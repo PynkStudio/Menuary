@@ -4,53 +4,30 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-
-const souls = [
-  {
-    id: "burger",
-    kicker: "American Taste",
-    title: "Burger House",
-    desc: "Tredici panini firmati, smash, pulled, scottona. Due mani, nessuna scusa.",
-    href: "/menu#burger",
-    image: "/photos/burger-esagerato.png",
-  },
-  {
-    id: "pizza",
-    kicker: "Italian Style",
-    title: "Pizza House",
-    desc: "Classiche come devono essere. Speciali Be Pork come non te le aspetti.",
-    href: "/menu#pizze-speciali",
-    image: "/photos/pizza-multigusto.png",
-  },
-  {
-    id: "cucina",
-    kicker: "Tradizione Pugliese",
-    title: "Cucina Pugliese",
-    desc: "Crudo alla barese, orecchiette con le brasciole, tagliata Angus. Si mangia sul serio.",
-    href: "/menu#secondi",
-    image: "/photos/orecchiette-brasciole.png",
-  },
-];
+import { useTenant } from "@/components/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
 
 export function ThreeSouls() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
+
   return (
     <section id="tre-anime" className="relative scroll-mt-24 bg-pork-cream py-20 md:py-28">
       <div className="container-wide">
         <div className="mb-12 flex flex-col items-center text-center">
-          <span className="chip-red">Tre anime, una casa</span>
+          <span className="chip-red">{content.soulsIntro.eyebrow}</span>
           <h2 className="headline mt-4 text-5xl sm:text-6xl lg:text-7xl text-balance">
-            Tutte le facce della fame,
+            {content.soulsIntro.titleLead}
             <br />
-            <span className="text-pork-red">in un posto solo.</span>
+            <span className="text-pork-red">{content.soulsIntro.titleAccent}</span>
           </h2>
           <p className="mt-4 max-w-2xl text-lg text-pork-ink/70">
-            Be Pork non è un burger bar. È un ristorante con tre anime forti che
-            convivono nello stesso tavolo.
+            {content.soulsIntro.body}
           </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-3">
-          {souls.map((soul, i) => (
+          {content.souls.map((soul, i) => (
             <motion.div
               key={soul.id}
               initial={{ opacity: 0, y: 24 }}

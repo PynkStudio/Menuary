@@ -1,10 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { siteConfig } from "@/lib/site-config";
 import { useSettingsStore } from "@/store/settings-store";
 import type { DaySchedule } from "@/lib/venue-hours";
 import { defaultHoursWeek } from "@/lib/venue-hours";
+import { useTenant } from "@/components/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
 
 function usePublicHours(): DaySchedule[] {
   const hw = useSettingsStore((s) => s.hoursWeek);
@@ -14,13 +15,15 @@ function usePublicHours(): DaySchedule[] {
 
 /** Telefono effettivo (override admin o default) + link tel: e wa.me. */
 export function useVenueContactPhone() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
   const override = useSettingsStore((s) => s.phoneOverride?.trim() ?? "");
-  const display = override || siteConfig.contact.phone;
+  const display = override || content.contact.phone;
   const telHref = `tel:${display.replace(/\s/g, "")}`;
-  const waDigits = display.replace(/\D/g, "");
+  const waDigits = override ? display.replace(/\D/g, "") : content.contact.whatsappDigits;
   const waHref = (message?: string) =>
     `https://wa.me/${waDigits}?text=${encodeURIComponent(
-      message ?? siteConfig.whatsapp.defaultMessage,
+      message ?? content.contact.whatsappMessage,
     )}`;
   return { display, telHref, waHref };
 }
@@ -122,10 +125,12 @@ export function VenueWhatsappLink({
 }
 
 export function VenueCopyrightAddress() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
   const override = useSettingsStore((s) => s.addressOverride?.trim() ?? "");
   const text = override
     ? override.replace(/\s*\n+\s*/g, " — ").trim()
-    : siteConfig.address.full;
+    : content.address.full;
   return <>{text}</>;
 }
 
@@ -136,8 +141,10 @@ export function VenueAddressBlock({
   className?: string;
   multiline?: boolean;
 }) {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
   const override = useSettingsStore((s) => s.addressOverride?.trim() ?? "");
-  const raw = override || siteConfig.address.full;
+  const raw = override || content.address.full;
   if (multiline && override) {
     return (
       <span className={`whitespace-pre-wrap ${className ?? ""}`}>{raw}</span>
@@ -148,10 +155,10 @@ export function VenueAddressBlock({
   }
   return (
     <span className={className}>
-      {siteConfig.address.street}
+      {content.address.street}
       <br />
-      {siteConfig.address.zip} {siteConfig.address.city} (
-      {siteConfig.address.province})
+      {content.address.zip} {content.address.city} (
+      {content.address.province})
     </span>
   );
 }

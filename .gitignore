@@ -7,3 +7,4 @@ out
 .vercel
 public/uploads/*
 !public/uploads/.gitkeep
+.env*.local

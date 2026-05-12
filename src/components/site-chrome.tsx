@@ -8,6 +8,7 @@ import { ShopFabs } from "./shop-fabs";
 import { CartDrawer } from "./cart-drawer";
 import { CartFlyOverlay } from "./cart-fly-overlay";
 import { FavoritesDrawer } from "./favorites-drawer";
+import { usePlatformMode } from "./platform-mode-provider";
 
 function isInternal(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -16,7 +17,15 @@ function isInternal(pathname: string | null): boolean {
 
 export function SiteChrome() {
   const pathname = usePathname();
-  if (isInternal(pathname)) return null;
+  const mode = usePlatformMode();
+  if (
+    isInternal(pathname) ||
+    mode === "marketing" ||
+    mode === "platform-admin" ||
+    mode === "preview"
+  ) {
+    return null;
+  }
   return (
     <>
       <Navbar />
@@ -31,6 +40,14 @@ export function SiteChrome() {
 
 export function SiteFooterGate() {
   const pathname = usePathname();
-  if (isInternal(pathname)) return null;
+  const mode = usePlatformMode();
+  if (
+    isInternal(pathname) ||
+    mode === "marketing" ||
+    mode === "platform-admin" ||
+    mode === "preview"
+  ) {
+    return null;
+  }
   return <Footer />;
 }

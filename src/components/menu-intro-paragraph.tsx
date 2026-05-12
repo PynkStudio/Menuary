@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useHydrated } from "@/components/providers";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { TableOrderEntryModal } from "@/components/table-order-entry-modal";
 
 function renderWithOptionalPlus(text: string) {
@@ -53,8 +53,7 @@ function introParts(allowTakeaway: boolean, allowTableOrders: boolean): {
 /** Hero testuale /menu + CTA ingresso tavolo (secondo impostazioni). */
 export function MenuIntroParagraph() {
   const hydrated = useHydrated();
-  const allowTakeaway = useSettingsStore((s) => s.allowTakeaway);
-  const allowTableOrders = useSettingsStore((s) => s.allowTableOrders);
+  const { allowTakeaway, allowTableOrders } = useEffectiveFeatures();
   const [modalOpen, setModalOpen] = useState(false);
 
   const { body, showTableCta } = hydrated

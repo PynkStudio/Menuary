@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   ChefHat,
   ClipboardList,
+  Building2,
   LayoutDashboard,
   LogOut,
   Menu as MenuIcon,
@@ -17,7 +18,9 @@ import type { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { clearAdminSession } from "@/lib/admin-auth";
 import { cn } from "@/lib/utils";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { useTenant } from "@/components/tenant-provider";
+import { usePlatformMode } from "@/components/platform-mode-provider";
 
 type NavFlags = {
   allowTakeaway: boolean;
@@ -42,6 +45,7 @@ const NAV_ITEMS: NavItem[] = [
     visible: (s) => s.allowTakeaway || s.allowTableOrders,
   },
   { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
+  { href: "/admin/tenant", label: "Tenant", icon: Building2 },
   {
     href: "/admin/ordini",
     label: "Ordini",
@@ -68,24 +72,31 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const mode = usePlatformMode();
 
-  const allowTakeaway = useSettingsStore((s) => s.allowTakeaway);
-  const allowTableOrders = useSettingsStore((s) => s.allowTableOrders);
-  const kitchenDisplayEnabled = useSettingsStore(
-    (s) => s.kitchenDisplayEnabled,
-  );
+  const tenant = useTenant();
+  const {
+    allowTakeaway,
+    allowTableOrders,
+    kitchenDisplayEnabled,
+  } = useEffectiveFeatures();
 
   const navItems = useMemo(() => {
+    if (mode === "platform-admin") {
+      return NAV_ITEMS.filter((it) => it.href === "/admin" || it.href === "/admin/tenant");
+    }
     const flags: NavFlags = {
       allowTakeaway,
       allowTableOrders,
       kitchenDisplayEnabled,
     };
     return NAV_ITEMS.filter((it) => (it.visible ? it.visible(flags) : true));
-  }, [allowTakeaway, allowTableOrders, kitchenDisplayEnabled]);
+  }, [allowTakeaway, allowTableOrders, kitchenDisplayEnabled, mode]);
 
   const adminEntryHref =
-    allowTakeaway || allowTableOrders ? "/admin" : "/admin/menu";
+    mode === "platform-admin" || allowTakeaway || allowTableOrders
+      ? "/admin"
+      : "/admin/menu";
 
   function logout() {
     clearAdminSession();
@@ -105,7 +116,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             href={adminEntryHref}
             className="headline text-2xl text-pork-mustard"
           >
-            Be Pork · gestione
+            {mode === "platform-admin" ? "Menuary · controllo" : `${tenant.name} · gestione`}
           </Link>
           <button
             className="lg:hidden"

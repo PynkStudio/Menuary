@@ -1,7 +1,8 @@
 "use client";
 
 import { MapPin, Phone, Clock, MessageCircle } from "lucide-react";
-import { siteConfig } from "@/lib/site-config";
+import { useTenant } from "@/components/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
 import {
   VenueAddressBlock,
   VenueHoursList,
@@ -10,20 +11,22 @@ import {
 } from "@/components/venue-display";
 
 export function FindUs() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
+
   return (
     <section className="bg-pork-cream py-20 md:py-28">
       <div className="container-wide">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
           <div>
-            <span className="chip-red">Come trovarci</span>
+            <span className="chip-red">{content.findUs.eyebrow}</span>
             <h2 className="headline mt-4 text-5xl sm:text-6xl lg:text-7xl text-balance">
-              In centro a Bari,
+              {content.findUs.titleLead}
               <br />
-              <span className="text-pork-red">dove si mangia davvero.</span>
+              <span className="text-pork-red">{content.findUs.titleAccent}</span>
             </h2>
             <p className="mt-4 max-w-xl text-lg text-pork-ink/70">
-              Via Quintino Sella, cuore del quartiere Murat. Due passi dal mare, meno da un
-              buon bicchiere di birra.
+              {content.findUs.body}
             </p>
 
             <dl className="mt-8 space-y-5">
@@ -37,7 +40,7 @@ export function FindUs() {
                   </dt>
                   <dd className="mt-0.5 text-pork-ink">
                     <a
-                      href={siteConfig.maps.searchUrl}
+                      href={content.maps.searchUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold hover:underline"
@@ -81,7 +84,7 @@ export function FindUs() {
                 Prenota un tavolo
               </VenueWhatsappLink>
               <a
-                href={siteConfig.maps.searchUrl}
+                href={content.maps.searchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-ghost text-base"
@@ -93,8 +96,8 @@ export function FindUs() {
 
           <div className="relative h-[28rem] overflow-hidden rounded-3xl bg-pork-ink/5 shadow-xl ring-1 ring-pork-ink/10 lg:h-auto">
             <iframe
-              title="Mappa Be Pork"
-              src={siteConfig.maps.embedUrl}
+              title={content.findUs.mapTitle}
+              src={content.maps.embedUrl}
               className="h-full w-full"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

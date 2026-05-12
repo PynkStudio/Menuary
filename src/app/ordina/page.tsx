@@ -10,7 +10,7 @@ import { formatRemovedForLine } from "@/lib/ingredients";
 import { formatEuro } from "@/lib/price-utils";
 import { useHydrated } from "@/components/providers";
 import { LineMods } from "@/components/line-mods";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 function nextSlots(count = 8, stepMin = 15): string[] {
   const out: string[] = [];
@@ -33,7 +33,7 @@ function nextSlots(count = 8, stepMin = 15): string[] {
 export default function OrdinaPage() {
   const hydrated = useHydrated();
   const router = useRouter();
-  const takeawayOk = useSettingsStore((s) => s.allowTakeaway);
+  const { allowTakeaway: takeawayOk } = useEffectiveFeatures();
 
   const lines = useCartStore((s) => s.lines);
   const clear = useCartStore((s) => s.clear);

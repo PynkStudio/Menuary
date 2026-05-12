@@ -6,16 +6,16 @@ const config: Config = {
     extend: {
       colors: {
         pork: {
-          red: "#B8332E",
-          "red-dark": "#8E2420",
-          peach: "#F4C89A",
-          cream: "#FFF4E6",
-          ink: "#141010",
-          brick: "#3A2320",
-          mustard: "#F5C518",
-          "mustard-soft": "#F7D04A",
-          green: "#2EB840",
-          pink: "#EC5B8D",
+          red: "rgb(var(--tenant-red) / <alpha-value>)",
+          "red-dark": "rgb(var(--tenant-red-dark) / <alpha-value>)",
+          peach: "rgb(var(--tenant-peach) / <alpha-value>)",
+          cream: "rgb(var(--tenant-cream) / <alpha-value>)",
+          ink: "rgb(var(--tenant-ink) / <alpha-value>)",
+          brick: "rgb(var(--tenant-brick) / <alpha-value>)",
+          mustard: "rgb(var(--tenant-mustard) / <alpha-value>)",
+          "mustard-soft": "rgb(var(--tenant-mustard-soft) / <alpha-value>)",
+          green: "rgb(var(--tenant-green) / <alpha-value>)",
+          pink: "rgb(var(--tenant-pink) / <alpha-value>)",
         },
       },
       fontFamily: {

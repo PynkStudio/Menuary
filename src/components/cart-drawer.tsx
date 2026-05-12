@@ -21,7 +21,7 @@ import { CartLineNoteModal } from "./cart-line-note-modal";
 import { FormatoChoiceModal } from "./formato-choice-modal";
 import { hasMenuBundle } from "@/lib/menu-bundle";
 import type { AdminMenuItem, CartLine } from "@/lib/types";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { canAddToCart } from "@/lib/ordering-rules";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { spawnCartFly } from "@/lib/cart-fly";
@@ -51,8 +51,7 @@ export function CartDrawer() {
     null,
   );
 
-  const allowTakeaway = useSettingsStore((s) => s.allowTakeaway);
-  const allowTableOrders = useSettingsStore((s) => s.allowTableOrders);
+  const { allowTakeaway, allowTableOrders } = useEffectiveFeatures();
   const orderingHere = canAddToCart(pathname, {
     allowTakeaway,
     allowTableOrders,

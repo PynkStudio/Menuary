@@ -5,6 +5,7 @@ import { useMenuStore } from "@/store/menu-store";
 import { useCartStore } from "@/store/cart-store";
 import { useFavoritesStore } from "@/store/favorites-store";
 import { useSettingsStore } from "@/store/settings-store";
+import { useTenantAdminStore } from "@/store/tenant-admin-store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
@@ -16,6 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       useCartStore.persist.rehydrate(),
       useFavoritesStore.persist.rehydrate(),
       useSettingsStore.persist.rehydrate(),
+      useTenantAdminStore.persist.rehydrate(),
     ]).then(() => {
       if (mounted) setHydrated(true);
     });
@@ -26,6 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       if (e.key === "bepork-cart-v1") useCartStore.persist.rehydrate();
       if (e.key === "bepork-favorites-v1") useFavoritesStore.persist.rehydrate();
       if (e.key === "bepork-settings-v1") useSettingsStore.persist.rehydrate();
+      if (e.key === "bepork-tenant-admin-v1") {
+        useTenantAdminStore.persist.rehydrate();
+      }
     };
     window.addEventListener("storage", onStorage);
 

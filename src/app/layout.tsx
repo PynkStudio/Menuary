@@ -1,12 +1,19 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Bagel_Fat_One, Bebas_Neue, Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { SiteChrome, SiteFooterGate } from "@/components/site-chrome";
+import { TenantProvider } from "@/components/tenant-provider";
+import { PlatformModeProvider } from "@/components/platform-mode-provider";
 import { siteConfig } from "@/lib/site-config";
 import { googleRating, reviews } from "@/lib/reviews-data";
 import { menu, priceFromNumber } from "@/lib/menu-data";
+import { resolveTenantFromHost } from "@/lib/tenant-runtime";
+import { tenantThemeCssVars } from "@/lib/tenant-theme";
+import { getPlatformModeFromHost } from "@/lib/platform";
+import { getTenantContent } from "@/lib/tenant-content";
 
 const display = Bagel_Fat_One({
   subsets: ["latin"],
@@ -28,47 +35,99 @@ const body = Manrope({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: `${siteConfig.name} — Burger, Pizza e Cucina Pugliese a Bari`,
-    template: `%s · ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: [
-    "Be Pork",
-    "hamburger Bari",
-    "burger Bari centro",
-    "pizzeria Bari",
-    "ristorante Bari",
-    "street food Bari",
-    "Via Quintino Sella Bari",
-    "pulled pork Bari",
-    "pizza all'assassina Bari",
-  ],
-  openGraph: {
-    title: `${siteConfig.name} — Burger, Pizza e Cucina Pugliese a Bari`,
-    description: siteConfig.description,
-    url: siteConfig.url,
-    siteName: siteConfig.name,
-    locale: "it_IT",
-    type: "website",
-    images: [{ url: "/logo-payoff.png", alt: "Be Pork — Mordi e Godi" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-    images: ["/logo-payoff.png"],
-  },
-  alternates: {
-    canonical: siteConfig.url,
-  },
-  icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const host = (await headers()).get("host");
+  const tenant = resolveTenantFromHost(host);
+  const mode = getPlatformModeFromHost(host);
+  const content = getTenantContent(tenant.id);
+  const tenantTitle =
+    tenant.id === "faak"
+      ? `${tenant.name} - cibo e vino a ribellione naturale`
+      : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
+
+  return {
+    metadataBase: new URL(mode === "marketing" ? siteConfig.url : content.url),
+    title:
+      mode === "marketing"
+        ? {
+            default: "Menuary — siti e ordini digitali per ristoranti",
+            template: "%s · Menuary",
+          }
+        : {
+            default: tenantTitle,
+            template: `%s · ${tenant.name}`,
+          },
+    description:
+      mode === "marketing"
+        ? "Menuary crea siti ristorante multi-tenant con menu digitali, ordini e area gestionale."
+        : content.description,
+    keywords:
+      mode === "marketing"
+        ? [
+            "Menuary",
+            "siti per ristoranti",
+            "menu digitale",
+            "ordini ristorante",
+            "piattaforma multi tenant ristoranti",
+          ]
+        : tenant.id === "faak"
+          ? [
+              tenant.name,
+              "FAAK Milano",
+              "Viviana Varese",
+              "aperitivo Milano Isola",
+              "ristorante Via Arnaldo da Brescia",
+            ]
+          : [
+              tenant.name,
+              "hamburger Bari",
+              "burger Bari centro",
+              "pizzeria Bari",
+              "ristorante Bari",
+              "street food Bari",
+              "Via Quintino Sella Bari",
+              "pulled pork Bari",
+              "pizza all'assassina Bari",
+            ],
+    openGraph: {
+      title:
+        mode === "marketing"
+          ? "Menuary — siti e ordini digitali per ristoranti"
+          : tenantTitle,
+      description:
+        mode === "marketing"
+          ? "Menuary crea siti ristorante multi-tenant con menu digitali, ordini e area gestionale."
+          : content.description,
+      url: mode === "marketing" ? "https://menuary.it" : content.url,
+      siteName: mode === "marketing" ? "Menuary" : tenant.name,
+      locale: "it_IT",
+      type: "website",
+      ...(mode === "marketing"
+        ? {}
+        : {
+            images: [
+              { url: content.showcaseLogoSrc, alt: content.showcaseLogoAlt },
+            ],
+          }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: mode === "marketing" ? "Menuary" : tenant.name,
+      description:
+        mode === "marketing"
+          ? "Menuary crea siti ristorante multi-tenant con menu digitali, ordini e area gestionale."
+          : content.description,
+      ...(mode === "marketing" ? {} : { images: [content.showcaseLogoSrc] }),
+    },
+    alternates: {
+      canonical: mode === "marketing" ? "https://menuary.it" : content.url,
+    },
+    icons: {
+      icon: mode === "marketing" ? "/logo.png" : content.logoSrc,
+      apple: mode === "marketing" ? "/logo.png" : content.logoSrc,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#141010",
@@ -139,23 +198,53 @@ const restaurantSchema = {
   sameAs: [siteConfig.social.instagram, siteConfig.social.facebook],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const host = (await headers()).get("host");
+  const tenant = resolveTenantFromHost(host);
+  const mode = getPlatformModeFromHost(host);
+  const themeVars = tenantThemeCssVars(tenant.theme);
+  const content = getTenantContent(tenant.id);
+  const tenantRestaurantSchema = {
+    ...restaurantSchema,
+    name: tenant.name,
+    image: `${content.url}${content.showcaseLogoSrc}`,
+    url: content.url,
+    telephone: content.contact.phone,
+    address: {
+      ...restaurantSchema.address,
+      streetAddress: content.address.street,
+      postalCode: content.address.zip,
+      addressLocality: content.address.city,
+      addressRegion: content.address.province,
+    },
+    sameAs: [content.social.instagram, content.social.facebook],
+  };
+
   return (
-    <html lang="it" className={`${display.variable} ${impact.variable} ${body.variable}`}>
+    <html
+      lang="it"
+      className={`${display.variable} ${impact.variable} ${body.variable}`}
+      style={themeVars as React.CSSProperties}
+      data-tenant={tenant.id}
+    >
       <body>
         <Script
           id="schema-restaurant"
           type="application/ld+json"
           strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(tenantRestaurantSchema) }}
         />
-        <Providers>
-          <SiteChrome />
-          <main className="min-w-0 overflow-x-hidden">{children}</main>
-          <SiteFooterGate />
-        </Providers>
+        <PlatformModeProvider mode={mode}>
+          <TenantProvider tenant={tenant}>
+            <Providers>
+              <SiteChrome />
+              <main className="min-w-0 overflow-x-hidden">{children}</main>
+              <SiteFooterGate />
+            </Providers>
+          </TenantProvider>
+        </PlatformModeProvider>
       </body>
     </html>
   );

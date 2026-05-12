@@ -6,70 +6,24 @@ import { motion } from "framer-motion";
 import { SectionHeader } from "./section-header";
 import { PriceSticker } from "./price-sticker";
 import { ArrowRight } from "lucide-react";
-
-const dishes = [
-  {
-    name: "Esagerato Pork",
-    desc: "Scottona, pulled, bacon, stracciatella. Il panino che si ricorda.",
-    price: "€ 15,00",
-    image: "/photos/burger-esagerato.png",
-    variant: "red" as const,
-    href: "/menu#burger",
-  },
-  {
-    name: "Pizza all'Assassina",
-    desc: "Spaghetti croccanti, pomodoro, stracciatella. Bari in una fetta.",
-    price: "€ 10,00",
-    image: "/photos/pizza-multigusto.png",
-    variant: "mustard" as const,
-    href: "/menu#pizze-speciali",
-  },
-  {
-    name: "Tagliata Pork",
-    desc: "300 gr di Angus, datterino, rucola, grana. Secca e giusta.",
-    price: "€ 18,00",
-    image: "/photos/tagliata-pork.png",
-    variant: "green" as const,
-    href: "/menu#secondi",
-  },
-  {
-    name: "Assassina Pork",
-    desc: "Burger di scottona + spaghetti all'assassina + stracciatella.",
-    price: "€ 13,00",
-    image: "/photos/burger-assassina.png",
-    variant: "pink" as const,
-    href: "/menu#burger",
-  },
-  {
-    name: "Mega Stick",
-    desc: "La grigliata che chiude la serata: tagliata, costata, bombette, zampina.",
-    price: "€ 50,00",
-    image: "/photos/stinco-pork.png",
-    variant: "red" as const,
-    href: "/menu#secondi",
-  },
-  {
-    name: "Orecchiette con le brasciole",
-    desc: "Il ragù della domenica, a Bari, ogni sera.",
-    price: "Primi",
-    image: "/photos/orecchiette-padella.png",
-    variant: "mustard" as const,
-    href: "/menu#primi",
-  },
-];
+import { useTenant } from "@/components/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
 
 export function SignatureDishes() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
+
   return (
     <section className="bg-pork-cream py-20 md:py-28">
       <div className="container-wide">
         <SectionHeader
-          eyebrow="Scelti dalla casa"
-          title="I piatti che ci chiedono tutti."
-          subtitle="Sei motivi per tornare. Più dodici che non hai ancora provato."
+          eyebrow={content.dishesIntro.eyebrow}
+          title={content.dishesIntro.title}
+          subtitle={content.dishesIntro.subtitle}
         />
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {dishes.map((dish, i) => (
+          {content.dishes.map((dish, i) => (
             <motion.div
               key={dish.name}
               initial={{ opacity: 0, y: 20 }}

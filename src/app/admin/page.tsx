@@ -14,8 +14,11 @@ import { useMenuStore } from "@/store/menu-store";
 import { useSettingsStore } from "@/store/settings-store";
 import { formatEuro } from "@/lib/price-utils";
 import { useHydrated } from "@/components/providers";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { usePlatformMode } from "@/components/platform-mode-provider";
 
 export default function AdminHome() {
+  const mode = usePlatformMode();
   const router = useRouter();
   const hydrated = useHydrated();
   const [settingsReady, setSettingsReady] = useState(() =>
@@ -24,9 +27,11 @@ export default function AdminHome() {
   const items = useMenuStore((s) => s.items);
   const orders = useMenuStore((s) => s.orders);
   const sessions = useMenuStore((s) => s.sessions);
-  const allowTakeaway = useSettingsStore((s) => s.allowTakeaway);
-  const allowTableOrders = useSettingsStore((s) => s.allowTableOrders);
-  const kitchenOn = useSettingsStore((s) => s.kitchenDisplayEnabled);
+  const {
+    allowTakeaway,
+    allowTableOrders,
+    kitchenDisplayEnabled: kitchenOn,
+  } = useEffectiveFeatures();
   const showOrdini = allowTakeaway || allowTableOrders;
   const showTavoli = allowTableOrders;
   const ordersModuleOn = showOrdini;
@@ -42,9 +47,10 @@ export default function AdminHome() {
   }, []);
 
   useEffect(() => {
+    if (mode === "platform-admin") return;
     if (!settingsReady) return;
     if (!ordersModuleOn) router.replace("/admin/menu");
-  }, [settingsReady, ordersModuleOn, router]);
+  }, [settingsReady, ordersModuleOn, router, mode]);
 
   const stats = useMemo(() => {
     const total = items.length;
@@ -67,6 +73,37 @@ export default function AdminHome() {
     const tablesOpen = sessions.filter((s) => s.status === "aperta").length;
     return { total, unavailable, openOrders, todayRevenue, tablesOpen };
   }, [items, orders, sessions]);
+
+  if (mode === "platform-admin") {
+    return (
+      <div className="space-y-8">
+        <header>
+          <p className="impact-title text-xs text-pork-red">Menuary</p>
+          <h1 className="headline text-4xl">Controllo piattaforma</h1>
+          <p className="mt-2 max-w-2xl text-pork-ink/60">
+            Gestione centrale dei tenant, dei moduli abilitati e delle anteprime
+            commerciali in attesa del dominio definitivo.
+          </p>
+        </header>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <Quick
+            href="/admin/tenant"
+            title="Gestisci tenant"
+            desc="Attivazioni, moduli, demo e profili configurabili"
+            icon={<Settings size={22} />}
+          />
+          <Quick
+            href="https://demo.menuary.it/bepork-demo"
+            title="Apri preview esempio"
+            desc="Verifica il flusso demo prima dell'attivazione dominio"
+            icon={<QrCode size={22} />}
+            external
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (!settingsReady || !ordersModuleOn) {
     return <p className="text-pork-ink/50">Caricamento…</p>;

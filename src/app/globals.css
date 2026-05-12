@@ -7,6 +7,16 @@
     --font-display: "Bagel Fat One", cursive;
     --font-impact: "Bebas Neue", sans-serif;
     --font-body: "Manrope", system-ui, sans-serif;
+    --tenant-red: 184 51 46;
+    --tenant-red-dark: 142 36 32;
+    --tenant-peach: 244 200 154;
+    --tenant-cream: 255 244 230;
+    --tenant-ink: 20 16 16;
+    --tenant-brick: 58 35 32;
+    --tenant-mustard: 245 197 24;
+    --tenant-mustard-soft: 247 208 74;
+    --tenant-green: 46 184 64;
+    --tenant-pink: 236 91 141;
   }
 
   html {

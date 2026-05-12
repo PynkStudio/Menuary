@@ -4,10 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, MessageCircle, UtensilsCrossed } from "lucide-react";
-import { whatsappUrl } from "@/lib/site-config";
+import { useTenant } from "@/components/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
+import { VenueWhatsappLink } from "@/components/venue-display";
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
 
   const scrollToNext = () => {
     document.getElementById("tre-anime")?.scrollIntoView({
@@ -20,7 +24,7 @@ export function Hero() {
     <section className="relative isolate overflow-hidden bg-pork-ink pb-20 pt-[calc(7rem+env(safe-area-inset-top))] text-pork-cream md:pb-28 md:pt-[calc(9rem+env(safe-area-inset-top))]">
       <div className="absolute inset-0 -z-10">
         <Image
-          src="/photos/burger-esagerato.png"
+          src={content.hero.backdrop}
           alt=""
           fill
           priority
@@ -42,27 +46,21 @@ export function Hero() {
             className="max-w-3xl"
           >
             <span className="inline-flex items-center gap-2 rounded-full bg-pork-mustard/15 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-pork-mustard ring-1 ring-pork-mustard/30">
-              Ristorante · Pizzeria · Burger House — Bari
+              {content.hero.eyebrow}
             </span>
             <h1 className="headline mt-6 text-6xl text-pork-cream sm:text-7xl md:text-8xl lg:text-[9rem]">
-              Il maiale
+              {content.hero.titleLead}
               <br />
-              <span className="text-pork-mustard">è una filosofia.</span>
+              <span className="text-pork-mustard">{content.hero.titleAccent}</span>
             </h1>
             <p className="mt-6 max-w-xl text-xl text-pork-cream/85 text-pretty">
-              A Bari, si chiama <strong>Be Pork</strong>. Burger smashati, pizze firmate,
-              cucina pugliese che non chiede permesso.
+              {content.hero.body}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href={whatsappUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-mustard text-base"
-              >
+              <VenueWhatsappLink className="btn-mustard text-base">
                 <MessageCircle size={20} />
-                Prenota su WhatsApp
-              </a>
+                {content.hero.ctaLabel}
+              </VenueWhatsappLink>
               <Link href="/menu" className="btn-ghost-light text-base">
                 <UtensilsCrossed size={20} />
                 Guarda il menu
@@ -82,8 +80,8 @@ export function Hero() {
           >
             <div className="relative mx-auto aspect-square w-full max-w-md isolate">
               <Image
-                src="/logo-payoff.png"
-                alt="Be Pork — Mordi e Godi"
+                src={content.showcaseLogoSrc}
+                alt={content.showcaseLogoAlt}
                 fill
                 priority
                 unoptimized

@@ -11,7 +11,7 @@ import {
   selectActiveSession,
   selectSessionByCode,
 } from "@/store/menu-store";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useHydrated } from "@/components/providers";
 import { formatEuro } from "@/lib/price-utils";
 import { getClientId } from "@/lib/client-id";
@@ -83,8 +83,10 @@ function TavoloBody() {
   const [joinCode, setJoinCode] = useState("");
   const [nickname, setNickname] = useState("");
 
-  const allowTableOrders = useSettingsStore((s) => s.allowTableOrders);
-  const dinerSeparation = useSettingsStore((s) => s.dinerSeparationAtTables);
+  const {
+    allowTableOrders,
+    dinerSeparationAtTables: dinerSeparation,
+  } = useEffectiveFeatures();
 
   const resolvedTable: Table | undefined = useMemo(() => {
     if (!tParam) return undefined;

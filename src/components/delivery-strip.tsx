@@ -1,7 +1,13 @@
-import { siteConfig } from "@/lib/site-config";
+"use client";
+
 import { Truck } from "lucide-react";
+import { useTenant } from "@/components/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
 
 export function DeliveryStrip() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
+
   return (
     <section className="bg-pork-ink text-pork-cream">
       <div className="container-wide flex flex-col items-center justify-between gap-6 py-8 md:flex-row">
@@ -10,14 +16,14 @@ export function DeliveryStrip() {
             <Truck size={22} />
           </div>
           <div>
-            <p className="impact-title text-2xl">Fame ora, tavolo pieno?</p>
+            <p className="impact-title text-2xl">{content.delivery.title}</p>
             <p className="text-sm text-pork-cream/70">
-              Presto ordini Be Pork anche a domicilio.
+              {content.delivery.body}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {siteConfig.delivery.map((d) => (
+          {content.delivery.partners.map((d) => (
             <a
               key={d.name}
               href={d.url}

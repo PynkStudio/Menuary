@@ -23,7 +23,7 @@ import {
   getMenuServiceNotes,
   menuServiceNoteText,
 } from "@/lib/menu-service-notes";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { canAddToCart } from "@/lib/ordering-rules";
 import {
   formatIngredientsLine,
@@ -65,8 +65,7 @@ const priceVariantColors: Array<"mustard" | "red"> = ["mustard", "red"];
 
 export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
   const pathname = usePathname();
-  const allowTakeaway = useSettingsStore((s) => s.allowTakeaway);
-  const allowTableOrders = useSettingsStore((s) => s.allowTableOrders);
+  const { allowTakeaway, allowTableOrders } = useEffectiveFeatures();
   const orderingAllowed = canAddToCart(pathname, {
     allowTakeaway,
     allowTableOrders,

@@ -8,8 +8,12 @@ import {
   getSafeAdminPostLoginPath,
   setAdminSession,
 } from "@/lib/admin-auth";
+import { usePlatformMode } from "@/components/platform-mode-provider";
+import { useTenant } from "@/components/tenant-provider";
 
 export default function LoginPage() {
+  const mode = usePlatformMode();
+  const tenant = useTenant();
   const router = useRouter();
   const [pw, setPw] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -39,7 +43,9 @@ export default function LoginPage() {
         </div>
         <h1 className="headline text-center text-3xl">Area riservata</h1>
         <p className="mt-1 text-center text-sm text-pork-ink/60">
-          Be Pork · gestione menu e ordini
+          {mode === "platform-admin"
+            ? "Menuary · controllo piattaforma"
+            : `${tenant.name} · gestione menu e ordini`}
         </p>
 
         <label className="mt-6 block">
@@ -68,7 +74,7 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-[11px] text-pork-ink/50">
           Usa la password fornita per il tuo ambiente. Per assistenza sull’accesso contatta chi
-          gestisce il servizio Be Pork.
+          gestisce il servizio.
         </p>
       </form>
     </div>

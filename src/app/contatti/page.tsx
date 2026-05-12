@@ -1,19 +1,31 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { MapPin, Instagram, Facebook } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 import { ContattiReserveCards } from "@/components/contatti-reserve-cards";
+import { MarketingLeadForm } from "@/components/marketing/lead-form";
 import {
   VenueAddressBlock,
   VenueHoursList,
 } from "@/components/venue-display";
+import { getPlatformModeFromHost } from "@/lib/platform";
 
-export const metadata: Metadata = {
-  title: "Contatti & Prenotazioni",
-  description:
-    "Prenota da Be Pork su WhatsApp o chiamaci. Via Quintino Sella 128, 70123 Bari. Orari, mappa, social.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const mode = getPlatformModeFromHost((await headers()).get("host"));
+  return mode === "marketing"
+    ? {
+        title: "Contatti",
+        description:
+          "Richiedi una demo Menuary e raccontaci ristorante, obiettivi e funzioni da attivare.",
+      }
+    : {
+        title: "Contatti & Prenotazioni",
+        description:
+          "Prenota da Be Pork su WhatsApp o chiamaci. Via Quintino Sella 128, 70123 Bari. Orari, mappa, social.",
+      };
+}
 
-export default function ContattiPage() {
+function TenantContactsPage() {
   return (
     <>
       <section className="bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
@@ -97,4 +109,47 @@ export default function ContattiPage() {
       </section>
     </>
   );
+}
+
+function MarketingContactsPage() {
+  return (
+    <div className="min-h-screen bg-[#f7f2eb] px-5 py-10 text-[#17120f] sm:px-8 lg:px-12 lg:py-16">
+      <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+        <section className="pt-6 lg:sticky lg:top-10">
+          <p className="inline-flex rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#7f6258] ring-1 ring-black/5">
+            contatti Menuary
+          </p>
+          <h1 className="headline mt-5 text-6xl sm:text-7xl">
+            Raccontaci il locale. Ti restituiamo il percorso giusto.
+          </h1>
+          <p className="mt-6 max-w-xl text-base leading-8 text-black/68">
+            Usiamo questa richiesta per capire se serve una demo commerciale,
+            un nuovo tenant, una migrazione o l&apos;attivazione dei moduli operativi.
+          </p>
+
+          <div className="mt-8 grid gap-3">
+            {[
+              "Anteprima tenant pronta da condividere",
+              "Dominio dedicato e area personale",
+              "Menu, ordini, tavoli e cucina attivabili",
+            ].map((item) => (
+              <div
+                key={item}
+                className="rounded-[1.5rem] bg-white px-4 py-3 text-sm font-semibold shadow-[0_18px_45px_rgba(20,16,16,0.05)] ring-1 ring-black/5"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <MarketingLeadForm />
+      </div>
+    </div>
+  );
+}
+
+export default async function ContattiPage() {
+  const mode = getPlatformModeFromHost((await headers()).get("host"));
+  return mode === "marketing" ? <MarketingContactsPage /> : <TenantContactsPage />;
 }

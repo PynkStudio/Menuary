@@ -7,8 +7,10 @@ import { Menu, X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { whatsappUrl } from "@/lib/site-config";
-import { useSettingsStore } from "@/store/settings-store";
 import { useFavoritesStore } from "@/store/favorites-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { useTenant } from "@/components/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
 
 const navBase = [
   { label: "Menu", href: "/menu" },
@@ -21,13 +23,20 @@ const navBase = [
 ];
 
 export function Navbar() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const setFavOpen = useFavoritesStore((s) => s.setOpen);
-  const allowTakeaway = useSettingsStore((s) => s.allowTakeaway);
+  const { allowTakeaway, favoritesEnabled } = useEffectiveFeatures();
   const nav = useMemo(
-    () => navBase.filter((i) => i.href !== "/ordina" || allowTakeaway),
-    [allowTakeaway],
+    () =>
+      navBase.filter((i) => {
+        if (i.href === "/ordina") return allowTakeaway;
+        if ("favorites" in i && i.favorites) return favoritesEnabled;
+        return true;
+      }),
+    [allowTakeaway, favoritesEnabled],
   );
 
   useEffect(() => {
@@ -54,17 +63,17 @@ export function Navbar() {
         )}
       >
         <div className="container-wide flex items-center justify-between py-3 md:py-4">
-          <Link href="/" className="group flex items-center gap-3" aria-label="Be Pork home">
+          <Link href="/" className="group flex items-center gap-3" aria-label={`${tenant.name} home`}>
             <Image
-              src="/logo.png"
-              alt="Be Pork"
+              src={content.logoSrc}
+              alt={content.logoAlt}
               width={56}
               height={56}
               priority
               unoptimized
               className="h-12 w-12 md:h-14 md:w-14 object-contain transition-transform group-hover:rotate-[-4deg]"
             />
-            <span className="sr-only">Be Pork</span>
+            <span className="sr-only">{tenant.name}</span>
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Principale">
@@ -156,7 +165,7 @@ export function Navbar() {
             onClick={() => setOpen(false)}
           >
             <MessageCircle size={22} />
-            Prenota su WhatsApp
+            {content.hero.ctaLabel}
           </a>
         </div>
       </div>

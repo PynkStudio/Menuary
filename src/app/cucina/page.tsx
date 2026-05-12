@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Flame, CheckCircle2, Clock, Utensils } from "lucide-react";
 import { useMenuStore } from "@/store/menu-store";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { useTenant } from "@/components/tenant-provider";
 import { useHydrated } from "@/components/providers";
 import type { Order, OrderStatus } from "@/lib/types";
 import {
@@ -33,11 +34,14 @@ const COLUMNS: Array<{ key: OrderStatus; title: string; accent: string }> = [
 ];
 
 export default function KitchenDisplay() {
+  const tenant = useTenant();
   const hydrated = useHydrated();
   const orders = useMenuStore((s) => s.orders);
   const updateStatus = useMenuStore((s) => s.updateOrderStatus);
-  const kitchenOn = useSettingsStore((s) => s.kitchenDisplayEnabled);
-  const dinerSeparation = useSettingsStore((s) => s.dinerSeparationAtTables);
+  const {
+    kitchenDisplayEnabled: kitchenOn,
+    dinerSeparationAtTables: dinerSeparation,
+  } = useEffectiveFeatures();
 
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -104,7 +108,7 @@ export default function KitchenDisplay() {
           </div>
           <div>
             <p className="impact-title text-xs text-pork-mustard">
-              Be Pork · cucina
+              {tenant.name} · cucina
             </p>
             <h1 className="headline text-2xl">Schermo cucina</h1>
           </div>

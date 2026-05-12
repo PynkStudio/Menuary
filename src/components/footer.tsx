@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Instagram, Facebook, Phone, MapPin, Lock } from "lucide-react";
-import { siteConfig } from "@/lib/site-config";
+import { useTenant } from "@/components/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
 import {
   VenueAddressBlock,
   VenueCopyrightAddress,
@@ -11,46 +14,47 @@ import {
 } from "@/components/venue-display";
 
 export function Footer() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
   return (
     <footer className="relative mt-16 bg-pork-ink pb-[env(safe-area-inset-bottom)] text-pork-cream">
       <div className="container-wide grid gap-12 pt-16 pb-8 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-4">
             <Image
-              src="/logo.png"
-              alt="Be Pork"
+              src={content.logoSrc}
+              alt={content.logoAlt}
               width={72}
               height={72}
               unoptimized
               className="h-16 w-16 object-contain"
             />
             <div>
-              <p className="impact-title text-3xl text-pork-mustard">Be Pork</p>
+              <p className="impact-title text-3xl text-pork-mustard">{tenant.name}</p>
               <p className="text-sm text-pork-cream/70">
-                Il maiale è una filosofia.
+                {content.footer.tagline}
               </p>
             </div>
           </div>
           <p className="mt-6 max-w-md text-pork-cream/70">
-            Ristorante, pizzeria e burger house nel centro di Bari. Burger smashati,
-            pizze firmate, cucina pugliese che non chiede permesso.
+            {content.footer.body}
           </p>
           <div className="mt-6 flex gap-3">
             <a
-              href={siteConfig.social.instagram}
+              href={content.social.instagram}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-pork-cream/20 text-pork-cream transition-colors hover:border-pork-mustard hover:text-pork-mustard"
-              aria-label="Instagram Be Pork"
+              aria-label={content.social.instagramLabel}
             >
               <Instagram size={18} />
             </a>
             <a
-              href={siteConfig.social.facebook}
+              href={content.social.facebook}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-pork-cream/20 text-pork-cream transition-colors hover:border-pork-mustard hover:text-pork-mustard"
-              aria-label="Facebook Be Pork"
+              aria-label={content.social.facebookLabel}
             >
               <Facebook size={18} />
             </a>
@@ -82,7 +86,7 @@ export function Footer() {
         <div className="container-wide flex flex-col gap-4 py-6 text-xs text-pork-cream/50 md:flex-row md:items-center md:justify-between">
           <p className="flex flex-wrap items-center gap-2">
             <span>
-              © {new Date().getFullYear()} Be Pork — <VenueCopyrightAddress />
+              © {new Date().getFullYear()} {tenant.name} — <VenueCopyrightAddress />
             </span>
             <Link
               href="/admin/login"
