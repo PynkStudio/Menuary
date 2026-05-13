@@ -8,10 +8,15 @@ import { PriceSticker } from "./price-sticker";
 import { ArrowRight } from "lucide-react";
 import { useTenant } from "@/components/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
+import { usePlatformMode } from "@/components/platform-mode-provider";
 
 export function SignatureDishes() {
   const tenant = useTenant();
+  const mode = usePlatformMode();
   const content = getTenantContent(tenant.id);
+  const previewPrefix =
+    mode === "preview" && tenant.previewSlug ? `/${tenant.previewSlug}` : "";
+  const menuHref = `${previewPrefix}/menu`;
 
   return (
     <section className="bg-pork-cream py-20 md:py-28">
@@ -32,7 +37,7 @@ export function SignatureDishes() {
               transition={{ duration: 0.5, delay: i * 0.05 }}
             >
               <Link
-                href={dish.href}
+                href={`${previewPrefix}${dish.href}`}
                 className="group relative block h-72 overflow-hidden rounded-3xl bg-pork-ink shadow-lg ring-1 ring-pork-ink/5 transition-all hover:-translate-y-1 hover:shadow-2xl"
               >
                 <Image
@@ -56,7 +61,7 @@ export function SignatureDishes() {
         </div>
 
         <div className="mt-10 text-center">
-          <Link href="/menu" className="btn-primary text-base">
+          <Link href={menuHref} className="btn-primary text-base">
             Tutto il menu <ArrowRight size={18} />
           </Link>
         </div>

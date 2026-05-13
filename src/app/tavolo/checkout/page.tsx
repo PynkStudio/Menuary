@@ -16,7 +16,7 @@ import {
 } from "@/lib/coperto";
 import { useHydrated } from "@/components/providers";
 import { LineMods } from "@/components/line-mods";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 function CheckoutTavoloBody() {
   const hydrated = useHydrated();
@@ -29,7 +29,7 @@ function CheckoutTavoloBody() {
   const items = useMenuStore((s) => s.items);
   const sessions = useMenuStore((s) => s.sessions);
   const orders = useMenuStore((s) => s.orders);
-  const dinerSeparation = useSettingsStore((s) => s.dinerSeparationAtTables);
+  const { dinerSeparationAtTables: dinerSeparation } = useEffectiveFeatures();
   const oneBill = !dinerSeparation;
 
   const sessionStillOpen = context.sessionId

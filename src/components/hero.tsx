@@ -7,11 +7,17 @@ import { ChevronDown, MessageCircle, UtensilsCrossed } from "lucide-react";
 import { useTenant } from "@/components/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { VenueWhatsappLink } from "@/components/venue-display";
+import { usePlatformMode } from "@/components/platform-mode-provider";
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
   const tenant = useTenant();
+  const mode = usePlatformMode();
   const content = getTenantContent(tenant.id);
+  const menuHref =
+    mode === "preview" && tenant.previewSlug
+      ? `/${tenant.previewSlug}/menu`
+      : "/menu";
 
   const scrollToNext = () => {
     document.getElementById("tre-anime")?.scrollIntoView({
@@ -61,7 +67,7 @@ export function Hero() {
                 <MessageCircle size={20} />
                 {content.hero.ctaLabel}
               </VenueWhatsappLink>
-              <Link href="/menu" className="btn-ghost-light text-base">
+              <Link href={menuHref} className="btn-ghost-light text-base">
                 <UtensilsCrossed size={20} />
                 Guarda il menu
               </Link>

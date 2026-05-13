@@ -1,4 +1,5 @@
 import type { TenantProfile } from "./tenant";
+import { allTenantFeatures } from "./tenant-modules";
 
 export const DEFAULT_TENANT_ID = "bepork";
 
@@ -22,44 +23,28 @@ export const TENANTS: TenantProfile[] = [
       green: "#2EB840",
       pink: "#EC5B8D",
     },
-    features: {
-      takeaway: true,
-      tableOrders: true,
-      kitchenDisplay: true,
-      dinerSeparation: false,
-      favorites: true,
-      reviews: true,
-      gallery: true,
-    },
+    features: allTenantFeatures(true),
   },
   {
     id: "faak",
     name: "FAAK",
     label: "Tenant 2 · FAAK",
-    domains: ["faak.menuary.local"],
+    domains: ["faak.menuary.local", "faak.menuary.localhost"],
     previewSlug: "faak-demo",
     enabled: true,
     theme: {
-      red: "#D54537",
-      redDark: "#92291F",
-      peach: "#F5D7A8",
-      cream: "#FFF7E8",
-      ink: "#151210",
-      brick: "#4B2D25",
-      mustard: "#F3C931",
-      mustardSoft: "#F8DC69",
-      green: "#6E8E3D",
-      pink: "#D96A7A",
+      red: "#CD562F",
+      redDark: "#000000",
+      peach: "#FFF263",
+      cream: "#FFFFFF",
+      ink: "#000000",
+      brick: "#2E4560",
+      mustard: "#FFF263",
+      mustardSoft: "#FFF8A5",
+      green: "#2E4560",
+      pink: "#CD562F",
     },
-    features: {
-      takeaway: true,
-      tableOrders: true,
-      kitchenDisplay: true,
-      dinerSeparation: false,
-      favorites: true,
-      reviews: true,
-      gallery: true,
-    },
+    features: allTenantFeatures(true),
   },
 ];
 

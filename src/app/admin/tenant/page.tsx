@@ -2,55 +2,19 @@
 
 import { RotateCcw, ShieldCheck, Power } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
-import type { TenantFeatureKey } from "@/lib/tenant";
 import { useTenant } from "@/components/tenant-provider";
 import {
   mergeTenantOverrides,
   useTenantAdminStore,
 } from "@/store/tenant-admin-store";
 import { usePlatformMode } from "@/components/platform-mode-provider";
-
-const FEATURE_ROWS: Array<{
-  key: TenantFeatureKey;
-  label: string;
-  description: string;
-}> = [
-  {
-    key: "takeaway",
-    label: "Ordini da asporto",
-    description: "Abilita percorso ordine e checkout da ritiro.",
-  },
-  {
-    key: "tableOrders",
-    label: "Ordini al tavolo",
-    description: "Abilita QR, sessioni tavolo e checkout condiviso.",
-  },
-  {
-    key: "kitchenDisplay",
-    label: "Schermo cucina",
-    description: "Rende disponibile la vista operativa per la brigata.",
-  },
-  {
-    key: "dinerSeparation",
-    label: "Commensali distinti",
-    description: "Separa gli ordini dei clienti all'interno della sessione tavolo.",
-  },
-  {
-    key: "favorites",
-    label: "Preferiti",
-    description: "Mantiene attivo il layer di salvataggio piatti preferiti.",
-  },
-  {
-    key: "reviews",
-    label: "Recensioni",
-    description: "Consente la pubblicazione del modulo recensioni.",
-  },
-  {
-    key: "gallery",
-    label: "Galleria",
-    description: "Consente la pubblicazione del modulo gallery.",
-  },
-];
+import {
+  formatFeatureDependencies,
+  getMissingFeatureDependencies,
+  TENANT_MODULES,
+  TENANT_MODULE_BY_KEY,
+  TENANT_MODULE_CATEGORIES,
+} from "@/lib/tenant-modules";
 
 export default function AdminTenantPage() {
   const mode = usePlatformMode();
@@ -83,8 +47,10 @@ export default function AdminTenantPage() {
         <p className="impact-title text-xs text-pork-red">Piattaforma</p>
         <h1 className="headline text-4xl">Tenant</h1>
         <p className="mt-2 text-pork-ink/65">
-          Gestione dei profili cliente e dei moduli disponibili. Il tenant corrente,
-          risolto dal dominio, è <strong>{activeTenant.label}</strong>.
+          Gestione dei profili cliente e dei moduli abilitati da Menuary. Il locale può solo
+          sospendere temporaneamente i servizi dal proprio pannello, mentre l’inclusione nel piano
+          si decide qui. Il tenant corrente, risolto dal dominio, è{" "}
+          <strong>{activeTenant.label}</strong>.
         </p>
       </header>
 
@@ -131,45 +97,82 @@ export default function AdminTenantPage() {
               <div className="mt-5 rounded-2xl bg-pork-cream p-4">
                 <div className="flex items-center gap-2 text-sm font-bold text-pork-ink">
                   <ShieldCheck size={16} className="text-pork-red" />
-                  Moduli disponibili
+                  Moduli inclusi nel piano
                 </div>
-                <div className="mt-4 space-y-3">
-                  {FEATURE_ROWS.map((feature) => {
-                    const enabled = effective.features[feature.key];
-                    return (
-                      <div
-                        key={feature.key}
-                        className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-1 ring-pork-ink/5 sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        <div className="min-w-0">
-                          <p className="font-bold">{feature.label}</p>
-                          <p className="mt-1 text-sm text-pork-ink/60">
-                            {feature.description}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFeatureEnabled(tenant.id, feature.key, !enabled)
-                          }
-                          className={
-                            "shrink-0 rounded-full px-4 py-2 text-sm font-bold transition " +
-                            (enabled
-                              ? "bg-pork-red text-white"
-                              : "bg-pork-ink/10 text-pork-ink/55")
-                          }
-                        >
-                          {enabled ? "Attivo" : "Spento"}
-                        </button>
+                <div className="mt-4 space-y-5">
+                  {TENANT_MODULE_CATEGORIES.map((category) => (
+                    <div key={category}>
+                      <p className="mb-2 text-[10px] font-black uppercase tracking-wide text-pork-ink/45">
+                        {category}
+                      </p>
+                      <div className="space-y-3">
+                        {TENANT_MODULES.filter(
+                          (feature) => feature.category === category,
+                        ).map((feature) => {
+                          const enabled = effective.features[feature.key];
+                          const missing = getMissingFeatureDependencies(
+                            effective.features,
+                            feature.key,
+                          );
+                          const dependencyNote = formatFeatureDependencies(feature.key);
+                          return (
+                            <div
+                              key={feature.key}
+                              className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-1 ring-pork-ink/5 sm:flex-row sm:items-center sm:justify-between"
+                            >
+                              <div className="min-w-0">
+                                <p className="font-bold">{feature.label}</p>
+                                <p className="mt-1 text-sm text-pork-ink/60">
+                                  {feature.description}
+                                </p>
+                                {dependencyNote && (
+                                  <p className="mt-2 text-xs font-bold text-pork-ink/45">
+                                    {dependencyNote}
+                                  </p>
+                                )}
+                                {missing.length > 0 && (
+                                  <p className="mt-2 rounded-xl bg-pork-mustard/25 px-3 py-2 text-xs font-bold text-pork-ink/70">
+                                    Bloccato: attiva{" "}
+                                    {missing
+                                      .map(
+                                        (dependency) =>
+                                          TENANT_MODULE_BY_KEY[dependency].label,
+                                      )
+                                      .join(" oppure ")}
+                                    .
+                                  </p>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setFeatureEnabled(
+                                    tenant.id,
+                                    feature.key,
+                                    !enabled,
+                                  )
+                                }
+                                className={
+                                  "shrink-0 rounded-full px-4 py-2 text-sm font-bold transition " +
+                                  (enabled
+                                    ? "bg-pork-red text-white"
+                                    : "bg-pork-ink/10 text-pork-ink/55")
+                                }
+                              >
+                              {enabled ? "Incluso" : "Escluso"}
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
                 <p className="text-pork-ink/55">
-                  Override locali separati dalla configurazione seed del tenant.
+                  Questi toggle sono commerciali: decidono cosa il tenant può usare o sospendere.
                 </p>
                 <button
                   type="button"

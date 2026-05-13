@@ -8,7 +8,7 @@ import {
   selectActiveSession,
 } from "@/store/menu-store";
 import { useCartStore } from "@/store/cart-store";
-import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { resolveTableFromCustomerInput } from "@/lib/table-resolve";
 import { getClientId } from "@/lib/client-id";
 import { NicknameGate } from "@/components/nickname-gate";
@@ -35,7 +35,7 @@ export function TableOrderJoinFlow({
   const addDiner = useMenuStore((s) => s.addDiner);
   const updateDinerNickname = useMenuStore((s) => s.updateDinerNickname);
 
-  const dinerSeparation = useSettingsStore((s) => s.dinerSeparationAtTables);
+  const { dinerSeparationAtTables: dinerSeparation } = useEffectiveFeatures();
 
   const [step, setStep] = useState<"table" | "code">("table");
   const [tableInput, setTableInput] = useState("");

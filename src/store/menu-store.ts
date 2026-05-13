@@ -3,7 +3,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createBrowserLocalJSONStorage } from "@/lib/zustand-json-storage";
-import { menu as seedMenu } from "@/lib/menu-data";
+import { getSeedMenuForTenant } from "@/lib/tenant-menu-data";
+import type { MenuCategory } from "@/lib/menu-data";
 import {
   type ExtraList,
   DEFAULT_EXTRA_LISTS,
@@ -16,7 +17,9 @@ import {
 import type {
   AdminMenuCategory,
   AdminMenuItem,
+  AdminMenuList,
   Extra,
+  MenuDay,
   Order,
   OrderStatus,
   PriceFormat,
@@ -27,6 +30,7 @@ import type {
 import type { MenuIngredient } from "@/lib/ingredients";
 
 const STORAGE_KEY = "bepork-menu-v3";
+const DEFAULT_MENU_TENANT_ID = "bepork";
 
 function migrateItemIngredients(it: AdminMenuItem): AdminMenuItem {
   const ing = it.ingredients;
@@ -41,7 +45,7 @@ function migrateItemIngredients(it: AdminMenuItem): AdminMenuItem {
   };
 }
 
-function seedCategories(): AdminMenuCategory[] {
+function seedCategories(seedMenu: MenuCategory[]): AdminMenuCategory[] {
   return seedMenu.map((c, order) => ({
     id: c.id,
     title: c.title,
@@ -51,7 +55,7 @@ function seedCategories(): AdminMenuCategory[] {
   }));
 }
 
-function seedItems(): AdminMenuItem[] {
+function seedItems(seedMenu: MenuCategory[]): AdminMenuItem[] {
   const out: AdminMenuItem[] = [];
   seedMenu.forEach((cat) => {
     cat.items.forEach((it, i) => {
@@ -66,9 +70,146 @@ function seedItems(): AdminMenuItem[] {
   return out;
 }
 
+function allItemIds(items: AdminMenuItem[]): string[] {
+  return items.map((item) => item.id);
+}
+
+function itemIdsByCategory(
+  items: AdminMenuItem[],
+  categoryIds: string[],
+): string[] {
+  const categorySet = new Set(categoryIds);
+  return items
+    .filter((item) => categorySet.has(item.categoryId))
+    .map((item) => item.id);
+}
+
+function seedMenuLists(
+  tenantId: string,
+  categories: AdminMenuCategory[],
+  items: AdminMenuItem[],
+): AdminMenuList[] {
+  const fullMenu: AdminMenuList = {
+    id: "menu-completo",
+    name: "Menu completo",
+    description: "Tutti i piatti pubblicati dal locale.",
+    order: 0,
+    enabled: true,
+    itemIds: allItemIds(items),
+    visibility: {},
+  };
+
+  if (tenantId === "faak") {
+    return [
+      {
+        id: "faak-menu-mattina",
+        name: "Menu mattina",
+        description: "Colazione e forno, visibile fino a tarda mattina.",
+        order: 0,
+        enabled: true,
+        itemIds: itemIdsByCategory(items, ["faak-mattina"]),
+        visibility: { startTime: "07:00", endTime: "11:30" },
+      },
+      {
+        id: "faak-menu-pranzo",
+        name: "Menu giorno",
+        description: "Pranzo e piatti di cucina.",
+        order: 1,
+        enabled: true,
+        itemIds: itemIdsByCategory(items, ["faak-giorno"]),
+        visibility: { startTime: "11:30", endTime: "17:30" },
+      },
+      {
+        id: "faak-menu-aperitivo",
+        name: "Menu aperitivo",
+        description: "Bere, stuzzichi e tavoli informali.",
+        order: 2,
+        enabled: true,
+        itemIds: itemIdsByCategory(items, ["faak-aperitivo"]),
+        visibility: { startTime: "17:30", endTime: "21:00" },
+      },
+      {
+        id: "faak-menu-sera",
+        name: "Menu sera",
+        description: "Cena e percorsi serali.",
+        order: 3,
+        enabled: true,
+        itemIds: itemIdsByCategory(items, ["faak-sera", "faak-aperitivo"]),
+        visibility: { startTime: "19:00", endTime: "01:00" },
+      },
+      fullMenu,
+    ];
+  }
+
+  return [
+    fullMenu,
+    {
+      id: "menu-pranzo",
+      name: "Menu pranzo",
+      description: "Piatti rapidi, antipasti e proposte leggere per il servizio diurno.",
+      order: 1,
+      enabled: true,
+      itemIds: itemIdsByCategory(items, ["antipasti", "insalate", "primi"]),
+      visibility: { startTime: "11:30", endTime: "16:00" },
+    },
+    {
+      id: "menu-sera",
+      name: "Menu sera",
+      description: "La carta completa per sala ristorante e servizio serale.",
+      order: 2,
+      enabled: true,
+      itemIds: allItemIds(items),
+      visibility: { startTime: "18:30", endTime: "01:00" },
+    },
+    {
+      id: "menu-weekend",
+      name: "Menu weekend",
+      description: "Combo, burger, pizze e portate da condividere per venerdi, sabato e domenica.",
+      order: 3,
+      enabled: true,
+      itemIds: items
+        .filter((item) => {
+          const text = `${item.categoryId} ${item.name}`.toLowerCase();
+          return (
+            text.includes("menu") ||
+            text.includes("combo") ||
+            text.includes("burger") ||
+            text.includes("pizza") ||
+            text.includes("taglier")
+          );
+        })
+        .map((item) => item.id),
+      visibility: { days: [0, 5, 6] },
+    },
+    {
+      id: "menu-piano-bar",
+      name: "Menu piano bar",
+      description: "Selezione ridotta per tavoli area bar, drink e piatti condivisibili.",
+      order: 4,
+      enabled: true,
+      itemIds: items
+        .filter((item) => {
+          const text = `${item.categoryId} ${item.name}`.toLowerCase();
+          return (
+            text.includes("bev") ||
+            text.includes("birr") ||
+            text.includes("taglier") ||
+            text.includes("nachos") ||
+            text.includes("patat") ||
+            text.includes("fritt")
+          );
+        })
+        .map((item) => item.id),
+      visibility: { tableIds: ["tbl-5", "tbl-6"], startTime: "18:00", endTime: "01:00" },
+    },
+  ];
+}
+
 export interface MenuState {
+  currentTenantId: string;
   categories: AdminMenuCategory[];
   items: AdminMenuItem[];
+  menuLists: AdminMenuList[];
   /** Liste aggiunte condivise: modificate una volta, tutti i piatti collegati le vedono. */
   extraLists: ExtraList[];
   orders: Order[];
@@ -90,6 +231,10 @@ export interface MenuState {
   applyExtraListToItemIds: (listId: string, itemIds: string[]) => void;
   addItem: (categoryId: string, draft: Partial<AdminMenuItem>) => string;
   removeItem: (id: string) => void;
+  addMenuList: (draft?: Partial<AdminMenuList>) => string;
+  updateMenuList: (id: string, patch: Partial<AdminMenuList>) => void;
+  removeMenuList: (id: string) => void;
+  toggleMenuListItem: (menuListId: string, itemId: string) => void;
 
   addOrder: (o: Omit<Order, "id" | "createdAt" | "status" | "code">) => Order;
   updateOrderStatus: (id: string, status: OrderStatus) => void;
@@ -110,6 +255,7 @@ export interface MenuState {
   closeSession: (sessionId: string) => void;
 
   resetToSeed: () => void;
+  setTenantSeed: (tenantId: string) => void;
 }
 
 function seedTables(): Table[] {
@@ -122,10 +268,15 @@ function seedTables(): Table[] {
   }));
 }
 
-function buildInitial() {
+function buildInitial(tenantId = DEFAULT_MENU_TENANT_ID) {
+  const seedMenu = getSeedMenuForTenant(tenantId);
+  const categories = seedCategories(seedMenu);
+  const items = seedItems(seedMenu);
   return {
-    categories: seedCategories(),
-    items: seedItems(),
+    currentTenantId: tenantId,
+    categories,
+    items,
+    menuLists: seedMenuLists(tenantId, categories, items),
     extraLists: mergeExtraListsWithDefaults(undefined, DEFAULT_EXTRA_LISTS),
     orders: [] as Order[],
     lastOrderSeq: 0,
@@ -250,12 +401,78 @@ export const useMenuStore = create<MenuState>()(
           extras: draft.extras,
           bundleSlots: draft.bundleSlots,
         };
-        set((s) => ({ items: [...s.items, newItem] }));
+        set((s) => ({
+          items: [...s.items, newItem],
+          menuLists: s.menuLists.map((list) =>
+            list.id === "menu-completo"
+              ? { ...list, itemIds: [...list.itemIds, newItem.id] }
+              : list,
+          ),
+        }));
         return id;
       },
 
       removeItem: (id) =>
-        set((s) => ({ items: s.items.filter((it) => it.id !== id) })),
+        set((s) => ({
+          items: s.items.filter((it) => it.id !== id),
+          menuLists: s.menuLists.map((list) => ({
+            ...list,
+            itemIds: list.itemIds.filter((itemId) => itemId !== id),
+          })),
+        })),
+
+      addMenuList: (draft) => {
+        const id = draft?.id ?? genId("ml");
+        set((s) => ({
+          menuLists: [
+            ...s.menuLists,
+            {
+              id,
+              name: draft?.name?.trim() || "Nuovo menu",
+              description: draft?.description,
+              order: draft?.order ?? s.menuLists.length,
+              enabled: draft?.enabled ?? true,
+              itemIds: draft?.itemIds ?? [],
+              visibility: draft?.visibility ?? {},
+            },
+          ],
+        }));
+        return id;
+      },
+
+      updateMenuList: (id, patch) =>
+        set((s) => ({
+          menuLists: s.menuLists.map((list) =>
+            list.id === id
+              ? {
+                  ...list,
+                  ...patch,
+                  visibility: patch.visibility
+                    ? { ...list.visibility, ...patch.visibility }
+                    : list.visibility,
+                }
+              : list,
+          ),
+        })),
+
+      removeMenuList: (id) =>
+        set((s) => ({
+          menuLists: s.menuLists.filter((list) => list.id !== id),
+        })),
+
+      toggleMenuListItem: (menuListId, itemId) =>
+        set((s) => ({
+          menuLists: s.menuLists.map((list) => {
+            if (list.id !== menuListId) return list;
+            const exists = list.itemIds.includes(itemId);
+            return {
+              ...list,
+              itemIds: exists
+                ? list.itemIds.filter((id) => id !== itemId)
+                : [...list.itemIds, itemId],
+            };
+          }),
+        })),
 
       addOrder: (o) => {
         let created!: Order;
@@ -373,7 +590,14 @@ export const useMenuStore = create<MenuState>()(
           ),
         })),
 
-      resetToSeed: () => set(buildInitial()),
+      resetToSeed: () =>
+        set((s) => buildInitial(s.currentTenantId || DEFAULT_MENU_TENANT_ID)),
+
+      setTenantSeed: (tenantId) =>
+        set((s) => {
+          if (s.currentTenantId === tenantId) return s;
+          return buildInitial(tenantId);
+        }),
     }),
     {
       name: STORAGE_KEY,
@@ -381,7 +605,9 @@ export const useMenuStore = create<MenuState>()(
       storage: createBrowserLocalJSONStorage(),
       partialize: (s) => ({
         categories: s.categories,
+        currentTenantId: s.currentTenantId,
         items: s.items,
+        menuLists: s.menuLists,
         extraLists: s.extraLists,
         orders: s.orders,
         lastOrderSeq: s.lastOrderSeq,
@@ -391,12 +617,23 @@ export const useMenuStore = create<MenuState>()(
       merge: (persisted, current) => {
         if (!persisted || typeof persisted !== "object") return current;
         const p = persisted as Partial<MenuState>;
+        const currentTenantId = p.currentTenantId ?? current.currentTenantId;
         const items = p.items?.map(migrateItemIngredients) ?? current.items;
+        const categories = p.categories ?? current.categories;
+        const menuLists =
+          p.menuLists && p.menuLists.length > 0
+            ? p.menuLists.map((list) => ({
+                ...list,
+                enabled: list.enabled ?? true,
+                itemIds: list.itemIds ?? [],
+                visibility: list.visibility ?? {},
+              }))
+            : seedMenuLists(currentTenantId, categories, items);
         const extraLists = mergeExtraListsWithDefaults(
           p.extraLists as ExtraList[] | undefined,
           DEFAULT_EXTRA_LISTS,
         );
-        return { ...current, ...p, items, extraLists };
+        return { ...current, ...p, currentTenantId, items, menuLists, extraLists };
       },
     },
   ),
@@ -404,6 +641,10 @@ export const useMenuStore = create<MenuState>()(
 
 export function selectCategoriesOrdered(s: MenuState): AdminMenuCategory[] {
   return [...s.categories].sort((a, b) => a.order - b.order);
+}
+
+export function selectMenuListsOrdered(s: Pick<MenuState, "menuLists">): AdminMenuList[] {
+  return [...s.menuLists].sort((a, b) => a.order - b.order);
 }
 
 export function selectItemsByCategory(
@@ -415,6 +656,53 @@ export function selectItemsByCategory(
     .filter((i) => i.categoryId === categoryId)
     .filter((i) => (onlyAvailable ? i.available : true))
     .sort((a, b) => a.order - b.order);
+}
+
+function timeToMinutes(value?: string): number | null {
+  if (!value) return null;
+  const [hh, mm] = value.split(":").map(Number);
+  if (!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+  return hh * 60 + mm;
+}
+
+function isTimeInWindow(now: Date, start?: string, end?: string): boolean {
+  const startMinutes = timeToMinutes(start);
+  const endMinutes = timeToMinutes(end);
+  if (startMinutes == null && endMinutes == null) return true;
+  const current = now.getHours() * 60 + now.getMinutes();
+  if (startMinutes != null && endMinutes == null) return current >= startMinutes;
+  if (startMinutes == null && endMinutes != null) return current <= endMinutes;
+  if (startMinutes == null || endMinutes == null) return true;
+  if (startMinutes <= endMinutes) {
+    return current >= startMinutes && current <= endMinutes;
+  }
+  return current >= startMinutes || current <= endMinutes;
+}
+
+export function isMenuListVisible(
+  menuList: AdminMenuList,
+  options?: { now?: Date; tableId?: string | null },
+): boolean {
+  if (!menuList.enabled) return false;
+  const now = options?.now ?? new Date();
+  const visibility = menuList.visibility ?? {};
+  const days = visibility.days ?? [];
+  if (days.length > 0 && !days.includes(now.getDay() as MenuDay)) return false;
+  if (!isTimeInWindow(now, visibility.startTime, visibility.endTime)) return false;
+  const tableIds = visibility.tableIds ?? [];
+  if (tableIds.length > 0 && (!options?.tableId || !tableIds.includes(options.tableId))) {
+    return false;
+  }
+  return true;
+}
+
+export function selectVisibleMenuLists(
+  menuLists: AdminMenuList[],
+  options?: { now?: Date; tableId?: string | null },
+): AdminMenuList[] {
+  return selectMenuListsOrdered({ menuLists } as Pick<MenuState, "menuLists">).filter((list) =>
+    isMenuListVisible(list, options),
+  );
 }
 
 export function selectItemById(

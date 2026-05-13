@@ -2,11 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Plus,
-  QrCode,
-  Trash2,
-  Users,
-  Receipt,
   Copy,
   ExternalLink,
   X,
@@ -23,8 +18,10 @@ import { useHydrated } from "@/components/providers";
 import { formatEuro } from "@/lib/price-utils";
 import type { Table, TableSession } from "@/lib/types";
 import { LineMods } from "@/components/line-mods";
-import { useSettingsStore } from "@/store/settings-store";
 import { aggregateOrderLinesForSession } from "@/lib/kitchen-merge";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { FloorPlanEditor } from "@/components/admin/floor-plan-editor";
+import type { RoomTable } from "@/store/restaurant-services-store";
 
 export default function AdminTavoliPage() {
   const hydrated = useHydrated();
@@ -33,40 +30,48 @@ export default function AdminTavoliPage() {
   const orders = useMenuStore((s) => s.orders);
 
   const addTable = useMenuStore((s) => s.addTable);
-  const removeTable = useMenuStore((s) => s.removeTable);
   const openSession = useMenuStore((s) => s.openSession);
   const closeSession = useMenuStore((s) => s.closeSession);
-  const updateTable = useMenuStore((s) => s.updateTable);
 
-  const [newLabel, setNewLabel] = useState("");
-  const [newSeats, setNewSeats] = useState<string>("4");
   const [qrFor, setQrFor] = useState<Table | null>(null);
   const [closeFor, setCloseFor] = useState<TableSession | null>(null);
   const [openSessionFor, setOpenSessionFor] = useState<Table | null>(null);
 
-  const tablesWithData = useMemo(() => {
-    return [...tables]
-      .sort((a, b) => a.createdAt - b.createdAt)
-      .map((t) => {
-        const session = selectActiveSession(sessions, t.id);
-        const sessionOrders = session
-          ? selectOrdersBySession(orders, session.id)
-          : [];
-        const total = sessionOrders.reduce((a, o) => a + o.total, 0);
-        return { table: t, session, sessionOrders, total };
-      });
-  }, [tables, sessions, orders]);
-
   if (!hydrated) return <div className="text-pork-ink/50">Caricamento…</div>;
 
-  function handleAddTable(e: React.FormEvent) {
-    e.preventDefault();
-    const label = newLabel.trim();
-    if (!label) return;
-    const seats = parseInt(newSeats, 10);
-    addTable(label, Number.isFinite(seats) && seats > 0 ? seats : undefined);
-    setNewLabel("");
-    setNewSeats("4");
+  function ensureOperationalTable(roomTable: RoomTable): Table {
+    const byId = tables.find((table) => table.id === roomTable.id);
+    if (byId) return byId;
+    const byLabel = tables.find(
+      (table) => table.label.toLowerCase() === roomTable.label.toLowerCase(),
+    );
+    if (byLabel) return byLabel;
+    return addTable(roomTable.label, roomTable.seats);
+  }
+
+  function sessionInfoFor(roomTable: RoomTable) {
+    const table = ensureOperationalTable(roomTable);
+    const session = selectActiveSession(sessions, table.id);
+    const sessionOrders = session ? selectOrdersBySession(orders, session.id) : [];
+    return {
+      active: Boolean(session),
+      total: sessionOrders.reduce((sum, order) => sum + order.total, 0),
+      ordersCount: sessionOrders.length,
+    };
+  }
+
+  function openRoomTable(roomTable: RoomTable) {
+    setOpenSessionFor(ensureOperationalTable(roomTable));
+  }
+
+  function closeRoomTable(roomTable: RoomTable) {
+    const table = ensureOperationalTable(roomTable);
+    const session = selectActiveSession(sessions, table.id);
+    if (session) setCloseFor(session);
+  }
+
+  function showRoomTableQr(roomTable: RoomTable) {
+    setQrFor(ensureOperationalTable(roomTable));
   }
 
   return (
@@ -76,72 +81,17 @@ export default function AdminTavoliPage() {
           <p className="impact-title text-xs text-pork-red">Staff</p>
           <h1 className="headline text-4xl">Tavoli & QR code</h1>
           <p className="mt-1 text-sm text-pork-ink/60">
-            Crea i tavoli, stampa il QR, apri/chiudi le sessioni.
+            Piantina locale, stati tavolo, QR, apertura e chiusura sessioni.
           </p>
         </div>
-        <form
-          onSubmit={handleAddTable}
-          className="flex items-end gap-2 rounded-2xl bg-white p-3 ring-1 ring-pork-ink/10"
-        >
-          <div>
-            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-pork-ink/60">
-              Nome tavolo
-            </label>
-            <input
-              type="text"
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              placeholder="Tavolo 7"
-              className="w-40 rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 outline-none focus:border-pork-red"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-pork-ink/60">
-              Coperti
-            </label>
-            <input
-              type="number"
-              min={1}
-              value={newSeats}
-              onChange={(e) => setNewSeats(e.target.value)}
-              className="w-16 rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 outline-none focus:border-pork-red"
-            />
-          </div>
-          <button type="submit" className="btn-primary text-sm">
-            <Plus size={16} /> Crea
-          </button>
-        </form>
       </header>
 
-      {tablesWithData.length === 0 ? (
-        <div className="rounded-2xl bg-white p-10 text-center text-pork-ink/60 ring-1 ring-pork-ink/5">
-          Nessun tavolo. Creane uno per generare il QR.
-        </div>
-      ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {tablesWithData.map(({ table, session, sessionOrders, total }) => (
-            <TableCard
-              key={table.id}
-              table={table}
-              session={session}
-              total={total}
-              ordersCount={sessionOrders.length}
-              onLabel={(label) => updateTable(table.id, { label })}
-              onOpen={() => setOpenSessionFor(table)}
-              onShowQR={() => setQrFor(table)}
-              onClose={() => session && setCloseFor(session)}
-              onDelete={() => {
-                if (
-                  confirm(
-                    `Eliminare ${table.label}? Le sessioni storiche associate verranno rimosse.`,
-                  )
-                )
-                  removeTable(table.id);
-              }}
-            />
-          ))}
-        </ul>
-      )}
+      <FloorPlanEditor
+        getTableSession={sessionInfoFor}
+        onOpenTable={openRoomTable}
+        onCloseTable={closeRoomTable}
+        onShowQR={showRoomTableQr}
+      />
 
       {qrFor && <QrModal table={qrFor} onClose={() => setQrFor(null)} />}
       {openSessionFor && (
@@ -173,148 +123,6 @@ export default function AdminTavoliPage() {
         />
       )}
     </div>
-  );
-}
-
-function TableCard({
-  table,
-  session,
-  total,
-  ordersCount,
-  onLabel,
-  onOpen,
-  onShowQR,
-  onClose,
-  onDelete,
-}: {
-  table: Table;
-  session?: TableSession;
-  total: number;
-  ordersCount: number;
-  onLabel: (l: string) => void;
-  onOpen: () => void;
-  onShowQR: () => void;
-  onClose: () => void;
-  onDelete: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [label, setLabel] = useState(table.label);
-
-  const active = !!session;
-
-  return (
-    <li className="flex flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-pork-ink/5">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          {editing ? (
-            <input
-              type="text"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              onBlur={() => {
-                onLabel(label.trim() || table.label);
-                setEditing(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-              }}
-              autoFocus
-              className="w-full rounded-lg border-2 border-pork-ink/10 bg-white px-2 py-1 text-lg font-bold outline-none focus:border-pork-red"
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="truncate text-left"
-              title="Rinomina"
-            >
-              <span className="headline text-2xl">{table.label}</span>
-            </button>
-          )}
-          {table.seats && (
-            <p className="flex items-center gap-1 text-xs text-pork-ink/50">
-              <Users size={12} /> {table.seats} coperti
-            </p>
-          )}
-        </div>
-        <span
-          className={
-            "shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide " +
-            (active ? "bg-pork-green text-white" : "bg-pork-ink/10 text-pork-ink/50")
-          }
-        >
-          {active ? "Aperto" : "Libero"}
-        </span>
-      </div>
-
-      {active && session && (
-        <div className="mt-3 rounded-xl bg-pork-cream p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-pork-ink/60">
-                Codice sessione
-              </p>
-              <p className="font-impact text-3xl tracking-[0.3em] text-pork-red">
-                {session.code}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-pork-ink/60">
-                Totale
-              </p>
-              <p className="font-impact text-2xl text-pork-ink">
-                {formatEuro(total)}
-              </p>
-            </div>
-          </div>
-          <p className="mt-1 text-[11px] text-pork-ink/60">
-            {session.declaredCovers != null && (
-              <>
-                {session.declaredCovers} coperti dichiarati ·{" "}
-              </>
-            )}
-            {session.diners.length} commensale{session.diners.length !== 1 && "i"} ·{" "}
-            {ordersCount} ordin{ordersCount !== 1 ? "i" : "e"}
-          </p>
-        </div>
-      )}
-
-      <div className="mt-auto flex flex-wrap gap-2 pt-4">
-        <button
-          type="button"
-          onClick={onShowQR}
-          className="inline-flex items-center gap-1 rounded-full bg-pork-ink px-3 py-1.5 text-xs font-bold text-pork-cream hover:bg-pork-red"
-        >
-          <QrCode size={14} /> QR
-        </button>
-        {!active ? (
-          <button
-            type="button"
-            onClick={onOpen}
-            className="inline-flex items-center gap-1 rounded-full bg-pork-green px-3 py-1.5 text-xs font-bold text-white hover:opacity-90"
-          >
-            Apri sessione
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex items-center gap-1 rounded-full bg-pork-red px-3 py-1.5 text-xs font-bold text-white hover:bg-pork-red-dark"
-          >
-            <Receipt size={14} /> Chiudi tavolo
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onDelete}
-          disabled={active}
-          className="ml-auto inline-flex items-center gap-1 rounded-full border-2 border-pork-ink/10 px-3 py-1.5 text-xs font-semibold text-pork-ink/50 transition-colors hover:border-pork-red hover:text-pork-red disabled:opacity-40 disabled:hover:border-pork-ink/10 disabled:hover:text-pork-ink/50"
-          title={active ? "Chiudi prima la sessione" : "Elimina"}
-        >
-          <Trash2 size={14} />
-        </button>
-      </div>
-    </li>
   );
 }
 
@@ -512,7 +320,7 @@ function CloseSessionModal({
   onConfirm: () => void;
 }) {
   const items = useMenuStore((s) => s.items);
-  const dinerSeparation = useSettingsStore((s) => s.dinerSeparationAtTables);
+  const { dinerSeparationAtTables: dinerSeparation } = useEffectiveFeatures();
   const total = orders.reduce((a, o) => a + o.total, 0);
   const aggregated =
     !dinerSeparation && orders.length > 0

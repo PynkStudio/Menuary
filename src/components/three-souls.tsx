@@ -6,10 +6,14 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useTenant } from "@/components/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
+import { usePlatformMode } from "@/components/platform-mode-provider";
 
 export function ThreeSouls() {
   const tenant = useTenant();
+  const mode = usePlatformMode();
   const content = getTenantContent(tenant.id);
+  const previewPrefix =
+    mode === "preview" && tenant.previewSlug ? `/${tenant.previewSlug}` : "";
 
   return (
     <section id="tre-anime" className="relative scroll-mt-24 bg-pork-cream py-20 md:py-28">
@@ -36,7 +40,7 @@ export function ThreeSouls() {
               transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
             >
               <Link
-                href={soul.href}
+                href={`${previewPrefix}${soul.href}`}
                 className="group relative block h-[28rem] overflow-hidden rounded-3xl bg-pork-ink shadow-xl"
               >
                 <Image

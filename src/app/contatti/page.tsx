@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { MapPin, Instagram, Facebook } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 import { ContattiReserveCards } from "@/components/contatti-reserve-cards";
+import { ReservationRequestForm } from "@/components/reservation-request-form";
 import { MarketingLeadForm } from "@/components/marketing/lead-form";
 import {
   VenueAddressBlock,
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? {
         title: "Contatti",
         description:
-          "Richiedi una demo Menuary e raccontaci ristorante, obiettivi e funzioni da attivare.",
+          "Raccontaci il tuo ristorante e scopri come Menuary puo trasformarlo in un sito su misura.",
       }
     : {
         title: "Contatti & Prenotazioni",
@@ -43,8 +44,9 @@ function TenantContactsPage() {
       </section>
 
       <section className="bg-pork-cream py-16 md:py-20">
-        <div className="container-wide grid gap-6 md:grid-cols-2">
+        <div className="container-wide grid gap-6 lg:grid-cols-3">
           <ContattiReserveCards />
+          <ReservationRequestForm />
         </div>
       </section>
 
@@ -113,29 +115,29 @@ function TenantContactsPage() {
 
 function MarketingContactsPage() {
   return (
-    <div className="min-h-screen bg-[#f7f2eb] px-5 py-10 text-[#17120f] sm:px-8 lg:px-12 lg:py-16">
+    <div className="menuary-shell min-h-screen bg-[var(--menuary-paper)] px-5 py-10 text-[var(--menuary-ink)] sm:px-8 lg:px-12 lg:py-16">
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
         <section className="pt-6 lg:sticky lg:top-10">
-          <p className="inline-flex rounded-full bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#7f6258] ring-1 ring-black/5">
+          <p className="menuary-eyebrow">
             contatti Menuary
           </p>
-          <h1 className="headline mt-5 text-6xl sm:text-7xl">
-            Raccontaci il locale. Ti restituiamo il percorso giusto.
+          <h1 className="menuary-display mt-5 text-[clamp(3rem,6vw,6.4rem)]">
+            Raccontaci il tuo ristorante. Ti mostriamo come potrebbe vivere online.
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-8 text-black/68">
-            Usiamo questa richiesta per capire se serve una demo commerciale,
-            un nuovo tenant, una migrazione o l&apos;attivazione dei moduli operativi.
+          <p className="mt-6 max-w-xl text-lg leading-9 text-[var(--menuary-muted)]">
+            Partiamo da cucina, atmosfera, clientela e modo di lavorare. Da li costruiamo
+            una proposta concreta: sito, menu, prenotazioni, ordini e strumenti utili al tuo locale.
           </p>
 
-          <div className="mt-8 grid gap-3">
+          <div className="mt-9 grid gap-3">
             {[
-              "Anteprima tenant pronta da condividere",
-              "Dominio dedicato e area personale",
-              "Menu, ordini, tavoli e cucina attivabili",
+              "Un sito personalizzato sul carattere del ristorante",
+              "Menu digitale, prenotazioni e ordini se ti servono",
+              "Gestione semplice per aggiornare contenuti e servizi",
             ].map((item) => (
               <div
                 key={item}
-                className="rounded-[1.5rem] bg-white px-4 py-3 text-sm font-semibold shadow-[0_18px_45px_rgba(20,16,16,0.05)] ring-1 ring-black/5"
+                className="rounded-[1.3rem] bg-[var(--menuary-porcelain)] px-4 py-3 text-sm font-semibold shadow-[0_18px_45px_rgba(48,43,35,0.05)] ring-1 ring-[var(--menuary-line)]"
               >
                 {item}
               </div>

@@ -49,6 +49,29 @@ export type AdminMenuCategory = Omit<MenuCategory, "items"> & {
   order: number;
 };
 
+export type MenuDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export type AdminMenuListVisibility = {
+  /** Giorni locali: 0 domenica, 1 lunedi, ... 6 sabato. Vuoto = tutti i giorni. */
+  days?: MenuDay[];
+  /** HH:mm locale. Vuoto = nessun limite di inizio. */
+  startTime?: string;
+  /** HH:mm locale. Vuoto = nessun limite di fine. Supporta fasce che passano mezzanotte. */
+  endTime?: string;
+  /** Tavoli abilitati. Vuoto = tutti i tavoli. */
+  tableIds?: string[];
+};
+
+export type AdminMenuList = {
+  id: string;
+  name: string;
+  description?: string;
+  order: number;
+  enabled: boolean;
+  itemIds: string[];
+  visibility: AdminMenuListVisibility;
+};
+
 export type OrderType = "tavolo" | "asporto";
 
 export type OrderStatus =

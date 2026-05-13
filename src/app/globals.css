@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Faak Avenir";
+  src: url("/faak/fonts/Avenir-Book.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Faak Avenir";
+  src: url("/faak/fonts/Avenir-Medium.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Faak Avenir";
+  src: url("/faak/fonts/Avenir-Heavy.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Faak Avenir";
+  src: url("/faak/fonts/Avenir-Black.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --font-display: "Bagel Fat One", cursive;
@@ -34,6 +66,50 @@
     background-image:
       radial-gradient(circle at 20% 0%, rgba(245, 197, 24, 0.12) 0%, transparent 50%),
       radial-gradient(circle at 80% 100%, rgba(184, 51, 46, 0.08) 0%, transparent 50%);
+  }
+
+  html[data-platform="marketing"] body {
+    --menuary-paper: #f3efe7;
+    --menuary-porcelain: #fbf8f1;
+    --menuary-ink: #18231f;
+    --menuary-muted: #69726c;
+    --menuary-line: rgba(24, 35, 31, 0.14);
+    --menuary-copper: #a95f45;
+    --menuary-copper-dark: #743d2f;
+    --menuary-gold: #d2b66d;
+    --menuary-sage: #879276;
+    background-color: var(--menuary-paper);
+    color: var(--menuary-ink);
+    font-family: var(--font-menuary-body), system-ui, sans-serif;
+    background-image:
+      radial-gradient(circle at 14% 10%, rgba(210, 182, 109, 0.18) 0%, transparent 30%),
+      radial-gradient(circle at 82% 16%, rgba(135, 146, 118, 0.18) 0%, transparent 28%),
+      linear-gradient(180deg, #fbf8f1 0%, #f3efe7 100%);
+  }
+
+  html[data-tenant="faak"] {
+    --font-display: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    --font-impact: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    --font-body: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  html[data-tenant="faak"] body {
+    background-color: rgb(var(--tenant-cream));
+    background-image:
+      linear-gradient(180deg, rgba(255, 242, 99, 0.24) 0%, transparent 24%),
+      linear-gradient(90deg, rgba(205, 86, 47, 0.06) 0%, transparent 18%, transparent 82%, rgba(46, 69, 96, 0.06) 100%);
+    color: rgb(var(--tenant-ink));
+    letter-spacing: 0;
+  }
+
+  .tenant-preview-surface[data-tenant-surface="faak"] {
+    background-color: rgb(var(--tenant-cream));
+    background-image:
+      linear-gradient(180deg, rgba(255, 242, 99, 0.24) 0%, transparent 24%),
+      linear-gradient(90deg, rgba(205, 86, 47, 0.06) 0%, transparent 18%, transparent 82%, rgba(46, 69, 96, 0.06) 100%);
+    color: rgb(var(--tenant-ink));
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 0;
   }
 
   ::selection {
@@ -98,6 +174,346 @@
   .paper-card {
     @apply relative rounded-3xl bg-pork-cream text-pork-ink shadow-xl shadow-pork-ink/10;
   }
+
+  .menuary-shell {
+    color: var(--menuary-ink);
+    font-family: var(--font-menuary-body), system-ui, sans-serif;
+    font-feature-settings: "ss01" 1, "cv11" 1;
+  }
+
+  .menuary-display {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-weight: 650;
+    letter-spacing: 0;
+    line-height: 0.9;
+    text-transform: none;
+    text-wrap: balance;
+  }
+
+  .menuary-wordmark {
+    font-family: var(--font-menuary-body), system-ui, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 850;
+    letter-spacing: -0.04em;
+  }
+
+  .menuary-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    border-left: 2px solid var(--menuary-copper);
+    padding-left: 0.85rem;
+    color: var(--menuary-copper);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .menuary-kicker {
+    color: var(--menuary-ink);
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  .menuary-nav-link {
+    color: rgba(24, 35, 31, 0.68);
+    font-size: 0.94rem;
+    font-weight: 650;
+    transition: color 220ms ease;
+  }
+
+  .menuary-nav-link:hover {
+    color: var(--menuary-ink);
+  }
+
+  .menuary-button {
+    display: inline-flex;
+    min-height: 3.1rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.85rem 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    transition:
+      transform 260ms cubic-bezier(0.32, 0.72, 0, 1),
+      background-color 260ms ease,
+      color 260ms ease,
+      box-shadow 260ms ease;
+  }
+
+  .menuary-button:hover {
+    transform: translateY(-2px);
+  }
+
+  .menuary-button:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .menuary-button:focus-visible {
+    outline: 3px solid rgba(169, 95, 69, 0.28);
+    outline-offset: 3px;
+  }
+
+  .menuary-button-dark {
+    background: var(--menuary-ink);
+    color: var(--menuary-paper);
+    box-shadow: 0 18px 44px rgba(24, 35, 31, 0.16);
+  }
+
+  .menuary-button-dark:hover {
+    background: #23332d;
+  }
+
+  .menuary-button-accent {
+    background: var(--menuary-copper);
+    color: #fffaf2;
+    box-shadow: 0 18px 44px rgba(169, 95, 69, 0.2);
+  }
+
+  .menuary-button-accent:hover {
+    background: var(--menuary-copper-dark);
+  }
+
+  .menuary-button-light {
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--menuary-ink);
+    box-shadow: inset 0 0 0 1px var(--menuary-line);
+  }
+
+  .menuary-button-light:hover {
+    background: #fffaf2;
+  }
+
+  .menuary-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(24, 35, 31, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(24, 35, 31, 0.035) 1px, transparent 1px);
+    background-size: 4.25rem 4.25rem;
+    mask-image: linear-gradient(180deg, #000 0%, transparent 78%);
+  }
+
+  .menuary-product-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2rem;
+    background: rgba(255, 250, 242, 0.78);
+    box-shadow:
+      0 34px 90px rgba(48, 43, 35, 0.16),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.62);
+    backdrop-filter: blur(18px);
+  }
+
+  .menuary-browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    border-bottom: 1px solid var(--menuary-line);
+    padding: 1rem 1.1rem;
+    color: var(--menuary-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .menuary-browser-bar span {
+    width: 0.58rem;
+    height: 0.58rem;
+    border-radius: 999px;
+    background: var(--menuary-line);
+  }
+
+  .menuary-browser-bar p {
+    margin-left: auto;
+  }
+
+  .menuary-phone-preview {
+    min-height: 25rem;
+    border-radius: 1.55rem;
+    background:
+      linear-gradient(180deg, rgba(24, 35, 31, 0.12), transparent 34%),
+      var(--menuary-ink);
+    color: var(--menuary-paper);
+    padding: 1.25rem;
+  }
+
+  .menuary-phone-top {
+    width: 42%;
+    height: 0.34rem;
+    margin: 0 auto 2.2rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  .menuary-admin-preview {
+    display: grid;
+    min-height: 14rem;
+    align-items: end;
+    gap: 1.25rem;
+    border-radius: 1.55rem;
+    background: #fffaf2;
+    padding: 1.25rem;
+    box-shadow: inset 0 0 0 1px rgba(24, 35, 31, 0.08);
+  }
+
+  .menuary-chart {
+    display: flex;
+    height: 5rem;
+    align-items: end;
+    gap: 0.5rem;
+  }
+
+  .menuary-chart span {
+    flex: 1;
+    border-radius: 999px 999px 0 0;
+    background: linear-gradient(180deg, var(--menuary-gold), var(--menuary-copper));
+  }
+
+  .menuary-module-tile {
+    border-radius: 1.2rem;
+    background: rgba(135, 146, 118, 0.16);
+    padding: 1rem;
+    color: var(--menuary-ink);
+    font-weight: 800;
+    box-shadow: inset 0 0 0 1px rgba(24, 35, 31, 0.06);
+  }
+
+  .menuary-audience-card {
+    min-height: 19rem;
+    border-radius: 1.8rem;
+    background:
+      linear-gradient(180deg, rgba(255, 250, 242, 0.09), rgba(255, 250, 242, 0.035)),
+      rgba(255, 255, 255, 0.03);
+    padding: 2rem;
+    box-shadow: inset 0 0 0 1px rgba(255, 250, 242, 0.1);
+  }
+
+  .menuary-audience-card .menuary-kicker {
+    color: var(--menuary-gold);
+  }
+
+  .menuary-demo-stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .menuary-step-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    border-radius: 1.6rem;
+    background: rgba(255, 250, 242, 0.72);
+    padding: 1.35rem;
+    box-shadow:
+      inset 0 0 0 1px var(--menuary-line),
+      0 18px 60px rgba(48, 43, 35, 0.07);
+  }
+
+  .menuary-step-card span {
+    display: flex;
+    width: 3rem;
+    height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--menuary-ink);
+    color: var(--menuary-paper);
+    font-weight: 850;
+    letter-spacing: -0.04em;
+  }
+
+  html[data-tenant="faak"] .headline,
+  .tenant-preview-surface[data-tenant-surface="faak"] .headline {
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    line-height: 0.94;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  html[data-tenant="faak"] .impact-title,
+  .tenant-preview-surface[data-tenant-surface="faak"] .impact-title {
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  html[data-tenant="faak"] .btn-primary,
+  html[data-tenant="faak"] .btn-mustard,
+  html[data-tenant="faak"] .btn-ghost,
+  html[data-tenant="faak"] .btn-ghost-light,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-primary,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-mustard,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-ghost,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-ghost-light {
+    min-height: 3rem;
+    border-radius: 0 !important;
+    box-shadow: none;
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  html[data-tenant="faak"] .btn-primary,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-primary {
+    background-color: rgb(var(--tenant-red));
+  }
+
+  html[data-tenant="faak"] .btn-primary:hover,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-primary:hover {
+    background-color: rgb(var(--tenant-ink));
+  }
+
+  html[data-tenant="faak"] .btn-mustard,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-mustard {
+    background-color: rgb(var(--tenant-mustard));
+    color: rgb(var(--tenant-ink));
+  }
+
+  html[data-tenant="faak"] .btn-mustard:hover,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-mustard:hover {
+    background-color: rgb(var(--tenant-red));
+    color: rgb(var(--tenant-cream));
+  }
+
+  html[data-tenant="faak"] .btn-ghost,
+  html[data-tenant="faak"] .btn-ghost-light,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-ghost,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-ghost-light {
+    border-width: 1px;
+  }
+
+  html[data-tenant="faak"] .chip,
+  html[data-tenant="faak"] .chip-mustard,
+  html[data-tenant="faak"] .chip-red,
+  html[data-tenant="faak"] .chip-green,
+  html[data-tenant="faak"] .chip-pink,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip-mustard,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip-red,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip-green,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip-pink {
+    border-radius: 0 !important;
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  html[data-tenant="faak"] .paper-card,
+  .tenant-preview-surface[data-tenant-surface="faak"] .paper-card {
+    border-radius: 0 !important;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    box-shadow: none;
+  }
 }
 
 @layer utilities {
@@ -116,6 +532,51 @@
   .touch-pan-x {
     touch-action: pan-x;
   }
+
+  html[data-tenant="faak"] .rounded-full,
+  html[data-tenant="faak"] .rounded-3xl,
+  html[data-tenant="faak"] .rounded-\[2\.25rem\],
+  html[data-tenant="faak"] .rounded-\[2rem\],
+  html[data-tenant="faak"] .rounded-\[1\.75rem\],
+  html[data-tenant="faak"] .rounded-\[1\.65rem\],
+  html[data-tenant="faak"] .rounded-\[1\.6rem\],
+  html[data-tenant="faak"] .rounded-\[1\.45rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-full,
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-3xl,
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[2\.25rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[2rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[1\.75rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[1\.65rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[1\.6rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[1\.45rem\] {
+    border-radius: 0 !important;
+  }
+
+  html[data-tenant="faak"] .shadow-sm,
+  html[data-tenant="faak"] .shadow-md,
+  html[data-tenant="faak"] .shadow-lg,
+  html[data-tenant="faak"] .shadow-xl,
+  html[data-tenant="faak"] .shadow-2xl,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-sm,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-md,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-lg,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-xl,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-2xl {
+    box-shadow: none !important;
+  }
+}
+
+html[data-tenant="faak"] section.bg-pork-ink {
+  background-color: rgb(var(--tenant-brick));
+}
+
+.tenant-preview-surface[data-tenant-surface="faak"] section.bg-pork-ink {
+  background-color: rgb(var(--tenant-brick));
+}
+
+html[data-tenant="faak"] header.bg-pork-cream {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: none;
 }
 
 @keyframes bepork-cart-fly {

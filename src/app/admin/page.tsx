@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Blocks,
+  CalendarCheck,
   ChefHat,
   ClipboardList,
   QrCode,
@@ -30,11 +32,28 @@ export default function AdminHome() {
   const {
     allowTakeaway,
     allowTableOrders,
+    orderKioskEnabled,
     kitchenDisplayEnabled: kitchenOn,
+    modules,
   } = useEffectiveFeatures();
-  const showOrdini = allowTakeaway || allowTableOrders;
+  const showOrdini = allowTakeaway || allowTableOrders || orderKioskEnabled;
   const showTavoli = allowTableOrders;
   const ordersModuleOn = showOrdini;
+  const advancedServicesOn = Boolean(
+    modules.orderKiosk ||
+      modules.reservations ||
+      modules.tablePlanner ||
+      modules.productAvailability ||
+      modules.upselling ||
+      modules.crm ||
+      modules.analytics ||
+      modules.takeawaySlots ||
+      modules.deliveryHub ||
+      modules.inventoryFoodCost ||
+      modules.printStations ||
+      modules.staffRoles ||
+      modules.multiLocation,
+  );
 
   useEffect(() => {
     if (useSettingsStore.persist.hasHydrated()) {
@@ -169,6 +188,22 @@ export default function AdminHome() {
             title="Tavoli & QR"
             desc="Crea tavoli, stampa QR, chiudi conti"
             icon={<QrCode size={22} />}
+          />
+        )}
+        {modules.reservations && (
+          <Quick
+            href="/admin/prenotazioni"
+            title="Prenotazioni"
+            desc="Agenda, coperti, tavoli, note cliente e stati"
+            icon={<CalendarCheck size={22} />}
+          />
+        )}
+        {advancedServicesOn && (
+          <Quick
+            href="/admin/servizi"
+            title="Servizi avanzati"
+            desc="Kiosk, prenotazioni, sala, CRM, slot, delivery, magazzino e staff"
+            icon={<Blocks size={22} />}
           />
         )}
         <Quick

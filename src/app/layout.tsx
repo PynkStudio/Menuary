@@ -1,6 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Bagel_Fat_One, Bebas_Neue, Manrope } from "next/font/google";
+import {
+  Bagel_Fat_One,
+  Bebas_Neue,
+  DM_Sans,
+  Fraunces,
+  Manrope,
+} from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -35,6 +41,18 @@ const body = Manrope({
   display: "swap",
 });
 
+const menuaryDisplay = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-menuary-display",
+  display: "swap",
+});
+
+const menuaryBody = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-menuary-body",
+  display: "swap",
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   const host = (await headers()).get("host");
   const tenant = resolveTenantFromHost(host);
@@ -50,7 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title:
       mode === "marketing"
         ? {
-            default: "Menuary — siti e ordini digitali per ristoranti",
+            default: "Menuary - siti personalizzati per ristoranti",
             template: "%s · Menuary",
           }
         : {
@@ -59,7 +77,7 @@ export async function generateMetadata(): Promise<Metadata> {
           },
     description:
       mode === "marketing"
-        ? "Menuary crea siti ristorante multi-tenant con menu digitali, ordini e area gestionale."
+        ? "Menuary crea siti su misura per ristoranti, con menu digitale, prenotazioni, ordini e gestione semplice dei contenuti."
         : content.description,
     keywords:
       mode === "marketing"
@@ -68,7 +86,7 @@ export async function generateMetadata(): Promise<Metadata> {
             "siti per ristoranti",
             "menu digitale",
             "ordini ristorante",
-            "piattaforma multi tenant ristoranti",
+            "sito ristorante online",
           ]
         : tenant.id === "faak"
           ? [
@@ -92,11 +110,11 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title:
         mode === "marketing"
-          ? "Menuary — siti e ordini digitali per ristoranti"
+          ? "Menuary - siti personalizzati per ristoranti"
           : tenantTitle,
       description:
         mode === "marketing"
-          ? "Menuary crea siti ristorante multi-tenant con menu digitali, ordini e area gestionale."
+          ? "Menuary crea siti su misura per ristoranti, con menu digitale, prenotazioni, ordini e gestione semplice dei contenuti."
           : content.description,
       url: mode === "marketing" ? "https://menuary.it" : content.url,
       siteName: mode === "marketing" ? "Menuary" : tenant.name,
@@ -115,7 +133,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: mode === "marketing" ? "Menuary" : tenant.name,
       description:
         mode === "marketing"
-          ? "Menuary crea siti ristorante multi-tenant con menu digitali, ordini e area gestionale."
+          ? "Menuary crea siti su misura per ristoranti, con menu digitale, prenotazioni, ordini e gestione semplice dei contenuti."
           : content.description,
       ...(mode === "marketing" ? {} : { images: [content.showcaseLogoSrc] }),
     },
@@ -225,9 +243,10 @@ export default async function RootLayout({
   return (
     <html
       lang="it"
-      className={`${display.variable} ${impact.variable} ${body.variable}`}
+      className={`${display.variable} ${impact.variable} ${body.variable} ${menuaryDisplay.variable} ${menuaryBody.variable}`}
       style={themeVars as React.CSSProperties}
       data-tenant={tenant.id}
+      data-platform={mode}
     >
       <body>
         <Script

@@ -6,6 +6,8 @@ import {
   ChefHat,
   ClipboardList,
   Building2,
+  Blocks,
+  CalendarCheck,
   LayoutDashboard,
   LogOut,
   Menu as MenuIcon,
@@ -25,7 +27,10 @@ import { usePlatformMode } from "@/components/platform-mode-provider";
 type NavFlags = {
   allowTakeaway: boolean;
   allowTableOrders: boolean;
+  orderKioskEnabled: boolean;
   kitchenDisplayEnabled: boolean;
+  advancedServicesEnabled: boolean;
+  reservationsEnabled: boolean;
 };
 
 type NavItem = {
@@ -42,7 +47,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/admin",
     label: "Dashboard",
     icon: LayoutDashboard,
-    visible: (s) => s.allowTakeaway || s.allowTableOrders,
+    visible: (s) => s.allowTakeaway || s.allowTableOrders || s.orderKioskEnabled,
   },
   { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
   { href: "/admin/tenant", label: "Tenant", icon: Building2 },
@@ -50,13 +55,25 @@ const NAV_ITEMS: NavItem[] = [
     href: "/admin/ordini",
     label: "Ordini",
     icon: ClipboardList,
-    visible: (s) => s.allowTakeaway || s.allowTableOrders,
+    visible: (s) => s.allowTakeaway || s.allowTableOrders || s.orderKioskEnabled,
   },
   {
     href: "/admin/tavoli",
     label: "Tavoli & QR",
     icon: QrCode,
     visible: (s) => s.allowTableOrders,
+  },
+  {
+    href: "/admin/prenotazioni",
+    label: "Prenotazioni",
+    icon: CalendarCheck,
+    visible: (s) => s.reservationsEnabled,
+  },
+  {
+    href: "/admin/servizi",
+    label: "Servizi",
+    icon: Blocks,
+    visible: (s) => s.advancedServicesEnabled,
   },
   { href: "/admin/impostazioni", label: "Impostazioni", icon: Settings },
   {
@@ -78,23 +95,55 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const {
     allowTakeaway,
     allowTableOrders,
+    orderKioskEnabled,
     kitchenDisplayEnabled,
+    modules,
   } = useEffectiveFeatures();
+
+  const advancedServicesEnabled = Boolean(
+    modules.orderKiosk ||
+      modules.reservations ||
+      modules.tablePlanner ||
+      modules.productAvailability ||
+      modules.upselling ||
+      modules.crm ||
+      modules.analytics ||
+      modules.takeawaySlots ||
+      modules.deliveryHub ||
+      modules.inventoryFoodCost ||
+      modules.printStations ||
+      modules.staffRoles ||
+      modules.multiLocation,
+  );
 
   const navItems = useMemo(() => {
     if (mode === "platform-admin") {
       return NAV_ITEMS.filter((it) => it.href === "/admin" || it.href === "/admin/tenant");
     }
+    const tenantHiddenItems = new Set(["/admin/tenant"]);
     const flags: NavFlags = {
       allowTakeaway,
       allowTableOrders,
+      orderKioskEnabled,
       kitchenDisplayEnabled,
+      advancedServicesEnabled,
+      reservationsEnabled: modules.reservations,
     };
-    return NAV_ITEMS.filter((it) => (it.visible ? it.visible(flags) : true));
-  }, [allowTakeaway, allowTableOrders, kitchenDisplayEnabled, mode]);
+    return NAV_ITEMS.filter(
+      (it) => !tenantHiddenItems.has(it.href) && (it.visible ? it.visible(flags) : true),
+    );
+  }, [
+    allowTakeaway,
+    allowTableOrders,
+    orderKioskEnabled,
+    kitchenDisplayEnabled,
+    advancedServicesEnabled,
+    modules.reservations,
+    mode,
+  ]);
 
   const adminEntryHref =
-    mode === "platform-admin" || allowTakeaway || allowTableOrders
+    mode === "platform-admin" || allowTakeaway || allowTableOrders || orderKioskEnabled
       ? "/admin"
       : "/admin/menu";
 

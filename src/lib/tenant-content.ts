@@ -294,7 +294,7 @@ const faakContent: TenantContent = {
       kicker: "FAAK la mattina",
       title: "Colazione irrequieta",
       desc: "Caffe, forno, grafica diretta e tono netto. Una prima fascia oraria con voce propria.",
-      href: "/menu",
+      href: "/menu#faak-mattina",
       image: "/faak/mattina.png",
     },
     {
@@ -302,7 +302,7 @@ const faakContent: TenantContent = {
       kicker: "FAAK il giorno",
       title: "Pranzo con fuoco",
       desc: "Padella, brace, verdure e piatti che parlano come il locale: chiari, energici, non neutri.",
-      href: "/menu",
+      href: "/menu#faak-giorno",
       image: "/faak/giorno.png",
     },
     {
@@ -310,7 +310,7 @@ const faakContent: TenantContent = {
       kicker: "FAAK da bere",
       title: "Aperitivo manifesto",
       desc: "Vino, cocktail e socialita entrano nella stessa esperienza senza perdere riconoscibilita.",
-      href: "/menu",
+      href: "/menu#faak-aperitivo",
       image: "/faak/aperitivo.png",
     },
   ],
@@ -327,7 +327,7 @@ const faakContent: TenantContent = {
       price: "hero",
       image: "/faak/hero-claim.png",
       variant: "mustard",
-      href: "/",
+      href: "/menu#faak-mattina",
     },
     {
       name: "Viviana Varese",
@@ -335,7 +335,7 @@ const faakContent: TenantContent = {
       price: "story",
       image: "/faak/chef.png",
       variant: "red",
-      href: "/chi-siamo",
+      href: "/menu#faak-giorno",
     },
     {
       name: "Fuoco e pane",
@@ -343,7 +343,7 @@ const faakContent: TenantContent = {
       price: "visual",
       image: "/faak/fire-bread.png",
       variant: "pink",
-      href: "/galleria",
+      href: "/menu#faak-sera",
     },
   ],
   findUs: {

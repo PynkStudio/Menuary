@@ -1,18 +1,12 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { TenantProvider } from "@/components/tenant-provider";
-import { Hero } from "@/components/hero";
-import { ThreeSouls } from "@/components/three-souls";
-import { SignatureDishes } from "@/components/signature-dishes";
-import { FixedMenus } from "@/components/fixed-menus";
-import { ReviewsSection } from "@/components/reviews-section";
-import { FindUs } from "@/components/find-us";
-import { DeliveryStrip } from "@/components/delivery-strip";
+import { MenuPageShell } from "@/components/menu-page-shell";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 
-export default async function PreviewTenantHome({
+export default async function PreviewTenantMenu({
   params,
 }: {
   params: Promise<{ previewSlug: string }>;
@@ -32,13 +26,7 @@ export default async function PreviewTenantHome({
         data-tenant-surface={tenant.id}
         style={themeVars as React.CSSProperties}
       >
-        <Hero />
-        <ThreeSouls />
-        <SignatureDishes />
-        <FixedMenus />
-        <ReviewsSection />
-        <FindUs />
-        <DeliveryStrip />
+        <MenuPageShell />
       </div>
     </TenantProvider>
   );

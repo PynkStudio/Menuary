@@ -8,6 +8,7 @@ import {
 } from "@/lib/legal/policies";
 import { PolicySectionsView } from "@/components/legal/policy-sections-view";
 import { useSettingsStore } from "@/store/settings-store";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 function ModuleChip({ active, label }: { active: boolean; label: string }) {
   return (
@@ -28,10 +29,12 @@ export function DynamicPolicyDocument({
 }: {
   variant: "privacy" | "cookie";
 }) {
-  const allowTakeaway = useSettingsStore((s) => s.allowTakeaway);
-  const allowTableOrders = useSettingsStore((s) => s.allowTableOrders);
-  const dinerSeparationAtTables = useSettingsStore((s) => s.dinerSeparationAtTables);
-  const kitchenDisplayEnabled = useSettingsStore((s) => s.kitchenDisplayEnabled);
+  const {
+    allowTakeaway,
+    allowTableOrders,
+    dinerSeparationAtTables,
+    kitchenDisplayEnabled,
+  } = useEffectiveFeatures();
 
   const [settingsReady, setSettingsReady] = useState(() =>
     useSettingsStore.persist.hasHydrated(),

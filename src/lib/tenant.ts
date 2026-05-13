@@ -1,8 +1,23 @@
 export type TenantFeatureFlags = {
+  website: boolean;
+  onlineMenu: boolean;
   takeaway: boolean;
   tableOrders: boolean;
+  orderKiosk: boolean;
   kitchenDisplay: boolean;
   dinerSeparation: boolean;
+  reservations: boolean;
+  tablePlanner: boolean;
+  productAvailability: boolean;
+  upselling: boolean;
+  crm: boolean;
+  analytics: boolean;
+  takeawaySlots: boolean;
+  deliveryHub: boolean;
+  inventoryFoodCost: boolean;
+  printStations: boolean;
+  staffRoles: boolean;
+  multiLocation: boolean;
   favorites: boolean;
   reviews: boolean;
   gallery: boolean;
