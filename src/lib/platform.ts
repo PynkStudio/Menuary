@@ -1,12 +1,13 @@
 // ─── PlatformMode ─────────────────────────────────────────────────────────────
-// "marketing"   → menuary.it          sito marketing verticale food
-// "marketing-b" → [vertical-b].it     sito marketing verticale services
-//                 TODO: sostituire il dominio placeholder quando il nome è definito
-// "tenant"      → bepork.it / ecc.    sito del singolo locale
-// "platform-admin" → admin.menuary.it back-office piattaforma
-// "preview"     → demo.menuary.it     anteprima tenant via previewSlug
-// "clients"     → clienti.menuary.it  area personale clienti / titolari (login + profilo)
-// "studio"      → studio.menuary.it   fatturazione e abbonamenti per i locali (clienti B2B Menuary)
+// "marketing"      → menuary.it          sito marketing verticale food
+// "marketing-b"    → [vertical-b].it     sito marketing verticale services
+// "tenant"         → bepork.it / ecc.    sito del singolo locale
+// "platform-admin" → admin.menuary.it    back-office piattaforma
+// "preview"        → demo.menuary.it     anteprima tenant via previewSlug
+// "clients"        → clienti.menuary.it  area personale clienti
+// "studio"         → studio.menuary.it   fatturazione e abbonamenti B2B
+// "login"          → login.menuary.it    auth centralizzato (popup + redirect)
+// "gestione"       → gestione.menuary.it pannello gestione tenant per store staff
 export type PlatformMode =
   | "tenant"
   | "marketing"
@@ -14,16 +15,19 @@ export type PlatformMode =
   | "platform-admin"
   | "preview"
   | "clients"
-  | "studio";
+  | "studio"
+  | "login"
+  | "gestione";
 
 export const PLATFORM_HOSTS = {
-  marketing:   ["menuary.it", "www.menuary.it", "menuary.localhost"],
-  // TODO: rimpiazzare "vertical-b.localhost" con il dominio reale del secondo verticale
+  marketing:    ["menuary.it", "www.menuary.it", "menuary.localhost"],
   "marketing-b": ["vertical-b.localhost", "www.vertical-b.localhost"],
-  admin:       ["admin.menuary.it", "admin.menuary.localhost"],
-  preview:     ["demo.menuary.it", "demo.menuary.localhost"],
-  clients:     ["clienti.menuary.it", "clienti.menuary.localhost"],
-  studio:      ["studio.menuary.it", "studio.menuary.localhost"],
+  admin:        ["admin.menuary.it", "admin.menuary.localhost"],
+  preview:      ["demo.menuary.it", "demo.menuary.localhost"],
+  clients:      ["clienti.menuary.it", "clienti.menuary.localhost"],
+  studio:       ["studio.menuary.it", "studio.menuary.localhost"],
+  login:        ["login.menuary.it", "login.menuary.localhost"],
+  gestione:     ["gestione.menuary.it", "gestione.menuary.localhost"],
 } as const;
 
 export function normalizeHost(host: string | null | undefined): string {
@@ -40,6 +44,8 @@ export function getPlatformModeFromHost(
   if (PLATFORM_HOSTS.preview.includes(normalized as never))     return "preview";
   if (PLATFORM_HOSTS.clients.includes(normalized as never))     return "clients";
   if (PLATFORM_HOSTS.studio.includes(normalized as never))      return "studio";
+  if (PLATFORM_HOSTS.login.includes(normalized as never))       return "login";
+  if (PLATFORM_HOSTS.gestione.includes(normalized as never))    return "gestione";
   return "tenant";
 }
 
