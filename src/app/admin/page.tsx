@@ -15,9 +15,9 @@ import {
 import { useMenuStore } from "@/store/menu-store";
 import { useSettingsStore } from "@/store/settings-store";
 import { formatEuro } from "@/lib/price-utils";
-import { useHydrated } from "@/components/providers";
+import { useHydrated } from "@/components/core/providers";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
-import { usePlatformMode } from "@/components/platform-mode-provider";
+import { usePlatformMode } from "@/components/core/platform-mode-provider";
 
 export default function AdminHome() {
   const mode = usePlatformMode();

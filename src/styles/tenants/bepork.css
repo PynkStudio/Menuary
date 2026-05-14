@@ -1,0 +1,62 @@
+/* ============================================================
+   bepork.css — stili specifici per il tenant BePork
+   ============================================================ */
+
+@layer components {
+  .headline {
+    @apply font-display leading-[0.95] tracking-tight;
+  }
+
+  .impact-title {
+    @apply font-impact tracking-wide uppercase;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-pork-red px-6 py-3 font-semibold text-white shadow-lg shadow-pork-red/20 transition-all hover:bg-pork-red-dark hover:shadow-pork-red/30 active:scale-95;
+  }
+
+  .btn-mustard {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-pork-mustard px-6 py-3 font-bold text-pork-ink shadow-lg shadow-pork-mustard/30 transition-all hover:bg-pork-mustard-soft active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-pork-ink/20 bg-transparent px-6 py-3 font-semibold text-pork-ink transition-all hover:border-pork-ink hover:bg-pork-ink hover:text-pork-cream active:scale-95;
+  }
+
+  .btn-ghost-light {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-pork-cream/40 bg-transparent px-6 py-3 font-semibold text-pork-cream transition-all hover:border-pork-cream hover:bg-pork-cream hover:text-pork-ink active:scale-95;
+  }
+
+  .container-wide {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-pork-ink/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-pork-ink/70;
+  }
+
+  .chip-mustard {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-pork-mustard px-3 py-1 text-xs font-black uppercase tracking-wide text-pork-ink;
+  }
+
+  .chip-red {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-pork-red px-3 py-1 text-xs font-black uppercase tracking-wide text-white;
+  }
+
+  .chip-green {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-pork-green px-3 py-1 text-xs font-black uppercase tracking-wide text-white;
+  }
+
+  .chip-pink {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-pork-pink px-3 py-1 text-xs font-black uppercase tracking-wide text-white;
+  }
+
+  .price-sticker {
+    @apply relative inline-flex items-center justify-center rounded-md px-3 py-1.5 font-impact text-base shadow-md;
+    transform: rotate(-3deg);
+  }
+
+  .paper-card {
+    @apply relative rounded-3xl bg-pork-cream text-pork-ink shadow-xl shadow-pork-ink/10;
+  }
+}

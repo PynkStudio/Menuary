@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTenant } from "@/components/tenant-provider";
+import { useTenant } from "@/components/core/tenant-provider";
 import {
   getLocalModuleEnabled,
   isModuleSuspensionActive,

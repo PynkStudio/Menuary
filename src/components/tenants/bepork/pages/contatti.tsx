@@ -1,8 +1,8 @@
 import { MapPin, Instagram, Facebook } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
-import { ContattiReserveCards } from "@/components/contatti-reserve-cards";
-import { ReservationRequestForm } from "@/components/reservation-request-form";
-import { VenueAddressBlock, VenueHoursList } from "@/components/venue-display";
+import { ContattiReserveCards } from "@/components/modules/reservations/contatti-reserve-cards";
+import { ReservationRequestForm } from "@/components/modules/reservations/reservation-request-form";
+import { VenueAddressBlock, VenueHoursList } from "@/components/modules/reservations/venue-display";
 
 export function BeporkContactsPage() {
   return (

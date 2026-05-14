@@ -14,8 +14,8 @@ import {
   createCopertoOrderLine,
   dinerAlreadyHasCopertoOrder,
 } from "@/lib/coperto";
-import { useHydrated } from "@/components/providers";
-import { LineMods } from "@/components/line-mods";
+import { useHydrated } from "@/components/core/providers";
+import { LineMods } from "@/components/modules/shop/line-mods";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 function CheckoutTavoloBody() {

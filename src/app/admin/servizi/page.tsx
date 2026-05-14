@@ -17,8 +17,8 @@ import {
   Users,
   Utensils,
 } from "lucide-react";
-import { useHydrated } from "@/components/providers";
-import { useTenant } from "@/components/tenant-provider";
+import { useHydrated } from "@/components/core/providers";
+import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useRestaurantServicesStore } from "@/store/restaurant-services-store";
 import { formatEuro } from "@/lib/price-utils";

@@ -131,18 +131,66 @@ src/app/
 
 ```
 src/components/
-  marketing/                ← menuary.it
-    pages/
-      home.tsx              ← MarketingHomePage
-      pricing.tsx           ← MarketingPricingPage
-      contatti.tsx          ← MarketingContactsPage
-      chi-siamo.tsx         ← MarketingAboutPage
-    marketing-shell.tsx     ← header + footer condivisi marketing
-    marketing-sections.tsx  ← sezioni riusabili (Features, FAQ, CTA, Demos, ecc.)
-    lead-form.tsx           ← form richiesta proposta
+  core/                     ← provider e shell globali
+    platform-mode-provider.tsx  ← contesto PlatformMode
+    tenant-provider.tsx         ← contesto TenantProfile
+    site-chrome.tsx             ← shell visiva (navbar + footer + drawers)
+    providers.tsx               ← tutti i provider React annidati
+
+  tenant-shell/             ← elementi UI di cornice tenant
+    navbar.tsx
+    footer.tsx
+
+  modules/                  ← moduli funzionali (tutti tenant-aware)
+    menu/                   ← menu digitale
+      interactive-menu.tsx
+      menu-card.tsx
+      menu-card-interactive.tsx
+      menu-category-nav.tsx
+      menu-page-shell.tsx
+      menu-intro-paragraph.tsx
+      menu-disclaimer.tsx
+      section-header.tsx
+      allergen-badges.tsx
+      allergen-icon.tsx
+      allergen-modal-collapsible.tsx
+      spicy-level-badge.tsx
+      price-sticker.tsx
+    shop/                   ← carrello e ordini
+      cart-drawer.tsx
+      cart-fly-overlay.tsx
+      cart-line-note-modal.tsx
+      delivery-strip.tsx
+      formato-choice-modal.tsx
+      item-customizer.tsx
+      line-mods.tsx
+      menu-bundle-customizer.tsx
+      shop-fabs.tsx
+    table-orders/           ← ordine al tavolo
+      menu-active-table-bar.tsx
+      nickname-gate.tsx
+      table-order-entry-modal.tsx
+      table-order-join-flow.tsx
+    reservations/           ← prenotazioni e contatti
+      contatti-reserve-cards.tsx
+      reservation-request-form.tsx
+      venue-display.tsx
+      find-us.tsx
+      whatsapp-float.tsx
+    reviews/                ← recensioni
+      review-card.tsx
+      reviews-section.tsx
+    gallery/                ← galleria foto
+      gallery.tsx
+    favorites/              ← wishlist piatti
+      favorites-drawer.tsx
 
   tenants/                  ← un folder per tenant + _shared per il template
-    _shared/
+    _shared/                ← componenti condivisi usati dalla TenantHomePage
+      hero.tsx
+      three-souls.tsx
+      signature-dishes.tsx
+      fixed-menus.tsx
       pages/
         home.tsx            ← TenantHomePage (template generico, tenant-aware via context)
     bepork/
@@ -153,6 +201,16 @@ src/components/
       pages/
         chi-siamo.tsx
         contatti.tsx
+
+  marketing/                ← menuary.it
+    pages/
+      home.tsx              ← MarketingHomePage
+      pricing.tsx           ← MarketingPricingPage
+      contatti.tsx          ← MarketingContactsPage
+      chi-siamo.tsx         ← MarketingAboutPage
+    marketing-shell.tsx     ← header + footer condivisi marketing
+    marketing-sections.tsx  ← sezioni riusabili (Features, FAQ, CTA, Demos, ecc.)
+    lead-form.tsx           ← form richiesta proposta
 
   admin/                    ← componenti back-office
     admin-shell.tsx
@@ -165,10 +223,46 @@ src/components/
     image-upload.tsx
     extra-lists-manager.tsx
 
-  [altri componenti tenant]  ← hero.tsx, navbar.tsx, menu-*.tsx, cart-*.tsx, ecc.
-                               tutti tenant-aware: leggono dati e features dal
-                               TenantProvider via useTenant() / useEffectiveFeatures()
+  legal/                    ← documenti legali
+    dynamic-policy-document.tsx
+    policy-sections-view.tsx
+
+  vertical-b/               ← placeholder secondo verticale
+    pages/
+      home.tsx
 ```
+
+---
+
+## 5b. Struttura `src/styles/` — CSS per tenant
+
+I CSS sono suddivisi per evitare che stili specifici di un tenant o della piattaforma
+marketing inquinino il bundle di tutti gli altri contesti.
+
+```
+src/styles/
+  marketing.css         ← classi .menuary-container, .menuary-pricing-row,
+                           .menuary-feature-card, .menuary-testimonial,
+                           .menuary-faq-*, .menuary-marquee*, .menuary-price-tag,
+                           .menuary-mockup-*, keyframes menuary-*,
+                           .menuary-fade-up e varianti
+  tenants/
+    bepork.css          ← .headline, .impact-title, .btn-primary, .btn-mustard,
+                           .btn-ghost, .btn-ghost-light, .container-wide,
+                           .chip*, .price-sticker, .paper-card
+    faak.css            ← override html[data-tenant="faak"] e .tenant-preview-surface
+                           su headline, btn-*, chip*, paper-card, rounded-*, shadow-*
+                           + section.bg-pork-ink → tenant-brick
+    vertical-b.css      ← TODO: stili secondo verticale (file vuoto)
+```
+
+Tutti e tre i file vengono importati in `src/app/layout.tsx` dopo `globals.css`.
+Il `globals.css` mantiene: `@tailwind`, `@font-face` Faak Avenir, `@layer base`
+(variabili CSS, reset html/body, variabili Menuary su `data-platform="marketing"`),
+`@layer utilities` (`.text-balance`, `.mask-fade-bottom`, ecc.),
+keyframes `bepork-cart-fly` e `.cart-fly-particle`, e i blocchi `.menuary-shell`,
+`.menuary-display`, `.menuary-button` variants, product frames, audience/demo/step cards
+(usati trasversalmente nell'app).
 
 ---
 
@@ -272,5 +366,8 @@ Quando il secondo verticale avrà un nome:
 | `src/lib/site-config.ts` | Configurazione statica BePork (indirizzo, social, mappe) |
 | `src/store/settings-store.ts` | Stato runtime admin (override moduli, sospensioni) |
 | `tailwind.config.ts` | Token colore tenant (`pork-*`) + utility custom |
-| `src/app/globals.css` | CSS variables Menuary (`--menuary-*`), classi editoriali, override FAAK |
+| `src/app/globals.css` | CSS variables base, `@font-face` Faak Avenir, reset html/body, keyframes cart-fly |
+| `src/styles/marketing.css` | Classi `.menuary-*` editoriali e animazioni (solo piattaforma marketing) |
+| `src/styles/tenants/bepork.css` | Classi `.headline`, `.btn-*`, `.chip-*`, `.paper-card` per BePork |
+| `src/styles/tenants/faak.css` | Override `html[data-tenant="faak"]` per font, bordi, shadow |
 | `next.config.ts` | Domini immagini remoti (Unsplash), ottimizzazione formati |

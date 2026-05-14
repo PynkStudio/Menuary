@@ -2,12 +2,12 @@
 
 import { RotateCcw, ShieldCheck, Power } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
-import { useTenant } from "@/components/tenant-provider";
+import { useTenant } from "@/components/core/tenant-provider";
 import {
   mergeTenantOverrides,
   useTenantAdminStore,
 } from "@/store/tenant-admin-store";
-import { usePlatformMode } from "@/components/platform-mode-provider";
+import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import {
   formatFeatureDependencies,
   getMissingFeatureDependencies,

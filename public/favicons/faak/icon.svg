@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#FFFFFF"/>
+  <!-- Top color bar -->
+  <rect width="32" height="5" fill="#CD562F"/>
+  <text
+    x="16" y="24"
+    font-family="'Helvetica Neue', 'Arial', sans-serif"
+    font-size="13"
+    font-weight="700"
+    text-anchor="middle"
+    fill="#000000"
+    letter-spacing="1"
+  >FAAK</text>
+</svg>

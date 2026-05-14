@@ -22,7 +22,7 @@ import type { AdminMenuItem, AdminMenuList, MenuDay } from "@/lib/types";
 import { formatEuro, minPrice } from "@/lib/price-utils";
 import { ItemEditor } from "@/components/admin/item-editor";
 import { ExtraListsManager } from "@/components/admin/extra-lists-manager";
-import { useHydrated } from "@/components/providers";
+import { useHydrated } from "@/components/core/providers";
 
 const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 1, label: "Lun" },

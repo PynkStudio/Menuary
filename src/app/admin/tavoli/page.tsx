@@ -14,10 +14,10 @@ import {
   selectOrdersBySession,
 } from "@/store/menu-store";
 import { formatRemovedForLine } from "@/lib/ingredients";
-import { useHydrated } from "@/components/providers";
+import { useHydrated } from "@/components/core/providers";
 import { formatEuro } from "@/lib/price-utils";
 import type { Table, TableSession } from "@/lib/types";
-import { LineMods } from "@/components/line-mods";
+import { LineMods } from "@/components/modules/shop/line-mods";
 import { aggregateOrderLinesForSession } from "@/lib/kitchen-merge";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { FloorPlanEditor } from "@/components/admin/floor-plan-editor";

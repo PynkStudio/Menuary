@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MenuPageShell } from "@/components/menu-page-shell";
+import { MenuPageShell } from "@/components/modules/menu/menu-page-shell";
 
 export const metadata: Metadata = {
   title: "Menu",

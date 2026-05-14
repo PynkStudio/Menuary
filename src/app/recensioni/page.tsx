@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Star, MessageCircle } from "lucide-react";
-import { ReviewCard } from "@/components/review-card";
+import { ReviewCard } from "@/components/modules/reviews/review-card";
 import { reviews, googleRating } from "@/lib/reviews-data";
 import { formatNumberIT } from "@/lib/format";
 import { whatsappUrl } from "@/lib/site-config";

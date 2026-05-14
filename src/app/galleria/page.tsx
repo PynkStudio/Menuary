@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import { Gallery } from "@/components/gallery";
+import { Gallery } from "@/components/modules/gallery/gallery";
 import { whatsappUrl } from "@/lib/site-config";
 
 export const metadata: Metadata = {

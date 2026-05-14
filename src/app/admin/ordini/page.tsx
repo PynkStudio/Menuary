@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, Trash2, XCircle } from "lucide-react";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
 import { formatRemovedForLine } from "@/lib/ingredients";
-import { useHydrated } from "@/components/providers";
+import { useHydrated } from "@/components/core/providers";
 import type { OrderStatus } from "@/lib/types";
 import {
   STATUS_COLOR,
@@ -14,7 +14,7 @@ import {
   formatTime,
 } from "@/lib/orders-ui";
 import { formatEuro } from "@/lib/price-utils";
-import { LineMods } from "@/components/line-mods";
+import { LineMods } from "@/components/modules/shop/line-mods";
 import { useSettingsStore } from "@/store/settings-store";
 
 const FILTERS: Array<{ value: "open" | "all" | OrderStatus; label: string }> = [

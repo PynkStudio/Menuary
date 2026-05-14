@@ -8,8 +8,8 @@ import {
   isModuleSuspensionActive,
   useSettingsStore,
 } from "@/store/settings-store";
-import { useHydrated } from "@/components/providers";
-import { useTenant } from "@/components/tenant-provider";
+import { useHydrated } from "@/components/core/providers";
+import { useTenant } from "@/components/core/tenant-provider";
 import { siteConfig } from "@/lib/site-config";
 import { HoursWeekEditor } from "@/components/admin/hours-week-editor";
 import type { DaySchedule } from "@/lib/venue-hours";

@@ -21,8 +21,8 @@ import { useMemo, useState } from "react";
 import { clearAdminSession } from "@/lib/admin-auth";
 import { cn } from "@/lib/utils";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
-import { useTenant } from "@/components/tenant-provider";
-import { usePlatformMode } from "@/components/platform-mode-provider";
+import { useTenant } from "@/components/core/tenant-provider";
+import { usePlatformMode } from "@/components/core/platform-mode-provider";
 
 type NavFlags = {
   allowTakeaway: boolean;

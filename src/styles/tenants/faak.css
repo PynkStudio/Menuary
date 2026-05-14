@@ -1,0 +1,137 @@
+/* ============================================================
+   faak.css — override e stili specifici per il tenant Faak
+   ============================================================ */
+
+@layer components {
+  html[data-tenant="faak"] .headline,
+  .tenant-preview-surface[data-tenant-surface="faak"] .headline {
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    line-height: 0.94;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  html[data-tenant="faak"] .impact-title,
+  .tenant-preview-surface[data-tenant-surface="faak"] .impact-title {
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  html[data-tenant="faak"] .btn-primary,
+  html[data-tenant="faak"] .btn-mustard,
+  html[data-tenant="faak"] .btn-ghost,
+  html[data-tenant="faak"] .btn-ghost-light,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-primary,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-mustard,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-ghost,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-ghost-light {
+    min-height: 3rem;
+    border-radius: 0 !important;
+    box-shadow: none;
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  html[data-tenant="faak"] .btn-primary,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-primary {
+    background-color: rgb(var(--tenant-red));
+  }
+
+  html[data-tenant="faak"] .btn-primary:hover,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-primary:hover {
+    background-color: rgb(var(--tenant-ink));
+  }
+
+  html[data-tenant="faak"] .btn-mustard,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-mustard {
+    background-color: rgb(var(--tenant-mustard));
+    color: rgb(var(--tenant-ink));
+  }
+
+  html[data-tenant="faak"] .btn-mustard:hover,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-mustard:hover {
+    background-color: rgb(var(--tenant-red));
+    color: rgb(var(--tenant-cream));
+  }
+
+  html[data-tenant="faak"] .btn-ghost,
+  html[data-tenant="faak"] .btn-ghost-light,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-ghost,
+  .tenant-preview-surface[data-tenant-surface="faak"] .btn-ghost-light {
+    border-width: 1px;
+  }
+
+  html[data-tenant="faak"] .chip,
+  html[data-tenant="faak"] .chip-mustard,
+  html[data-tenant="faak"] .chip-red,
+  html[data-tenant="faak"] .chip-green,
+  html[data-tenant="faak"] .chip-pink,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip-mustard,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip-red,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip-green,
+  .tenant-preview-surface[data-tenant-surface="faak"] .chip-pink {
+    border-radius: 0 !important;
+    font-family: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  html[data-tenant="faak"] .paper-card,
+  .tenant-preview-surface[data-tenant-surface="faak"] .paper-card {
+    border-radius: 0 !important;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    box-shadow: none;
+  }
+}
+
+@layer utilities {
+  html[data-tenant="faak"] .rounded-full,
+  html[data-tenant="faak"] .rounded-3xl,
+  html[data-tenant="faak"] .rounded-\[2\.25rem\],
+  html[data-tenant="faak"] .rounded-\[2rem\],
+  html[data-tenant="faak"] .rounded-\[1\.75rem\],
+  html[data-tenant="faak"] .rounded-\[1\.65rem\],
+  html[data-tenant="faak"] .rounded-\[1\.6rem\],
+  html[data-tenant="faak"] .rounded-\[1\.45rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-full,
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-3xl,
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[2\.25rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[2rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[1\.75rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[1\.65rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[1\.6rem\],
+  .tenant-preview-surface[data-tenant-surface="faak"] .rounded-\[1\.45rem\] {
+    border-radius: 0 !important;
+  }
+
+  html[data-tenant="faak"] .shadow-sm,
+  html[data-tenant="faak"] .shadow-md,
+  html[data-tenant="faak"] .shadow-lg,
+  html[data-tenant="faak"] .shadow-xl,
+  html[data-tenant="faak"] .shadow-2xl,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-sm,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-md,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-lg,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-xl,
+  .tenant-preview-surface[data-tenant-surface="faak"] .shadow-2xl {
+    box-shadow: none !important;
+  }
+}
+
+html[data-tenant="faak"] section.bg-pork-ink {
+  background-color: rgb(var(--tenant-brick));
+}
+
+.tenant-preview-surface[data-tenant-surface="faak"] section.bg-pork-ink {
+  background-color: rgb(var(--tenant-brick));
+}
+
+html[data-tenant="faak"] header.bg-pork-cream {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: none;
+}

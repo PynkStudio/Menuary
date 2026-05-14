@@ -11,8 +11,8 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
-import { useHydrated } from "@/components/providers";
-import { useTenant } from "@/components/tenant-provider";
+import { useHydrated } from "@/components/core/providers";
+import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import {
   type Reservation,

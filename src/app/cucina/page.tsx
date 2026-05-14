@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Flame, CheckCircle2, Clock, Utensils } from "lucide-react";
 import { useMenuStore } from "@/store/menu-store";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
-import { useTenant } from "@/components/tenant-provider";
-import { useHydrated } from "@/components/providers";
+import { useTenant } from "@/components/core/tenant-provider";
+import { useHydrated } from "@/components/core/providers";
 import type { Order, OrderStatus } from "@/lib/types";
 import {
   STATUS_COLOR,

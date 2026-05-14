@@ -8,11 +8,13 @@ import {
   Manrope,
 } from "next/font/google";
 import Script from "next/script";
+// globals.css carica via @import (postcss-import): styles/tenants/bepork.css,
+// styles/tenants/faak.css, styles/marketing.css
 import "./globals.css";
-import { Providers } from "@/components/providers";
-import { SiteChrome, SiteFooterGate } from "@/components/site-chrome";
-import { TenantProvider } from "@/components/tenant-provider";
-import { PlatformModeProvider } from "@/components/platform-mode-provider";
+import { Providers } from "@/components/core/providers";
+import { SiteChrome, SiteFooterGate } from "@/components/core/site-chrome";
+import { TenantProvider } from "@/components/core/tenant-provider";
+import { PlatformModeProvider } from "@/components/core/platform-mode-provider";
 import { siteConfig } from "@/lib/site-config";
 import { googleRating, reviews } from "@/lib/reviews-data";
 import { menu, priceFromNumber } from "@/lib/menu-data";
@@ -20,6 +22,7 @@ import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { getTenantContent } from "@/lib/tenant-content";
+import { buildIconSet, themeColor } from "@/lib/favicon";
 
 const display = Bagel_Fat_One({
   subsets: ["latin"],
@@ -140,19 +143,21 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: mode === "marketing" ? "https://menuary.it" : content.url,
     },
-    icons: {
-      icon: mode === "marketing" ? "/logo.png" : content.logoSrc,
-      apple: mode === "marketing" ? "/logo.png" : content.logoSrc,
-    },
+    icons: buildIconSet(mode, tenant),
   };
 }
 
-export const viewport: Viewport = {
-  themeColor: "#141010",
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-};
+export async function generateViewport(): Promise<Viewport> {
+  const host = (await headers()).get("host");
+  const tenant = resolveTenantFromHost(host);
+  const mode = getPlatformModeFromHost(host);
+  return {
+    themeColor: themeColor(mode, tenant),
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+  };
+}
 
 const restaurantSchema = {
   "@context": "https://schema.org",

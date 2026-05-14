@@ -8,8 +8,8 @@ import {
   getSafeAdminPostLoginPath,
   setAdminSession,
 } from "@/lib/admin-auth";
-import { usePlatformMode } from "@/components/platform-mode-provider";
-import { useTenant } from "@/components/tenant-provider";
+import { usePlatformMode } from "@/components/core/platform-mode-provider";
+import { useTenant } from "@/components/core/tenant-provider";
 
 export default function LoginPage() {
   const mode = usePlatformMode();

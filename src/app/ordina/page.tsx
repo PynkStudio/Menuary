@@ -8,8 +8,8 @@ import { useCartStore, cartTotal } from "@/store/cart-store";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
 import { formatRemovedForLine } from "@/lib/ingredients";
 import { formatEuro } from "@/lib/price-utils";
-import { useHydrated } from "@/components/providers";
-import { LineMods } from "@/components/line-mods";
+import { useHydrated } from "@/components/core/providers";
+import { LineMods } from "@/components/modules/shop/line-mods";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 function nextSlots(count = 8, stepMin = 15): string[] {

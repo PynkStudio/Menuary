@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { TenantProvider } from "@/components/tenant-provider";
-import { MenuPageShell } from "@/components/menu-page-shell";
+import { TenantProvider } from "@/components/core/tenant-provider";
+import { MenuPageShell } from "@/components/modules/menu/menu-page-shell";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";

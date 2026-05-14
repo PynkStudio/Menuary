@@ -7,8 +7,8 @@ import { CheckCircle2, Clock, Package } from "lucide-react";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
 import { formatRemovedForLine } from "@/lib/ingredients";
 import { formatEuro } from "@/lib/price-utils";
-import { useHydrated } from "@/components/providers";
-import { LineMods } from "@/components/line-mods";
+import { useHydrated } from "@/components/core/providers";
+import { LineMods } from "@/components/modules/shop/line-mods";
 
 function ConfermaContent() {
   const hydrated = useHydrated();

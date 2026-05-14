@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Copy, Users, KeyRound } from "lucide-react";
-import { InteractiveMenu } from "@/components/interactive-menu";
+import { InteractiveMenu } from "@/components/modules/menu/interactive-menu";
 import { useCartStore, type CartContext } from "@/store/cart-store";
 import {
   useMenuStore,
@@ -12,12 +12,12 @@ import {
   selectSessionByCode,
 } from "@/store/menu-store";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
-import { useHydrated } from "@/components/providers";
+import { useHydrated } from "@/components/core/providers";
 import { formatEuro } from "@/lib/price-utils";
 import { getClientId } from "@/lib/client-id";
 import type { TableSession, Table } from "@/lib/types";
-import { TableOrderJoinFlow } from "@/components/table-order-join-flow";
-import { NicknameGate } from "@/components/nickname-gate";
+import { TableOrderJoinFlow } from "@/components/modules/table-orders/table-order-join-flow";
+import { NicknameGate } from "@/components/modules/table-orders/nickname-gate";
 
 function sameTavoloSessionBinding(
   a: CartContext,
