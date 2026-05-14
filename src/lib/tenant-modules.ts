@@ -1,4 +1,4 @@
-import type { TenantFeatureFlags, TenantFeatureKey } from "@/lib/tenant";
+import type { TenantFeatureFlags, TenantFeatureKey, TenantVertical } from "@/lib/tenant";
 
 export type TenantModuleCategory =
   | "Presenza digitale"
@@ -7,6 +7,13 @@ export type TenantModuleCategory =
   | "Crescita"
   | "Gestione";
 
+// Copy alternativo per vertical diversi dal default ("food").
+// Se non specificato per un vertical, si usano label e description di default.
+export type VerticalModuleCopy = {
+  label: string;
+  description: string;
+};
+
 export type TenantModuleDefinition = {
   key: TenantFeatureKey;
   label: string;
@@ -14,6 +21,8 @@ export type TenantModuleDefinition = {
   category: TenantModuleCategory;
   requires?: TenantFeatureKey[];
   requiresAny?: TenantFeatureKey[];
+  // Copy specifico per vertical. Il default (food) è già in label/description.
+  verticalCopy?: Partial<Record<TenantVertical, VerticalModuleCopy>>;
 };
 
 export const TENANT_MODULES: TenantModuleDefinition[] = [
@@ -22,6 +31,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Sito del locale",
     description: "Pubblica pagine, contatti, orari, brand e contenuti base del ristorante.",
     category: "Presenza digitale",
+    verticalCopy: {
+      services: {
+        label: "Sito dello studio",
+        description: "Pubblica pagine, contatti, orari, brand e contenuti base dello studio o del locale.",
+      },
+    },
   },
   {
     key: "onlineMenu",
@@ -29,6 +44,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Rende disponibile il menu digitale consultabile da sito, QR e preview.",
     category: "Presenza digitale",
     requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Listino servizi",
+        description: "Pubblica il catalogo dei trattamenti o servizi offerti, consultabile da sito e QR.",
+      },
+    },
   },
   {
     key: "takeaway",
@@ -36,6 +57,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Abilita percorso ordine e checkout da ritiro.",
     category: "Ordini",
     requires: ["onlineMenu"],
+    verticalCopy: {
+      services: {
+        label: "Richieste a domicilio",
+        description: "Abilita richieste per servizi in loco o a domicilio con checkout dedicato.",
+      },
+    },
   },
   {
     key: "tableOrders",
@@ -43,6 +70,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Abilita QR, sessioni tavolo e checkout condiviso.",
     category: "Ordini",
     requires: ["onlineMenu"],
+    verticalCopy: {
+      services: {
+        label: "Ordini in postazione",
+        description: "Abilita QR, sessioni per postazione e checkout condiviso in sala.",
+      },
+    },
   },
   {
     key: "orderKiosk",
@@ -50,6 +83,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Abilita postazioni self-order per consultare il menu e inviare ordini dal locale.",
     category: "Ordini",
     requires: ["onlineMenu"],
+    verticalCopy: {
+      services: {
+        label: "Kiosk self-service",
+        description: "Abilita postazioni self-service per consultare i servizi e inviare richieste.",
+      },
+    },
   },
   {
     key: "takeawaySlots",
@@ -57,6 +96,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Gestisce fasce di ritiro, capacità per slot e avvisi di cucina satura.",
     category: "Ordini",
     requires: ["takeaway"],
+    verticalCopy: {
+      services: {
+        label: "Slot disponibilità",
+        description: "Gestisce fasce orarie, capacità per slot e avvisi di agenda satura.",
+      },
+    },
   },
   {
     key: "deliveryHub",
@@ -64,6 +109,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Prepara il locale a ricevere ordini diretti e centralizzare i canali delivery.",
     category: "Ordini",
     requires: ["takeaway"],
+    verticalCopy: {
+      services: {
+        label: "Hub interventi a domicilio",
+        description: "Centralizza le richieste di intervento domiciliare e i canali di contatto.",
+      },
+    },
   },
   {
     key: "kitchenDisplay",
@@ -71,6 +122,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Rende disponibile la vista operativa per la brigata.",
     category: "Operatività",
     requiresAny: ["takeaway", "tableOrders", "orderKiosk"],
+    verticalCopy: {
+      services: {
+        label: "Bacheca operatori",
+        description: "Vista operativa in tempo reale per gli operatori: richieste in coda, in lavorazione, completate.",
+      },
+    },
   },
   {
     key: "printStations",
@@ -78,6 +135,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Divide le comande per cucina, bar, pizzeria e banco con stampa o ristampa.",
     category: "Operatività",
     requiresAny: ["takeaway", "tableOrders", "orderKiosk"],
+    verticalCopy: {
+      services: {
+        label: "Reparti e stampa",
+        description: "Divide le richieste per reparto o operatore con stampa o notifica dedicata.",
+      },
+    },
   },
   {
     key: "dinerSeparation",
@@ -85,6 +148,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Separa gli ordini dei clienti all'interno della sessione tavolo.",
     category: "Operatività",
     requires: ["tableOrders"],
+    verticalCopy: {
+      services: {
+        label: "Clienti distinti per postazione",
+        description: "Separa i servizi richiesti da clienti diversi nella stessa sessione.",
+      },
+    },
   },
   {
     key: "reservations",
@@ -92,6 +161,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Raccoglie prenotazioni online con recapiti, note, allergie e preferenze.",
     category: "Operatività",
     requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Appuntamenti",
+        description: "Raccoglie richieste di appuntamento online con recapiti, note e preferenze del cliente.",
+      },
+    },
   },
   {
     key: "tablePlanner",
@@ -99,6 +174,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Mappa tavoli e stati operativi: libero, occupato, ordinato, pagamento, pulizia.",
     category: "Operatività",
     requires: ["reservations"],
+    verticalCopy: {
+      services: {
+        label: "Agenda e postazioni",
+        description: "Mappa postazioni e stati: libero, occupato, in lavorazione, completato.",
+      },
+    },
   },
   {
     key: "productAvailability",
@@ -106,6 +187,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Nasconde esauriti, quantità limitate e piatti legati a ingredienti mancanti.",
     category: "Operatività",
     requires: ["onlineMenu"],
+    verticalCopy: {
+      services: {
+        label: "Disponibilità servizi",
+        description: "Nasconde servizi non disponibili, sospesi o con capacità esaurita.",
+      },
+    },
   },
   {
     key: "upselling",
@@ -113,6 +200,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Propone extra, abbinamenti, menu completi e suggerimenti in carrello.",
     category: "Crescita",
     requires: ["onlineMenu"],
+    verticalCopy: {
+      services: {
+        label: "Servizi aggiuntivi",
+        description: "Propone trattamenti complementari, pacchetti e add-on durante il percorso di prenotazione.",
+      },
+    },
   },
   {
     key: "crm",
@@ -155,6 +248,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Collega ingredienti, costi, soglie e margine stimato ai piatti del menu.",
     category: "Gestione",
     requires: ["onlineMenu"],
+    verticalCopy: {
+      services: {
+        label: "Costi e margini",
+        description: "Collega materiali, costi operativi e margine stimato ai singoli servizi.",
+      },
+    },
   },
   {
     key: "staffRoles",

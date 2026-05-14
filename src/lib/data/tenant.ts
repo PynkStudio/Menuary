@@ -50,6 +50,9 @@ function rowToProfile(r: Row): TenantProfile {
     id: r.id,
     name: r.name,
     label: r.label,
+    // La colonna `vertical` non è ancora presente sulla tabella Supabase:
+    // tutti i tenant attuali sono ristoranti, quindi default a "food".
+    vertical: "food",
     domains: r.domains,
     previewSlug: r.preview_slug ?? undefined,
     enabled: r.enabled,

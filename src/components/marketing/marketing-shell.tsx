@@ -1,0 +1,135 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+export function MarketingShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="menuary-shell min-h-screen bg-[var(--menuary-paper)] text-[var(--menuary-ink)]">
+      <MarketingHeader />
+      <main>{children}</main>
+      <MarketingFooter />
+    </div>
+  );
+}
+
+function MarketingHeader() {
+  return (
+    <header className="border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70 sticky top-0 z-40">
+      <div className="menuary-container flex items-center justify-between py-5">
+        <Link href="/" className="menuary-wordmark" aria-label="Menuary home">
+          menuary
+          <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
+        </Link>
+        <nav className="hidden items-center gap-9 md:flex">
+          <Link href="/" className="menuary-nav-link">Prodotto</Link>
+          <Link href="/chi-siamo" className="menuary-nav-link">Studio</Link>
+          <Link href="/pricing" className="menuary-nav-link">Offerta</Link>
+          <a
+            href="https://demo.menuary.it/bepork-demo"
+            className="menuary-nav-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Demo
+          </a>
+        </nav>
+        <Link href="/contatti" className="menuary-button menuary-button-dark">
+          Parla con noi
+        </Link>
+      </div>
+    </header>
+  );
+}
+
+function MarketingFooter() {
+  const year = new Date().getFullYear();
+  return (
+    <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
+      <div className="menuary-container py-16">
+        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div>
+            <p className="menuary-wordmark text-2xl">
+              menuary
+              <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
+            </p>
+            <p className="mt-5 max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
+              Studio digitale per ristoranti. Costruiamo siti, menu e strumenti su misura,
+              tenuti vivi giorno per giorno.
+            </p>
+          </div>
+
+          <FooterColumn
+            title="Navigazione"
+            links={[
+              { href: "/", label: "Home" },
+              { href: "/chi-siamo", label: "Studio" },
+              { href: "/pricing", label: "Offerta" },
+              { href: "/contatti", label: "Contatti" },
+            ]}
+          />
+          <FooterColumn
+            title="Esempi"
+            links={[
+              { href: "https://demo.menuary.it/bepork-demo", label: "Be Pork · Bari", external: true },
+              { href: "https://demo.menuary.it/faak-demo", label: "Faak · Bari", external: true },
+            ]}
+          />
+          <FooterColumn
+            title="Contatti"
+            links={[
+              { href: "mailto:hello@menuary.it", label: "hello@menuary.it" },
+              { href: "/contatti", label: "Richiedi proposta" },
+            ]}
+          />
+        </div>
+
+        <div className="menuary-rule mt-14" />
+        <div className="mt-6 flex flex-col gap-3 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] sm:flex-row sm:items-center sm:justify-between">
+          <p>© {year} · Menuary</p>
+          <div className="flex gap-6">
+            <Link href="/privacy" className="hover:text-[var(--menuary-ink)]">Privacy</Link>
+            <Link href="/cookie" className="hover:text-[var(--menuary-ink)]">Cookie</Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function FooterColumn({
+  title,
+  links,
+}: {
+  title: string;
+  links: { href: string; label: string; external?: boolean }[];
+}) {
+  return (
+    <div>
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--menuary-ink)]">
+        {title}
+      </p>
+      <ul className="mt-5 space-y-3 text-[15px]">
+        {links.map((link) => (
+          <li key={link.href + link.label}>
+            {link.external ? (
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--menuary-muted)] transition-colors hover:text-[var(--menuary-ink)]"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                href={link.href}
+                className="text-[var(--menuary-muted)] transition-colors hover:text-[var(--menuary-ink)]"
+              >
+                {link.label}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

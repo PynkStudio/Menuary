@@ -4,10 +4,12 @@ import { allTenantFeatures } from "./tenant-modules";
 export const DEFAULT_TENANT_ID = "bepork";
 
 export const TENANTS: TenantProfile[] = [
+  // ── Verticale food (menuary.it) ──────────────────────────────────────────
   {
     id: "bepork",
     name: "Be Pork",
     label: "Tenant 1 · Be Pork",
+    vertical: "food",
     domains: ["bepork.it", "www.bepork.it", "localhost", "127.0.0.1"],
     previewSlug: "bepork-demo",
     enabled: true,
@@ -29,6 +31,7 @@ export const TENANTS: TenantProfile[] = [
     id: "faak",
     name: "FAAK",
     label: "Tenant 2 · FAAK",
+    vertical: "food",
     domains: ["faak.menuary.local", "faak.menuary.localhost"],
     previewSlug: "faak-demo",
     enabled: true,
@@ -46,6 +49,21 @@ export const TENANTS: TenantProfile[] = [
     },
     features: allTenantFeatures(true),
   },
+
+  // ── Verticale services (TODO: dominio marketing da definire) ─────────────
+  // Aggiungere qui i tenant non ristorativi quando il verticale sarà pronto.
+  // Esempio:
+  // {
+  //   id: "studio-rossi",
+  //   name: "Studio Rossi",
+  //   label: "Tenant · Studio Rossi",
+  //   vertical: "services",
+  //   domains: ["studiorossi.it", "www.studiorossi.it"],
+  //   previewSlug: "studio-rossi-demo",
+  //   enabled: true,
+  //   theme: { ... },
+  //   features: allTenantFeatures(true),
+  // },
 ];
 
 export function findTenantById(id: string): TenantProfile | undefined {
@@ -61,6 +79,10 @@ export function findTenantByDomain(hostname: string): TenantProfile | undefined 
 
 export function findTenantByPreviewSlug(slug: string): TenantProfile | undefined {
   return TENANTS.find((tenant) => tenant.previewSlug === slug);
+}
+
+export function findTenantsByVertical(vertical: TenantProfile["vertical"]): TenantProfile[] {
+  return TENANTS.filter((tenant) => tenant.vertical === vertical);
 }
 
 export function getDefaultTenant(): TenantProfile {
