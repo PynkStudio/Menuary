@@ -9,6 +9,7 @@ import { formatRemovedForLine } from "@/lib/ingredients";
 import { formatEuro } from "@/lib/price-utils";
 import { useHydrated } from "@/components/core/providers";
 import { LineMods } from "@/components/modules/shop/line-mods";
+import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
 
 function ConfermaContent() {
   const hydrated = useHydrated();
@@ -22,17 +23,21 @@ function ConfermaContent() {
 
   if (!order) {
     return (
-      <div className="container-wide py-32 text-center">
-        <p className="impact-title text-pork-red">Ordine non trovato.</p>
-        <Link href="/menu" className="btn-primary mt-6 inline-flex">
-          Torna al menu
-        </Link>
-      </div>
+      <>
+        <MenuaryAuthHintGate />
+        <div className="container-wide py-32 text-center">
+          <p className="impact-title text-pork-red">Ordine non trovato.</p>
+          <Link href="/menu" className="btn-primary mt-6 inline-flex">
+            Torna al menu
+          </Link>
+        </div>
+      </>
     );
   }
 
   return (
     <>
+      <MenuaryAuthHintGate />
       <section className="relative bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
         <div className="container-wide text-center">
           <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-pork-mustard text-pork-ink">

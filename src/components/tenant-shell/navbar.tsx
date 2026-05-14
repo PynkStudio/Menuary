@@ -28,16 +28,33 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const setFavOpen = useFavoritesStore((s) => s.setOpen);
-  const { allowTakeaway, favoritesEnabled } = useEffectiveFeatures();
-  const nav = useMemo(
-    () =>
-      navBase.filter((i) => {
-        if (i.href === "/ordina") return allowTakeaway;
-        if ("favorites" in i && i.favorites) return favoritesEnabled;
-        return true;
-      }),
-    [allowTakeaway, favoritesEnabled],
-  );
+  const { allowTakeaway, favoritesEnabled, modules } = useEffectiveFeatures();
+
+  const beporkModuleNav = useMemo(() => {
+    if (tenant.id !== "bepork") return [] as { label: string; href: string }[];
+    const extra: { label: string; href: string }[] = [];
+    if (modules.onlineMenu) extra.push({ label: "Consigli menu", href: "/assistant-menu" });
+    if (modules.tableOrders) extra.push({ label: "Tavolo QR", href: "/tavolo" });
+    if (modules.staffRoles) extra.push({ label: "Staff", href: "/staff" });
+    if (modules.kitchenDisplay) extra.push({ label: "Cucina", href: "/cucina" });
+    return extra;
+  }, [tenant.id, modules]);
+
+  const nav = useMemo(() => {
+    const filtered = navBase.filter((i) => {
+      if (i.href === "/ordina") return allowTakeaway;
+      if ("favorites" in i && i.favorites) return favoritesEnabled;
+      return true;
+    });
+    if (tenant.id !== "bepork" || beporkModuleNav.length === 0) return filtered;
+    const menuIdx = filtered.findIndex((i) => i.href === "/menu");
+    if (menuIdx === -1) return [...beporkModuleNav.map((i) => ({ ...i, href: i.href })), ...filtered];
+    return [
+      ...filtered.slice(0, menuIdx + 1),
+      ...beporkModuleNav.map((i) => ({ label: i.label, href: i.href })),
+      ...filtered.slice(menuIdx + 1),
+    ];
+  }, [allowTakeaway, favoritesEnabled, tenant.id, beporkModuleNav]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);

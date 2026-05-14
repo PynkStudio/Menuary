@@ -21,6 +21,8 @@ export function SiteChrome() {
   if (
     isInternal(pathname) ||
     mode === "marketing" ||
+    mode === "clients" ||
+    mode === "studio" ||
     mode === "platform-admin" ||
     mode === "preview"
   ) {
@@ -44,6 +46,8 @@ export function SiteFooterGate() {
   if (
     isInternal(pathname) ||
     mode === "marketing" ||
+    mode === "clients" ||
+    mode === "studio" ||
     mode === "platform-admin" ||
     mode === "preview"
   ) {

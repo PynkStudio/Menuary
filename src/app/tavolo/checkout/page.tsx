@@ -17,6 +17,7 @@ import {
 import { useHydrated } from "@/components/core/providers";
 import { LineMods } from "@/components/modules/shop/line-mods";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
 
 function CheckoutTavoloBody() {
   const hydrated = useHydrated();
@@ -286,8 +287,11 @@ function CheckoutTavoloBody() {
 
 export default function Page() {
   return (
-    <Suspense fallback={null}>
-      <CheckoutTavoloBody />
-    </Suspense>
+    <>
+      <MenuaryAuthHintGate />
+      <Suspense fallback={null}>
+        <CheckoutTavoloBody />
+      </Suspense>
+    </>
   );
 }

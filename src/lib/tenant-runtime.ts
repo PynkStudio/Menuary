@@ -16,3 +16,11 @@ export function resolveTenantFromPreviewSlug(
   if (!slug) return getDefaultTenant();
   return findTenantByPreviewSlug(slug) ?? getDefaultTenant();
 }
+
+/** Sede opzionale da query (?loc=slug) per multi-sede senza cambiare host. */
+export function resolveLocationSlugFromSearchParams(
+  searchParams: URLSearchParams | null | undefined,
+): string | null {
+  if (!searchParams) return null;
+  return searchParams.get("loc") ?? searchParams.get("location");
+}

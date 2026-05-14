@@ -5,6 +5,8 @@ import { InteractiveMenu } from "@/components/modules/menu/interactive-menu";
 import { DeliveryStrip } from "@/components/modules/shop/delivery-strip";
 import { MenuIntroParagraph } from "@/components/modules/menu/menu-intro-paragraph";
 import { MenuActiveTableBar } from "@/components/modules/table-orders/menu-active-table-bar";
+import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
+import { PersonalizedMenuHint } from "@/components/modules/menu/personalized-menu-hint";
 import { useTenant } from "@/components/core/tenant-provider";
 
 export function MenuPageShell() {
@@ -13,6 +15,8 @@ export function MenuPageShell() {
 
   return (
     <>
+      <MenuaryAuthHintGate />
+      <PersonalizedMenuHint />
       <section className="relative bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
         <div className="container-wide">
           <span className="chip-mustard">Menu</span>

@@ -14,6 +14,11 @@ import {
 import { useHydrated } from "@/components/core/providers";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { ADMIN_TOKEN_HEADER, getAdminPassword } from "@/lib/admin-auth";
+import {
+  mapReservationRequestRow,
+  type ReservationRequestRow,
+} from "@/lib/reservations/map-row";
 import {
   type Reservation,
   type ReservationStatus,
@@ -62,6 +67,10 @@ function sortReservations(a: Reservation, b: Reservation) {
   return ad.localeCompare(bd);
 }
 
+function isUuid(id: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+}
+
 export default function AdminPrenotazioniPage() {
   const hydrated = useHydrated();
   const tenant = useTenant();
@@ -75,6 +84,27 @@ export default function AdminPrenotazioniPage() {
   useEffect(() => {
     if (!hydrated) return;
     store.setTenantSeed(tenant.id);
+  }, [hydrated, store, tenant.id]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/tenant/${encodeURIComponent(tenant.id)}/reservations`, {
+          headers: { [ADMIN_TOKEN_HEADER]: getAdminPassword() },
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { reservations?: ReservationRequestRow[] };
+        if (cancelled || !data.reservations?.length) return;
+        store.replaceReservations(data.reservations.map(mapReservationRequestRow));
+      } catch {
+        /* Supabase non configurato o offline: restano i dati seed locali */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [hydrated, store, tenant.id]);
 
   const tableOptions = useMemo(
@@ -129,7 +159,7 @@ export default function AdminPrenotazioniPage() {
     setDraft(emptyDraft);
   }
 
-  function saveReservation() {
+  async function saveReservation() {
     if (!draft.customer.trim() || !draft.phone.trim() || !draft.date.trim() || !draft.time.trim()) {
       return;
     }
@@ -147,6 +177,31 @@ export default function AdminPrenotazioniPage() {
 
     if (editingId) {
       store.updateReservation(editingId, payload);
+      if (isUuid(editingId)) {
+        try {
+          await fetch(
+            `/api/tenant/${encodeURIComponent(tenant.id)}/reservations/${encodeURIComponent(editingId)}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                [ADMIN_TOKEN_HEADER]: getAdminPassword(),
+              },
+              body: JSON.stringify({
+                customer_name: payload.customer,
+                customer_phone: payload.phone,
+                covers: payload.covers,
+                reservation_date: payload.date,
+                reservation_time: payload.time,
+                notes: payload.notes ?? null,
+                status: payload.status,
+              }),
+            },
+          );
+        } catch {
+          /* ignore */
+        }
+      }
     } else {
       store.addReservation(payload);
     }

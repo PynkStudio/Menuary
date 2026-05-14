@@ -8,20 +8,20 @@ const HERO_IMAGE =
 
 const PRODUCT_PILLARS = [
   {
-    title: "Un sito che ti somiglia",
-    body: "Tipografia, ritmo, foto e parole sono scelte sul tuo locale. Nessun template, nessuna scenografia di sistema: solo ciò che racconta meglio quello che cucini.",
+    title: "Sistema operativo del locale",
+    body: "Menu, ordini al tavolo e da asporto, prenotazioni, sala, cucina, magazzino e food cost, staff e turni, canali delivery, CRM e analytics. Un solo prodotto che copre l'intera catena operativa, non solo la vetrina online.",
   },
   {
-    title: "Il menu, sempre vivo",
-    body: "Piatti, prezzi, allergeni, varianti, disponibilità. Tutto aggiornabile in minuti, senza ricomporre nulla. La carta resta coerente, anche quando cambia tre volte al mese.",
+    title: "Account Menuary per i clienti",
+    body: "I clienti accedono con Menuary: preferenze e allergeni restano sul profilo. Il locale riceve dati utili solo dopo un ordine o una prenotazione in quel ristorante — privacy by design.",
   },
   {
-    title: "Prenotazioni e ordini",
-    body: "Per i clienti, le azioni che contano in un gesto: chiamare, prenotare, ordinare, leggere la carta. Per te, richieste raccolte in un unico posto, ordinate e leggibili.",
+    title: "Menu sempre vivo + IA sul listino",
+    body: "Piatti, prezzi, allergeni, disponibilità aggiornati in minuti. Suggerimenti in carrello, assistente menu e ranking personalizzato quando il cliente è riconosciuto.",
   },
   {
-    title: "Manutenzione inclusa",
-    body: "Aggiornamenti tecnici, sicurezza, nuove funzioni, contenuti stagionali. Menuary si occupa di tenere il sito in forma. Tu del ristorante.",
+    title: "Manutenzione e roadmap",
+    body: "Aggiornamenti tecnici, sicurezza, RLS su database condiviso, integrazioni (Retell, WhatsApp) e nuovi moduli. Menuary mantiene la piattaforma; tu gestisci il servizio in sala.",
   },
 ];
 
@@ -73,18 +73,19 @@ export function MarketingHomePage() {
         <div className="menuary-container pt-16 pb-24 lg:pt-24 lg:pb-32">
           <div className="grid items-end gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
             <div className="menuary-fade-up">
-              <p className="menuary-section-label">Studio digitale per ristoranti</p>
+              <p className="menuary-section-label">Piattaforma per ristoranti</p>
               <h1 className="menuary-display mt-7 text-[clamp(3rem,7.4vw,6.4rem)]">
-                Il tuo ristorante online,
+                Il gestionale del ristorante,
                 <br />
                 con la stessa cura
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">che metti in sala.</span>
               </h1>
               <p className="mt-8 max-w-xl text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
-                Menuary disegna e tiene vivo il sito del tuo locale. Un&apos;identità coerente,
-                un menu sempre aggiornato, prenotazioni e ordini al posto giusto. Niente template,
-                niente scenografia: ciò che serve, fatto bene.
+                Menuary unifica sito, menu digitale, ordini, prenotazioni, CRM e analytics in un
+                unico database multi-tenant. I clienti possono accedere con il profilo Menuary: il
+                locale riceve insight solo dopo un&apos;interazione reale — identità forte e
+                operatività seria, senza template generici.
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <Link href="/contatti" className="menuary-button menuary-button-accent">

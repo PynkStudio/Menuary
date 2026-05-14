@@ -354,7 +354,26 @@ Quando il secondo verticale avrà un nome:
 
 ---
 
-## 10. File di configurazione chiave
+## 10. Monolite Supabase e moduli dati
+
+Un unico progetto Supabase serve **Menuary** e tutti i **tenant**; la separazione è per **RLS** e `tenant_id`.
+
+| Area | File / cartella |
+|------|-----------------|
+| Migrazione schema | `supabase/migrations/20260214120000_platform_modules.sql` (profili, CRM, prenotazioni, sedi, staff, push, delivery, magazzino, webhook, traduzioni menu) |
+| Client service_role | `src/lib/supabase/service.ts` — richiede `SUPABASE_SERVICE_ROLE_KEY` in env server |
+| Prenotazioni + engine | `src/app/api/tenant/[tenantId]/reservations/`, `src/lib/reservations/engine.ts`, `src/lib/reservations/map-row.ts` |
+| Menuary / CRM | `src/app/api/personalization/establish`, `.../menu`, `src/app/api/admin/crm-analytics` |
+| IA (stub) | `src/app/api/ai/menu-suggest`, `src/app/api/ai/assistant` — pagina `/assistant-menu` |
+| Canali esterni | `src/app/api/webhooks/retell`, `.../whatsapp` |
+| Push | `src/app/api/push/subscribe`, `.../vapid-public-key` |
+| Delivery / magazzino | `src/app/api/admin/delivery-inventory` |
+| i18n cookie | `src/middleware.ts` (`NEXT_LOCALE`), `src/lib/locale.ts` |
+| Multi-sede (slug in query) | `resolveLocationSlugFromSearchParams` in `src/lib/tenant-runtime.ts` (`?loc=` o `?location=`) |
+
+---
+
+## 11. File di configurazione chiave
 
 | File | Ruolo |
 |------|-------|

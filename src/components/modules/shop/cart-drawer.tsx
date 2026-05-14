@@ -22,6 +22,7 @@ import { FormatoChoiceModal } from "@/components/modules/shop/formato-choice-mod
 import { hasMenuBundle } from "@/lib/menu-bundle";
 import type { AdminMenuItem, CartLine } from "@/lib/types";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { CartAiUpsell } from "@/components/modules/shop/cart-ai-upsell";
 import { canAddToCart } from "@/lib/ordering-rules";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { spawnCartFly } from "@/lib/cart-fly";
@@ -390,6 +391,8 @@ export function CartDrawer() {
             }}
           />
         )}
+
+        {lines.length > 0 && <CartAiUpsell lines={lines} />}
 
         {lines.length > 0 && (
           <footer className="shrink-0 border-t border-pork-ink/10 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">

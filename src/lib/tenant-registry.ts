@@ -1,7 +1,11 @@
 import type { TenantProfile } from "./tenant";
+import type { TenantFeatureFlags } from "./tenant";
 import { allTenantFeatures } from "./tenant-modules";
 
 export const DEFAULT_TENANT_ID = "bepork";
+
+/** Be Pork: stack demo/produzione con tutti i moduli piattaforma attivi (nei limiti dell’implementazione). */
+export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = allTenantFeatures(true);
 
 export const TENANTS: TenantProfile[] = [
   // ── Verticale food (menuary.it) ──────────────────────────────────────────
@@ -25,7 +29,7 @@ export const TENANTS: TenantProfile[] = [
       green: "#2EB840",
       pink: "#EC5B8D",
     },
-    features: allTenantFeatures(true),
+    features: BEPORK_FULL_MODULE_FLAGS,
   },
   {
     id: "faak",

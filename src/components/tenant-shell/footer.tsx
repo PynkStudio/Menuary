@@ -12,10 +12,12 @@ import {
   VenuePhoneDisplay,
   VenueWhatsappLink,
 } from "@/components/modules/reservations/venue-display";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 export function Footer() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
+  const features = useEffectiveFeatures();
   return (
     <footer className="relative mt-16 bg-pork-ink pb-[env(safe-area-inset-bottom)] text-pork-cream">
       <div className="container-wide grid gap-12 pt-16 pb-8 md:grid-cols-4">
@@ -97,6 +99,42 @@ export function Footer() {
             </Link>
           </p>
           <p className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {tenant.id === "bepork" && (
+              <span className="flex flex-wrap gap-x-3 gap-y-1 text-pork-cream/55">
+                {features.modules.onlineMenu && (
+                  <Link
+                    href="/assistant-menu"
+                    className="transition-colors hover:text-pork-mustard hover:underline"
+                  >
+                    Consigli menu
+                  </Link>
+                )}
+                {features.modules.tableOrders && (
+                  <Link
+                    href="/tavolo"
+                    className="transition-colors hover:text-pork-mustard hover:underline"
+                  >
+                    Tavolo QR
+                  </Link>
+                )}
+                {features.modules.staffRoles && (
+                  <Link
+                    href="/staff"
+                    className="transition-colors hover:text-pork-mustard hover:underline"
+                  >
+                    Turni staff
+                  </Link>
+                )}
+                {features.modules.kitchenDisplay && (
+                  <Link
+                    href="/cucina"
+                    className="transition-colors hover:text-pork-mustard hover:underline"
+                  >
+                    Cucina
+                  </Link>
+                )}
+              </span>
+            )}
             <span className="flex flex-wrap gap-x-4 gap-y-1">
               <Link
                 href="/privacy"

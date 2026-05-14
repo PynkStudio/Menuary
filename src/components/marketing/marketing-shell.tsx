@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { CLIENTS_PUBLIC_ORIGIN } from "@/lib/clients-config";
+import { STUDIO_PUBLIC_ORIGIN } from "@/lib/studio-config";
 
 export function MarketingShell({ children }: { children: ReactNode }) {
   return (
@@ -31,10 +33,21 @@ function MarketingHeader() {
           >
             Demo
           </a>
+          <a href={`${CLIENTS_PUBLIC_ORIGIN}/login`} className="menuary-nav-link">
+            Area personale
+          </a>
         </nav>
-        <Link href="/contatti" className="menuary-button menuary-button-dark">
-          Parla con noi
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href={`${CLIENTS_PUBLIC_ORIGIN}/login`}
+            className="menuary-button menuary-button-light text-sm md:hidden"
+          >
+            Accedi
+          </a>
+          <Link href="/contatti" className="menuary-button menuary-button-dark">
+            Parla con noi
+          </Link>
+        </div>
       </div>
     </header>
   );
@@ -78,6 +91,11 @@ function MarketingFooter() {
             links={[
               { href: "mailto:hello@menuary.it", label: "hello@menuary.it" },
               { href: "/contatti", label: "Richiedi proposta" },
+              {
+                href: STUDIO_PUBLIC_ORIGIN,
+                label: "Fatturazione e abbonamenti (locali)",
+                external: true,
+              },
             ]}
           />
         </div>

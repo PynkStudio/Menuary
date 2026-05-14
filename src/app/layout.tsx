@@ -23,6 +23,8 @@ import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { getTenantContent } from "@/lib/tenant-content";
 import { buildIconSet, themeColor } from "@/lib/favicon";
+import { CLIENTS_PUBLIC_ORIGIN, clientsSite } from "@/lib/clients-config";
+import { STUDIO_PUBLIC_ORIGIN, studioSite } from "@/lib/studio-config";
 
 const display = Bagel_Fat_One({
   subsets: ["latin"],
@@ -60,6 +62,79 @@ export async function generateMetadata(): Promise<Metadata> {
   const host = (await headers()).get("host");
   const tenant = resolveTenantFromHost(host);
   const mode = getPlatformModeFromHost(host);
+
+  if (mode === "clients") {
+    return {
+      metadataBase: new URL(CLIENTS_PUBLIC_ORIGIN),
+      title: {
+        default: clientsSite.name,
+        template: "%s · Menuary",
+      },
+      description: clientsSite.description,
+      keywords: [
+        "Menuary",
+        "account clienti",
+        "privacy",
+        "consensi",
+        "allergeni",
+        "ordini ristorante",
+      ],
+      openGraph: {
+        title: clientsSite.name,
+        description: clientsSite.description,
+        url: CLIENTS_PUBLIC_ORIGIN,
+        siteName: "Menuary",
+        locale: "it_IT",
+        type: "website",
+      },
+      twitter: {
+        card: "summary",
+        title: clientsSite.name,
+        description: clientsSite.description,
+      },
+      alternates: {
+        canonical: CLIENTS_PUBLIC_ORIGIN,
+      },
+      icons: buildIconSet(mode, tenant),
+    };
+  }
+
+  if (mode === "studio") {
+    return {
+      metadataBase: new URL(STUDIO_PUBLIC_ORIGIN),
+      title: {
+        default: studioSite.name,
+        template: "%s · Menuary",
+      },
+      description: studioSite.description,
+      keywords: [
+        "Menuary",
+        "fatturazione ristorante",
+        "abbonamento",
+        "SEPA",
+        "Stripe",
+        "recesso",
+      ],
+      openGraph: {
+        title: studioSite.name,
+        description: studioSite.description,
+        url: STUDIO_PUBLIC_ORIGIN,
+        siteName: "Menuary",
+        locale: "it_IT",
+        type: "website",
+      },
+      twitter: {
+        card: "summary",
+        title: studioSite.name,
+        description: studioSite.description,
+      },
+      alternates: {
+        canonical: STUDIO_PUBLIC_ORIGIN,
+      },
+      icons: buildIconSet(mode, tenant),
+    };
+  }
+
   const content = getTenantContent(tenant.id);
   const tenantTitle =
     tenant.id === "faak"
@@ -229,6 +304,7 @@ export default async function RootLayout({
   const mode = getPlatformModeFromHost(host);
   const themeVars = tenantThemeCssVars(tenant.theme);
   const content = getTenantContent(tenant.id);
+  const showRestaurantJsonLd = mode === "tenant" || mode === "preview";
   const tenantRestaurantSchema = {
     ...restaurantSchema,
     name: tenant.name,
@@ -254,12 +330,14 @@ export default async function RootLayout({
       data-platform={mode}
     >
       <body>
-        <Script
-          id="schema-restaurant"
-          type="application/ld+json"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(tenantRestaurantSchema) }}
-        />
+        {showRestaurantJsonLd ? (
+          <Script
+            id="schema-restaurant"
+            type="application/ld+json"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(tenantRestaurantSchema) }}
+          />
+        ) : null}
         <PlatformModeProvider mode={mode}>
           <TenantProvider tenant={tenant}>
             <Providers>

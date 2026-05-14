@@ -1,6 +1,8 @@
 /* Split CSS per tenant e piattaforma marketing —
    importati tramite postcss-import prima del processing Tailwind.
-   Gli @import devono precedere le direttive @tailwind. */
+   Gli @import devono precedere le direttive @tailwind.
+   Nei file importati, le regole con @apply vanno dentro @layer components:
+   togliere il layer può far fallire o svuotare il CSS in produzione. */
 @import "../styles/tenants/bepork.css";
 @import "../styles/tenants/faak.css";
 @import "../styles/marketing.css";
@@ -75,7 +77,9 @@
       radial-gradient(circle at 80% 100%, rgba(184, 51, 46, 0.08) 0%, transparent 50%);
   }
 
-  html[data-platform="marketing"] body {
+  html[data-platform="marketing"] body,
+  html[data-platform="clients"] body,
+  html[data-platform="studio"] body {
     --menuary-paper: #f3efe7;
     --menuary-porcelain: #fbf8f1;
     --menuary-ink: #18231f;

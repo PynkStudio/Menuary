@@ -10,6 +10,8 @@ import { formatRemovedForLine } from "@/lib/ingredients";
 import { formatEuro } from "@/lib/price-utils";
 import { useHydrated } from "@/components/core/providers";
 import { LineMods } from "@/components/modules/shop/line-mods";
+import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
+import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 function nextSlots(count = 8, stepMin = 15): string[] {
@@ -33,6 +35,7 @@ function nextSlots(count = 8, stepMin = 15): string[] {
 export default function OrdinaPage() {
   const hydrated = useHydrated();
   const router = useRouter();
+  const tenant = useTenant();
   const { allowTakeaway: takeawayOk } = useEffectiveFeatures();
 
   const lines = useCartStore((s) => s.lines);
@@ -90,6 +93,16 @@ export default function OrdinaPage() {
       })),
       total,
     });
+    void fetch("/api/personalization/establish", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tenantId: tenant.id,
+        source: "order",
+        orderId: null,
+      }),
+    }).catch(() => {});
     clear();
     router.replace(`/ordina/conferma?id=${created.id}`);
   }
@@ -112,6 +125,7 @@ export default function OrdinaPage() {
 
   return (
     <>
+      <MenuaryAuthHintGate />
       <section className="relative bg-pork-ink pt-32 pb-10 text-pork-cream md:pt-40">
         <div className="container-wide">
           <span className="chip-mustard">Asporto</span>

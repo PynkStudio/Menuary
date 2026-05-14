@@ -18,6 +18,7 @@ import { getClientId } from "@/lib/client-id";
 import type { TableSession, Table } from "@/lib/types";
 import { TableOrderJoinFlow } from "@/components/modules/table-orders/table-order-join-flow";
 import { NicknameGate } from "@/components/modules/table-orders/nickname-gate";
+import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
 
 function sameTavoloSessionBinding(
   a: CartContext,
@@ -404,8 +405,11 @@ function EmptyCentered({ children }: { children: React.ReactNode }) {
 
 export default function TavoloPage() {
   return (
-    <Suspense fallback={null}>
-      <TavoloBody />
-    </Suspense>
+    <>
+      <MenuaryAuthHintGate />
+      <Suspense fallback={null}>
+        <TavoloBody />
+      </Suspense>
+    </>
   );
 }

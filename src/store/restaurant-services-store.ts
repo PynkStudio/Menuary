@@ -7,7 +7,15 @@ import { createBrowserLocalJSONStorage } from "@/lib/zustand-json-storage";
 const STORAGE_KEY = "bepork-restaurant-services-v1";
 const DEFAULT_TENANT_ID = "bepork";
 
-export type ReservationStatus = "nuova" | "confermata" | "seduta" | "no_show";
+export type ReservationStatus =
+  | "nuova"
+  | "confermata"
+  | "seduta"
+  | "no_show"
+  | "pending_manual"
+  | "auto_proposed"
+  | "rejected"
+  | "draft";
 export type RoomTableStatus = "libero" | "prenotato" | "occupato" | "pagamento" | "pulizia";
 export type DeliveryChannelStatus = "attivo" | "pausa" | "chiuso";
 export type InventoryStatus = "ok" | "basso" | "critico";
@@ -150,10 +158,11 @@ type RestaurantServicesSnapshot = {
 type RestaurantServicesState = RestaurantServicesSnapshot & {
   currentTenantId: string;
   setTenantSeed: (tenantId: string) => void;
-  addReservation: (reservation: Omit<Reservation, "id" | "status"> & { status?: ReservationStatus }) => void;
+  addReservation: (reservation: Omit<Reservation, "id" | "status"> & { id?: string; status?: ReservationStatus }) => void;
   updateReservation: (id: string, patch: Partial<Reservation>) => void;
   updateReservationStatus: (id: string, status: ReservationStatus) => void;
   removeReservation: (id: string) => void;
+  replaceReservations: (list: Reservation[]) => void;
   addRoomTable: (table: Omit<RoomTable, "id">) => void;
   updateRoomTable: (id: string, patch: Partial<RoomTable>) => void;
   updateRoomTableStatus: (id: string, status: RoomTableStatus) => void;
@@ -339,7 +348,9 @@ export const useRestaurantServicesStore = create<RestaurantServicesState>()(
           reservations: [
             {
               ...reservation,
-              id: `res-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+              id:
+                reservation.id ??
+                `res-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
               status: reservation.status ?? "nuova",
             },
             ...state.reservations,
@@ -361,6 +372,7 @@ export const useRestaurantServicesStore = create<RestaurantServicesState>()(
         set((state) => ({
           reservations: state.reservations.filter((reservation) => reservation.id !== id),
         })),
+      replaceReservations: (list) => set({ reservations: list }),
       addRoomTable: (table) =>
         set((state) => ({
           roomTables: [
