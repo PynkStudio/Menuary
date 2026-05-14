@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
 import { clientsSite } from "@/lib/clients-config";
+import { STUDIO_PUBLIC_ORIGIN } from "@/lib/studio-config";
 
 const NAV = [
   { href: clientsSite.paths.home, label: "Home" },
@@ -49,13 +51,17 @@ export function ClientsNav() {
           </nav>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="https://menuary.it"
-            className="text-sm font-semibold text-[var(--menuary-muted)] hover:text-[var(--menuary-ink)]"
+          <a
+            href={`${STUDIO_PUBLIC_ORIGIN}/login`}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--menuary-copper)] transition-colors hover:text-[var(--menuary-copper-dark)]"
           >
-            menuary.it
-          </Link>
-          <Link href={clientsSite.paths.login} className="menuary-button menuary-button-dark text-sm">
+            Sei un ristoratore?
+            <ArrowUpRight size={14} strokeWidth={1.8} />
+          </a>
+          <Link
+            href={clientsSite.paths.login}
+            className="menuary-button menuary-button-dark text-sm"
+          >
             Accedi
           </Link>
         </div>

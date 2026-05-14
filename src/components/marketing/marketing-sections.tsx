@@ -3,14 +3,17 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   BookOpen,
+  Boxes,
   CalendarCheck,
   ChefHat,
-  LineChart,
+  Calculator,
+  Phone,
   Plus,
-  QrCode,
   ShoppingBag,
   Sparkles,
   Star,
+  Truck,
+  Users,
   Wand2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -24,43 +27,64 @@ const FEATURES: {
   title: string;
   body: string;
   tone?: "light" | "dark";
+  soon?: boolean;
 }[] = [
   {
-    icon: BookOpen,
-    title: "Menu digitale, sempre vivo",
-    body:
-      "Piatti, prezzi, allergeni e disponibilità in un editor pensato per la sala. Aggiorni in due tocchi, online in un secondo.",
-  },
-  {
-    icon: CalendarCheck,
-    title: "Prenotazioni dal sito",
-    body:
-      "Richieste raccolte in un solo posto, ordinate per data e turno. Il cliente prenota in trenta secondi, tu rispondi quando vuoi.",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Ordini al tavolo e asporto",
-    body:
-      "QR sul tavolo, ordine in cucina, ricevuta al cliente. Niente comande perse, niente errori in copertura piena.",
-    tone: "dark",
-  },
-  {
-    icon: QrCode,
-    title: "QR menu e carte di sala",
-    body:
-      "Una sola fonte di verità per il menu. Versione QR, versione stampata, versione mobile: cambiano insieme.",
-  },
-  {
     icon: Wand2,
-    title: "Identità su misura",
+    title: "Sito su misura",
     body:
       "Tipografia, fotografia, colori e voce costruiti sul tuo locale. Niente template, niente scenografia di sistema.",
   },
   {
-    icon: LineChart,
-    title: "Numeri leggibili",
+    icon: BookOpen,
+    title: "Menu digitale",
     body:
-      "Pagine viste, ordini, prenotazioni, conversioni. Una dashboard che dice cosa funziona — e cosa cambiare.",
+      "Piatti, prezzi, allergeni, varianti, disponibilità in un editor pensato per la sala. Aggiorni in due tocchi, online in un secondo.",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Prenotazioni",
+    body:
+      "Richieste raccolte per data e turno, conferme automatiche, calendario di sala, reminder WhatsApp. Una tela sola per tutta la settimana.",
+    tone: "dark",
+  },
+  {
+    icon: ShoppingBag,
+    title: "Ordini sala & asporto",
+    body:
+      "QR sul tavolo, comande in cucina, ricevuta al cliente. Niente carta straccia, niente errori in copertura piena.",
+  },
+  {
+    icon: Truck,
+    title: "Delivery integrato",
+    body:
+      "Zone di consegna, slot orari, gestione rider, integrazione con i corrieri principali. Asporto e delivery dalla stessa coda.",
+  },
+  {
+    icon: Boxes,
+    title: "Magazzino",
+    body:
+      "Ingredienti, scorte, fornitori, alert sotto soglia. Il magazzino scende quando un piatto esce in cucina — automaticamente.",
+    tone: "dark",
+  },
+  {
+    icon: Calculator,
+    title: "Food cost",
+    body:
+      "Ricette, costo per piatto, margine in tempo reale. Vedi quanto guadagni davvero — prima di mettere il prezzo in carta.",
+  },
+  {
+    icon: Users,
+    title: "CRM clienti",
+    body:
+      "Storico ordini, preferenze, allergeni, ricorrenze. Il cliente entra e tu sai già cosa beve e dove ama sedersi.",
+  },
+  {
+    icon: Phone,
+    title: "IA al telefono",
+    body:
+      "Risponde 24/7 con la voce del locale: prende prenotazioni, accetta ordini, suggerisce piatti. Lo staff resta in sala.",
+    soon: true,
     tone: "dark",
   },
 ];
@@ -72,21 +96,22 @@ export function FeaturesSection() {
       className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]"
     >
       <div className="menuary-container py-24 lg:py-32">
-        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20 lg:items-end">
+        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:items-end">
           <div>
-            <p className="menuary-section-label">Tutto quello che serve</p>
+            <p className="menuary-section-label">Nove moduli, un solo prodotto</p>
             <h2 className="menuary-display mt-6 text-[clamp(2.4rem,5vw,4.4rem)]">
-              Un solo strumento.
+              Dal sito al
               <br />
               <span className="italic text-[var(--menuary-copper)]">
-                Tutta la sala digitale.
+                food cost in cucina.
               </span>
             </h2>
           </div>
           <p className="max-w-md text-[15px] leading-7 text-[var(--menuary-muted)] lg:justify-self-end lg:text-right">
-            Menuary mette in un solo prodotto quello che oggi chiedi a tre o
-            quattro fornitori diversi. Stesso linguaggio, stesso supporto,
-            stesso conto a fine mese.
+            Menuary copre l&apos;intera catena operativa del ristorante: dalla
+            vetrina online al magazzino, dal CRM clienti all&apos;assistente IA
+            che risponde al telefono. Stesso linguaggio, stesso database, stesso
+            supporto.
           </p>
         </div>
 
@@ -97,9 +122,15 @@ export function FeaturesSection() {
               <article
                 key={f.title}
                 data-tone={f.tone === "dark" ? "dark" : undefined}
-                className="menuary-feature-card"
+                className="menuary-feature-card relative"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
+                {f.soon && (
+                  <span className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full bg-[var(--menuary-gold)]/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--menuary-gold)]">
+                    <Sparkles size={10} strokeWidth={2} />
+                    Presto
+                  </span>
+                )}
                 <span className="menuary-feature-icon">
                   <Icon size={20} strokeWidth={1.7} />
                 </span>
@@ -110,6 +141,317 @@ export function FeaturesSection() {
               </article>
             );
           })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   PRODUCT LEVELS — "come vuoi usare Menuary?"
+   ============================================================ */
+
+const PRODUCT_LEVELS: {
+  index: string;
+  kicker: string;
+  title: string;
+  body: string;
+  bullets: string[];
+}[] = [
+  {
+    index: "01",
+    kicker: "Vetrina",
+    title: "Solo il sito",
+    body:
+      "Un sito personalizzato con menu digitale aggiornabile. La forma minima: identità online, leggibile, sempre fresca.",
+    bullets: ["Sito su misura", "Menu digitale", "Contatti, foto, recensioni"],
+  },
+  {
+    index: "02",
+    kicker: "Operatività",
+    title: "Sito + gestionale",
+    body:
+      "Tutto quello che ti serve per far girare la sala: prenotazioni, ordini, delivery, magazzino, food cost, CRM e analytics.",
+    bullets: [
+      "Tutto della Vetrina",
+      "Prenotazioni · ordini · delivery",
+      "Magazzino, food cost, CRM",
+    ],
+  },
+  {
+    index: "03",
+    kicker: "Autopilota",
+    title: "Gestionale + IA",
+    body:
+      "L'assistente IA risponde al telefono con la voce del locale: prende prenotazioni, accetta ordini, suggerisce piatti. Lo staff resta dove serve.",
+    bullets: [
+      "Tutto dell'Operatività",
+      "Risponde alle chiamate 24/7",
+      "Prenotazioni e ordini in autonomia",
+    ],
+    // soon flag handled in section
+  },
+];
+
+export function ProductLevelsSection() {
+  return (
+    <section
+      id="livelli"
+      className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]"
+    >
+      <div className="menuary-container py-24 lg:py-32">
+        <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-3xl">
+            <p className="menuary-section-label">Tre modi di usarlo</p>
+            <h2 className="menuary-display mt-6 text-[clamp(2.4rem,5vw,4.4rem)]">
+              Quanto vuoi che
+              <br />
+              <span className="italic text-[var(--menuary-copper)]">
+                Menuary lavori per te?
+              </span>
+            </h2>
+          </div>
+          <p className="max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
+            Una piattaforma, tre livelli di profondità. Cominci dalla vetrina e
+            spegni o accendi i moduli quando ti servono — senza rifare il sito.
+          </p>
+        </div>
+
+        <div className="mt-14 grid gap-px sm:gap-6 lg:grid-cols-3">
+          {PRODUCT_LEVELS.map((lvl, i) => {
+            const isAI = i === 2;
+            return (
+              <article
+                key={lvl.index}
+                className={
+                  "relative flex flex-col gap-6 border bg-[var(--menuary-porcelain)] p-8 sm:p-10 transition-colors " +
+                  (isAI
+                    ? "border-[var(--menuary-gold)] bg-[var(--menuary-ink)] text-[var(--menuary-paper)]"
+                    : "border-[var(--menuary-line)] hover:border-[var(--menuary-ink)]/40")
+                }
+              >
+                {isAI && (
+                  <span className="absolute -top-3 left-8 inline-flex items-center gap-1 rounded-full bg-[var(--menuary-gold)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--menuary-ink)]">
+                    <Sparkles size={11} strokeWidth={2} />
+                    Presto disponibile
+                  </span>
+                )}
+
+                <div className="flex items-baseline justify-between">
+                  <p
+                    className={
+                      "menuary-index-lg " +
+                      (isAI ? "!text-[var(--menuary-gold)]" : "")
+                    }
+                  >
+                    {lvl.index}
+                  </p>
+                  <span
+                    className={
+                      "text-xs uppercase tracking-[0.22em] " +
+                      (isAI ? "text-[var(--menuary-gold)]" : "text-[var(--menuary-copper)]")
+                    }
+                  >
+                    {lvl.kicker}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="menuary-display text-3xl">{lvl.title}</h3>
+                  <p
+                    className={
+                      "mt-4 text-[15px] leading-7 " +
+                      (isAI ? "text-white/70" : "text-[var(--menuary-muted)]")
+                    }
+                  >
+                    {lvl.body}
+                  </p>
+                </div>
+
+                <ul className="mt-auto space-y-2.5 text-[15px]">
+                  {lvl.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-3">
+                      <span
+                        className={
+                          "mt-[0.55rem] inline-block h-px w-3 shrink-0 " +
+                          (isAI
+                            ? "bg-[var(--menuary-gold)]"
+                            : "bg-[var(--menuary-copper)]")
+                        }
+                      />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   AI PHONE RECEPTIONIST — coming soon showcase
+   ============================================================ */
+
+export function AIPhoneSection() {
+  return (
+    <section
+      id="ia"
+      className="relative overflow-hidden border-t border-[var(--menuary-line)] bg-[var(--menuary-ink)] text-[var(--menuary-paper)]"
+    >
+      {/* decorative grid */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,250,242,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,250,242,1) 1px, transparent 1px)",
+          backgroundSize: "4rem 4rem",
+          maskImage: "radial-gradient(circle at center, black 0%, transparent 70%)",
+        }}
+      />
+
+      <div className="menuary-container relative py-24 lg:py-32">
+        <div className="grid gap-14 lg:grid-cols-[1fr_1.05fr] lg:gap-20 lg:items-center">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--menuary-gold)]/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--menuary-gold)]">
+              <Sparkles size={11} strokeWidth={2} />
+              In arrivo · 2026
+            </span>
+            <h2 className="menuary-display mt-6 text-[clamp(2.4rem,5.2vw,4.8rem)]">
+              Un&apos;assistente che risponde
+              <br />
+              <span className="italic text-[var(--menuary-gold)]">
+                quando tu sei in sala.
+              </span>
+            </h2>
+            <p className="mt-7 max-w-md text-[16px] leading-[1.75] text-white/70">
+              L&apos;IA vocale di Menuary risponde al telefono con la voce e il
+              tono del locale. Prende prenotazioni, accetta ordini d&apos;asporto,
+              suggerisce piatti del giorno, gestisce le richieste fuori orario —
+              e ti lascia il riepilogo nel pannello quando entri il mattino dopo.
+            </p>
+
+            <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+              {[
+                { t: "Voce e tono del locale", b: "Cloning vocale opzionale" },
+                { t: "Prenotazioni & ordini", b: "Scrive direttamente in agenda" },
+                { t: "24 / 7 senza pause", b: "Notti, weekend, copertura piena" },
+                { t: "Multilingua nativa", b: "IT, EN, FR, ES, DE" },
+              ].map((it) => (
+                <li
+                  key={it.t}
+                  className="border-t border-white/15 pt-4 text-[15px] leading-6"
+                >
+                  <p className="font-semibold text-[var(--menuary-paper)]">
+                    {it.t}
+                  </p>
+                  <p className="mt-1 text-white/55">{it.b}</p>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
+              <Link
+                href="/contatti"
+                className="menuary-button menuary-button-accent"
+              >
+                Entra nella lista d&apos;attesa
+              </Link>
+              <Link href="/pricing" className="menuary-link menuary-link-light">
+                Vedi i piani
+                <ArrowUpRight size={16} strokeWidth={1.6} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Call transcript mockup */}
+          <div className="relative">
+            <div className="rounded-[1.5rem] border border-white/12 bg-white/[0.04] p-5 sm:p-7 backdrop-blur-sm shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--menuary-gold)]/15 text-[var(--menuary-gold)]">
+                    <Phone size={18} strokeWidth={1.8} />
+                  </span>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">
+                      Chiamata in corso
+                    </p>
+                    <p className="font-semibold mt-0.5">+39 080 ··· 4127</p>
+                  </div>
+                </div>
+                <span className="text-xs text-white/55 tabular-nums">02:14</span>
+              </div>
+
+              <div className="mt-5 space-y-4 text-[14px] leading-6">
+                <div className="flex gap-3">
+                  <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--menuary-gold)]/20 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--menuary-gold)]">
+                    IA
+                  </span>
+                  <p className="text-white/85">
+                    Ristorante Be Pork, buonasera. Come posso aiutarla?
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">
+                    Cli
+                  </span>
+                  <p className="text-white/65">
+                    Vorrei prenotare per due persone, sabato alle 21.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--menuary-gold)]/20 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--menuary-gold)]">
+                    IA
+                  </span>
+                  <p className="text-white/85">
+                    Sabato alle 21, tavolo per due. Confermo a nome di…?
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold uppercase tracking-[0.16em] text-white/70">
+                    Cli
+                  </span>
+                  <p className="text-white/65">Bianchi. C&apos;è qualcosa di vegano?</p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--menuary-gold)]/20 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--menuary-gold)]">
+                    IA
+                  </span>
+                  <p className="text-white/85">
+                    Sì: orecchiette ai broccoli, tagliata vegetale e cheesecake al
+                    cocco. Le segno anche la nota allergeni?
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between rounded-2xl border border-[var(--menuary-gold)]/40 bg-[var(--menuary-gold)]/10 px-4 py-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--menuary-gold)]">
+                    Prenotazione creata
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-white">
+                    Bianchi · sab 22, 21:00 · 2 cop. · note vegano
+                  </p>
+                </div>
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[var(--menuary-gold)] text-[var(--menuary-ink)]">
+                  <CalendarCheck size={16} strokeWidth={2} />
+                </span>
+              </div>
+            </div>
+
+            {/* floating status pill */}
+            <div className="absolute -top-4 -right-4 hidden items-center gap-2 rounded-full border border-white/15 bg-[var(--menuary-ink)] px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-white/80 sm:inline-flex">
+              <span className="relative inline-flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--menuary-gold)] opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--menuary-gold)]" />
+              </span>
+              live
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -429,41 +771,48 @@ export function FAQSection({
    PRICING TEASER
    ============================================================ */
 
-const PRICING_TEASER = [
+const PRICING_TEASER: {
+  name: string;
+  tagline: string;
+  price: string;
+  setup: string;
+  items: string[];
+  featured?: boolean;
+}[] = [
   {
-    name: "Presenza",
-    tagline: "Sito su misura",
+    name: "Vetrina",
+    tagline: "Solo il sito",
     price: "39",
     setup: "setup da € 690",
     items: [
-      "Sito personalizzato",
+      "Sito su misura",
       "Menu digitale aggiornabile",
-      "Recensioni, foto, orari, contatti",
+      "Recensioni, foto, contatti",
     ],
   },
   {
     name: "Operatività",
-    tagline: "Sito + servizi",
-    price: "79",
-    setup: "setup da € 990",
+    tagline: "Sito + gestionale",
+    price: "129",
+    setup: "setup da € 1.490",
     featured: true,
     items: [
-      "Tutto di Presenza",
-      "Prenotazioni e ordini",
-      "QR menu di sala",
-      "Pannello staff",
+      "Tutto di Vetrina",
+      "Prenotazioni · ordini · delivery",
+      "Magazzino, food cost, CRM",
+      "Pannello staff & analytics",
     ],
   },
   {
-    name: "Crescita",
-    tagline: "Su richiesta",
+    name: "Autopilota",
+    tagline: "Gestionale + IA · 2026",
     price: "—",
-    setup: "preventivo dedicato",
+    setup: "lista d'attesa",
     items: [
       "Tutto di Operatività",
-      "Funzioni custom su richiesta",
-      "Campagne stagionali",
-      "Supporto prioritario",
+      "IA al telefono 24/7",
+      "Prenotazioni e ordini autonomi",
+      "Multilingua nativa",
     ],
   },
 ];

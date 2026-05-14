@@ -22,17 +22,8 @@ function MarketingHeader() {
           <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
-          <Link href="/" className="menuary-nav-link">Prodotto</Link>
-          <Link href="/chi-siamo" className="menuary-nav-link">Studio</Link>
           <Link href="/pricing" className="menuary-nav-link">Offerta</Link>
-          <a
-            href="https://demo.menuary.it/bepork-demo"
-            className="menuary-nav-link"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Demo
-          </a>
+          <Link href="/chi-siamo" className="menuary-nav-link">Studio</Link>
           <a href={`${CLIENTS_PUBLIC_ORIGIN}/login`} className="menuary-nav-link">
             Area personale
           </a>
@@ -58,15 +49,28 @@ function MarketingFooter() {
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-16">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
           <div>
             <p className="menuary-wordmark text-2xl">
               menuary
               <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
             </p>
             <p className="mt-5 max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
-              Studio digitale per ristoranti. Costruiamo siti, menu e strumenti su misura,
-              tenuti vivi giorno per giorno.
+              La piattaforma operativa per ristoranti: sito, gestionale completo e assistente
+              IA al telefono. Costruita su misura, mantenuta nel tempo.
+            </p>
+            <p className="mt-6 text-[13px] leading-6 text-[var(--menuary-muted)]">
+              Un servizio di{" "}
+              <a
+                href="https://pynkstudio.it"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[var(--menuary-ink)] underline decoration-[var(--menuary-copper)] underline-offset-4 transition-colors hover:text-[var(--menuary-copper)]"
+              >
+                PynkStudio
+              </a>
+              <span aria-hidden> · </span>
+              <span>Milano, Italia</span>
             </p>
           </div>
 
@@ -80,20 +84,29 @@ function MarketingFooter() {
             ]}
           />
           <FooterColumn
-            title="Esempi"
-            links={[
-              { href: "https://demo.menuary.it/bepork-demo", label: "Be Pork · Bari", external: true },
-              { href: "https://demo.menuary.it/faak-demo", label: "Faak · Bari", external: true },
-            ]}
-          />
-          <FooterColumn
             title="Contatti"
             links={[
               { href: "mailto:hello@menuary.it", label: "hello@menuary.it" },
+              { href: "tel:+393513768607", label: "+39 351 3768607" },
               { href: "/contatti", label: "Richiedi proposta" },
+            ]}
+          />
+          <FooterColumn
+            title="Per i locali"
+            links={[
+              {
+                href: `${STUDIO_PUBLIC_ORIGIN}/login`,
+                label: "Login ristoratori",
+                external: true,
+              },
               {
                 href: STUDIO_PUBLIC_ORIGIN,
-                label: "Fatturazione e abbonamenti (locali)",
+                label: "Fatturazione e abbonamenti",
+                external: true,
+              },
+              {
+                href: `${CLIENTS_PUBLIC_ORIGIN}/login`,
+                label: "Area personale clienti",
                 external: true,
               },
             ]}
@@ -102,7 +115,7 @@ function MarketingFooter() {
 
         <div className="menuary-rule mt-14" />
         <div className="mt-6 flex flex-col gap-3 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] sm:flex-row sm:items-center sm:justify-between">
-          <p>© {year} · Menuary</p>
+          <p>© {year} · Menuary · PynkStudio</p>
           <div className="flex gap-6">
             <Link href="/privacy" className="hover:text-[var(--menuary-ink)]">Privacy</Link>
             <Link href="/cookie" className="hover:text-[var(--menuary-ink)]">Cookie</Link>

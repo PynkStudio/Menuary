@@ -25,6 +25,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (mode === "platform-admin") {
+    // admin.menuary.it/* → /admin/*
+    if (!pathname.startsWith("/admin")) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = "/admin" + (pathname === "/" ? "" : pathname);
+      return NextResponse.rewrite(rewritten);
+    }
+    return NextResponse.next();
+  }
+
   if (mode === "clients") {
     if (CLIENTS_PATHS.has(pathname)) return NextResponse.next();
     return NextResponse.redirect(new URL("/", request.url));

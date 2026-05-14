@@ -18,45 +18,47 @@ type Plan = {
 
 const PLANS: Plan[] = [
   {
-    name: "Presenza",
-    tagline: "Sito su misura",
+    name: "Vetrina",
+    tagline: "Solo il sito",
     monthly: "39",
     setup: "da € 690",
-    body: "Per chi vuole essere scelto meglio online. Una presenza curata e coerente con il locale.",
+    body: "Per chi vuole essere scelto meglio online. La forma minima: identità, menu e contatti curati.",
     items: [
-      "Dominio personalizzato",
-      "Design su misura sull'identità",
+      "Sito su misura, dominio personalizzato",
       "Menu digitale aggiornabile",
       "Recensioni, foto, orari, contatti",
       "Hosting, SSL, backup inclusi",
+      "Aggiornamenti tecnici continui",
     ],
   },
   {
     name: "Operatività",
-    tagline: "Sito + servizi",
-    monthly: "79",
-    setup: "da € 990",
+    tagline: "Sito + gestionale",
+    monthly: "129",
+    setup: "da € 1.490",
     featured: true,
-    body: "Per locali che vogliono trasformare il sito in uno strumento di lavoro. Più richieste, meno errori.",
+    body: "Per locali che vogliono trasformare il sito in uno strumento di lavoro. Più richieste, meno errori, margini sotto controllo.",
     items: [
-      "Tutto quello di Presenza",
-      "Prenotazioni dal sito",
-      "Ordini da asporto e dal tavolo",
-      "QR menu per sala e tavoli",
-      "Pannello staff per cucina e cassa",
+      "Tutto di Vetrina",
+      "Prenotazioni · ordini · delivery",
+      "Magazzino con alert sotto soglia",
+      "Food cost & margini in tempo reale",
+      "CRM clienti e analytics",
+      "Pannello staff, cucina, cassa",
     ],
   },
   {
-    name: "Crescita",
-    tagline: "Evoluzione continua",
+    name: "Autopilota",
+    tagline: "Gestionale + IA · 2026",
     monthly: "Custom",
-    setup: "preventivo dedicato",
-    body: "Per ristoranti che vogliono partire bene e aggiungere funzioni quando il locale ne ha bisogno.",
+    setup: "lista d'attesa",
+    body: "Per chi vuole un'assistente IA che risponde al telefono 24/7, gestisce prenotazioni e ordini con la voce del locale.",
     items: [
-      "Tutto quello di Operatività",
-      "Funzioni custom su richiesta",
-      "Campagne stagionali e nuove sezioni",
-      "Multi-sede e multi-brand",
+      "Tutto di Operatività",
+      "IA al telefono 24/7",
+      "Prenotazioni e ordini autonomi",
+      "Cloning vocale opzionale",
+      "Multilingua nativa (IT, EN, FR, ES, DE)",
       "Supporto prioritario dedicato",
     ],
   },
@@ -64,26 +66,29 @@ const PLANS: Plan[] = [
 
 type Row = {
   label: string;
-  presenza: boolean | string;
+  vetrina: boolean | string;
   operativita: boolean | string;
-  crescita: boolean | string;
+  autopilota: boolean | string;
 };
 
 const COMPARE_ROWS: Row[] = [
-  { label: "Sito personalizzato", presenza: true, operativita: true, crescita: true },
-  { label: "Menu digitale aggiornabile", presenza: true, operativita: true, crescita: true },
-  { label: "Hosting, SSL, backup", presenza: true, operativita: true, crescita: true },
-  { label: "Prenotazioni online", presenza: false, operativita: true, crescita: true },
-  { label: "Ordini asporto / al tavolo", presenza: false, operativita: true, crescita: true },
-  { label: "QR menu per la sala", presenza: false, operativita: true, crescita: true },
-  { label: "Pannello staff", presenza: false, operativita: true, crescita: true },
-  { label: "Multi-sede", presenza: false, operativita: false, crescita: true },
-  { label: "Funzioni custom", presenza: false, operativita: false, crescita: true },
+  { label: "Sito su misura", vetrina: true, operativita: true, autopilota: true },
+  { label: "Menu digitale", vetrina: true, operativita: true, autopilota: true },
+  { label: "Hosting, SSL, backup", vetrina: true, operativita: true, autopilota: true },
+  { label: "Prenotazioni online", vetrina: false, operativita: true, autopilota: true },
+  { label: "Ordini sala & asporto", vetrina: false, operativita: true, autopilota: true },
+  { label: "Delivery integrato", vetrina: false, operativita: true, autopilota: true },
+  { label: "Magazzino & scorte", vetrina: false, operativita: true, autopilota: true },
+  { label: "Food cost & margini", vetrina: false, operativita: true, autopilota: true },
+  { label: "CRM clienti", vetrina: false, operativita: true, autopilota: true },
+  { label: "Pannello staff & cucina", vetrina: false, operativita: true, autopilota: true },
+  { label: "IA al telefono 24/7", vetrina: false, operativita: false, autopilota: "2026" },
+  { label: "Cloning vocale", vetrina: false, operativita: false, autopilota: "2026" },
   {
     label: "Supporto",
-    presenza: "Standard",
+    vetrina: "Standard",
     operativita: "Prioritario",
-    crescita: "Dedicato",
+    autopilota: "Dedicato",
   },
 ];
 
@@ -94,23 +99,31 @@ const PRICING_FAQ = [
   },
   {
     q: "Cosa è incluso nel canone mensile?",
-    a: "Hosting, dominio (se gestito da noi), certificati SSL, backup, aggiornamenti tecnici, sicurezza e tutte le nuove funzioni del prodotto. Più il supporto del nostro team.",
+    a: "Hosting, dominio (se gestito da noi), certificati SSL, backup, aggiornamenti tecnici, sicurezza e tutte le nuove funzioni del prodotto, su qualsiasi modulo. Più il supporto del nostro team.",
   },
   {
     q: "Posso passare da un piano all'altro?",
-    a: "Sì, in qualsiasi momento. Aggiungere prenotazioni, ordini o nuove sezioni è una semplice attivazione, senza dover rifare il sito.",
+    a: "Sì, in qualsiasi momento. Aggiungere prenotazioni, ordini, magazzino, food cost o CRM è una semplice attivazione, senza dover rifare il sito.",
+  },
+  {
+    q: "Quando è disponibile l'IA al telefono?",
+    a: "L'assistente IA vocale arriva nel 2026 in beta privata. Con il piano Autopilota entri nella lista d'attesa con priorità di accesso, e nel frattempo paghi solo Operatività finché la funzione non è attiva.",
   },
   {
     q: "Quanto tempo serve per andare online?",
-    a: "Per Presenza, in media 3–5 settimane dalla prima chiamata. Operatività richiede 4–6 settimane. Crescita ha tempi dedicati in base al progetto.",
+    a: "Per Vetrina, in media 3–5 settimane dalla prima chiamata. Operatività richiede 4–6 settimane perché include magazzino, food cost e configurazione dei moduli operativi. Autopilota ha tempi dedicati legati al rollout dell'IA.",
   },
   {
     q: "Posso usare il mio dominio attuale?",
     a: "Certo. Possiamo configurare il tuo dominio esistente o registrarne uno nuovo per te. In entrambi i casi nessun costo aggiuntivo.",
   },
   {
-    q: "Le commissioni su prenotazioni e ordini?",
-    a: "Zero. Menuary non trattiene nulla sui tuoi ordini o prenotazioni. Quello che incassi è tuo, integrale.",
+    q: "Le commissioni su prenotazioni, ordini e delivery?",
+    a: "Zero. Menuary non trattiene nulla sui tuoi ordini, prenotazioni o consegne. Quello che incassi è tuo, integrale. Eventuali fee dei corrieri delivery dipendono dal provider che scegli.",
+  },
+  {
+    q: "Il gestionale magazzino e food cost servono davvero?",
+    a: "Se il locale fattura più di 10–15.000€ al mese sì. Magazzino significa scorte sotto soglia automatiche, niente ingredienti scaduti, niente piatti tolti la sera. Food cost significa vedere il margine reale per piatto — e capire perché un piatto popolare in realtà costa più di quanto rende.",
   },
 ];
 
@@ -228,7 +241,11 @@ export function MarketingPricingPage() {
                       : "menuary-button menuary-button-light")
                   }
                 >
-                  {plan.featured ? "Inizia con Operatività" : "Richiedi proposta"}
+                  {plan.featured
+                    ? "Inizia con Operatività"
+                    : plan.monthly === "Custom"
+                      ? "Entra in lista d'attesa"
+                      : "Richiedi proposta"}
                 </Link>
               </article>
             ))}
@@ -262,11 +279,11 @@ export function MarketingPricingPage() {
                     <th className="py-4 pr-4 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-semibold">
                       Funzione
                     </th>
-                    <th className="py-4 px-4 text-center font-semibold">Presenza</th>
+                    <th className="py-4 px-4 text-center font-semibold">Vetrina</th>
                     <th className="py-4 px-4 text-center font-semibold text-[var(--menuary-copper)]">
                       Operatività
                     </th>
-                    <th className="py-4 pl-4 text-center font-semibold">Crescita</th>
+                    <th className="py-4 pl-4 text-center font-semibold">Autopilota</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -274,13 +291,13 @@ export function MarketingPricingPage() {
                     <tr key={row.label} className="border-b border-[var(--menuary-line)]">
                       <td className="py-4 pr-4">{row.label}</td>
                       <td className="py-4 px-4 text-center">
-                        <CellMark value={row.presenza} />
+                        <CellMark value={row.vetrina} />
                       </td>
                       <td className="py-4 px-4 text-center">
                         <CellMark value={row.operativita} />
                       </td>
                       <td className="py-4 pl-4 text-center">
-                        <CellMark value={row.crescita} />
+                        <CellMark value={row.autopilota} />
                       </td>
                     </tr>
                   ))}
