@@ -3,16 +3,16 @@ import { cookies } from "next/headers";
 import type { Database } from "./types";
 
 /**
- * @param cookieDomain — se specificato sovrascrive il domain del cookie.
- *   Usare ".menuary.it" dal login portal per condividere la sessione
- *   tra tutti i sottodomini *.menuary.it senza ulteriori scambi di token.
+ * @param cookieDomain — domain da impostare sul cookie Supabase.
+ *   - ".menuary.it"  → cookie condiviso su tutti i sottodomini *.menuary.it
+ *   - undefined      → nessun attributo Domain (cookie scoped al host corrente)
+ *
+ * Usare ".menuary.it" esplicitamente solo dal login portal e dal middleware
+ * dei sottodomini Menuary. NON impostarlo su domini custom (bepork.it, ecc.)
+ * perché il browser rifiuterebbe il cookie (spec violation).
  */
 export async function createSupabaseServerClient(cookieDomain?: string) {
   const cookieStore = await cookies();
-  const domain =
-    cookieDomain ??
-    (process.env.NODE_ENV === "production" ? ".menuary.it" : undefined);
-
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,7 +26,7 @@ export async function createSupabaseServerClient(cookieDomain?: string) {
             toSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, {
                 ...options,
-                ...(domain ? { domain } : {}),
+                ...(cookieDomain !== undefined ? { domain: cookieDomain } : {}),
               }),
             );
           } catch {

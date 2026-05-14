@@ -6,6 +6,7 @@
 @import "../styles/tenants/bepork.css";
 @import "../styles/tenants/faak.css";
 @import "../styles/marketing.css";
+@import "../styles/admin.css";
 
 @tailwind base;
 @tailwind components;

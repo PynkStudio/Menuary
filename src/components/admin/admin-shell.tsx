@@ -11,10 +11,13 @@ import {
   LayoutDashboard,
   LogOut,
   Menu as MenuIcon,
+  Package,
   QrCode,
   Settings,
+  Users,
   UtensilsCrossed,
   X,
+  CreditCard,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -41,6 +44,13 @@ type NavItem = {
   /** Se assente, sempre visibile. */
   visible?: (s: NavFlags) => boolean;
 };
+
+const PLATFORM_ADMIN_NAV: NavItem[] = [
+  { href: "/admin/crm", label: "CRM Lead", icon: Users },
+  { href: "/admin/pacchetti", label: "Pacchetti", icon: Package },
+  { href: "/admin/abbonamenti", label: "Abbonamenti", icon: CreditCard },
+  { href: "/admin/tenant", label: "Tenant & Moduli", icon: Building2 },
+];
 
 const NAV_ITEMS: NavItem[] = [
   {
@@ -118,7 +128,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   const navItems = useMemo(() => {
     if (mode === "platform-admin") {
-      return NAV_ITEMS.filter((it) => it.href === "/admin" || it.href === "/admin/tenant");
+      return PLATFORM_ADMIN_NAV;
     }
     const tenantHiddenItems = new Set(["/admin/tenant"]);
     const flags: NavFlags = {

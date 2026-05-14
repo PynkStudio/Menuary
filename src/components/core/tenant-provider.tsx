@@ -36,3 +36,9 @@ export function useTenant(): TenantProfile {
   if (!tenant) throw new Error("useTenant must be used inside TenantProvider");
   return tenant;
 }
+
+/** Versione null-safe di useTenant — da usare in componenti che vengono montati
+ *  anche in mode non-tenant (es. SiteChrome, che viene renderizzato globalmente). */
+export function useTenantOrNull(): TenantProfile | null {
+  return useContext(TenantContext);
+}

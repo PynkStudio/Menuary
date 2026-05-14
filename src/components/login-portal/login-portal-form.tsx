@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { resolveDestination, type LoginFrom } from "@/lib/login-url";
 import { notifyParentAndClose } from "@/lib/login-popup";
+import { useSearchParams } from "next/navigation";
 import { TENANTS } from "@/lib/tenant-registry";
 import { tenantSlugFromFrom } from "@/lib/login-url";
 
@@ -16,6 +17,10 @@ interface Props {
 }
 
 export function LoginPortalForm({ from, next, popup, error: initialError }: Props) {
+  const searchParams = useSearchParams();
+  // Origin del parent che ha aperto il popup (passato come ?origin=...)
+  const parentOrigin = searchParams.get("origin") ?? "";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(initialError ?? null);
@@ -44,7 +49,7 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
       password,
     });
 
-    if (error || !data.user) {
+    if (error || !data.user || !data.session) {
       setError("Email o password non corretti.");
       setLoading(false);
       return;
@@ -62,8 +67,12 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
     const destination = resolveDestination({ from, next, role, tenantId });
 
     if (popup) {
-      // Popup mode: notifica il parent e chiudi
-      notifyParentAndClose(from ?? "clienti");
+      notifyParentAndClose({
+        from: from ?? "clienti",
+        parentOrigin,
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+      });
     } else {
       window.location.href = destination;
     }

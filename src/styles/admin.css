@@ -1,0 +1,7 @@
+/* Utility condivise per i form del pannello platform-admin */
+@layer components {
+  .input-base {
+    @apply w-full rounded-xl border border-pork-ink/15 bg-white px-3 py-2.5 text-sm
+           placeholder-pork-ink/35 focus:outline-none focus:ring-2 focus:ring-pork-red/30;
+  }
+}

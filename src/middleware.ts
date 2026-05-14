@@ -6,9 +6,11 @@ import { getPlatformModeFromHost } from "@/lib/platform";
 /** Portale clienti B2C — path pubblici */
 const CLIENTS_PATHS = new Set([
   "/", "/login", "/registrati", "/recupera-password",
-  "/profilo", "/consensi", "/ristoranti", "/ordini",
+  "/profilo", "/consensi", "/ristoranti", "/ordini", "/impostazioni",
 ]);
-const CLIENTS_PRIVATE_PATHS = new Set(["/profilo", "/consensi", "/ristoranti", "/ordini"]);
+const CLIENTS_PRIVATE_PATHS = new Set([
+  "/profilo", "/consensi", "/ristoranti", "/ordini", "/impostazioni",
+]);
 
 /** Portale fatturazione B2B */
 const STUDIO_PATHS = new Set(["/", "/fatturazione", "/pagamenti", "/recesso"]);
@@ -26,7 +28,20 @@ function allowStaticAssets(pathname: string) {
   return false;
 }
 
-async function getSessionUser(request: NextRequest, response: NextResponse) {
+function resolveSessionCookieDomain(host: string | null): string | undefined {
+  if (!host) return undefined;
+  const h = host.split(":")[0].toLowerCase();
+  // Sottodomini Menuary: cookie condiviso su .menuary.it
+  if (h === "menuary.it" || h.endsWith(".menuary.it")) return ".menuary.it";
+  // Domini custom (bepork.it, ecc.): nessun domain override
+  return undefined;
+}
+
+async function getSessionUser(
+  request: NextRequest,
+  response: NextResponse,
+  cookieDomain?: string,
+) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -35,7 +50,10 @@ async function getSessionUser(request: NextRequest, response: NextResponse) {
         getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
+            response.cookies.set(name, value, {
+              ...options,
+              ...(cookieDomain !== undefined ? { domain: cookieDomain } : {}),
+            }),
           );
         },
       },
@@ -61,6 +79,7 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get("host");
   const mode = getPlatformModeFromHost(host);
   const { pathname } = request.nextUrl;
+  const cookieDomain = resolveSessionCookieDomain(host);
 
   if (allowStaticAssets(pathname)) return NextResponse.next();
 
@@ -96,7 +115,7 @@ export async function middleware(request: NextRequest) {
       } else {
         response = NextResponse.next({ request });
       }
-      const user = await getSessionUser(request, response);
+      const user = await getSessionUser(request, response, cookieDomain);
       if (!user) {
         return loginRedirect(
           request,
@@ -130,7 +149,7 @@ export async function middleware(request: NextRequest) {
       } else {
         response = NextResponse.next({ request });
       }
-      const user = await getSessionUser(request, response);
+      const user = await getSessionUser(request, response, cookieDomain);
       if (!user) {
         return loginRedirect(request, "admin", pathname.replace(/^\/admin/, "") || "/");
       }
@@ -152,7 +171,7 @@ export async function middleware(request: NextRequest) {
     }
     if (CLIENTS_PRIVATE_PATHS.has(pathname)) {
       const response = NextResponse.next({ request });
-      const user = await getSessionUser(request, response);
+      const user = await getSessionUser(request, response, cookieDomain);
       if (!user) return loginRedirect(request, "clienti", pathname);
       return response;
     }

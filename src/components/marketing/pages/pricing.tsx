@@ -1,68 +1,20 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { Check, Minus, Sparkles } from "lucide-react";
+import { Check, Minus, Sparkles, ArrowRight } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import {
   FAQSection,
   FinalCTASection,
 } from "@/components/marketing/marketing-sections";
+import {
+  PRICING_PLANS,
+  annualSaving,
+  type PricingPlan,
+} from "@/lib/platform-pricing";
 
-type Plan = {
-  name: string;
-  tagline: string;
-  monthly: string;
-  setup: string;
-  body: string;
-  items: string[];
-  featured?: boolean;
-};
-
-const PLANS: Plan[] = [
-  {
-    name: "Vetrina",
-    tagline: "Solo il sito",
-    monthly: "39",
-    setup: "da € 690",
-    body: "Per chi vuole essere scelto meglio online. La forma minima: identità, menu e contatti curati.",
-    items: [
-      "Sito su misura, dominio personalizzato",
-      "Menu digitale aggiornabile",
-      "Recensioni, foto, orari, contatti",
-      "Hosting, SSL, backup inclusi",
-      "Aggiornamenti tecnici continui",
-    ],
-  },
-  {
-    name: "Operatività",
-    tagline: "Sito + gestionale",
-    monthly: "129",
-    setup: "da € 1.490",
-    featured: true,
-    body: "Per locali che vogliono trasformare il sito in uno strumento di lavoro. Più richieste, meno errori, margini sotto controllo.",
-    items: [
-      "Tutto di Vetrina",
-      "Prenotazioni · ordini · delivery",
-      "Magazzino con alert sotto soglia",
-      "Food cost & margini in tempo reale",
-      "CRM clienti e analytics",
-      "Pannello staff, cucina, cassa",
-    ],
-  },
-  {
-    name: "Autopilota",
-    tagline: "Gestionale + IA",
-    monthly: "249",
-    setup: "da € 1.990",
-    body: "Per chi vuole un'assistente IA che risponde al telefono 24/7, gestisce prenotazioni e ordini con la voce del locale.",
-    items: [
-      "Tutto di Operatività",
-      "IA al telefono 24/7",
-      "Prenotazioni e ordini autonomi",
-      "Cloning vocale opzionale",
-      "Multilingua nativa (IT, EN, FR, ES, DE)",
-      "Supporto prioritario dedicato",
-    ],
-  },
-];
+// ─── Tabella di confronto ─────────────────────────────────────────────────────
 
 type Row = {
   label: string;
@@ -92,18 +44,28 @@ const COMPARE_ROWS: Row[] = [
   },
 ];
 
+// ─── FAQ ──────────────────────────────────────────────────────────────────────
+
 const PRICING_FAQ = [
   {
-    q: "C'è un vincolo annuale?",
-    a: "No. I piani Menuary sono mensili, senza penali. Puoi cambiare piano o disdire con un mese di preavviso. Il setup iniziale resta acquisito.",
+    q: "Il contratto è annuale?",
+    a: "Sì. Il contratto ha durata annuale e non è previsto il recesso anticipato. Puoi però cambiare piano — salire o scendere — in qualsiasi momento: la variazione è attiva dal mese successivo.",
   },
   {
-    q: "Cosa è incluso nel canone mensile?",
-    a: "Hosting, dominio (se gestito da noi), certificati SSL, backup, aggiornamenti tecnici, sicurezza e tutte le nuove funzioni del prodotto, su qualsiasi modulo. Più il supporto del nostro team.",
+    q: "Cosa cambia tra fatturazione annuale e mensile?",
+    a: "Con fatturazione annuale paghi un unico importo per i 12 mesi e benefici di un canone mensile ridotto. Con fatturazione mensile la spesa è ripartita mese per mese, ma il canone è più alto. In entrambi i casi il contratto è annuale.",
+  },
+  {
+    q: "Cos'è il costo di attivazione?",
+    a: "È una tariffa una tantum per la configurazione iniziale: setup tecnico, onboarding, personalizzazione del sito e dei moduli. Non è inclusa nel canone e viene concordata prima dell'avvio. I prezzi indicati sono indicativi; il preventivo esatto dipende dalla complessità del locale.",
+  },
+  {
+    q: "Cosa è incluso nel canone?",
+    a: "Hosting, dominio (se gestito da noi), certificati SSL, backup, aggiornamenti tecnici, sicurezza e tutte le nuove funzioni del prodotto su qualsiasi modulo. Più il supporto del nostro team.",
   },
   {
     q: "Posso passare da un piano all'altro?",
-    a: "Sì, in qualsiasi momento. Aggiungere prenotazioni, ordini, magazzino, food cost o CRM è una semplice attivazione, senza dover rifare il sito.",
+    a: "Sì, in qualsiasi momento. Aggiungere prenotazioni, ordini, magazzino, food cost o CRM è una semplice attivazione, senza dover rifare il sito. La variazione è attiva dal mese successivo.",
   },
   {
     q: "Come funziona l'IA al telefono?",
@@ -118,36 +80,16 @@ const PRICING_FAQ = [
     a: "Certo. Possiamo configurare il tuo dominio esistente o registrarne uno nuovo per te. In entrambi i casi nessun costo aggiuntivo.",
   },
   {
-    q: "Le commissioni su prenotazioni, ordini e delivery?",
+    q: "Ci sono commissioni su prenotazioni, ordini o delivery?",
     a: "Zero. Menuary non trattiene nulla sui tuoi ordini, prenotazioni o consegne. Quello che incassi è tuo, integrale. Eventuali fee dei corrieri delivery dipendono dal provider che scegli.",
-  },
-  {
-    q: "Il gestionale magazzino e food cost servono davvero?",
-    a: "Se il locale fattura più di 10–15.000€ al mese sì. Magazzino significa scorte sotto soglia automatiche, niente ingredienti scaduti, niente piatti tolti la sera. Food cost significa vedere il margine reale per piatto — e capire perché un piatto popolare in realtà costa più di quanto rende.",
   },
 ];
 
-function CellMark({ value }: { value: boolean | string }) {
-  if (value === true) {
-    return (
-      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--menuary-sage)]/15 text-[var(--menuary-sage)]">
-        <Check size={14} strokeWidth={2} />
-      </span>
-    );
-  }
-  if (value === false) {
-    return (
-      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--menuary-line)] text-[var(--menuary-muted)]">
-        <Minus size={14} strokeWidth={2} />
-      </span>
-    );
-  }
-  return (
-    <span className="text-[14px] font-semibold text-[var(--menuary-ink)]">{value}</span>
-  );
-}
+// ─── Componente principale ────────────────────────────────────────────────────
 
 export function MarketingPricingPage() {
+  const [billing, setBilling] = useState<"annual" | "monthly">("annual");
+
   return (
     <MarketingShell>
       {/* HERO */}
@@ -165,9 +107,8 @@ export function MarketingPricingPage() {
               </h1>
             </div>
             <p className="menuary-fade-up menuary-fade-up-d1 max-w-md text-[15px] leading-7 text-[var(--menuary-muted)] lg:text-right">
-              Tre piani pensati per ristoranti di ogni dimensione. Prezzi
-              chiari, nessun vincolo annuale, nessuna commissione su
-              prenotazioni e ordini.
+              Tre piani per ristoranti di ogni dimensione. Prezzi chiari, zero
+              commissioni su ordini e prenotazioni.
             </p>
           </div>
         </div>
@@ -176,74 +117,85 @@ export function MarketingPricingPage() {
       {/* PLAN CARDS */}
       <section>
         <div className="menuary-container py-20 lg:py-24">
-          <div className="grid gap-px sm:gap-6 lg:grid-cols-3">
-            {PLANS.map((plan) => (
-              <article
-                key={plan.name}
+
+          {/* Toggle fatturazione */}
+          <div className="mb-14 flex justify-center">
+            <div className="inline-flex items-center gap-1 rounded-full border border-[var(--menuary-line)] p-1">
+              <button
+                onClick={() => setBilling("annual")}
                 className={
-                  "relative flex flex-col gap-6 border bg-[var(--menuary-porcelain)] p-8 sm:p-10 transition-colors " +
-                  (plan.featured
-                    ? "border-[var(--menuary-copper)] bg-[var(--menuary-paper)] lg:-translate-y-2"
-                    : "border-[var(--menuary-line)] hover:border-[var(--menuary-ink)]/40")
+                  "rounded-full px-5 py-2 text-sm font-semibold transition " +
+                  (billing === "annual"
+                    ? "bg-[var(--menuary-ink)] text-[var(--menuary-paper)]"
+                    : "text-[var(--menuary-muted)] hover:text-[var(--menuary-ink)]")
                 }
               >
-                {plan.featured && (
-                  <span className="absolute -top-3 left-8 inline-flex items-center gap-1 rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white">
-                    <Sparkles size={11} strokeWidth={2} />
-                    Consigliato
-                  </span>
-                )}
+                Annuale
+              </button>
+              <button
+                onClick={() => setBilling("monthly")}
+                className={
+                  "rounded-full px-5 py-2 text-sm font-semibold transition " +
+                  (billing === "monthly"
+                    ? "bg-[var(--menuary-ink)] text-[var(--menuary-paper)]"
+                    : "text-[var(--menuary-muted)] hover:text-[var(--menuary-ink)]")
+                }
+              >
+                Mensile
+              </button>
+            </div>
+            {billing === "annual" && (
+              <p className="ml-4 self-center text-xs font-semibold text-[var(--menuary-sage)]">
+                Risparmio fino a {Math.max(...PRICING_PLANS.map(annualSaving))}€/anno
+              </p>
+            )}
+          </div>
 
-                <div>
-                  <h2 className="menuary-display text-3xl">{plan.name}</h2>
-                  <p className="mt-1 text-xs uppercase tracking-[0.22em] text-[var(--menuary-copper)]">
-                    {plan.tagline}
-                  </p>
-                </div>
-
-                <div>
-                  <span className="menuary-price-tag">
-                    <span className="amount">€{plan.monthly}</span>
-                    <span className="unit">/mese</span>
-                  </span>
-                  <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-                    setup {plan.setup}
-                  </p>
-                </div>
-
-                <p className="text-[15px] leading-7 text-[var(--menuary-muted)]">{plan.body}</p>
-
-                <ul className="space-y-3 text-[15px]">
-                  {plan.items.map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <Check
-                        size={16}
-                        strokeWidth={2}
-                        className="mt-1 shrink-0 text-[var(--menuary-copper)]"
-                      />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href="/contatti"
-                  className={
-                    "mt-2 " +
-                    (plan.featured
-                      ? "menuary-button menuary-button-accent"
-                      : "menuary-button menuary-button-light")
-                  }
-                >
-                  {plan.featured ? "Inizia con Operatività" : "Richiedi proposta"}
-                </Link>
-              </article>
+          <div className="grid gap-px sm:gap-6 lg:grid-cols-3">
+            {PRICING_PLANS.map((plan) => (
+              <PlanCard key={plan.slug} plan={plan} billing={billing} />
             ))}
           </div>
 
-          <p className="mt-12 text-center text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-            Tutti i prezzi sono IVA esclusa · pagamento mensile o annuale
+          {/* Note IVA */}
+          <p className="mt-10 text-center text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
+            Tutti i prezzi sono IVA esclusa &nbsp;·&nbsp; contratto annuale
+            {billing === "annual"
+              ? " · fatturazione annuale"
+              : " · fatturazione mensile"}
           </p>
+        </div>
+      </section>
+
+      {/* NOTE COMMERCIALI */}
+      <section className="border-t border-[var(--menuary-line)]">
+        <div className="menuary-container py-16 lg:py-20">
+          <div className="mx-auto max-w-3xl">
+            <p className="menuary-section-label mb-6">Note</p>
+            <div className="grid gap-8 sm:grid-cols-3 text-[14px] leading-7 text-[var(--menuary-muted)]">
+              <div>
+                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">Contratto annuale</p>
+                <p>
+                  La durata minima è di 12 mesi. Non è previsto il recesso
+                  anticipato. Puoi cambiare piano in qualsiasi momento.
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">Costo di attivazione</p>
+                <p>
+                  Una tantum, concordata prima dell&apos;avvio. Copre setup tecnico,
+                  onboarding e personalizzazione. Non è inclusa nel canone.
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">IVA e prezzi</p>
+                <p>
+                  Tutti i prezzi esposti sono al netto dell&apos;IVA applicabile.
+                  La fattura sarà emessa con l&apos;aliquota vigente.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -306,5 +258,118 @@ export function MarketingPricingPage() {
 
       <FinalCTASection />
     </MarketingShell>
+  );
+}
+
+// ─── Plan Card ────────────────────────────────────────────────────────────────
+
+function PlanCard({
+  plan,
+  billing,
+}: {
+  plan: PricingPlan;
+  billing: "annual" | "monthly";
+}) {
+  const price = billing === "annual" ? plan.price_annual : plan.price_monthly;
+  const saving = annualSaving(plan);
+
+  return (
+    <article
+      className={
+        "relative flex flex-col gap-6 border bg-[var(--menuary-porcelain)] p-8 sm:p-10 transition-colors " +
+        (plan.is_featured
+          ? "border-[var(--menuary-copper)] bg-[var(--menuary-paper)] lg:-translate-y-2"
+          : "border-[var(--menuary-line)] hover:border-[var(--menuary-ink)]/40")
+      }
+    >
+      {plan.is_featured && (
+        <span className="absolute -top-3 left-8 inline-flex items-center gap-1 rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white">
+          <Sparkles size={11} strokeWidth={2} />
+          Consigliato
+        </span>
+      )}
+
+      <div>
+        <h2 className="menuary-display text-3xl">{plan.marketing_name}</h2>
+        <p className="mt-1 text-xs uppercase tracking-[0.22em] text-[var(--menuary-copper)]">
+          {plan.tagline}
+        </p>
+      </div>
+
+      {/* Prezzo */}
+      <div>
+        <span className="menuary-price-tag">
+          <span className="amount">€{price}</span>
+          <span className="unit">/mese</span>
+        </span>
+        {billing === "annual" ? (
+          <p className="mt-2 text-xs text-[var(--menuary-muted)]">
+            <span className="font-semibold text-[var(--menuary-sage)]">
+              Risparmi €{saving}/anno
+            </span>
+            {" "}rispetto al mensile
+          </p>
+        ) : (
+          <p className="mt-2 text-xs text-[var(--menuary-muted)]">
+            €{plan.price_annual}/mese pagando annualmente
+          </p>
+        )}
+        <p className="mt-1.5 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
+          setup {plan.setup_from}
+        </p>
+      </div>
+
+      <p className="text-[15px] leading-7 text-[var(--menuary-muted)]">
+        {plan.description}
+      </p>
+
+      <ul className="space-y-3 text-[15px]">
+        {plan.marketing_items.map((item) => (
+          <li key={item} className="flex items-start gap-3">
+            <Check
+              size={16}
+              strokeWidth={2}
+              className="mt-1 shrink-0 text-[var(--menuary-copper)]"
+            />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+
+      <Link
+        href="/contatti"
+        className={
+          "mt-2 inline-flex items-center justify-center gap-2 " +
+          (plan.is_featured
+            ? "menuary-button menuary-button-accent"
+            : "menuary-button menuary-button-light")
+        }
+      >
+        {plan.cta_label ?? "Richiedi proposta"}
+        <ArrowRight size={15} strokeWidth={2} />
+      </Link>
+    </article>
+  );
+}
+
+// ─── CellMark ─────────────────────────────────────────────────────────────────
+
+function CellMark({ value }: { value: boolean | string }) {
+  if (value === true) {
+    return (
+      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--menuary-sage)]/15 text-[var(--menuary-sage)]">
+        <Check size={14} strokeWidth={2} />
+      </span>
+    );
+  }
+  if (value === false) {
+    return (
+      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--menuary-line)] text-[var(--menuary-muted)]">
+        <Minus size={14} strokeWidth={2} />
+      </span>
+    );
+  }
+  return (
+    <span className="text-[14px] font-semibold text-[var(--menuary-ink)]">{value}</span>
   );
 }

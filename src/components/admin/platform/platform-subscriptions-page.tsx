@@ -1,0 +1,428 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import {
+  CalendarClock,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  ArrowRight,
+  CreditCard,
+  Euro,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type {
+  PlatformSubscription,
+  PlatformPayment,
+  SubscriptionStatus,
+} from "@/lib/platform-crm-types";
+import {
+  SUBSCRIPTION_STATUS_LABELS,
+  SUBSCRIPTION_STATUS_COLORS,
+  PAYMENT_STATUS_COLORS,
+  PAYMENT_STATUS_LABELS,
+} from "@/lib/platform-crm-types";
+
+// ─── Mock dati ────────────────────────────────────────────────────────────────
+
+const MOCK_SUBSCRIPTIONS: PlatformSubscription[] = [
+  {
+    id: "sub-1",
+    lead_id: "1",
+    package_id: "pkg-growth",
+    billing_cycle: "monthly",
+    price_override: null,
+    currency: "EUR",
+    status: "trial",
+    started_at: "2026-05-01",
+    trial_ends_at: "2026-05-31",
+    current_period_start: "2026-05-01",
+    current_period_end: "2026-05-31",
+    next_renewal_at: "2026-06-01",
+    cancelled_at: null,
+    notes: null,
+    created_at: "2026-05-01T10:00:00Z",
+    updated_at: "2026-05-01T10:00:00Z",
+    lead: {
+      id: "1", business_name: "Osteria della Piazza",
+      business_slug: null, business_vertical: "food",
+      contact_name: "Marco Ferri", contact_email: "marco@osteriadellapiazza.it",
+      contact_phone: null, address: null, city: "Bologna", province: "BO",
+      postal_code: null, country: "IT",
+      billing_name: null, billing_vat: null, billing_cf: null,
+      billing_address: null, billing_city: null, billing_province: null,
+      billing_postal_code: null, billing_sdi: null, billing_pec: null,
+      status: "prospect", source: "form_web", notes: null,
+      tenant_id: null, converted_at: null,
+      created_at: "2026-05-01T10:00:00Z", updated_at: "2026-05-10T15:30:00Z",
+    },
+    package: {
+      id: "pkg-growth", name: "Growth", slug: "growth", description: null,
+      price_monthly: 99, price_yearly: 990, currency: "EUR",
+      modules: ["website", "onlineMenu", "reservations", "takeaway", "tableOrders"],
+      is_active: true, sort_order: 2,
+      created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z",
+    },
+  },
+  {
+    id: "sub-2",
+    lead_id: "2",
+    package_id: "pkg-pro",
+    billing_cycle: "yearly",
+    price_override: null,
+    currency: "EUR",
+    status: "active",
+    started_at: "2026-02-01",
+    trial_ends_at: null,
+    current_period_start: "2026-02-01",
+    current_period_end: "2027-01-31",
+    next_renewal_at: "2027-02-01",
+    cancelled_at: null,
+    notes: null,
+    created_at: "2026-02-01T10:00:00Z",
+    updated_at: "2026-02-01T10:00:00Z",
+    lead: {
+      id: "2", business_name: "BePork",
+      business_slug: "bepork", business_vertical: "food",
+      contact_name: "Luca Bianchi", contact_email: "luca@bepork.it",
+      contact_phone: null, address: "Via Veneto 5", city: "Roma", province: "RM",
+      postal_code: "00187", country: "IT",
+      billing_name: "BePork S.r.l.", billing_vat: "IT12345678901",
+      billing_cf: null, billing_address: null, billing_city: null,
+      billing_province: null, billing_postal_code: null, billing_sdi: null, billing_pec: null,
+      status: "active", source: "diretto", notes: null,
+      tenant_id: "bepork", converted_at: "2026-02-01T00:00:00Z",
+      created_at: "2026-01-15T09:00:00Z", updated_at: "2026-05-01T12:00:00Z",
+    },
+    package: {
+      id: "pkg-pro", name: "Pro", slug: "pro", description: null,
+      price_monthly: 179, price_yearly: 1790, currency: "EUR",
+      modules: ["website", "onlineMenu", "reservations", "takeaway", "tableOrders",
+                "crm", "analytics", "upselling"],
+      is_active: true, sort_order: 3,
+      created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z",
+    },
+  },
+];
+
+const MOCK_PAYMENTS: PlatformPayment[] = [
+  {
+    id: "pay-1", subscription_id: "sub-1", lead_id: "1",
+    amount: 99, currency: "EUR", status: "pending",
+    payment_method: "bonifico", payment_date: null,
+    due_date: "2026-06-01", invoice_number: null, notes: null,
+    created_at: "2026-05-01T10:00:00Z", updated_at: "2026-05-01T10:00:00Z",
+  },
+  {
+    id: "pay-2", subscription_id: "sub-2", lead_id: "2",
+    amount: 1790, currency: "EUR", status: "paid",
+    payment_method: "bonifico", payment_date: "2026-02-05",
+    due_date: "2026-02-01", invoice_number: "FT-2026-001", notes: null,
+    created_at: "2026-02-01T10:00:00Z", updated_at: "2026-02-05T10:00:00Z",
+  },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function fmt(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("it-IT", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function eur(n: number) {
+  return new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(n);
+}
+
+function daysUntil(dateStr: string | null): number | null {
+  if (!dateStr) return null;
+  const diff = new Date(dateStr).getTime() - Date.now();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+// ─── Componente ───────────────────────────────────────────────────────────────
+
+const STATUS_FILTERS: { value: SubscriptionStatus | "all"; label: string }[] = [
+  { value: "all", label: "Tutti" },
+  { value: "trial", label: "Trial" },
+  { value: "active", label: "Attivi" },
+  { value: "suspended", label: "Sospesi" },
+  { value: "cancelled", label: "Cancellati" },
+];
+
+export function PlatformSubscriptionsPage() {
+  const [subscriptions] = useState<PlatformSubscription[]>(MOCK_SUBSCRIPTIONS);
+  const [payments] = useState<PlatformPayment[]>(MOCK_PAYMENTS);
+  const [activeFilter, setActiveFilter] = useState<SubscriptionStatus | "all">("all");
+
+  const mrr = subscriptions
+    .filter((s) => s.status === "active" || s.status === "trial")
+    .reduce((sum, s) => {
+      const price = s.price_override ?? (s.billing_cycle === "yearly"
+        ? (s.package?.price_yearly ?? 0) / 12
+        : (s.package?.price_monthly ?? 0));
+      return sum + price;
+    }, 0);
+
+  const pendingPayments = payments.filter((p) => p.status === "pending");
+  const pendingTotal = pendingPayments.reduce((s, p) => s + p.amount, 0);
+
+  const expiringSoon = subscriptions.filter((s) => {
+    const days = daysUntil(s.next_renewal_at);
+    return (s.status === "trial" || s.status === "active") && days !== null && days <= 30;
+  });
+
+  const filtered = subscriptions.filter(
+    (s) => activeFilter === "all" || s.status === activeFilter,
+  );
+
+  return (
+    <div className="space-y-8">
+      <header>
+        <p className="impact-title text-xs text-pork-red">Piattaforma</p>
+        <h1 className="headline text-4xl">Abbonamenti</h1>
+        <p className="mt-1 text-pork-ink/60">
+          Panoramica rinnovi, scadenze e pagamenti.
+        </p>
+      </header>
+
+      {/* KPI */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <KpiCard
+          icon={Euro}
+          label="MRR stimato"
+          value={eur(mrr)}
+          sub="abbonamenti attivi + trial"
+        />
+        <KpiCard
+          icon={CreditCard}
+          label="Pagamenti attesi"
+          value={eur(pendingTotal)}
+          sub={`${pendingPayments.length} in sospeso`}
+          alert={pendingPayments.length > 0}
+        />
+        <KpiCard
+          icon={AlertTriangle}
+          label="Scadono a breve"
+          value={String(expiringSoon.length)}
+          sub="entro 30 giorni"
+          alert={expiringSoon.length > 0}
+        />
+        <KpiCard
+          icon={CheckCircle2}
+          label="Abbonamenti attivi"
+          value={String(subscriptions.filter((s) => s.status === "active").length)}
+          sub="stato: active"
+        />
+      </div>
+
+      {/* Alert scadenze imminenti */}
+      {expiringSoon.length > 0 && (
+        <div className="rounded-2xl bg-pork-mustard/15 p-4">
+          <div className="flex items-center gap-2 font-bold text-pork-ink">
+            <AlertTriangle size={16} className="text-pork-mustard" />
+            Rinnovi imminenti
+          </div>
+          <div className="mt-3 space-y-2">
+            {expiringSoon.map((s) => {
+              const days = daysUntil(s.next_renewal_at);
+              return (
+                <div key={s.id} className="flex items-center justify-between text-sm">
+                  <span className="font-semibold">{s.lead?.business_name}</span>
+                  <span className="text-pork-ink/60">
+                    {s.package?.name} · rinnova {fmt(s.next_renewal_at)}
+                    {days !== null && days <= 7 && (
+                      <span className="ml-2 font-bold text-pork-red">({days}gg)</span>
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Filtri */}
+      <div className="flex gap-1 rounded-2xl bg-pork-ink/5 p-1 w-fit">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => setActiveFilter(f.value)}
+            className={cn(
+              "rounded-xl px-4 py-2 text-sm font-bold transition",
+              activeFilter === f.value
+                ? "bg-pork-ink text-pork-cream"
+                : "text-pork-ink/60 hover:text-pork-ink",
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tabella abbonamenti */}
+      <div className="space-y-3">
+        {filtered.map((sub) => (
+          <SubscriptionRow key={sub.id} sub={sub} payments={payments.filter((p) => p.subscription_id === sub.id)} />
+        ))}
+        {filtered.length === 0 && (
+          <div className="rounded-3xl bg-white p-10 text-center ring-1 ring-pork-ink/10">
+            <p className="text-pork-ink/50">Nessun abbonamento trovato.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Sezione pagamenti in sospeso */}
+      {pendingPayments.length > 0 && (
+        <section>
+          <h2 className="headline mb-4 text-2xl">Pagamenti in attesa</h2>
+          <div className="space-y-3">
+            {pendingPayments.map((p) => {
+              const sub = subscriptions.find((s) => s.id === p.subscription_id);
+              const days = daysUntil(p.due_date);
+              return (
+                <div
+                  key={p.id}
+                  className="flex flex-wrap items-center gap-4 rounded-2xl bg-white p-4 ring-1 ring-pork-ink/10"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold">{sub?.lead?.business_name ?? "—"}</p>
+                    <p className="mt-0.5 text-sm text-pork-ink/55">
+                      {sub?.package?.name} · {eur(p.amount)} · scade {fmt(p.due_date)}
+                      {days !== null && days <= 0 && (
+                        <span className="ml-2 font-bold text-pork-red">SCADUTO</span>
+                      )}
+                      {days !== null && days > 0 && days <= 7 && (
+                        <span className="ml-2 font-bold text-pork-mustard">({days}gg)</span>
+                      )}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide",
+                      PAYMENT_STATUS_COLORS[p.status],
+                    )}
+                  >
+                    {PAYMENT_STATUS_LABELS[p.status]}
+                  </span>
+                  <button className="shrink-0 rounded-full bg-pork-green px-3 py-1.5 text-xs font-bold text-white">
+                    Segna pagato
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+// ─── Riga abbonamento ─────────────────────────────────────────────────────────
+
+function SubscriptionRow({
+  sub,
+  payments,
+}: {
+  sub: PlatformSubscription;
+  payments: PlatformPayment[];
+}) {
+  const effectivePrice =
+    sub.price_override ??
+    (sub.billing_cycle === "yearly"
+      ? sub.package?.price_yearly
+      : sub.package?.price_monthly) ??
+    0;
+
+  const days = daysUntil(sub.next_renewal_at);
+  const expiresWarn = days !== null && days <= 30 && (sub.status === "trial" || sub.status === "active");
+
+  return (
+    <div className="rounded-2xl bg-white p-5 ring-1 ring-pork-ink/10">
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/admin/crm/${sub.lead_id}`}
+              className="font-bold hover:text-pork-red"
+            >
+              {sub.lead?.business_name ?? sub.lead_id}
+            </Link>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide",
+                SUBSCRIPTION_STATUS_COLORS[sub.status],
+              )}
+            >
+              {SUBSCRIPTION_STATUS_LABELS[sub.status]}
+            </span>
+            {expiresWarn && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-pork-mustard/20 px-2.5 py-0.5 text-[10px] font-bold text-pork-ink">
+                <Clock size={10} /> {days}gg
+              </span>
+            )}
+          </div>
+          <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-pork-ink/55">
+            <span>{sub.package?.name}</span>
+            <span>{eur(effectivePrice)}/{sub.billing_cycle === "monthly" ? "mese" : "anno"}</span>
+            <span>Rinnovo: {fmt(sub.next_renewal_at)}</span>
+            {sub.trial_ends_at && <span>Trial fino al: {fmt(sub.trial_ends_at)}</span>}
+          </div>
+        </div>
+
+        {/* Pagamenti rapidi */}
+        <div className="flex flex-wrap gap-2">
+          {payments.slice(0, 2).map((p) => (
+            <span
+              key={p.id}
+              className={cn(
+                "rounded-full px-2 py-1 text-[10px] font-bold",
+                PAYMENT_STATUS_COLORS[p.status],
+              )}
+            >
+              {eur(p.amount)} · {PAYMENT_STATUS_LABELS[p.status]}
+            </span>
+          ))}
+        </div>
+
+        <Link
+          href={`/admin/crm/${sub.lead_id}`}
+          className="shrink-0 text-pork-ink/30 hover:text-pork-ink"
+        >
+          <ArrowRight size={16} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ─── KPI Card ─────────────────────────────────────────────────────────────────
+
+function KpiCard({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  alert,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  sub: string;
+  alert?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl bg-white p-5 ring-1",
+        alert ? "ring-pork-mustard/50" : "ring-pork-ink/10",
+      )}
+    >
+      <Icon size={18} className={cn("mb-3", alert ? "text-pork-mustard" : "text-pork-ink/40")} />
+      <p className="text-xl font-black">{value}</p>
+      <p className="mt-0.5 text-xs font-bold text-pork-ink/70">{label}</p>
+      <p className="text-[11px] text-pork-ink/40">{sub}</p>
+    </div>
+  );
+}

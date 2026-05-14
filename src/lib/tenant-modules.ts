@@ -21,6 +21,10 @@ export type TenantModuleDefinition = {
   category: TenantModuleCategory;
   requires?: TenantFeatureKey[];
   requiresAny?: TenantFeatureKey[];
+  // Sub-sistemi garantiti: quando questo modulo è attivo, i moduli in `implies`
+  // vengono attivati automaticamente indipendentemente dal flag nel registry del tenant.
+  // Usare per funzionalità che fanno parte integrante del pacchetto (es. favorites con menu).
+  implies?: TenantFeatureKey[];
   // Copy specifico per vertical. Il default (food) è già in label/description.
   verticalCopy?: Partial<Record<TenantVertical, VerticalModuleCopy>>;
 };
@@ -44,6 +48,8 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Rende disponibile il menu digitale consultabile da sito, QR e preview.",
     category: "Presenza digitale",
     requires: ["website"],
+    // favorites è parte integrante del pacchetto menu: sempre incluso quando onlineMenu è attivo.
+    implies: ["favorites"],
     verticalCopy: {
       services: {
         label: "Listino servizi",
@@ -317,12 +323,26 @@ export function isTenantFeatureEffective(
 export function resolveTenantFeatures(
   features: TenantFeatureFlags,
 ): TenantFeatureFlags {
-  return Object.fromEntries(
+  // Prima passata: risolve i flag in base ai declared flags + dependency requirements.
+  const resolved = Object.fromEntries(
     TENANT_MODULES.map((module) => [
       module.key,
       isTenantFeatureEffective(features, module.key),
     ]),
   ) as TenantFeatureFlags;
+
+  // Seconda passata: propaga gli `implies` (sub-sistemi garantiti dal modulo padre).
+  // Un modulo attivo porta sempre con sé i suoi sotto-sistemi, indipendentemente
+  // da come il tenant ha configurato i flag nel registry.
+  for (const module of TENANT_MODULES) {
+    if (resolved[module.key]) {
+      for (const implied of module.implies ?? []) {
+        resolved[implied] = true;
+      }
+    }
+  }
+
+  return resolved;
 }
 
 export function formatFeatureDependencies(key: TenantFeatureKey): string {

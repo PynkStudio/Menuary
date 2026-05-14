@@ -14,5 +14,6 @@ export const clientsSite = {
     consents: "/consensi",
     restaurants: "/ristoranti",
     orders: "/ordini",
+    settings: "/impostazioni",
   },
 } as const;

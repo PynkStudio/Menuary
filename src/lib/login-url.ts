@@ -27,13 +27,14 @@ export function buildLoginUrl(options: {
   from: LoginFrom;
   next?: string;
   popup?: boolean;
-  /** Callback per type=invite o type=recovery */
-  callbackType?: "invite" | "recovery";
+  /** Origine del chiamante (window.location.origin) — usato dal popup per il postMessage sicuro */
+  origin?: string;
 }): string {
   const url = new URL(LOGIN_BASE);
   url.searchParams.set("from", options.from);
   if (options.next) url.searchParams.set("next", options.next);
   if (options.popup) url.searchParams.set("popup", "1");
+  if (options.origin) url.searchParams.set("origin", options.origin);
   return url.toString();
 }
 

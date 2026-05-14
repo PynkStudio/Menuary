@@ -27,7 +27,8 @@ export async function GET(request: Request) {
   const next = parseNext(searchParams.get("next"));
   const isPopup = searchParams.get("popup") === "1";
 
-  const supabase = await createSupabaseServerClient();
+  // Questo route gira su login.menuary.it: cookie condiviso su .menuary.it
+  const supabase = await createSupabaseServerClient(".menuary.it");
 
   if (tokenHash && type) {
     const { data, error } = await supabase.auth.verifyOtp({

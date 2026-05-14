@@ -15,6 +15,7 @@ const NAV = [
   { href: clientsSite.paths.orders, label: "Ordini" },
   { href: clientsSite.paths.consents, label: "Privacy e consensi" },
   { href: clientsSite.paths.restaurants, label: "Dati con i ristoranti" },
+  { href: clientsSite.paths.settings, label: "Impostazioni" },
 ] as const;
 
 export function ClientsNav() {
