@@ -484,3 +484,95 @@
     animation: none !important;
   }
 }
+
+/* ============================================================
+   v11 — integrations, modules, comparison
+   ============================================================ */
+
+@layer components {
+  /* INTEGRATIONS TILES */
+  .menuary-integration-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.6rem;
+    min-height: 5.5rem;
+    padding: 1.1rem 1.25rem;
+    background: var(--menuary-paper);
+    transition:
+      background-color 280ms ease,
+      transform 280ms ease;
+    cursor: default;
+  }
+
+  .menuary-integration-tile:hover {
+    background: var(--menuary-porcelain);
+    transform: translateY(-1px);
+  }
+
+  .menuary-integration-name {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    color: var(--menuary-ink);
+  }
+
+  .menuary-integration-cat {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--menuary-muted);
+  }
+
+  /* MODULE SHOWCASE CARDS */
+  .menuary-module-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 2rem 1.85rem 2.1rem;
+    background: var(--menuary-paper);
+    border: 1px solid var(--menuary-line);
+    transition:
+      border-color 360ms ease,
+      transform 360ms cubic-bezier(0.2, 0.6, 0.2, 1),
+      box-shadow 360ms ease;
+  }
+
+  .menuary-module-card:hover {
+    border-color: rgba(24, 35, 31, 0.28);
+    transform: translateY(-2px);
+    box-shadow: 0 24px 60px -28px rgba(24, 35, 31, 0.22);
+  }
+
+  /* MAGAZZINO STOCK ROWS */
+  .menuary-stock-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 0.85rem;
+    background: var(--menuary-paper);
+    border: 1px solid var(--menuary-line);
+  }
+
+  .menuary-stock-row[data-status="sotto"] {
+    background: rgba(169, 95, 69, 0.07);
+    border-color: rgba(169, 95, 69, 0.32);
+  }
+
+  .menuary-stock-pill {
+    flex-shrink: 0;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: var(--menuary-copper);
+    color: #fffaf2;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+  }
+}

@@ -1,15 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { AdminShell } from "@/components/admin/admin-shell";
 
-export function AdminLayoutSwitch({
-  loginSlot,
-  protectedSlot,
-}: {
-  loginSlot: React.ReactNode;
-  protectedSlot: React.ReactNode;
-}) {
+const AUTH_PATHS = ["/admin/login", "/admin/set-password"];
+
+export function AdminLayoutSwitch({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin/login")) return <>{loginSlot}</>;
-  return <>{protectedSlot}</>;
+  const isAuthPage = AUTH_PATHS.some((p) => pathname?.startsWith(p));
+  if (isAuthPage) return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }

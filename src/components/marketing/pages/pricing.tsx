@@ -49,9 +49,9 @@ const PLANS: Plan[] = [
   },
   {
     name: "Autopilota",
-    tagline: "Gestionale + IA · 2026",
-    monthly: "Custom",
-    setup: "lista d'attesa",
+    tagline: "Gestionale + IA",
+    monthly: "249",
+    setup: "da € 1.990",
     body: "Per chi vuole un'assistente IA che risponde al telefono 24/7, gestisce prenotazioni e ordini con la voce del locale.",
     items: [
       "Tutto di Operatività",
@@ -82,8 +82,8 @@ const COMPARE_ROWS: Row[] = [
   { label: "Food cost & margini", vetrina: false, operativita: true, autopilota: true },
   { label: "CRM clienti", vetrina: false, operativita: true, autopilota: true },
   { label: "Pannello staff & cucina", vetrina: false, operativita: true, autopilota: true },
-  { label: "IA al telefono 24/7", vetrina: false, operativita: false, autopilota: "2026" },
-  { label: "Cloning vocale", vetrina: false, operativita: false, autopilota: "2026" },
+  { label: "IA al telefono 24/7", vetrina: false, operativita: false, autopilota: true },
+  { label: "Cloning vocale", vetrina: false, operativita: false, autopilota: true },
   {
     label: "Supporto",
     vetrina: "Standard",
@@ -106,12 +106,12 @@ const PRICING_FAQ = [
     a: "Sì, in qualsiasi momento. Aggiungere prenotazioni, ordini, magazzino, food cost o CRM è una semplice attivazione, senza dover rifare il sito.",
   },
   {
-    q: "Quando è disponibile l'IA al telefono?",
-    a: "L'assistente IA vocale arriva nel 2026 in beta privata. Con il piano Autopilota entri nella lista d'attesa con priorità di accesso, e nel frattempo paghi solo Operatività finché la funzione non è attiva.",
+    q: "Come funziona l'IA al telefono?",
+    a: "L'assistente vocale risponde 24/7 con la voce e il tono del locale. Prende prenotazioni e le scrive direttamente nell'agenda, accetta ordini d'asporto, suggerisce piatti del giorno, gestisce le richieste fuori orario. Supporta il cloning vocale opzionale e parla nativamente italiano, inglese, francese, spagnolo e tedesco.",
   },
   {
     q: "Quanto tempo serve per andare online?",
-    a: "Per Vetrina, in media 3–5 settimane dalla prima chiamata. Operatività richiede 4–6 settimane perché include magazzino, food cost e configurazione dei moduli operativi. Autopilota ha tempi dedicati legati al rollout dell'IA.",
+    a: "Per Vetrina, in media 3–5 settimane dalla prima chiamata. Operatività richiede 4–6 settimane perché include magazzino, food cost e configurazione dei moduli operativi. Autopilota aggiunge 2 settimane per training della voce e calibrazione dei flussi telefonici.",
   },
   {
     q: "Posso usare il mio dominio attuale?",
@@ -203,14 +203,8 @@ export function MarketingPricingPage() {
 
                 <div>
                   <span className="menuary-price-tag">
-                    {plan.monthly === "Custom" ? (
-                      <span className="amount">Custom</span>
-                    ) : (
-                      <>
-                        <span className="amount">€{plan.monthly}</span>
-                        <span className="unit">/mese</span>
-                      </>
-                    )}
+                    <span className="amount">€{plan.monthly}</span>
+                    <span className="unit">/mese</span>
                   </span>
                   <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
                     setup {plan.setup}
@@ -241,11 +235,7 @@ export function MarketingPricingPage() {
                       : "menuary-button menuary-button-light")
                   }
                 >
-                  {plan.featured
-                    ? "Inizia con Operatività"
-                    : plan.monthly === "Custom"
-                      ? "Entra in lista d'attesa"
-                      : "Richiedi proposta"}
+                  {plan.featured ? "Inizia con Operatività" : "Richiedi proposta"}
                 </Link>
               </article>
             ))}
