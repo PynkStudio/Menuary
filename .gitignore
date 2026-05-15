@@ -9,3 +9,4 @@ public/uploads/*
 !public/uploads/.gitkeep
 .env*.local
 .claude/worktrees/agent-a70947da8ab29b154/
+.claude/worktrees/naughty-yalow-9e9abc/
