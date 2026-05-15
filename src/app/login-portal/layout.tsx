@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HashTokenRedirector } from "@/components/login-portal/hash-token-redirector";
 
 export const metadata: Metadata = {
   title: "Accedi · Menuary",
@@ -12,6 +13,7 @@ export default function LoginPortalLayout({
 }) {
   return (
     <div className="min-h-screen bg-[#F5F0EA] antialiased">
+      <HashTokenRedirector />
       {children}
     </div>
   );
