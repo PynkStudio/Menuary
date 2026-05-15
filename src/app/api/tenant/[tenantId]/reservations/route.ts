@@ -115,6 +115,9 @@ export async function POST(
       table_id: tableId,
       assigned_area: assignedArea,
       menuary_user_id: body.menuaryUserId ?? null,
+      // TODO(google-reserve): quando la prenotazione arriva da Google Actions Center,
+      // impostare channel: "google_reserve" e popolare `location_id` dalla location collegata.
+      // Il campo `location_id` è già nella tabella `reservation_requests` (FK → tenant_google_locations).
       channel: "web",
     })
     .select("id")

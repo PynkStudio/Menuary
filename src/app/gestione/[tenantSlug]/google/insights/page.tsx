@@ -1,31 +1,12 @@
 import { notFound } from "next/navigation";
 import { TENANTS } from "@/lib/tenant-registry";
 import { getPrimaryLocation } from "@/lib/data/google-sync";
+import { InsightsPanel } from "@/components/gestione/google/insights-panel";
 import Link from "next/link";
-import { ChevronLeft, Eye, Search, MousePointerClick, Phone } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 interface Props {
   params: Promise<{ tenantSlug: string }>;
-}
-
-// Placeholder card per ogni metrica — si popola con i dati reali dall'API
-// Business Profile Performance quando il tenant è collegato.
-function MetricCard({ icon: Icon, label, value, note }: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  note?: string;
-}) {
-  return (
-    <div className="rounded-2xl border-2 border-pork-ink/10 bg-white p-5">
-      <div className="flex items-center gap-2 text-pork-ink/40">
-        <Icon size={16} />
-        <span className="text-xs font-bold uppercase tracking-wide">{label}</span>
-      </div>
-      <p className="mt-3 text-3xl font-bold">{value}</p>
-      {note && <p className="mt-1 text-xs text-pork-ink/40">{note}</p>}
-    </div>
-  );
 }
 
 export default async function InsightsPage({ params }: Props) {
@@ -36,7 +17,7 @@ export default async function InsightsPage({ params }: Props) {
   const location = await getPrimaryLocation(tenantSlug);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Link
           href={`/gestione/${tenantSlug}/google`}
@@ -64,27 +45,7 @@ export default async function InsightsPage({ params }: Props) {
           </Link>
         </div>
       ) : (
-        <>
-          <p className="text-sm text-pork-ink/50">
-            Dati degli ultimi 30 giorni dalla tua scheda su Google Maps e Ricerca.
-          </p>
-
-          {/* Metriche principali — TODO: popolare con Business Profile Performance API */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard icon={Eye}              label="Visualizzazioni"  value="—" note="Presto disponibile" />
-            <MetricCard icon={Search}           label="Ricerche"         value="—" note="Presto disponibile" />
-            <MetricCard icon={MousePointerClick} label="Click sito web"  value="—" note="Presto disponibile" />
-            <MetricCard icon={Phone}            label="Chiamate"         value="—" note="Presto disponibile" />
-          </div>
-
-          <div className="rounded-2xl border-2 border-dashed border-pork-ink/15 p-8 text-center space-y-2">
-            <p className="font-semibold text-pork-ink/60">Grafici e serie storiche</p>
-            <p className="text-sm text-pork-ink/40">
-              In arrivo — l'integrazione con la Business Profile Performance API
-              mostrerà qui andamento giornaliero di impressioni, click e chiamate.
-            </p>
-          </div>
-        </>
+        <InsightsPanel tenantId={tenantSlug} />
       )}
     </div>
   );

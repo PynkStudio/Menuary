@@ -2,43 +2,33 @@ import "server-only";
 import { getRefreshToken, upsertGoogleAuth } from "@/lib/data/google-sync";
 import { toGoogleRegularHours, toGoogleSpecialHours, type SpecialHourInput } from "@/lib/google/hours-converter";
 import type { DaySchedule } from "@/lib/venue-hours";
+import {
+  PERFORMANCE_METRICS,
+  type BusinessHours,
+  type BusinessInfo,
+  type GmbReview,
+  type PerformanceMetricName,
+  type DatedValue,
+  type MetricTimeSeries,
+  type PerformanceData,
+  type LocationWithMeta,
+} from "@/lib/google/my-business-types";
 
-// ─── Google Business Profile API — scaffold ───────────────────────────────────
-// API abilitate su Google Cloud Console (progetto 144376832025):
-//   • My Business Business Information API  → lettura/scrittura info attività
-//   • My Business Account Management API    → gestione account e location
-//   • Business Profile Performance API      → metriche (views, ricerche, click)
-//
-// STATO: scaffold non operativo. L'implementazione reale richiede:
-//   1. OAuth2 flow per ottenere il refresh_token del titolare dell'attività.
-//      Client ID: GOOGLE_MY_BUSINESS_CLIENT_ID (già su Vercel)
-//      Client Secret: GOOGLE_MY_BUSINESS_CLIENT_SECRET (da aggiungere)
-//      Redirect URI: GOOGLE_MY_BUSINESS_REDIRECT_URI
-//      Scope: https://www.googleapis.com/auth/business.manage
-//   2. Persistenza del refresh_token per tenant su Supabase.
-//   3. Il resource name della location: "accounts/{id}/locations/{id}"
-//      Recuperabile via My Business Account Management API.
+export type {
+  BusinessHours,
+  BusinessInfo,
+  GmbReview,
+  PerformanceMetricName,
+  DatedValue,
+  MetricTimeSeries,
+  PerformanceData,
+  LocationWithMeta,
+};
+export { starRatingToNumber } from "@/lib/google/my-business-types";
 
 const API_BASE = "https://mybusinessbusinessinformation.googleapis.com/v1";
 const ACCOUNT_API_BASE = "https://mybusinessaccountmanagement.googleapis.com/v1";
 const PERFORMANCE_API_BASE = "https://businessprofileperformance.googleapis.com/v1";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export type BusinessHours = {
-  dayOfWeek: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
-  openTime: string;   // "HH:MM"
-  closeTime: string;  // "HH:MM"
-};
-
-export type BusinessInfo = {
-  name: string;                  // resource name, es. "accounts/123/locations/456"
-  title: string;                 // nome pubblico attività
-  phoneNumbers?: { primaryPhone?: string };
-  websiteUri?: string;
-  regularHours?: { periods: BusinessHours[] };
-  description?: string;
-};
 
 // ─── OAuth token helper (stub) ────────────────────────────────────────────────
 
@@ -188,32 +178,33 @@ export async function listLocations(tenantId: string, accountId: string): Promis
   return json.locations ?? [];
 }
 
-/**
- * Recupera le metriche di performance della scheda (impressioni, click, chiamate).
- * Richiede Business Profile Performance API.
- */
 export async function getPerformanceMetrics(
   tenantId: string,
   locationResourceName: string,
   startDate: { year: number; month: number; day: number },
   endDate: { year: number; month: number; day: number },
-): Promise<unknown> {
+): Promise<PerformanceData> {
   const token = await getAccessToken(tenantId);
-  const params = new URLSearchParams({
-    "dailyMetric": "ALL",
-    "dailyRange.start_date.year": String(startDate.year),
-    "dailyRange.start_date.month": String(startDate.month),
-    "dailyRange.start_date.day": String(startDate.day),
-    "dailyRange.end_date.year": String(endDate.year),
-    "dailyRange.end_date.month": String(endDate.month),
-    "dailyRange.end_date.day": String(endDate.day),
-  });
+
+  // URLSearchParams.append consente chiavi ripetute — necessario per dailyMetric.
+  const params = new URLSearchParams();
+  for (const metric of PERFORMANCE_METRICS) params.append("dailyMetric", metric);
+  params.append("dailyRange.start_date.year",  String(startDate.year));
+  params.append("dailyRange.start_date.month", String(startDate.month));
+  params.append("dailyRange.start_date.day",   String(startDate.day));
+  params.append("dailyRange.end_date.year",    String(endDate.year));
+  params.append("dailyRange.end_date.month",   String(endDate.month));
+  params.append("dailyRange.end_date.day",     String(endDate.day));
+
   const res = await fetch(
     `${PERFORMANCE_API_BASE}/${locationResourceName}:fetchMultiDailyMetricsTimeSeries?${params}`,
     { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" },
   );
-  if (!res.ok) throw new Error(`Performance API HTTP ${res.status}`);
-  return res.json();
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Performance API HTTP ${res.status}: ${detail}`);
+  }
+  return res.json() as Promise<PerformanceData>;
 }
 
 // ─── API calls (stub) ─────────────────────────────────────────────────────────
@@ -330,25 +321,6 @@ export async function syncSpecialHours(
 // ancora in uso per reviews — non migrata a v1 al momento della scrittura).
 const REVIEWS_API_BASE = "https://mybusiness.googleapis.com/v4";
 
-export type GmbReview = {
-  name: string;            // resource name completo della recensione
-  reviewId: string;
-  reviewer: { displayName: string; profilePhotoUrl?: string };
-  starRating: "ONE" | "TWO" | "THREE" | "FOUR" | "FIVE";
-  comment: string;
-  createTime: string;
-  updateTime: string;
-  reviewReply?: { comment: string; updateTime: string } | null;
-};
-
-const STAR_MAP: Record<GmbReview["starRating"], number> = {
-  ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5,
-};
-
-export function starRatingToNumber(r: GmbReview["starRating"]): number {
-  return STAR_MAP[r];
-}
-
 /** Recupera le recensioni della sede da Google My Business API. */
 export async function getBusinessReviews(
   tenantId: string,
@@ -408,13 +380,6 @@ export async function deleteReviewReply(
 }
 
 // ─── Locations con metadata ────────────────────────────────────────────────────
-
-export type LocationWithMeta = {
-  name: string;           // "accounts/{id}/locations/{id}"
-  title: string;
-  placeId: string | null;
-  address?: string;
-};
 
 /** Elenca le location di un account includendo i metadata (place_id). */
 export async function listLocationsWithMeta(

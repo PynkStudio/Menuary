@@ -44,6 +44,11 @@ export async function GET(request: Request) {
     );
   }
 
+  // TODO(google-reserve): dopo che Google ci approva come Actions Center partner,
+  // in questo callback (o in exchangeCodeAndSave) richiedere anche lo scope
+  // "https://www.googleapis.com/auth/mapsbooking" oltre a quelli già presenti.
+  // Lo stesso refresh token potrà essere usato sia per My Business che per Actions Center.
+
   // Dopo aver salvato il token, mandiamo il gestore alla selezione sede
   return NextResponse.redirect(
     `${origin}/gestione/${tenantId}/google?google_auth=ok&step=select-location`,

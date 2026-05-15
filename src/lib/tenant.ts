@@ -54,6 +54,9 @@ export type TenantFeatureFlags = {
   favorites: boolean;
   reviews: boolean;
   gallery: boolean;
+  // TODO(google-reserve): aggiungere flag `googleReserve: boolean` una volta approvati come partner Actions Center.
+  // Abilita il pulsante "Prenota" direttamente su Google Maps/Search per il tenant.
+  // Prerequisito: tenant deve avere `reservations: true` e una location Google collegata.
 };
 
 // ─── Theme ────────────────────────────────────────────────────────────────────

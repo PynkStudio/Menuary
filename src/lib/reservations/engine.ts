@@ -1,3 +1,13 @@
+// TODO(google-reserve): aggiungere `getAvailableSlots(tenantId, date, covers)` che restituisce
+// gli slot disponibili nel formato Maps Booking API (AvailabilityFeed).
+// Questa funzione verrà chiamata dal nuovo endpoint `/api/google-reserve/[tenantId]/availability`
+// che Google interroga periodicamente per aggiornare i blocchi prenotabili su Maps.
+// Ref: https://developers.google.com/maps-booking/reference/rest/v1/availabilities
+
+// TODO(google-reserve): aggiungere `buildBookingFromGooglePayload(payload)` che normalizza
+// il body della richiesta Google (CreateBookingRequest) nel formato interno CreateBody,
+// così da poter riusare tutta la logica di assegnazione tavolo già presente nel POST route.
+
 /** Parole chiave che forzano approvazione manuale (prenotazioni). */
 const SPECIAL_KEYWORDS =
   /\b(esterno|terrazzo|dehor|vista mare|vista|bambini|seggiolone|compleanno|privat|sala separata|accessibilit[aà]|carrozzina)\b/i;

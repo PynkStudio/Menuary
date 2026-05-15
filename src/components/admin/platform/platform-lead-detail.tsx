@@ -17,7 +17,9 @@ import {
   X,
   UtensilsCrossed,
   Briefcase,
+  GitBranch,
 } from "lucide-react";
+import { GenerateTenantModal } from "./generate-tenant-modal";
 import { cn } from "@/lib/utils";
 import type {
   PlatformLead,
@@ -157,6 +159,7 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   const [activeTab, setActiveTab] = useState<Tab>("anagrafica");
   const [editingNote, setEditingNote] = useState(false);
   const [noteText, setNoteText] = useState(lead.notes ?? "");
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
 
   void leadId; // in produzione: usato per fetch da Supabase
 
@@ -206,6 +209,23 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
             {lead.contact_name} · {lead.contact_email}
             {lead.city && ` · ${lead.city} (${lead.province})`}
           </p>
+        </div>
+
+        {/* Azioni header */}
+        <div className="flex flex-wrap items-center gap-2">
+          {!lead.tenant_id && (
+            <button
+              onClick={() => setShowGenerateModal(true)}
+              className="inline-flex items-center gap-2 rounded-full bg-pork-ink px-4 py-2 text-sm font-bold text-white transition hover:bg-pork-ink/80"
+            >
+              <GitBranch size={14} /> Converti in Tenant
+            </button>
+          )}
+          {lead.tenant_id && (
+            <span className="inline-flex items-center gap-2 rounded-full bg-pork-green/15 px-4 py-2 text-sm font-bold text-pork-green">
+              <GitBranch size={14} /> Tenant attivo
+            </span>
+          )}
         </div>
 
         {/* Cambio status */}
@@ -270,6 +290,13 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
           />
         )}
       </div>
+
+      {showGenerateModal && (
+        <GenerateTenantModal
+          lead={lead}
+          onClose={() => setShowGenerateModal(false)}
+        />
+      )}
     </div>
   );
 }
