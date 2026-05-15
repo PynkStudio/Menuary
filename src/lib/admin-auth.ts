@@ -2,8 +2,8 @@
 // Questo file è mantenuto per compatibilità con eventuali import esistenti.
 // Il vecchio sistema password + localStorage non è più in uso per admin.menuary.it.
 
-export const ADMIN_SESSION_KEY = "bepork-admin-session";
-export const ADMIN_TOKEN_HEADER = "x-bepork-admin";
+export const ADMIN_SESSION_KEY = "menuary-admin-session";
+export const ADMIN_TOKEN_HEADER = "x-menuary-admin";
 
 /** @deprecated Non più usato — auth gestita da Supabase */
 export function readAdminSession(): boolean {

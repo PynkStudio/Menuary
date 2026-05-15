@@ -8,6 +8,9 @@ import { FixedMenus } from "@/components/tenants/_shared/fixed-menus";
 import { ReviewsSection } from "@/components/modules/reviews/reviews-section";
 import { FindUs } from "@/components/modules/reservations/find-us";
 import { DeliveryStrip } from "@/components/modules/shop/delivery-strip";
+import { ServicesHero } from "@/components/tenants/_shared/services-hero";
+import { ServicesCategories } from "@/components/tenants/_shared/services-categories";
+import { ServicesContact } from "@/components/tenants/_shared/services-contact";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
@@ -18,13 +21,34 @@ export default async function PreviewTenantHome({
   params: Promise<{ previewSlug: string }>;
 }) {
   const host = (await headers()).get("host");
-  if (getPlatformModeFromHost(host) !== "preview") notFound();
+  const mode = getPlatformModeFromHost(host);
+
+  if (mode !== "preview" && mode !== "preview-bizery") notFound();
 
   const { previewSlug } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
   if (tenant.previewSlug !== previewSlug) notFound();
+
   const themeVars = tenantThemeCssVars(tenant.theme);
 
+  // ── Verticale services (Bizery) ──────────────────────────────────────────────
+  if (tenant.vertical === "services") {
+    return (
+      <TenantProvider tenant={tenant}>
+        <div
+          className="min-h-screen"
+          data-tenant-surface={tenant.id}
+          style={themeVars as React.CSSProperties}
+        >
+          <ServicesHero />
+          <ServicesCategories />
+          <ServicesContact />
+        </div>
+      </TenantProvider>
+    );
+  }
+
+  // ── Verticale food (Menuary) — layout di default ─────────────────────────────
   return (
     <TenantProvider tenant={tenant}>
       <div

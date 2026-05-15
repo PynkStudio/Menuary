@@ -2,10 +2,43 @@ import type { TenantProfile } from "./tenant";
 import type { TenantFeatureFlags } from "./tenant";
 import { allTenantFeatures } from "./tenant-modules";
 
-export const DEFAULT_TENANT_ID = "bepork";
+/** Tenant demo del verticale food (Menuary). Usato come fallback per host non riconosciuti sul verticale food. */
+export const DEFAULT_FOOD_TENANT_ID = "bepork";
+
+/** Tenant demo del verticale services (Bizery). Usato come fallback per host Bizery non riconosciuti. */
+export const DEFAULT_SERVICES_TENANT_ID = "bizery-demo";
+
+/** @deprecated Usa getDefaultTenantForVertical(). Mantenuto per compatibilità con import esistenti. */
+export const DEFAULT_TENANT_ID = DEFAULT_FOOD_TENANT_ID;
 
 /** Be Pork: stack demo/produzione con tutti i moduli piattaforma attivi (nei limiti dell’implementazione). */
 export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = allTenantFeatures(true);
+
+/** Officina KAM: primo tenant reale Bizery — officina auto e moto. */
+export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: true,        // "Listino servizi"
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: true,      // "Appuntamenti"
+  tablePlanner: true,      // "Agenda e postazioni"
+  productAvailability: true,
+  upselling: true,         // "Servizi aggiuntivi"
+  crm: true,
+  analytics: true,
+  takeawaySlots: false,
+  deliveryHub: false,
+  inventoryFoodCost: true, // "Costi e margini"
+  printStations: false,
+  staffRoles: true,
+  multiLocation: false,
+  favorites: false,
+  reviews: true,
+  gallery: true,
+};
 
 /** Bizery demo: moduli appropriati per il verticale services (no food-specific). */
 export const BIZERY_DEMO_MODULE_FLAGS: TenantFeatureFlags = {
@@ -103,18 +136,29 @@ export const TENANTS: TenantProfile[] = [
     },
     features: BIZERY_DEMO_MODULE_FLAGS,
   },
-  // Aggiungere qui i tenant Bizery reali quando attivati:
-  // {
-  //   id: "nome-azienda",
-  //   name: "Nome Azienda",
-  //   label: "Tenant · Nome Azienda",
-  //   vertical: "services",
-  //   domains: ["nomeazienda.it", "www.nomeazienda.it"],
-  //   previewSlug: "nome-azienda-demo",
-  //   enabled: true,
-  //   theme: { ... },
-  //   features: BIZERY_DEMO_MODULE_FLAGS,
-  // },
+  // ── Tenant Bizery reali ──────────────────────────────────────────────────────
+  {
+    id: "officinakam",
+    name: "Officina KAM",
+    label: "Demo · Officina KAM",
+    vertical: "services",
+    domains: [],                    // nessun dominio proprio (solo preview slug)
+    previewSlug: "officinakam",     // → demo.bizery.it/officinakam
+    enabled: true,
+    theme: {
+      red: "#F97316",               // orange primario (brand officinakam)
+      redDark: "#C2410C",           // orange scuro
+      peach: "#FED7AA",             // warm light accent
+      cream: "#0A0A0B",             // sfondo dark (invertito rispetto ai tenant food)
+      ink: "#F8FAFC",               // testo chiaro su sfondo dark
+      brick: "#18181B",             // surface dark (cards, sezioni alternate)
+      mustard: "#F97316",           // accent secondario (uguale a red per coerenza brand)
+      mustardSoft: "#FEF3C7",       // soft warm per badge
+      green: "#22C55E",
+      pink: "#A855F7",
+    },
+    features: OFFICINAKAM_MODULE_FLAGS,
+  },
 ];
 
 export function findTenantById(id: string): TenantProfile | undefined {
@@ -136,6 +180,13 @@ export function findTenantsByVertical(vertical: TenantProfile["vertical"]): Tena
   return TENANTS.filter((tenant) => tenant.vertical === vertical);
 }
 
+/** Restituisce il tenant demo appropriato per il verticale. Usare sempre questo come fallback al posto di getDefaultTenant(). */
+export function getDefaultTenantForVertical(vertical: TenantProfile["vertical"]): TenantProfile {
+  const id = vertical === "services" ? DEFAULT_SERVICES_TENANT_ID : DEFAULT_FOOD_TENANT_ID;
+  return findTenantById(id) ?? findTenantsByVertical(vertical)[0] ?? TENANTS[0];
+}
+
+/** @deprecated Usa getDefaultTenantForVertical(vertical). Questo restituisce sempre il default food (BePork). */
 export function getDefaultTenant(): TenantProfile {
-  return findTenantById(DEFAULT_TENANT_ID) ?? TENANTS[0];
+  return getDefaultTenantForVertical("food");
 }

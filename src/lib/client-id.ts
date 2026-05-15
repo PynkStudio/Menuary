@@ -1,6 +1,6 @@
 "use client";
 
-const KEY = "bepork-client-id";
+const KEY = "menuary-client-id";
 
 export function getClientId(): string {
   if (typeof window === "undefined") return "server";

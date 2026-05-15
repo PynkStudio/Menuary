@@ -369,6 +369,166 @@ const faakContent: TenantContent = {
   },
 };
 
+const officinakamContent: TenantContent = {
+  logoSrc: "/officinakam/logo.svg",
+  logoAlt: "Officina KAM",
+  showcaseLogoSrc: "/officinakam/hero-moto.jpg",
+  showcaseLogoAlt: "Officina KAM - Precisione meccanica",
+  description:
+    "Officina KAM — manutenzione professionale per auto e moto. Diagnostica avanzata, preventivi chiari, interventi su appuntamento.",
+  url: "https://officinakam.it",
+  social: {
+    instagram: "https://www.instagram.com/officinakam/",
+    facebook: "https://www.facebook.com/officinakam/",
+    instagramLabel: "Instagram Officina KAM",
+    facebookLabel: "Facebook Officina KAM",
+  },
+  contact: {
+    phone: "+39 0XX XXX XXXX",
+    whatsappDigits: "39XXXXXXXXXX",
+    whatsappMessage:
+      "Ciao Officina KAM! Vorrei prenotare un appuntamento per il mio veicolo. Grazie!",
+  },
+  address: {
+    street: "Via Example 123",
+    zip: "00100",
+    city: "Roma",
+    province: "RM",
+    full: "Via Example 123 - 00100 Roma (RM)",
+  },
+  maps: {
+    searchUrl:
+      "https://www.google.com/maps/search/?api=1&query=Officina+KAM+Roma",
+    embedUrl:
+      "https://www.google.com/maps?q=Officina+KAM+Roma&output=embed",
+  },
+  hero: {
+    eyebrow: "Officina auto e moto · Roma",
+    titleLead: "Precisione meccanica.",
+    titleAccent: "Diagnostica avanzata.",
+    body:
+      "Manutenzione professionale per auto e moto. Strumenti diagnostici di ultima generazione, preventivi chiari e interventi su appuntamento.",
+    backdrop: "/officinakam/hero-moto.jpg",
+    ctaLabel: "Prenota un appuntamento",
+  },
+  soulsIntro: {
+    eyebrow: "Tre specializzazioni, un'unica officina",
+    titleLead: "Auto, Moto e Diagnostica",
+    titleAccent: "in un unico posto.",
+    body:
+      "Copriamo l'intera gamma dei veicoli con attrezzature professionali e personale specializzato per ogni tipo di intervento.",
+  },
+  // Riutilizziamo "souls" come categorie di servizio
+  souls: [
+    {
+      id: "auto",
+      kicker: "Manutenzione ordinaria",
+      title: "Auto",
+      desc: "Pneumatici, pastiglie freno, dischi, tagliandi, sospensioni. Tutto per tenere la tua auto in perfetta efficienza.",
+      href: "#servizi",
+      image: "/officinakam/hero-moto.jpg",
+    },
+    {
+      id: "moto",
+      kicker: "Manutenzione completa",
+      title: "Moto",
+      desc: "Tagliandi, impianto frenante, trasmissione, sospensioni, pneumatici. Esperienza specifica per ogni modello.",
+      href: "#servizi",
+      image: "/officinakam/hero-moto.jpg",
+    },
+    {
+      id: "diagnostica",
+      kicker: "Tecnologia avanzata",
+      title: "Diagnostica",
+      desc: "Scanner OBD multimarca, check completo dell'elettronica, lettura e azzeramento anomalie. Diagnosi certa in pochi minuti.",
+      href: "#servizi",
+      image: "/officinakam/hero-moto.jpg",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "Servizi in evidenza",
+    title: "Quello che ci chiedono di più.",
+    subtitle: "Interventi rapidi, preventivi chiari, nessuna sorpresa in fattura.",
+  },
+  // Riutilizziamo "dishes" come servizi in evidenza
+  dishes: [
+    {
+      name: "Tagliando completo",
+      desc: "Cambio olio e filtri, controllo freni, livelli e usura. Tutto in un unico intervento.",
+      price: "Da preventivo",
+      image: "/officinakam/hero-moto.jpg",
+      variant: "red",
+      href: "#contatti",
+    },
+    {
+      name: "Diagnostica OBD",
+      desc: "Lettura errori, check sensori e centraline. Risultato immediato, soluzione chiara.",
+      price: "Da preventivo",
+      image: "/officinakam/hero-moto.jpg",
+      variant: "mustard",
+      href: "#contatti",
+    },
+    {
+      name: "Kit freni completo",
+      desc: "Sostituzione pastiglie e dischi freno, spurgo impianto. Sicurezza al primo posto.",
+      price: "Da preventivo",
+      image: "/officinakam/hero-moto.jpg",
+      variant: "green",
+      href: "#contatti",
+    },
+    {
+      name: "Revisione sospensioni",
+      desc: "Ammortizzatori, molle e silent block. Comfort e tenuta di strada ripristinati.",
+      price: "Da preventivo",
+      image: "/officinakam/hero-moto.jpg",
+      variant: "pink",
+      href: "#contatti",
+    },
+    {
+      name: "Pneumatici montati",
+      desc: "Fornitura e montaggio con equilibratura. Auto e moto, qualsiasi misura.",
+      price: "Da preventivo",
+      image: "/officinakam/hero-moto.jpg",
+      variant: "red",
+      href: "#contatti",
+    },
+    {
+      name: "Check-up pre-viaggio",
+      desc: "Controllo completo prima di partire: livelli, freni, pneumatici, luci e impianto elettrico.",
+      price: "Gratuito",
+      image: "/officinakam/hero-moto.jpg",
+      variant: "mustard",
+      href: "#contatti",
+    },
+  ],
+  findUs: {
+    eyebrow: "Dove siamo",
+    titleLead: "Vieni a trovarci,",
+    titleAccent: "siamo a Roma.",
+    body:
+      "Lavoriamo solo su appuntamento per garantire tempi certi e qualità costante. Contattaci per prenotare o richiedere un preventivo.",
+    mapTitle: "Mappa Officina KAM",
+  },
+  footer: {
+    tagline: "Precisione meccanica. Diagnostica avanzata.",
+    body:
+      "Officina KAM — manutenzione professionale per auto e moto a Roma. Interventi su appuntamento, preventivi chiari, nessuna sorpresa.",
+  },
+  delivery: {
+    title: "Ritiro e consegna a domicilio",
+    body: "Presto disponibile il servizio di ritiro e riconsegna del veicolo presso la tua sede.",
+    partners: [],
+  },
+};
+
+import { findTenantById } from "./tenant-registry";
+
 export function getTenantContent(tenantId: string): TenantContent {
-  return tenantId === "faak" ? faakContent : beporkContent;
+  if (tenantId === "faak") return faakContent;
+  if (tenantId === "officinakam") return officinakamContent;
+  // Ogni tenant deve avere il proprio blocco content sopra.
+  // Fallback per verticale: non restituire mai contenuto BePork per tenant services.
+  const profile = findTenantById(tenantId);
+  if (profile?.vertical === "services") return officinakamContent;
+  return beporkContent;
 }

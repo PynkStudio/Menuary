@@ -46,12 +46,10 @@ export const VERTICAL_REGISTRY: Record<TenantVertical, VerticalMeta> = {
   },
   services: {
     id: "services",
-    // TODO: aggiornare con il nome commerciale definitivo del secondo verticale
-    productName: "Vertical B",
-    // TODO: aggiornare con il dominio reale
-    marketingDomain: "vertical-b.localhost",
-    businessNoun: "studio",
-    businessNounPlural: "studi e locali",
+    productName: "Bizery",
+    marketingDomain: "bizery.it",
+    businessNoun: "azienda",
+    businessNounPlural: "aziende e studi",
     reservationCTA: "Prenota un appuntamento",
     menuLabel: "Servizi",
   },

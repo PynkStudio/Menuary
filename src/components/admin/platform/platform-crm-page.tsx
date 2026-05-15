@@ -22,7 +22,6 @@ import {
   LEAD_STATUS_COLORS,
   SOURCE_LABELS,
   VERTICAL_BADGE_CLASSES,
-  VERTICAL_DOT_CLASSES,
   VERTICAL_SHORT_LABELS,
 } from "@/lib/platform-crm-types";
 import { cn } from "@/lib/utils";

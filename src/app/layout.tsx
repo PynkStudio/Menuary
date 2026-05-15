@@ -341,9 +341,12 @@ export default async function RootLayout({
   const tenant = resolveTenantFromHost(host);
   const mode = getPlatformModeFromHost(host);
   const themeVars = tenantThemeCssVars(tenant.theme);
-  const content = getTenantContent(tenant.id);
-  const showRestaurantJsonLd = mode === "tenant" || mode === "preview";
-  const tenantRestaurantSchema = {
+  // Per i mode Bizery il contenuto tenant non è rilevante (shell propria, nessun JSON-LD).
+  const isBizeryMode =
+    mode === "marketing-bizery" || mode === "gestione-bizery" || mode === "preview-bizery";
+  const content = isBizeryMode ? null : getTenantContent(tenant.id);
+  const showRestaurantJsonLd = (mode === "tenant" || mode === "preview") && content !== null;
+  const tenantRestaurantSchema = content ? {
     ...restaurantSchema,
     name: tenant.name,
     image: `${content.url}${content.showcaseLogoSrc}`,
@@ -357,7 +360,7 @@ export default async function RootLayout({
       addressRegion: content.address.province,
     },
     sameAs: [content.social.instagram, content.social.facebook],
-  };
+  } : restaurantSchema;
 
   return (
     <html

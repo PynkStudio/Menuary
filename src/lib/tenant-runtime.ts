@@ -1,20 +1,33 @@
 import {
   findTenantByDomain,
   findTenantByPreviewSlug,
-  getDefaultTenant,
+  getDefaultTenantForVertical,
 } from "./tenant-registry";
+import { getPlatformModeFromHost } from "./platform";
 import type { TenantProfile } from "./tenant";
 
+function verticalFromMode(mode: ReturnType<typeof getPlatformModeFromHost>): TenantProfile["vertical"] {
+  return mode === "marketing-bizery" || mode === "preview-bizery" || mode === "gestione-bizery"
+    ? "services"
+    : "food";
+}
+
 export function resolveTenantFromHost(host: string | null | undefined): TenantProfile {
-  if (!host) return getDefaultTenant();
-  return findTenantByDomain(host) ?? getDefaultTenant();
+  if (!host) return getDefaultTenantForVertical("food");
+  const tenant = findTenantByDomain(host);
+  if (tenant) return tenant;
+  const vertical = verticalFromMode(getPlatformModeFromHost(host));
+  return getDefaultTenantForVertical(vertical);
 }
 
 export function resolveTenantFromPreviewSlug(
   slug: string | null | undefined,
+  host?: string | null,
 ): TenantProfile {
-  if (!slug) return getDefaultTenant();
-  return findTenantByPreviewSlug(slug) ?? getDefaultTenant();
+  if (!slug) return getDefaultTenantForVertical(host ? verticalFromMode(getPlatformModeFromHost(host)) : "food");
+  return findTenantByPreviewSlug(slug) ?? getDefaultTenantForVertical(
+    host ? verticalFromMode(getPlatformModeFromHost(host)) : "food",
+  );
 }
 
 /** Sede opzionale da query (?loc=slug) per multi-sede senza cambiare host. */

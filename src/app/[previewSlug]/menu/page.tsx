@@ -15,7 +15,7 @@ export default async function PreviewTenantMenu({
   if (getPlatformModeFromHost(host) !== "preview") notFound();
 
   const { previewSlug } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
   if (tenant.previewSlug !== previewSlug) notFound();
   const themeVars = tenantThemeCssVars(tenant.theme);
 
