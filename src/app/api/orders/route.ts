@@ -8,6 +8,7 @@ import {
   type DbOrderLine,
 } from "@/lib/api/orders";
 import type { CartLine } from "@/lib/types";
+import type { Database } from "@/lib/supabase/types";
 
 // ─── POST /api/orders — crea ordine ──────────────────────────────────────────
 
@@ -97,7 +98,7 @@ export async function GET(req: NextRequest) {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (status) query = query.eq("status", status);
+  if (status) query = query.eq("status", status as Database["public"]["Enums"]["order_status"]);
   if (sessionId) query = query.eq("session_id", sessionId);
 
   const { data, error } = await query;

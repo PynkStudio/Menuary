@@ -3,11 +3,13 @@
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { notifyParentAndClose } from "@/lib/login-popup";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 /**
  * Pagina intermedia post-login.
  *
- * Popup mode:  invia postMessage al parent e chiude la finestra.
+ * Popup mode:   recupera la session corrente da Supabase e la passa al parent
+ *               via postMessage (per token exchange su domini custom), poi chiude.
  * Redirect mode: segue il parametro `destination` direttamente.
  */
 export default function AuthSuccessPage() {
@@ -17,10 +19,24 @@ export default function AuthSuccessPage() {
   useEffect(() => {
     const destination = searchParams.get("destination");
     const from = searchParams.get("from") ?? "clienti";
+    const parentOrigin = searchParams.get("origin") ?? "";
     const isPopup = !!window.opener && !window.opener.closed;
 
     if (isPopup) {
-      notifyParentAndClose(from);
+      // Recupera token dalla sessione corrente per il postMessage
+      const supabase = createSupabaseBrowserClient();
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) {
+          notifyParentAndClose({
+            from,
+            parentOrigin,
+            accessToken: data.session.access_token,
+            refreshToken: data.session.refresh_token,
+          });
+        } else {
+          window.close();
+        }
+      });
     } else if (destination) {
       window.location.href = destination;
     } else {

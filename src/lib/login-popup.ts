@@ -93,11 +93,11 @@ export function openLoginPopup(options: LoginPopupOptions): void {
   }, 500);
 
   function cleanup() {
-    window.removeEventListener("message", handleMessage as EventListener);
+    window.removeEventListener("message", handleMessage as unknown as EventListener);
     clearInterval(pollTimer);
   }
 
-  window.addEventListener("message", handleMessage as EventListener);
+  window.addEventListener("message", handleMessage as unknown as EventListener);
 }
 
 /**

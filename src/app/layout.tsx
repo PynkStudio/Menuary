@@ -8,6 +8,7 @@ import {
   Manrope,
 } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 // globals.css carica via @import (postcss-import): styles/tenants/bepork.css,
 // styles/tenants/faak.css, styles/marketing.css
 import "./globals.css";
@@ -338,6 +339,7 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(tenantRestaurantSchema) }}
           />
         ) : null}
+        <Analytics />
         <PlatformModeProvider mode={mode}>
           <TenantProvider tenant={tenant}>
             <Providers>
