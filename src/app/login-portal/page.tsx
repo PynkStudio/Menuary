@@ -1,8 +1,10 @@
-import { parseFrom, parseNext, tenantSlugFromFrom } from "@/lib/login-url";
+import { redirect } from "next/navigation";
+import { parseFrom, parseNext, tenantSlugFromFrom, resolveDestination } from "@/lib/login-url";
 import { TENANTS } from "@/lib/tenant-registry";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { LoginPortalForm } from "@/components/login-portal/login-portal-form";
 import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function LoginPortalPage({
   searchParams,
@@ -19,6 +21,32 @@ export default async function LoginPortalPage({
   const next = parseNext(sp.next);
   const popup = sp.popup === "1";
   const error = sp.error === "link-scaduto" ? "Il link non è più valido. Riprova ad accedere." : null;
+
+  // Utente già autenticato che arriva direttamente su login.menuary.it
+  if (!popup) {
+    const supabase = await createSupabaseServerClient(".menuary.it");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      if (from) {
+        // Aveva un from: prova a mandarlo alla destinazione corretta
+        const { data: adminRow } = await supabase
+          .from("admin_users")
+          .select("role, tenant_id")
+          .eq("auth_user_id", user.id)
+          .eq("enabled", true)
+          .single();
+        const destination = resolveDestination({
+          from,
+          next,
+          role: adminRow?.role ?? null,
+          tenantId: adminRow?.tenant_id ?? null,
+        });
+        redirect(destination);
+      }
+      // Nessun from: mostra la pagina di selezione portali
+      redirect("/portali");
+    }
+  }
 
   // Tenant branding server-side: accent color come CSS var inline
   const slug = tenantSlugFromFrom(from);

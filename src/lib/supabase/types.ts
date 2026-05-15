@@ -1648,6 +1648,11 @@ export type Database = {
         | "personale_cucina"
         | "kitdisplay"
         | "kiosk"
+        | "superadmin"
+        | "admin"
+        | "venditore"
+        | "amministrazione"
+        | "gestore"
       order_status:
         | "nuovo"
         | "in_preparazione"
@@ -1796,6 +1801,11 @@ export const Constants = {
         "personale_cucina",
         "kitdisplay",
         "kiosk",
+        "superadmin",
+        "admin",
+        "venditore",
+        "amministrazione",
+        "gestore",
       ],
       order_status: [
         "nuovo",

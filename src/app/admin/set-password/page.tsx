@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -11,6 +11,30 @@ export default function SetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [tokenVerified, setTokenVerified] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const tokenHash = hash.get("token_hash");
+    const type = hash.get("type") as "invite" | "recovery" | null;
+
+    if (!tokenHash || !type) {
+      setTokenVerified(true);
+      return;
+    }
+
+    window.history.replaceState(null, "", window.location.pathname);
+
+    const supabase = createSupabaseBrowserClient();
+    supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
+      if (error) {
+        setError("Il link non è più valido o è già stato usato. Richiedi un nuovo invito.");
+        setTokenVerified(false);
+      } else {
+        setTokenVerified(true);
+      }
+    });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +64,15 @@ export default function SetPasswordPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-pork-ink p-6">
-      <form
+      {tokenVerified === null && (
+        <p className="text-sm text-pork-cream/60">Verifica in corso…</p>
+      )}
+      {tokenVerified === false && (
+        <p className="rounded-2xl bg-pork-cream px-6 py-4 text-sm font-semibold text-pork-red">
+          {error}
+        </p>
+      )}
+      {tokenVerified === true && <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-3xl bg-pork-cream p-8 shadow-2xl"
       >
@@ -94,7 +126,7 @@ export default function SetPasswordPage() {
         >
           {loading ? "Salvataggio…" : "Salva e accedi"}
         </button>
-      </form>
+      </form>}
     </div>
   );
 }

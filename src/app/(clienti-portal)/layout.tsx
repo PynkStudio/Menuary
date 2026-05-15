@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { ClientsShell } from "@/components/clients/clients-shell";
+import { PortalSwitcher } from "@/components/portal-switcher/portal-switcher";
 
 export default async function ClientiPortalLayout({
   children,
@@ -10,5 +11,10 @@ export default async function ClientiPortalLayout({
   if (mode !== "clients") {
     notFound();
   }
-  return <ClientsShell>{children}</ClientsShell>;
+  return (
+    <>
+      <ClientsShell>{children}</ClientsShell>
+      <PortalSwitcher current="clienti" cookieDomain=".menuary.it" />
+    </>
+  );
 }

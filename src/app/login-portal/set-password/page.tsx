@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { KeyRound } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -14,9 +14,9 @@ import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
  * 1. type=invite  → enrollment nuovo utente (staff o admin invitato)
  * 2. mode=recovery → reset password richiesto dall'utente
  *
- * In entrambi i casi l'utente è già autenticato (token verificato dal callback).
- * Dopo aver impostato la password viene reindirizzato al portale corretto.
- * In modalità invite, mostra la checkbox per abilitare il profilo cliente Menuary.
+ * Il token OTP arriva nel hash fragment (#token_hash=...&type=...) per evitare
+ * che i link scanner dei client email (Gmail, Outlook…) lo consumino via GET
+ * prima che l'utente clicchi. La verifica avviene qui, client-side via JS.
  */
 export default function SetPasswordPage() {
   const searchParams = useSearchParams();
@@ -33,6 +33,33 @@ export default function SetPasswordPage() {
   const [consumerOptIn, setConsumerOptIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // null = verifica in corso, true = ok, false = fallita
+  const [tokenVerified, setTokenVerified] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const tokenHash = hash.get("token_hash");
+    const type = hash.get("type") as "invite" | "recovery" | null;
+
+    if (!tokenHash || !type) {
+      // Nessun token nel hash: sessione già attiva (flusso vecchio) o accesso diretto
+      setTokenVerified(true);
+      return;
+    }
+
+    // Rimuove il hash dall'URL per evitare ri-verifica su refresh
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+
+    const supabase = createSupabaseBrowserClient();
+    supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
+      if (error) {
+        setError("Il link non è più valido o è già stato usato. Richiedi un nuovo link.");
+        setTokenVerified(false);
+      } else {
+        setTokenVerified(true);
+      }
+    });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -110,7 +137,19 @@ export default function SetPasswordPage() {
               )}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Verifica token in corso */}
+            {tokenVerified === null && (
+              <p className="py-4 text-center text-sm text-black/40">Verifica in corso…</p>
+            )}
+
+            {/* Token non valido */}
+            {tokenVerified === false && (
+              <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+                {error}
+              </p>
+            )}
+
+            {tokenVerified === true && <form onSubmit={handleSubmit} className="space-y-4">
               <label className="block text-sm font-semibold">
                 {isRecovery ? "Nuova password" : "Password"}
                 <input
@@ -170,7 +209,7 @@ export default function SetPasswordPage() {
               >
                 {loading ? "Salvataggio…" : isRecovery ? "Salva nuova password" : "Salva e accedi"}
               </button>
-            </form>
+            </form>}
           </div>
         </div>
       </div>

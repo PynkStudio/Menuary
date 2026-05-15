@@ -18,7 +18,15 @@ export const STORE_ROLES = [
 
 export const DEVICE_ROLES = ["kitdisplay", "kiosk"] as const;
 
-export const PLATFORM_ROLES = ["platform_admin", "tenant_admin"] as const;
+export const PLATFORM_ROLES = [
+  "superadmin",
+  "admin",
+  "venditore",
+  "amministrazione",
+  "gestore",
+  "platform_admin",
+  "tenant_admin",
+] as const;
 
 /** Ruoli legacy mantenuti per backward compat con dati esistenti */
 export const LEGACY_ROLES = ["staff", "kitchen"] as const;
@@ -106,7 +114,7 @@ export function getEffectiveCapabilities(
   permissionsOverride: Record<string, boolean> = {},
 ): StoreCapabilities {
   if (!STORE_ROLES.includes(role as StoreRole)) {
-    // platform_admin e tenant_admin: accesso pieno
+    // ruoli piattaforma: accesso pieno (le differenze funzionali si implementano in seguito)
     const full: StoreCapabilities = {
       can_cassa: true,
       can_edit_menu: true,
@@ -126,7 +134,12 @@ export function getEffectiveCapabilities(
 
 /** Etichette leggibili per UI */
 export const ROLE_LABELS: Record<AdminRole, string> = {
-  platform_admin: "Admin piattaforma",
+  superadmin: "Super Admin",
+  admin: "Admin",
+  venditore: "Venditore",
+  amministrazione: "Amministrazione",
+  gestore: "Gestore",
+  platform_admin: "Admin piattaforma (legacy)",
   tenant_admin: "Titolare (legacy)",
   staff: "Staff (legacy)",
   kitchen: "Cucina (legacy)",

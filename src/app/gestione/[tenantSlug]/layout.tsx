@@ -5,6 +5,7 @@ import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { GestioneShell } from "@/components/gestione/gestione-shell";
 import { GestioneLoginGate } from "@/components/gestione/gestione-login-gate";
+import { PortalSwitcher } from "@/components/portal-switcher/portal-switcher";
 import type { Database } from "@/lib/supabase/types";
 
 interface Props {
@@ -111,6 +112,7 @@ export default async function GestioneLayout({ children, params }: Props) {
       >
         {children}
       </GestioneShell>
+      <PortalSwitcher current="gestione" cookieDomain={isBizery ? undefined : ".menuary.it"} />
     </div>
   );
 }

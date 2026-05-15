@@ -27,17 +27,33 @@ export async function GET(request: Request) {
   const next = parseNext(searchParams.get("next"));
   const isPopup = searchParams.get("popup") === "1";
 
-  // Questo route gira su login.menuary.it: cookie condiviso su .menuary.it
-  const supabase = await createSupabaseServerClient(".menuary.it");
-
   if (tokenHash && type) {
-    const { data, error } = await supabase.auth.verifyOtp({
-      token_hash: tokenHash,
-      type,
-    });
+    // invite e recovery: NON verificare server-side — i link scanner dei client email
+    // (Gmail, Outlook…) eseguono GET su ogni link appena arriva la mail, consumando
+    // il token OTP prima che l'utente clicchi. Soluzione: passare il token nel hash
+    // fragment verso una pagina client-side; i scanner non eseguono JS quindi il
+    // token sopravvive fino al click reale dell'utente.
+    if (type === "invite") {
+      const params = new URLSearchParams();
+      if (from) params.set("from", from);
+      const hash = `token_hash=${encodeURIComponent(tokenHash)}&type=invite`;
+      return NextResponse.redirect(`${origin}/set-password?${params}#${hash}`);
+    }
+
+    if (type === "recovery") {
+      const params = new URLSearchParams({ mode: "recovery" });
+      if (from) params.set("from", from);
+      if (next) params.set("next", next);
+      const hash = `token_hash=${encodeURIComponent(tokenHash)}&type=recovery`;
+      return NextResponse.redirect(`${origin}/set-password?${params}#${hash}`);
+    }
+
+    // signup e magiclink: verificare server-side è sicuro (l'utente ha cliccato
+    // intenzionalmente; non c'è una password da impostare, il token crea la sessione).
+    const supabase = await createSupabaseServerClient(".menuary.it");
+    const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
 
     if (!error && data.user) {
-      // Recupera ruolo e tenant dell'utente da admin_users
       const { data: adminRow } = await supabase
         .from("admin_users")
         .select("role, tenant_id")
@@ -46,27 +62,9 @@ export async function GET(request: Request) {
 
       const role = adminRow?.role ?? null;
       const tenantId = adminRow?.tenant_id ?? null;
-
-      // Invite → set-password (sempre su login.menuary.it con branding corretto)
-      if (type === "invite") {
-        const params = new URLSearchParams();
-        if (from) params.set("from", from);
-        return NextResponse.redirect(`${origin}/set-password?${params}`);
-      }
-
-      // Recovery → pagina nuova password
-      if (type === "recovery") {
-        const params = new URLSearchParams();
-        if (from) params.set("from", from);
-        if (next) params.set("next", next);
-        return NextResponse.redirect(`${origin}/set-password?${params}&mode=recovery`);
-      }
-
-      // Signup confirm o magiclink → destinazione finale
       const destination = resolveDestination({ from, next, role, tenantId });
 
       if (isPopup) {
-        // Nel popup: redirect a auth-success che fa postMessage e chiude
         const params = new URLSearchParams({ destination });
         if (from) params.set("from", from);
         return NextResponse.redirect(`${origin}/auth-success?${params}`);

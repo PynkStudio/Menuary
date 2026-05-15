@@ -83,7 +83,14 @@ export function resolveDestination(options: {
   tenantId: string | null;
 }): string {
   const { from, next, role, tenantId } = options;
-  const isPlatformAdmin = role === "platform_admin" || role === "tenant_admin";
+  const isPlatformAdmin =
+    role === "superadmin" ||
+    role === "admin" ||
+    role === "venditore" ||
+    role === "amministrazione" ||
+    role === "gestore" ||
+    role === "platform_admin" ||
+    role === "tenant_admin";
   const isStoreStaff = !isPlatformAdmin && !!tenantId;
 
   // Prova a onorare 'from' se l'utente ha accesso
