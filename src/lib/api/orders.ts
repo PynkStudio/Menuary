@@ -1,5 +1,7 @@
 import type { CartLine, Order, OrderLine, OrderStatus } from "@/lib/types";
-import type { Json } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
+
+type OrderLineInsert = Database["public"]["Tables"]["order_lines"]["Insert"];
 
 /** Righe DB → OrderLine TypeScript */
 export function dbLinesToOrderLines(rows: DbOrderLine[]): OrderLine[] {
@@ -43,7 +45,7 @@ export function dbRowToOrder(row: DbOrder, lines: OrderLine[]): Order {
 export function cartLinesToDbRows(
   orderId: string,
   cartLines: CartLine[],
-): Omit<DbOrderLine, "id">[] {
+): OrderLineInsert[] {
   return cartLines.map((l, i) => ({
     order_id: orderId,
     position: i,
