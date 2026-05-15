@@ -96,6 +96,31 @@ export type PlatformPayment = {
   updated_at: string;
 };
 
+// ─── Vertical ─────────────────────────────────────────────────────────────────
+
+export type LeadVertical = "food" | "services";
+
+export const VERTICAL_LABELS: Record<LeadVertical, string> = {
+  food: "Menuary · Food",
+  services: "Bizery · Services",
+};
+
+export const VERTICAL_SHORT_LABELS: Record<LeadVertical, string> = {
+  food: "Menuary",
+  services: "Bizery",
+};
+
+/** Classi Tailwind per badge verticale — usa colori brand hardcoded (contesto admin). */
+export const VERTICAL_BADGE_CLASSES: Record<LeadVertical, string> = {
+  food:     "bg-amber-100 text-amber-800",
+  services: "bg-blue-100 text-blue-700",
+};
+
+export const VERTICAL_DOT_CLASSES: Record<LeadVertical, string> = {
+  food:     "bg-amber-500",
+  services: "bg-blue-500",
+};
+
 // ─── Labels UI ─────────────────────────────────────────────────────────────────
 
 export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {

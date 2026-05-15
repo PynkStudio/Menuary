@@ -15,10 +15,15 @@ import { resolveTenantFeatures } from "@/lib/tenant-modules";
 
 const EXCLUDED_MODES = new Set([
   "marketing",
+  "marketing-bizery",
   "clients",
   "studio",
   "platform-admin",
   "preview",
+  "preview-bizery",
+  "login",
+  "gestione",
+  "gestione-bizery",
 ] as const);
 
 function isInternal(pathname: string | null): boolean {

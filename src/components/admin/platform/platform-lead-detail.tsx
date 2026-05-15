@@ -15,6 +15,8 @@ import {
   Pencil,
   Save,
   X,
+  UtensilsCrossed,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -30,6 +32,8 @@ import {
   SUBSCRIPTION_STATUS_COLORS,
   PAYMENT_STATUS_LABELS,
   PAYMENT_STATUS_COLORS,
+  VERTICAL_BADGE_CLASSES,
+  VERTICAL_LABELS,
 } from "@/lib/platform-crm-types";
 
 // ─── Tipi tab ─────────────────────────────────────────────────────────────────
@@ -178,7 +182,17 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
 
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-3">
+            {/* Icona e badge verticale */}
+            <VerticalIcon vertical={lead.business_vertical} />
             <h1 className="headline text-3xl">{lead.business_name}</h1>
+            <span
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wide",
+                VERTICAL_BADGE_CLASSES[lead.business_vertical],
+              )}
+            >
+              {VERTICAL_LABELS[lead.business_vertical]}
+            </span>
             <span
               className={cn(
                 "rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wide",
@@ -265,10 +279,23 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
 function TabAnagrafica({ lead }: { lead: PlatformLead }) {
   return (
     <div className="space-y-6">
+      {/* Banner verticale */}
+      <div
+        className={cn(
+          "flex items-center gap-3 rounded-2xl p-4",
+          VERTICAL_BADGE_CLASSES[lead.business_vertical],
+        )}
+      >
+        <VerticalIcon vertical={lead.business_vertical} size={20} />
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide opacity-60">Verticale</p>
+          <p className="font-black">{VERTICAL_LABELS[lead.business_vertical]}</p>
+        </div>
+      </div>
+
       <SectionTitle icon={Building2}>Attività</SectionTitle>
       <FieldGrid>
         <Field label="Nome attività" value={lead.business_name} />
-        <Field label="Vertical" value={lead.business_vertical === "food" ? "Ristorazione" : "Servizi"} />
         <Field label="Slug / futuro ID tenant" value={lead.business_slug} />
       </FieldGrid>
 
@@ -537,6 +564,19 @@ function TabNote({
       )}
     </div>
   );
+}
+
+// ─── Vertical icon ────────────────────────────────────────────────────────────
+
+function VerticalIcon({
+  vertical,
+  size = 16,
+}: {
+  vertical: "food" | "services";
+  size?: number;
+}) {
+  if (vertical === "food") return <UtensilsCrossed size={size} />;
+  return <Briefcase size={size} />;
 }
 
 // ─── Primitivi UI ─────────────────────────────────────────────────────────────
