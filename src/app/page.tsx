@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { MarketingHomePage } from "@/components/marketing/pages/home";
-import { VerticalBHomePage } from "@/components/vertical-b/pages/home";
 import { TenantHomePage } from "@/components/tenants/_shared/pages/home";
 import { ClientsHomePage } from "@/components/clients/clients-home-page";
 import { ClientsShell } from "@/components/clients/clients-shell";
