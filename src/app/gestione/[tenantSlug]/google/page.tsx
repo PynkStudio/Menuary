@@ -3,7 +3,7 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { getPrimaryLocation, getLastSuccessfulSync } from "@/lib/data/google-sync";
 import { GoogleConnectCard } from "@/components/gestione/google/google-connect-card";
 import Link from "next/link";
-import { Star, Clock, MessageSquare, BarChart2 } from "lucide-react";
+import { Clock, MessageSquare, BarChart2 } from "lucide-react";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 
 interface Props {

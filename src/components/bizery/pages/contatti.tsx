@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
 import { BizeryShell } from "@/components/bizery/bizery-shell";
 

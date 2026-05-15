@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, MessageSquare, Send, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, MessageSquare, Send, ChevronUp } from "lucide-react";
 import type { GmbReview } from "@/lib/google/my-business-types";
 import { starRatingToNumber } from "@/lib/google/my-business-types";
 

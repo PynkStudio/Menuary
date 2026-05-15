@@ -9,7 +9,6 @@ import {
   Users,
   TrendingUp,
   Boxes,
-  BarChart2,
   Building2,
   Check,
   Plus,
