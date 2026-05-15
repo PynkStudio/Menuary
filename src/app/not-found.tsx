@@ -12,12 +12,14 @@ export default async function NotFound() {
   if (mode !== "tenant" && mode !== "preview") {
     const labelByMode: Record<string, string> = {
       marketing: "Menuary",
-      "marketing-b": "Menuary",
+      "marketing-bizery": "Bizery",
       "platform-admin": "Menuary · Back-office",
       clients: "Menuary · Area personale",
       studio: "Menuary · Studio",
       login: "Menuary · Accesso",
       gestione: "Menuary · Gestione",
+      "gestione-bizery": "Bizery · Gestione",
+      "preview-bizery": "Bizery",
     };
     const label = labelByMode[mode] ?? "Menuary";
 

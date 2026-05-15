@@ -20,10 +20,12 @@ type IconSet = NonNullable<Metadata["icons"]>;
 
 /** Restituisce il prefisso della cartella favicon in /public per un dato sito. */
 function faviconBase(mode: PlatformMode, tenant: TenantProfile): string {
-  if (mode === "marketing")   return "/favicons/menuary";
-  if (mode === "clients")     return "/favicons/menuary";
-  if (mode === "studio")      return "/favicons/menuary";
-  if (mode === "marketing-b") return "/favicons/vertical-b";
+  if (mode === "marketing")         return "/favicons/menuary";
+  if (mode === "clients")           return "/favicons/menuary";
+  if (mode === "studio")            return "/favicons/menuary";
+  if (mode === "marketing-bizery")  return "/favicons/bizery";
+  if (mode === "gestione-bizery")   return "/favicons/bizery";
+  if (mode === "preview-bizery")    return "/favicons/bizery";
   // Per i tenant, la cartella coincide con l'id del tenant.
   // Se non esiste ancora una cartella dedicata, ricade su bepork come default.
   return `/favicons/${tenant.id}`;
@@ -58,10 +60,10 @@ export function buildIconSet(mode: PlatformMode, tenant: TenantProfile): IconSet
  * Corrisponde al colore della tab/barra browser su mobile.
  */
 export function themeColor(mode: PlatformMode, tenant: TenantProfile): string {
-  if (mode === "marketing")   return "#18231f"; // Menuary ink
-  if (mode === "clients")     return "#18231f";
-  if (mode === "studio")      return "#18231f";
-  if (mode === "marketing-b") return "#1a1a2e"; // Vertical B placeholder
+  if (mode === "marketing")        return "#18231f"; // Menuary ink
+  if (mode === "clients")          return "#18231f";
+  if (mode === "studio")           return "#18231f";
+  if (mode === "marketing-bizery") return "#0F172A"; // Bizery ink
   // Usa il colore "ink" del tema del tenant
   return tenant.theme.ink;
 }

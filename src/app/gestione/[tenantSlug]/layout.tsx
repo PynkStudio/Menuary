@@ -4,6 +4,7 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { GestioneShell } from "@/components/gestione/gestione-shell";
+import { GestioneLoginGate } from "@/components/gestione/gestione-login-gate";
 import type { Database } from "@/lib/supabase/types";
 
 interface Props {
@@ -16,16 +17,40 @@ export default async function GestioneLayout({ children, params }: Props) {
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) notFound();
 
-  // Verifica sessione + ruolo per questo tenant
-  const supabase = await createSupabaseServerClient(".menuary.it");
+  const host = (await headers()).get("host") ?? "";
+  const isBizery =
+    host.endsWith(".bizery.it") || host.endsWith(".bizery.localhost");
+
+  // Bizery: cookie origin-scoped (set via popup postMessage + set-session).
+  // Menuary: cookie condiviso su .menuary.it (redirect-based login).
+  const cookieDomain = isBizery ? undefined : ".menuary.it";
+  const supabase = await createSupabaseServerClient(cookieDomain);
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    const host = (await headers()).get("host");
+    if (isBizery) {
+      // Cross-domain: non si può fare redirect + aspettarsi il cookie .bizery.it.
+      // Mostriamo il login gate client-side che apre il popup su login.menuary.it.
+      const cssVars = tenantThemeCssVars(tenant.theme);
+      return (
+        <div
+          style={{
+            ...cssVars,
+            backgroundColor: tenant.theme.cream,
+            color: tenant.theme.ink,
+            minHeight: "100vh",
+          } as React.CSSProperties}
+        >
+          <GestioneLoginGate
+            tenantSlug={tenantSlug}
+            tenantName={tenant.name}
+            accentColor={tenant.theme.red}
+          />
+        </div>
+      );
+    }
     const next = encodeURIComponent("/");
-    redirect(
-      `https://login.menuary.it?from=gestione.${tenantSlug}&next=${next}${host ? "" : ""}`,
-    );
+    redirect(`https://login.menuary.it?from=gestione.${tenantSlug}&next=${next}`);
   }
 
   const { data: adminRow } = await supabase
@@ -41,6 +66,25 @@ export default async function GestioneLayout({ children, params }: Props) {
   const isOwnTenant = adminRow?.tenant_id === tenantSlug;
 
   if (!isPlatformAdmin && !isOwnTenant) {
+    if (isBizery) {
+      const cssVars = tenantThemeCssVars(tenant.theme);
+      return (
+        <div
+          style={{
+            ...cssVars,
+            backgroundColor: tenant.theme.cream,
+            color: tenant.theme.ink,
+            minHeight: "100vh",
+          } as React.CSSProperties}
+        >
+          <GestioneLoginGate
+            tenantSlug={tenantSlug}
+            tenantName={tenant.name}
+            accentColor={tenant.theme.red}
+          />
+        </div>
+      );
+    }
     redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);
   }
 

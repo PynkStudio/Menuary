@@ -1,0 +1,24 @@
+/* ============================================================
+   bizery.css — stili specifici per il verticale Bizery (services)
+   ============================================================ */
+
+@layer components {
+  /* Usa gli stessi token CSS pork-* (referenziano var(--tenant-*))
+     così il tema blu Bizery viene applicato automaticamente. */
+
+  .bizery-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-pork-red px-6 py-3 font-semibold text-white shadow-lg shadow-pork-red/20 transition-all hover:bg-pork-red-dark hover:shadow-pork-red/30 active:scale-95;
+  }
+
+  .bizery-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border-2 border-pork-ink/20 bg-transparent px-6 py-3 font-semibold text-pork-ink transition-all hover:border-pork-ink hover:bg-pork-ink hover:text-pork-cream active:scale-95;
+  }
+
+  .bizery-card {
+    @apply rounded-2xl bg-white p-6 shadow-sm shadow-black/5 ring-1 ring-black/5;
+  }
+
+  .bizery-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-pork-red/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-pork-red;
+  }
+}

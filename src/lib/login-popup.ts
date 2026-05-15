@@ -12,6 +12,7 @@ export const LOGIN_ORIGIN =
     : "http://login.menuary.localhost:3000";
 
 const MENUARY_DOMAIN = ".menuary.it";
+const BIZERY_DOMAIN = ".bizery.it";
 
 export interface LoginPopupOptions {
   from: LoginFrom;
@@ -147,12 +148,22 @@ function isMenuarySubdomain(origin: string): boolean {
   }
 }
 
+function isBizerySubdomain(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === "bizery.it" || hostname.endsWith(BIZERY_DOMAIN);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Origini autorizzate a ricevere token via postMessage.
- * Include tutti i sottodomini Menuary + domini tenant registrati.
+ * Include tutti i sottodomini Menuary, tutti i sottodomini Bizery + domini tenant registrati.
  */
 function isAllowedOrigin(origin: string): boolean {
   if (isMenuarySubdomain(origin)) return true;
+  if (isBizerySubdomain(origin)) return true;
   // Tenant con dominio custom — in futuro leggere da un registry
   const ALLOWED_CUSTOM = ["https://bepork.it", "https://www.bepork.it", "https://faak.it"];
   return ALLOWED_CUSTOM.includes(origin);

@@ -5,6 +5,7 @@
    togliere il layer può far fallire o svuotare il CSS in produzione. */
 @import "../styles/tenants/bepork.css";
 @import "../styles/tenants/faak.css";
+@import "../styles/tenants/bizery.css";
 @import "../styles/marketing.css";
 @import "../styles/admin.css";
 

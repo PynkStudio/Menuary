@@ -100,6 +100,43 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
+  if (mode === "marketing-bizery") {
+    return {
+      metadataBase: new URL("https://bizery.it"),
+      title: {
+        default: "Bizery - la piattaforma digitale per la tua azienda",
+        template: "%s · Bizery",
+      },
+      description:
+        "Bizery crea siti su misura per aziende di servizi, con appuntamenti, listino digitale, CRM e gestione team.",
+      keywords: [
+        "Bizery",
+        "siti per aziende",
+        "gestione appuntamenti",
+        "listino servizi online",
+        "CRM aziende",
+        "piattaforma digitale servizi",
+      ],
+      openGraph: {
+        title: "Bizery - la piattaforma digitale per la tua azienda",
+        description:
+          "Bizery crea siti su misura per aziende di servizi, con appuntamenti, listino digitale, CRM e gestione team.",
+        url: "https://bizery.it",
+        siteName: "Bizery",
+        locale: "it_IT",
+        type: "website",
+      },
+      twitter: {
+        card: "summary",
+        title: "Bizery",
+        description:
+          "Bizery crea siti su misura per aziende di servizi, con appuntamenti, listino digitale, CRM e gestione team.",
+      },
+      alternates: { canonical: "https://bizery.it" },
+      icons: buildIconSet(mode, tenant),
+    };
+  }
+
   if (mode === "studio") {
     return {
       metadataBase: new URL(STUDIO_PUBLIC_ORIGIN),

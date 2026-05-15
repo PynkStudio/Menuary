@@ -2,12 +2,13 @@
  * Utilità per costruire e interpretare gli URL di login.menuary.it
  *
  * Schema del parametro `from`:
- *   "admin"           → admin.menuary.it          (platform admin)
- *   "studio"          → studio.menuary.it          (fatturazione B2B)
- *   "clienti"         → clienti.menuary.it         (portale clienti)
- *   "gestione.bepork" → gestione.menuary.it/bepork (pannello store)
- *   "app.ios"         → deep link iOS app (futuro)
- *   "app.android"     → deep link Android app (futuro)
+ *   "admin"                  → admin.menuary.it              (platform admin)
+ *   "studio"                 → studio.menuary.it             (fatturazione B2B)
+ *   "clienti"                → clienti.menuary.it            (portale clienti)
+ *   "gestione.bepork"        → gestione.menuary.it/bepork    (pannello store food)
+ *   "gestione-bizery.acme"   → gestione.bizery.it/acme       (pannello store bizery, cross-domain popup)
+ *   "app.ios"                → deep link iOS app (futuro)
+ *   "app.android"            → deep link Android app (futuro)
  */
 
 export type LoginFrom =
@@ -15,6 +16,7 @@ export type LoginFrom =
   | "studio"
   | "clienti"
   | `gestione.${string}`
+  | `gestione-bizery.${string}`
   | `app.${string}`;
 
 const LOGIN_BASE =
@@ -53,6 +55,7 @@ export function parseFrom(raw: string | null | undefined): LoginFrom | null {
   const allowed: LoginFrom[] = ["admin", "studio", "clienti"];
   if ((allowed as string[]).includes(raw)) return raw as LoginFrom;
   if (/^gestione\.[a-z0-9-]+$/.test(raw)) return raw as LoginFrom;
+  if (/^gestione-bizery\.[a-z0-9-]+$/.test(raw)) return raw as LoginFrom;
   if (/^app\.(ios|android)$/.test(raw)) return raw as LoginFrom;
   return null;
 }
@@ -64,10 +67,12 @@ export function parseNext(raw: string | null | undefined): string | null {
   return null;
 }
 
-/** Estrae il tenant slug da `from=gestione.bepork` → "bepork" */
+/** Estrae il tenant slug da `from=gestione.bepork` → "bepork" o da `from=gestione-bizery.acme` → "acme" */
 export function tenantSlugFromFrom(from: LoginFrom | null): string | null {
-  if (!from?.startsWith("gestione.")) return null;
-  return from.split(".")[1] ?? null;
+  if (!from) return null;
+  if (from.startsWith("gestione-bizery.")) return from.slice("gestione-bizery.".length) || null;
+  if (from.startsWith("gestione.")) return from.split(".")[1] ?? null;
+  return null;
 }
 
 /** Risolve l'URL di destinazione post-login in base a `from` e al ruolo */
@@ -101,6 +106,17 @@ export function resolveDestination(options: {
       isPlatformAdmin || (isStoreStaff && tenantId === slug);
     if (slug && canAccess) {
       return `https://gestione.menuary.it/${slug}${next ?? ""}`;
+    }
+  }
+
+  // Bizery: popup-based cross-domain auth → il token viene passato via postMessage,
+  // ma questa funzione gestisce il fallback per mobile (redirect diretto).
+  if (from?.startsWith("gestione-bizery.")) {
+    const slug = tenantSlugFromFrom(from);
+    const canAccess =
+      isPlatformAdmin || (isStoreStaff && tenantId === slug);
+    if (slug && canAccess) {
+      return `https://gestione.bizery.it/${slug}${next ?? ""}`;
     }
   }
 

@@ -7,6 +7,32 @@ export const DEFAULT_TENANT_ID = "bepork";
 /** Be Pork: stack demo/produzione con tutti i moduli piattaforma attivi (nei limiti dell’implementazione). */
 export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = allTenantFeatures(true);
 
+/** Bizery demo: moduli appropriati per il verticale services (no food-specific). */
+export const BIZERY_DEMO_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: true,       // "Listino servizi" nel verticale services
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: true,     // "Appuntamenti"
+  tablePlanner: true,     // "Agenda e postazioni"
+  productAvailability: true,
+  upselling: true,        // "Servizi aggiuntivi"
+  crm: true,
+  analytics: true,
+  takeawaySlots: true,    // "Slot disponibilità"
+  deliveryHub: false,
+  inventoryFoodCost: true, // "Costi e margini"
+  printStations: false,
+  staffRoles: true,
+  multiLocation: true,
+  favorites: true,
+  reviews: true,
+  gallery: true,
+};
+
 export const TENANTS: TenantProfile[] = [
   // ── Verticale food (menuary.it) ──────────────────────────────────────────
   {
@@ -54,19 +80,40 @@ export const TENANTS: TenantProfile[] = [
     features: allTenantFeatures(true),
   },
 
-  // ── Verticale services (TODO: dominio marketing da definire) ─────────────
-  // Aggiungere qui i tenant non ristorativi quando il verticale sarà pronto.
-  // Esempio:
+  // ── Verticale services (Bizery — bizery.it) ──────────────────────────────
+  {
+    id: "bizery-demo",
+    name: "Bizery",
+    label: "Demo · Bizery",
+    vertical: "services",
+    domains: ["bizery.it", "www.bizery.it", "bizery.localhost"],  // marketing site + demo preview
+    previewSlug: "bizery-demo",
+    enabled: true,
+    theme: {
+      red: "#2563EB",       // blu primario Bizery
+      redDark: "#1D4ED8",
+      peach: "#DBEAFE",
+      cream: "#F0F5FF",
+      ink: "#0F172A",
+      brick: "#1E3A5F",
+      mustard: "#F59E0B",
+      mustardSoft: "#FCD34D",
+      green: "#10B981",
+      pink: "#8B5CF6",
+    },
+    features: BIZERY_DEMO_MODULE_FLAGS,
+  },
+  // Aggiungere qui i tenant Bizery reali quando attivati:
   // {
-  //   id: "studio-rossi",
-  //   name: "Studio Rossi",
-  //   label: "Tenant · Studio Rossi",
+  //   id: "nome-azienda",
+  //   name: "Nome Azienda",
+  //   label: "Tenant · Nome Azienda",
   //   vertical: "services",
-  //   domains: ["studiorossi.it", "www.studiorossi.it"],
-  //   previewSlug: "studio-rossi-demo",
+  //   domains: ["nomeazienda.it", "www.nomeazienda.it"],
+  //   previewSlug: "nome-azienda-demo",
   //   enabled: true,
   //   theme: { ... },
-  //   features: allTenantFeatures(true),
+  //   features: BIZERY_DEMO_MODULE_FLAGS,
   // },
 ];
 

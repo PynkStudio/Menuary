@@ -12,7 +12,7 @@ export default async function HomePage() {
   const mode = getPlatformModeFromHost((await headers()).get("host"));
 
   if (mode === "marketing") return <MarketingHomePage />;
-  if (mode === "marketing-b") return <VerticalBHomePage />;
+  // marketing-bizery → gestito dal middleware con rewrite su /bizery
   if (mode === "clients") {
     return (
       <ClientsShell>

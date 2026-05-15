@@ -2,15 +2,9 @@ import { Lock } from "lucide-react";
 
 const LOGIN_BASE = "https://login.menuary.it";
 
-export default async function AdminLoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ next?: string }>;
-}) {
-  const { next } = await searchParams;
+export default function GestioneRootPage() {
   const loginUrl = new URL(LOGIN_BASE);
-  loginUrl.searchParams.set("from", "admin");
-  if (next && next !== "/") loginUrl.searchParams.set("next", next);
+  loginUrl.searchParams.set("from", "gestione");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-pork-ink p-6">
@@ -19,10 +13,10 @@ export default async function AdminLoginPage({
           <Lock size={22} />
         </div>
         <p className="impact-title text-xs text-pork-red">Menuary</p>
-        <h1 className="headline mt-1 text-3xl">Area riservata</h1>
-        <p className="mt-1 text-sm text-pork-ink/60">Back-office piattaforma</p>
+        <h1 className="headline mt-1 text-3xl">Pannello gestione</h1>
+        <p className="mt-1 text-sm text-pork-ink/60">Area riservata ai gestori</p>
         <p className="mt-5 text-sm text-pork-ink/70">
-          Accedi con il tuo account Menuary per continuare.
+          Accedi con il tuo account per gestire il tuo locale.
         </p>
         <a
           href={loginUrl.toString()}

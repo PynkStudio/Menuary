@@ -30,6 +30,8 @@ function resolveSessionCookieDomain(host: string | null): string | undefined {
   const h = host.split(":")[0].toLowerCase();
   // Sottodomini Menuary: cookie condiviso su .menuary.it
   if (h === "menuary.it" || h.endsWith(".menuary.it")) return ".menuary.it";
+  // Sottodomini Bizery: gestione.bizery.it usa cookie origin-scoped (set-session via popup)
+  // Non impostiamo .bizery.it come domain perché il cookie è già scoped al request origin.
   // Domini custom (bepork.it, ecc.): nessun domain override
   return undefined;
 }
@@ -39,25 +41,29 @@ async function getSessionUser(
   response: NextResponse,
   cookieDomain?: string,
 ) {
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, {
-              ...options,
-              ...(cookieDomain !== undefined ? { domain: cookieDomain } : {}),
-            }),
-          );
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, {
+                ...options,
+                ...(cookieDomain !== undefined ? { domain: cookieDomain } : {}),
+              }),
+            );
+          },
         },
       },
-    },
-  );
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
+    );
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 /** Redirect a login.menuary.it con from + next */
@@ -148,7 +154,10 @@ export async function middleware(request: NextRequest) {
       }
       const user = await getSessionUser(request, response, cookieDomain);
       if (!user) {
-        return loginRedirect(request, "admin", pathname.replace(/^\/admin/, "") || "/");
+        const next = pathname.replace(/^\/admin/, "") || "/";
+        const fallback = new URL("/admin/login", request.url);
+        fallback.searchParams.set("next", next);
+        return NextResponse.redirect(fallback);
       }
       return response;
     }
@@ -171,6 +180,33 @@ export async function middleware(request: NextRequest) {
       const user = await getSessionUser(request, response, cookieDomain);
       if (!user) return loginRedirect(request, "clienti", pathname);
       return response;
+    }
+    return NextResponse.next();
+  }
+
+  // ── Gestione Bizery (gestione.bizery.it/[slug]) ──────────────────────────
+  // Auth gestita dal layout via popup (cross-domain: no redirect+cookie possibile).
+  if (mode === "gestione-bizery") {
+    if (!pathname.startsWith("/gestione")) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = "/gestione" + (pathname === "/" ? "" : pathname);
+      return NextResponse.rewrite(rewritten);
+    }
+    return NextResponse.next();
+  }
+
+  // ── Preview Bizery (demo.bizery.it/[previewSlug]) ─────────────────────────
+  if (mode === "preview-bizery") {
+    // Stesso meccanismo di demo.menuary.it: risoluzione tenant via previewSlug
+    return NextResponse.next();
+  }
+
+  // ── Marketing Bizery (bizery.it) ─────────────────────────────────────────
+  if (mode === "marketing-bizery") {
+    if (!pathname.startsWith("/bizery")) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = "/bizery" + (pathname === "/" ? "" : pathname);
+      return NextResponse.rewrite(rewritten);
     }
     return NextResponse.next();
   }
