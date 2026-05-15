@@ -55,7 +55,7 @@ export function ClientsSettingsPanel() {
           cronologia verranno eliminati definitivamente.
         </p>
         <p className="mt-2 text-sm text-[var(--menuary-muted)]">
-          Non puoi eliminare l'account se sei ancora membro dello staff di un locale.
+          Non puoi eliminare l&apos;account se sei ancora membro dello staff di un locale.
           Chiedi prima ai titolari di rimuoverti.
         </p>
 

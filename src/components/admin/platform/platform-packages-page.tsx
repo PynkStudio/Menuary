@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import type { PlatformPackage } from "@/lib/platform-crm-types";
 import { TENANT_MODULES, TENANT_MODULE_CATEGORIES } from "@/lib/tenant-modules";
 import type { TenantFeatureKey } from "@/lib/tenant";
-import { PRICING_PLANS, annualSaving } from "@/lib/platform-pricing";
+import { PRICING_PLANS } from "@/lib/platform-pricing";
 
 // ─── Tipo esteso con campi marketing ─────────────────────────────────────────
 

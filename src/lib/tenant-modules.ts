@@ -334,9 +334,9 @@ export function resolveTenantFeatures(
   // Seconda passata: propaga gli `implies` (sub-sistemi garantiti dal modulo padre).
   // Un modulo attivo porta sempre con sé i suoi sotto-sistemi, indipendentemente
   // da come il tenant ha configurato i flag nel registry.
-  for (const module of TENANT_MODULES) {
-    if (resolved[module.key]) {
-      for (const implied of module.implies ?? []) {
+  for (const mod of TENANT_MODULES) {
+    if (resolved[mod.key]) {
+      for (const implied of mod.implies ?? []) {
         resolved[implied] = true;
       }
     }

@@ -10,8 +10,6 @@ import {
   Receipt,
   CreditCard,
   FileText,
-  CheckCircle2,
-  Clock,
   AlertCircle,
   Plus,
   Pencil,

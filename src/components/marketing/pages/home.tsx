@@ -47,7 +47,7 @@ const HOMEPAGE_FAQ = [
   },
   {
     q: "Chi gestisce sicurezza, hosting e manutenzione?",
-    a: "Tutto incluso. Hosting, certificati SSL, backup, aggiornamenti tecnici e nuove funzioni del prodotto fanno parte del canone mensile — incluse le evoluzioni della piattaforma su tutti i moduli.",
+    a: "Tutto incluso. Hosting, certificati SSL, backup, aggiornamenti tecnici e nuove funzioni del prodotto fanno parte del canone annuale — incluse le evoluzioni della piattaforma su tutti i moduli. Il contratto è annuale, senza possibilità di recesso anticipato, ma puoi cambiare piano in qualsiasi momento.",
   },
   {
     q: "Lavorate solo a Milano o in tutta Italia?",

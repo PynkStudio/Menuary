@@ -3,11 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  CalendarClock,
   AlertTriangle,
   CheckCircle2,
   Clock,
-  XCircle,
   ArrowRight,
   CreditCard,
   Euro,
