@@ -40,13 +40,26 @@ export function buildLoginUrl(options: {
   return url.toString();
 }
 
-/** Costruisce il redirect_to da passare a supabase.auth.admin.inviteUserByEmail */
+const LOGIN_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://login.menuary.it"
+    : "http://login.menuary.localhost:3000";
+
+/**
+ * URL di conferma per inviti e link email.
+ * Usa /confirm (client-side) che gestisce tutti i formati:
+ * hash fragment (implicit), token_hash (OTP diretto), code (PKCE).
+ */
 export function buildAuthCallbackUrl(from: LoginFrom): string {
-  const base =
-    process.env.NODE_ENV === "production"
-      ? "https://login.menuary.it"
-      : "http://login.menuary.localhost:3000";
-  return `${base}/api/auth/callback?from=${encodeURIComponent(from)}`;
+  return `${LOGIN_BASE_URL}/confirm?from=${encodeURIComponent(from)}`;
+}
+
+/**
+ * URL di conferma per recovery (resetPasswordForEmail).
+ * Aggiunge mode=recovery così la pagina sa redirigere a set-password.
+ */
+export function buildRecoveryCallbackUrl(from: LoginFrom): string {
+  return `${LOGIN_BASE_URL}/confirm?from=${encodeURIComponent(from)}&mode=recovery`;
 }
 
 /** Valida e normalizza il param `from` — previene open redirect */

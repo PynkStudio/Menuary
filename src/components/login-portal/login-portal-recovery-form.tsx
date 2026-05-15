@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { LoginFrom } from "@/lib/login-url";
-import { buildAuthCallbackUrl } from "@/lib/login-url";
+import { buildRecoveryCallbackUrl } from "@/lib/login-url";
 
 interface Props {
   from: LoginFrom | null;
@@ -23,9 +23,7 @@ export function LoginPortalRecoveryForm({ from, accentColor }: Props) {
     setError(null);
 
     const supabase = createSupabaseBrowserClient();
-    const redirectTo = from
-      ? buildAuthCallbackUrl(from)
-      : buildAuthCallbackUrl("clienti");
+    const redirectTo = buildRecoveryCallbackUrl(from ?? "clienti");
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,

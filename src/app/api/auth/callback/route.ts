@@ -17,15 +17,54 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
 
   const tokenHash = searchParams.get("token_hash");
+  const code = searchParams.get("code");
   const type = searchParams.get("type") as
     | "invite"
     | "signup"
     | "recovery"
     | "magiclink"
     | null;
+  const mode = searchParams.get("mode"); // "recovery" quando viene da resetPasswordForEmail
   const from = parseFrom(searchParams.get("from"));
   const next = parseNext(searchParams.get("next"));
   const isPopup = searchParams.get("popup") === "1";
+
+  // ── PKCE code exchange (resetPasswordForEmail e signup confirm via @supabase/ssr) ──
+  // Il browser-client PKCE non invia token_hash direttamente: Supabase verifica il token
+  // sul suo server e redirige qui con ?code=xxx. Scambiamo il code per la sessione.
+  if (code) {
+    const supabase = await createSupabaseServerClient(".menuary.it");
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error && data.user) {
+      if (mode === "recovery") {
+        // Sessione già attiva — set-password non deve riverificare nulla
+        const params = new URLSearchParams({ mode: "recovery" });
+        if (from) params.set("from", from);
+        if (next) params.set("next", next);
+        return NextResponse.redirect(`${origin}/set-password?${params}`);
+      }
+
+      // Signup confirm o magiclink: vai alla destinazione finale
+      const { data: adminRow } = await supabase
+        .from("admin_users")
+        .select("role, tenant_id")
+        .eq("auth_user_id", data.user.id)
+        .single();
+
+      const role = adminRow?.role ?? null;
+      const tenantId = adminRow?.tenant_id ?? null;
+      const destination = resolveDestination({ from, next, role, tenantId });
+
+      if (isPopup) {
+        const params = new URLSearchParams({ destination });
+        if (from) params.set("from", from);
+        return NextResponse.redirect(`${origin}/auth-success?${params}`);
+      }
+
+      return NextResponse.redirect(destination);
+    }
+  }
 
   if (tokenHash && type) {
     // invite e recovery: NON verificare server-side — i link scanner dei client email
