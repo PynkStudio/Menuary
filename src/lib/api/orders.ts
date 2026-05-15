@@ -1,5 +1,5 @@
-import type { CartLine } from "@/store/cart-store";
-import type { Order, OrderLine, OrderStatus } from "@/lib/types";
+import type { CartLine, Order, OrderLine, OrderStatus } from "@/lib/types";
+import type { Json } from "@/lib/supabase/types";
 
 /** Righe DB → OrderLine TypeScript */
 export function dbLinesToOrderLines(rows: DbOrderLine[]): OrderLine[] {
@@ -99,9 +99,9 @@ export type DbOrderLine = {
   variant_label: string | null;
   unit_price: number | string;
   line_total: number | string;
-  removed_ingredients: unknown;
-  added_extras: unknown;
-  bundle_picks: unknown;
+  removed_ingredients: Json;
+  added_extras: Json;
+  bundle_picks: Json;
   note: string | null;
 };
 
