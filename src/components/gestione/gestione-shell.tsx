@@ -48,6 +48,9 @@ export function GestioneShell({
 
   const base = `/gestione/${tenant.id}`;
 
+  const isAdmin =
+    currentUser.role === "tenant_admin" || currentUser.role === "platform_admin";
+
   const items: NavItem[] = [
     { label: "Dashboard", href: base, visible: () => true },
     { label: "Ordini", href: `${base}/ordini`, visible: () => true },
@@ -57,6 +60,7 @@ export function GestioneShell({
     { label: "Cassa", href: `${base}/cassa`, visible: (c) => c.can_cassa },
     { label: "Turni", href: `${base}/turni`, visible: () => true },
     { label: "Staff", href: `${base}/staff`, visible: (c) => c.can_manage_staff },
+    { label: "Google", href: `${base}/google`, visible: () => isAdmin },
     { label: "Analytics", href: `${base}/analytics`, visible: (c) => c.can_view_analytics },
     { label: "Fatturazione", href: `${base}/fatturazione`, visible: (c) => c.can_view_financials },
   ];

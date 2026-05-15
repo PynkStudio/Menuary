@@ -981,6 +981,123 @@ export type Database = {
           },
         ]
       }
+      tenant_special_hours: {
+        Row: {
+          id: string
+          tenant_id: string
+          date: string
+          closed: boolean
+          slots: unknown
+          label: string | null
+          synced_to_google: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          date: string
+          closed?: boolean
+          slots?: unknown
+          label?: string | null
+          synced_to_google?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          date?: string
+          closed?: boolean
+          slots?: unknown
+          label?: string | null
+          synced_to_google?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      tenant_google_auth: {
+        Row: {
+          tenant_id: string
+          refresh_token: string
+          authorized_at: string
+          authorized_by: string | null
+        }
+        Insert: {
+          tenant_id: string
+          refresh_token: string
+          authorized_at?: string
+          authorized_by?: string | null
+        }
+        Update: {
+          tenant_id?: string
+          refresh_token?: string
+          authorized_at?: string
+          authorized_by?: string | null
+        }
+        Relationships: []
+      }
+      tenant_google_locations: {
+        Row: {
+          id: string
+          tenant_id: string
+          location_resource_name: string
+          place_id: string | null
+          location_name: string | null
+          is_primary: boolean
+          linked_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          location_resource_name: string
+          place_id?: string | null
+          location_name?: string | null
+          is_primary?: boolean
+          linked_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          location_resource_name?: string
+          place_id?: string | null
+          location_name?: string | null
+          is_primary?: boolean
+          linked_at?: string
+        }
+        Relationships: []
+      }
+      google_sync_log: {
+        Row: {
+          id: string
+          tenant_id: string
+          synced_at: string
+          reviews_fetched: number | null
+          rating: number | null
+          rating_count: number | null
+          status: string
+          error_message: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          synced_at?: string
+          reviews_fetched?: number | null
+          rating?: number | null
+          rating_count?: number | null
+          status?: string
+          error_message?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          synced_at?: string
+          reviews_fetched?: number | null
+          rating?: number | null
+          rating_count?: number | null
+          status?: string
+          error_message?: string | null
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           author: string
@@ -993,6 +1110,10 @@ export type Database = {
           published: boolean
           rating: number
           reviews_count: number | null
+          source: string
+          google_review_id: string | null
+          reply_comment: string | null
+          replied_at: string | null
           tenant_id: string
           text: string
         }
@@ -1007,6 +1128,10 @@ export type Database = {
           published?: boolean
           rating: number
           reviews_count?: number | null
+          source?: string
+          google_review_id?: string | null
+          reply_comment?: string | null
+          replied_at?: string | null
           tenant_id: string
           text: string
         }
@@ -1021,6 +1146,10 @@ export type Database = {
           published?: boolean
           rating?: number
           reviews_count?: number | null
+          source?: string
+          google_review_id?: string | null
+          reply_comment?: string | null
+          replied_at?: string | null
           tenant_id?: string
           text?: string
         }

@@ -56,6 +56,9 @@ function rowToProfile(r: Row): TenantProfile {
     domains: r.domains,
     previewSlug: r.preview_slug ?? undefined,
     enabled: r.enabled,
+    // `status` non ancora presente sulla tabella DB: i tenant letti da DB
+    // sono tenant reali in produzione, quindi default a "active".
+    status: "active",
     theme: r.theme as TenantTheme,
     features: r.features as TenantFeatureFlags,
   };

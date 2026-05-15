@@ -77,9 +77,6 @@ export const TENANTS: TenantProfile[] = [
     previewSlug: "bepork-demo",
     enabled: true,
     status: "active",
-    google: {
-      placeId: "",  // TODO: inserire il Place ID reale da Google Maps
-    },
     theme: {
       red: "#B8332E",
       redDark: "#8E2420",
@@ -103,9 +100,6 @@ export const TENANTS: TenantProfile[] = [
     previewSlug: "faak-demo",
     enabled: true,
     status: "trial",
-    google: {
-      placeId: "",  // TODO: inserire il Place ID reale
-    },
     theme: {
       red: "#CD562F",
       redDark: "#000000",
@@ -155,9 +149,6 @@ export const TENANTS: TenantProfile[] = [
     previewSlug: "officinakam",     // → demo.bizery.it/officinakam
     enabled: true,
     status: "active",
-    google: {
-      placeId: "",  // TODO: inserire il Place ID reale
-    },
     theme: {
       red: "#F97316",               // orange primario (brand officinakam)
       redDark: "#C2410C",           // orange scuro

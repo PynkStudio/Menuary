@@ -21,11 +21,13 @@ export type TenantVertical = "food" | "services";
 export type TenantStatus = "active" | "trial" | "offline";
 
 // ─── Google integration ───────────────────────────────────────────────────────
+// Il Place ID e il resource name della location Google non sono hardcodati qui:
+// vengono acquisiti dinamicamente quando il gestore collega il proprio account
+// Google Business tramite OAuth dal pannello di gestione (gestione.menuary.it /
+// gestione.bizery.it) e sono persistiti nella tabella `tenant_google_locations`.
 export type TenantGoogleConfig = {
-  /** Google Maps Place ID — usato dall'API Places per fetching recensioni. */
-  placeId?: string;
-  /** Google Business Profile resource name (formato: "accounts/{id}/locations/{id}"). Usato dall'API My Business (implementazione futura). */
-  businessProfileId?: string;
+  /** Marker opzionale per indicare che il tenant ha già completato il linking Google. Usato solo come override manuale in casi eccezionali. */
+  manualPlaceId?: string;
 };
 
 // ─── Feature flags ────────────────────────────────────────────────────────────
