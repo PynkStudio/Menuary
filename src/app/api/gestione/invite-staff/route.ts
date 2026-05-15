@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildAuthCallbackUrl } from "@/lib/login-url";
-import { STORE_ROLES, type StoreRole } from "@/lib/store-roles";
+import type { StoreRole } from "@/lib/store-roles";
 import type { Database } from "@/lib/supabase/types";
 
 type AdminRole = Database["public"]["Enums"]["admin_role"];
