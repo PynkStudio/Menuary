@@ -83,11 +83,12 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
     ? `/recupera-password?from=${encodeURIComponent(from)}${next ? `&next=${encodeURIComponent(next)}` : ""}`
     : "/recupera-password";
 
-  // Link "registrati" solo per portale clienti
+  // Link "registrati" solo per portale clienti (gli altri ruoli arrivano via invito)
   const showRegister = from === "clienti" || from === null;
-  const registerHref = from
-    ? `/registrati?from=${encodeURIComponent(from)}`
-    : "/registrati";
+  const registerHref =
+    process.env.NODE_ENV === "production"
+      ? "https://clienti.menuary.it/registrati"
+      : "http://clienti.menuary.localhost:3000/registrati";
 
   return (
     <form onSubmit={handleLogin} className="space-y-5">

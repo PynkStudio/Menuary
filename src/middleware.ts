@@ -12,9 +12,6 @@ const CLIENTS_PRIVATE_PATHS = new Set([
   "/profilo", "/consensi", "/ristoranti", "/ordini", "/impostazioni",
 ]);
 
-/** Portale fatturazione B2B */
-const STUDIO_PATHS = new Set(["/", "/fatturazione", "/pagamenti", "/recesso"]);
-
 /** Admin — path accessibili senza sessione */
 const ADMIN_PUBLIC = new Set(["/admin/login", "/admin/set-password"]);
 
@@ -178,12 +175,47 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── Studio (studio.menuary.it) ────────────────────────────────────────────
+  // ── Studio (deprecato) → reindirizza tutto su gestione.menuary.it ──────
   if (mode === "studio") {
-    if (!STUDIO_PATHS.has(pathname)) {
-      return NextResponse.redirect(new URL("/", request.url));
+    // Mappa i vecchi path studio sulle nuove sezioni di gestione
+    const sectionMap: Record<string, string> = {
+      "/": "/fatturazione",
+      "/fatturazione": "/fatturazione",
+      "/pagamenti": "/pagamenti",
+      "/recesso": "/recesso",
+    };
+    const section = sectionMap[pathname] ?? "/fatturazione";
+
+    // Risolve il tenant dell'utente per redirigere al suo gestione
+    const response = NextResponse.next({ request });
+    const user = await getSessionUser(request, response, cookieDomain);
+    if (!user) {
+      return loginRedirect(request, "studio", section);
     }
-    return NextResponse.next();
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll() { /* read-only */ },
+        },
+      },
+    );
+    const { data: row } = await supabase
+      .from("admin_users")
+      .select("tenant_id")
+      .eq("auth_user_id", user.id)
+      .eq("enabled", true)
+      .single();
+
+    if (!row?.tenant_id) {
+      return NextResponse.redirect(new URL("https://login.menuary.it?from=studio"));
+    }
+    return NextResponse.redirect(
+      new URL(`https://gestione.menuary.it/${row.tenant_id}${section}`),
+    );
   }
 
   return NextResponse.next();

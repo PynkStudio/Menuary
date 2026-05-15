@@ -20,9 +20,16 @@ export const DEVICE_ROLES = ["kitdisplay", "kiosk"] as const;
 
 export const PLATFORM_ROLES = ["platform_admin", "tenant_admin"] as const;
 
+/** Ruoli legacy mantenuti per backward compat con dati esistenti */
+export const LEGACY_ROLES = ["staff", "kitchen"] as const;
+
 export type StoreRole = (typeof STORE_ROLES)[number];
 export type DeviceRole = (typeof DEVICE_ROLES)[number];
-export type AdminRole = StoreRole | DeviceRole | (typeof PLATFORM_ROLES)[number];
+export type AdminRole =
+  | StoreRole
+  | DeviceRole
+  | (typeof PLATFORM_ROLES)[number]
+  | (typeof LEGACY_ROLES)[number];
 
 export interface StoreCapabilities {
   /** Accesso alla cassa (pagamenti, chiusura conto) */
@@ -121,6 +128,8 @@ export function getEffectiveCapabilities(
 export const ROLE_LABELS: Record<AdminRole, string> = {
   platform_admin: "Admin piattaforma",
   tenant_admin: "Titolare (legacy)",
+  staff: "Staff (legacy)",
+  kitchen: "Cucina (legacy)",
   titolare: "Titolare",
   manager: "Manager",
   chef: "Chef",

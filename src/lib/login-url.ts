@@ -85,8 +85,12 @@ export function resolveDestination(options: {
   if (from === "admin" && isPlatformAdmin) {
     return `https://admin.menuary.it${next ?? ""}`;
   }
-  if (from === "studio" && (isPlatformAdmin || isStoreStaff)) {
-    return `https://studio.menuary.it${next ?? ""}`;
+  // studio è deprecato → reindirizza alle pagine fatturazione dentro gestione
+  if (from === "studio") {
+    if (isPlatformAdmin) return "https://admin.menuary.it";
+    if (isStoreStaff && tenantId) {
+      return `https://gestione.menuary.it/${tenantId}/fatturazione${next ?? ""}`;
+    }
   }
   if (from === "clienti") {
     return `https://clienti.menuary.it${next ?? ""}`;
