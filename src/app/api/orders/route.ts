@@ -7,7 +7,7 @@ import {
   type DbOrder,
   type DbOrderLine,
 } from "@/lib/api/orders";
-import type { CartLine } from "@/store/cart-store";
+import type { CartLine } from "@/lib/types";
 
 // ─── POST /api/orders — crea ordine ──────────────────────────────────────────
 
