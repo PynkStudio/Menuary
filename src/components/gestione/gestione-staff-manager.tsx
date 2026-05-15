@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, Trash2, RefreshCcw } from "lucide-react";
 import {
-  STORE_ROLES,
   ROLE_LABELS,
   ROLE_DEFAULTS,
   type StoreRole,
