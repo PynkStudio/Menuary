@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { resolveDestination, type LoginFrom } from "@/lib/login-url";
+import { resolveUserAccess } from "@/lib/user-access";
 import { notifyParentAndClose } from "@/lib/login-popup";
 import { useSearchParams } from "next/navigation";
 import { TENANTS } from "@/lib/tenant-registry";
@@ -56,15 +57,13 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
     }
 
     // Recupera ruolo dal DB
-    const { data: adminRow } = await supabase
-      .from("admin_users")
-      .select("role, tenant_id")
-      .eq("auth_user_id", data.user.id)
-      .single();
-
-    const role = adminRow?.role ?? null;
-    const tenantId = adminRow?.tenant_id ?? null;
-    const destination = resolveDestination({ from, next, role, tenantId });
+    const access = await resolveUserAccess(supabase, data.user.id);
+    const destination = resolveDestination({
+      from,
+      next,
+      isSiteadmin: access.isSiteadmin,
+      tenantId: access.tenantId,
+    });
 
     if (popup) {
       notifyParentAndClose({

@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { MarketingReview, MarketingTenant } from "@/lib/marketing-data";
 
 /* ============================================================
    FEATURES
@@ -393,7 +394,7 @@ export function AIPhoneSection() {
                     IA
                   </span>
                   <p className="text-white/85">
-                    Ristorante Be Pork, buonasera. Come posso aiutarla?
+                    Ristorante, buonasera. Come posso aiutarla?
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -588,18 +589,14 @@ export function ProductPreviewSection() {
    LOGOS MARQUEE
    ============================================================ */
 
-const LOGOS = [
-  "Be Pork",
-  "Faak",
-  "La Trattoria",
-  "Don Carlo",
-  "Bistrot 7",
-  "Cucina Vera",
-  "Sale & Pepe",
-  "L'Osteria",
-];
-
-export function LogosStripSection() {
+export function LogosStripSection({ tenants }: { tenants: MarketingTenant[] }) {
+  if (tenants.length === 0) return null;
+  const labels = tenants.map((t) => t.name);
+  // Duplichiamo per il marquee infinito; se ne abbiamo pochi, ripetiamo abbastanza
+  // volte da riempire la striscia in modo credibile.
+  const minMarqueeItems = 8;
+  const repeats = Math.max(2, Math.ceil(minMarqueeItems / labels.length));
+  const track = Array.from({ length: repeats }, () => labels).flat();
   return (
     <section className="border-y border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-10 lg:py-14">
@@ -609,7 +606,7 @@ export function LogosStripSection() {
           </p>
           <div className="menuary-marquee flex-1">
             <div className="menuary-marquee-track">
-              {[...LOGOS, ...LOGOS].map((label, i) => (
+              {track.map((label, i) => (
                 <span
                   key={`${label}-${i}`}
                   className="font-[var(--font-menuary-display)] text-[clamp(1.4rem,2.4vw,2rem)] italic text-[var(--menuary-ink)]/70"
@@ -630,42 +627,17 @@ export function LogosStripSection() {
    TESTIMONIALS
    ============================================================ */
 
-const TESTIMONIALS: {
-  quote: string;
-  name: string;
-  role: string;
-  rating?: number;
-}[] = [
-  {
-    quote:
-      "Avevamo un sito statico aggiornato due volte l’anno. Con Menuary il menu vive ogni settimana — e i clienti se ne accorgono.",
-    name: "Andrea Lippolis",
-    role: "Be Pork · Bari",
-    rating: 5,
-  },
-  {
-    quote:
-      "La cosa che ci ha convinti è il tono. Sembra un sito fatto da chi conosce la sala, non un template per ristoranti.",
-    name: "Viviana Varese",
-    role: "Faak · Milano",
-    rating: 5,
-  },
-  {
-    quote:
-      "Prenotazioni e ordini in un unico posto. Lo staff è entrato in confidenza in tre giorni, senza formazione.",
-    name: "Marco De Santis",
-    role: "Bistrot 7 · Lecce",
-    rating: 5,
-  },
-];
-
-export function TestimonialsSection() {
+export function TestimonialsSection({ reviews }: { reviews: MarketingReview[] }) {
+  if (reviews.length === 0) return null;
+  const visible = reviews.slice(0, 3);
+  const avg =
+    reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
       <div className="menuary-container py-24 lg:py-32">
         <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-3xl">
-            <p className="menuary-section-label">Voci dei locali</p>
+            <p className="menuary-section-label">Voci dei locali · Google</p>
             <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.6vw,4rem)]">
               Lo dicono meglio loro.
             </h2>
@@ -677,35 +649,38 @@ export function TestimonialsSection() {
               ))}
             </div>
             <span>
-              <strong className="text-[var(--menuary-ink)]">4.9 / 5</strong>{" "}
-              soddisfazione media
+              <strong className="text-[var(--menuary-ink)]">
+                {avg.toFixed(1).replace(".", ",")} / 5
+              </strong>{" "}
+              media Google
             </span>
           </div>
         </div>
 
         <div className="mt-12 grid gap-px sm:gap-6 md:grid-cols-3">
-          {TESTIMONIALS.map((t) => (
-            <figure key={t.name} className="menuary-testimonial">
+          {visible.map((t) => (
+            <figure key={t.id} className="menuary-testimonial">
               <div className="flex gap-0.5 text-[var(--menuary-copper)]">
-                {Array.from({ length: t.rating ?? 5 }).map((_, i) => (
+                {Array.from({ length: t.rating }).map((_, i) => (
                   <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
                 ))}
               </div>
               <blockquote className="menuary-testimonial-quote">
-                &ldquo;{t.quote}&rdquo;
+                &ldquo;{t.text}&rdquo;
               </blockquote>
               <figcaption className="mt-auto flex items-center gap-3 border-t border-[var(--menuary-line)] pt-4">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--menuary-ink)] text-[var(--menuary-paper)] font-bold text-sm">
-                  {t.name
+                  {t.author
                     .split(" ")
                     .map((p) => p[0])
                     .slice(0, 2)
                     .join("")}
                 </span>
                 <div>
-                  <p className="text-sm font-semibold">{t.name}</p>
+                  <p className="text-sm font-semibold">{t.author}</p>
                   <p className="text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-                    {t.role}
+                    {t.tenantName}
+                    {t.tenantCity ? ` · ${t.tenantCity}` : ""}
                   </p>
                 </div>
               </figcaption>
@@ -837,8 +812,9 @@ export function PricingTeaserSection() {
             </h2>
           </div>
           <p className="max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
-            Nessun vincolo annuale, nessuna fee nascosta. Cambi piano o disdici
-            con un mese di preavviso.
+            Contratto annuale, zero commissioni e zero fee nascoste. Puoi
+            cambiare piano in qualsiasi momento — la variazione parte dal mese
+            successivo.
           </p>
         </div>
 
@@ -1056,7 +1032,7 @@ const AUDIENCES = [
     body:
       "Menu leggibile, contatti chiari, ordini rapidi. Contenuti concreti per chi decide in trenta secondi sul marciapiede.",
     image:
-      "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=900&q=80",
   },
   {
     title: "Cocktail bar & bistrot",
@@ -1127,24 +1103,15 @@ export function AudiencesSection() {
    DEMOS
    ============================================================ */
 
-const DEMOS = [
-  {
-    href: "https://demo.menuary.it/bepork-demo",
-    label: "Be Pork · Bari",
-    tag: "Trattoria contemporanea",
-    image:
-      "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    href: "https://demo.menuary.it/faak-demo",
-    label: "Faak · Bari",
-    tag: "Bistrot urban",
-    image:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
-  },
-];
-
-export function DemosSection() {
+export function DemosSection({ tenants }: { tenants: MarketingTenant[] }) {
+  if (tenants.length === 0) return null;
+  const visible = tenants.slice(0, 4);
+  const title =
+    visible.length === 1
+      ? "Un locale, una voce."
+      : visible.length === 2
+        ? "Due locali, due voci diverse."
+        : `${visible.length} locali, ${visible.length} voci diverse.`;
   return (
     <section className="border-t border-[var(--menuary-line)]">
       <div className="menuary-container py-24 lg:py-32">
@@ -1152,20 +1119,25 @@ export function DemosSection() {
           <div>
             <p className="menuary-section-label">Esempi recenti</p>
             <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.4vw,4rem)]">
-              Due locali, due voci diverse.
+              {title}
             </h2>
           </div>
           <p className="max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
-            Esplora due ristoranti reali costruiti su Menuary. Stesso motore,
+            Esplora ristoranti reali costruiti su Menuary. Stesso motore,
             identità opposte.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-8 md:grid-cols-2">
-          {DEMOS.map((d) => (
+        <div
+          className={
+            "mt-12 grid gap-8 " +
+            (visible.length === 1 ? "md:grid-cols-1" : "md:grid-cols-2")
+          }
+        >
+          {visible.map((d) => (
             <a
-              key={d.href}
-              href={d.href}
+              key={d.id}
+              href={d.url}
               target="_blank"
               rel="noopener noreferrer"
               className="group block cursor-pointer"
@@ -1173,7 +1145,7 @@ export function DemosSection() {
               <div className="menuary-photo aspect-[5/4] w-full">
                 <Image
                   src={d.image}
-                  alt={d.label}
+                  alt={d.name}
                   width={1100}
                   height={880}
                   className="h-full w-full object-cover"
@@ -1182,9 +1154,12 @@ export function DemosSection() {
               <div className="mt-5 flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-                    {d.tag}
+                    {d.city}
                   </p>
-                  <p className="menuary-display mt-2 text-2xl">{d.label}</p>
+                  <p className="menuary-display mt-2 text-2xl">
+                    {d.name}
+                    {d.city ? ` · ${d.city}` : ""}
+                  </p>
                 </div>
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--menuary-line)] transition-colors group-hover:border-[var(--menuary-ink)] group-hover:bg-[var(--menuary-ink)] group-hover:text-[var(--menuary-paper)]">
                   <ArrowUpRight size={18} strokeWidth={1.6} />
@@ -1608,9 +1583,9 @@ export function ComparisonSection() {
 
 export function BigNumbersSection() {
   const stats = [
-    { n: "−42%", l: "Tempo speso in gestione menu", h: "rispetto al cartaceo" },
-    { n: "+27%", l: "Prenotazioni in più dopo il go-live", h: "media primo trimestre" },
-    { n: "+18%", l: "Conversione delivery vs portali esterni", h: "ordini diretti" },
+    { n: "1", l: "Pannello per tutta l'operatività", h: "sito, sala, cucina, IA" },
+    { n: "24/7", l: "Risposte automatiche al telefono", h: "anche fuori orario" },
+    { n: "9", l: "Moduli integrati", h: "accendi solo ciò che ti serve" },
     { n: "0", l: "Commissioni su ordini e prenotazioni", h: "incassi integrali" },
   ];
 
@@ -1633,12 +1608,12 @@ export function BigNumbersSection() {
               I numeri che contano
             </p>
             <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.6vw,3.8rem)]">
-              Quattro metriche, una storia.
+              Quattro promesse, una piattaforma.
             </h2>
           </div>
           <p className="max-w-sm text-[15px] leading-7 text-white/65">
-            Media misurata sui ristoranti attivi su Menuary nei primi 90 giorni
-            dal go-live.
+            Quello che vogliamo garantire a ogni ristorante che entra su
+            Menuary — dal primo giorno, senza eccezioni.
           </p>
         </div>
 

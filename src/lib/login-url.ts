@@ -88,61 +88,34 @@ export function tenantSlugFromFrom(from: LoginFrom | null): string | null {
   return null;
 }
 
-/** Risolve l'URL di destinazione post-login in base a `from` e al ruolo */
+/** Risolve l'URL di destinazione post-login */
 export function resolveDestination(options: {
   from: LoginFrom | null;
   next: string | null;
-  role: string | null;
+  isSiteadmin: boolean;
   tenantId: string | null;
 }): string {
-  const { from, next, role, tenantId } = options;
-  const isPlatformAdmin =
-    role === "superadmin" ||
-    role === "admin" ||
-    role === "venditore" ||
-    role === "amministrazione" ||
-    role === "gestore" ||
-    role === "platform_admin" ||
-    role === "tenant_admin";
-  const isStoreStaff = !isPlatformAdmin && !!tenantId;
+  const { from, next, isSiteadmin, tenantId } = options;
 
-  // Prova a onorare 'from' se l'utente ha accesso
-  if (from === "admin" && isPlatformAdmin) {
-    return `https://admin.menuary.it${next ?? ""}`;
-  }
-  // studio è deprecato → reindirizza alle pagine fatturazione dentro gestione
+  if (from === "admin" && isSiteadmin) return `https://admin.menuary.it${next ?? ""}`;
   if (from === "studio") {
-    if (isPlatformAdmin) return "https://admin.menuary.it";
-    if (isStoreStaff && tenantId) {
-      return `https://gestione.menuary.it/${tenantId}/fatturazione${next ?? ""}`;
-    }
+    if (isSiteadmin) return "https://admin.menuary.it";
+    if (tenantId)    return `https://gestione.menuary.it/${tenantId}/fatturazione${next ?? ""}`;
   }
-  if (from === "clienti") {
-    return `https://clienti.menuary.it${next ?? ""}`;
-  }
+  if (from === "clienti") return `https://clienti.menuary.it${next ?? ""}`;
   if (from?.startsWith("gestione.")) {
     const slug = tenantSlugFromFrom(from);
-    const canAccess =
-      isPlatformAdmin || (isStoreStaff && tenantId === slug);
-    if (slug && canAccess) {
+    if (slug && (isSiteadmin || tenantId === slug))
       return `https://gestione.menuary.it/${slug}${next ?? ""}`;
-    }
   }
-
-  // Bizery: popup-based cross-domain auth → il token viene passato via postMessage,
-  // ma questa funzione gestisce il fallback per mobile (redirect diretto).
   if (from?.startsWith("gestione-bizery.")) {
     const slug = tenantSlugFromFrom(from);
-    const canAccess =
-      isPlatformAdmin || (isStoreStaff && tenantId === slug);
-    if (slug && canAccess) {
+    if (slug && (isSiteadmin || tenantId === slug))
       return `https://gestione.bizery.it/${slug}${next ?? ""}`;
-    }
   }
 
   // Fallback per ruolo
-  if (!role && !tenantId) return "https://clienti.menuary.it";
-  if (isPlatformAdmin) return "https://admin.menuary.it";
-  if (isStoreStaff) return `https://gestione.menuary.it/${tenantId}`;
+  if (isSiteadmin) return "https://admin.menuary.it";
+  if (tenantId)    return `https://gestione.menuary.it/${tenantId}`;
   return "https://clienti.menuary.it";
 }

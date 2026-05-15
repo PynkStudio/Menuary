@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { parseFrom, parseNext, resolveDestination } from "@/lib/login-url";
+import { resolveUserAccess } from "@/lib/user-access";
 import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
 
 /**
@@ -127,18 +128,12 @@ async function redirectToDestination(
   from: ReturnType<typeof parseFrom>,
   next: string | null,
 ) {
-  const { data: adminRow } = await supabase
-    .from("admin_users")
-    .select("role, tenant_id")
-    .eq("auth_user_id", userId)
-    .eq("enabled", true)
-    .single();
-
+  const access = await resolveUserAccess(supabase, userId);
   const destination = resolveDestination({
     from,
     next,
-    role: adminRow?.role ?? null,
-    tenantId: adminRow?.tenant_id ?? null,
+    isSiteadmin: access.isSiteadmin,
+    tenantId: access.tenantId,
   });
   window.location.href = destination;
 }

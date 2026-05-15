@@ -99,6 +99,39 @@ export type Database = {
           },
         ]
       }
+      customer: {
+        Row: {
+          birth_date: string | null
+          consumer_active: boolean
+          diet_notes: string | null
+          is_vegetarian: boolean
+          marketing_opt_in: boolean
+          preferred_language: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birth_date?: string | null
+          consumer_active?: boolean
+          diet_notes?: string | null
+          is_vegetarian?: boolean
+          marketing_opt_in?: boolean
+          preferred_language?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birth_date?: string | null
+          consumer_active?: boolean
+          diet_notes?: string | null
+          is_vegetarian?: boolean
+          marketing_opt_in?: boolean
+          preferred_language?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customer_events: {
         Row: {
           created_at: string
@@ -232,6 +265,60 @@ export type Database = {
           },
         ]
       }
+      employee: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          enabled: boolean
+          id: string
+          invited_by: string | null
+          permissions: Json
+          role: Database["public"]["Enums"]["employee_role"]
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          enabled?: boolean
+          id?: string
+          invited_by?: string | null
+          permissions?: Json
+          role?: Database["public"]["Enums"]["employee_role"]
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          enabled?: boolean
+          id?: string
+          invited_by?: string | null
+          permissions?: Json
+          role?: Database["public"]["Enums"]["employee_role"]
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "customer"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       extra_list_items: {
         Row: {
           code: string
@@ -307,6 +394,7 @@ export type Database = {
           alt: string | null
           created_at: string
           id: string
+          location_id: string | null
           position: number
           tenant_id: string
           url: string
@@ -315,6 +403,7 @@ export type Database = {
           alt?: string | null
           created_at?: string
           id?: string
+          location_id?: string | null
           position?: number
           tenant_id: string
           url: string
@@ -323,6 +412,7 @@ export type Database = {
           alt?: string | null
           created_at?: string
           id?: string
+          location_id?: string | null
           position?: number
           tenant_id?: string
           url?: string
@@ -333,6 +423,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gallery_images_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
@@ -387,30 +484,42 @@ export type Database = {
       locations: {
         Row: {
           address: string | null
+          city: string | null
           created_at: string
+          email: string | null
           id: string
           is_default: boolean
           name: string
+          phone: string | null
+          routing_mode: string
           slug: string
           tenant_id: string
           updated_at: string
         }
         Insert: {
           address?: string | null
+          city?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           is_default?: boolean
           name: string
+          phone?: string | null
+          routing_mode?: string
           slug: string
           tenant_id: string
           updated_at?: string
         }
         Update: {
           address?: string | null
+          city?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           is_default?: boolean
           name?: string
+          phone?: string | null
+          routing_mode?: string
           slug?: string
           tenant_id?: string
           updated_at?: string
@@ -421,6 +530,42 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_locations: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          location_id: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          location_id: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          location_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_locations_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_locations_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
@@ -473,6 +618,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          location_id: string | null
           position: number
           subtitle: string | null
           tenant_id: string
@@ -484,6 +630,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          location_id?: string | null
           position?: number
           subtitle?: string | null
           tenant_id: string
@@ -495,6 +642,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          location_id?: string | null
           position?: number
           subtitle?: string | null
           tenant_id?: string
@@ -507,6 +655,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_categories_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
@@ -623,6 +778,7 @@ export type Database = {
           extra_list_id: string | null
           id: string
           image: string | null
+          location_id: string | null
           name: string
           piccante_level: number | null
           position: number
@@ -645,6 +801,7 @@ export type Database = {
           extra_list_id?: string | null
           id?: string
           image?: string | null
+          location_id?: string | null
           name: string
           piccante_level?: number | null
           position?: number
@@ -667,6 +824,7 @@ export type Database = {
           extra_list_id?: string | null
           id?: string
           image?: string | null
+          location_id?: string | null
           name?: string
           piccante_level?: number | null
           position?: number
@@ -697,6 +855,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_items_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
             referencedColumns: ["id"]
           },
         ]
@@ -781,6 +946,7 @@ export type Database = {
           diner_client_id: string | null
           diner_nickname: string | null
           id: string
+          location_id: string | null
           menuary_user_id: string | null
           notes: string | null
           pickup_time: string | null
@@ -801,6 +967,7 @@ export type Database = {
           diner_client_id?: string | null
           diner_nickname?: string | null
           id?: string
+          location_id?: string | null
           menuary_user_id?: string | null
           notes?: string | null
           pickup_time?: string | null
@@ -821,6 +988,7 @@ export type Database = {
           diner_client_id?: string | null
           diner_nickname?: string | null
           id?: string
+          location_id?: string | null
           menuary_user_id?: string | null
           notes?: string | null
           pickup_time?: string | null
@@ -835,6 +1003,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_session_id_fkey"
             columns: ["session_id"]
@@ -981,139 +1156,23 @@ export type Database = {
           },
         ]
       }
-      tenant_special_hours: {
-        Row: {
-          id: string
-          tenant_id: string
-          date: string
-          closed: boolean
-          slots: unknown
-          label: string | null
-          synced_to_google: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          date: string
-          closed?: boolean
-          slots?: unknown
-          label?: string | null
-          synced_to_google?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          date?: string
-          closed?: boolean
-          slots?: unknown
-          label?: string | null
-          synced_to_google?: boolean
-          created_at?: string
-        }
-        Relationships: []
-      }
-      tenant_google_auth: {
-        Row: {
-          tenant_id: string
-          refresh_token: string
-          authorized_at: string
-          authorized_by: string | null
-        }
-        Insert: {
-          tenant_id: string
-          refresh_token: string
-          authorized_at?: string
-          authorized_by?: string | null
-        }
-        Update: {
-          tenant_id?: string
-          refresh_token?: string
-          authorized_at?: string
-          authorized_by?: string | null
-        }
-        Relationships: []
-      }
-      tenant_google_locations: {
-        Row: {
-          id: string
-          tenant_id: string
-          location_resource_name: string
-          place_id: string | null
-          location_name: string | null
-          is_primary: boolean
-          linked_at: string
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          location_resource_name: string
-          place_id?: string | null
-          location_name?: string | null
-          is_primary?: boolean
-          linked_at?: string
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          location_resource_name?: string
-          place_id?: string | null
-          location_name?: string | null
-          is_primary?: boolean
-          linked_at?: string
-        }
-        Relationships: []
-      }
-      google_sync_log: {
-        Row: {
-          id: string
-          tenant_id: string
-          synced_at: string
-          reviews_fetched: number | null
-          rating: number | null
-          rating_count: number | null
-          status: string
-          error_message: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          synced_at?: string
-          reviews_fetched?: number | null
-          rating?: number | null
-          rating_count?: number | null
-          status?: string
-          error_message?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          synced_at?: string
-          reviews_fetched?: number | null
-          rating?: number | null
-          rating_count?: number | null
-          status?: string
-          error_message?: string | null
-        }
-        Relationships: []
-      }
       reviews: {
         Row: {
           author: string
           created_at: string
           date_label: string | null
+          google_review_id: string | null
           id: string
           is_local_guide: boolean
+          location_id: string | null
           photos_count: number | null
           position: number
           published: boolean
           rating: number
+          replied_at: string | null
+          reply_comment: string | null
           reviews_count: number | null
           source: string
-          google_review_id: string | null
-          reply_comment: string | null
-          replied_at: string | null
           tenant_id: string
           text: string
         }
@@ -1121,17 +1180,18 @@ export type Database = {
           author: string
           created_at?: string
           date_label?: string | null
+          google_review_id?: string | null
           id?: string
           is_local_guide?: boolean
+          location_id?: string | null
           photos_count?: number | null
           position?: number
           published?: boolean
           rating: number
+          replied_at?: string | null
+          reply_comment?: string | null
           reviews_count?: number | null
           source?: string
-          google_review_id?: string | null
-          reply_comment?: string | null
-          replied_at?: string | null
           tenant_id: string
           text: string
         }
@@ -1139,21 +1199,29 @@ export type Database = {
           author?: string
           created_at?: string
           date_label?: string | null
+          google_review_id?: string | null
           id?: string
           is_local_guide?: boolean
+          location_id?: string | null
           photos_count?: number | null
           position?: number
           published?: boolean
           rating?: number
+          replied_at?: string | null
+          reply_comment?: string | null
           reviews_count?: number | null
           source?: string
-          google_review_id?: string | null
-          reply_comment?: string | null
-          replied_at?: string | null
           tenant_id?: string
           text?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reviews_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reviews_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -1189,6 +1257,47 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "table_sessions"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      siteadmin: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          enabled: boolean
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["siteadmin_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          enabled?: boolean
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["siteadmin_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          enabled?: boolean
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["siteadmin_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "siteadmin_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "customer"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1300,6 +1409,7 @@ export type Database = {
           created_at: string
           id: string
           label: string
+          location_id: string | null
           seats: number | null
           tenant_id: string
         }
@@ -1308,6 +1418,7 @@ export type Database = {
           created_at?: string
           id?: string
           label: string
+          location_id?: string | null
           seats?: number | null
           tenant_id: string
         }
@@ -1316,10 +1427,18 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string
+          location_id?: string | null
           seats?: number | null
           tenant_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tables_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tables_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -1458,6 +1577,54 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenantadmin: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          enabled: boolean
+          id: string
+          invited_by: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          enabled?: boolean
+          id?: string
+          invited_by?: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          enabled?: boolean
+          id?: string
+          invited_by?: string | null
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenantadmin_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenantadmin_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "customer"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1618,6 +1785,145 @@ export type Database = {
           },
         ]
       }
+      google_sync_log: {
+        Row: {
+          error_message: string | null
+          id: string
+          rating: number | null
+          rating_count: number | null
+          reviews_fetched: number | null
+          status: string
+          synced_at: string
+          tenant_id: string
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          rating?: number | null
+          rating_count?: number | null
+          reviews_fetched?: number | null
+          status?: string
+          synced_at?: string
+          tenant_id: string
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          rating?: number | null
+          rating_count?: number | null
+          reviews_fetched?: number | null
+          status?: string
+          synced_at?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      tenant_google_auth: {
+        Row: {
+          authorized_at: string
+          authorized_by: string | null
+          refresh_token: string
+          tenant_id: string
+        }
+        Insert: {
+          authorized_at?: string
+          authorized_by?: string | null
+          refresh_token: string
+          tenant_id: string
+        }
+        Update: {
+          authorized_at?: string
+          authorized_by?: string | null
+          refresh_token?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      tenant_google_locations: {
+        Row: {
+          id: string
+          is_primary: boolean
+          linked_at: string
+          location_id: string | null
+          location_name: string | null
+          location_resource_name: string
+          place_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          id?: string
+          is_primary?: boolean
+          linked_at?: string
+          location_id?: string | null
+          location_name?: string | null
+          location_resource_name: string
+          place_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          id?: string
+          is_primary?: boolean
+          linked_at?: string
+          location_id?: string | null
+          location_name?: string | null
+          location_resource_name?: string
+          place_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_google_locations_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_special_hours: {
+        Row: {
+          closed: boolean
+          created_at: string
+          date: string
+          id: string
+          label: string | null
+          location_id: string | null
+          slots: Json
+          synced_to_google: boolean
+          tenant_id: string
+        }
+        Insert: {
+          closed?: boolean
+          created_at?: string
+          date: string
+          id?: string
+          label?: string | null
+          location_id?: string | null
+          slots?: Json
+          synced_to_google?: boolean
+          tenant_id: string
+        }
+        Update: {
+          closed?: boolean
+          created_at?: string
+          date?: string
+          id?: string
+          label?: string | null
+          location_id?: string | null
+          slots?: Json
+          synced_to_google?: boolean
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_special_hours_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1626,12 +1932,13 @@ export type Database = {
       can_admin_tenant: { Args: { t: string }; Returns: boolean }
       current_user_tenant: { Args: never; Returns: string }
       is_platform_admin: { Args: never; Returns: boolean }
+      is_siteadmin: { Args: never; Returns: boolean }
       next_order_code: {
         Args: { p_prefix?: string; p_tenant_id: string }
         Returns: string
       }
       revoke_tenant_access: {
-        Args: { p_admin_user_id: string; p_revoker_user_id: string }
+        Args: { p_employee_id: string; p_revoker_user_id: string }
         Returns: undefined
       }
     }
@@ -1653,6 +1960,13 @@ export type Database = {
         | "venditore"
         | "amministrazione"
         | "gestore"
+      employee_role:
+        | "manager"
+        | "chef"
+        | "cameriere"
+        | "personale_cucina"
+        | "kitdisplay"
+        | "kiosk"
       order_status:
         | "nuovo"
         | "in_preparazione"
@@ -1662,6 +1976,12 @@ export type Database = {
       order_type: "tavolo" | "asporto"
       price_kind: "single" | "sized" | "persone" | "volume"
       session_status: "aperta" | "chiusa"
+      siteadmin_role:
+        | "superadmin"
+        | "admin"
+        | "venditore"
+        | "amministrazione"
+        | "gestore"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1807,6 +2127,14 @@ export const Constants = {
         "amministrazione",
         "gestore",
       ],
+      employee_role: [
+        "manager",
+        "chef",
+        "cameriere",
+        "personale_cucina",
+        "kitdisplay",
+        "kiosk",
+      ],
       order_status: [
         "nuovo",
         "in_preparazione",
@@ -1817,6 +2145,14 @@ export const Constants = {
       order_type: ["tavolo", "asporto"],
       price_kind: ["single", "sized", "persone", "volume"],
       session_status: ["aperta", "chiusa"],
+      siteadmin_role: [
+        "superadmin",
+        "admin",
+        "venditore",
+        "amministrazione",
+        "gestore",
+      ],
     },
   },
 } as const
+

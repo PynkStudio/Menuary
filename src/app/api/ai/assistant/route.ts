@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   let profileHint = "";
   if (user && svc) {
     const { data: prof } = await svc
-      .from("user_profiles")
+      .from("customer")
       .select("is_vegetarian")
       .eq("user_id", user.id)
       .maybeSingle();

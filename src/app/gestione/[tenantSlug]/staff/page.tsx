@@ -13,9 +13,8 @@ export default async function StaffPage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);
 
-  // Lista staff del tenant — RLS filtra per tenant del chiamante automaticamente
   const { data: staff } = await supabase
-    .from("admin_users")
+    .from("employee")
     .select("id, email, role, display_name, permissions, enabled, created_at")
     .eq("tenant_id", tenantSlug)
     .order("created_at", { ascending: true });

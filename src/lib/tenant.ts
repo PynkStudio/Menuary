@@ -86,6 +86,31 @@ export type TenantProfile = {
   google?: TenantGoogleConfig;
   theme: TenantTheme;
   features: TenantFeatureFlags;
+  /** Preferred routing form for multi-location tenants. Defaults to "both". */
+  locationRouting?: LocationRoutingMode;
 };
 
 export type TenantFeatureKey = keyof TenantFeatureFlags;
+
+// ─── Location routing ─────────────────────────────────────────────────────────
+// "subdomain" → milano.tenant.it
+// "path"      → tenant.it?loc=milano
+// "both"      → subdomain preferred, query param accepted as fallback
+export type LocationRoutingMode = "subdomain" | "path" | "both";
+
+// ─── Location ─────────────────────────────────────────────────────────────────
+// Represents a physical location (sede) of a tenant.
+// Exists in DB for all tenants — single-location tenants always have exactly
+// one row with is_default = true and never see any location-switching UI.
+export type TenantLocation = {
+  id: string;
+  tenantId: string;
+  name: string;
+  slug: string;
+  address: string | null;
+  city: string | null;
+  phone: string | null;
+  email: string | null;
+  isDefault: boolean;
+  routingMode: LocationRoutingMode;
+};

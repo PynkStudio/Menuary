@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { parseFrom, parseNext, resolveDestination } from "@/lib/login-url";
+import { resolveUserAccess } from "@/lib/user-access";
 
 /**
  * Callback centralizzato per tutti i link email di Supabase.
@@ -46,15 +47,13 @@ export async function GET(request: Request) {
       }
 
       // Signup confirm o magiclink: vai alla destinazione finale
-      const { data: adminRow } = await supabase
-        .from("admin_users")
-        .select("role, tenant_id")
-        .eq("auth_user_id", data.user.id)
-        .single();
-
-      const role = adminRow?.role ?? null;
-      const tenantId = adminRow?.tenant_id ?? null;
-      const destination = resolveDestination({ from, next, role, tenantId });
+      const access = await resolveUserAccess(supabase, data.user.id);
+      const destination = resolveDestination({
+        from,
+        next,
+        isSiteadmin: access.isSiteadmin,
+        tenantId: access.tenantId,
+      });
 
       if (isPopup) {
         const params = new URLSearchParams({ destination });
@@ -93,15 +92,13 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
 
     if (!error && data.user) {
-      const { data: adminRow } = await supabase
-        .from("admin_users")
-        .select("role, tenant_id")
-        .eq("auth_user_id", data.user.id)
-        .single();
-
-      const role = adminRow?.role ?? null;
-      const tenantId = adminRow?.tenant_id ?? null;
-      const destination = resolveDestination({ from, next, role, tenantId });
+      const access = await resolveUserAccess(supabase, data.user.id);
+      const destination = resolveDestination({
+        from,
+        next,
+        isSiteadmin: access.isSiteadmin,
+        tenantId: access.tenantId,
+      });
 
       if (isPopup) {
         const params = new URLSearchParams({ destination });

@@ -13,7 +13,7 @@ export function MarketingLeadForm() {
 
   async function submit(formData: FormData) {
     setStatus({ type: "sending" });
-    const payload = Object.fromEntries(formData.entries());
+    const payload = { ...Object.fromEntries(formData.entries()), vertical: "food" };
     const response = await fetch("/api/marketing-leads", {
       method: "POST",
       headers: { "content-type": "application/json" },

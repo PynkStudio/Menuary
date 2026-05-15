@@ -1,15 +1,14 @@
 /**
- * Sistema ruoli e permessi per gestione.menuary.it
+ * Ruoli e permessi per gestione.menuary.it
  *
- * Ogni utente ha un ruolo base che definisce i permessi di default.
- * Il campo `permissions` su admin_users contiene gli override espliciti:
- *   { can_cassa: true, can_manage_shifts: true }
+ * SiteadminRole → chi opera su admin.menuary.it (siteadmin table)
+ * EmployeeRole  → dipendenti degli store (employee table)
  *
- * Per ottenere i permessi effettivi: getEffectiveCapabilities(role, permissions)
+ * getEffectiveCapabilities() combina i default del ruolo con gli override
+ * espliciti salvati in employee.permissions
  */
 
-export const STORE_ROLES = [
-  "titolare",
+export const EMPLOYEE_ROLES = [
   "manager",
   "chef",
   "cameriere",
@@ -18,55 +17,23 @@ export const STORE_ROLES = [
 
 export const DEVICE_ROLES = ["kitdisplay", "kiosk"] as const;
 
-export const PLATFORM_ROLES = [
-  "superadmin",
-  "admin",
-  "venditore",
-  "amministrazione",
-  "gestore",
-  "platform_admin",
-  "tenant_admin",
-] as const;
+export type SiteadminRole = "superadmin" | "admin" | "venditore" | "amministrazione" | "gestore";
+export type EmployeeRole = (typeof EMPLOYEE_ROLES)[number] | (typeof DEVICE_ROLES)[number];
 
-/** Ruoli legacy mantenuti per backward compat con dati esistenti */
-export const LEGACY_ROLES = ["staff", "kitchen"] as const;
-
-export type StoreRole = (typeof STORE_ROLES)[number];
-export type DeviceRole = (typeof DEVICE_ROLES)[number];
-export type AdminRole =
-  | StoreRole
-  | DeviceRole
-  | (typeof PLATFORM_ROLES)[number]
-  | (typeof LEGACY_ROLES)[number];
+/** @deprecated Usa EMPLOYEE_ROLES */
+export const STORE_ROLES = EMPLOYEE_ROLES;
 
 export interface StoreCapabilities {
-  /** Accesso alla cassa (pagamenti, chiusura conto) */
   can_cassa: boolean;
-  /** Può modificare menu e disponibilità voci */
   can_edit_menu: boolean;
-  /** Vede e gestisce le prenotazioni */
   can_manage_reservations: boolean;
-  /** Vede analytics e report del locale */
   can_view_analytics: boolean;
-  /** Può creare/modificare turni altrui */
   can_manage_shifts: boolean;
-  /** Può invitare e gestire account staff */
   can_manage_staff: boolean;
-  /** Vede report finanziari e impostazioni abbonamento */
   can_view_financials: boolean;
 }
 
-/** Permessi di default per ogni ruolo — sovrascrivibili via admin_users.permissions */
-export const ROLE_DEFAULTS: Record<StoreRole, StoreCapabilities> = {
-  titolare: {
-    can_cassa: true,
-    can_edit_menu: true,
-    can_manage_reservations: true,
-    can_view_analytics: true,
-    can_manage_shifts: true,
-    can_manage_staff: true,
-    can_view_financials: true,
-  },
+export const ROLE_DEFAULTS: Record<(typeof EMPLOYEE_ROLES)[number], StoreCapabilities> = {
   manager: {
     can_cassa: false,
     can_edit_menu: true,
@@ -105,45 +72,30 @@ export const ROLE_DEFAULTS: Record<StoreRole, StoreCapabilities> = {
   },
 };
 
-/**
- * Restituisce i permessi effettivi combinando i default del ruolo
- * con gli override espliciti salvati in admin_users.permissions
- */
+const FULL_ACCESS: StoreCapabilities = {
+  can_cassa: true,
+  can_edit_menu: true,
+  can_manage_reservations: true,
+  can_view_analytics: true,
+  can_manage_shifts: true,
+  can_manage_staff: true,
+  can_view_financials: true,
+};
+
 export function getEffectiveCapabilities(
-  role: AdminRole,
+  role: EmployeeRole | null,
   permissionsOverride: Record<string, boolean> = {},
 ): StoreCapabilities {
-  if (!STORE_ROLES.includes(role as StoreRole)) {
-    // ruoli piattaforma: accesso pieno (le differenze funzionali si implementano in seguito)
-    const full: StoreCapabilities = {
-      can_cassa: true,
-      can_edit_menu: true,
-      can_manage_reservations: true,
-      can_view_analytics: true,
-      can_manage_shifts: true,
-      can_manage_staff: true,
-      can_view_financials: true,
-    };
-    return full;
-  }
-  return {
-    ...ROLE_DEFAULTS[role as StoreRole],
-    ...permissionsOverride,
-  };
+  if (!role || !EMPLOYEE_ROLES.includes(role as never)) return FULL_ACCESS;
+  return { ...ROLE_DEFAULTS[role as (typeof EMPLOYEE_ROLES)[number]], ...permissionsOverride };
 }
 
-/** Etichette leggibili per UI */
-export const ROLE_LABELS: Record<AdminRole, string> = {
+export const ROLE_LABELS: Record<SiteadminRole | EmployeeRole, string> = {
   superadmin: "Super Admin",
   admin: "Admin",
   venditore: "Venditore",
   amministrazione: "Amministrazione",
   gestore: "Gestore",
-  platform_admin: "Admin piattaforma (legacy)",
-  tenant_admin: "Titolare (legacy)",
-  staff: "Staff (legacy)",
-  kitchen: "Cucina (legacy)",
-  titolare: "Titolare",
   manager: "Manager",
   chef: "Chef",
   cameriere: "Cameriere",
@@ -151,11 +103,3 @@ export const ROLE_LABELS: Record<AdminRole, string> = {
   kitdisplay: "Display cucina",
   kiosk: "Kiosk",
 };
-
-/** Ruoli che possono fare login personale (non dispositivo) */
-export function isPersonalRole(role: AdminRole): role is StoreRole {
-  return STORE_ROLES.includes(role as StoreRole);
-}
-
-/** Tutti gli utenti possono vedere il proprio schedule turni (se modulo attivo) */
-export const SHIFTS_MODULE = "shifts" as const;

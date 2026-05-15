@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { data: profile } = await svc
-    .from("user_profiles")
+    .from("customer")
     .select("is_vegetarian,diet_notes,preferred_language")
     .eq("user_id", user.id)
     .maybeSingle();

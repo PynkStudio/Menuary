@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { GestioneShell } from "@/components/gestione/gestione-shell";
 import { GestioneLoginGate } from "@/components/gestione/gestione-login-gate";
 import { PortalSwitcher } from "@/components/portal-switcher/portal-switcher";
-import type { Database } from "@/lib/supabase/types";
+import type { EmployeeRole } from "@/lib/store-roles";
 
 interface Props {
   children: React.ReactNode;
@@ -54,19 +54,17 @@ export default async function GestioneLayout({ children, params }: Props) {
     redirect(`https://login.menuary.it?from=gestione.${tenantSlug}&next=${next}`);
   }
 
-  const { data: adminRow } = await supabase
-    .from("admin_users")
-    .select("role, tenant_id, permissions, display_name, email")
-    .eq("auth_user_id", user.id)
-    .eq("enabled", true)
-    .single();
+  const [{ data: sa }, { data: ta }, { data: emp }] = await Promise.all([
+    supabase.from("siteadmin").select("role").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
+    supabase.from("tenantadmin").select("email, display_name").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
+    supabase.from("employee").select("email, display_name, role, permissions").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
+  ]);
 
-  // Authorization: platform_admin può vedere tutto, altrimenti il tenant deve combaciare
-  const isPlatformAdmin =
-    adminRow?.role === "platform_admin" || adminRow?.role === "tenant_admin";
-  const isOwnTenant = adminRow?.tenant_id === tenantSlug;
+  const isSiteadmin = !!sa;
+  const isTenantAdmin = !!ta;
+  const hasAccess = isSiteadmin || isTenantAdmin || !!emp;
 
-  if (!isPlatformAdmin && !isOwnTenant) {
+  if (!hasAccess) {
     if (isBizery) {
       const cssVars = tenantThemeCssVars(tenant.theme);
       return (
@@ -104,10 +102,11 @@ export default async function GestioneLayout({ children, params }: Props) {
       <GestioneShell
         tenant={{ id: tenant.id, name: tenant.name, theme: tenant.theme }}
         currentUser={{
-          email: adminRow?.email ?? user.email ?? "",
-          displayName: adminRow?.display_name ?? null,
-          role: adminRow?.role ?? null,
-          permissions: (adminRow?.permissions as Record<string, boolean>) ?? {},
+          email: ta?.email ?? emp?.email ?? user.email ?? "",
+          displayName: ta?.display_name ?? emp?.display_name ?? null,
+          role: (emp?.role as EmployeeRole | null) ?? null,
+          permissions: (emp?.permissions as Record<string, boolean>) ?? {},
+          isTenantAdmin: isTenantAdmin || isSiteadmin,
         }}
       >
         {children}
@@ -121,6 +120,7 @@ export type GestioneTenantTheme = (typeof TENANTS)[number]["theme"];
 export type GestioneCurrentUser = {
   email: string;
   displayName: string | null;
-  role: Database["public"]["Enums"]["admin_role"] | null;
+  role: EmployeeRole | null;
   permissions: Record<string, boolean>;
+  isTenantAdmin: boolean;
 };

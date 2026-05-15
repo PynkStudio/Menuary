@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { parseFrom, parseNext, tenantSlugFromFrom, resolveDestination } from "@/lib/login-url";
+import { resolveUserAccess } from "@/lib/user-access";
 import { TENANTS } from "@/lib/tenant-registry";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { LoginPortalForm } from "@/components/login-portal/login-portal-form";
@@ -29,17 +30,12 @@ export default async function LoginPortalPage({
     if (user) {
       if (from) {
         // Aveva un from: prova a mandarlo alla destinazione corretta
-        const { data: adminRow } = await supabase
-          .from("admin_users")
-          .select("role, tenant_id")
-          .eq("auth_user_id", user.id)
-          .eq("enabled", true)
-          .single();
+        const access = await resolveUserAccess(supabase, user.id);
         const destination = resolveDestination({
           from,
           next,
-          role: adminRow?.role ?? null,
-          tenantId: adminRow?.tenant_id ?? null,
+          isSiteadmin: access.isSiteadmin,
+          tenantId: access.tenantId,
         });
         redirect(destination);
       }

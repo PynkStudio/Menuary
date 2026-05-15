@@ -7,8 +7,8 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   getEffectiveCapabilities,
   type StoreCapabilities,
+  type EmployeeRole,
 } from "@/lib/store-roles";
-import type { Database } from "@/lib/supabase/types";
 
 interface Tenant {
   id: string;
@@ -19,8 +19,9 @@ interface Tenant {
 interface CurrentUser {
   email: string;
   displayName: string | null;
-  role: Database["public"]["Enums"]["admin_role"] | null;
+  role: EmployeeRole | null;
   permissions: Record<string, boolean>;
+  isTenantAdmin: boolean;
 }
 
 interface NavItem {
@@ -48,8 +49,7 @@ export function GestioneShell({
 
   const base = `/gestione/${tenant.id}`;
 
-  const isAdmin =
-    currentUser.role === "tenant_admin" || currentUser.role === "platform_admin";
+  const isAdmin = currentUser.isTenantAdmin;
 
   const items: NavItem[] = [
     { label: "Dashboard", href: base, visible: () => true },

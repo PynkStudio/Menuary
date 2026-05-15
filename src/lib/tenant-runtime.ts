@@ -37,3 +37,42 @@ export function resolveLocationSlugFromSearchParams(
   if (!searchParams) return null;
   return searchParams.get("loc") ?? searchParams.get("location");
 }
+
+/**
+ * Sede da sottodominio: milano.tenant.it → "milano".
+ * Controlla se `host` è un sottodominio di uno dei domini del tenant.
+ * Reserved subdomains (www, app, api, mail, smtp, ftp) vengono ignorati.
+ * Ritorna null se il host non è un sottodominio di un dominio del tenant.
+ */
+export function resolveLocationSlugFromHost(
+  host: string | null | undefined,
+  tenantDomains: string[],
+): string | null {
+  if (!host) return null;
+  const RESERVED = new Set(["www", "app", "api", "mail", "smtp", "ftp", "admin", "demo", "gestione", "clienti", "login", "studio"]);
+  const normalized = host.split(":")[0].toLowerCase();
+  for (const domain of tenantDomains) {
+    const d = domain.toLowerCase();
+    if (normalized.endsWith("." + d)) {
+      const sub = normalized.slice(0, normalized.length - d.length - 1);
+      if (sub && !sub.includes(".") && !RESERVED.has(sub)) return sub;
+    }
+  }
+  return null;
+}
+
+/**
+ * Risolve lo slug di sede dall'host o dai searchParams, in ordine di priorità:
+ * 1. Sottodominio (milano.tenant.it)
+ * 2. Query param (?loc=milano)
+ */
+export function resolveLocationSlug(
+  host: string | null | undefined,
+  tenantDomains: string[],
+  searchParams: URLSearchParams | null | undefined,
+): string | null {
+  return (
+    resolveLocationSlugFromHost(host, tenantDomains) ??
+    resolveLocationSlugFromSearchParams(searchParams)
+  );
+}

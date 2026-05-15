@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getPlatformModeFromHost } from "@/lib/platform";
+import { resolveTenantFromHost, resolveLocationSlugFromHost } from "@/lib/tenant-runtime";
 
 /** Portale clienti B2C — path pubblici */
 const CLIENTS_PATHS = new Set([
@@ -239,19 +240,43 @@ export async function middleware(request: NextRequest) {
         },
       },
     );
+
     const { data: row } = await supabase
-      .from("admin_users")
+      .from("tenantadmin")
       .select("tenant_id")
-      .eq("auth_user_id", user.id)
+      .eq("user_id", user.id)
       .eq("enabled", true)
-      .single();
+      .maybeSingle();
 
     if (!row?.tenant_id) {
-      return NextResponse.redirect(new URL("https://login.menuary.it?from=studio"));
+      // prova employee
+      const { data: empRow } = await supabase
+        .from("employee")
+        .select("tenant_id")
+        .eq("user_id", user.id)
+        .eq("enabled", true)
+        .maybeSingle();
+      const tid = empRow?.tenant_id;
+      if (!tid) return NextResponse.redirect(new URL("https://login.menuary.it?from=studio"));
+      return NextResponse.redirect(new URL(`https://gestione.menuary.it/${tid}${section}`));
     }
     return NextResponse.redirect(
       new URL(`https://gestione.menuary.it/${row.tenant_id}${section}`),
     );
+  }
+
+  // ── Tenant site (dominio custom o sottodominio tenant) ───────────────────
+  // Rileva se il host è un sottodominio di un dominio del tenant
+  // (es. milano.bepork.it) e propaga lo slug come header x-location-slug
+  // in modo che layout e pagine possano usarlo senza un'ulteriore query.
+  // Funziona sia in mode "tenant" che in qualsiasi altra mode per i domini
+  // custom con location subdomain.
+  const tenant = resolveTenantFromHost(host);
+  const locationSlug = resolveLocationSlugFromHost(host, tenant.domains);
+  if (locationSlug) {
+    const response = NextResponse.next({ request });
+    response.headers.set("x-location-slug", locationSlug);
+    return response;
   }
 
   return NextResponse.next();

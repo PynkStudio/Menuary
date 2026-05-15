@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { KeyRound } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { parseFrom, resolveDestination } from "@/lib/login-url";
+import { parseFrom } from "@/lib/login-url";
 import { TENANTS } from "@/lib/tenant-registry";
 import { tenantSlugFromFrom } from "@/lib/login-url";
 import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
@@ -90,26 +90,18 @@ export default function SetPasswordPage() {
     // Enrollment: se l'utente ha scelto di abilitare il profilo cliente
     if (!isRecovery && consumerOptIn) {
       await supabase
-        .from("user_profiles")
-        .update({ consumer_enabled: true })
+        .from("customer")
+        .update({ consumer_active: true })
         .eq("user_id", updateData.user.id);
     }
 
-    // Recupera ruolo per il redirect finale
-    const { data: adminRow } = await supabase
-      .from("admin_users")
-      .select("role, tenant_id")
-      .eq("auth_user_id", updateData.user.id)
-      .single();
-
-    const destination = resolveDestination({
-      from,
-      next: next ?? null,
-      role: adminRow?.role ?? null,
-      tenantId: adminRow?.tenant_id ?? null,
-    });
-
-    window.location.href = destination;
+    // Redirect a /portali (server component) invece di andare direttamente
+    // alla destinazione finale. Il passaggio server-side è necessario perché:
+    // 1. Aggiorna il cookie di sessione con domain=.menuary.it (senza di ciò
+    //    admin.menuary.it non riceve il cookie e rimanda al login)
+    // 2. Determina i portali disponibili server-side (più affidabile di client-side)
+    const portalBase = from ? `/?from=${encodeURIComponent(from)}` : "/portali";
+    window.location.href = portalBase;
   }
 
   return (

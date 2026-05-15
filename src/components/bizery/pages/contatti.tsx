@@ -1,5 +1,6 @@
 import { Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
 import { BizeryShell } from "@/components/bizery/bizery-shell";
+import { BizeryContactForm } from "@/components/bizery/bizery-contact-form";
 
 export function BizeryContattiPage() {
   return (
@@ -67,7 +68,7 @@ export function BizeryContattiPage() {
 
             {/* Form */}
             <div className="menuary-fade-up menuary-fade-up-d1">
-              <ContactForm />
+              <BizeryContactForm />
             </div>
           </div>
         </div>
@@ -108,92 +109,3 @@ function ContactRow({
   return <a href={href} className={cls}>{inner}</a>;
 }
 
-function ContactForm() {
-  return (
-    <form
-      action="https://formspree.io/f/hello@bizery.it"
-      method="POST"
-      className="space-y-5 border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-8 lg:p-10"
-    >
-      <h2
-        className="text-2xl font-medium tracking-[-0.02em]"
-        style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-      >
-        Richiedi una proposta
-      </h2>
-      <p className="text-[14px] leading-6 text-[var(--menuary-muted)]">
-        Compila il modulo e ti ricontattiamo entro 24 ore lavorative.
-      </p>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--menuary-muted)]">Nome</span>
-          <input
-            name="nome"
-            type="text"
-            required
-            placeholder="Mario Rossi"
-            className="mt-2 w-full border border-[var(--menuary-line)] bg-[var(--menuary-paper)] px-4 py-3 text-sm outline-none transition focus:border-[var(--menuary-copper)]"
-          />
-        </label>
-        <label className="block">
-          <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--menuary-muted)]">Azienda</span>
-          <input
-            name="azienda"
-            type="text"
-            placeholder="Nome azienda"
-            className="mt-2 w-full border border-[var(--menuary-line)] bg-[var(--menuary-paper)] px-4 py-3 text-sm outline-none transition focus:border-[var(--menuary-copper)]"
-          />
-        </label>
-      </div>
-
-      <label className="block">
-        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--menuary-muted)]">Email</span>
-        <input
-          name="email"
-          type="email"
-          required
-          placeholder="mario@azienda.it"
-          className="mt-2 w-full border border-[var(--menuary-line)] bg-[var(--menuary-paper)] px-4 py-3 text-sm outline-none transition focus:border-[var(--menuary-copper)]"
-        />
-      </label>
-
-      <label className="block">
-        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--menuary-muted)]">Settore</span>
-        <select
-          name="settore"
-          className="mt-2 w-full border border-[var(--menuary-line)] bg-[var(--menuary-paper)] px-4 py-3 text-sm outline-none transition focus:border-[var(--menuary-copper)]"
-        >
-          <option value="">Seleziona il tuo settore</option>
-          <option>Studio professionale (legale, fiscale, medico)</option>
-          <option>Centro benessere / salone</option>
-          <option>Officina / centro assistenza</option>
-          <option>Scuola / formazione</option>
-          <option>Fitness / palestra</option>
-          <option>Altro settore di servizi</option>
-        </select>
-      </label>
-
-      <label className="block">
-        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--menuary-muted)]">Messaggio</span>
-        <textarea
-          name="messaggio"
-          rows={4}
-          placeholder="Raccontaci la tua azienda e cosa stai cercando…"
-          className="mt-2 w-full border border-[var(--menuary-line)] bg-[var(--menuary-paper)] px-4 py-3 text-sm outline-none transition focus:border-[var(--menuary-copper)] resize-none"
-        />
-      </label>
-
-      <button
-        type="submit"
-        className="menuary-button menuary-button-accent w-full justify-center"
-      >
-        Invia richiesta
-      </button>
-
-      <p className="text-center text-xs text-[var(--menuary-muted)]">
-        Rispondiamo entro 24 ore lavorative. Prima chiamata sempre gratuita.
-      </p>
-    </form>
-  );
-}

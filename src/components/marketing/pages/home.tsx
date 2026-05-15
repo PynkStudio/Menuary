@@ -20,6 +20,7 @@ import {
   ProductPreviewSection,
   TestimonialsSection,
 } from "@/components/marketing/marketing-sections";
+import { getMarketingHomeData } from "@/lib/marketing-data";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1400&q=80";
@@ -55,7 +56,19 @@ const HOMEPAGE_FAQ = [
   },
 ];
 
-export function MarketingHomePage() {
+export async function MarketingHomePage() {
+  const { activeTenants, testimonials, activeCount } =
+    await getMarketingHomeData("food");
+
+  const heroStats: [string, string][] = [
+    ["9", "moduli integrati"],
+    ...((activeCount > 0
+      ? ([[`+${activeCount}`, "ristoranti attivi"]] as [string, string][])
+      : []) as [string, string][]),
+    ["24/7", "assistente IA"],
+    ["0", "commissioni"],
+  ];
+
   return (
     <MarketingShell>
       {/* HERO */}
@@ -109,7 +122,7 @@ export function MarketingHomePage() {
                     strokeWidth={1.7}
                     className="text-[var(--menuary-gold)]"
                   />
-                  9 moduli integrati + IA
+                  Sito · gestionale · IA in un unico canone
                 </span>
               </div>
             </div>
@@ -172,13 +185,13 @@ export function MarketingHomePage() {
             </figure>
           </div>
 
-          <div className="mt-20 grid gap-8 sm:grid-cols-2 lg:mt-24 lg:grid-cols-4 lg:gap-14">
-            {[
-              ["9", "moduli integrati"],
-              ["+40", "ristoranti attivi"],
-              ["24/7", "assistente IA"],
-              ["0", "commissioni"],
-            ].map(([n, l]) => (
+          <div
+            className={
+              "mt-20 grid gap-8 sm:grid-cols-2 lg:mt-24 lg:gap-14 " +
+              (heroStats.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4")
+            }
+          >
+            {heroStats.map(([n, l]) => (
               <div key={l} className="menuary-stat">
                 <p className="menuary-display text-4xl">{n}</p>
                 <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
@@ -191,7 +204,7 @@ export function MarketingHomePage() {
       </section>
 
       {/* SOCIAL PROOF MARQUEE */}
-      <LogosStripSection />
+      <LogosStripSection tenants={activeTenants} />
 
       {/* PRODUCT LEVELS — how do you want to use Menuary? */}
       <ProductLevelsSection />
@@ -218,7 +231,7 @@ export function MarketingHomePage() {
       <AudiencesSection />
 
       {/* TESTIMONIALS */}
-      <TestimonialsSection />
+      <TestimonialsSection reviews={testimonials} />
 
       {/* INTEGRATIONS */}
       <IntegrationsSection />
@@ -227,7 +240,7 @@ export function MarketingHomePage() {
       <ProcessSection />
 
       {/* DEMOS */}
-      <DemosSection />
+      <DemosSection tenants={activeTenants} />
 
       {/* PRICING TEASER */}
       <PricingTeaserSection />
