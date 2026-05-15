@@ -76,6 +76,10 @@ export const TENANTS: TenantProfile[] = [
     domains: ["bepork.it", "www.bepork.it", "localhost", "127.0.0.1"],
     previewSlug: "bepork-demo",
     enabled: true,
+    status: "active",
+    google: {
+      placeId: "",  // TODO: inserire il Place ID reale da Google Maps
+    },
     theme: {
       red: "#B8332E",
       redDark: "#8E2420",
@@ -98,6 +102,10 @@ export const TENANTS: TenantProfile[] = [
     domains: ["faak.menuary.local", "faak.menuary.localhost"],
     previewSlug: "faak-demo",
     enabled: true,
+    status: "trial",
+    google: {
+      placeId: "",  // TODO: inserire il Place ID reale
+    },
     theme: {
       red: "#CD562F",
       redDark: "#000000",
@@ -122,6 +130,7 @@ export const TENANTS: TenantProfile[] = [
     domains: ["bizery.it", "www.bizery.it", "bizery.localhost"],  // marketing site + demo preview
     previewSlug: "bizery-demo",
     enabled: true,
+    status: "trial",
     theme: {
       red: "#2563EB",       // blu primario Bizery
       redDark: "#1D4ED8",
@@ -145,6 +154,10 @@ export const TENANTS: TenantProfile[] = [
     domains: [],                    // nessun dominio proprio (solo preview slug)
     previewSlug: "officinakam",     // → demo.bizery.it/officinakam
     enabled: true,
+    status: "active",
+    google: {
+      placeId: "",  // TODO: inserire il Place ID reale
+    },
     theme: {
       red: "#F97316",               // orange primario (brand officinakam)
       redDark: "#C2410C",           // orange scuro

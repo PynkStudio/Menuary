@@ -11,6 +11,23 @@
 // src/components/[nome-vertical]/pages/.
 export type TenantVertical = "food" | "services";
 
+// ─── Status ───────────────────────────────────────────────────────────────────
+// Governa il ciclo di vita del tenant sulla piattaforma e determina
+// quali job automatici vengono eseguiti (es. sync Google Reviews).
+//
+// "active"  → tenant in produzione: sync ogni 30 giorni
+// "trial"   → tenant in prova: solo il primo sync di popolamento, poi stop
+// "offline" → tenant disattivato: nessun job automatico eseguito
+export type TenantStatus = "active" | "trial" | "offline";
+
+// ─── Google integration ───────────────────────────────────────────────────────
+export type TenantGoogleConfig = {
+  /** Google Maps Place ID — usato dall'API Places per fetching recensioni. */
+  placeId?: string;
+  /** Google Business Profile resource name (formato: "accounts/{id}/locations/{id}"). Usato dall'API My Business (implementazione futura). */
+  businessProfileId?: string;
+};
+
 // ─── Feature flags ────────────────────────────────────────────────────────────
 export type TenantFeatureFlags = {
   website: boolean;
@@ -60,6 +77,8 @@ export type TenantProfile = {
   domains: string[];
   previewSlug?: string;
   enabled: boolean;
+  status: TenantStatus;
+  google?: TenantGoogleConfig;
   theme: TenantTheme;
   features: TenantFeatureFlags;
 };
