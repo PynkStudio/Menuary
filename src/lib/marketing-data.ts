@@ -2,6 +2,7 @@ import { TENANTS } from "./tenant-registry";
 import { getTenantContent } from "./tenant-content";
 import { createSupabaseServiceClient } from "./supabase/service";
 import type { TenantProfile } from "./tenant";
+import { PRICING_PLANS, type PricingPlan } from "./platform-pricing";
 
 export type MarketingTenant = {
   id: string;
@@ -115,4 +116,40 @@ export async function getMarketingHomeData(
     testimonials,
     activeCount: profiles.length,
   };
+}
+
+/**
+ * Legge i piani commerciali da Supabase (platform_packages).
+ * Fallback su PRICING_PLANS hardcoded se il DB non è raggiungibile.
+ *
+ * Mapping colonne DB → PricingPlan:
+ *   price_monthly          → price_annual  (canone mensile equiv. pagamento annuale)
+ *   price_monthly_billing  → price_monthly (canone mensile con fatturazione mensile)
+ */
+export async function fetchPricingPlans(): Promise<PricingPlan[]> {
+  const supabase = createSupabaseServiceClient();
+  if (!supabase) return PRICING_PLANS;
+
+  const { data, error } = await supabase
+    .from("platform_packages")
+    .select(
+      "slug, marketing_name, tagline, marketing_description, price_monthly, price_monthly_billing, setup_from, marketing_items, is_featured, cta_label",
+    )
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error || !data || data.length === 0) return PRICING_PLANS;
+
+  return data.map((row) => ({
+    slug: row.slug,
+    marketing_name: row.marketing_name ?? row.slug,
+    tagline: row.tagline ?? "",
+    description: row.marketing_description ?? "",
+    price_annual: row.price_monthly,
+    price_monthly: row.price_monthly_billing ?? row.price_monthly,
+    setup_from: row.setup_from ?? "",
+    marketing_items: row.marketing_items ?? [],
+    is_featured: row.is_featured,
+    cta_label: row.cta_label ?? undefined,
+  }));
 }

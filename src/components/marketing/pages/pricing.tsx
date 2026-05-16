@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, Minus, Sparkles, ArrowRight } from "lucide-react";
+import { Check, Minus, Phone, ArrowRight } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import {
   FAQSection,
@@ -10,6 +10,7 @@ import {
 } from "@/components/marketing/marketing-sections";
 import {
   PRICING_PLANS,
+  AI_ADDON,
   annualSaving,
   type PricingPlan,
 } from "@/lib/platform-pricing";
@@ -18,29 +19,39 @@ import {
 
 type Row = {
   label: string;
-  vetrina: boolean | string;
-  operativita: boolean | string;
-  autopilota: boolean | string;
+  presence: boolean | string;
+  booking: boolean | string;
+  ops: boolean | string;
 };
 
 const COMPARE_ROWS: Row[] = [
-  { label: "Sito su misura", vetrina: true, operativita: true, autopilota: true },
-  { label: "Menu digitale", vetrina: true, operativita: true, autopilota: true },
-  { label: "Hosting, SSL, backup", vetrina: true, operativita: true, autopilota: true },
-  { label: "Prenotazioni online", vetrina: false, operativita: true, autopilota: true },
-  { label: "Ordini sala & asporto", vetrina: false, operativita: true, autopilota: true },
-  { label: "Delivery integrato", vetrina: false, operativita: true, autopilota: true },
-  { label: "Magazzino & scorte", vetrina: false, operativita: true, autopilota: true },
-  { label: "Food cost & margini", vetrina: false, operativita: true, autopilota: true },
-  { label: "CRM clienti", vetrina: false, operativita: true, autopilota: true },
-  { label: "Pannello staff & cucina", vetrina: false, operativita: true, autopilota: true },
-  { label: "IA al telefono 24/7", vetrina: false, operativita: false, autopilota: true },
-  { label: "Cloning vocale", vetrina: false, operativita: false, autopilota: true },
+  { label: "Sito su misura", presence: true, booking: true, ops: true },
+  { label: "Dominio personalizzato", presence: true, booking: true, ops: true },
+  { label: "Hosting, SSL, backup", presence: true, booking: true, ops: true },
+  { label: "Menu digitale aggiornabile", presence: true, booking: true, ops: true },
+  { label: "Recensioni Google sul sito", presence: true, booking: true, ops: true },
+  { label: "Orari e info su Google Maps", presence: true, booking: true, ops: true },
+  { label: "Aggiornamenti tecnici", presence: true, booking: true, ops: true },
+  { label: "Prenotazioni online", presence: false, booking: true, ops: true },
+  { label: "Conferme e reminder automatici", presence: false, booking: true, ops: true },
+  { label: "Calendario di sala", presence: false, booking: true, ops: true },
+  { label: "Click-to-WhatsApp", presence: false, booking: true, ops: true },
+  { label: "Ordini sala & asporto", presence: false, booking: false, ops: true },
+  { label: "Delivery integrato", presence: false, booking: false, ops: true },
+  { label: "CRM clienti & analytics", presence: false, booking: false, ops: true },
+  { label: "Dashboard operativa", presence: false, booking: false, ops: true },
+  { label: "Gestione staff e cucina", presence: false, booking: false, ops: true },
+  {
+    label: "Integrazione AI (add-on)",
+    presence: "+€60/mese",
+    booking: "+€60/mese",
+    ops: "+€60/mese",
+  },
   {
     label: "Supporto",
-    vetrina: "Standard",
-    operativita: "Prioritario",
-    autopilota: "Dedicato",
+    presence: "Standard",
+    booking: "Prioritario",
+    ops: "Dedicato",
   },
 ];
 
@@ -48,47 +59,52 @@ const COMPARE_ROWS: Row[] = [
 
 const PRICING_FAQ = [
   {
-    q: "Il contratto è annuale?",
-    a: "Sì. Il contratto ha durata annuale e non è previsto il recesso anticipato. Puoi però cambiare piano — salire o scendere — in qualsiasi momento: la variazione è attiva dal mese successivo.",
+    q: "Come funziona il contratto?",
+    a: "Il contratto è annuale con pagamento anticipato di 12 mesi. Non è previsto il recesso anticipato, ma puoi disdire il rinnovo automatico con un preavviso di 30 giorni: il contratto scade naturalmente al termine del periodo pagato.",
+  },
+  {
+    q: "Quando va online il sito?",
+    a: "Sito e servizi vengono attivati entro 7 giorni dalla firma del contratto e dal pagamento del setup iniziale.",
+  },
+  {
+    q: "Posso cambiare piano?",
+    a: "Sì. Passare a un piano superiore è possibile in qualsiasi momento ed è attivo immediatamente. Passare a un piano inferiore è possibile, ma la variazione parte dal rinnovo successivo.",
   },
   {
     q: "Cosa cambia tra fatturazione annuale e mensile?",
-    a: "Con fatturazione annuale paghi un unico importo per i 12 mesi e benefici di un canone mensile ridotto. Con fatturazione mensile la spesa è ripartita mese per mese, ma il canone è più alto. In entrambi i casi il contratto è annuale.",
+    a: "Con pagamento annuale anticipato benefici di un canone mensile equivalente ridotto. Con fatturazione mensile la spesa è ripartita mese per mese, ma il canone è più alto. In entrambi i casi il contratto è annuale.",
   },
   {
     q: "Cos'è il costo di attivazione?",
-    a: "È una tariffa una tantum per la configurazione iniziale: setup tecnico, onboarding, personalizzazione del sito e dei moduli. Non è inclusa nel canone e viene concordata prima dell'avvio. I prezzi indicati sono indicativi; il preventivo esatto dipende dalla complessità del locale.",
+    a: "È una tariffa una tantum per la configurazione iniziale: setup tecnico, onboarding e personalizzazione del sito. Non è inclusa nel canone mensile. I prezzi indicati sono indicativi; il preventivo esatto dipende dalla complessità del locale.",
   },
   {
-    q: "Cosa è incluso nel canone?",
-    a: "Hosting, dominio (se gestito da noi), certificati SSL, backup, aggiornamenti tecnici, sicurezza e tutte le nuove funzioni del prodotto su qualsiasi modulo. Più il supporto del nostro team.",
+    q: "Cosa è incluso nel canone mensile?",
+    a: "Hosting, dominio, certificati SSL, backup, aggiornamenti tecnici, sicurezza e tutte le nuove funzioni del prodotto. Più il supporto del nostro team.",
   },
   {
-    q: "Posso passare da un piano all'altro?",
-    a: "Sì, in qualsiasi momento. Aggiungere prenotazioni, ordini, magazzino, food cost o CRM è una semplice attivazione, senza dover rifare il sito. La variazione è attiva dal mese successivo.",
+    q: "Come funziona l'integrazione AI?",
+    a: "L'assistente IA risponde al telefono 24/7 con la voce e il tono del locale: prende prenotazioni e le scrive direttamente in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce richieste fuori orario. Supporta il cloning vocale opzionale e parla nativamente italiano, inglese, francese, spagnolo e tedesco. È disponibile per tutti i piani al costo aggiuntivo di €60/mese.",
   },
   {
-    q: "Come funziona l'IA al telefono?",
-    a: "L'assistente vocale risponde 24/7 con la voce e il tono del locale. Prende prenotazioni e le scrive direttamente nell'agenda, accetta ordini d'asporto, suggerisce piatti del giorno, gestisce le richieste fuori orario. Supporta il cloning vocale opzionale e parla nativamente italiano, inglese, francese, spagnolo e tedesco.",
-  },
-  {
-    q: "Quanto tempo serve per andare online?",
-    a: "Per Vetrina, in media 3–5 settimane dalla prima chiamata. Operatività richiede 4–6 settimane perché include magazzino, food cost e configurazione dei moduli operativi. Autopilota aggiunge 2 settimane per training della voce e calibrazione dei flussi telefonici.",
-  },
-  {
-    q: "Posso usare il mio dominio attuale?",
-    a: "Certo. Possiamo configurare il tuo dominio esistente o registrarne uno nuovo per te. In entrambi i casi nessun costo aggiuntivo.",
+    q: "Come funziona la quota minuti dell'integrazione AI?",
+    a: "Ogni piano AI include una quota mensile di minuti di conversazione. Se la superi, gli addebiti aggiuntivi sono calcolati a prezzo di costo — senza nessun markup da parte nostra. Trovi il dettaglio della quota nel contratto.",
   },
   {
     q: "Ci sono commissioni su prenotazioni, ordini o delivery?",
-    a: "Zero. Menuary non trattiene nulla sui tuoi ordini, prenotazioni o consegne. Quello che incassi è tuo, integrale. Eventuali fee dei corrieri delivery dipendono dal provider che scegli.",
+    a: "Zero. Menuary non trattiene nulla sui tuoi ordini, prenotazioni o consegne. Quello che incassi è tuo, integrale.",
+  },
+  {
+    q: "Posso usare il mio dominio attuale?",
+    a: "Sì. Possiamo configurare il tuo dominio esistente o registrarne uno nuovo. In entrambi i casi senza costo aggiuntivo.",
   },
 ];
 
 // ─── Componente principale ────────────────────────────────────────────────────
 
-export function MarketingPricingPage() {
+export function MarketingPricingPage({ plans = PRICING_PLANS }: { plans?: PricingPlan[] }) {
   const [billing, setBilling] = useState<"annual" | "monthly">("annual");
+  const maxSaving = Math.max(...plans.map(annualSaving));
 
   return (
     <MarketingShell>
@@ -98,17 +114,17 @@ export function MarketingPricingPage() {
           <div className="grid items-end gap-14 lg:grid-cols-[1.2fr_0.8fr]">
             <div className="menuary-fade-up">
               <p className="menuary-section-label">Offerta</p>
-              <h1 className="menuary-display mt-7 text-[clamp(3rem,6.8vw,6rem)]">
-                Parti dal sito giusto.
+              <h1 className="menuary-display mt-7 text-[clamp(3rem,6.8vw,6rem)] text-balance">
+                Tre piani.
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
-                  Aggiungi solo ciò che serve.
+                  Nessuna sorpresa.
                 </span>
               </h1>
             </div>
             <p className="menuary-fade-up menuary-fade-up-d1 max-w-md text-[15px] leading-7 text-[var(--menuary-muted)] lg:text-right">
-              Tre piani per ristoranti di ogni dimensione. Prezzi chiari, zero
-              commissioni su ordini e prenotazioni.
+              Prezzi chiari, zero commissioni su ordini e prenotazioni. Parti
+              da dove vuoi, aggiungi solo ciò che ti serve.
             </p>
           </div>
         </div>
@@ -117,9 +133,8 @@ export function MarketingPricingPage() {
       {/* PLAN CARDS */}
       <section>
         <div className="menuary-container py-20 lg:py-24">
-
           {/* Toggle fatturazione */}
-          <div className="mb-14 flex justify-center">
+          <div className="mb-14 flex flex-wrap items-center justify-center gap-4">
             <div className="inline-flex items-center gap-1 rounded-full border border-[var(--menuary-line)] p-1">
               <button
                 onClick={() => setBilling("annual")}
@@ -130,7 +145,7 @@ export function MarketingPricingPage() {
                     : "text-[var(--menuary-muted)] hover:text-[var(--menuary-ink)]")
                 }
               >
-                Annuale
+                Annuale anticipato
               </button>
               <button
                 onClick={() => setBilling("monthly")}
@@ -144,26 +159,87 @@ export function MarketingPricingPage() {
                 Mensile
               </button>
             </div>
-            {billing === "annual" && (
-              <p className="ml-4 self-center text-xs font-semibold text-[var(--menuary-sage)]">
-                Risparmio fino a {Math.max(...PRICING_PLANS.map(annualSaving))}€/anno
+            {billing === "annual" && maxSaving > 0 && (
+              <p className="text-xs font-semibold text-[var(--menuary-sage)]">
+                Risparmi fino a €{maxSaving}/anno
               </p>
             )}
           </div>
 
           <div className="grid gap-px sm:gap-6 lg:grid-cols-3">
-            {PRICING_PLANS.map((plan) => (
+            {plans.map((plan) => (
               <PlanCard key={plan.slug} plan={plan} billing={billing} />
             ))}
           </div>
 
-          {/* Note IVA */}
           <p className="mt-10 text-center text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-            Tutti i prezzi sono IVA esclusa &nbsp;·&nbsp; contratto annuale
+            Tutti i prezzi sono IVA esclusa · contratto annuale ·{" "}
             {billing === "annual"
-              ? " · fatturazione annuale"
-              : " · fatturazione mensile"}
+              ? "pagamento anticipato 12 mesi"
+              : "fatturazione mensile"}
           </p>
+        </div>
+      </section>
+
+      {/* AI ADD-ON */}
+      <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
+        <div className="menuary-container py-20 lg:py-24">
+          <div className="grid items-start gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
+            <div>
+              <p className="menuary-section-label">Disponibile per tutti i piani</p>
+              <h2 className="menuary-display mt-6 text-[clamp(2rem,4.2vw,3.4rem)] text-balance">
+                Integrazione AI al telefono.
+              </h2>
+              <p className="mt-6 text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
+                {AI_ADDON.description}
+              </p>
+              <div className="mt-8 inline-flex items-baseline gap-2">
+                <span className="menuary-display text-[3rem] leading-none">
+                  +€{AI_ADDON.monthly}
+                </span>
+                <span className="text-sm text-[var(--menuary-muted)]">/mese</span>
+              </div>
+              <p className="mt-3 max-w-sm text-sm leading-[1.65] text-[var(--menuary-muted)]">
+                {AI_ADDON.minutesNote}
+              </p>
+              <Link href="/contatti" className="menuary-link mt-7 inline-flex">
+                Scopri l&apos;integrazione IA
+                <ArrowRight size={14} strokeWidth={1.8} className="ml-1" />
+              </Link>
+            </div>
+
+            <div className="rounded-3xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-8">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--menuary-ink)] text-[var(--menuary-paper)]">
+                  <Phone size={18} strokeWidth={1.7} />
+                </span>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                    IA al telefono · 24/7
+                  </p>
+                  <p className="menuary-display text-base">Assistente vocale</p>
+                </div>
+              </div>
+
+              <ul className="mt-8 space-y-4">
+                {AI_ADDON.items.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-[15px] leading-[1.5]">
+                    <Check
+                      size={16}
+                      strokeWidth={2}
+                      className="mt-0.5 shrink-0 text-[var(--menuary-sage)]"
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8 rounded-xl bg-[var(--menuary-ink)]/5 p-4 text-sm leading-[1.6] text-[var(--menuary-ink)]">
+                <span className="font-semibold">Quota minuti mensile inclusa.</span>{" "}
+                Oltre la soglia, addebiti a prezzo di costo — senza markup.
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -171,27 +247,44 @@ export function MarketingPricingPage() {
       <section className="border-t border-[var(--menuary-line)]">
         <div className="menuary-container py-16 lg:py-20">
           <div className="mx-auto max-w-3xl">
-            <p className="menuary-section-label mb-6">Note</p>
-            <div className="grid gap-8 sm:grid-cols-3 text-[14px] leading-7 text-[var(--menuary-muted)]">
+            <p className="menuary-section-label mb-6">Condizioni</p>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-[14px] leading-7 text-[var(--menuary-muted)]">
               <div>
-                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">Contratto annuale</p>
+                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">
+                  Contratto annuale
+                </p>
                 <p>
-                  La durata minima è di 12 mesi. Non è previsto il recesso
-                  anticipato. Puoi cambiare piano in qualsiasi momento.
+                  Durata 12 mesi con pagamento anticipato. Disdetta del rinnovo
+                  automatico con 30 giorni di preavviso — il contratto scade al
+                  termine del periodo pagato.
                 </p>
               </div>
               <div>
-                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">Costo di attivazione</p>
+                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">
+                  Cambio piano
+                </p>
                 <p>
-                  Una tantum, concordata prima dell&apos;avvio. Copre setup tecnico,
-                  onboarding e personalizzazione. Non è inclusa nel canone.
+                  Upgrade attivo subito, in qualsiasi momento. Downgrade
+                  possibile, parte dal rinnovo successivo.
                 </p>
               </div>
               <div>
-                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">IVA e prezzi</p>
+                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">
+                  Attivazione
+                </p>
                 <p>
-                  Tutti i prezzi esposti sono al netto dell&apos;IVA applicabile.
-                  La fattura sarà emessa con l&apos;aliquota vigente.
+                  Sito e servizi online entro 7 giorni dalla firma del
+                  contratto. Il costo di setup è una tantum, concordato prima
+                  dell&apos;avvio.
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">
+                  IVA e prezzi
+                </p>
+                <p>
+                  Tutti i prezzi sono al netto dell&apos;IVA. La fattura sarà
+                  emessa con l&apos;aliquota vigente.
                 </p>
               </div>
             </div>
@@ -221,11 +314,11 @@ export function MarketingPricingPage() {
                     <th className="py-4 pr-4 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-semibold">
                       Funzione
                     </th>
-                    <th className="py-4 px-4 text-center font-semibold">Vetrina</th>
+                    <th className="py-4 px-4 text-center font-semibold">Presenza</th>
                     <th className="py-4 px-4 text-center font-semibold text-[var(--menuary-copper)]">
-                      Operatività
+                      Prenotazioni
                     </th>
-                    <th className="py-4 pl-4 text-center font-semibold">Autopilota</th>
+                    <th className="py-4 pl-4 text-center font-semibold">Operatività</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -233,13 +326,13 @@ export function MarketingPricingPage() {
                     <tr key={row.label} className="border-b border-[var(--menuary-line)]">
                       <td className="py-4 pr-4">{row.label}</td>
                       <td className="py-4 px-4 text-center">
-                        <CellMark value={row.vetrina} />
+                        <CellMark value={row.presence} />
                       </td>
                       <td className="py-4 px-4 text-center">
-                        <CellMark value={row.operativita} />
+                        <CellMark value={row.booking} />
                       </td>
                       <td className="py-4 pl-4 text-center">
-                        <CellMark value={row.autopilota} />
+                        <CellMark value={row.ops} />
                       </td>
                     </tr>
                   ))}
@@ -284,8 +377,7 @@ function PlanCard({
     >
       {plan.is_featured && (
         <span className="absolute -top-3 left-8 inline-flex items-center gap-1 rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white">
-          <Sparkles size={11} strokeWidth={2} />
-          Consigliato
+          Più scelto
         </span>
       )}
 
@@ -304,10 +396,15 @@ function PlanCard({
         </span>
         {billing === "annual" ? (
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
-            <span className="font-semibold text-[var(--menuary-sage)]">
-              Risparmi €{saving}/anno
-            </span>
-            {" "}rispetto al mensile
+            {saving > 0 && (
+              <>
+                <span className="font-semibold text-[var(--menuary-sage)]">
+                  Risparmi €{saving}/anno
+                </span>{" "}
+                rispetto al mensile ·{" "}
+              </>
+            )}
+            pagamento annuale anticipato
           </p>
         ) : (
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
@@ -370,6 +467,8 @@ function CellMark({ value }: { value: boolean | string }) {
     );
   }
   return (
-    <span className="text-[14px] font-semibold text-[var(--menuary-ink)]">{value}</span>
+    <span className="text-[13px] font-semibold text-[var(--menuary-copper)]">
+      {value}
+    </span>
   );
 }

@@ -1846,16 +1846,34 @@ function GoogleGlyph() {
 
 function TripAdvisorGlyph() {
   return (
-    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#00AF87] text-white font-black">
-      <span className="text-xs tracking-tight">Ta</span>
+    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full">
+      {/* TripAdvisor owl — green circle, two eyes */}
+      <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden>
+        <circle cx="20" cy="20" r="20" fill="#00AF87" />
+        {/* left eye */}
+        <circle cx="13" cy="21" r="6" fill="white" />
+        <circle cx="13" cy="21" r="3.5" fill="#00AF87" />
+        <circle cx="13" cy="21" r="2" fill="#1A1A1A" />
+        <circle cx="12" cy="20" r="0.7" fill="white" />
+        {/* right eye */}
+        <circle cx="27" cy="21" r="6" fill="white" />
+        <circle cx="27" cy="21" r="3.5" fill="#00AF87" />
+        <circle cx="27" cy="21" r="2" fill="#1A1A1A" />
+        <circle cx="26" cy="20" r="0.7" fill="white" />
+        {/* beak */}
+        <ellipse cx="20" cy="27" rx="2.5" ry="1.5" fill="white" opacity="0.9" />
+      </svg>
     </span>
   );
 }
 
 function YelpGlyph() {
   return (
-    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#D32323] text-white font-black">
-      <span className="text-xs tracking-tight">Y</span>
+    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#D32323]">
+      {/* Yelp burst star */}
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden fill="white">
+        <path d="M12.27 12.56l-3.93 1.06a.5.5 0 0 1-.6-.64l1.58-3.67a.5.5 0 0 1 .88-.06l2.35 2.61a.5.5 0 0 1-.28.7zm1.37-.96l2.08-3.43a.5.5 0 0 1 .85.06l1.24 3.8a.5.5 0 0 1-.57.65l-3.32-.43a.5.5 0 0 1-.28-.65zm-4.83 4.28l-3.59-1.6a.5.5 0 0 1-.1-.86l3.08-2.25a.5.5 0 0 1 .76.28l.51 3.83a.5.5 0 0 1-.66.6zm9.04 1.14l-3.6 1.53a.5.5 0 0 1-.67-.57l.46-3.85a.5.5 0 0 1 .75-.37l3.13 2.2a.5.5 0 0 1-.07.86zm-4.43 3.83l.04 3.9a.5.5 0 0 1-.78.42l-3.22-2.12a.5.5 0 0 1 .07-.86l3.18-1.77a.5.5 0 0 1 .71.43z" />
+      </svg>
     </span>
   );
 }
@@ -1952,14 +1970,12 @@ const HOME_PRICING_PLANS: HomePricingPlan[] = [
     monthly: "39",
     setup: "da 690 €",
     features: [
-      "Sito responsive",
-      "Dominio personalizzato",
-      "Hosting + SSL",
-      "Menu digitale",
-      "Recensioni Google integrate",
-      "Orari e contatti",
-      "Google Maps integrato",
-      "Aggiornamenti tecnici",
+      "Sito su misura, dominio personalizzato",
+      "Menu digitale aggiornabile",
+      "Recensioni Google integrate sul sito",
+      "Orari e festività su Google Maps",
+      "Hosting, SSL, backup inclusi",
+      "Aggiornamenti tecnici continui",
     ],
     ctaLabel: "Inizia",
   },
@@ -1972,9 +1988,8 @@ const HOME_PRICING_PLANS: HomePricingPlan[] = [
     inherits: "Tutto di Presenza, più",
     features: [
       "Prenotazioni online",
-      "Email automatiche",
-      "Notifiche",
-      "Calendario prenotazioni",
+      "Conferme e reminder automatici",
+      "Calendario di sala",
       "Click-to-WhatsApp",
       "Pannello richieste",
     ],
@@ -1989,12 +2004,11 @@ const HOME_PRICING_PLANS: HomePricingPlan[] = [
     setup: "da 1.990 €",
     inherits: "Tutto di Prenotazioni, più",
     features: [
-      "CRM clienti",
-      "Newsletter",
-      "Analytics",
+      "Ordini sala & asporto",
+      "Delivery integrato",
+      "CRM clienti & analytics",
       "Dashboard operativa",
-      "Gestione ordini",
-      "Gestione staff light",
+      "Gestione staff e cucina",
     ],
     ctaLabel: "Parlane con noi",
   },
@@ -2105,8 +2119,37 @@ export function HomePricingSection() {
         </div>
 
         <p className="mt-8 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-          IVA esclusa · Nessuna penale di disdetta
+          IVA esclusa · Contratto annuale · Attivazione entro 7 giorni
         </p>
+
+        {/* AI add-on callout */}
+        <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-6 sm:flex-row sm:items-center sm:gap-8">
+          <div className="flex items-center gap-4 shrink-0">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--menuary-ink)] text-[var(--menuary-paper)]">
+              <Phone size={18} strokeWidth={1.7} />
+            </span>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                Add-on disponibile per tutti
+              </p>
+              <p className="menuary-display text-lg">
+                IA al telefono{" "}
+                <span className="text-[var(--menuary-copper)]">+€60/mese</span>
+              </p>
+            </div>
+          </div>
+          <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">
+            Assistente vocale 24/7 che risponde con la voce del locale, prende
+            prenotazioni e gestisce ordini. Quota minuti mensile inclusa;
+            oltre la soglia, addebiti a prezzo di costo senza markup.
+          </p>
+          <Link
+            href="/pricing#ai"
+            className="menuary-button menuary-button-light shrink-0 text-sm"
+          >
+            Scopri
+          </Link>
+        </div>
       </div>
     </section>
   );
