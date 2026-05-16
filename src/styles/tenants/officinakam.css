@@ -1,4 +1,8 @@
 @layer components {
+  main:has(.kam-site) {
+    overflow-x: visible !important;
+  }
+
   .kam-site {
     --kam-bg: #0a0a0b;
     --kam-surface-1: #131316;
@@ -16,7 +20,6 @@
     --kam-body: "Manrope", system-ui, sans-serif;
     --kam-mono: "JetBrains Mono", ui-monospace, monospace;
     min-height: 100vh;
-    overflow: hidden;
     background: var(--kam-bg);
     color: var(--kam-text);
     font-family: var(--kam-body);
@@ -152,12 +155,19 @@
 
   .kam-showroom {
     position: relative;
-    min-height: 100svh;
-    padding: 120px 0 72px;
-    overflow: hidden;
+    height: 560vh;
+    overflow: visible;
     background:
       radial-gradient(circle at 50% 44%, rgba(249, 115, 22, 0.14), transparent 32%),
       linear-gradient(180deg, #0e0e10 0%, #15151a 62%, #0a0a0b 100%);
+  }
+
+  .kam-showroom-sticky {
+    position: fixed;
+    inset: 0 0 auto;
+    height: 100svh;
+    overflow: hidden;
+    background: var(--kam-bg);
   }
 
   .kam-grid-bg {
@@ -171,37 +181,88 @@
     pointer-events: none;
   }
 
-  .kam-showroom::after {
+  .kam-showroom-vignette {
     position: absolute;
     inset: 0;
     z-index: 1;
     background: radial-gradient(circle at center, transparent 28%, rgba(10, 10, 11, 0.74) 100%);
-    content: "";
     pointer-events: none;
   }
 
   .kam-showroom-media {
     position: absolute;
-    inset: 120px max(24px, 6vw) 74px;
+    inset: 0;
     display: grid;
     place-items: center;
+    z-index: 0;
   }
 
   .kam-bike-frame {
     position: relative;
-    width: min(92vw, 1180px);
+    width: min(92vw, 1400px);
     aspect-ratio: 16 / 9;
     overflow: hidden;
     border: 1px solid var(--kam-line);
     border-radius: 24px;
     background: var(--kam-surface-1);
     box-shadow: 0 40px 140px rgba(0, 0, 0, 0.52);
+    transform-origin: 50% 50%;
+    transition: transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
   }
 
   .kam-bike-image {
     object-fit: cover;
     opacity: 0.62;
     filter: contrast(1.08) saturate(0.76);
+  }
+
+  .kam-hotspots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .kam-hotspots > span {
+    position: absolute;
+    display: grid;
+    width: 14px;
+    height: 14px;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(249, 115, 22, 0.56);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+    transform: translate(-50%, -50%);
+    transition:
+      background 240ms ease,
+      box-shadow 240ms ease,
+      transform 240ms ease;
+  }
+
+  .kam-hotspots > span.is-active {
+    background: var(--kam-orange);
+    box-shadow:
+      0 0 0 6px rgba(249, 115, 22, 0.18),
+      0 0 0 12px rgba(249, 115, 22, 0.08);
+  }
+
+  .kam-hotspots em {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: var(--kam-orange);
+    font-family: var(--kam-mono);
+    font-size: 9px;
+    font-style: normal;
+    letter-spacing: 0.16em;
+    white-space: nowrap;
+    opacity: 0;
+    text-transform: uppercase;
+    transition: opacity 180ms ease;
+  }
+
+  .kam-hotspots > span.is-active em {
+    opacity: 1;
   }
 
   .kam-frame-corners::before,
@@ -231,7 +292,9 @@
     position: relative;
     z-index: 2;
     display: grid;
-    min-height: calc(100svh - 192px);
+    height: 100svh;
+    padding-top: 118px;
+    padding-bottom: 72px;
     grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.58fr);
     align-items: end;
     gap: 42px;
@@ -331,6 +394,16 @@
     line-height: 0.98;
   }
 
+  .kam-hud-card small {
+    display: block;
+    margin-top: 8px;
+    color: var(--kam-orange);
+    font-family: var(--kam-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
   .kam-hud-card p {
     margin-top: 16px;
     color: var(--kam-muted);
@@ -359,6 +432,22 @@
     border-color: var(--kam-orange);
     background: var(--kam-orange);
     color: var(--kam-bg);
+  }
+
+  .kam-scroll-progress {
+    position: relative;
+    height: 1px;
+    margin-top: 22px;
+    overflow: hidden;
+    background: var(--kam-line);
+  }
+
+  .kam-scroll-progress span {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--kam-orange), rgba(249, 115, 22, 0.2));
+    transform-origin: left center;
+    will-change: transform;
   }
 
   .kam-hud-metric {
@@ -979,15 +1068,7 @@
     }
 
     .kam-showroom {
-      min-height: auto;
-      padding-bottom: 44px;
-    }
-
-    .kam-showroom-media {
-      position: relative;
-      inset: auto;
-      margin: 24px auto 0;
-      width: min(100% - 32px, 720px);
+      height: 520vh;
     }
 
     .kam-hud,
@@ -999,8 +1080,10 @@
     }
 
     .kam-hud {
-      min-height: auto;
-      padding-top: 28px;
+      height: 100svh;
+      align-content: end;
+      padding-top: 96px;
+      padding-bottom: 32px;
     }
 
     .kam-hud-card,
@@ -1040,11 +1123,52 @@
     }
 
     .kam-showroom {
+      height: 500vh;
+    }
+
+    .kam-showroom-media {
+      inset: 76px -88px auto;
+      height: 48svh;
+      place-items: center;
+    }
+
+    .kam-bike-frame {
+      width: 680px;
+      max-width: none;
+      border-radius: 18px;
+    }
+
+    .kam-hud {
       padding-top: 92px;
+      padding-bottom: 18px;
+      gap: 14px;
     }
 
     .kam-hud h1 {
-      font-size: 52px;
+      font-size: 48px;
+    }
+
+    .kam-hud-left p {
+      max-width: 23rem;
+      margin-top: 14px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .kam-hero-actions {
+      margin-top: 18px;
+    }
+
+    .kam-hud-card h2 {
+      font-size: 28px;
+    }
+
+    .kam-hud-card p {
+      display: none;
+    }
+
+    .kam-hud-metric strong {
+      font-size: 34px;
     }
 
     .kam-hud-card {

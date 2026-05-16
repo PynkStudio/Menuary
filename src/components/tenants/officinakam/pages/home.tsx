@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import {
   ArrowRight,
@@ -35,32 +35,50 @@ const stages = [
   {
     code: "DGN-INIT",
     label: "00 / Vista totale",
+    subtitle: "Ispezione completa",
     title: "Ogni moto.\nOgni parte.\nOgni dettaglio.",
     body: "La diagnosi parte da una vista d'insieme: freni, gomme, elettronica, trasmissione e punti critici vengono controllati prima del preventivo.",
+    focal: { x: 0.5, y: 0.5, scale: 1 },
     metric: "200+",
     caption: "punti di controllo",
   },
   {
     code: "M-FREN",
     label: "01 / Impianto frenante",
+    subtitle: "Anteriore + posteriore",
     title: "Freni.",
     body: "Pastiglie, dischi, liquido e usura asimmetrica. Ti diciamo cosa serve davvero prima di ordinare i ricambi.",
+    focal: { x: 0.27, y: 0.66, scale: 2.4 },
     metric: "DOT4",
     caption: "liquido verificato",
   },
   {
     code: "M-TAGL",
     label: "02 / Motore",
+    subtitle: "Tagliando completo",
     title: "Motore.",
     body: "Olio, filtri, candele e serraggi. Lavoro pulito, ricambi tracciati, foto dell'intervento su richiesta.",
+    focal: { x: 0.5, y: 0.55, scale: 2.1 },
     metric: "Nm",
     caption: "serraggio controllato",
   },
   {
+    code: "M-FORK",
+    label: "03 / Sospensioni",
+    subtitle: "Forcelle + mono",
+    title: "Sospensioni.",
+    body: "Revisione forcelle e mono, paraoli, raschia-polvere e taratura. La ciclistica viene controllata con il peso reale del pilota.",
+    focal: { x: 0.23, y: 0.42, scale: 2.3 },
+    metric: "Setup",
+    caption: "geometria + taratura",
+  },
+  {
     code: "D-OBD",
-    label: "03 / Diagnostica elettronica",
+    label: "04 / Diagnostica elettronica",
+    subtitle: "OBD + centraline",
     title: "Elettronica.",
     body: "Lettura centraline, service reset e diagnosi multimarca. Il problema viene isolato prima di smontare.",
+    focal: { x: 0.56, y: 0.46, scale: 2.4 },
     metric: "30'",
     caption: "diagnosi orientativa",
   },
@@ -103,18 +121,100 @@ function priceText(item: { price: { kind: string; value?: number } }) {
   return "Da preventivo";
 }
 
+function clamp(value: number, min = 0, max = 1) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function easeInOutCubic(value: number) {
+  return value < 0.5
+    ? 4 * value * value * value
+    : 1 - Math.pow(-2 * value + 2, 3) / 2;
+}
+
+function getShowroomState(progress: number) {
+  const segment = 1 / (stages.length - 1);
+  const rawIndex = clamp(progress) / segment;
+  const fromIndex = Math.min(stages.length - 2, Math.floor(rawIndex));
+  const local = clamp(rawIndex - fromIndex);
+  const eased = easeInOutCubic(local);
+  const from = stages[fromIndex];
+  const to = stages[Math.min(stages.length - 1, fromIndex + 1)];
+  const interpolate = (a: number, b: number) => a + (b - a) * eased;
+  const x = interpolate(from.focal.x, to.focal.x);
+  const y = interpolate(from.focal.y, to.focal.y);
+  const scale = interpolate(from.focal.scale, to.focal.scale);
+  const index = eased > 0.5 ? Math.min(stages.length - 1, fromIndex + 1) : fromIndex;
+
+  return {
+    index,
+    progress,
+    scale,
+    tx: (0.5 - x) * 100,
+    ty: (0.5 - y) * 100,
+  };
+}
+
 export function OfficinaKamHomePage() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
   const { display: phoneDisplay, waHref } = useVenueContactPhone();
   const [activeGroup, setActiveGroup] = useState(0);
-  const [stage, setStage] = useState(0);
   const [requestSent, setRequestSent] = useState(false);
+  const showroomRef = useRef<HTMLElement | null>(null);
+  const [showroom, setShowroom] = useState(() => getShowroomState(0));
 
   const menuGroups = useMemo(() => officinaKamMenu, []);
   const currentGroup = menuGroups[activeGroup] ?? menuGroups[0];
   const tenantGoogleRating = getGoogleRatingForTenant(tenant.id);
   const reviewSample = getReviewsForTenant(tenant.id).slice(0, 3);
+  const currentStage = stages[showroom.index] ?? stages[0];
+
+  useEffect(() => {
+    let frame = 0;
+    let lastProgress = -1;
+
+    const update = () => {
+      frame = 0;
+      const el = showroomRef.current;
+      if (!el) return;
+      const scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
+      const scrollTop =
+        window.scrollY ||
+        document.documentElement.scrollTop ||
+        document.body.scrollTop ||
+        0;
+      const progress = clamp((scrollTop - el.offsetTop) / scrollable);
+      if (Math.abs(progress - lastProgress) < 0.001) return;
+      lastProgress = progress;
+      setShowroom(getShowroomState(progress));
+    };
+
+    const schedule = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(update);
+    };
+
+    update();
+    const interval = window.setInterval(schedule, 80);
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.clearInterval(interval);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, []);
+
+  const jumpToStage = (index: number) => {
+    const el = showroomRef.current;
+    if (!el) return;
+    const scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
+    window.scrollTo({
+      top: el.offsetTop + scrollable * (index / (stages.length - 1)),
+      behavior: "smooth",
+    });
+  };
 
   return (
     <main className="kam-site">
@@ -140,63 +240,99 @@ export function OfficinaKamHomePage() {
         </div>
       </nav>
 
-      <section id="top" className="kam-showroom">
-        <div className="kam-grid-bg" />
-        <div className="kam-showroom-media">
-          <div className="kam-bike-frame">
-            <Image
-              src={content.hero.backdrop}
-              alt="Moto in officina Officina KAM"
-              fill
-              priority
-              sizes="(max-width: 768px) 94vw, 1100px"
-              className="kam-bike-image"
-            />
-            <div className="kam-frame-corners" />
-          </div>
-        </div>
-
-        <div className="kam-container kam-hud">
-          <div className="kam-hud-left">
-            <span className="kam-eyebrow">{content.hero.eyebrow}</span>
-            <h1>
-              Meccanica
-              <span>di precisione.</span>
-            </h1>
-            <p>{content.hero.body}</p>
-            <div className="kam-hero-actions">
-              <VenueWhatsappLink className="kam-btn kam-btn-primary">
-                {content.hero.ctaLabel} <ArrowRight size={16} />
-              </VenueWhatsappLink>
-              <a className="kam-btn kam-btn-ghost" href="#listino">
-                Vedi listino <ChevronRight size={16} />
-              </a>
+      <section id="top" ref={showroomRef} className="kam-showroom">
+        <div
+          className="kam-showroom-sticky"
+          style={{
+            position: showroom.progress >= 1 ? "absolute" : "fixed",
+            top: showroom.progress >= 1 ? "auto" : 0,
+            bottom: showroom.progress >= 1 ? 0 : "auto",
+          }}
+        >
+          <div className="kam-grid-bg" />
+          <div className="kam-showroom-vignette" />
+          <div className="kam-showroom-media">
+            <div
+              className="kam-bike-frame"
+              style={{
+                transform: `scale(${showroom.scale}) translate3d(${showroom.tx}%, ${showroom.ty}%, 0)`,
+              }}
+            >
+              <Image
+                src={content.hero.backdrop}
+                alt="Moto in officina Officina KAM"
+                fill
+                priority
+                sizes="(max-width: 768px) 94vw, 1400px"
+                className="kam-bike-image"
+              />
+              <div className="kam-hotspots" aria-hidden="true">
+                {stages.slice(1).map((item, index) => {
+                  const realIndex = index + 1;
+                  return (
+                    <span
+                      key={item.code}
+                      className={showroom.index === realIndex ? "is-active" : ""}
+                      style={{
+                        left: `${item.focal.x * 100}%`,
+                        top: `${item.focal.y * 100}%`,
+                      }}
+                    >
+                      <em>{item.code}</em>
+                    </span>
+                  );
+                })}
+              </div>
+              <div className="kam-frame-corners" />
             </div>
           </div>
 
-          <aside className="kam-hud-card" aria-label="Diagnostica in evidenza">
-            <div className="kam-hud-code">{stages[stage].label}</div>
-            <h2>{stages[stage].title}</h2>
-            <p>{stages[stage].body}</p>
-            <div className="kam-stage-tabs">
-              {stages.map((item, index) => (
-                <button
-                  key={item.code}
-                  type="button"
-                  onClick={() => setStage(index)}
-                  className={index === stage ? "is-active" : ""}
-                  aria-label={item.label}
-                >
-                  {String(index).padStart(2, "0")}
-                </button>
-              ))}
+          <div className="kam-container kam-hud">
+            <div className="kam-hud-left">
+              <span className="kam-eyebrow">{content.hero.eyebrow}</span>
+              <h1>
+                Meccanica
+                <span>di precisione.</span>
+              </h1>
+              <p>{content.hero.body}</p>
+              <div className="kam-hero-actions">
+                <VenueWhatsappLink className="kam-btn kam-btn-primary">
+                  {content.hero.ctaLabel} <ArrowRight size={16} />
+                </VenueWhatsappLink>
+                <a className="kam-btn kam-btn-ghost" href="#listino">
+                  Vedi listino <ChevronRight size={16} />
+                </a>
+              </div>
             </div>
-            <div className="kam-hud-metric">
-              <strong>{stages[stage].metric}</strong>
-              <span>{stages[stage].caption}</span>
-              <em>{stages[stage].code}</em>
-            </div>
-          </aside>
+
+            <aside className="kam-hud-card" aria-label="Diagnostica in evidenza">
+              <div className="kam-hud-code">{currentStage.label}</div>
+              <small>{currentStage.subtitle}</small>
+              <h2>{currentStage.title}</h2>
+              <p>{currentStage.body}</p>
+              <div className="kam-stage-tabs">
+                {stages.map((item, index) => (
+                  <button
+                    key={item.code}
+                    type="button"
+                    onClick={() => jumpToStage(index)}
+                    className={index === showroom.index ? "is-active" : ""}
+                    aria-label={item.label}
+                  >
+                    {String(index).padStart(2, "0")}
+                  </button>
+                ))}
+              </div>
+              <div className="kam-scroll-progress" aria-hidden="true">
+                <span style={{ transform: `scaleX(${showroom.progress})` }} />
+              </div>
+              <div className="kam-hud-metric">
+                <strong>{currentStage.metric}</strong>
+                <span>{currentStage.caption}</span>
+                <em>{currentStage.code}</em>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
 
