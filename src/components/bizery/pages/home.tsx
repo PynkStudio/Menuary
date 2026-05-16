@@ -1,222 +1,163 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowUpRight,
-  CalendarCheck,
-  ShieldCheck,
-  Sparkles,
-  BookOpen,
-  Users,
-  TrendingUp,
-  Boxes,
-  Building2,
-  Check,
-  Plus,
-  PhoneCall,
-  PhoneOutgoing,
-  MessageCircle,
-  Bot,
-  Clock,
-  Mic,
-  Headphones,
-  Send,
-  CalendarClock,
   Bell,
+  CalendarCheck,
+  CalendarClock,
+  Check,
+  Clock,
+  Globe,
+  Megaphone,
+  MessageCircle,
+  Phone,
+  PhoneCall,
+  Plus,
+  Send,
+  ShieldCheck,
+  Star,
 } from "lucide-react";
 import { BizeryShell } from "@/components/bizery/bizery-shell";
-import { PRICING_PLANS, annualSaving } from "@/lib/platform-pricing";
+import { BIZERY_PRICING_PLANS, AI_ADDON, annualSaving } from "@/lib/platform-pricing";
 import { getMarketingHomeData } from "@/lib/marketing-data";
 
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80";
+// ─── Dati statici ─────────────────────────────────────────────────────────────
 
-const FEATURES: { icon: typeof CalendarCheck; title: string; body: string; tone?: "dark" }[] = [
+const GOOGLE_SYNC_CARDS: {
+  icon: typeof Star;
+  title: string;
+  body: string;
+  note?: string;
+}[] = [
   {
-    icon: PhoneCall,
-    title: "Centralino IA H24",
-    body: "Un assistente vocale risponde al telefono 24/7 con la voce del tuo brand: dà informazioni, fissa, sposta e cancella appuntamenti, gestisce le emergenze. Nessuna chiamata persa, mai più.",
-    tone: "dark",
+    icon: Star,
+    title: "Recensioni sincronizzate",
+    body: "Le recensioni Google vengono aggiornate automaticamente sul sito.",
+    note: "Aggiornamento periodico automatico.",
   },
   {
-    icon: MessageCircle,
-    title: "WhatsApp & SMS automatici",
-    body: "Conversazioni inbound e outbound automatiche su WhatsApp, SMS e webchat. Il cliente scrive, l'IA capisce, propone slot, conferma o riprogramma — direttamente sulla tua agenda.",
+    icon: Clock,
+    title: "Orari sempre corretti",
+    body: "Aggiorna orari di apertura, chiusure e festività da un solo posto.",
   },
   {
-    icon: PhoneOutgoing,
-    title: "Chiamate outbound IA",
-    body: "Promemoria automatici, conferme di appuntamento, recall sui no-show. L'IA chiama, parla con il cliente e aggiorna l'agenda in tempo reale.",
-  },
-  {
-    icon: CalendarCheck,
-    title: "Agenda integrata",
-    body: "Agenda operativa unica per tutti i canali: telefono umano, IA, sito, WhatsApp, walk-in. Conferme automatiche, blocchi orari, sovrapposizioni risolte.",
-    tone: "dark",
-  },
-  {
-    icon: BookOpen,
-    title: "Sito su misura",
-    body: "Identità, servizi, orari, contatti costruiti sul tuo brand. Niente template: ogni pagina rispecchia davvero la tua azienda — e converte.",
-  },
-  {
-    icon: Users,
-    title: "CRM clienti",
-    body: "Storico, preferenze, ricorrenze, note operative. L'IA legge il CRM prima di rispondere: il cliente si sente riconosciuto al primo squillo.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Analytics & report",
-    body: "Appuntamenti per fascia oraria, servizi più richiesti, scontrino medio, tasso di no-show. Cosa funziona, cosa no, dove intervenire.",
-    tone: "dark",
-  },
-  {
-    icon: Boxes,
-    title: "Costi e margini",
-    body: "Collega materiali e ore operative a ogni servizio. Vedi il margine reale prima di comunicare il listino.",
-  },
-  {
-    icon: Building2,
-    title: "Multi-sede",
-    body: "Più sedi, un unico account. Listini differenziati, agenda separata, report comparativi, permessi staff per sede.",
+    icon: Megaphone,
+    title: "Novità e promozioni",
+    body: "Pubblica aggiornamenti e offerte direttamente sulla tua scheda Google.",
   },
   {
     icon: ShieldCheck,
-    title: "Staff e ruoli",
-    body: "Permessi granulari per ogni membro: chi vede la cassa, chi gestisce l'agenda, chi modifica listino e servizi.",
-  },
-  {
-    icon: Mic,
-    title: "Voice cloning",
-    body: "L'IA può rispondere con una voce coerente al tuo brand — clonata in modo etico e con consenso. Continuità di identità anche al telefono.",
-  },
-  {
-    icon: BookOpen,
-    title: "Listino servizi digitale",
-    body: "Catalogo consultabile da sito e QR. Aggiornalo in due clic, sempre online, sempre allineato a ciò che l'IA propone al cliente.",
+    title: "Meno errori, meno chiamate",
+    body: "Evita clienti che trovano informazioni sbagliate online.",
   },
 ];
 
-const AI_CAPABILITIES: { icon: typeof PhoneCall; title: string; body: string; badge: string }[] = [
+const BENEFIT_CARDS: { n: string; title: string; body: string }[] = [
+  {
+    n: "01",
+    title: "Sito professionale",
+    body: "Responsive, veloce e progettato per valorizzare il tuo studio.",
+  },
+  {
+    n: "02",
+    title: "Appuntamenti semplici",
+    body: "Gestisci richieste e prenotazioni senza caos, via web o WhatsApp.",
+  },
+  {
+    n: "03",
+    title: "Google Maps integrato",
+    body: "Orari, recensioni e informazioni aggiornati da un unico pannello.",
+  },
+  {
+    n: "04",
+    title: "Strumenti operativi",
+    body: "CRM, analytics e gestione staff. Tutto integrato, niente plugin.",
+  },
+];
+
+const AI_CAPABILITIES: {
+  icon: typeof PhoneCall;
+  title: string;
+  body: string;
+  badge: string;
+}[] = [
   {
     icon: PhoneCall,
     title: "Inbound vocale H24",
-    body: "Risponde a qualsiasi ora, parla italiano naturale, capisce intento e contesto. Dà informazioni su orari, servizi, prezzi, indicazioni. Fissa, sposta o cancella un appuntamento mentre parla.",
+    body: "Risponde a qualsiasi ora con italiano naturale. Fissa, sposta o cancella un appuntamento mentre parla, senza mettere il cliente in attesa.",
     badge: "Telefono in",
-  },
-  {
-    icon: PhoneOutgoing,
-    title: "Outbound vocale",
-    body: "Chiama il cliente per confermare l'appuntamento del giorno dopo, ricordare un controllo periodico, riproporre uno slot dopo un no-show. Aggiorna l'agenda in tempo reale in base alla risposta.",
-    badge: "Telefono out",
   },
   {
     icon: MessageCircle,
     title: "WhatsApp inbound",
-    body: "Risponde 24/7 ai messaggi dei clienti: propone slot, conferma servizio e durata, gestisce richieste di modifica o cancellazione. Multilingua e con tono adatto al tuo brand.",
+    body: "Risponde 24/7 ai messaggi: propone slot, conferma servizio e durata, gestisce richieste di modifica o cancellazione.",
     badge: "WhatsApp in",
   },
   {
     icon: Send,
-    title: "WhatsApp outbound",
-    body: "Promemoria automatici, conferme, follow-up, recall periodici, offerte mirate ai segmenti del CRM. Il cliente può rispondere e cambiare appuntamento in chat — senza chiamarti.",
-    badge: "WhatsApp out",
+    title: "Promemoria & recall",
+    body: "Sequenze automatiche su WhatsApp, SMS ed email. Il cliente può rispondere e spostare l'appuntamento in chat — senza chiamarti.",
+    badge: "Outbound",
   },
   {
     icon: Bell,
-    title: "Promemoria multicanale",
-    body: "Sequenze automatiche su WhatsApp, SMS, email e chiamata vocale. Logica configurabile per servizio: 24h prima, 2h prima, conferma con un tap.",
+    title: "Conferme automatiche",
+    body: "Logica configurabile per servizio: 24h prima, 2h prima, conferma con un tap. Tasso di no-show ridotto in media del 60–70%.",
     badge: "Reminder",
   },
   {
     icon: CalendarClock,
-    title: "Riprogrammazione automatica",
-    body: "Se il cliente dice di non poter venire, l'IA propone subito un nuovo slot coerente con la durata del servizio e le disponibilità reali della sede. Tu vedi solo il risultato in agenda.",
+    title: "Riprogrammazione",
+    body: "Se il cliente non può venire, l'IA propone subito un nuovo slot. Tu vedi solo il risultato aggiornato in agenda.",
     badge: "Reschedule",
   },
-];
-
-const AI_FLOW = [
   {
-    n: "01",
-    title: "Il cliente contatta",
-    body: "Telefono, WhatsApp, SMS o webchat: qualsiasi canale, qualsiasi orario. Niente più chiamate perse fuori orario.",
-  },
-  {
-    n: "02",
-    title: "L'IA capisce e risponde",
-    body: "Riconosce il cliente dal CRM, comprende la richiesta, dà informazioni precise sui tuoi servizi, orari, prezzi e disponibilità reali.",
-  },
-  {
-    n: "03",
-    title: "Fissa, sposta o cancella",
-    body: "Propone gli slot giusti tenendo conto della durata del servizio, dello staff disponibile, della sede. Conferma immediata sull'agenda.",
-  },
-  {
-    n: "04",
-    title: "Promemoria e conferma",
-    body: "Sequenza automatica di reminder. Se il cliente non risponde, l'IA chiama. Se chiede di spostare, riprogramma. Se non viene, riparte il recall.",
+    icon: Phone,
+    title: "Cloning vocale",
+    body: "L'IA risponde con una voce coerente al tuo brand — clonata in modo etico. Continuità di identità anche al telefono.",
+    badge: "Voice ID",
   },
 ];
 
 const FAQ = [
   {
-    q: "Come funziona esattamente la risposta IA al telefono?",
-    a: "Quando un cliente chiama, l'IA risponde subito con una voce naturale (anche clonata dal tuo brand, se vuoi). Capisce italiano colloquiale, accede in tempo reale ad agenda, CRM e listino, e può dare informazioni, fissare un appuntamento, spostarlo o cancellarlo. Tu vedi tutto in agenda come se l'avesse scritto un operatore umano.",
+    q: "A cosa serve un sito per uno studio professionale nel 2026?",
+    a: "Serve a controllare come vieni trovato e percepito, prima ancora che il cliente chiami. Google Maps, recensioni, orari aggiornati, appuntamenti online: chi non gestisce questi punti lascia spazio ai concorrenti. Un sito professionale è la prima sala d'attesa del tuo studio.",
   },
   {
-    q: "E le chiamate in uscita per i promemoria?",
-    a: "L'IA chiama automaticamente i clienti per conferme di appuntamento, promemoria di controlli ricorrenti, recall dopo no-show o per riempire slot liberi. Parla con il cliente, gestisce risposte, riprogramma e aggiorna l'agenda — senza che tu debba toccare il telefono.",
+    q: "Non basta un profilo LinkedIn o Instagram?",
+    a: "No. LinkedIn e Instagram non gestiscono appuntamenti, non appaiono nelle ricerche Google Maps e non sono tuoi — l'algoritmo può cambiare, il profilo può essere sospeso. Il sito è un asset che possiedi, che si accumula nel tempo e che Google indicizza.",
   },
   {
-    q: "WhatsApp e SMS sono inclusi?",
-    a: "Sì. La piattaforma gestisce conversazioni inbound e outbound su WhatsApp Business, SMS, webchat ed email. Il cliente può fissare, spostare o cancellare un appuntamento in chat, anche di notte. Promemoria e conferme partono in automatico secondo le regole che imposti.",
-  },
-  {
-    q: "L'IA può fare errori sull'agenda?",
-    a: "L'IA opera dentro regole che imposti tu: durata servizi, staff abilitato, sede, buffer tra appuntamenti, vincoli orari. Tutte le operazioni sono tracciate e revocabili dal pannello in un clic. Per i casi delicati può chiedere conferma umana prima di confermare.",
-  },
-  {
-    q: "Posso usare solo il sito, senza IA né appuntamenti?",
-    a: "Sì. Bizery è modulare: parti dal piano Vetrina con sito + listino digitale, e quando vuoi accendi appuntamenti, CRM, analytics, multi-sede o centralino IA senza dover rifare nulla.",
+    q: "Come funziona l'IA al telefono?",
+    a: "L'assistente risponde 24/7 con la voce e il tono dello studio. Fissa, sposta e cancella appuntamenti direttamente in agenda, gestisce richieste fuori orario, manda promemoria automatici su WhatsApp e SMS. Supporta cloning vocale e parla in 5 lingue. Disponibile dal piano Appuntamenti.",
   },
   {
     q: "Quanto tempo serve per andare online?",
-    a: "Per il piano Vetrina, 3–5 settimane dalla prima chiamata al go-live. Per Operatività 4–6 settimane. Il modulo IA (Autopilota) richiede 2–3 settimane in più per training su servizi, FAQ e voce.",
+    a: "Entro 7 giorni dalla firma del contratto. La configurazione iniziale — onboarding, design, personalizzazione — avviene prima, in media 2–4 settimane.",
   },
   {
     q: "Il contratto è annuale?",
-    a: "Sì, durata minima 12 mesi senza recesso anticipato. Puoi cambiare piano in qualsiasi momento — la variazione è attiva dal mese successivo.",
+    a: "Sì, con pagamento anticipato di 12 mesi. Il rinnovo automatico si può disdire con 30 giorni di preavviso; il contratto scade al termine del periodo pagato. Upgrade attivo immediatamente; downgrade dal rinnovo successivo.",
   },
   {
-    q: "Cosa è incluso nel canone?",
-    a: "Hosting, dominio (se gestito da noi), SSL, backup, aggiornamenti tecnici, tutte le nuove funzioni del prodotto e il supporto del nostro team. Per il modulo IA è incluso un pacchetto di minuti voce e messaggi mensili; oltre soglia si paga a consumo.",
-  },
-  {
-    q: "Ci sono commissioni su prenotazioni o vendite?",
+    q: "Ci sono commissioni su prenotazioni?",
     a: "Zero. Bizery non trattiene nulla sulle tue prenotazioni o transazioni. Quello che incassi è tuo, integrale.",
+  },
+  {
+    q: "Posso aggiornare il sito da solo?",
+    a: "Sì. Listino, orari, foto, eventi: tutto si aggiorna dal pannello senza toccare il codice, anche dallo smartphone tra un appuntamento e l'altro.",
+  },
+  {
+    q: "Il sito è disponibile in più lingue?",
+    a: "Sì. Ogni sito viene realizzato in versione multilingua di default, coprendo le principali lingue europee: italiano, inglese, francese, tedesco e spagnolo. Su richiesta è possibile aggiungere altre lingue in base all'utenza tipica dello studio — ad esempio russo, arabo, cinese o giapponese. Il costo delle lingue aggiuntive viene concordato in fase di preventivo.",
   },
 ];
 
-export async function BizeryHomePage() {
-  const { testimonials, activeCount } = await getMarketingHomeData("services");
+// ─── Componente ───────────────────────────────────────────────────────────────
 
-  // Hero stats: aggiungiamo il counter clienti reali solo se ce ne sono;
-  // altrimenti teniamo le quattro metriche di prodotto già esistenti.
-  const baseStats: [string, string][] = [
-    ["24/7", "centralino IA"],
-    ["0", "chiamate perse"],
-    ["−68%", "no-show medio"],
-    ["0", "commissioni"],
-  ];
-  const heroStats: [string, string][] =
-    activeCount > 0
-      ? [
-          [`+${activeCount}`, "aziende attive"],
-          ["24/7", "centralino IA"],
-          ["0", "chiamate perse"],
-          ["0", "commissioni"],
-        ]
-      : baseStats;
+export async function BizeryHomePage() {
+  const { testimonials, activeTenants, activeCount } =
+    await getMarketingHomeData("services");
 
   return (
     <BizeryShell>
@@ -231,129 +172,512 @@ export async function BizeryHomePage() {
           aria-hidden
         />
         <div className="menuary-container relative pt-16 pb-20 lg:pt-24 lg:pb-28">
-          <div className="grid items-end gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+          <div className="grid items-end gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
             <div className="menuary-fade-up">
-              <p className="menuary-section-label">Piattaforma operativa con IA integrata</p>
+              <p className="menuary-section-label">Per studi e aziende di servizi</p>
               <h1
-                className="mt-7 text-[clamp(2.8rem,7vw,6.2rem)] font-medium leading-[1.05] tracking-[-0.02em]"
+                className="mt-7 text-[clamp(2.6rem,6.4vw,5.6rem)] font-medium leading-[1.05] tracking-[-0.02em] text-balance"
                 style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
               >
-                Il sistema operativo
-                <br />
-                della tua azienda.
+                La tua attività online,
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
-                  Sito, agenda, IA al telefono.
+                  senza complicazioni.
                 </span>
               </h1>
               <p className="mt-8 max-w-xl text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
-                Bizery unisce sito su misura, agenda, CRM e un centralino IA
-                che risponde 24/7 a telefono e WhatsApp: fissa, sposta e cancella
-                appuntamenti, manda promemoria e conferme — al posto tuo.
+                Sito professionale, appuntamenti online e gestione semplificata
+                di Google Maps e presenza digitale.
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <Link href="/contatti" className="menuary-button menuary-button-accent">
-                  Richiedi una proposta
+                  Richiedi una demo
                 </Link>
-                <Link href="#ia" className="menuary-link">
-                  Scopri l&apos;IA
+                <Link href="#google" className="menuary-link">
+                  Come funziona
                   <ArrowUpRight size={16} strokeWidth={1.6} />
                 </Link>
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
                 <span className="inline-flex items-center gap-2">
-                  <Clock size={14} strokeWidth={1.7} className="text-[var(--menuary-sage)]" />
-                  Risposta 24/7
+                  <ShieldCheck size={14} strokeWidth={1.7} className="text-[var(--menuary-sage)]" />
+                  Prima chiamata gratuita
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <PhoneCall size={14} strokeWidth={1.7} className="text-[var(--menuary-copper)]" />
-                  Centralino IA
+                  <Clock size={14} strokeWidth={1.7} className="text-[var(--menuary-copper)]" />
+                  Online in 2–4 settimane
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <MessageCircle size={14} strokeWidth={1.7} className="text-[var(--menuary-sage)]" />
-                  WhatsApp in & out
+                  <Globe size={14} strokeWidth={1.7} className="text-[var(--menuary-muted)]" />
+                  Multilingua · IT EN FR DE ES +
                 </span>
               </div>
             </div>
 
-            {/* Hero image */}
-            <figure className="menuary-fade-up menuary-fade-up-d2 relative">
-              <div className="menuary-photo aspect-[4/5] w-full">
-                <Image
-                  src={HERO_IMAGE}
-                  alt="Team in ufficio in una azienda di servizi"
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 44vw"
-                  className="object-cover"
-                />
-              </div>
-
-              {/* Floating: chiamata IA in corso */}
-              <div
-                aria-hidden
-                className="absolute -bottom-6 -left-6 hidden w-[18.5rem] rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)]/95 p-4 backdrop-blur-md shadow-[0_24px_60px_-20px_rgba(15,23,42,0.22)] sm:block"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--menuary-ink)] text-[var(--menuary-paper)]">
-                    <PhoneCall size={16} strokeWidth={1.8} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--menuary-muted)] font-bold">
-                      IA al telefono · live
-                    </p>
-                    <p className="text-sm font-semibold truncate">
-                      Maria sposta a giovedì 14:30
-                    </p>
+            {/* Mockup composito */}
+            <figure className="menuary-fade-up menuary-fade-up-d2 relative" aria-hidden>
+              <div className="menuary-product-frame p-4">
+                <div className="menuary-browser-bar">
+                  <span /><span /><span />
+                  <p>app.bizery.it</p>
+                </div>
+                <div className="menuary-admin-preview">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="menuary-module-tile">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Oggi</p>
+                      <p
+                        className="mt-1 text-2xl font-medium"
+                        style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                      >
+                        8
+                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">appuntamenti</span>
+                      </p>
+                    </div>
+                    <div className="menuary-module-tile">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Google</p>
+                      <p
+                        className="mt-1 text-2xl font-medium"
+                        style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                      >
+                        4,8
+                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">★ media</span>
+                      </p>
+                    </div>
+                    <div className="menuary-module-tile">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Orari</p>
+                      <p
+                        className="mt-1 text-base font-medium leading-tight"
+                        style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                      >
+                        Aggiornati
+                        <br />
+                        <span className="text-xs font-medium text-[var(--menuary-muted)]">oggi</span>
+                      </p>
+                    </div>
                   </div>
-                  <span className="relative inline-flex h-2 w-2 shrink-0">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--menuary-sage)] opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--menuary-sage)]" />
+                </div>
+              </div>
+
+              {/* Google Business card */}
+              <div className="absolute -top-6 -right-2 hidden w-[15rem] rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.22)] sm:block">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-5 w-5 items-center justify-center">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC04" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.99 10.99 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
+                    </svg>
                   </span>
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                    Google · scheda
+                  </p>
                 </div>
-                <div className="mt-3 flex items-center gap-2 text-[11px] text-[var(--menuary-muted)]">
-                  <Bot size={12} strokeWidth={1.8} className="text-[var(--menuary-copper)]" />
-                  Agenda aggiornata in automatico
+                <div className="mt-3 flex items-center gap-1.5">
+                  <div className="flex gap-0.5 text-[var(--menuary-copper)]">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={12} fill="currentColor" strokeWidth={0} />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-[var(--menuary-ink)]">4,8</span>
                 </div>
+                <p className="mt-2 text-xs text-[var(--menuary-muted)]">Aperto · chiude alle 19:00</p>
               </div>
 
-              {/* Floating: WhatsApp outbound */}
-              <div
-                aria-hidden
-                className="absolute -top-5 right-3 hidden w-[15rem] rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)]/95 px-4 py-3 backdrop-blur-md shadow-[0_24px_60px_-20px_rgba(15,23,42,0.18)] md:block"
-              >
-                <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--menuary-muted)] font-bold inline-flex items-center gap-1.5">
-                  <MessageCircle size={11} strokeWidth={2} className="text-[var(--menuary-sage)]" />
-                  Promemoria inviato
-                </p>
-                <p className="mt-1.5 text-[13px] leading-snug">
-                  &laquo;Ciao Luca, ti aspettiamo domani alle 10:00. Confermi?&raquo;
-                </p>
-                <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[var(--menuary-sage)] font-bold">
-                  Risposta ricevuta · confermato
-                </p>
+              {/* Mobile preview */}
+              <div className="absolute -bottom-8 -left-4 hidden w-[11rem] rounded-3xl border border-[var(--menuary-line)] bg-[var(--menuary-ink)] p-3 shadow-[0_30px_70px_-24px_rgba(15,23,42,0.4)] sm:block">
+                <div className="menuary-phone-top" />
+                <div className="rounded-2xl bg-[var(--menuary-paper)] p-3 text-[var(--menuary-ink)]">
+                  <p
+                    className="text-base font-medium leading-tight"
+                    style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                  >
+                    Studio
+                    <br />
+                    Legale Rossi
+                  </p>
+                  <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[var(--menuary-muted)] font-bold">
+                    Milano · diritto civile
+                  </p>
+                  <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[var(--menuary-ink)]">
+                    <CalendarCheck size={12} strokeWidth={1.8} className="text-[var(--menuary-copper)]" />
+                    Prenota un appuntamento
+                  </div>
+                  <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--menuary-muted)]">
+                    <Check size={11} strokeWidth={2} className="text-[var(--menuary-sage)]" />
+                    Aperto oggi
+                  </div>
+                </div>
               </div>
-
-              <figcaption className="mt-4 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-                <span>— Studio Bizery</span>
-                <span>Milano · Italia</span>
-              </figcaption>
             </figure>
           </div>
 
-          {/* Stats strip */}
-          <div className="mt-20 grid gap-8 sm:grid-cols-2 lg:mt-24 lg:grid-cols-4 lg:gap-14">
-            {heroStats.map(([n, l]) => (
-              <div key={l} className="menuary-stat">
-                <p
-                  className="text-4xl font-medium"
-                  style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                >
-                  {n}
+          {/* Stats */}
+          {activeCount > 0 && (
+            <div className="mt-20 grid gap-8 sm:grid-cols-3 lg:mt-24 lg:gap-14">
+              {([
+                [`+${activeCount}`, "studi attivi"],
+                ["7gg", "attivazione"],
+                ["0", "commissioni"],
+              ] as [string, string][]).map(([n, l]) => (
+                <div key={l} className="menuary-stat">
+                  <p className="text-4xl font-medium" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>{n}</p>
+                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">{l}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── SOCIAL PROOF — studi clienti ── */}
+      {activeTenants.length > 0 && (
+        <section className="border-t border-[var(--menuary-line)]">
+          <div className="menuary-container py-10">
+            <p className="mb-8 text-center text-xs uppercase tracking-[0.22em] text-[var(--menuary-muted)] font-bold">
+              Studi e aziende che usano Bizery
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-10">
+              {activeTenants.slice(0, 6).map((t) => (
+                <p key={t.id} className="text-sm font-semibold text-[var(--menuary-ink)] opacity-50">
+                  {t.name}
                 </p>
-                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">{l}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── GOOGLE SYNC ── */}
+      <section id="google" className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
+        <div className="menuary-container py-24 lg:py-32">
+          <div className="max-w-3xl">
+            <p className="menuary-section-label">Integrazione Google</p>
+            <h2
+              className="mt-6 text-[clamp(2.2rem,4.8vw,4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
+              style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+            >
+              Google sempre aggiornato.
+            </h2>
+            <p className="mt-6 max-w-xl text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
+              Gestisci sito, orari e presenza locale da un unico pannello.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {GOOGLE_SYNC_CARDS.map((card) => {
+              const Icon = card.icon;
+              return (
+                <div
+                  key={card.title}
+                  className="group flex flex-col rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--menuary-ink)]"
+                >
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--menuary-ink)]/5 text-[var(--menuary-ink)]">
+                    <Icon size={20} strokeWidth={1.6} />
+                  </span>
+                  <h3
+                    className="mt-6 text-[1.35rem] font-medium leading-tight"
+                    style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                  >
+                    {card.title}
+                  </h3>
+                  <p className="mt-3 text-[15px] leading-[1.6] text-[var(--menuary-muted)]">{card.body}</p>
+                  {card.note && (
+                    <p className="mt-5 border-t border-[var(--menuary-line)] pt-4 text-[11px] uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
+                      {card.note}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRESENZA LOCALE ── */}
+      <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
+        <div className="menuary-container py-24 lg:py-32">
+          <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+            <div>
+              <p className="menuary-section-label">Presenza locale</p>
+              <h2
+                className="mt-6 text-[clamp(2.2rem,4.8vw,4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
+                style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+              >
+                La tua presenza online,
+                <br />
+                <span className="italic text-[var(--menuary-copper)]">tutta insieme.</span>
+              </h2>
+              <p className="mt-7 max-w-lg text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
+                Bizery collega sito, Google Maps e strumenti operativi per
+                mantenere il tuo studio aggiornato e professionale.
+              </p>
+              <Link href="/contatti" className="menuary-link mt-8 inline-flex">
+                Parla con noi
+                <ArrowUpRight size={14} strokeWidth={1.6} />
+              </Link>
+            </div>
+
+            <div className="relative mx-auto w-full max-w-md">
+              {/* Google card */}
+              <div className="relative z-20 rounded-2xl border border-[var(--menuary-line)] bg-white p-5 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.22)]">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-[inset_0_0_0_1px_var(--menuary-line)]">
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC04" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.99 10.99 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
+                    </svg>
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Google</p>
+                    <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">La tua scheda · Aperto</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="flex gap-0.5 text-[var(--menuary-copper)]">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-[var(--menuary-ink)]">4,8</span>
+                  <span className="text-xs text-[var(--menuary-muted)]">· aggiornato oggi</span>
+                </div>
+              </div>
+
+              {/* TripAdvisor */}
+              <div className="relative z-10 -mt-3 ml-12 rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)]">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full">
+                    <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden>
+                      <circle cx="20" cy="20" r="20" fill="#00AF87" />
+                      <circle cx="13" cy="21" r="6" fill="white" />
+                      <circle cx="13" cy="21" r="3.5" fill="#00AF87" />
+                      <circle cx="13" cy="21" r="2" fill="#1A1A1A" />
+                      <circle cx="12" cy="20" r="0.7" fill="white" />
+                      <circle cx="27" cy="21" r="6" fill="white" />
+                      <circle cx="27" cy="21" r="3.5" fill="#00AF87" />
+                      <circle cx="27" cy="21" r="2" fill="#1A1A1A" />
+                      <circle cx="26" cy="20" r="0.7" fill="white" />
+                      <ellipse cx="20" cy="27" rx="2.5" ry="1.5" fill="white" opacity="0.9" />
+                    </svg>
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Tripadvisor</p>
+                    <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">Eccellenza · 2026</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Yelp */}
+              <div className="relative z-0 -mt-3 ml-4 mr-12 rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_16px_40px_-24px_rgba(15,23,42,0.18)]">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#D32323]">
+                    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden fill="white">
+                      <path d="M12.27 12.56l-3.93 1.06a.5.5 0 0 1-.6-.64l1.58-3.67a.5.5 0 0 1 .88-.06l2.35 2.61a.5.5 0 0 1-.28.7zm1.37-.96l2.08-3.43a.5.5 0 0 1 .85.06l1.24 3.8a.5.5 0 0 1-.57.65l-3.32-.43a.5.5 0 0 1-.28-.65zm-4.83 4.28l-3.59-1.6a.5.5 0 0 1-.1-.86l3.08-2.25a.5.5 0 0 1 .76.28l.51 3.83a.5.5 0 0 1-.66.6zm9.04 1.14l-3.6 1.53a.5.5 0 0 1-.67-.57l.46-3.85a.5.5 0 0 1 .75-.37l3.13 2.2a.5.5 0 0 1-.07.86zm-4.43 3.83l.04 3.9a.5.5 0 0 1-.78.42l-3.22-2.12a.5.5 0 0 1 .07-.86l3.18-1.77a.5.5 0 0 1 .71.43z" />
+                    </svg>
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Yelp</p>
+                    <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">94 recensioni · 4,6</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── BENEFICI ── */}
+      <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
+        <div className="menuary-container py-24 lg:py-32">
+          <div className="max-w-3xl">
+            <p className="menuary-section-label">Cosa trovi dentro</p>
+            <h2
+              className="mt-6 text-[clamp(2.2rem,4.8vw,4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
+              style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+            >
+              Tutto quello che serve.
+              <br />
+              <span className="italic text-[var(--menuary-copper)]">Niente di più.</span>
+            </h2>
+          </div>
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {BENEFIT_CARDS.map((card) => (
+              <div
+                key={card.n}
+                className="flex flex-col rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--menuary-ink)]"
+              >
+                <p className="text-base font-medium text-[var(--menuary-copper)]" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }} aria-hidden>
+                  {card.n}
+                </p>
+                <h3 className="mt-6 text-[1.45rem] font-medium leading-tight" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
+                  {card.title}
+                </h3>
+                <p className="mt-3 text-[15px] leading-[1.6] text-[var(--menuary-muted)]">{card.body}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ── */}
+      {testimonials.length > 0 && (
+        <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
+          <div className="menuary-container py-24 lg:py-28">
+            <p className="menuary-section-label">Voci dei clienti · Google</p>
+            <h2
+              className="mt-6 text-[clamp(2rem,4vw,3.4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
+              style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+            >
+              Lo dicono meglio loro.
+            </h2>
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {testimonials.slice(0, 3).map((t) => (
+                <figure
+                  key={t.id}
+                  className="flex flex-col gap-5 border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-7 rounded-2xl"
+                >
+                  <div className="flex gap-0.5 text-[var(--menuary-copper)]">
+                    {Array.from({ length: t.rating }).map((_, i) => (
+                      <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
+                    ))}
+                  </div>
+                  <blockquote className="text-[15px] leading-7 text-[var(--menuary-ink)]/85">
+                    &laquo;{t.text}&raquo;
+                  </blockquote>
+                  <figcaption className="mt-auto border-t border-[var(--menuary-line)] pt-4">
+                    <p className="text-sm font-semibold">{t.author}</p>
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
+                      {t.tenantName}{t.tenantCity ? ` · ${t.tenantCity}` : ""}
+                    </p>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── PRICING ── */}
+      <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
+        <div className="menuary-container py-24 lg:py-28">
+          <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div className="max-w-3xl">
+              <p className="menuary-section-label">Piani</p>
+              <h2
+                className="mt-6 text-[clamp(2.2rem,4.8vw,4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
+                style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+              >
+                Tre piani.
+                <br />
+                <span className="italic text-[var(--menuary-copper)]">Nessuna sorpresa.</span>
+              </h2>
+            </div>
+            <p className="max-w-sm text-[15px] leading-[1.6] text-[var(--menuary-muted)]">
+              Setup una tantum, canone mensile fisso. IVA esclusa. Contratto annuale.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:items-stretch">
+            {BIZERY_PRICING_PLANS.map((plan) => {
+              const highlighted = plan.is_featured === true;
+              const saving = annualSaving(plan);
+              return (
+                <article
+                  key={plan.slug}
+                  className={
+                    "relative flex flex-col rounded-3xl border bg-[var(--menuary-paper)] p-8 transition-all duration-200 " +
+                    (highlighted
+                      ? "border-[var(--menuary-copper)] shadow-[0_30px_70px_-30px_rgba(15,23,42,0.22)] lg:scale-[1.02]"
+                      : "border-[var(--menuary-line)] hover:border-[var(--menuary-ink)]")
+                  }
+                >
+                  {highlighted && (
+                    <span className="absolute -top-3 left-8 inline-flex items-center rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
+                      Più scelto
+                    </span>
+                  )}
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Piano</p>
+                  <h3
+                    className="mt-2 text-[1.9rem] font-medium leading-tight"
+                    style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                  >
+                    {plan.marketing_name}
+                  </h3>
+                  <div className="mt-6 flex items-baseline gap-1">
+                    <span
+                      className="text-[3.4rem] font-medium leading-none tabular-nums"
+                      style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                    >
+                      {plan.price_annual}
+                    </span>
+                    <span className="text-sm text-[var(--menuary-muted)]">€/mese</span>
+                  </div>
+                  <p className="mt-1.5 text-xs text-[var(--menuary-muted)]">
+                    Pagamento annuale anticipato
+                    {saving > 0 && (
+                      <span className="ml-1 font-semibold text-[var(--menuary-sage)]">· risparmi €{saving}/anno</span>
+                    )}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--menuary-muted)]">
+                    Mensile: €{plan.price_monthly}/mese · Setup {plan.setup_from}
+                  </p>
+                  <div className="my-7 h-px bg-[var(--menuary-line)]" />
+                  <ul className="space-y-3">
+                    {plan.marketing_items.map((f) => (
+                      <li key={f} className="flex items-start gap-3 text-[15px] leading-[1.5]">
+                        <Check size={16} strokeWidth={2} className="mt-1 shrink-0 text-[var(--menuary-sage)]" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto pt-8">
+                    <Link
+                      href="/contatti"
+                      className={
+                        "menuary-button " +
+                        (highlighted ? "menuary-button-accent" : "menuary-button-light")
+                      }
+                    >
+                      {plan.cta_label ?? "Richiedi proposta"}
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <p className="mt-8 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
+            IVA esclusa · Nessuna penale di disdetta · Attivazione entro 7 giorni
+          </p>
+
+          {/* AI callout */}
+          <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-6 sm:flex-row sm:items-center sm:gap-8">
+            <div className="flex items-center gap-4 shrink-0">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--menuary-ink)] text-[var(--menuary-paper)]">
+                <Phone size={18} strokeWidth={1.7} />
+              </span>
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Dal piano Appuntamenti in su</p>
+                <p
+                  className="text-lg font-medium"
+                  style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                >
+                  IA al telefono{" "}
+                  <span className="text-[var(--menuary-copper)]">+€{AI_ADDON.monthly}/mese</span>
+                </p>
+              </div>
+            </div>
+            <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">
+              Assistente vocale 24/7 che risponde con la voce dello studio, fissa e
+              sposta appuntamenti, manda promemoria. Quota minuti mensile inclusa;
+              oltre la soglia, addebiti a prezzo di costo senza markup.
+            </p>
+            <Link href="/pricing" className="menuary-button menuary-button-light shrink-0 text-sm">
+              Scopri
+            </Link>
           </div>
         </div>
       </section>
@@ -367,26 +691,22 @@ export async function BizeryHomePage() {
         <div className="menuary-container py-24 lg:py-32 text-[var(--menuary-paper)]">
           <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20 lg:items-end">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--menuary-copper)] font-bold inline-flex items-center gap-2">
-                <Sparkles size={12} strokeWidth={2} />
-                Autopilota · Modulo IA
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--menuary-copper)] font-bold">
+                Integrazione AI · add-on
               </p>
               <h2
                 className="mt-6 text-[clamp(2.4rem,5.4vw,4.8rem)] font-medium leading-[1.05] tracking-[-0.02em]"
                 style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
               >
-                Un&apos;assistente che
+                Un assistente che
                 <br />
-                <span className="italic text-[var(--menuary-copper)]">
-                  non stacca mai.
-                </span>
+                <span className="italic text-[var(--menuary-copper)]">non stacca mai.</span>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-[1.8] text-[var(--menuary-paper)]/70 lg:justify-self-end lg:text-right">
-              Risponde al telefono, scrive su WhatsApp, manda promemoria,
-              chiama per confermare, riprogramma se serve. Lavora dentro la
-              tua agenda, parla il linguaggio della tua azienda, opera 24 ore
-              su 24 — anche quando tu non puoi.
+              Risponde al telefono, scrive su WhatsApp, manda promemoria e
+              riprogramma gli appuntamenti. Lavora dentro la tua agenda,
+              parla il linguaggio dello studio, 24 ore su 24.
             </p>
           </div>
 
@@ -409,297 +729,23 @@ export async function BizeryHomePage() {
                   <h3 className="mt-6 text-[1.2rem] font-semibold leading-snug text-[var(--menuary-paper)]">
                     {c.title}
                   </h3>
-                  <p className="mt-3 text-[14px] leading-[1.7] text-[var(--menuary-paper)]/65">
-                    {c.body}
-                  </p>
+                  <p className="mt-3 text-[14px] leading-[1.7] text-[var(--menuary-paper)]/65">{c.body}</p>
                 </article>
               );
             })}
           </div>
 
-          {/* Flow */}
-          <div className="mt-20 lg:mt-24 grid gap-10 lg:grid-cols-4 lg:gap-6">
-            {AI_FLOW.map((step) => (
-              <div key={step.n} className="relative">
-                <p
-                  className="text-5xl font-medium text-[var(--menuary-copper)]"
-                  style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                >
-                  {step.n}
-                </p>
-                <h4 className="mt-4 text-[1.05rem] font-semibold text-[var(--menuary-paper)]">
-                  {step.title}
-                </h4>
-                <p className="mt-2 text-[14px] leading-[1.7] text-[var(--menuary-paper)]/60">
-                  {step.body}
-                </p>
-              </div>
-            ))}
-          </div>
-
           <div className="mt-16 flex flex-wrap items-center gap-4">
             <Link href="/contatti" className="menuary-button menuary-button-accent">
-              Voglio l&apos;IA per la mia azienda
+              Aggiungi l&apos;IA al tuo piano
             </Link>
             <Link href="/pricing" className="menuary-link menuary-link-light">
-              Vedi il piano Autopilota
+              Vedi i piani
               <ArrowUpRight size={16} strokeWidth={1.6} />
             </Link>
           </div>
         </div>
       </section>
-
-      {/* ── FEATURES ── */}
-      <section
-        id="moduli"
-        className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]"
-      >
-        <div className="menuary-container py-24 lg:py-32">
-          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:items-end">
-            <div>
-              <p className="menuary-section-label">Dodici moduli, un solo prodotto</p>
-              <h2
-                className="mt-6 text-[clamp(2.4rem,5vw,4.4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
-                style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-              >
-                Dal sito al
-                <br />
-                <span className="italic text-[var(--menuary-copper)]">
-                  centralino IA.
-                </span>
-              </h2>
-            </div>
-            <p className="max-w-md text-[15px] leading-7 text-[var(--menuary-muted)] lg:justify-self-end lg:text-right">
-              Bizery copre l&apos;intera catena operativa di un&apos;azienda di servizi:
-              dalla vetrina online alla gestione agenda, dal CRM al controllo costi,
-              fino all&apos;assistente IA che risponde a telefono e WhatsApp.
-              Stesso linguaggio, stesso database, stesso supporto.
-            </p>
-          </div>
-
-          <div className="mt-14 grid gap-px border-[var(--menuary-line)] sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => {
-              const Icon = f.icon;
-              return (
-                <article
-                  key={f.title}
-                  className="menuary-feature-card"
-                  data-tone={f.tone ?? "light"}
-                >
-                  <div className="menuary-feature-icon">
-                    <Icon size={18} strokeWidth={1.6} />
-                  </div>
-                  <h3 className="text-[1.15rem] font-semibold leading-snug">{f.title}</h3>
-                  <p className="text-[14px] leading-6">{f.body}</p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── PRICING TEASER ── */}
-      <section className="border-t border-[var(--menuary-line)]">
-        <div className="menuary-container py-24 lg:py-28">
-          <div className="mx-auto max-w-4xl text-center">
-            <p className="menuary-section-label justify-center">Offerta</p>
-            <h2
-              className="mt-6 text-[clamp(2.4rem,5vw,4.2rem)] font-medium leading-[1.05] tracking-[-0.02em]"
-              style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-            >
-              Parti dal sito giusto.
-              <br />
-              <span className="italic text-[var(--menuary-copper)]">
-                Aggiungi solo ciò che serve.
-              </span>
-            </h2>
-            <p className="mt-6 text-[15px] leading-7 text-[var(--menuary-muted)]">
-              Tre piani per aziende di ogni dimensione. Prezzi chiari, zero commissioni
-              su prenotazioni e transazioni. L&apos;IA è inclusa nel piano Autopilota.
-            </p>
-          </div>
-
-          <div className="mt-16 grid gap-6 lg:grid-cols-3">
-            {PRICING_PLANS.map((plan) => (
-              <article
-                key={plan.slug}
-                className={
-                  "relative flex flex-col gap-5 border p-8 transition-colors " +
-                  (plan.is_featured
-                    ? "border-[var(--menuary-copper)] bg-[var(--menuary-porcelain)] lg:-translate-y-2"
-                    : "border-[var(--menuary-line)] bg-[var(--menuary-paper)] hover:border-[var(--menuary-ink)]/30")
-                }
-              >
-                {plan.is_featured && (
-                  <span className="absolute -top-3 left-8 inline-flex items-center gap-1 rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white">
-                    <Sparkles size={11} strokeWidth={2} />
-                    Consigliato
-                  </span>
-                )}
-                <div>
-                  <h3
-                    className="text-3xl font-medium tracking-[-0.02em]"
-                    style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                  >
-                    {plan.marketing_name}
-                  </h3>
-                  <p className="mt-1 text-xs uppercase tracking-[0.22em] text-[var(--menuary-copper)]">
-                    {plan.tagline}
-                  </p>
-                </div>
-                <div>
-                  <span className="menuary-price-tag">
-                    <span className="amount">€{plan.price_annual}</span>
-                    <span className="unit">/mese</span>
-                  </span>
-                  <p className="mt-1 text-xs text-[var(--menuary-muted)]">
-                    <span className="font-semibold text-[var(--menuary-sage)]">
-                      Risparmio €{annualSaving(plan)}/anno
-                    </span>{" "}con pagamento annuale
-                  </p>
-                </div>
-                <ul className="space-y-2.5 text-[14px]">
-                  {plan.marketing_items.map((item) => (
-                    <li key={item} className="flex items-start gap-2.5">
-                      <Check size={14} strokeWidth={2} className="mt-0.5 shrink-0 text-[var(--menuary-copper)]" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/contatti"
-                  className={
-                    "mt-auto inline-flex items-center justify-center gap-2 " +
-                    (plan.is_featured
-                      ? "menuary-button menuary-button-accent"
-                      : "menuary-button menuary-button-light")
-                  }
-                >
-                  {plan.cta_label ?? "Richiedi proposta"}
-                </Link>
-              </article>
-            ))}
-          </div>
-
-          <p className="mt-10 text-center text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-            Tutti i prezzi sono IVA esclusa · contratto annuale ·{" "}
-            <Link href="/pricing" className="underline hover:text-[var(--menuary-ink)]">
-              vedi tutte le funzioni
-            </Link>
-          </p>
-        </div>
-      </section>
-
-      {/* ── COMPARISON: Bizery vs sito tradizionale ── */}
-      <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
-        <div className="menuary-container py-24 lg:py-32">
-          <div className="grid gap-16 lg:grid-cols-2 lg:gap-24 lg:items-center">
-            <div>
-              <p className="menuary-section-label">Perché Bizery</p>
-              <h2
-                className="mt-6 text-[clamp(2.2rem,4.4vw,3.8rem)] font-medium leading-[1.05] tracking-[-0.02em]"
-                style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-              >
-                Non è un sito.
-                <br />
-                <span className="italic text-[var(--menuary-copper)]">
-                  È il sistema operativo
-                  <br />
-                  della tua azienda.
-                </span>
-              </h2>
-              <p className="mt-6 text-[15px] leading-7 text-[var(--menuary-muted)]">
-                Un sito fermo vale poco. Bizery collega vetrina, agenda e
-                clienti — e ci mette sopra un&apos;IA che parla e scrive
-                al posto tuo, 24 ore su 24.
-              </p>
-              <Link href="/contatti" className="mt-8 menuary-button menuary-button-dark inline-flex">
-                Inizia ora
-              </Link>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                { label: "Centralino IA telefono H24", bizery: true, old: false },
-                { label: "WhatsApp & SMS automatici in/out", bizery: true, old: false },
-                { label: "Chiamate outbound di promemoria", bizery: true, old: false },
-                { label: "Riprogrammazione automatica", bizery: true, old: false },
-                { label: "Agenda prenotazioni integrata", bizery: true, old: false },
-                { label: "CRM clienti nativo", bizery: true, old: false },
-                { label: "Analytics e report", bizery: true, old: false },
-                { label: "Costi e margini per servizio", bizery: true, old: false },
-                { label: "Multi-sede con un account", bizery: true, old: false },
-                { label: "Zero commissioni", bizery: true, old: false },
-              ].map((row) => (
-                <div
-                  key={row.label}
-                  className="flex items-center justify-between gap-4 border border-[var(--menuary-line)] bg-[var(--menuary-paper)] px-5 py-3.5"
-                >
-                  <span className="text-[15px]">{row.label}</span>
-                  <div className="flex items-center gap-6 shrink-0">
-                    <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-[var(--menuary-muted)]">
-                      <span className={row.bizery ? "text-[var(--menuary-sage)]" : "text-[var(--menuary-muted)]"}>
-                        {row.bizery ? <Check size={14} /> : <Plus size={14} className="rotate-45" />}
-                      </span>
-                      Bizery
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-[var(--menuary-muted)]">
-                      <span className="text-[var(--menuary-muted)]">
-                        <Plus size={14} className="rotate-45" />
-                      </span>
-                      Tradizionale
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIAL / TRUST ── */}
-      {testimonials.length > 0 && (
-        <section className="border-t border-[var(--menuary-line)]">
-          <div className="menuary-container py-24 lg:py-28">
-            <p className="menuary-section-label">Voci dei clienti · Google</p>
-            <h2
-              className="mt-6 text-[clamp(2rem,4vw,3.4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
-              style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-            >
-              Lo dicono loro,
-              <br />
-              <span className="italic text-[var(--menuary-copper)]">
-                non lo diciamo noi.
-              </span>
-            </h2>
-
-            <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {testimonials.slice(0, 3).map((t) => (
-                <figure
-                  key={t.id}
-                  className="flex flex-col gap-5 border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7"
-                >
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--menuary-copper)]/15 text-[var(--menuary-copper)]">
-                    <Headphones size={16} strokeWidth={1.7} />
-                  </span>
-                  <blockquote className="text-[15px] leading-7 text-[var(--menuary-ink)]/85">
-                    &laquo;{t.text}&raquo;
-                  </blockquote>
-                  <figcaption className="mt-auto border-t border-[var(--menuary-line)] pt-4 text-sm">
-                    <p className="font-semibold text-[var(--menuary-ink)]">
-                      {t.author}
-                    </p>
-                    <p className="text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)] mt-1">
-                      {t.tenantName}
-                      {t.tenantCity ? ` · ${t.tenantCity}` : ""}
-                    </p>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── FAQ ── */}
       <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
@@ -714,9 +760,9 @@ export async function BizeryHomePage() {
             </h2>
             <div>
               {FAQ.map((item) => (
-                <details key={item.q} className="menuary-faq-item">
+                <details key={item.q} className="menuary-faq-item group">
                   <summary>
-                    {item.q}
+                    <span>{item.q}</span>
                     <span className="menuary-faq-toggle" aria-hidden>
                       <Plus size={16} strokeWidth={1.8} />
                     </span>
@@ -725,38 +771,39 @@ export async function BizeryHomePage() {
                 </details>
               ))}
             </div>
+            <p className="mt-10 text-[14px] text-[var(--menuary-muted)]">
+              Non hai trovato quello che cercavi?{" "}
+              <Link href="/contatti" className="menuary-link">
+                Scrivici
+                <ArrowUpRight size={13} strokeWidth={1.8} />
+              </Link>
+            </p>
           </div>
         </div>
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section
-        className="border-t border-[var(--menuary-line)]"
-        style={{ background: "var(--menuary-ink)" }}
-      >
+      <section className="border-t border-[var(--menuary-line)]" style={{ background: "var(--menuary-ink)" }}>
         <div className="menuary-container py-24 text-center lg:py-28">
-          <p
-            className="text-xs uppercase tracking-[0.24em] text-[var(--menuary-paper)]/40 font-bold"
-          >
+          <p className="text-xs uppercase tracking-[0.24em] text-[var(--menuary-paper)]/40 font-bold">
             Inizia oggi
           </p>
           <h2
             className="mt-6 text-[clamp(2.6rem,6vw,5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[var(--menuary-paper)]"
             style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
           >
-            La tua azienda merita
+            La tua attività merita
             <br />
             <span className="italic text-[var(--menuary-copper)]">
-              un&apos;assistente che non dorme.
+              un partner digitale concreto.
             </span>
           </h2>
           <p className="mt-8 text-[16px] leading-7 text-[var(--menuary-paper)]/60 max-w-md mx-auto">
-            Prima chiamata gratuita. Proposta su misura in 48 ore.
-            Nessun vincolo prima di firmare.
+            Prima chiamata gratuita. Proposta su misura in 48 ore. Nessun vincolo prima di firmare.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link href="/contatti" className="menuary-button menuary-button-accent">
-              Richiedi una proposta
+              Richiedi una demo
             </Link>
             <Link href="/pricing" className="menuary-link menuary-link-light">
               Vedi i piani

@@ -1955,6 +1955,7 @@ type HomePricingPlan = {
   eyebrow: string;
   name: string;
   monthly: string;
+  monthlyBilling: string;
   setup: string;
   inherits?: string;
   features: string[];
@@ -1968,6 +1969,7 @@ const HOME_PRICING_PLANS: HomePricingPlan[] = [
     eyebrow: "Piano",
     name: "Presenza",
     monthly: "39",
+    monthlyBilling: "49",
     setup: "da 690 €",
     features: [
       "Sito su misura, dominio personalizzato",
@@ -1984,6 +1986,7 @@ const HOME_PRICING_PLANS: HomePricingPlan[] = [
     eyebrow: "Più scelto",
     name: "Prenotazioni",
     monthly: "89",
+    monthlyBilling: "99",
     setup: "da 1.190 €",
     inherits: "Tutto di Presenza, più",
     features: [
@@ -2001,6 +2004,7 @@ const HOME_PRICING_PLANS: HomePricingPlan[] = [
     eyebrow: "Piano",
     name: "Operatività",
     monthly: "169",
+    monthlyBilling: "199",
     setup: "da 1.990 €",
     inherits: "Tutto di Prenotazioni, più",
     features: [
@@ -2072,8 +2076,14 @@ export function HomePricingSection() {
                     €/mese
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-[var(--menuary-muted)]">
-                  Setup {plan.setup}
+                <p className="mt-1.5 text-xs text-[var(--menuary-muted)]">
+                  Pagamento annuale anticipato ·{" "}
+                  <span className="font-semibold text-[var(--menuary-sage)]">
+                    risparmi €{(Number(plan.monthlyBilling) - Number(plan.monthly)) * 12}/anno
+                  </span>
+                </p>
+                <p className="mt-1 text-xs text-[var(--menuary-muted)]">
+                  Mensile: €{plan.monthlyBilling}/mese · Setup {plan.setup}
                 </p>
 
                 <div className="my-7 h-px bg-[var(--menuary-line)]" />
@@ -2140,8 +2150,9 @@ export function HomePricingSection() {
           </div>
           <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">
             Assistente vocale 24/7 che risponde con la voce del locale, prende
-            prenotazioni e gestisce ordini. Quota minuti mensile inclusa;
-            oltre la soglia, addebiti a prezzo di costo senza markup.
+            prenotazioni e gestisce ordini. Disponibile dai piani Prenotazioni
+            e Operatività. Quota minuti mensile inclusa; oltre la soglia,
+            addebiti a prezzo di costo senza markup.
           </p>
           <Link
             href="/pricing#ai"

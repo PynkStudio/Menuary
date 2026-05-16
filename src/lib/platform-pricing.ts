@@ -45,11 +45,14 @@ export type PricingPlan = {
   is_featured?: boolean;
   /** Label CTA */
   cta_label?: string;
+  /** Se il piano supporta l'add-on AI (default true) */
+  ai_addon?: boolean;
 };
 
-/** Integrazione AI: add-on disponibile per tutti i piani */
+/** Integrazione AI: add-on disponibile dai piani Prenotazioni e Operatività */
 export const AI_ADDON = {
   monthly: 60,
+  minPlan: "prenotazioni" as const,
   description:
     "Assistente IA al telefono disponibile 24/7. Risponde con la voce e il tono del tuo locale, prende prenotazioni e le scrive in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce le richieste fuori orario.",
   items: [
@@ -74,8 +77,10 @@ export const PRICING_PLANS: PricingPlan[] = [
     price_annual: 39,
     price_monthly: 49,
     setup_from: "da €690",
+    ai_addon: false,
     marketing_items: [
       "Sito su misura, dominio personalizzato",
+      "Multilingua incluso · IT EN FR DE ES",
       "Menu digitale aggiornabile",
       "Recensioni Google integrate sul sito",
       "Orari, festività e info su Google Maps",
@@ -92,6 +97,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     price_annual: 89,
     price_monthly: 99,
     setup_from: "da €1.190",
+    ai_addon: true,
     marketing_items: [
       "Tutto di Presenza",
       "Prenotazioni online",
@@ -110,8 +116,9 @@ export const PRICING_PLANS: PricingPlan[] = [
     description:
       "Per chi vuole trasformare il locale in un'operazione efficiente. Ordini, delivery, CRM, analytics e dashboard operativa tutto integrato.",
     price_annual: 169,
-    price_monthly: 299,
+    price_monthly: 199,
     setup_from: "da €1.990",
+    ai_addon: true,
     marketing_items: [
       "Tutto di Prenotazioni",
       "Ordini sala & asporto",
@@ -126,4 +133,90 @@ export const PRICING_PLANS: PricingPlan[] = [
 /** Risparmio annuale scegliendo fatturazione annuale anticipata */
 export function annualSaving(plan: PricingPlan): number {
   return (plan.price_monthly - plan.price_annual) * 12;
+}
+
+// ─── Piani Bizery (verticale services) ───────────────────────────────────────
+// Prezzi identici a Menuary; copy adattato per studi e aziende di servizi.
+// "prenotazioni" diventa "Appuntamenti" in display, slug invariato.
+
+export const BIZERY_PRICING_PLANS: PricingPlan[] = [
+  {
+    slug: "presenza",
+    marketing_name: "Presenza",
+    tagline: "La tua attività online",
+    description:
+      "Per chi vuole essere trovato bene e fare una prima impressione professionale. Sito su misura, Google Maps integrato e presenza digitale gestita in un posto solo.",
+    price_annual: 39,
+    price_monthly: 49,
+    setup_from: "da €690",
+    ai_addon: false,
+    marketing_items: [
+      "Sito aziendale su misura, dominio personalizzato",
+      "Multilingua incluso · IT EN FR DE ES",
+      "Listino servizi digitale aggiornabile",
+      "Recensioni Google integrate sul sito",
+      "Orari, festività e info su Google Maps",
+      "Hosting, SSL, backup inclusi",
+      "Aggiornamenti tecnici continui",
+    ],
+  },
+  {
+    slug: "prenotazioni",
+    marketing_name: "Appuntamenti",
+    tagline: "Presenza + prenotazioni",
+    description:
+      "Tutto di Presenza più un sistema completo per raccogliere e gestire appuntamenti. Conferme automatiche, calendario, WhatsApp — senza caos.",
+    price_annual: 89,
+    price_monthly: 99,
+    setup_from: "da €1.190",
+    ai_addon: true,
+    is_featured: true,
+    cta_label: "Inizia con Appuntamenti",
+    marketing_items: [
+      "Tutto di Presenza",
+      "Prenotazioni & appuntamenti online",
+      "Conferme e reminder automatici via email",
+      "Calendario appuntamenti",
+      "Click-to-WhatsApp",
+      "Pannello richieste",
+    ],
+  },
+  {
+    slug: "operativita",
+    marketing_name: "Operatività",
+    tagline: "Gestionale completo",
+    description:
+      "Per chi vuole trasformare l'azienda in un'operazione efficiente. CRM, analytics, gestione costi, multi-sede e pannello staff tutto integrato.",
+    price_annual: 169,
+    price_monthly: 199,
+    setup_from: "da €1.990",
+    ai_addon: true,
+    marketing_items: [
+      "Tutto di Appuntamenti",
+      "CRM clienti & analytics",
+      "Gestione costi e margini per servizio",
+      "Multi-sede con un account",
+      "Pannello staff & ruoli",
+      "Dashboard operativa",
+    ],
+  },
+];
+
+/**
+ * Sovrappone la copy Bizery sui dati di prezzo provenienti dal DB.
+ * I prezzi vengono sempre dal DB; nomi, descrizioni e feature list
+ * vengono dalla costante BIZERY_PRICING_PLANS.
+ */
+export function mergeBizeryPlans(dbPlans: PricingPlan[]): PricingPlan[] {
+  return BIZERY_PRICING_PLANS.map((base) => {
+    const fromDb = dbPlans.find((p) => p.slug === base.slug);
+    if (!fromDb) return base;
+    return {
+      ...base,
+      price_annual: fromDb.price_annual,
+      price_monthly: fromDb.price_monthly,
+      setup_from: fromDb.setup_from,
+      is_featured: fromDb.is_featured ?? base.is_featured,
+    };
+  });
 }

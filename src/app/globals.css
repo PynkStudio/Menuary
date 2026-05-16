@@ -84,7 +84,8 @@
 
   html[data-platform="marketing"] body,
   html[data-platform="clients"] body,
-  html[data-platform="studio"] body {
+  html[data-platform="studio"] body,
+  html[data-platform="platform-admin"] body {
     --menuary-paper: #f3efe7;
     --menuary-porcelain: #fbf8f1;
     --menuary-ink: #18231f;

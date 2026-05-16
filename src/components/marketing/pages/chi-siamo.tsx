@@ -118,6 +118,10 @@ const STUDIO_FAQ = [
     q: "Lavorate solo a Milano?",
     a: "No. Lo studio è a Milano, ma seguiamo locali in tutta Italia. La maggior parte del lavoro avviene da remoto. Quando ha senso — per un sopralluogo fotografico o un onboarding complesso — veniamo da voi.",
   },
+  {
+    q: "Il sito è disponibile in più lingue?",
+    a: "Sì. Ogni sito viene realizzato in versione multilingua di default, coprendo le principali lingue europee: italiano, inglese, francese, tedesco e spagnolo. Su richiesta è possibile aggiungere altre lingue in base all'utenza tipica del locale — ad esempio russo, arabo, cinese o giapponese per zone ad alta frequentazione turistica internazionale. Il costo delle lingue aggiuntive viene concordato in fase di preventivo.",
+  },
 ];
 
 // ─── Componente principale ────────────────────────────────────────────────────

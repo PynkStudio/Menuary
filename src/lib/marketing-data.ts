@@ -2,7 +2,7 @@ import { TENANTS } from "./tenant-registry";
 import { getTenantContent } from "./tenant-content";
 import { createSupabaseServiceClient } from "./supabase/service";
 import type { TenantProfile } from "./tenant";
-import { PRICING_PLANS, type PricingPlan } from "./platform-pricing";
+import { PRICING_PLANS, mergeBizeryPlans, type PricingPlan } from "./platform-pricing";
 
 export type MarketingTenant = {
   id: string;
@@ -116,6 +116,14 @@ export async function getMarketingHomeData(
     testimonials,
     activeCount: profiles.length,
   };
+}
+
+/**
+ * Piani Bizery: prezzi da Supabase, copy adattata per il verticale services.
+ */
+export async function fetchBizeryPricingPlans(): Promise<PricingPlan[]> {
+  const dbPlans = await fetchPricingPlans();
+  return mergeBizeryPlans(dbPlans);
 }
 
 /**

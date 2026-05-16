@@ -4,6 +4,7 @@ import {
   CalendarCheck,
   Check,
   Clock,
+  Globe,
   ShieldCheck,
   Star,
 } from "lucide-react";
@@ -45,6 +46,10 @@ const HOMEPAGE_FAQ = [
   {
     q: "Posso cambiare piano in seguito?",
     a: "Sì, in qualsiasi momento. Si parte spesso da Presenza e si attivano Prenotazioni o Operatività quando serve, senza rifare nulla.",
+  },
+  {
+    q: "Il sito è disponibile in più lingue?",
+    a: "Sì. Ogni sito viene realizzato in versione multilingua di default, coprendo le principali lingue europee: italiano, inglese, francese, tedesco e spagnolo. Su richiesta è possibile aggiungere altre lingue in base all'utenza tipica del locale — ad esempio russo, arabo, cinese o giapponese per zone ad alta frequentazione turistica internazionale. Il costo delle lingue aggiuntive viene concordato in fase di preventivo.",
   },
 ];
 
@@ -101,6 +106,14 @@ export async function MarketingHomePage() {
                     className="text-[var(--menuary-gold)]"
                   />
                   Online in 2–4 settimane
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Globe
+                    size={14}
+                    strokeWidth={1.7}
+                    className="text-[var(--menuary-muted)]"
+                  />
+                  Multilingua · IT EN FR DE ES +
                 </span>
               </div>
             </div>

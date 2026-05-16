@@ -347,6 +347,25 @@ export default async function RootLayout({
   const mode = getPlatformModeFromHost(host);
   const themeVars = tenantThemeCssVars(tenant.theme);
 
+  // admin.menuary.it: il pannello platform-admin deve indossare la palette Menuary,
+  // non quella del tenant food di default (BePork). Rimappiamo i token --tenant-* sui
+  // valori Menuary così che le classi pork-* dentro AdminShell rendano in brand Menuary.
+  const platformAdminThemeOverride: Record<string, string> = mode === "platform-admin"
+    ? {
+        "--tenant-cream": "243 239 231",
+        "--tenant-peach": "251 248 241",
+        "--tenant-ink": "24 35 31",
+        "--tenant-brick": "24 35 31",
+        "--tenant-mustard": "210 182 109",
+        "--tenant-mustard-soft": "169 95 69",
+        "--tenant-red": "169 95 69",
+        "--tenant-red-dark": "116 61 47",
+        "--tenant-green": "135 146 118",
+        "--tenant-pink": "169 95 69",
+      }
+    : {};
+  const htmlStyle = { ...themeVars, ...platformAdminThemeOverride } as React.CSSProperties;
+
   // Fetch sedi solo per tenant con multiLocation abilitato in modalità tenant site.
   // In tutti gli altri mode (marketing, admin, gestione…) le sedi non servono al root layout.
   const locations =
@@ -381,7 +400,7 @@ export default async function RootLayout({
     <html
       lang="it"
       className={`${display.variable} ${impact.variable} ${body.variable} ${menuaryDisplay.variable} ${menuaryBody.variable}`}
-      style={themeVars as React.CSSProperties}
+      style={htmlStyle}
       data-tenant={tenant.id}
       data-platform={mode}
     >

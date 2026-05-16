@@ -26,6 +26,7 @@ type Row = {
 
 const COMPARE_ROWS: Row[] = [
   { label: "Sito su misura", presence: true, booking: true, ops: true },
+  { label: "Multilingua · IT EN FR DE ES (+ altre su richiesta)", presence: true, booking: true, ops: true },
   { label: "Dominio personalizzato", presence: true, booking: true, ops: true },
   { label: "Hosting, SSL, backup", presence: true, booking: true, ops: true },
   { label: "Menu digitale aggiornabile", presence: true, booking: true, ops: true },
@@ -43,7 +44,7 @@ const COMPARE_ROWS: Row[] = [
   { label: "Gestione staff e cucina", presence: false, booking: false, ops: true },
   {
     label: "Integrazione AI (add-on)",
-    presence: "+€60/mese",
+    presence: false,
     booking: "+€60/mese",
     ops: "+€60/mese",
   },
@@ -84,7 +85,7 @@ const PRICING_FAQ = [
   },
   {
     q: "Come funziona l'integrazione AI?",
-    a: "L'assistente IA risponde al telefono 24/7 con la voce e il tono del locale: prende prenotazioni e le scrive direttamente in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce richieste fuori orario. Supporta il cloning vocale opzionale e parla nativamente italiano, inglese, francese, spagnolo e tedesco. È disponibile per tutti i piani al costo aggiuntivo di €60/mese.",
+    a: "L'assistente IA risponde al telefono 24/7 con la voce e il tono del locale: prende prenotazioni e le scrive direttamente in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce richieste fuori orario. Supporta il cloning vocale opzionale e parla nativamente italiano, inglese, francese, spagnolo e tedesco. È disponibile dai piani Prenotazioni e Operatività al costo aggiuntivo di €60/mese.",
   },
   {
     q: "Come funziona la quota minuti dell'integrazione AI?",
@@ -97,6 +98,10 @@ const PRICING_FAQ = [
   {
     q: "Posso usare il mio dominio attuale?",
     a: "Sì. Possiamo configurare il tuo dominio esistente o registrarne uno nuovo. In entrambi i casi senza costo aggiuntivo.",
+  },
+  {
+    q: "Il sito è disponibile in più lingue?",
+    a: "Sì. Ogni sito viene realizzato in versione multilingua di default, coprendo le principali lingue europee: italiano, inglese, francese, tedesco e spagnolo. Su richiesta è possibile aggiungere altre lingue in base all'utenza tipica del locale — ad esempio russo, arabo, cinese o giapponese per zone ad alta frequentazione turistica internazionale. Il costo delle lingue aggiuntive viene concordato in fase di preventivo.",
   },
 ];
 
@@ -186,7 +191,7 @@ export function MarketingPricingPage({ plans = PRICING_PLANS }: { plans?: Pricin
         <div className="menuary-container py-20 lg:py-24">
           <div className="grid items-start gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
             <div>
-              <p className="menuary-section-label">Disponibile per tutti i piani</p>
+              <p className="menuary-section-label">Dal piano Prenotazioni in su</p>
               <h2 className="menuary-display mt-6 text-[clamp(2rem,4.2vw,3.4rem)] text-balance">
                 Integrazione AI al telefono.
               </h2>
@@ -396,19 +401,19 @@ function PlanCard({
         </span>
         {billing === "annual" ? (
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
+            Fatturazione annuale anticipata
             {saving > 0 && (
-              <>
-                <span className="font-semibold text-[var(--menuary-sage)]">
-                  Risparmi €{saving}/anno
-                </span>{" "}
-                rispetto al mensile ·{" "}
-              </>
+              <span className="ml-1 font-semibold text-[var(--menuary-sage)]">
+                · risparmi €{saving}/anno
+              </span>
             )}
-            pagamento annuale anticipato
           </p>
         ) : (
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
-            €{plan.price_annual}/mese pagando annualmente
+            Con pagamento annuale:{" "}
+            <span className="font-semibold text-[var(--menuary-sage)]">
+              €{plan.price_annual}/mese · risparmi €{saving}/anno
+            </span>
           </p>
         )}
         <p className="mt-1.5 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
