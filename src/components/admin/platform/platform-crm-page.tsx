@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Building2,
@@ -17,6 +17,7 @@ import {
   MapPin,
   Flame,
   MonitorUp,
+  UserCheck,
 } from "lucide-react";
 import type { PlatformLead, LeadStatus, LeadVertical } from "@/lib/platform-crm-types";
 import {
@@ -57,11 +58,22 @@ function fmt(iso: string) {
   });
 }
 
+type CurrentUser = { user_id: string; name: string; role: string };
+
 export function PlatformCrmPage() {
   const [leads] = useState<PlatformLead[]>(PLATFORM_LEADS);
   const [activeTab, setActiveTab] = useState<LeadStatus | "all">("all");
   const [verticalFilter, setVerticalFilter] = useState<LeadVertical | "all">("all");
   const [query, setQuery] = useState("");
+  const [myLeadsOnly, setMyLeadsOnly] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/me")
+      .then((r) => r.json())
+      .then((data: CurrentUser) => setCurrentUser(data))
+      .catch(() => null);
+  }, []);
 
   const foodLeads = leads.filter((l) => l.business_vertical === "food");
   const servicesLeads = leads.filter((l) => l.business_vertical === "services");
@@ -78,6 +90,7 @@ export function PlatformCrmPage() {
   const filtered = leads.filter((l) => {
     const matchTab = activeTab === "all" || l.status === activeTab;
     const matchVertical = verticalFilter === "all" || l.business_vertical === verticalFilter;
+    const matchOwner = !myLeadsOnly || (currentUser != null && l.sales_owner_id === currentUser.user_id);
     const q = query.toLowerCase();
     const matchSearch =
       !q ||
@@ -86,8 +99,12 @@ export function PlatformCrmPage() {
       l.contact_email.toLowerCase().includes(q) ||
       (l.city ?? "").toLowerCase().includes(q) ||
       l.locations.some((loc) => `${loc.name} ${loc.address ?? ""} ${loc.city ?? ""}`.toLowerCase().includes(q));
-    return matchTab && matchVertical && matchSearch;
+    return matchTab && matchVertical && matchOwner && matchSearch;
   });
+
+  const myLeadsCount = currentUser
+    ? leads.filter((l) => l.sales_owner_id === currentUser.user_id).length
+    : 0;
 
   return (
     <div className="space-y-8">
@@ -197,6 +214,24 @@ export function PlatformCrmPage() {
             className="w-full rounded-xl border border-pork-ink/10 bg-white py-2.5 pl-9 pr-4 text-sm placeholder-pork-ink/35 focus:outline-none focus:ring-2 focus:ring-pork-red/30"
           />
         </div>
+
+        {/* Filtro I miei lead */}
+        <button
+          onClick={() => setMyLeadsOnly((v) => !v)}
+          title={myLeadsOnly ? "Mostra tutti i lead" : "Mostra solo i miei lead"}
+          className={cn(
+            "inline-flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition",
+            myLeadsOnly
+              ? "bg-pork-red text-white"
+              : "border border-pork-ink/10 bg-white text-pork-ink/60 hover:text-pork-ink",
+          )}
+        >
+          <UserCheck size={14} />
+          I miei lead
+          <span className={cn("text-xs", myLeadsOnly ? "opacity-80" : "opacity-50")}>
+            {myLeadsCount}
+          </span>
+        </button>
       </div>
 
       {/* Lista */}
@@ -397,6 +432,12 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
             >
               <MonitorUp size={12} /> demo
             </a>
+          )}
+          {lead.sales_owner_name && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-pork-ink/5 px-2 py-0.5 text-xs font-bold text-pork-ink/55">
+              <UserCheck size={10} />
+              {lead.sales_owner_name}
+            </span>
           )}
         </div>
       </div>

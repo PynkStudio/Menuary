@@ -6,7 +6,8 @@
 // "preview"           → demo.menuary.it         anteprima tenant food via previewSlug
 // "preview-bizery"    → demo.bizery.it          anteprima tenant bizery via previewSlug
 // "clients"           → clienti.menuary.it      area personale clienti
-// "studio"            → studio.menuary.it       fatturazione e abbonamenti B2B
+// "studio"            → studio.menuary.it       fatturazione e abbonamenti B2B (food)
+// "studio-bizery"     → studio.bizery.it        fatturazione e abbonamenti B2B (services)
 // "login"             → login.menuary.it        auth centralizzato (popup + redirect)
 // "gestione"          → gestione.menuary.it     pannello gestione tenant food
 // "gestione-bizery"   → gestione.bizery.it      pannello gestione tenant bizery (cross-domain popup auth)
@@ -19,6 +20,7 @@ export type PlatformMode =
   | "preview-bizery"
   | "clients"
   | "studio"
+  | "studio-bizery"
   | "login"
   | "gestione"
   | "gestione-bizery";
@@ -31,6 +33,7 @@ export const PLATFORM_HOSTS = {
   "preview-bizery":   ["demo.bizery.it", "demo.bizery.localhost"],
   clients:            ["clienti.menuary.it", "clienti.menuary.localhost"],
   studio:             ["studio.menuary.it", "studio.menuary.localhost"],
+  "studio-bizery":    ["studio.bizery.it", "studio.bizery.localhost"],
   login:              ["login.menuary.it", "login.menuary.localhost"],
   gestione:           ["gestione.menuary.it", "gestione.menuary.localhost"],
   "gestione-bizery":  ["gestione.bizery.it", "gestione.bizery.localhost"],
@@ -51,6 +54,7 @@ export function getPlatformModeFromHost(
   if (PLATFORM_HOSTS["preview-bizery"].includes(normalized as never))  return "preview-bizery";
   if (PLATFORM_HOSTS.clients.includes(normalized as never))            return "clients";
   if (PLATFORM_HOSTS.studio.includes(normalized as never))             return "studio";
+  if (PLATFORM_HOSTS["studio-bizery"].includes(normalized as never))   return "studio-bizery";
   if (PLATFORM_HOSTS.login.includes(normalized as never))              return "login";
   if (PLATFORM_HOSTS.gestione.includes(normalized as never))           return "gestione";
   if (PLATFORM_HOSTS["gestione-bizery"].includes(normalized as never)) return "gestione-bizery";
@@ -67,5 +71,5 @@ export function isClientsPortalMode(mode: PlatformMode): boolean {
 }
 
 export function isStudioPortalMode(mode: PlatformMode): boolean {
-  return mode === "studio";
+  return mode === "studio" || mode === "studio-bizery";
 }

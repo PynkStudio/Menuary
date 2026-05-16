@@ -17,7 +17,9 @@ export type AdminPermission =
   | "subscriptions:view"
   | "commissions:view"
   | "tenant:manage"
-  | "users:manage";
+  | "users:manage"
+  | "inbox:view"
+  | "inbox:compose";
 
 export const SITEADMIN_ROLE_LABELS: Record<SiteadminRole, string> = {
   superadmin: "Super admin",
@@ -55,14 +57,16 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   "commissions:view",
   "tenant:manage",
   "users:manage",
+  "inbox:view",
+  "inbox:compose",
 ];
 
 export const ROLE_PERMISSIONS: Record<SiteadminRole, AdminPermission[]> = {
   superadmin: ALL_PERMISSIONS,
   admin: ALL_PERMISSIONS,
-  venditore: ["crm:view", "crm:create", "crm:demo", "commissions:view"],
-  amministrazione: ["subscriptions:view", "commissions:view"],
-  gestore: ["tenant:manage"],
+  venditore: ["crm:view", "crm:create", "crm:demo", "commissions:view", "inbox:view", "inbox:compose"],
+  amministrazione: ["subscriptions:view", "commissions:view", "inbox:view", "inbox:compose"],
+  gestore: ["tenant:manage", "inbox:view"],
   lead_inserter: ["crm:create"],
 };
 
@@ -98,6 +102,7 @@ export function requiredPermissionForAdminPath(pathname: string): AdminPermissio
   if (normalized === "/admin/provvigioni" || normalized.startsWith("/admin/provvigioni/")) return "commissions:view";
   if (normalized === "/admin/tenant" || normalized.startsWith("/admin/tenant/")) return "tenant:manage";
   if (normalized === "/admin/utenti" || normalized.startsWith("/admin/utenti/")) return "users:manage";
+  if (normalized === "/admin/inbox" || normalized.startsWith("/admin/inbox/")) return "inbox:view";
   return "users:manage";
 }
 

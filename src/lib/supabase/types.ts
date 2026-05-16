@@ -14,6 +14,183 @@ export type Database = {
   }
   public: {
     Tables: {
+      sent_emails: {
+        Row: {
+          id: string
+          created_at: string
+          resend_message_id: string | null
+          from_address: string
+          from_name: string | null
+          to_addresses: string[]
+          subject: string
+          html_body: string | null
+          brand: "menuary" | "bizery"
+          sent_by_user_id: string | null
+          sent_by_name: string | null
+          status: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          resend_message_id?: string | null
+          from_address: string
+          from_name?: string | null
+          to_addresses: string[]
+          subject?: string
+          html_body?: string | null
+          brand: "menuary" | "bizery"
+          sent_by_user_id?: string | null
+          sent_by_name?: string | null
+          status?: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          resend_message_id?: string | null
+          from_address?: string
+          from_name?: string | null
+          to_addresses?: string[]
+          subject?: string
+          html_body?: string | null
+          brand?: "menuary" | "bizery"
+          sent_by_user_id?: string | null
+          sent_by_name?: string | null
+          status?: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
+        }
+        Relationships: []
+      }
+      email_tracking_events: {
+        Row: {
+          id: string
+          created_at: string
+          resend_email_id: string
+          event_type: string
+          from_address: string | null
+          to_address: string | null
+          subject: string | null
+          brand: "menuary" | "bizery" | null
+          metadata: Json
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          resend_email_id: string
+          event_type: string
+          from_address?: string | null
+          to_address?: string | null
+          subject?: string | null
+          brand?: "menuary" | "bizery" | null
+          metadata?: Json
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          resend_email_id?: string
+          event_type?: string
+          from_address?: string | null
+          to_address?: string | null
+          subject?: string | null
+          brand?: "menuary" | "bizery" | null
+          metadata?: Json
+        }
+        Relationships: []
+      }
+      email_signatures: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+          brand: "menuary" | "bizery"
+          name: string
+          title: string
+          phone: string
+          email: string
+          website: string
+          html: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+          brand: "menuary" | "bizery"
+          name?: string
+          title?: string
+          phone?: string
+          email?: string
+          website?: string
+          html?: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+          brand?: "menuary" | "bizery"
+          name?: string
+          title?: string
+          phone?: string
+          email?: string
+          website?: string
+          html?: string
+        }
+        Relationships: []
+      }
+      inbound_emails: {
+        Row: {
+          id: string
+          created_at: string
+          message_id: string | null
+          from_address: string
+          from_name: string | null
+          to_addresses: string[]
+          subject: string
+          text_body: string | null
+          html_body: string | null
+          headers: Json
+          attachments: Json
+          brand: "menuary" | "bizery"
+          read: boolean
+          starred: boolean
+          archived: boolean
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          message_id?: string | null
+          from_address: string
+          from_name?: string | null
+          to_addresses: string[]
+          subject?: string
+          text_body?: string | null
+          html_body?: string | null
+          headers?: Json
+          attachments?: Json
+          brand: "menuary" | "bizery"
+          read?: boolean
+          starred?: boolean
+          archived?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          message_id?: string | null
+          from_address?: string
+          from_name?: string | null
+          to_addresses?: string[]
+          subject?: string
+          text_body?: string | null
+          html_body?: string | null
+          headers?: Json
+          attachments?: Json
+          brand?: "menuary" | "bizery"
+          read?: boolean
+          starred?: boolean
+          archived?: boolean
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           auth_user_id: string | null

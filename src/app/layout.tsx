@@ -68,6 +68,24 @@ export async function generateMetadata(): Promise<Metadata> {
   const tenant = resolveTenantFromHost(host);
   const mode = getPlatformModeFromHost(host);
 
+  if (mode === "platform-admin") {
+    return {
+      metadataBase: new URL("https://admin.menuary.it"),
+      title: { default: "Menuary · admin", template: "%s · Menuary" },
+      robots: { index: false, follow: false },
+      icons: buildIconSet(mode, tenant),
+    };
+  }
+
+  if (mode === "gestione") {
+    return {
+      metadataBase: new URL("https://gestione.menuary.it"),
+      title: { default: "Menuary · gestione", template: "%s · Menuary" },
+      robots: { index: false, follow: false },
+      icons: buildIconSet(mode, tenant),
+    };
+  }
+
   if (mode === "clients") {
     return {
       metadataBase: new URL(CLIENTS_PUBLIC_ORIGIN),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,6 +15,7 @@ import {
   Pencil,
   Save,
   X,
+  UserCheck,
   UtensilsCrossed,
   Briefcase,
   GitBranch,
@@ -65,6 +66,8 @@ import { getModuleLabel } from "@/lib/vertical";
 
 type Tab = "anagrafica" | "fatturazione" | "abbonamento" | "pagamenti" | "note";
 
+type Venditore = { id: string; user_id: string; name: string; email: string; role: string };
+
 const TABS: { value: Tab; label: string; icon: React.ElementType }[] = [
   { value: "anagrafica", label: "Anagrafica", icon: Building2 },
   { value: "fatturazione", label: "Fatturazione", icon: Receipt },
@@ -112,6 +115,15 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   const [noteText, setNoteText] = useState(lead.notes ?? "");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showSaleModal, setShowSaleModal] = useState(false);
+  const [venditori, setVenditori] = useState<Venditore[]>([]);
+  const [assignSaving, setAssignSaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/venditori")
+      .then((r) => r.json())
+      .then((data: { venditori?: Venditore[] }) => setVenditori(data.venditori ?? []))
+      .catch(() => null);
+  }, []);
 
   function changeStatus(status: LeadStatus) {
     setLead((prev) => ({ ...prev, status }));
@@ -128,6 +140,27 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   function saveNote() {
     setLead((prev) => ({ ...prev, notes: noteText }));
     setEditingNote(false);
+  }
+
+  async function assignVenditore(venditore: Venditore | null) {
+    setAssignSaving(true);
+    try {
+      await fetch(`/api/admin/leads/${lead.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sales_owner_id: venditore?.user_id ?? null,
+          sales_owner_name: venditore?.name ?? null,
+        }),
+      });
+      setLead((prev) => ({
+        ...prev,
+        sales_owner_id: venditore?.user_id ?? null,
+        sales_owner_name: venditore?.name ?? null,
+      }));
+    } finally {
+      setAssignSaving(false);
+    }
   }
 
   function confirmSale(payload: SalePayload) {
@@ -356,7 +389,15 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
 
       {/* Contenuto tab */}
       <div className="rounded-3xl bg-white p-6 ring-1 ring-pork-ink/10">
-        {activeTab === "anagrafica" && <TabAnagrafica lead={lead} onStatusChange={changeStatus} />}
+        {activeTab === "anagrafica" && (
+          <TabAnagrafica
+            lead={lead}
+            onStatusChange={changeStatus}
+            venditori={venditori}
+            onAssign={assignVenditore}
+            assignSaving={assignSaving}
+          />
+        )}
         {activeTab === "fatturazione" && <TabFatturazione lead={lead} />}
         {activeTab === "abbonamento" && (
           <TabAbbonamento subscription={subscription} lead={lead} />
@@ -534,9 +575,15 @@ function ConfirmSaleModal({
 function TabAnagrafica({
   lead,
   onStatusChange,
+  venditori,
+  onAssign,
+  assignSaving,
 }: {
   lead: PlatformLead;
   onStatusChange: (status: LeadStatus) => void;
+  venditori: Venditore[];
+  onAssign: (v: Venditore | null) => void;
+  assignSaving: boolean;
 }) {
   const phoneHref = lead.contact_phone ? `tel:${lead.contact_phone.replace(/\s/g, "")}` : null;
   const whatsappHref = lead.contact_phone ? `https://wa.me/${lead.contact_phone.replace(/[^\d]/g, "")}` : null;
@@ -623,6 +670,46 @@ function TabAnagrafica({
         <Field label="Dominio ufficiale" value={lead.official_domain} />
         <Field label="Dominio attivo" value={lead.official_domain_active ? "Sì" : "No"} />
       </FieldGrid>
+
+      {/* Assegnazione venditore */}
+      <div className="rounded-2xl border border-pork-ink/10 bg-pork-ink/2 p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <UserCheck size={14} className="text-pork-red" />
+          <p className="text-xs font-black uppercase tracking-wide text-pork-ink/50">
+            Venditore assegnato
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <select
+            disabled={assignSaving}
+            value={lead.sales_owner_id ?? ""}
+            onChange={(e) => {
+              const v = venditori.find((x) => x.user_id === e.target.value) ?? null;
+              onAssign(v);
+            }}
+            className="flex-1 rounded-xl border border-pork-ink/10 bg-white px-3 py-2.5 text-sm font-semibold text-pork-ink focus:outline-none focus:ring-2 focus:ring-pork-red/25 disabled:opacity-50"
+          >
+            <option value="">— Non assegnato —</option>
+            {venditori.map((v) => (
+              <option key={v.user_id} value={v.user_id}>
+                {v.name}
+                {v.role === "venditore" ? "" : ` (${v.role})`}
+              </option>
+            ))}
+          </select>
+          {assignSaving && (
+            <span className="text-xs text-pork-ink/40">Salvataggio…</span>
+          )}
+          {!assignSaving && lead.sales_owner_id && (
+            <button
+              onClick={() => onAssign(null)}
+              className="rounded-full border border-pork-ink/10 px-3 py-2 text-xs font-bold text-pork-ink/50 hover:border-red-200 hover:text-red-500"
+            >
+              Rimuovi
+            </button>
+          )}
+        </div>
+      </div>
       <div className="flex flex-wrap gap-2">
         {(["lead", "prospect", "active", "churned"] as LeadStatus[]).map((status) => (
           <button

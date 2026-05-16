@@ -6,6 +6,8 @@ import { ClientsHomePage } from "@/components/clients/clients-home-page";
 import { ClientsShell } from "@/components/clients/clients-shell";
 import { StudioHomePage } from "@/components/studio/studio-home-page";
 import { StudioShell } from "@/components/studio/studio-shell";
+import { BizeryStudioHomePage } from "@/components/bizery-studio/bizery-studio-home-page";
+import { BizeryStudioShell } from "@/components/bizery-studio/bizery-studio-shell";
 
 export default async function HomePage() {
   const mode = getPlatformModeFromHost((await headers()).get("host"));
@@ -24,6 +26,13 @@ export default async function HomePage() {
       <StudioShell>
         <StudioHomePage />
       </StudioShell>
+    );
+  }
+  if (mode === "studio-bizery") {
+    return (
+      <BizeryStudioShell>
+        <BizeryStudioHomePage />
+      </BizeryStudioShell>
     );
   }
   return <TenantHomePage />;

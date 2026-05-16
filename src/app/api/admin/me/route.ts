@@ -23,6 +23,7 @@ export async function GET() {
 
   return NextResponse.json({
     id: siteadmin.id,
+    user_id: user.id,
     email: siteadmin.email,
     name: siteadmin.display_name ?? siteadmin.email,
     role: siteadmin.role,

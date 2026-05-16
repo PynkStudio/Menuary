@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { sendEmail, resolveSender } from "@/lib/email/sender";
+import { buildContactConfirmationEmail } from "@/lib/email/templates/contact-confirmation";
 
 type LeadRequest = {
   name?: string;
@@ -29,55 +31,22 @@ function buildNotes(interest: string, message: string): string | null {
 async function sendConfirmationEmail(
   to: string,
   contactName: string,
+  businessName: string,
   vertical: "food" | "services",
 ): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return;
+  const { brand } = resolveSender(vertical === "services" ? "bizery-demo" : "bepork");
+  const firstName = contactName.split(/\s+/)[0] ?? "";
+  const html = buildContactConfirmationEmail({ brand, firstName, businessName });
 
-  const brand = vertical === "services" ? "Bizery" : "Menuary";
-  const from = process.env.RESEND_FROM_EMAIL
-    ?? (vertical === "services" ? "Bizery <hello@bizery.it>" : "Menuary <hello@menuary.it>");
-  const replyTo = vertical === "services" ? "hello@bizery.it" : "hello@menuary.it";
-
-  const subject = `Abbiamo ricevuto la tua richiesta · ${brand}`;
-  const firstName = contactName.split(/\s+/)[0] || "";
-  const greeting = firstName ? `Ciao ${firstName},` : "Ciao,";
-
-  const text =
-    `${greeting}\n\n` +
-    `grazie per aver scritto a ${brand}. Abbiamo preso in carico la tua richiesta ` +
-    `e ti risponderemo entro 24 ore lavorative con una proposta su misura.\n\n` +
-    `Se nel frattempo vuoi aggiungere qualcosa, rispondi pure a questa email.\n\n` +
-    `— Il team ${brand}`;
-
-  const html = `<!doctype html><html><body style="font-family:Georgia,serif;background:#f7f3ed;padding:32px;color:#2a241c;">
-  <div style="max-width:540px;margin:0 auto;background:#fff;padding:40px 36px;border:1px solid #e6dfd2;">
-    <p style="text-transform:uppercase;letter-spacing:0.22em;font-size:11px;color:#9a8c75;margin:0 0 24px;font-family:Helvetica,Arial,sans-serif;font-weight:700;">${brand}</p>
-    <h1 style="font-size:26px;line-height:1.2;margin:0 0 18px;font-weight:500;">Richiesta ricevuta.</h1>
-    <p style="font-size:15px;line-height:1.7;margin:0 0 14px;">${greeting}</p>
-    <p style="font-size:15px;line-height:1.7;margin:0 0 14px;">
-      grazie per aver scritto a <strong>${brand}</strong>. Abbiamo preso in carico la tua richiesta
-      e ti risponderemo <strong>entro 24 ore lavorative</strong> con una proposta su misura.
-    </p>
-    <p style="font-size:15px;line-height:1.7;margin:0 0 28px;">
-      Se nel frattempo vuoi aggiungere qualcosa, rispondi pure a questa email.
-    </p>
-    <p style="font-size:14px;color:#6b5f4d;margin:0;">— Il team ${brand}</p>
-  </div>
-</body></html>`;
-
-  try {
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ from, to, reply_to: replyTo, subject, text, html }),
-    });
-  } catch {
-    // best-effort: la lead è già stata salvata, l'email è un nice-to-have
-  }
+  await sendEmail({
+    to,
+    subject: `Abbiamo ricevuto la tua richiesta · ${brand.name}`,
+    html,
+    replyTo: `hello@${brand.domain}`,
+    // tenantId non passato: il from viene risolto dal vertical via tenantId demo
+    tenantId: vertical === "services" ? "bizery-demo" : "bepork",
+  });
+  // best-effort: la lead è già stata salvata, l'email è un nice-to-have
 }
 
 export async function POST(request: Request) {
@@ -138,7 +107,7 @@ export async function POST(request: Request) {
     );
   }
 
-  await sendConfirmationEmail(email, name, vertical);
+  await sendConfirmationEmail(email, name, businessName, vertical);
 
   return NextResponse.json({ ok: true });
 }
