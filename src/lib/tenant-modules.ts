@@ -37,8 +37,8 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     category: "Presenza digitale",
     verticalCopy: {
       services: {
-        label: "Sito dello studio",
-        description: "Pubblica pagine, contatti, orari, brand e contenuti base dello studio o del locale.",
+        label: "Sito dell'attività",
+        description: "Pubblica pagine, contatti, indirizzo, orari, brand e contenuti base dell'azienda.",
       },
     },
   },
@@ -52,8 +52,8 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     implies: ["favorites"],
     verticalCopy: {
       services: {
-        label: "Listino servizi",
-        description: "Pubblica il catalogo dei trattamenti o servizi offerti, consultabile da sito e QR.",
+        label: "Listino prezzi",
+        description: "Pubblica servizi, prezzi, disponibilità, foto e cataloghi consultabili da sito e QR.",
       },
     },
   },
@@ -219,6 +219,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Gestisce contatti, coupon, ritorno cliente, compleanni e storico preferenze.",
     category: "Crescita",
     requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "CRM clienti",
+        description: "Gestisce contatti, richieste, appuntamenti, follow-up e storico preferenze.",
+      },
+    },
   },
   {
     key: "analytics",
@@ -226,6 +232,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Mostra vendite, fasce orarie, piatti forti, scontrino medio e tempi cucina.",
     category: "Crescita",
     requiresAny: ["onlineMenu", "takeaway", "tableOrders", "orderKiosk"],
+    verticalCopy: {
+      services: {
+        label: "Analytics attività",
+        description: "Mostra richieste, appuntamenti, servizi più consultati, canali e conversioni.",
+      },
+    },
   },
   {
     key: "reviews",
@@ -233,6 +245,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Consente la pubblicazione del modulo recensioni.",
     category: "Crescita",
     requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Recensioni",
+        description: "Consente la pubblicazione e la gestione delle recensioni dell'attività.",
+      },
+    },
   },
   {
     key: "gallery",
@@ -247,6 +265,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Mantiene attivo il layer di salvataggio piatti preferiti.",
     category: "Crescita",
     requires: ["onlineMenu"],
+    verticalCopy: {
+      services: {
+        label: "Preferiti",
+        description: "Mantiene attivo il salvataggio dei servizi preferiti da parte dei clienti.",
+      },
+    },
   },
   {
     key: "inventoryFoodCost",
@@ -267,6 +291,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Abilita permessi per cameriere, cucina, manager e admin con log modifiche.",
     category: "Gestione",
     requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Ruoli team",
+        description: "Abilita permessi per operatori, tecnici, manager e admin con log modifiche.",
+      },
+    },
   },
   {
     key: "multiLocation",
@@ -274,6 +304,12 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     description: "Gestisce menu centralizzato, prezzi per sede, report comparativi e permessi.",
     category: "Gestione",
     requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Multi-sede",
+        description: "Gestisce listini centralizzati, prezzi per sede, report comparativi e permessi.",
+      },
+    },
   },
 ];
 

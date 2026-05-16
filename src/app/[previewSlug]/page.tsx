@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { TenantProvider } from "@/components/core/tenant-provider";
@@ -15,6 +16,51 @@ import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
+import { getTenantContent } from "@/lib/tenant-content";
+import { buildTenantIconSet } from "@/lib/favicon";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ previewSlug: string }>;
+}): Promise<Metadata> {
+  const host = (await headers()).get("host");
+  const mode = getPlatformModeFromHost(host);
+  const { previewSlug } = await params;
+  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const content = getTenantContent(tenant.id);
+  const isServices = tenant.vertical === "services";
+  const title =
+    tenant.id === "officinakam"
+      ? "Officina KAM - Meccanica di precisione"
+      : isServices
+        ? `${tenant.name} - servizi, appuntamenti e listino prezzi`
+        : tenant.id === "faak"
+          ? `${tenant.name} - cibo e vino a ribellione naturale`
+          : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
+
+  return {
+    metadataBase: new URL(mode === "preview-bizery" ? "https://demo.bizery.it" : "https://demo.menuary.it"),
+    title: { absolute: title },
+    description: content.description,
+    openGraph: {
+      title,
+      description: content.description,
+      url: content.url,
+      siteName: tenant.name,
+      locale: "it_IT",
+      type: "website",
+      images: [{ url: content.showcaseLogoSrc, alt: content.showcaseLogoAlt }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: content.description,
+      images: [content.showcaseLogoSrc],
+    },
+    icons: buildTenantIconSet(tenant),
+  };
+}
 
 export default async function PreviewTenantHome({
   params,

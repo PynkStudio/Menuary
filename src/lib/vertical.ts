@@ -51,7 +51,7 @@ export const VERTICAL_REGISTRY: Record<TenantVertical, VerticalMeta> = {
     businessNoun: "azienda",
     businessNounPlural: "aziende e studi",
     reservationCTA: "Prenota un appuntamento",
-    menuLabel: "Servizi",
+    menuLabel: "Listino prezzi",
   },
 };
 

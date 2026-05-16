@@ -23,9 +23,12 @@ import { getTenantContent } from "@/lib/tenant-content";
 import { officinaKamMenu } from "@/lib/tenant-menu-data";
 import { getGoogleRatingForTenant, getReviewsForTenant } from "@/lib/reviews-data";
 import { formatNumberIT } from "@/lib/format";
+import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import {
   VenueAddressBlock,
+  VenueGoogleMapsLink,
   VenueHoursList,
+  VenueMapFrame,
   VenuePhoneDisplay,
   VenueWhatsappLink,
   useVenueContactPhone,
@@ -154,9 +157,34 @@ function getShowroomState(progress: number) {
   };
 }
 
+function FooterColumn({
+  title,
+  links,
+}: {
+  title: string;
+  links: Array<{ label: string; href: string; external?: boolean }>;
+}) {
+  return (
+    <div className="kam-footer-column">
+      <h3>{title}</h3>
+      {links.map((link) => (
+        <a
+          key={link.label}
+          href={link.href}
+          target={link.external ? "_blank" : undefined}
+          rel={link.external ? "noopener noreferrer" : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+  );
+}
+
 export function OfficinaKamHomePage() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
+  const staffHref = getTenantGestioneExternalHref(tenant.id);
   const { display: phoneDisplay, waHref } = useVenueContactPhone();
   const [activeGroup, setActiveGroup] = useState(0);
   const [requestSent, setRequestSent] = useState(false);
@@ -612,13 +640,13 @@ export function OfficinaKamHomePage() {
           </div>
           <div className="kam-contact-grid">
             <div className="kam-detail-list">
-              <a href={content.maps.searchUrl} target="_blank" rel="noopener noreferrer">
+              <VenueGoogleMapsLink>
                 <MapPin size={20} />
                 <span>
                   <small>Indirizzo</small>
                   <VenueAddressBlock multiline={false} />
                 </span>
-              </a>
+              </VenueGoogleMapsLink>
               <VenuePhoneDisplay className="kam-detail-link" />
               <a href={`mailto:info@${content.url.replace(/https?:\/\/(www\.)?/, "")}`}>
                 <Mail size={20} />
@@ -642,17 +670,58 @@ export function OfficinaKamHomePage() {
                 </span>
               </div>
             </div>
-            <iframe
+            <VenueMapFrame
               title={content.findUs.mapTitle}
-              src={content.maps.embedUrl}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
+              dark
             />
           </div>
           <footer className="kam-footer">
-            <p>{tenant.name} · {content.footer.tagline}</p>
-            <a href={waHref()} target="_blank" rel="noopener noreferrer">Prenota su WhatsApp</a>
+            <div className="kam-footer-brand">
+              <a href="#top" className="kam-logo" aria-label="Torna all'inizio">
+                <span className="kam-logo-mark">K</span>
+                <span>
+                  Officina KAM
+                  <small>MECCANICA · DIAGNOSI · PERFORMANCE</small>
+                </span>
+              </a>
+              <p>{content.footer.body}</p>
+              <div className="kam-footer-actions">
+                <a href={waHref()} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                <a href={content.social.instagram} target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a href={staffHref} target="_blank" rel="noopener noreferrer">Staff</a>
+              </div>
+            </div>
+            <FooterColumn
+              title="Officina"
+              links={[
+                { label: "Servizi", href: "#servizi" },
+                { label: "Listino prezzi", href: "#listino" },
+                { label: "Processo", href: "#processo" },
+                { label: "Recensioni", href: "#recensioni" },
+              ]}
+            />
+            <FooterColumn
+              title="Gestione"
+              links={[
+                { label: "Staff", href: staffHref, external: true },
+                { label: "Prenota intervento", href: "#prenota" },
+                { label: "Orari e indirizzo", href: "#contatti" },
+                { label: "Privacy", href: "/privacy" },
+              ]}
+            />
+            <div className="kam-footer-column kam-footer-contact">
+              <h3>Contatti</h3>
+              <span><VenueAddressBlock multiline={false} /></span>
+              <a href={`tel:${phoneDisplay.replace(/\s/g, "")}`}>{phoneDisplay}</a>
+              <a href={`mailto:info@${content.url.replace(/https?:\/\/(www\.)?/, "")}`}>
+                info@{content.url.replace(/https?:\/\/(www\.)?/, "")}
+              </a>
+              <small>P.IVA 00000000000</small>
+            </div>
+            <div className="kam-footer-bottom">
+              <span>{tenant.name} · {content.footer.tagline}</span>
+              <span>Powered by Bizery</span>
+            </div>
           </footer>
         </div>
       </section>

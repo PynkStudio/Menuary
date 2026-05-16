@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { TENANTS } from "@/lib/tenant-registry";
@@ -12,10 +13,23 @@ import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveSessionCookieDomain, usesSharedMenuarySession } from "@/lib/session-cookie-domain";
 import type { LoginFrom } from "@/lib/login-url";
 import { getGestioneBaseHref } from "@/lib/gestione-routing";
+import { buildTenantIconSet } from "@/lib/favicon";
 
 interface Props {
   children: React.ReactNode;
   params: Promise<{ tenantSlug: string }>;
+}
+
+export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
+  const { tenantSlug } = await params;
+  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  if (!tenant) return {};
+
+  return {
+    title: { absolute: `${tenant.name} · gestione` },
+    robots: { index: false, follow: false },
+    icons: buildTenantIconSet(tenant),
+  };
 }
 
 export default async function GestioneLayout({ children, params }: Props) {
@@ -138,7 +152,13 @@ export default async function GestioneLayout({ children, params }: Props) {
       } as React.CSSProperties}
     >
       <GestioneShell
-        tenant={{ id: tenant.id, name: tenant.name, theme: tenant.theme, features: tenant.features }}
+        tenant={{
+          id: tenant.id,
+          name: tenant.name,
+          vertical: tenant.vertical,
+          theme: tenant.theme,
+          features: tenant.features,
+        }}
         currentUser={{
           email: ta?.email ?? emp?.email ?? user.email ?? "",
           displayName: ta?.display_name ?? emp?.display_name ?? null,

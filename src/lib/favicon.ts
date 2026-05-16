@@ -63,6 +63,16 @@ export function buildIconSet(mode: PlatformMode, tenant: TenantProfile): IconSet
   };
 }
 
+/** Icone del singolo tenant, usate nelle preview e nei pannelli gestione tenant-specifici. */
+export function buildTenantIconSet(tenant: TenantProfile): IconSet {
+  const base = `/favicons/${tenant.id}`;
+
+  return {
+    icon: [{ url: `${base}/icon.svg`, type: "image/svg+xml" }],
+    shortcut: `${base}/icon.svg`,
+  };
+}
+
 /**
  * Colori del tema di sfondo per il <meta name="theme-color">.
  * Corrisponde al colore della tab/barra browser su mobile.

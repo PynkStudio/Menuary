@@ -33,7 +33,7 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   deliveryHub: false,
   inventoryFoodCost: true, // "Costi e margini"
   printStations: false,
-  staffRoles: true,
+  staffRoles: false,
   multiLocation: false,
   favorites: false,
   reviews: true,

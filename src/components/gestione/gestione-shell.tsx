@@ -11,12 +11,15 @@ import {
   type EmployeeRole,
 } from "@/lib/store-roles";
 import type { TenantFeatureFlags, TenantLocation } from "@/lib/tenant";
+import type { TenantVertical } from "@/lib/tenant";
 import { isMultiLocation } from "@/lib/location";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { getModuleLabel } from "@/lib/vertical";
 
 interface Tenant {
   id: string;
   name: string;
+  vertical: TenantVertical;
   theme: { red: string; ink: string; cream: string };
   features: TenantFeatureFlags;
 }
@@ -78,10 +81,11 @@ export function GestioneShell({
 
   const items: NavItem[] = [
     { label: "Dashboard", href: dashboardHref, visible: () => true },
+    { label: "Dati attività", href: sectionHref("attivita"), visible: () => access.canManageActivity },
     { label: "Ordini", href: sectionHref("ordini"), visible: () => access.hasOrders },
-    { label: "Menu", href: sectionHref("menu"), visible: (c) => access.canManageMenu && c.can_edit_menu },
-    { label: "Tavoli", href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
-    { label: "Prenotazioni", href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations },
+    { label: getModuleLabel("onlineMenu", tenant.vertical), href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
+    { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
+    { label: getModuleLabel("reservations", tenant.vertical), href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations },
     { label: "Cassa", href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
     { label: "Turni", href: sectionHref("turni"), visible: () => access.canManageShifts },
     { label: "Staff", href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },

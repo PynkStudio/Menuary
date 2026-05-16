@@ -5,6 +5,11 @@ import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { getModuleCopy } from "@/lib/vertical";
+import {
+  VenueMapFrame,
+  useVenueAddressText,
+  useVenueMap,
+} from "@/components/modules/reservations/venue-display";
 
 const v = {
   bg:           "rgb(var(--tenant-cream))",
@@ -23,6 +28,8 @@ export function ServicesContact() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
   const reservationLabel = getModuleCopy("reservations", tenant.vertical).label;
+  const address = useVenueAddressText();
+  const map = useVenueMap();
 
   const contactItems = [
     {
@@ -47,8 +54,8 @@ export function ServicesContact() {
     {
       Icon: MapPin,
       label: "Indirizzo",
-      value: content.address.full,
-      href: content.maps.searchUrl,
+      value: address,
+      href: map.searchUrl,
       external: true,
     },
     {
@@ -157,21 +164,12 @@ export function ServicesContact() {
             className="overflow-hidden rounded-2xl"
             style={{ boxShadow: `inset 0 0 0 1px ${v.border}`, minHeight: "360px" }}
           >
-            <iframe
+            <VenueMapFrame
               title={content.findUs.mapTitle}
-              src={content.maps.embedUrl}
-              width="100%"
-              height="100%"
+              dark
               style={{
                 minHeight: "360px",
-                border: 0,
-                // Inverte la mappa per renderla dark-friendly
-                filter: "invert(90%) hue-rotate(180deg) brightness(0.95) contrast(0.9)",
-                display: "block",
               }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
             />
           </motion.div>
         </div>

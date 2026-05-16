@@ -23,6 +23,8 @@ import { formatEuro, minPrice } from "@/lib/price-utils";
 import { ItemEditor } from "@/components/admin/item-editor";
 import { ExtraListsManager } from "@/components/admin/extra-lists-manager";
 import { useHydrated } from "@/components/core/providers";
+import { useTenantOrNull } from "@/components/core/tenant-provider";
+import { getModuleLabel } from "@/lib/vertical";
 
 const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 1, label: "Lun" },
@@ -48,13 +50,17 @@ function formatMenuRules(menu: AdminMenuList): string {
     );
   }
   if (menu.visibility.tableIds?.length) {
-    rules.push(`${menu.visibility.tableIds.length} tavoli`);
+    rules.push(`${menu.visibility.tableIds.length} tavoli/postazioni`);
   }
   return rules.length > 0 ? rules.join(" · ") : "Sempre visibile";
 }
 
 export default function AdminMenuPage() {
   const hydrated = useHydrated();
+  const tenant = useTenantOrNull();
+  const vertical = tenant?.vertical ?? "food";
+  const isServices = vertical === "services";
+  const listinoLabel = getModuleLabel("onlineMenu", vertical);
   const categoriesRaw = useMenuStore((s) => s.categories);
   const items = useMenuStore((s) => s.items);
   const menuListsRaw = useMenuStore((s) => s.menuLists);
@@ -133,16 +139,18 @@ export default function AdminMenuPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="headline text-4xl">Menu</h1>
+        <h1 className="headline text-4xl">{listinoLabel}</h1>
         <p className="text-pork-ink/60">
-          Lista completa dei piatti e menu pubblici composti con regole di visibilità.
+          {isServices
+            ? "Gestisci servizi, prezzi, disponibilità, foto e listini pubblici con regole di visibilità."
+            : "Lista completa dei piatti e menu pubblici composti con regole di visibilità."}
         </p>
       </header>
 
       <div className="inline-flex rounded-2xl bg-white p-1 ring-1 ring-pork-ink/10">
         {[
-          { key: "items" as const, label: "Lista piatti" },
-          { key: "menus" as const, label: "Menu" },
+          { key: "items" as const, label: isServices ? "Servizi" : "Lista piatti" },
+          { key: "menus" as const, label: isServices ? "Listini pubblici" : "Menu" },
         ].map((option) => (
           <button
             key={option.key}
@@ -208,7 +216,7 @@ export default function AdminMenuPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Cerca piatto…"
+            placeholder={isServices ? "Cerca servizio..." : "Cerca piatto..."}
             className="w-full bg-transparent outline-none"
           />
         </div>
@@ -216,7 +224,7 @@ export default function AdminMenuPage() {
           {[
             { v: "all" as const, l: "Tutti" },
             { v: "available" as const, l: "Disponibili" },
-            { v: "unavailable" as const, l: "Esauriti" },
+            { v: "unavailable" as const, l: isServices ? "Non disponibili" : "Esauriti" },
           ].map((o) => (
             <button
               key={o.v}
@@ -239,13 +247,17 @@ export default function AdminMenuPage() {
         <section className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="impact-title text-xl text-pork-ink">Menu pubblicati</h2>
+              <h2 className="impact-title text-xl text-pork-ink">
+                {isServices ? "Listini pubblicati" : "Menu pubblicati"}
+              </h2>
               <button
                 type="button"
                 onClick={() => {
                   const id = addMenuList({
-                    name: "Nuovo menu",
-                    description: "Selezione personalizzata di piatti.",
+                    name: isServices ? "Nuovo listino" : "Nuovo menu",
+                    description: isServices
+                      ? "Selezione personalizzata di servizi."
+                      : "Selezione personalizzata di piatti.",
                     itemIds: [],
                     visibility: {},
                   });
@@ -253,7 +265,7 @@ export default function AdminMenuPage() {
                 }}
                 className="inline-flex items-center gap-1 rounded-full bg-pork-ink px-3 py-1.5 text-xs font-bold text-pork-cream hover:bg-pork-red"
               >
-                <Plus size={13} /> Crea menu
+                <Plus size={13} /> {isServices ? "Crea listino" : "Crea menu"}
               </button>
             </div>
 
@@ -273,7 +285,7 @@ export default function AdminMenuPage() {
                   <div className="min-w-0">
                     <p className="font-black text-pork-ink">{menu.name}</p>
                     <p className="mt-1 text-xs text-pork-ink/55">
-                      {menu.itemIds.length} piatti · {formatMenuRules(menu)}
+                      {menu.itemIds.length} {isServices ? "servizi" : "piatti"} · {formatMenuRules(menu)}
                     </p>
                   </div>
                   <span
@@ -298,7 +310,9 @@ export default function AdminMenuPage() {
             {!editingMenu ? (
               <div className="flex min-h-72 flex-col items-center justify-center text-center text-pork-ink/45">
                 <ListChecks size={34} />
-                <p className="mt-3 text-sm font-bold">Seleziona o crea un menu.</p>
+                <p className="mt-3 text-sm font-bold">
+                  {isServices ? "Seleziona o crea un listino." : "Seleziona o crea un menu."}
+                </p>
               </div>
             ) : (
               <div className="space-y-5">
@@ -323,7 +337,7 @@ export default function AdminMenuPage() {
                 <div className="grid gap-3 md:grid-cols-2">
                   <label className="block">
                     <span className="mb-1 block text-xs font-bold uppercase text-pork-ink/50">
-                      Nome menu
+                      {isServices ? "Nome listino" : "Nome menu"}
                     </span>
                     <input
                       value={editingMenu.name}
@@ -480,7 +494,7 @@ export default function AdminMenuPage() {
                       ))}
                     </select>
                     <span className="mt-1 block text-xs text-pork-ink/45">
-                      Nessuna selezione = tutti i tavoli. Usa Cmd/Ctrl per selezioni multiple.
+                      Nessuna selezione = tutte le postazioni. Usa Cmd/Ctrl per selezioni multiple.
                     </span>
                   </label>
                 </div>
@@ -488,7 +502,7 @@ export default function AdminMenuPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="impact-title text-sm text-pork-ink/70">
-                      Piatti nel menu
+                      {isServices ? "Servizi nel listino" : "Piatti nel menu"}
                     </h3>
                     <span className="text-xs font-bold text-pork-ink/45">
                       {editingMenu.itemIds.length} selezionati
@@ -578,7 +592,7 @@ export default function AdminMenuPage() {
               <ul className="grid gap-2 md:grid-cols-2">
                 {catItems.length === 0 ? (
                   <li className="col-span-full rounded-xl bg-white p-4 text-sm text-pork-ink/40">
-                    Nessun piatto.
+                    {isServices ? "Nessun servizio." : "Nessun piatto."}
                   </li>
                 ) : (
                   catItems.map((it) => (

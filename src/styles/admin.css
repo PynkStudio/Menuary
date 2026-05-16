@@ -153,4 +153,53 @@
   html[data-platform="platform-admin"] .btn-mustard:hover {
     background: var(--menuary-copper-dark);
   }
+
+  /* Gestione Bizery / tenant scuri: le pagine admin condivise usano molte card
+     bianche food-oriented. Qui le riportiamo su superfici scure tenant-aware. */
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .bg-white {
+    background-color: rgb(var(--tenant-brick)) !important;
+    color: rgb(var(--tenant-ink)) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .bg-pork-cream {
+    background-color: rgb(var(--tenant-cream)) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink {
+    color: rgb(var(--tenant-ink)) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/30 {
+    color: rgb(var(--tenant-ink) / 0.3) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/40 {
+    color: rgb(var(--tenant-ink) / 0.4) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/50 {
+    color: rgb(var(--tenant-ink) / 0.5) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/55 {
+    color: rgb(var(--tenant-ink) / 0.55) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/60 {
+    color: rgb(var(--tenant-ink) / 0.6) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/70 {
+    color: rgb(var(--tenant-ink) / 0.7) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/80 {
+    color: rgb(var(--tenant-ink) / 0.8) !important;
+  }
+
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] input,
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] select,
+  html[data-platform="gestione-bizery"] [data-gestione-tenant] textarea {
+    color: rgb(var(--tenant-ink));
+  }
 }

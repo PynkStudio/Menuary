@@ -1,4 +1,5 @@
 import { TENANTS } from "@/lib/tenant-registry";
+import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 
 export default async function GestioneDashboardPage({
   params,
@@ -7,6 +8,15 @@ export default async function GestioneDashboardPage({
 }) {
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const vertical = tenant ? getVerticalMeta(tenant.vertical) : null;
+  const menuLabel = tenant ? getModuleLabel("onlineMenu", tenant.vertical).toLowerCase() : "menu";
+  const reservationsLabel = tenant
+    ? getModuleLabel("reservations", tenant.vertical).toLowerCase()
+    : "prenotazioni";
+  const dashboardCopy =
+    tenant?.vertical === "services"
+      ? `Da qui gestisci sito, ${menuLabel}, ${reservationsLabel}, clienti, dati attività e fatturazione della tua ${vertical?.businessNoun ?? "azienda"}.`
+      : "Da qui gestisci ordini, menu, prenotazioni, staff e fatturazione del tuo locale.";
 
   return (
     <div>
@@ -17,7 +27,7 @@ export default async function GestioneDashboardPage({
         Benvenuto su {tenant?.name}
       </h1>
       <p className="mt-3 max-w-xl opacity-70">
-        Da qui gestisci ordini, menu, prenotazioni, staff e fatturazione del tuo locale.
+        {dashboardCopy}
       </p>
     </div>
   );

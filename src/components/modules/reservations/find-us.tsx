@@ -5,7 +5,9 @@ import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import {
   VenueAddressBlock,
+  VenueGoogleMapsLink,
   VenueHoursList,
+  VenueMapFrame,
   VenuePhoneDisplay,
   VenueWhatsappLink,
 } from "@/components/modules/reservations/venue-display";
@@ -39,14 +41,9 @@ export function FindUs() {
                     Indirizzo
                   </dt>
                   <dd className="mt-0.5 text-pork-ink">
-                    <a
-                      href={content.maps.searchUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold hover:underline"
-                    >
+                    <VenueGoogleMapsLink className="font-semibold hover:underline">
                       <VenueAddressBlock multiline={false} />
-                    </a>
+                    </VenueGoogleMapsLink>
                   </dd>
                 </div>
               </div>
@@ -83,26 +80,14 @@ export function FindUs() {
                 <MessageCircle size={20} />
                 Prenota un tavolo
               </VenueWhatsappLink>
-              <a
-                href={content.maps.searchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost text-base"
-              >
+              <VenueGoogleMapsLink className="btn-ghost text-base">
                 Apri in Google Maps
-              </a>
+              </VenueGoogleMapsLink>
             </div>
           </div>
 
           <div className="relative h-[28rem] overflow-hidden rounded-3xl bg-pork-ink/5 shadow-xl ring-1 ring-pork-ink/10 lg:h-auto">
-            <iframe
-              title={content.findUs.mapTitle}
-              src={content.maps.embedUrl}
-              className="h-full w-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
+            <VenueMapFrame title={content.findUs.mapTitle} className="h-full w-full" />
           </div>
         </div>
       </div>

@@ -199,7 +199,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const tenantTitle =
     tenant.id === "faak"
       ? `${tenant.name} - cibo e vino a ribellione naturale`
-      : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
+      : tenant.vertical === "services"
+        ? tenant.id === "officinakam"
+          ? "Officina KAM - Meccanica di precisione"
+          : `${tenant.name} - servizi, appuntamenti e listino prezzi`
+        : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
     metadataBase: new URL(mode === "marketing" ? siteConfig.url : content.url),

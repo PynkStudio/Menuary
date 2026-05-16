@@ -24,6 +24,7 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     modules,
     hasOrders,
     hasGoogleBusiness,
+    canManageActivity: modules.website,
     canManageMenu: modules.onlineMenu,
     canManageTables: modules.tablePlanner,
     canManageReservations: modules.reservations,

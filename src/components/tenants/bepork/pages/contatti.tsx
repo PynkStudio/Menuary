@@ -2,7 +2,12 @@ import { MapPin, Instagram, Facebook } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 import { ContattiReserveCards } from "@/components/modules/reservations/contatti-reserve-cards";
 import { ReservationRequestForm } from "@/components/modules/reservations/reservation-request-form";
-import { VenueAddressBlock, VenueHoursList } from "@/components/modules/reservations/venue-display";
+import {
+  VenueAddressBlock,
+  VenueGoogleMapsLink,
+  VenueHoursList,
+  VenueMapFrame,
+} from "@/components/modules/reservations/venue-display";
 
 export function BeporkContactsPage() {
   return (
@@ -37,14 +42,9 @@ export function BeporkContactsPage() {
                 <MapPin size={20} className="mt-1 shrink-0 text-pork-ink/60" />
                 <VenueAddressBlock className="text-pork-ink/80" />
               </address>
-              <a
-                href={siteConfig.maps.searchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-block text-sm font-semibold text-pork-red hover:underline"
-              >
+              <VenueGoogleMapsLink className="mt-3 inline-block text-sm font-semibold text-pork-red hover:underline">
                 Apri in Google Maps →
-              </a>
+              </VenueGoogleMapsLink>
             </div>
 
             <div>
@@ -76,13 +76,9 @@ export function BeporkContactsPage() {
           </div>
 
           <div className="relative h-96 overflow-hidden rounded-3xl shadow-xl ring-1 ring-pork-ink/10 lg:h-auto">
-            <iframe
+            <VenueMapFrame
               title="Mappa Be Pork"
-              src={siteConfig.maps.embedUrl}
               className="absolute inset-0 h-full w-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
             />
           </div>
         </div>

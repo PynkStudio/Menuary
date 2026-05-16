@@ -1,11 +1,30 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { useSettingsStore } from "@/store/settings-store";
 import type { DaySchedule } from "@/lib/venue-hours";
 import { defaultHoursWeek } from "@/lib/venue-hours";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
+import { useLocationOrNull } from "@/components/core/location-provider";
+
+type PublicGoogleMapLocation = {
+  placeId: string | null;
+  locationName: string | null;
+};
+
+function googleMapsSearchUrl(query: string, placeId?: string | null) {
+  const url = new URL("https://www.google.com/maps/search/");
+  url.searchParams.set("api", "1");
+  url.searchParams.set("query", query);
+  if (placeId) url.searchParams.set("query_place_id", placeId);
+  return url.toString();
+}
+
+function googleMapsEmbedUrl(query: string, placeId?: string | null) {
+  const mapQuery = placeId ? `place_id:${placeId}` : query;
+  return `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
+}
 
 function usePublicHours(): DaySchedule[] {
   const tenant = useTenant();
@@ -38,6 +57,109 @@ export function useVenueContactPhone() {
       message ?? content.contact.whatsappMessage,
     )}`;
   return { display, telHref, waHref };
+}
+
+export function useVenueAddressText() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
+  const location = useLocationOrNull()?.activeLocation;
+  const override = useSettingsStore((s) => s.addressOverride?.trim() ?? "");
+  const locationAddress = location?.address?.trim();
+  const locationCity = location?.city?.trim();
+  if (locationAddress) {
+    return locationCity && !locationAddress.toLowerCase().includes(locationCity.toLowerCase())
+      ? `${locationAddress}, ${locationCity}`
+      : locationAddress;
+  }
+  return override || content.address.full;
+}
+
+export function useVenueMap() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
+  const location = useLocationOrNull()?.activeLocation;
+  const address = useVenueAddressText();
+  const [googleLocation, setGoogleLocation] = useState<PublicGoogleMapLocation | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/tenant/${tenant.id}/map`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { google?: PublicGoogleMapLocation | null } | null) => {
+        if (!cancelled) setGoogleLocation(payload?.google ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setGoogleLocation(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tenant.id]);
+
+  return useMemo(() => {
+    const googleQuery =
+      googleLocation?.locationName ||
+      [location?.name, address].filter(Boolean).join(" ") ||
+      content.address.full;
+    const fallbackQuery = [location?.name, address].filter(Boolean).join(" ") || content.address.full;
+    const query = googleLocation?.placeId || googleLocation?.locationName ? googleQuery : fallbackQuery;
+    const placeId = googleLocation?.placeId ?? null;
+
+    return {
+      label: googleLocation?.locationName || location?.name || address,
+      searchUrl: googleMapsSearchUrl(query, placeId),
+      embedUrl: googleMapsEmbedUrl(query, placeId),
+    };
+  }, [address, content.address.full, googleLocation, location?.name]);
+}
+
+export function VenueGoogleMapsLink({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  const map = useVenueMap();
+  return (
+    <a href={map.searchUrl} target="_blank" rel="noopener noreferrer" className={className}>
+      {children}
+    </a>
+  );
+}
+
+export function VenueMapFrame({
+  title,
+  className,
+  style,
+  dark = false,
+}: {
+  title: string;
+  className?: string;
+  style?: CSSProperties;
+  dark?: boolean;
+}) {
+  const map = useVenueMap();
+  return (
+    <iframe
+      title={title}
+      src={map.embedUrl}
+      className={className}
+      width="100%"
+      height="100%"
+      style={{
+        border: 0,
+        display: "block",
+        ...(dark
+          ? { filter: "invert(90%) hue-rotate(180deg) brightness(0.95) contrast(0.9)" }
+          : {}),
+        ...style,
+      }}
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+      allowFullScreen
+    />
+  );
 }
 
 export function VenueHoursList({
@@ -137,12 +259,7 @@ export function VenueWhatsappLink({
 }
 
 export function VenueCopyrightAddress() {
-  const tenant = useTenant();
-  const content = getTenantContent(tenant.id);
-  const override = useSettingsStore((s) => s.addressOverride?.trim() ?? "");
-  const text = override
-    ? override.replace(/\s*\n+\s*/g, " — ").trim()
-    : content.address.full;
+  const text = useVenueAddressText().replace(/\s*\n+\s*/g, " — ").trim();
   return <>{text}</>;
 }
 
@@ -155,14 +272,15 @@ export function VenueAddressBlock({
 }) {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
+  const location = useLocationOrNull()?.activeLocation;
   const override = useSettingsStore((s) => s.addressOverride?.trim() ?? "");
-  const raw = override || content.address.full;
+  const raw = useVenueAddressText();
   if (multiline && override) {
     return (
       <span className={`whitespace-pre-wrap ${className ?? ""}`}>{raw}</span>
     );
   }
-  if (override) {
+  if (override || location?.address) {
     return <span className={className}>{raw}</span>;
   }
   return (
