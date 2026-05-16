@@ -277,6 +277,11 @@ export function OfficinaKamHomePage() {
             bottom: showroom.progress >= 1 ? 0 : "auto",
           }}
         >
+          <div
+            className="kam-scroll-progress-top"
+            aria-hidden="true"
+            style={{ width: `${showroom.progress * 100}%` }}
+          />
           <div className="kam-grid-bg" />
           <div className="kam-showroom-vignette" />
           <div className="kam-showroom-media">
@@ -315,14 +320,28 @@ export function OfficinaKamHomePage() {
             </div>
           </div>
 
+          <div className="kam-hud-topbar" aria-hidden="true">
+            <div className="kam-hud-chip">
+              <small>Sessione</small>
+              <strong>{currentStage.code}</strong>
+            </div>
+            <div className="kam-hud-chip kam-hud-chip-right">
+              <small>Operazione</small>
+              <strong>{currentStage.subtitle}</strong>
+            </div>
+          </div>
+
+          {showroom.progress < 0.05 && (
+            <div className="kam-scroll-cue" aria-hidden="true">
+              ↓ Scorri per ispezionare
+            </div>
+          )}
+
           <div className="kam-container kam-hud">
             <div className="kam-hud-left">
-              <span className="kam-eyebrow">{content.hero.eyebrow}</span>
-              <h1>
-                Meccanica
-                <span>di precisione.</span>
-              </h1>
-              <p>{content.hero.body}</p>
+              <span className="kam-eyebrow">{currentStage.label}</span>
+              <h1 className="kam-stage-title">{currentStage.title}</h1>
+              <p>{currentStage.body}</p>
               <div className="kam-hero-actions">
                 <VenueWhatsappLink className="kam-btn kam-btn-primary">
                   {content.hero.ctaLabel} <ArrowRight size={16} />
@@ -333,31 +352,33 @@ export function OfficinaKamHomePage() {
               </div>
             </div>
 
-            <aside className="kam-hud-card" aria-label="Diagnostica in evidenza">
-              <div className="kam-hud-code">{currentStage.label}</div>
-              <small>{currentStage.subtitle}</small>
-              <h2>{currentStage.title}</h2>
-              <p>{currentStage.body}</p>
-              <div className="kam-stage-tabs">
+            <aside className="kam-hud-right" aria-label="Diagnostica in evidenza">
+              <div className="kam-stage-counter">
+                <strong>{String(showroom.index + 1).padStart(2, "0")}</strong>
+                <span>/ {String(stages.length).padStart(2, "0")}</span>
+              </div>
+
+              <div className="kam-stage-dots">
                 {stages.map((item, index) => (
                   <button
                     key={item.code}
                     type="button"
                     onClick={() => jumpToStage(index)}
-                    className={index === showroom.index ? "is-active" : ""}
+                    className={
+                      index === showroom.index
+                        ? "is-active"
+                        : index < showroom.index
+                          ? "is-done"
+                          : ""
+                    }
                     aria-label={item.label}
-                  >
-                    {String(index).padStart(2, "0")}
-                  </button>
+                  />
                 ))}
               </div>
-              <div className="kam-scroll-progress" aria-hidden="true">
-                <span style={{ transform: `scaleX(${showroom.progress})` }} />
-              </div>
+
               <div className="kam-hud-metric">
                 <strong>{currentStage.metric}</strong>
                 <span>{currentStage.caption}</span>
-                <em>{currentStage.code}</em>
               </div>
             </aside>
           </div>

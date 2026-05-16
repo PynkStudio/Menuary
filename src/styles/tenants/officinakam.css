@@ -288,20 +288,88 @@
     border-bottom: 2px solid;
   }
 
+  .kam-scroll-progress-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 12;
+    height: 2px;
+    background: var(--kam-orange);
+    transition: width 100ms linear;
+    will-change: width;
+    pointer-events: none;
+  }
+
+  .kam-hud-topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 100px 40px 0;
+    pointer-events: none;
+  }
+
+  .kam-hud-chip {
+    display: grid;
+    gap: 4px;
+    text-align: left;
+  }
+
+  .kam-hud-chip-right {
+    text-align: right;
+  }
+
+  .kam-hud-chip small {
+    color: var(--kam-faint);
+    font-family: var(--kam-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .kam-hud-chip strong {
+    color: var(--kam-orange);
+    font-family: var(--kam-mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .kam-scroll-cue {
+    position: absolute;
+    top: 50%;
+    right: 40px;
+    z-index: 6;
+    color: var(--kam-faint);
+    font-family: var(--kam-mono);
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: right center;
+    pointer-events: none;
+  }
+
   .kam-hud {
     position: relative;
     z-index: 2;
     display: grid;
     height: 100svh;
-    padding-top: 118px;
-    padding-bottom: 72px;
-    grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.58fr);
+    padding-top: 0;
+    padding-bottom: 60px;
+    grid-template-columns: 1fr 1fr;
     align-items: end;
-    gap: 42px;
+    gap: 40px;
   }
 
   .kam-hud-left {
-    max-width: 760px;
+    max-width: 560px;
   }
 
   .kam-eyebrow {
@@ -336,7 +404,12 @@
     line-height: 0.95;
   }
 
-  .kam-hud h1 span,
+  .kam-stage-title {
+    white-space: pre-line;
+    max-width: 520px;
+    font-size: clamp(40px, 7vw, 92px) !important;
+  }
+
   .kam-section h2 span,
   .kam-booking-grid h2 span {
     display: block;
@@ -360,118 +433,102 @@
     margin-top: 32px;
   }
 
-  .kam-hud-card {
-    border: 1px solid var(--kam-line);
-    border-radius: 18px;
-    padding: 26px;
-    background: rgba(19, 19, 22, 0.82);
-    backdrop-filter: blur(16px);
+  .kam-hud-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
   }
 
-  .kam-hud-code,
   .kam-card-code,
   .kam-price-header,
   .kam-price-row > span,
-  .kam-segmented button,
-  .kam-hud-metric em {
+  .kam-segmented button {
     font-family: var(--kam-mono);
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
-  .kam-hud-code,
   .kam-card-code {
     color: var(--kam-faint);
     font-size: 11px;
   }
 
-  .kam-hud-card h2 {
-    margin: 16px 0 0;
-    white-space: pre-line;
-    font-family: var(--kam-display);
-    font-size: 38px;
-    font-weight: 730;
-    line-height: 0.98;
+  .kam-stage-counter {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: var(--kam-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--kam-muted);
+    text-transform: uppercase;
   }
 
-  .kam-hud-card small {
+  .kam-stage-counter strong {
+    font-family: var(--kam-display);
+    font-size: 48px;
+    line-height: 1;
+    font-weight: 600;
+    color: var(--kam-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kam-stage-counter span {
+    color: var(--kam-faint);
+  }
+
+  .kam-stage-dots {
+    display: flex;
+    gap: 8px;
+  }
+
+  .kam-stage-dots button {
+    width: 12px;
+    height: 4px;
+    padding: 0;
+    border: 0;
+    border-radius: 2px;
+    background: var(--kam-line-strong);
+    cursor: pointer;
+    transition: width 300ms ease, background 300ms ease;
+  }
+
+  .kam-stage-dots button.is-done {
+    background: rgba(249, 115, 22, 0.4);
+  }
+
+  .kam-stage-dots button.is-active {
+    width: 32px;
+    background: var(--kam-orange);
+  }
+
+  .kam-hud-metric {
+    min-width: 220px;
+    padding: 10px 14px;
+    text-align: right;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--kam-line);
+    border-radius: 8px;
+  }
+
+  .kam-hud-metric strong {
     display: block;
-    margin-top: 8px;
-    color: var(--kam-orange);
+    color: var(--kam-text);
+    font-family: var(--kam-display);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .kam-hud-metric span {
+    display: block;
+    margin-top: 2px;
+    color: var(--kam-faint);
     font-family: var(--kam-mono);
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-  }
-
-  .kam-hud-card p {
-    margin-top: 16px;
-    color: var(--kam-muted);
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  .kam-stage-tabs {
-    display: flex;
-    gap: 8px;
-    margin-top: 22px;
-  }
-
-  .kam-stage-tabs button {
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--kam-line);
-    border-radius: 999px;
-    background: transparent;
-    color: var(--kam-muted);
-    font-family: var(--kam-mono);
-    font-size: 11px;
-  }
-
-  .kam-stage-tabs button.is-active {
-    border-color: var(--kam-orange);
-    background: var(--kam-orange);
-    color: var(--kam-bg);
-  }
-
-  .kam-scroll-progress {
-    position: relative;
-    height: 1px;
-    margin-top: 22px;
-    overflow: hidden;
-    background: var(--kam-line);
-  }
-
-  .kam-scroll-progress span {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, var(--kam-orange), rgba(249, 115, 22, 0.2));
-    transform-origin: left center;
-    will-change: transform;
-  }
-
-  .kam-hud-metric {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0 14px;
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px solid var(--kam-line);
-  }
-
-  .kam-hud-metric strong {
-    grid-row: span 2;
-    color: var(--kam-orange);
-    font-family: var(--kam-display);
-    font-size: 42px;
-    line-height: 1;
-  }
-
-  .kam-hud-metric span,
-  .kam-hud-metric em {
-    color: var(--kam-muted);
-    font-size: 12px;
-    font-style: normal;
   }
 
   .kam-stats {
@@ -1153,11 +1210,25 @@
     .kam-hud {
       height: 100svh;
       align-content: end;
-      padding-top: 96px;
       padding-bottom: 32px;
     }
 
-    .kam-hud-card,
+    .kam-hud-right {
+      align-items: flex-start;
+    }
+
+    .kam-hud-metric {
+      text-align: left;
+    }
+
+    .kam-hud-topbar {
+      padding: 88px 24px 0;
+    }
+
+    .kam-scroll-cue {
+      display: none;
+    }
+
     .kam-google-card,
     .kam-big-number {
       justify-self: start;
@@ -1230,20 +1301,16 @@
       margin-top: 18px;
     }
 
-    .kam-hud-card h2 {
-      font-size: 28px;
-    }
-
-    .kam-hud-card p {
-      display: none;
-    }
-
-    .kam-hud-metric strong {
+    .kam-stage-counter strong {
       font-size: 34px;
     }
 
-    .kam-hud-card {
-      padding: 20px;
+    .kam-hud-topbar {
+      padding: 80px 18px 0;
+    }
+
+    .kam-hud-chip strong {
+      font-size: 10px;
     }
 
     .kam-stats-grid,
