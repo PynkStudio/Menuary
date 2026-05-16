@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchLocations } from "@/lib/location";
 import { GestioneLocationsManager } from "@/components/gestione/gestione-locations-manager";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
+import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 export default async function SediPage({
   params,
@@ -13,7 +14,7 @@ export default async function SediPage({
 }) {
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) notFound();
+  if (!tenant || !getGestioneModuleAccess(tenant.features).canManageLocations) notFound();
 
   const host = (await headers()).get("host");
   const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
@@ -25,7 +26,7 @@ export default async function SediPage({
     supabase.from("tenantadmin").select("id").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
     supabase.from("siteadmin").select("id").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
   ]);
-  if (!ta && !sa) redirect(`/gestione/${tenantSlug}`);
+  if (!ta && !sa) redirect(getGestioneBaseHref(host, tenant) || "/");
 
   const locations = await fetchLocations(supabase, tenantSlug);
 
@@ -37,11 +38,6 @@ export default async function SediPage({
       <h1 className="mt-2 text-3xl font-bold tracking-tight">Sedi</h1>
       <p className="mt-3 max-w-2xl opacity-70">
         Gestisci le sedi del locale. Ogni sede ha il proprio indirizzo, orari e URL dedicato.
-        {!tenant.features.multiLocation && (
-          <span className="ml-1">
-            Il modulo multi-sede non è attivo — contatta il supporto per abilitarlo.
-          </span>
-        )}
       </p>
 
       <div className="mt-8">

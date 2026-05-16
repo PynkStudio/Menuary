@@ -8,7 +8,6 @@ import {
   detectBrandFromRecipients,
 } from "@/lib/email/inbound-types";
 import {
-  type ResendTrackingEventType,
   type ResendTrackingPayload,
   detectBrandFromSender,
   trackingEventToStatus,

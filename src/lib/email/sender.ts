@@ -1,5 +1,4 @@
 import { findTenantById } from "@/lib/tenant-registry";
-import { VERTICAL_REGISTRY } from "@/lib/vertical";
 import type { TenantVertical } from "@/lib/tenant";
 
 // ─── Brand configs ─────────────────────────────────────────────────────────────
@@ -88,7 +87,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY non configurata." };
 
-  const { from, brand, replyTo } = resolveSender(params.tenantId);
+  const { from, replyTo } = resolveSender(params.tenantId);
 
   const body = {
     from: params.fromOverride ?? from,

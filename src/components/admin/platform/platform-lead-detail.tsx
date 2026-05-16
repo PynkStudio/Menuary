@@ -63,6 +63,7 @@ import {
   calculateSubscriptionTotal,
 } from "@/lib/platform-admin-data";
 import { getModuleLabel } from "@/lib/vertical";
+import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 
 type Tab = "anagrafica" | "fatturazione" | "abbonamento" | "pagamenti" | "note";
 
@@ -337,7 +338,7 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
                 <GitBranch size={14} /> Tenant attivo
               </span>
               <Link
-                href={`/gestione/${lead.tenant_id}`}
+                href={getTenantGestioneExternalHref(lead.tenant_id)}
                 className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 hover:border-pork-red/30 hover:text-pork-red"
               >
                 Pannello tenant <ExternalLink size={13} />

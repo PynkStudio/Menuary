@@ -20,6 +20,7 @@ import {
 import { AdminTenantLocationsPanel } from "@/components/admin/tenant-locations-panel";
 import { PLATFORM_LEADS, PLATFORM_SUBSCRIPTIONS } from "@/lib/platform-admin-data";
 import { getModuleCopy } from "@/lib/vertical";
+import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 
 const PREVIEW_HOST: Record<string, string> = {
   food: "https://demo.menuary.it",
@@ -161,7 +162,7 @@ export default function AdminTenantPage() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
-                    href={`/gestione/${tenant.id}`}
+                    href={getTenantGestioneExternalHref(tenant.id)}
                     className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 hover:border-pork-red/30 hover:text-pork-red"
                   >
                     Gestione tenant <ExternalLink size={13} />

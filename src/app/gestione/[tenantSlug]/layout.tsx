@@ -11,6 +11,7 @@ import { fetchLocations, fetchStaffAllowedLocationIds, filterAllowedLocations } 
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveSessionCookieDomain, usesSharedMenuarySession } from "@/lib/session-cookie-domain";
 import type { LoginFrom } from "@/lib/login-url";
+import { getGestioneBaseHref } from "@/lib/gestione-routing";
 
 interface Props {
   children: React.ReactNode;
@@ -107,12 +108,7 @@ export default async function GestioneLayout({ children, params }: Props) {
   }
 
   const cssVars = tenantThemeCssVars(tenant.theme);
-  const navBaseHref =
-    mode === "gestione-custom"
-      ? ""
-      : isDemoGestione
-        ? `/${tenant.id}/gestione`
-        : undefined;
+  const navBaseHref = getGestioneBaseHref(host, tenant);
 
   // Sedi: solo se il tenant ha multiLocation abilitato.
   const allLocations = tenant.features.multiLocation
@@ -142,7 +138,7 @@ export default async function GestioneLayout({ children, params }: Props) {
       } as React.CSSProperties}
     >
       <GestioneShell
-        tenant={{ id: tenant.id, name: tenant.name, theme: tenant.theme }}
+        tenant={{ id: tenant.id, name: tenant.name, theme: tenant.theme, features: tenant.features }}
         currentUser={{
           email: ta?.email ?? emp?.email ?? user.email ?? "",
           displayName: ta?.display_name ?? emp?.display_name ?? null,

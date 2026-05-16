@@ -5,6 +5,8 @@ import { GoogleConnectCard } from "@/components/gestione/google/google-connect-c
 import Link from "next/link";
 import { Clock, MessageSquare, BarChart2 } from "lucide-react";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { headers } from "next/headers";
+import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 interface Props {
   params: Promise<{ tenantSlug: string }>;
@@ -16,7 +18,7 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
   const { google_auth, step } = await searchParams;
 
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) notFound();
+  if (!tenant || !getGestioneModuleAccess(tenant.features).hasGoogleBusiness) notFound();
 
   const [location, lastSync] = await Promise.all([
     getPrimaryLocation(tenantSlug),
@@ -34,7 +36,7 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
         .is("reply_comment", null)
     : { count: null };
 
-  const base = `/gestione/${tenantSlug}/google`;
+  const base = `${getGestioneBaseHref((await headers()).get("host"), tenant)}/google`;
 
   const sections = [
     {

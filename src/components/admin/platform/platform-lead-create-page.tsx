@@ -475,7 +475,7 @@ function StepWebsite({ data, set, step, total }: StepProps) {
         {data.has_website === false && (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
             <p className="text-sm font-bold text-emerald-700">
-              Ottimo — un'attività senza sito è una grande opportunità per noi.
+              Ottimo — un&apos;attività senza sito è una grande opportunità per noi.
             </p>
           </div>
         )}
@@ -563,7 +563,7 @@ function StepMaps({ data, set, step, total }: StepProps) {
                 Ha registrato la titolarità su Google?
               </p>
               <p className="mb-2 text-sm text-pork-ink/50">
-                Se compare il pulsante "Gestisci questa struttura", la titolarità{" "}
+                Se compare il pulsante &quot;Gestisci questa struttura&quot;, la titolarità{" "}
                 <strong>non è stata</strong> registrata.
               </p>
               <div className="flex gap-3">
@@ -775,7 +775,7 @@ function StepContacts({ data, set, step, total }: StepProps) {
             onClick={addLocation}
             className="mt-3 inline-flex items-center gap-2 rounded-full border border-dashed border-pork-ink/20 px-4 py-2 text-sm font-bold text-pork-ink/50 hover:border-pork-red/40 hover:text-pork-red"
           >
-            <Plus size={14} /> Aggiungi un'altra sede
+            <Plus size={14} /> Aggiungi un&apos;altra sede
           </button>
         </div>
       </div>

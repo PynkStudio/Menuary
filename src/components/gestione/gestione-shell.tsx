@@ -10,13 +10,15 @@ import {
   type StoreCapabilities,
   type EmployeeRole,
 } from "@/lib/store-roles";
-import type { TenantLocation } from "@/lib/tenant";
+import type { TenantFeatureFlags, TenantLocation } from "@/lib/tenant";
 import { isMultiLocation } from "@/lib/location";
+import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 interface Tenant {
   id: string;
   name: string;
   theme: { red: string; ink: string; cream: string };
+  features: TenantFeatureFlags;
 }
 
 interface CurrentUser {
@@ -66,6 +68,7 @@ export function GestioneShell({
     currentUser.role ?? "personale_cucina",
     currentUser.permissions,
   );
+  const access = getGestioneModuleAccess(tenant.features);
 
   const base = navBaseHref ?? `/gestione/${tenant.id}`;
   const dashboardHref = base || "/";
@@ -75,17 +78,17 @@ export function GestioneShell({
 
   const items: NavItem[] = [
     { label: "Dashboard", href: dashboardHref, visible: () => true },
-    { label: "Ordini", href: sectionHref("ordini"), visible: () => true },
-    { label: "Menu", href: sectionHref("menu"), visible: (c) => c.can_edit_menu },
-    { label: "Tavoli", href: sectionHref("tavoli"), visible: (c) => c.can_manage_reservations },
-    { label: "Prenotazioni", href: sectionHref("prenotazioni"), visible: (c) => c.can_manage_reservations },
-    { label: "Cassa", href: sectionHref("cassa"), visible: (c) => c.can_cassa },
-    { label: "Turni", href: sectionHref("turni"), visible: () => true },
-    { label: "Staff", href: sectionHref("staff"), visible: (c) => c.can_manage_staff },
-    { label: "Google", href: sectionHref("google"), visible: () => isAdmin },
-    { label: "Analytics", href: sectionHref("analytics"), visible: (c) => c.can_view_analytics },
+    { label: "Ordini", href: sectionHref("ordini"), visible: () => access.hasOrders },
+    { label: "Menu", href: sectionHref("menu"), visible: (c) => access.canManageMenu && c.can_edit_menu },
+    { label: "Tavoli", href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
+    { label: "Prenotazioni", href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations },
+    { label: "Cassa", href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
+    { label: "Turni", href: sectionHref("turni"), visible: () => access.canManageShifts },
+    { label: "Staff", href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
+    { label: "Google", href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },
+    { label: "Analytics", href: sectionHref("analytics"), visible: (c) => access.canViewAnalytics && c.can_view_analytics },
     { label: "Fatturazione", href: sectionHref("fatturazione"), visible: (c) => c.can_view_financials },
-    { label: "Sedi", href: sectionHref("sedi"), visible: () => isAdmin },
+    { label: "Sedi", href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
   ];
 
   const visibleItems = items.filter((i) => i.visible(cap));

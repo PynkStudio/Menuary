@@ -4,6 +4,8 @@ import { getPrimaryLocation } from "@/lib/data/google-sync";
 import { ReviewsManager } from "@/components/gestione/google/reviews-manager";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { headers } from "next/headers";
+import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 interface Props {
   params: Promise<{ tenantSlug: string }>;
@@ -12,15 +14,16 @@ interface Props {
 export default async function RecensioniPage({ params }: Props) {
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) notFound();
+  if (!tenant || !getGestioneModuleAccess(tenant.features).modules.reviews) notFound();
 
   const location = await getPrimaryLocation(tenantSlug);
+  const googleHref = `${getGestioneBaseHref((await headers()).get("host"), tenant)}/google`;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Link
-          href={`/gestione/${tenantSlug}/google`}
+          href={googleHref}
           className="rounded-full p-1.5 text-pork-ink/40 hover:text-pork-ink"
         >
           <ChevronLeft size={20} />
@@ -38,7 +41,7 @@ export default async function RecensioniPage({ params }: Props) {
             Collega il tuo Google Business Profile per visualizzare e rispondere alle recensioni.
           </p>
           <Link
-            href={`/gestione/${tenantSlug}/google`}
+            href={googleHref}
             className="inline-block rounded-full bg-pork-ink px-5 py-2 text-sm font-bold text-pork-cream"
           >
             Vai alle impostazioni Google

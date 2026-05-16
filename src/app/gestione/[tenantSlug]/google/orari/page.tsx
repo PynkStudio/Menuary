@@ -9,6 +9,8 @@ import { ChevronLeft, RefreshCw } from "lucide-react";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { DaySchedule } from "@/lib/venue-hours";
 import { defaultHoursWeek } from "@/lib/venue-hours";
+import { headers } from "next/headers";
+import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 interface Props {
   params: Promise<{ tenantSlug: string }>;
@@ -17,7 +19,7 @@ interface Props {
 export default async function OrariPage({ params }: Props) {
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) notFound();
+  if (!tenant || !getGestioneModuleAccess(tenant.features).canManageReservations) notFound();
 
   const db = createSupabaseServiceClient();
   const [location, specialHours, tenantRow] = await Promise.all([
@@ -30,12 +32,13 @@ export default async function OrariPage({ params }: Props) {
 
   const hours: DaySchedule[] = (tenantRow?.hours as DaySchedule[] | null) ?? defaultHoursWeek();
   const googleConnected = !!location;
+  const googleHref = `${getGestioneBaseHref((await headers()).get("host"), tenant)}/google`;
 
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-3">
         <Link
-          href={`/gestione/${tenantSlug}/google`}
+          href={googleHref}
           className="rounded-full p-1.5 text-pork-ink/40 hover:text-pork-ink"
         >
           <ChevronLeft size={20} />

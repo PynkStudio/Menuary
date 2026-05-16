@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { InboundEmailBrand } from "./inbound-types";
