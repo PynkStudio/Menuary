@@ -15,10 +15,11 @@ export type TenantVertical = "food" | "services";
 // Governa il ciclo di vita del tenant sulla piattaforma e determina
 // quali job automatici vengono eseguiti (es. sync Google Reviews).
 //
-// "active"  → tenant in produzione: sync ogni 30 giorni
-// "trial"   → tenant in prova: solo il primo sync di popolamento, poi stop
-// "offline" → tenant disattivato: nessun job automatico eseguito
-export type TenantStatus = "active" | "trial" | "offline";
+// "active"     → tenant in produzione: sync ogni 30 giorni
+// "trial"      → tenant in prova: solo il primo sync di popolamento, poi stop
+// "offline"    → tenant disattivato: nessun job automatico eseguito
+// "trattativa" → prospect in fase commerciale: demo disponibile, nessun job automatico
+export type TenantStatus = "active" | "trial" | "offline" | "trattativa";
 
 // ─── Google integration ───────────────────────────────────────────────────────
 // Il Place ID e il resource name della location Google non sono hardcodati qui:

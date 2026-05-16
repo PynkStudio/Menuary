@@ -1640,8 +1640,10 @@ export type Database = {
           name: string
           preview_slug: string | null
           site_config: Json
+          status: string
           theme: Json
           updated_at: string
+          vertical: string
         }
         Insert: {
           created_at?: string
@@ -1654,8 +1656,10 @@ export type Database = {
           name: string
           preview_slug?: string | null
           site_config?: Json
+          status?: string
           theme?: Json
           updated_at?: string
+          vertical?: string
         }
         Update: {
           created_at?: string
@@ -1668,8 +1672,10 @@ export type Database = {
           name?: string
           preview_slug?: string | null
           site_config?: Json
+          status?: string
           theme?: Json
           updated_at?: string
+          vertical?: string
         }
         Relationships: []
       }

@@ -1,6 +1,7 @@
 "use client";
 
-import { RotateCcw, ShieldCheck, Power } from "lucide-react";
+import { RotateCcw, ShieldCheck, Power, ExternalLink } from "lucide-react";
+import type { TenantStatus } from "@/lib/tenant";
 import { TENANTS } from "@/lib/tenant-registry";
 import { useTenant } from "@/components/core/tenant-provider";
 import {
@@ -16,6 +17,18 @@ import {
   TENANT_MODULE_CATEGORIES,
 } from "@/lib/tenant-modules";
 import { AdminTenantLocationsPanel } from "@/components/admin/tenant-locations-panel";
+
+const PREVIEW_HOST: Record<string, string> = {
+  food: "https://demo.menuary.it",
+  services: "https://demo.bizery.it",
+};
+
+const STATUS_BADGE: Record<TenantStatus, { label: string; className: string }> = {
+  active:     { label: "Attivo",      className: "bg-pork-green text-white" },
+  trial:      { label: "Trial",       className: "bg-pork-mustard text-pork-ink" },
+  offline:    { label: "Offline",     className: "bg-pork-ink/20 text-pork-ink/60" },
+  trattativa: { label: "Trattativa",  className: "bg-amber-100 text-amber-800" },
+};
 
 export default function AdminTenantPage() {
   const mode = usePlatformMode();
@@ -74,10 +87,31 @@ export default function AdminTenantPage() {
                         Corrente
                       </span>
                     )}
+                    {(() => {
+                      const badge = STATUS_BADGE[tenant.status];
+                      return badge ? (
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${badge.className}`}>
+                          {badge.label}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   <p className="mt-1 text-sm text-pork-ink/55">
-                    {tenant.domains.join(" · ")}
+                    {tenant.domains.length > 0
+                      ? tenant.domains.join(" · ")
+                      : <span className="italic text-pork-ink/35">nessun dominio — solo preview</span>}
                   </p>
+                  {tenant.previewSlug && (
+                    <a
+                      href={`${PREVIEW_HOST[tenant.vertical] ?? "https://demo.menuary.it"}/${tenant.previewSlug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold text-pork-red hover:underline"
+                    >
+                      <ExternalLink size={12} />
+                      Link demo
+                    </a>
+                  )}
                 </div>
 
                 <button

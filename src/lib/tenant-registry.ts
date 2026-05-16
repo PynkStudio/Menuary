@@ -148,7 +148,7 @@ export const TENANTS: TenantProfile[] = [
     domains: [],                    // nessun dominio proprio (solo preview slug)
     previewSlug: "officinakam",     // → demo.bizery.it/officinakam
     enabled: true,
-    status: "active",
+    status: "trattativa",
     theme: {
       red: "#F97316",               // orange primario (brand officinakam)
       redDark: "#C2410C",           // orange scuro

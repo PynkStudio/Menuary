@@ -2,11 +2,13 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { TenantProfile, TenantFeatureFlags, TenantTheme } from "@/lib/tenant";
 
+const TENANT_SELECT = "id,name,label,domains,preview_slug,enabled,vertical,status,theme,features" as const;
+
 export async function getTenantById(id: string): Promise<TenantProfile | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("tenants")
-    .select("id,name,label,domains,preview_slug,enabled,theme,features")
+    .select(TENANT_SELECT)
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;
@@ -18,7 +20,7 @@ export async function getTenantByDomain(hostname: string): Promise<TenantProfile
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("tenants")
-    .select("id,name,label,domains,preview_slug,enabled,theme,features")
+    .select(TENANT_SELECT)
     .contains("domains", [normalized])
     .maybeSingle();
   return data ? rowToProfile(data) : null;
@@ -28,7 +30,7 @@ export async function getTenantByPreviewSlug(slug: string): Promise<TenantProfil
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("tenants")
-    .select("id,name,label,domains,preview_slug,enabled,theme,features")
+    .select(TENANT_SELECT)
     .eq("preview_slug", slug)
     .maybeSingle();
   return data ? rowToProfile(data) : null;
@@ -41,6 +43,8 @@ type Row = {
   domains: string[];
   preview_slug: string | null;
   enabled: boolean;
+  vertical: string | null;
+  status: string | null;
   theme: unknown;
   features: unknown;
 };
@@ -50,15 +54,11 @@ function rowToProfile(r: Row): TenantProfile {
     id: r.id,
     name: r.name,
     label: r.label,
-    // La colonna `vertical` non è ancora presente sulla tabella Supabase:
-    // tutti i tenant attuali sono ristoranti, quindi default a "food".
-    vertical: "food",
+    vertical: (r.vertical as TenantProfile["vertical"]) ?? "food",
     domains: r.domains,
     previewSlug: r.preview_slug ?? undefined,
     enabled: r.enabled,
-    // `status` non ancora presente sulla tabella DB: i tenant letti da DB
-    // sono tenant reali in produzione, quindi default a "active".
-    status: "active",
+    status: (r.status as TenantProfile["status"]) ?? "active",
     theme: r.theme as TenantTheme,
     features: r.features as TenantFeatureFlags,
   };
