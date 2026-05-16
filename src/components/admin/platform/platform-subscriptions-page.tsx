@@ -22,105 +22,11 @@ import {
   PAYMENT_STATUS_COLORS,
   PAYMENT_STATUS_LABELS,
 } from "@/lib/platform-crm-types";
-
-// ─── Mock dati ────────────────────────────────────────────────────────────────
-
-const MOCK_SUBSCRIPTIONS: PlatformSubscription[] = [
-  {
-    id: "sub-1",
-    lead_id: "1",
-    package_id: "pkg-growth",
-    billing_cycle: "monthly",
-    price_override: null,
-    currency: "EUR",
-    status: "trial",
-    started_at: "2026-05-01",
-    trial_ends_at: "2026-05-31",
-    current_period_start: "2026-05-01",
-    current_period_end: "2026-05-31",
-    next_renewal_at: "2026-06-01",
-    cancelled_at: null,
-    notes: null,
-    created_at: "2026-05-01T10:00:00Z",
-    updated_at: "2026-05-01T10:00:00Z",
-    lead: {
-      id: "1", business_name: "Osteria della Piazza",
-      business_slug: null, business_vertical: "food",
-      contact_name: "Marco Ferri", contact_email: "marco@osteriadellapiazza.it",
-      contact_phone: null, address: null, city: "Bologna", province: "BO",
-      postal_code: null, country: "IT",
-      billing_name: null, billing_vat: null, billing_cf: null,
-      billing_address: null, billing_city: null, billing_province: null,
-      billing_postal_code: null, billing_sdi: null, billing_pec: null,
-      status: "prospect", source: "form_web", notes: null,
-      tenant_id: null, converted_at: null,
-      created_at: "2026-05-01T10:00:00Z", updated_at: "2026-05-10T15:30:00Z",
-    },
-    package: {
-      id: "pkg-growth", name: "Growth", slug: "growth", description: null,
-      price_monthly: 99, price_yearly: 990, currency: "EUR",
-      modules: ["website", "onlineMenu", "reservations", "takeaway", "tableOrders"],
-      is_active: true, sort_order: 2,
-      created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z",
-    },
-  },
-  {
-    id: "sub-2",
-    lead_id: "2",
-    package_id: "pkg-pro",
-    billing_cycle: "yearly",
-    price_override: null,
-    currency: "EUR",
-    status: "active",
-    started_at: "2026-02-01",
-    trial_ends_at: null,
-    current_period_start: "2026-02-01",
-    current_period_end: "2027-01-31",
-    next_renewal_at: "2027-02-01",
-    cancelled_at: null,
-    notes: null,
-    created_at: "2026-02-01T10:00:00Z",
-    updated_at: "2026-02-01T10:00:00Z",
-    lead: {
-      id: "2", business_name: "BePork",
-      business_slug: "bepork", business_vertical: "food",
-      contact_name: "Luca Bianchi", contact_email: "luca@bepork.it",
-      contact_phone: null, address: "Via Veneto 5", city: "Roma", province: "RM",
-      postal_code: "00187", country: "IT",
-      billing_name: "BePork S.r.l.", billing_vat: "IT12345678901",
-      billing_cf: null, billing_address: null, billing_city: null,
-      billing_province: null, billing_postal_code: null, billing_sdi: null, billing_pec: null,
-      status: "active", source: "diretto", notes: null,
-      tenant_id: "bepork", converted_at: "2026-02-01T00:00:00Z",
-      created_at: "2026-01-15T09:00:00Z", updated_at: "2026-05-01T12:00:00Z",
-    },
-    package: {
-      id: "pkg-pro", name: "Pro", slug: "pro", description: null,
-      price_monthly: 179, price_yearly: 1790, currency: "EUR",
-      modules: ["website", "onlineMenu", "reservations", "takeaway", "tableOrders",
-                "crm", "analytics", "upselling"],
-      is_active: true, sort_order: 3,
-      created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z",
-    },
-  },
-];
-
-const MOCK_PAYMENTS: PlatformPayment[] = [
-  {
-    id: "pay-1", subscription_id: "sub-1", lead_id: "1",
-    amount: 99, currency: "EUR", status: "pending",
-    payment_method: "bonifico", payment_date: null,
-    due_date: "2026-06-01", invoice_number: null, notes: null,
-    created_at: "2026-05-01T10:00:00Z", updated_at: "2026-05-01T10:00:00Z",
-  },
-  {
-    id: "pay-2", subscription_id: "sub-2", lead_id: "2",
-    amount: 1790, currency: "EUR", status: "paid",
-    payment_method: "bonifico", payment_date: "2026-02-05",
-    due_date: "2026-02-01", invoice_number: "FT-2026-001", notes: null,
-    created_at: "2026-02-01T10:00:00Z", updated_at: "2026-02-05T10:00:00Z",
-  },
-];
+import {
+  PLATFORM_PAYMENTS,
+  PLATFORM_SUBSCRIPTIONS,
+  calculateSubscriptionTotal,
+} from "@/lib/platform-admin-data";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -150,16 +56,14 @@ const STATUS_FILTERS: { value: SubscriptionStatus | "all"; label: string }[] = [
 ];
 
 export function PlatformSubscriptionsPage() {
-  const [subscriptions] = useState<PlatformSubscription[]>(MOCK_SUBSCRIPTIONS);
-  const [payments] = useState<PlatformPayment[]>(MOCK_PAYMENTS);
+  const [subscriptions] = useState<PlatformSubscription[]>(PLATFORM_SUBSCRIPTIONS);
+  const [payments] = useState<PlatformPayment[]>(PLATFORM_PAYMENTS);
   const [activeFilter, setActiveFilter] = useState<SubscriptionStatus | "all">("all");
 
   const mrr = subscriptions
     .filter((s) => s.status === "active" || s.status === "trial")
     .reduce((sum, s) => {
-      const price = s.price_override ?? (s.billing_cycle === "yearly"
-        ? (s.package?.price_yearly ?? 0) / 12
-        : (s.package?.price_monthly ?? 0));
+      const price = calculateSubscriptionTotal(s) / (s.billing_cycle === "yearly" ? 12 : 1);
       return sum + price;
     }, 0);
 
@@ -328,10 +232,7 @@ function SubscriptionRow({
 }) {
   const effectivePrice =
     sub.price_override ??
-    (sub.billing_cycle === "yearly"
-      ? sub.package?.price_yearly
-      : sub.package?.price_monthly) ??
-    0;
+    calculateSubscriptionTotal(sub);
 
   const days = daysUntil(sub.next_renewal_at);
   const expiresWarn = days !== null && days <= 30 && (sub.status === "trial" || sub.status === "active");

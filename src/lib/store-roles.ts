@@ -17,7 +17,7 @@ export const EMPLOYEE_ROLES = [
 
 export const DEVICE_ROLES = ["kitdisplay", "kiosk"] as const;
 
-export type SiteadminRole = "superadmin" | "admin" | "venditore" | "amministrazione" | "gestore";
+export type SiteadminRole = "superadmin" | "admin" | "venditore" | "amministrazione" | "gestore" | "lead_inserter";
 export type EmployeeRole = (typeof EMPLOYEE_ROLES)[number] | (typeof DEVICE_ROLES)[number];
 
 /** @deprecated Usa EMPLOYEE_ROLES */
@@ -96,6 +96,7 @@ export const ROLE_LABELS: Record<SiteadminRole | EmployeeRole, string> = {
   venditore: "Venditore",
   amministrazione: "Amministrazione",
   gestore: "Gestore",
+  lead_inserter: "Inserimento lead",
   manager: "Manager",
   chef: "Chef",
   cameriere: "Cameriere",

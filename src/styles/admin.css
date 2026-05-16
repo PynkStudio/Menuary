@@ -4,4 +4,153 @@
     @apply w-full rounded-xl border border-pork-ink/15 bg-white px-3 py-2.5 text-sm
            placeholder-pork-ink/35 focus:outline-none focus:ring-2 focus:ring-pork-red/30;
   }
+
+  /* ============================================================
+     Menuary admin shell — usa i token --menuary-* di menuary.it.
+     Applicato solo in mode "platform-admin" (admin.menuary.it).
+     ============================================================ */
+  .menuary-admin-root {
+    min-height: 100vh;
+    background: var(--menuary-paper);
+    color: var(--menuary-ink);
+    font-family: var(--font-menuary-body), system-ui, sans-serif;
+  }
+
+  .menuary-admin-sidebar {
+    background: var(--menuary-ink);
+    color: var(--menuary-paper);
+    border-right: 1px solid rgba(255, 250, 242, 0.08);
+  }
+
+  .menuary-admin-sidebar-header {
+    border-bottom: 1px solid rgba(255, 250, 242, 0.1);
+  }
+
+  .menuary-admin-brand {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-weight: 500;
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+    color: var(--menuary-gold);
+  }
+
+  .menuary-admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.94rem;
+    color: rgba(255, 250, 242, 0.72);
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+
+  .menuary-admin-nav-link:hover {
+    background: rgba(255, 250, 242, 0.06);
+    color: var(--menuary-paper);
+  }
+
+  .menuary-admin-nav-link[data-active="true"] {
+    background: var(--menuary-copper);
+    color: #fffaf2;
+  }
+
+  .menuary-admin-nav-tag {
+    margin-left: auto;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(255, 250, 242, 0.1);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .menuary-admin-logout {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--menuary-paper);
+    font-weight: 600;
+    border: 1px solid rgba(255, 250, 242, 0.18);
+    transition: background-color 200ms ease, border-color 200ms ease;
+  }
+
+  .menuary-admin-logout:hover {
+    background: rgba(255, 250, 242, 0.06);
+    border-color: rgba(255, 250, 242, 0.32);
+  }
+
+  .menuary-admin-topbar {
+    background: rgba(243, 239, 231, 0.92);
+    border-bottom: 1px solid var(--menuary-line);
+    backdrop-filter: blur(10px);
+  }
+
+  .menuary-admin-topbar-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 999px;
+    background: var(--menuary-ink);
+    color: var(--menuary-paper);
+  }
+
+  .menuary-admin-topbar-title {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-weight: 500;
+    color: var(--menuary-ink);
+    letter-spacing: -0.01em;
+  }
+
+  .menuary-admin-backdrop {
+    background: rgba(24, 35, 31, 0.7);
+  }
+}
+
+/* admin.menuary.it: i contenuti dentro le pagine usano classi BePork (.headline,
+   .impact-title, btn-primary, ecc.). Le rivestiamo con i font/colori Menuary
+   senza dover toccare ogni singola pagina. */
+@layer components {
+  html[data-platform="platform-admin"] .headline {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    text-transform: none;
+  }
+
+  html[data-platform="platform-admin"] .impact-title {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    text-transform: none;
+  }
+
+  html[data-platform="platform-admin"] .btn-primary {
+    @apply bg-transparent shadow-none;
+    background: var(--menuary-ink);
+    color: var(--menuary-paper);
+  }
+
+  html[data-platform="platform-admin"] .btn-primary:hover {
+    background: #23332d;
+  }
+
+  html[data-platform="platform-admin"] .btn-mustard {
+    @apply shadow-none;
+    background: var(--menuary-copper);
+    color: #fffaf2;
+  }
+
+  html[data-platform="platform-admin"] .btn-mustard:hover {
+    background: var(--menuary-copper-dark);
+  }
 }

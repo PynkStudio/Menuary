@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 async function requireSiteAdmin(supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>) {
@@ -7,11 +8,11 @@ async function requireSiteAdmin(supabase: Awaited<ReturnType<typeof createSupaba
   if (!user) return null;
   const { data: sa } = await supabase
     .from("siteadmin")
-    .select("id")
+    .select("role")
     .eq("user_id", user.id)
     .eq("enabled", true)
     .maybeSingle();
-  return sa ? user : null;
+  return isSiteadminRole(sa?.role) && hasAdminPermission(sa.role, "tenant:manage") ? user : null;
 }
 
 /**

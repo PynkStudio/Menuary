@@ -1,6 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import {
+  canAccessAdminPath,
+  getDefaultAdminPath,
+  isSiteadminRole,
+  type SiteadminRole,
+} from "@/lib/admin-permissions";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromHost, resolveLocationSlugFromHost } from "@/lib/tenant-runtime";
 
@@ -64,6 +70,44 @@ async function getSessionUser(
     return user;
   } catch {
     return null;
+  }
+}
+
+async function getSessionUserAndSiteadminRole(
+  request: NextRequest,
+  response: NextResponse,
+  cookieDomain?: string,
+): Promise<{ user: Awaited<ReturnType<typeof getSessionUser>>; role: SiteadminRole | null }> {
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, {
+                ...options,
+                ...(cookieDomain !== undefined ? { domain: cookieDomain } : {}),
+              }),
+            );
+          },
+        },
+      },
+    );
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { user: null, role: null };
+    const { data: siteadmin } = await supabase
+      .from("siteadmin")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("enabled", true)
+      .maybeSingle();
+    const role = isSiteadminRole(siteadmin?.role) ? siteadmin.role : null;
+    return { user, role };
+  } catch {
+    return { user: null, role: null };
   }
 }
 
@@ -153,12 +197,21 @@ export async function middleware(request: NextRequest) {
       } else {
         response = NextResponse.next({ request });
       }
-      const user = await getSessionUser(request, response, cookieDomain);
+      const { user, role } = await getSessionUserAndSiteadminRole(request, response, cookieDomain);
       if (!user) {
         const next = pathname.replace(/^\/admin/, "") || "/";
         const fallback = new URL("/admin/login", request.url);
         fallback.searchParams.set("next", next);
         return NextResponse.redirect(fallback);
+      }
+      if (!role) {
+        return NextResponse.redirect(new URL("/admin/login", request.url));
+      }
+      if ((effectivePath.replace(/\/+$/, "") || "/admin") === "/admin") {
+        return NextResponse.redirect(new URL(getDefaultAdminPath(role), request.url));
+      }
+      if (!canAccessAdminPath(role, effectivePath)) {
+        return NextResponse.redirect(new URL(getDefaultAdminPath(role), request.url));
       }
       return response;
     }

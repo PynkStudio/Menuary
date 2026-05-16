@@ -18,6 +18,14 @@ import {
   UtensilsCrossed,
   Briefcase,
   GitBranch,
+  Mail,
+  Phone,
+  MessageCircle,
+  MapPinned,
+  Flame,
+  ExternalLink,
+  MonitorUp,
+  BadgeEuro,
 } from "lucide-react";
 import { GenerateTenantModal } from "./generate-tenant-modal";
 import { cn } from "@/lib/utils";
@@ -26,10 +34,16 @@ import type {
   PlatformSubscription,
   PlatformPayment,
   LeadStatus,
+  LeadStage,
+  BillingCycle,
 } from "@/lib/platform-crm-types";
 import {
   LEAD_STATUS_LABELS,
   LEAD_STATUS_COLORS,
+  LEAD_STAGE_LABELS,
+  LEAD_STAGE_COLORS,
+  LEAD_TEMPERATURE_LABELS,
+  LEAD_TEMPERATURE_COLORS,
   SUBSCRIPTION_STATUS_LABELS,
   SUBSCRIPTION_STATUS_COLORS,
   PAYMENT_STATUS_LABELS,
@@ -37,8 +51,17 @@ import {
   VERTICAL_BADGE_CLASSES,
   VERTICAL_LABELS,
 } from "@/lib/platform-crm-types";
-
-// ─── Tipi tab ─────────────────────────────────────────────────────────────────
+import {
+  PLATFORM_LEADS,
+  PLATFORM_PACKAGES,
+  PLATFORM_PAYMENTS,
+  PLATFORM_SUBSCRIPTIONS,
+  PLATFORM_COMMISSION_RULES,
+  calculateCommissionAmount,
+  calculateFirstPaymentBase,
+  calculateSubscriptionTotal,
+} from "@/lib/platform-admin-data";
+import { getModuleLabel } from "@/lib/vertical";
 
 type Tab = "anagrafica" | "fatturazione" | "abbonamento" | "pagamenti" | "note";
 
@@ -50,91 +73,14 @@ const TABS: { value: Tab; label: string; icon: React.ElementType }[] = [
   { value: "note", label: "Note", icon: FileText },
 ];
 
-// ─── Mock dati esempio ────────────────────────────────────────────────────────
-
-const MOCK_LEAD: PlatformLead = {
-  id: "1",
-  business_name: "Osteria della Piazza",
-  business_slug: null,
-  business_vertical: "food",
-  contact_name: "Marco Ferri",
-  contact_email: "marco@osteriadellapiazza.it",
-  contact_phone: "+39 347 1234567",
-  address: "Via Roma 12",
-  city: "Bologna",
-  province: "BO",
-  postal_code: "40121",
-  country: "IT",
-  billing_name: "Osteria della Piazza S.n.c.",
-  billing_vat: "IT08765432109",
-  billing_cf: "08765432109",
-  billing_address: "Via Roma 12",
-  billing_city: "Bologna",
-  billing_province: "BO",
-  billing_postal_code: "40121",
-  billing_sdi: "XXXXXXX",
-  billing_pec: "osteriapiazza@pec.it",
-  status: "prospect",
-  source: "form_web",
-  notes: "Interessato al pacchetto Growth. Richiamarlo la prossima settimana.",
-  tenant_id: null,
-  converted_at: null,
-  created_at: "2026-05-01T10:00:00Z",
-  updated_at: "2026-05-10T15:30:00Z",
+type SalePayload = {
+  packageId: string;
+  billingCycle: BillingCycle;
+  recurringAmount: number;
+  setupAmount: number;
+  firstPaymentAmount: number;
+  notes: string;
 };
-
-const MOCK_SUBSCRIPTION: PlatformSubscription = {
-  id: "sub-1",
-  lead_id: "1",
-  package_id: "pkg-growth",
-  billing_cycle: "monthly",
-  price_override: null,
-  currency: "EUR",
-  status: "trial",
-  started_at: "2026-05-01",
-  trial_ends_at: "2026-05-31",
-  current_period_start: "2026-05-01",
-  current_period_end: "2026-05-31",
-  next_renewal_at: "2026-06-01",
-  cancelled_at: null,
-  notes: null,
-  created_at: "2026-05-01T10:00:00Z",
-  updated_at: "2026-05-01T10:00:00Z",
-  package: {
-    id: "pkg-growth",
-    name: "Growth",
-    slug: "growth",
-    description: null,
-    price_monthly: 99,
-    price_yearly: 990,
-    currency: "EUR",
-    modules: ["website", "onlineMenu", "reservations", "takeaway", "tableOrders", "reviews", "gallery", "favorites"],
-    is_active: true,
-    sort_order: 2,
-    created_at: "2026-01-01T00:00:00Z",
-    updated_at: "2026-01-01T00:00:00Z",
-  },
-};
-
-const MOCK_PAYMENTS: PlatformPayment[] = [
-  {
-    id: "pay-1",
-    subscription_id: "sub-1",
-    lead_id: "1",
-    amount: 99,
-    currency: "EUR",
-    status: "pending",
-    payment_method: "bonifico",
-    payment_date: null,
-    due_date: "2026-06-01",
-    invoice_number: null,
-    notes: null,
-    created_at: "2026-05-01T10:00:00Z",
-    updated_at: "2026-05-01T10:00:00Z",
-  },
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(iso: string | null) {
   if (!iso) return "—";
@@ -153,23 +99,109 @@ function eur(n: number | null) {
 // ─── Componente principale ────────────────────────────────────────────────────
 
 export function PlatformLeadDetail({ leadId }: { leadId: string }) {
-  const [lead, setLead] = useState<PlatformLead>(MOCK_LEAD);
-  const [subscription] = useState<PlatformSubscription | null>(MOCK_SUBSCRIPTION);
-  const [payments] = useState<PlatformPayment[]>(MOCK_PAYMENTS);
+  const initialLead = PLATFORM_LEADS.find((item) => item.id === leadId) ?? PLATFORM_LEADS[0];
+  const [lead, setLead] = useState<PlatformLead>(initialLead);
+  const [subscription, setSubscription] = useState<PlatformSubscription | null>(
+    PLATFORM_SUBSCRIPTIONS.find((item) => item.lead_id === initialLead.id) ?? null,
+  );
+  const [payments, setPayments] = useState<PlatformPayment[]>(
+    PLATFORM_PAYMENTS.filter((item) => item.lead_id === initialLead.id),
+  );
   const [activeTab, setActiveTab] = useState<Tab>("anagrafica");
   const [editingNote, setEditingNote] = useState(false);
   const [noteText, setNoteText] = useState(lead.notes ?? "");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
-
-  void leadId; // in produzione: usato per fetch da Supabase
+  const [showSaleModal, setShowSaleModal] = useState(false);
 
   function changeStatus(status: LeadStatus) {
     setLead((prev) => ({ ...prev, status }));
   }
 
+  function changeStage(stage: LeadStage) {
+    setLead((prev) => ({
+      ...prev,
+      stage,
+      status: stage === "tenant" ? "active" : stage === "lost" ? "churned" : prev.status,
+    }));
+  }
+
   function saveNote() {
     setLead((prev) => ({ ...prev, notes: noteText }));
     setEditingNote(false);
+  }
+
+  function confirmSale(payload: SalePayload) {
+    const selectedPackage = PLATFORM_PACKAGES.find((item) => item.id === payload.packageId) ?? PLATFORM_PACKAGES[0];
+    const now = new Date().toISOString();
+    const tenantId = lead.business_slug ?? lead.business_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const nextRenewal = new Date();
+    nextRenewal.setMonth(nextRenewal.getMonth() + (payload.billingCycle === "monthly" ? 1 : 12));
+
+    const newSubscription: PlatformSubscription = {
+      id: subscription?.id ?? `sub-${lead.id}`,
+      lead_id: lead.id,
+      package_id: selectedPackage.id,
+      billing_cycle: payload.billingCycle,
+      price_override: payload.recurringAmount,
+      setup_amount: payload.setupAmount,
+      first_payment_amount: payload.firstPaymentAmount,
+      currency: "EUR",
+      status: "active",
+      started_at: now.slice(0, 10),
+      trial_ends_at: null,
+      current_period_start: now.slice(0, 10),
+      current_period_end: nextRenewal.toISOString().slice(0, 10),
+      next_renewal_at: nextRenewal.toISOString().slice(0, 10),
+      cancelled_at: null,
+      notes: payload.notes || null,
+      created_at: subscription?.created_at ?? now,
+      updated_at: now,
+      lead: { ...lead, status: "active", stage: "tenant", tenant_id: tenantId, converted_at: now },
+      package: selectedPackage,
+      location_plans: lead.locations.map((location) => ({
+        ...location,
+        package_slug: selectedPackage.slug,
+        package_name: selectedPackage.name,
+        price_factor: 1,
+      })),
+    };
+
+    const newPayment: PlatformPayment = {
+      id: `pay-${lead.id}-${Date.now()}`,
+      subscription_id: newSubscription.id,
+      lead_id: lead.id,
+      amount: payload.firstPaymentAmount,
+      currency: "EUR",
+      status: "pending",
+      payment_method: null,
+      payment_date: null,
+      due_date: now.slice(0, 10),
+      invoice_number: null,
+      notes: "Primo pagamento generato dalla conferma vendita.",
+      stripe_payment_link: null,
+      billing_payload: {
+        plan: selectedPackage.name,
+        billing_cycle: payload.billingCycle,
+        setup_amount: payload.setupAmount,
+        recurring_amount: payload.recurringAmount,
+        first_payment_amount: payload.firstPaymentAmount,
+      },
+      created_at: now,
+      updated_at: now,
+    };
+
+    setLead((prev) => ({
+      ...prev,
+      status: "active",
+      stage: "tenant",
+      tenant_id: tenantId,
+      converted_at: now,
+      sales_owner_id: prev.sales_owner_id ?? "sales-unassigned",
+      sales_owner_name: prev.sales_owner_name ?? "Venditore non assegnato",
+    }));
+    setSubscription(newSubscription);
+    setPayments((prev) => [newPayment, ...prev.filter((item) => item.id !== newPayment.id)]);
+    setShowSaleModal(false);
   }
 
   return (
@@ -204,6 +236,23 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
             >
               {LEAD_STATUS_LABELS[lead.status]}
             </span>
+            <span
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wide",
+                LEAD_STAGE_COLORS[lead.stage],
+              )}
+            >
+              {LEAD_STAGE_LABELS[lead.stage]}
+            </span>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-wide",
+                LEAD_TEMPERATURE_COLORS[lead.temperature],
+              )}
+            >
+              <Flame size={12} />
+              {LEAD_TEMPERATURE_LABELS[lead.temperature]}
+            </span>
           </div>
           <p className="mt-1 text-sm text-pork-ink/55">
             {lead.contact_name} · {lead.contact_email}
@@ -213,35 +262,71 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
 
         {/* Azioni header */}
         <div className="flex flex-wrap items-center gap-2">
-          {!lead.tenant_id && (
+          {!lead.demo_url && !lead.tenant_id && (
             <button
               onClick={() => setShowGenerateModal(true)}
               className="inline-flex items-center gap-2 rounded-full bg-pork-ink px-4 py-2 text-sm font-bold text-white transition hover:bg-pork-ink/80"
             >
-              <GitBranch size={14} /> Converti in Tenant
+              <MonitorUp size={14} /> Crea demo
             </button>
           )}
+          {lead.demo_url && !lead.tenant_id && (
+            <>
+              <a
+                href={lead.demo_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-4 py-2 text-sm font-bold text-indigo-700 hover:bg-indigo-200"
+              >
+                <MonitorUp size={14} /> Apri demo
+              </a>
+              {lead.demo_pr_url && (
+                <a
+                  href={lead.demo_pr_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 hover:border-pork-red/30 hover:text-pork-red"
+                >
+                  PR demo <ExternalLink size={13} />
+                </a>
+              )}
+              <button
+                onClick={() => setShowSaleModal(true)}
+                className="inline-flex items-center gap-2 rounded-full bg-pork-green px-4 py-2 text-sm font-bold text-white hover:bg-pork-green/90"
+              >
+                <BadgeEuro size={14} /> Segna venduto
+              </button>
+            </>
+          )}
           {lead.tenant_id && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-pork-green/15 px-4 py-2 text-sm font-bold text-pork-green">
-              <GitBranch size={14} /> Tenant attivo
-            </span>
+            <>
+              <span className="inline-flex items-center gap-2 rounded-full bg-pork-green/15 px-4 py-2 text-sm font-bold text-pork-green">
+                <GitBranch size={14} /> Tenant attivo
+              </span>
+              <Link
+                href={`/gestione/${lead.tenant_id}`}
+                className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 hover:border-pork-red/30 hover:text-pork-red"
+              >
+                Pannello tenant <ExternalLink size={13} />
+              </Link>
+            </>
           )}
         </div>
 
         {/* Cambio status */}
         <div className="flex flex-wrap gap-2">
-          {(["lead", "prospect", "active", "churned"] as LeadStatus[]).map((s) => (
+          {(["new", "contacted", "qualified", "demo", "proposal", "contract", "tenant", "lost"] as LeadStage[]).map((s) => (
             <button
               key={s}
-              onClick={() => changeStatus(s)}
+              onClick={() => changeStage(s)}
               className={cn(
                 "rounded-full px-3 py-1.5 text-xs font-bold transition",
-                lead.status === s
+                lead.stage === s
                   ? "bg-pork-ink text-pork-cream"
                   : "bg-pork-ink/5 text-pork-ink/60 hover:bg-pork-ink/10",
               )}
             >
-              {LEAD_STATUS_LABELS[s]}
+              {LEAD_STAGE_LABELS[s]}
             </button>
           ))}
         </div>
@@ -271,10 +356,10 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
 
       {/* Contenuto tab */}
       <div className="rounded-3xl bg-white p-6 ring-1 ring-pork-ink/10">
-        {activeTab === "anagrafica" && <TabAnagrafica lead={lead} />}
+        {activeTab === "anagrafica" && <TabAnagrafica lead={lead} onStatusChange={changeStatus} />}
         {activeTab === "fatturazione" && <TabFatturazione lead={lead} />}
         {activeTab === "abbonamento" && (
-          <TabAbbonamento subscription={subscription} />
+          <TabAbbonamento subscription={subscription} lead={lead} />
         )}
         {activeTab === "pagamenti" && (
           <TabPagamenti payments={payments} />
@@ -297,13 +382,165 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
           onClose={() => setShowGenerateModal(false)}
         />
       )}
+      {showSaleModal && (
+        <ConfirmSaleModal
+          lead={lead}
+          subscription={subscription}
+          onClose={() => setShowSaleModal(false)}
+          onConfirm={confirmSale}
+        />
+      )}
+    </div>
+  );
+}
+
+function ConfirmSaleModal({
+  lead,
+  subscription,
+  onClose,
+  onConfirm,
+}: {
+  lead: PlatformLead;
+  subscription: PlatformSubscription | null;
+  onClose: () => void;
+  onConfirm: (payload: SalePayload) => void;
+}) {
+  const defaultPackage = subscription?.package ?? PLATFORM_PACKAGES.find((item) => item.vertical === "both" || item.vertical === lead.business_vertical) ?? PLATFORM_PACKAGES[0];
+  const [packageId, setPackageId] = useState(defaultPackage.id);
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>(subscription?.billing_cycle ?? "monthly");
+  const [recurringAmount, setRecurringAmount] = useState(
+    subscription?.price_override ?? (billingCycle === "yearly" ? defaultPackage.price_yearly ?? defaultPackage.price_monthly * 12 : defaultPackage.price_monthly),
+  );
+  const [setupAmount, setSetupAmount] = useState(subscription?.setup_amount ?? 490);
+  const [notes, setNotes] = useState(subscription?.notes ?? "");
+
+  const selectedPackage = PLATFORM_PACKAGES.find((item) => item.id === packageId) ?? defaultPackage;
+  const sellerRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "venditore")?.commission_rate ?? 30;
+  const firstPaymentAmount = billingCycle === "monthly" ? setupAmount + recurringAmount : recurringAmount;
+  const commissionAmount = calculateCommissionAmount(firstPaymentAmount, sellerRate);
+
+  function selectPackage(nextPackageId: string) {
+    const nextPackage = PLATFORM_PACKAGES.find((item) => item.id === nextPackageId) ?? selectedPackage;
+    setPackageId(nextPackage.id);
+    setRecurringAmount(billingCycle === "yearly" ? nextPackage.price_yearly ?? nextPackage.price_monthly * 12 : nextPackage.price_monthly);
+  }
+
+  function selectBillingCycle(nextCycle: BillingCycle) {
+    setBillingCycle(nextCycle);
+    setRecurringAmount(nextCycle === "yearly" ? selectedPackage.price_yearly ?? selectedPackage.price_monthly * 12 : selectedPackage.price_monthly);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-pork-ink/55 p-4">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="impact-title text-xs text-pork-red">Conferma vendita</p>
+            <h2 className="headline text-3xl">{lead.business_name}</h2>
+            <p className="mt-1 text-sm text-pork-ink/55">
+              Inserisci i dati economici da salvare su pagamento, Stripe e fatturazione.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full border border-pork-ink/10 p-2 text-pork-ink/55 hover:text-pork-ink"
+            aria-label="Chiudi"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <label className="block md:col-span-2">
+            <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">Piano scelto</span>
+            <select
+              value={packageId}
+              onChange={(event) => selectPackage(event.target.value)}
+              className="mt-2 w-full rounded-2xl border border-pork-ink/10 bg-white px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-pork-red/30"
+            >
+              {PLATFORM_PACKAGES.map((pkg) => (
+                <option key={pkg.id} value={pkg.id}>
+                  {pkg.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div>
+            <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">Ciclo</span>
+            <div className="mt-2 grid grid-cols-2 gap-1 rounded-2xl bg-pork-ink/5 p-1">
+              {(["monthly", "yearly"] as BillingCycle[]).map((cycle) => (
+                <button
+                  key={cycle}
+                  onClick={() => selectBillingCycle(cycle)}
+                  className={cn(
+                    "rounded-xl px-3 py-2 text-sm font-black transition",
+                    billingCycle === cycle ? "bg-pork-ink text-pork-cream" : "text-pork-ink/60 hover:text-pork-ink",
+                  )}
+                >
+                  {cycle === "monthly" ? "Mensile" : "Annuale"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <MoneyInput
+            label={billingCycle === "monthly" ? "Canone primo mese" : "Canone annuale"}
+            value={recurringAmount}
+            onChange={setRecurringAmount}
+          />
+          <MoneyInput label="Setup" value={setupAmount} onChange={setSetupAmount} />
+
+          <label className="block md:col-span-2">
+            <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">Note accordo</span>
+            <textarea
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              rows={3}
+              className="mt-2 w-full rounded-2xl border border-pork-ink/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-pork-red/30"
+              placeholder="Es. prezzo concordato fuori listino, pagamento via Stripe, sconto setup..."
+            />
+          </label>
+        </div>
+
+        <div className="mt-6 grid gap-3 rounded-2xl bg-pork-cream p-4 sm:grid-cols-3">
+          <SummaryMetric label="Primo pagamento" value={eur(firstPaymentAmount)} />
+          <SummaryMetric label="Provvigione venditore" value={`${sellerRate}%`} />
+          <SummaryMetric label="Importo provvigione" value={eur(commissionAmount)} strong />
+        </div>
+
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="rounded-full border border-pork-ink/15 px-5 py-2.5 text-sm font-bold text-pork-ink/60"
+          >
+            Annulla
+          </button>
+          <button
+            onClick={() => onConfirm({ packageId, billingCycle, recurringAmount, setupAmount, firstPaymentAmount, notes })}
+            className="inline-flex items-center gap-2 rounded-full bg-pork-green px-5 py-2.5 text-sm font-bold text-white hover:bg-pork-green/90"
+          >
+            <Save size={15} />
+            Salva vendita
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
 // ─── Tab Anagrafica ───────────────────────────────────────────────────────────
 
-function TabAnagrafica({ lead }: { lead: PlatformLead }) {
+function TabAnagrafica({
+  lead,
+  onStatusChange,
+}: {
+  lead: PlatformLead;
+  onStatusChange: (status: LeadStatus) => void;
+}) {
+  const phoneHref = lead.contact_phone ? `tel:${lead.contact_phone.replace(/\s/g, "")}` : null;
+  const whatsappHref = lead.contact_phone ? `https://wa.me/${lead.contact_phone.replace(/[^\d]/g, "")}` : null;
+
   return (
     <div className="space-y-6">
       {/* Banner verticale */}
@@ -329,18 +566,77 @@ function TabAnagrafica({ lead }: { lead: PlatformLead }) {
       <SectionTitle icon={User}>Responsabile</SectionTitle>
       <FieldGrid>
         <Field label="Nome" value={lead.contact_name} />
-        <Field label="Email" value={lead.contact_email} />
-        <Field label="Telefono" value={lead.contact_phone} />
+        <ActionField
+          label="Email"
+          value={lead.contact_email}
+          href={`mailto:${lead.contact_email}`}
+          icon={Mail}
+        />
+        <ActionField
+          label="Telefono"
+          value={lead.contact_phone}
+          href={phoneHref}
+          icon={Phone}
+          extra={whatsappHref ? (
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-full bg-pork-green/10 px-2 py-1 text-xs font-black text-pork-green hover:bg-pork-green hover:text-white"
+            >
+              <MessageCircle size={12} /> WA
+            </a>
+          ) : null}
+        />
       </FieldGrid>
 
-      <SectionTitle icon={MapPin}>Sede operativa</SectionTitle>
+      <SectionTitle icon={MapPinned}>Sedi operative</SectionTitle>
+      <div className="grid gap-3 lg:grid-cols-2">
+        {lead.locations.map((location) => (
+          <div key={location.id} className="rounded-2xl bg-pork-cream p-4 ring-1 ring-pork-ink/5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-black">{location.name}</p>
+              {location.is_primary && (
+                <span className="rounded-full bg-pork-green/15 px-2 py-0.5 text-[10px] font-black uppercase text-pork-green">
+                  sede principale
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-pork-ink/60">
+              {[location.address, location.postal_code, location.city, location.province].filter(Boolean).join(", ") || "Indirizzo non inserito"}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <SectionTitle icon={GitBranch}>Pipeline</SectionTitle>
       <FieldGrid>
-        <Field label="Indirizzo" value={lead.address} />
-        <Field label="Città" value={lead.city} />
-        <Field label="Provincia" value={lead.province} />
-        <Field label="CAP" value={lead.postal_code} />
-        <Field label="Paese" value={lead.country} />
+        <Field label="Stadio avanzamento" value={LEAD_STAGE_LABELS[lead.stage]} />
+        <Field label="Classificazione" value={LEAD_TEMPERATURE_LABELS[lead.temperature]} />
+        <Field label="Stato commerciale" value={LEAD_STATUS_LABELS[lead.status]} />
+        <ActionField
+          label="Link demo"
+          value={lead.demo_url}
+          href={lead.demo_url}
+          icon={MonitorUp}
+        />
+        <Field label="Dominio ufficiale" value={lead.official_domain} />
+        <Field label="Dominio attivo" value={lead.official_domain_active ? "Sì" : "No"} />
       </FieldGrid>
+      <div className="flex flex-wrap gap-2">
+        {(["lead", "prospect", "active", "churned"] as LeadStatus[]).map((status) => (
+          <button
+            key={status}
+            onClick={() => onStatusChange(status)}
+            className={cn(
+              "rounded-full px-3 py-1.5 text-xs font-bold transition",
+              lead.status === status ? "bg-pork-ink text-pork-cream" : "bg-pork-ink/5 text-pork-ink/60 hover:bg-pork-ink/10",
+            )}
+          >
+            {LEAD_STATUS_LABELS[status]}
+          </button>
+        ))}
+      </div>
 
       <div className="flex flex-wrap gap-3 border-t border-pork-ink/10 pt-4">
         <InfoPill label="Fonte" value={lead.source ?? "—"} />
@@ -395,7 +691,7 @@ function TabFatturazione({ lead }: { lead: PlatformLead }) {
 
 // ─── Tab Abbonamento ──────────────────────────────────────────────────────────
 
-function TabAbbonamento({ subscription }: { subscription: PlatformSubscription | null }) {
+function TabAbbonamento({ subscription, lead }: { subscription: PlatformSubscription | null; lead: PlatformLead }) {
   if (!subscription) {
     return (
       <div className="py-10 text-center">
@@ -409,8 +705,7 @@ function TabAbbonamento({ subscription }: { subscription: PlatformSubscription |
   }
 
   const pkg = subscription.package;
-  const effectivePrice =
-    subscription.price_override ?? (subscription.billing_cycle === "yearly" ? pkg?.price_yearly : pkg?.price_monthly) ?? 0;
+  const effectivePrice = calculateSubscriptionTotal(subscription);
 
   return (
     <div className="space-y-6">
@@ -439,11 +734,33 @@ function TabAbbonamento({ subscription }: { subscription: PlatformSubscription |
             (subscription.price_override ? " (override)" : "")
           }
         />
+        <Field label="Setup concordato" value={eur(subscription.setup_amount)} />
+        <Field label="Primo pagamento" value={eur(subscription.first_payment_amount ?? calculateFirstPaymentBase(subscription))} />
         <Field label="Inizio" value={fmt(subscription.started_at)} />
         <Field label="Fine trial" value={fmt(subscription.trial_ends_at)} />
         <Field label="Periodo corrente" value={`${fmt(subscription.current_period_start)} → ${fmt(subscription.current_period_end)}`} />
         <Field label="Prossimo rinnovo" value={fmt(subscription.next_renewal_at)} />
+        <Field label="Sedi associate" value={String(subscription.location_plans?.length ?? lead.locations.length)} />
       </FieldGrid>
+
+      {subscription.location_plans && subscription.location_plans.length > 0 && (
+        <div>
+          <p className="mb-3 text-sm font-bold text-pork-ink/60">Piano per sede</p>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {subscription.location_plans.map((location) => (
+              <div key={location.id} className="rounded-2xl bg-pork-cream p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-black">{location.name}</p>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-black uppercase text-pork-ink/60">
+                    x{location.price_factor}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-pork-ink/60">{location.package_name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {pkg && (
         <div>
@@ -454,7 +771,7 @@ function TabAbbonamento({ subscription }: { subscription: PlatformSubscription |
                 key={m}
                 className="rounded-full bg-pork-ink/5 px-3 py-1 text-xs font-semibold text-pork-ink/70"
               >
-                {m}
+                {getModuleLabel(m, lead.business_vertical)}
               </span>
             ))}
           </div>
@@ -630,11 +947,80 @@ function Field({ label, value }: { label: string; value: string | null | undefin
   );
 }
 
+function ActionField({
+  label,
+  value,
+  href,
+  icon: Icon,
+  extra,
+}: {
+  label: string;
+  value: string | null | undefined;
+  href: string | null;
+  icon: React.ElementType;
+  extra?: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-pork-ink/40">{label}</p>
+      <div className="mt-1 flex flex-wrap items-center gap-2">
+        {value && href ? (
+          <a href={href} className="inline-flex items-center gap-1.5 text-sm font-semibold text-pork-ink hover:text-pork-red">
+            <Icon size={13} />
+            {value}
+          </a>
+        ) : (
+          <span className="text-sm font-semibold text-pork-ink/30">—</span>
+        )}
+        {extra}
+      </div>
+    </div>
+  );
+}
+
 function InfoPill({ label, value, className }: { label: string; value: string; className?: string }) {
   return (
     <span className="rounded-full bg-pork-ink/5 px-3 py-1.5 text-xs">
       <span className="text-pork-ink/50">{label}:</span>{" "}
       <span className={cn("font-bold text-pork-ink", className)}>{value}</span>
     </span>
+  );
+}
+
+function MoneyInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">{label}</span>
+      <div className="mt-2 flex items-center gap-2 rounded-2xl border border-pork-ink/10 px-4 py-3 focus-within:ring-2 focus-within:ring-pork-red/30">
+        <span className="text-sm font-black text-pork-ink/35">€</span>
+        <input
+          type="number"
+          min={0}
+          step="0.01"
+          value={value}
+          onChange={(event) => onChange(Number(event.target.value))}
+          className="w-full bg-transparent text-sm font-black tabular-nums outline-none"
+        />
+      </div>
+    </label>
+  );
+}
+
+function SummaryMetric({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <div>
+      <p className="text-[10px] font-black uppercase tracking-wide text-pork-ink/40">{label}</p>
+      <p className={cn("mt-1 text-lg tabular-nums", strong ? "font-black text-pork-red" : "font-black text-pork-ink")}>
+        {value}
+      </p>
+    </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { RotateCcw, ShieldCheck, Power, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { RotateCcw, ShieldCheck, Power, ExternalLink, ChevronDown, MapPin, CreditCard } from "lucide-react";
+import { useState } from "react";
 import type { TenantStatus } from "@/lib/tenant";
 import { TENANTS } from "@/lib/tenant-registry";
 import { useTenant } from "@/components/core/tenant-provider";
@@ -13,10 +15,11 @@ import {
   formatFeatureDependencies,
   getMissingFeatureDependencies,
   TENANT_MODULES,
-  TENANT_MODULE_BY_KEY,
   TENANT_MODULE_CATEGORIES,
 } from "@/lib/tenant-modules";
 import { AdminTenantLocationsPanel } from "@/components/admin/tenant-locations-panel";
+import { PLATFORM_LEADS, PLATFORM_SUBSCRIPTIONS } from "@/lib/platform-admin-data";
+import { getModuleCopy } from "@/lib/vertical";
 
 const PREVIEW_HOST: Record<string, string> = {
   food: "https://demo.menuary.it",
@@ -41,6 +44,16 @@ export default function AdminTenantPage() {
     (state) => state.setFeatureEnabled,
   );
   const resetTenant = useTenantAdminStore((state) => state.resetTenant);
+  const [demoDisabled, setDemoDisabled] = useState<Record<string, boolean>>({});
+
+  function persistTenantEnabled(tenantId: string, enabled: boolean) {
+    setTenantEnabled(tenantId, enabled);
+    void fetch("/api/admin/tenant-status", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tenantId, enabled }),
+    });
+  }
 
   if (mode !== "platform-admin") {
     return (
@@ -69,16 +82,21 @@ export default function AdminTenantPage() {
       </header>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        {TENANTS.map((tenant) => {
+        {TENANTS.filter((tenant) => tenant.id !== "bizery-demo").map((tenant) => {
           const effective = mergeTenantOverrides(tenant, overrides[tenant.id]);
           const current = tenant.id === activeTenant.id;
+          const lead = PLATFORM_LEADS.find((item) => item.tenant_id === tenant.id);
+          const subscription = lead
+            ? PLATFORM_SUBSCRIPTIONS.find((item) => item.lead_id === lead.id)
+            : null;
 
           return (
-            <section
+            <details
               key={tenant.id}
-              className="rounded-3xl bg-white p-6 ring-1 ring-pork-ink/10"
+              open={current}
+              className="group rounded-3xl bg-white p-6 ring-1 ring-pork-ink/10"
             >
-              <div className="flex flex-wrap items-start justify-between gap-4">
+              <summary className="flex cursor-pointer list-none flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="headline text-3xl">{tenant.name}</h2>
@@ -95,39 +113,109 @@ export default function AdminTenantPage() {
                         </span>
                       ) : null;
                     })()}
+                    <ChevronDown size={18} className="text-pork-ink/30 transition group-open:rotate-180" />
                   </div>
                   <p className="mt-1 text-sm text-pork-ink/55">
                     {tenant.domains.length > 0
                       ? tenant.domains.join(" · ")
                       : <span className="italic text-pork-ink/35">nessun dominio — solo preview</span>}
                   </p>
-                  {tenant.previewSlug && (
-                    <a
-                      href={`${PREVIEW_HOST[tenant.vertical] ?? "https://demo.menuary.it"}/${tenant.previewSlug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-bold text-pork-red hover:underline"
+                  {tenant.previewSlug && !demoDisabled[tenant.id] && (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                      <a
+                        href={`${PREVIEW_HOST[tenant.vertical] ?? "https://demo.menuary.it"}/${tenant.previewSlug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-pork-red hover:underline"
+                      >
+                        <ExternalLink size={12} />
+                        Link demo
+                      </a>
+                      {tenant.domains.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            setDemoDisabled((prev) => ({ ...prev, [tenant.id]: true }));
+                          }}
+                          className="rounded-full bg-pork-ink/5 px-2 py-1 text-[10px] font-black uppercase text-pork-ink/45 hover:bg-pork-ink/10"
+                        >
+                          Disattiva demo
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {tenant.previewSlug && demoDisabled[tenant.id] && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setDemoDisabled((prev) => ({ ...prev, [tenant.id]: false }));
+                      }}
+                      className="mt-1.5 rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-black uppercase text-indigo-700 hover:bg-indigo-100"
                     >
-                      <ExternalLink size={12} />
-                      Link demo
-                    </a>
+                      Riattiva demo temporanea
+                    </button>
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setTenantEnabled(tenant.id, !effective.enabled)}
-                  className={
-                    "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition " +
-                    (effective.enabled
-                      ? "bg-pork-green text-white"
-                      : "bg-pork-ink/10 text-pork-ink/60")
-                  }
-                >
-                  <Power size={16} />
-                  {effective.enabled ? "Tenant attivo" : "Tenant spento"}
-                </button>
-              </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    href={`/gestione/${tenant.id}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 hover:border-pork-red/30 hover:text-pork-red"
+                  >
+                    Gestione tenant <ExternalLink size={13} />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      persistTenantEnabled(tenant.id, !effective.enabled);
+                    }}
+                    className={
+                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition " +
+                      (effective.enabled
+                        ? "bg-pork-green text-white"
+                        : "bg-pork-ink/10 text-pork-ink/60")
+                    }
+                  >
+                    <Power size={16} />
+                    {effective.enabled ? "Tenant attivo" : "Tenant spento"}
+                  </button>
+                </div>
+              </summary>
+
+              {lead && (
+                <div className="mt-5 grid gap-3 rounded-2xl bg-pork-cream p-4 md:grid-cols-3">
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-pork-ink/40">Origine CRM</p>
+                    <Link href={`/admin/crm/${lead.id}`} className="mt-1 inline-flex items-center gap-1 text-sm font-black text-pork-red hover:underline">
+                      Apri lead <ExternalLink size={12} />
+                    </Link>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-pork-ink/40">Contatto</p>
+                    <p className="mt-1 text-sm font-semibold">{lead.contact_name} · {lead.contact_email}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-pork-ink/40">Sedi</p>
+                    <p className="mt-1 inline-flex items-center gap-1 text-sm font-semibold">
+                      <MapPin size={13} /> {lead.locations.length}
+                    </p>
+                  </div>
+                  {subscription?.package && (
+                    <div className="md:col-span-3">
+                      <p className="text-[10px] font-black uppercase text-pork-ink/40">Piano ereditato</p>
+                      <p className="mt-1 inline-flex items-center gap-1 text-sm font-semibold">
+                        <CreditCard size={13} />
+                        {tenant.vertical === "services" && subscription.package.adapted_name
+                          ? `${subscription.package.adapted_name} (${subscription.package.name})`
+                          : subscription.package.name}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="mt-5 rounded-2xl bg-pork-cream p-4">
                 <div className="flex items-center gap-2 text-sm font-bold text-pork-ink">
@@ -156,9 +244,9 @@ export default function AdminTenantPage() {
                               className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-1 ring-pork-ink/5 sm:flex-row sm:items-center sm:justify-between"
                             >
                               <div className="min-w-0">
-                                <p className="font-bold">{feature.label}</p>
+                                <p className="font-bold">{getModuleCopy(feature.key, tenant.vertical).label}</p>
                                 <p className="mt-1 text-sm text-pork-ink/60">
-                                  {feature.description}
+                                  {getModuleCopy(feature.key, tenant.vertical).description}
                                 </p>
                                 {dependencyNote && (
                                   <p className="mt-2 text-xs font-bold text-pork-ink/45">
@@ -171,7 +259,7 @@ export default function AdminTenantPage() {
                                     {missing
                                       .map(
                                         (dependency) =>
-                                          TENANT_MODULE_BY_KEY[dependency].label,
+                                          getModuleCopy(dependency, tenant.vertical).label,
                                       )
                                       .join(" oppure ")}
                                     .
@@ -225,7 +313,7 @@ export default function AdminTenantPage() {
                   multiLocationEnabled={effective.features.multiLocation}
                 />
               </div>
-            </section>
+            </details>
           );
         })}
       </div>

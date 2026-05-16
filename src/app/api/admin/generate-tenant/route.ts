@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const GITHUB_OWNER = process.env.GITHUB_REPO_OWNER ?? "PynkStudio";
 const GITHUB_REPO = process.env.GITHUB_REPO_NAME ?? "Menuary";
@@ -130,7 +132,7 @@ function generateFlagsConst(slug: string, vertical: "food" | "services"): string
 function patchRegistry(
   src: string,
   slug: string,
-  domain: string,
+  officialDomain: string,
   vertical: "food" | "services",
   businessName: string,
   primary: string,
@@ -144,10 +146,10 @@ function patchRegistry(
     name: "${businessName}",
     label: "${businessName}",
     vertical: "${vertical}",
-    domains: ["${domain}"],
-    previewSlug: "${slug}-demo",
+    domains: [], // dominio ufficiale previsto: ${officialDomain}; si attiva solo quando il lead diventa tenant.
+    previewSlug: "${slug}",
     enabled: true,
-    status: "trial",
+    status: "trattativa",
     theme: {
       red: "${primary}",
       redDark: "${primary}",
@@ -224,7 +226,24 @@ const ${varName}: TenantContent = {
 
 // ─── Route handler ────────────────────────────────────────────────────────────
 
+async function requireDemoPermission() {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) return false;
+  const { data: siteadmin } = await supabase
+    .from("siteadmin")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("enabled", true)
+    .maybeSingle();
+  return isSiteadminRole(siteadmin?.role) && hasAdminPermission(siteadmin.role, "crm:demo");
+}
+
 export async function POST(req: NextRequest) {
+  if (!await requireDemoPermission()) {
+    return NextResponse.json({ error: "Non autorizzato." }, { status: 403 });
+  }
+
   const { tenantSlug, domain, vertical, businessName, primaryColor, leadId } =
     (await req.json()) as {
       tenantSlug: string;
@@ -239,8 +258,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const branch = `tenant/${tenantSlug}`;
+  const branch = `demo/${tenantSlug}`;
   const pascal = toPascal(tenantSlug);
+  const demoUrl = vertical === "services"
+    ? `https://demo.bizery.it/${tenantSlug}`
+    : `https://demo.menuary.it/${tenantSlug}`;
 
   try {
     // 1. SHA del main → crea branch
@@ -294,28 +316,29 @@ export async function POST(req: NextRequest) {
 
     // 6. Apri PR
     const pr = await gh<{ html_url: string; number: number }>("/pulls", "POST", {
-      title: `New tenant: ${businessName} (${tenantSlug})`,
+      title: `Demo tenant: ${businessName} (${tenantSlug})`,
       head: branch,
       base: "main",
       body: [
-        "## Nuovo tenant generato automaticamente",
+        "## Nuova demo generata automaticamente",
         "",
         `- **ID**: \`${tenantSlug}\``,
         `- **Nome**: ${businessName}`,
-        `- **Dominio**: ${domain}`,
+        `- **Link demo**: ${demoUrl}`,
+        `- **Dominio ufficiale previsto**: ${domain}`,
         `- **Verticale**: ${vertical}`,
         `- **Lead CRM**: ${leadId}`,
         "",
-        "### Checklist dev",
+        "### Checklist dev prima della presentazione demo",
         `- [ ] UI custom in \`src/components/tenants/${tenantSlug}/\``,
         `- [ ] CSS tokens definitivi in \`src/styles/tenants/${tenantSlug}.css\``,
         `- [ ] Asset in \`public/${tenantSlug}/\``,
         `- [ ] Contenuti reali in \`tenant-content.ts\``,
-        `- [ ] Dominio configurato su Vercel`,
+        `- [ ] Lasciare il dominio ufficiale non attivo finché il lead non va in venduto`,
       ].join("\n"),
     });
 
-    return NextResponse.json({ success: true, pr_url: pr.html_url, pr_number: pr.number });
+    return NextResponse.json({ success: true, pr_url: pr.html_url, pr_number: pr.number, demo_url: demoUrl });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

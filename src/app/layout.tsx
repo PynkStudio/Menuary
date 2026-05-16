@@ -346,25 +346,9 @@ export default async function RootLayout({
   const tenant = resolveTenantFromHost(host);
   const mode = getPlatformModeFromHost(host);
   const themeVars = tenantThemeCssVars(tenant.theme);
-
-  // admin.menuary.it: il pannello platform-admin deve indossare la palette Menuary,
-  // non quella del tenant food di default (BePork). Rimappiamo i token --tenant-* sui
-  // valori Menuary così che le classi pork-* dentro AdminShell rendano in brand Menuary.
-  const platformAdminThemeOverride: Record<string, string> = mode === "platform-admin"
-    ? {
-        "--tenant-cream": "243 239 231",
-        "--tenant-peach": "251 248 241",
-        "--tenant-ink": "24 35 31",
-        "--tenant-brick": "24 35 31",
-        "--tenant-mustard": "210 182 109",
-        "--tenant-mustard-soft": "169 95 69",
-        "--tenant-red": "169 95 69",
-        "--tenant-red-dark": "116 61 47",
-        "--tenant-green": "135 146 118",
-        "--tenant-pink": "169 95 69",
-      }
-    : {};
-  const htmlStyle = { ...themeVars, ...platformAdminThemeOverride } as React.CSSProperties;
+  const tenantSiteDisabled =
+    (mode === "tenant" || mode === "preview" || mode === "preview-bizery") &&
+    (!tenant.enabled || tenant.status === "offline");
 
   // Fetch sedi solo per tenant con multiLocation abilitato in modalità tenant site.
   // In tutti gli altri mode (marketing, admin, gestione…) le sedi non servono al root layout.
@@ -400,7 +384,7 @@ export default async function RootLayout({
     <html
       lang="it"
       className={`${display.variable} ${impact.variable} ${body.variable} ${menuaryDisplay.variable} ${menuaryBody.variable}`}
-      style={htmlStyle}
+      style={themeVars as React.CSSProperties}
       data-tenant={tenant.id}
       data-platform={mode}
     >
@@ -419,9 +403,15 @@ export default async function RootLayout({
             <Suspense>
               <LocationProvider locations={locations} activeSlug={locationSlug}>
                 <Providers>
-                  <SiteChrome />
-                  <main className="min-w-0 overflow-x-hidden">{children}</main>
-                  <SiteFooterGate />
+                  {tenantSiteDisabled ? (
+                    <TenantUnavailable vertical={tenant.vertical} />
+                  ) : (
+                    <>
+                      <SiteChrome />
+                      <main className="min-w-0 overflow-x-hidden">{children}</main>
+                      <SiteFooterGate />
+                    </>
+                  )}
                 </Providers>
               </LocationProvider>
             </Suspense>
@@ -429,5 +419,29 @@ export default async function RootLayout({
         </PlatformModeProvider>
       </body>
     </html>
+  );
+}
+
+function TenantUnavailable({ vertical }: { vertical: "food" | "services" }) {
+  const isServices = vertical === "services";
+  const support = isServices ? "support@bizery.it" : "support@menuary.it";
+  const brand = isServices ? "Bizery" : "Menuary";
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-pork-cream px-5 py-16 text-pork-ink">
+      <div className="w-full max-w-xl rounded-3xl bg-white p-8 text-center ring-1 ring-pork-ink/10">
+        <p className="impact-title text-xs text-pork-red">{brand}</p>
+        <h1 className="headline mt-2 text-4xl">Sito non disponibile</h1>
+        <p className="mt-4 text-pork-ink/65">
+          Questo sito non è al momento disponibile. Per informazioni o assistenza contatta il servizio clienti.
+        </p>
+        <a
+          href={`mailto:${support}`}
+          className="mt-6 inline-flex rounded-full bg-pork-ink px-5 py-3 text-sm font-black text-white hover:bg-pork-ink/85"
+        >
+          {support}
+        </a>
+      </div>
+    </main>
   );
 }

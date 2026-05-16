@@ -12,182 +12,26 @@ import {
   TrendingUp,
   Users,
   CheckCircle2,
-  XCircle,
   UtensilsCrossed,
   Briefcase,
+  MapPin,
+  Flame,
+  MonitorUp,
 } from "lucide-react";
 import type { PlatformLead, LeadStatus, LeadVertical } from "@/lib/platform-crm-types";
 import {
   LEAD_STATUS_LABELS,
   LEAD_STATUS_COLORS,
+  LEAD_STAGE_LABELS,
+  LEAD_STAGE_COLORS,
+  LEAD_TEMPERATURE_LABELS,
+  LEAD_TEMPERATURE_COLORS,
   SOURCE_LABELS,
   VERTICAL_BADGE_CLASSES,
   VERTICAL_SHORT_LABELS,
 } from "@/lib/platform-crm-types";
 import { cn } from "@/lib/utils";
-
-// ─── Dati demo (sostituire con fetch Supabase) ────────────────────────────────
-
-const MOCK_LEADS: PlatformLead[] = [
-  // ── Menuary · Food ──
-  {
-    id: "1",
-    business_name: "Osteria della Piazza",
-    business_slug: null,
-    business_vertical: "food",
-    contact_name: "Marco Ferri",
-    contact_email: "marco@osteriadellapiazza.it",
-    contact_phone: "+39 347 1234567",
-    address: "Via Roma 12",
-    city: "Bologna",
-    province: "BO",
-    postal_code: "40121",
-    country: "IT",
-    billing_name: null, billing_vat: null, billing_cf: null,
-    billing_address: null, billing_city: null, billing_province: null,
-    billing_postal_code: null, billing_sdi: null, billing_pec: null,
-    status: "prospect",
-    source: "form_web",
-    notes: "Interessato al pacchetto Growth. Richiamarlo la prossima settimana.",
-    tenant_id: null,
-    converted_at: null,
-    created_at: "2026-05-01T10:00:00Z",
-    updated_at: "2026-05-10T15:30:00Z",
-  },
-  {
-    id: "2",
-    business_name: "BePork",
-    business_slug: "bepork",
-    business_vertical: "food",
-    contact_name: "Luca Bianchi",
-    contact_email: "luca@bepork.it",
-    contact_phone: "+39 338 9876543",
-    address: "Via Veneto 5",
-    city: "Roma",
-    province: "RM",
-    postal_code: "00187",
-    country: "IT",
-    billing_name: "BePork S.r.l.",
-    billing_vat: "IT12345678901",
-    billing_cf: "12345678901",
-    billing_address: "Via Veneto 5",
-    billing_city: "Roma",
-    billing_province: "RM",
-    billing_postal_code: "00187",
-    billing_sdi: "M5UXCR1",
-    billing_pec: "bepork@pec.it",
-    status: "active",
-    source: "diretto",
-    notes: null,
-    tenant_id: "bepork",
-    converted_at: "2026-02-01T00:00:00Z",
-    created_at: "2026-01-15T09:00:00Z",
-    updated_at: "2026-05-01T12:00:00Z",
-  },
-  {
-    id: "3",
-    business_name: "Pizzeria Napoli Verace",
-    business_slug: null,
-    business_vertical: "food",
-    contact_name: "Anna Esposito",
-    contact_email: "anna@napoliverace.it",
-    contact_phone: "+39 081 5556789",
-    address: "Corso Umberto 34",
-    city: "Napoli",
-    province: "NA",
-    postal_code: "80138",
-    country: "IT",
-    billing_name: null, billing_vat: null, billing_cf: null,
-    billing_address: null, billing_city: null, billing_province: null,
-    billing_postal_code: null, billing_sdi: null, billing_pec: null,
-    status: "lead",
-    source: "evento",
-    notes: "Conosciuta al Sigep 2026.",
-    tenant_id: null,
-    converted_at: null,
-    created_at: "2026-05-12T14:00:00Z",
-    updated_at: "2026-05-12T14:00:00Z",
-  },
-  // ── Bizery · Services ──
-  {
-    id: "4",
-    business_name: "Studio Legale Bruni",
-    business_slug: null,
-    business_vertical: "services",
-    contact_name: "Silvia Bruni",
-    contact_email: "silvia@studiobrunilegal.it",
-    contact_phone: "+39 02 8901234",
-    address: "Via Torino 88",
-    city: "Milano",
-    province: "MI",
-    postal_code: "20123",
-    country: "IT",
-    billing_name: null, billing_vat: null, billing_cf: null,
-    billing_address: null, billing_city: null, billing_province: null,
-    billing_postal_code: null, billing_sdi: null, billing_pec: null,
-    status: "prospect",
-    source: "referral",
-    notes: "Vuole un sito professionale con form appuntamenti. Trial in attesa.",
-    tenant_id: null,
-    converted_at: null,
-    created_at: "2026-05-08T11:00:00Z",
-    updated_at: "2026-05-13T09:15:00Z",
-  },
-  {
-    id: "5",
-    business_name: "Centro Benessere Aurea",
-    business_slug: "aurea",
-    business_vertical: "services",
-    contact_name: "Chiara Galli",
-    contact_email: "chiara@centroaurea.it",
-    contact_phone: "+39 055 2233445",
-    address: "Via dei Servi 21",
-    city: "Firenze",
-    province: "FI",
-    postal_code: "50122",
-    country: "IT",
-    billing_name: "Aurea S.r.l.",
-    billing_vat: "IT09876543210",
-    billing_cf: "09876543210",
-    billing_address: "Via dei Servi 21",
-    billing_city: "Firenze",
-    billing_province: "FI",
-    billing_postal_code: "50122",
-    billing_sdi: "A4C7F9B",
-    billing_pec: "aurea@pec.it",
-    status: "active",
-    source: "form_web",
-    notes: null,
-    tenant_id: "aurea",
-    converted_at: "2026-04-10T00:00:00Z",
-    created_at: "2026-03-20T10:00:00Z",
-    updated_at: "2026-05-10T08:00:00Z",
-  },
-  {
-    id: "6",
-    business_name: "Officina Bianchi Srl",
-    business_slug: null,
-    business_vertical: "services",
-    contact_name: "Roberto Bianchi",
-    contact_email: "r.bianchi@officinabianchi.it",
-    contact_phone: null,
-    address: "Via Industriale 3",
-    city: "Torino",
-    province: "TO",
-    postal_code: "10100",
-    country: "IT",
-    billing_name: null, billing_vat: null, billing_cf: null,
-    billing_address: null, billing_city: null, billing_province: null,
-    billing_postal_code: null, billing_sdi: null, billing_pec: null,
-    status: "lead",
-    source: "altro",
-    notes: null,
-    tenant_id: null,
-    converted_at: null,
-    created_at: "2026-05-14T16:30:00Z",
-    updated_at: "2026-05-14T16:30:00Z",
-  },
-];
+import { PLATFORM_LEADS } from "@/lib/platform-admin-data";
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
@@ -214,7 +58,7 @@ function fmt(iso: string) {
 }
 
 export function PlatformCrmPage() {
-  const [leads] = useState<PlatformLead[]>(MOCK_LEADS);
+  const [leads] = useState<PlatformLead[]>(PLATFORM_LEADS);
   const [activeTab, setActiveTab] = useState<LeadStatus | "all">("all");
   const [verticalFilter, setVerticalFilter] = useState<LeadVertical | "all">("all");
   const [query, setQuery] = useState("");
@@ -228,6 +72,7 @@ export function PlatformCrmPage() {
     prospect: leads.filter((l) => l.status === "prospect").length,
     active: leads.filter((l) => l.status === "active").length,
     churned: leads.filter((l) => l.status === "churned").length,
+    hot: leads.filter((l) => l.temperature === "hot").length,
   };
 
   const filtered = leads.filter((l) => {
@@ -239,7 +84,8 @@ export function PlatformCrmPage() {
       l.business_name.toLowerCase().includes(q) ||
       l.contact_name.toLowerCase().includes(q) ||
       l.contact_email.toLowerCase().includes(q) ||
-      (l.city ?? "").toLowerCase().includes(q);
+      (l.city ?? "").toLowerCase().includes(q) ||
+      l.locations.some((loc) => `${loc.name} ${loc.address ?? ""} ${loc.city ?? ""}`.toLowerCase().includes(q));
     return matchTab && matchVertical && matchSearch;
   });
 
@@ -250,7 +96,7 @@ export function PlatformCrmPage() {
           <p className="impact-title text-xs text-pork-red">Piattaforma</p>
           <h1 className="headline text-4xl">CRM Lead</h1>
           <p className="mt-1 text-pork-ink/60">
-            Pipeline commerciale: lead, prospect e tenant attivi di tutti i verticali.
+            Pipeline commerciale completa: demo, trattativa, venduto, sedi e conversione a tenant.
           </p>
         </div>
         <Link
@@ -265,8 +111,8 @@ export function PlatformCrmPage() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard icon={Users} label="Totale lead" value={counts.all} />
         <StatCard icon={TrendingUp} label="Prospect" value={counts.prospect} color="text-pork-mustard" />
+        <StatCard icon={Flame} label="Lead caldi" value={counts.hot} color="text-pork-red" />
         <StatCard icon={CheckCircle2} label="Tenant attivi" value={counts.active} color="text-pork-green" />
-        <StatCard icon={XCircle} label="Churned" value={counts.churned} color="text-pork-red" />
       </div>
 
       {/* Split verticali */}
@@ -437,11 +283,13 @@ function VerticalSplitCard({
 // ─── Riga lead ────────────────────────────────────────────────────────────────
 
 function LeadRow({ lead }: { lead: PlatformLead }) {
+  const phoneHref = lead.contact_phone ? `tel:${lead.contact_phone.replace(/\s/g, "")}` : undefined;
+  const whatsappHref = lead.contact_phone
+    ? `https://wa.me/${lead.contact_phone.replace(/[^\d]/g, "")}`
+    : undefined;
+
   return (
-    <Link
-      href={`/admin/crm/${lead.id}`}
-      className="flex items-center justify-between gap-4 rounded-2xl bg-white p-5 ring-1 ring-pork-ink/10 transition hover:ring-pork-red/30"
-    >
+    <article className="flex items-center justify-between gap-4 rounded-2xl bg-white p-5 ring-1 ring-pork-ink/10 transition hover:ring-pork-red/30">
       {/* Left strip: indicatore verticale */}
       <div
         className={cn(
@@ -475,6 +323,24 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
             {LEAD_STATUS_LABELS[lead.status]}
           </span>
 
+          <span
+            className={cn(
+              "rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide",
+              LEAD_STAGE_COLORS[lead.stage],
+            )}
+          >
+            {LEAD_STAGE_LABELS[lead.stage]}
+          </span>
+
+          <span
+            className={cn(
+              "rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide",
+              LEAD_TEMPERATURE_COLORS[lead.temperature],
+            )}
+          >
+            {LEAD_TEMPERATURE_LABELS[lead.temperature]}
+          </span>
+
           {lead.source && (
             <span className="rounded-full bg-pork-ink/5 px-2.5 py-0.5 text-[10px] text-pork-ink/50">
               {SOURCE_LABELS[lead.source]}
@@ -485,22 +351,52 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-pork-ink/60">
           <span>{lead.contact_name}</span>
           {lead.contact_email && (
-            <span className="inline-flex items-center gap-1">
+            <a href={`mailto:${lead.contact_email}`} className="inline-flex items-center gap-1 font-semibold hover:text-pork-red">
               <Mail size={12} />
               {lead.contact_email}
-            </span>
+            </a>
           )}
-          {lead.contact_phone && (
-            <span className="inline-flex items-center gap-1">
+          {lead.contact_phone && phoneHref && (
+            <a href={phoneHref} className="inline-flex items-center gap-1 font-semibold hover:text-pork-red">
               <Phone size={12} />
               {lead.contact_phone}
+            </a>
+          )}
+          {lead.contact_phone && whatsappHref && (
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-pork-green/10 px-2 py-0.5 text-xs font-black text-pork-green hover:bg-pork-green hover:text-white"
+            >
+              WA
+            </a>
+          )}
+          <span className="inline-flex items-center gap-1">
+            <MapPin size={12} />
+            {lead.locations.length} {lead.locations.length === 1 ? "sede" : "sedi"}
+            {lead.city && (
+              <>
+                {" · "}
+                {lead.city}
+                {lead.province && ` (${lead.province})`}
+              </>
+            )}
+          </span>
+          {lead.locations.length > 1 && (
+            <span className="rounded-full bg-pork-ink/5 px-2 py-0.5 text-xs font-bold text-pork-ink/50">
+              multi-sede
             </span>
           )}
-          {lead.city && (
-            <span>
-              {lead.city}
-              {lead.province && ` (${lead.province})`}
-            </span>
+          {lead.demo_url && (
+            <a
+              href={lead.demo_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-black text-indigo-700 hover:bg-indigo-100"
+            >
+              <MonitorUp size={12} /> demo
+            </a>
           )}
         </div>
       </div>
@@ -512,7 +408,9 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
         )}
       </div>
 
-      <ArrowRight size={16} className="shrink-0 text-pork-ink/30" />
-    </Link>
+      <Link href={`/admin/crm/${lead.id}`} className="shrink-0 rounded-full p-2 text-pork-ink/30 hover:bg-pork-ink/5 hover:text-pork-ink" aria-label={`Apri ${lead.business_name}`}>
+        <ArrowRight size={16} />
+      </Link>
+    </article>
   );
 }

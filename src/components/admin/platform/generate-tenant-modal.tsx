@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X, GitBranch, Loader2, ExternalLink, CheckCircle2 } from "lucide-react";
+import { X, GitBranch, Loader2, ExternalLink, CheckCircle2, MonitorUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PlatformLead } from "@/lib/platform-crm-types";
+import { PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
 
 type Props = {
   lead: PlatformLead;
@@ -30,6 +31,7 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prUrl, setPrUrl] = useState<string | null>(null);
+  const [demoUrl, setDemoUrl] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,10 +49,12 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
           vertical: lead.business_vertical,
           businessName: lead.business_name,
           primaryColor: primary,
+          initialModules: PLATFORM_PACKAGES.find((pkg) => pkg.slug === "presenza")?.modules ?? [],
+          locations: lead.locations,
         }),
       });
 
-      const data = (await res.json()) as { success?: boolean; pr_url?: string; error?: string };
+      const data = (await res.json()) as { success?: boolean; pr_url?: string; demo_url?: string; error?: string };
 
       if (!res.ok || data.error) {
         setError(data.error ?? "Errore sconosciuto");
@@ -58,6 +62,7 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
       }
 
       setPrUrl(data.pr_url!);
+      setDemoUrl(data.demo_url ?? null);
     } finally {
       setLoading(false);
     }
@@ -70,10 +75,10 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
         <div className="flex items-center justify-between border-b border-pork-ink/10 px-6 py-5">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pork-ink text-white">
-              <GitBranch size={16} />
+              <MonitorUp size={16} />
             </div>
             <div>
-              <p className="font-black">Converti in Tenant</p>
+              <p className="font-black">Crea demo</p>
               <p className="text-xs text-pork-ink/50">{lead.business_name}</p>
             </div>
           </div>
@@ -86,18 +91,30 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
         {prUrl ? (
           <div className="space-y-4 px-6 py-10 text-center">
             <CheckCircle2 size={40} className="mx-auto text-pork-green" />
-            <p className="text-lg font-black">Branch e PR creati!</p>
+            <p className="text-lg font-black">Demo predisposta</p>
             <p className="text-sm text-pork-ink/60">
-              La PR è aperta su GitHub. Quando il dev completa l&apos;UI custom, basta fare merge.
+              La PR è aperta su GitHub e il link demo è pronto per lavorare al sito e presentarlo al lead.
             </p>
-            <a
-              href={prUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-pork-ink px-5 py-2.5 text-sm font-bold text-white"
-            >
-              Apri PR su GitHub <ExternalLink size={13} />
-            </a>
+            <div className="flex flex-wrap justify-center gap-2">
+              {demoUrl && (
+                <a
+                  href={demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-pork-red px-5 py-2.5 text-sm font-bold text-white"
+                >
+                  Apri demo <ExternalLink size={13} />
+                </a>
+              )}
+              <a
+                href={prUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-pork-ink px-5 py-2.5 text-sm font-bold text-white"
+              >
+                Apri PR <ExternalLink size={13} />
+              </a>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
@@ -106,9 +123,9 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
               <p>
                 Verrà creata la branch{" "}
                 <code className="rounded bg-pork-ink/8 px-1 font-mono text-xs">
-                  tenant/{slug || "…"}
+                  demo/{slug || "…"}
                 </code>{" "}
-                con:
+                e verrà predisposto il link demo, senza attivare il dominio ufficiale.
               </p>
               <ul className="mt-2 list-inside list-disc space-y-0.5 text-xs">
                 <li>
@@ -128,7 +145,7 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
 
             {/* Campi */}
             <div className="space-y-4">
-              <FormField label="Slug tenant" hint="ID univoco — solo minuscolo e trattini">
+              <FormField label="Slug demo" hint="ID univoco — solo minuscolo e trattini">
                 <input
                   value={slug}
                   onChange={(e) =>
@@ -140,7 +157,7 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
                 />
               </FormField>
 
-              <FormField label="Dominio" hint="Dominio definitivo del tenant">
+              <FormField label="Dominio ufficiale previsto" hint="Resta non attivo finché il lead non firma">
                 <input
                   value={domain}
                   onChange={(e) => setDomain(e.target.value)}
@@ -149,6 +166,13 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
                   required
                 />
               </FormField>
+
+              <div className="rounded-2xl bg-pork-cream p-4 text-xs text-pork-ink/60">
+                <p className="font-bold text-pork-ink">Link demo: {lead.business_vertical === "services" ? "demo.bizery.it" : "demo.menuary.it"}/{slug || "…"}</p>
+                <p className="mt-1">
+                  Il piano sottoscritto e i moduli definitivi si scelgono dopo, quando il lead diventa venduto.
+                </p>
+              </div>
 
               <FormField
                 label="Colore primario"
@@ -203,7 +227,7 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
                   </>
                 ) : (
                   <>
-                    <GitBranch size={14} /> Genera Tenant
+                    <GitBranch size={14} /> Crea demo
                   </>
                 )}
               </button>

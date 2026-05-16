@@ -1554,6 +1554,7 @@ export type Database = {
       }
       siteadmin: {
         Row: {
+          commission_rate: number
           created_at: string
           display_name: string | null
           email: string
@@ -1564,6 +1565,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          commission_rate?: number
           created_at?: string
           display_name?: string | null
           email: string
@@ -1574,6 +1576,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          commission_rate?: number
           created_at?: string
           display_name?: string | null
           email?: string
@@ -2336,6 +2339,7 @@ export type Database = {
         | "venditore"
         | "amministrazione"
         | "gestore"
+        | "lead_inserter"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2505,8 +2509,8 @@ export const Constants = {
         "venditore",
         "amministrazione",
         "gestore",
+        "lead_inserter",
       ],
     },
   },
 } as const
-

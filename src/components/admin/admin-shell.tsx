@@ -18,10 +18,14 @@ import {
   UtensilsCrossed,
   X,
   CreditCard,
+  BadgeEuro,
+  UserCog,
+  UserPlus,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { clearAdminSession } from "@/lib/admin-auth";
+import { hasAdminPermission, type AdminPermission, type SiteadminRole } from "@/lib/admin-permissions";
 import { cn } from "@/lib/utils";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useTenant } from "@/components/core/tenant-provider";
@@ -41,15 +45,19 @@ type NavItem = {
   label: string;
   icon: LucideIcon;
   external?: boolean;
+  permission?: AdminPermission;
   /** Se assente, sempre visibile. */
   visible?: (s: NavFlags) => boolean;
 };
 
 const PLATFORM_ADMIN_NAV: NavItem[] = [
-  { href: "/admin/crm", label: "CRM Lead", icon: Users },
-  { href: "/admin/pacchetti", label: "Pacchetti", icon: Package },
-  { href: "/admin/abbonamenti", label: "Abbonamenti", icon: CreditCard },
-  { href: "/admin/tenant", label: "Tenant & Moduli", icon: Building2 },
+  { href: "/admin/crm", label: "CRM Lead", icon: Users, permission: "crm:view" },
+  { href: "/admin/crm/nuovo", label: "Nuovo lead", icon: UserPlus, permission: "crm:create" },
+  { href: "/admin/pacchetti", label: "Pacchetti", icon: Package, permission: "packages:manage" },
+  { href: "/admin/abbonamenti", label: "Abbonamenti", icon: CreditCard, permission: "subscriptions:view" },
+  { href: "/admin/provvigioni", label: "Provvigioni", icon: BadgeEuro, permission: "commissions:view" },
+  { href: "/admin/tenant", label: "Tenant & Moduli", icon: Building2, permission: "tenant:manage" },
+  { href: "/admin/utenti", label: "Utenti interni", icon: UserCog, permission: "users:manage" },
 ];
 
 const NAV_ITEMS: NavItem[] = [
@@ -99,6 +107,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [platformRole, setPlatformRole] = useState<SiteadminRole | null>(null);
   const mode = usePlatformMode();
 
   const tenant = useTenant();
@@ -109,6 +118,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     kitchenDisplayEnabled,
     modules,
   } = useEffectiveFeatures();
+
+  useEffect(() => {
+    if (mode !== "platform-admin") return;
+    let active = true;
+    void fetch("/api/admin/me", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data: { role?: SiteadminRole }) => {
+        if (active) setPlatformRole(data.role ?? null);
+      })
+      .catch(() => {
+        if (active) setPlatformRole(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [mode]);
 
   const advancedServicesEnabled = Boolean(
     modules.orderKiosk ||
@@ -128,7 +153,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   const navItems = useMemo(() => {
     if (mode === "platform-admin") {
-      return PLATFORM_ADMIN_NAV;
+      return PLATFORM_ADMIN_NAV.filter(
+        (it) => !it.permission || hasAdminPermission(platformRole, it.permission),
+      );
     }
     const tenantHiddenItems = new Set(["/admin/tenant"]);
     const flags: NavFlags = {
@@ -150,6 +177,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     advancedServicesEnabled,
     modules.reservations,
     mode,
+    platformRole,
   ]);
 
   const adminEntryHref =
@@ -160,6 +188,84 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   function logout() {
     clearAdminSession();
     router.replace("/admin/login");
+  }
+
+  const isPlatform = mode === "platform-admin";
+
+  if (isPlatform) {
+    return (
+      <div className="menuary-admin-root">
+        <aside
+          className={cn(
+            "menuary-admin-sidebar fixed inset-y-0 left-0 z-30 flex w-64 flex-col transition-transform lg:translate-x-0",
+            open ? "translate-x-0" : "-translate-x-full",
+          )}
+        >
+          <div className="menuary-admin-sidebar-header flex items-center justify-between p-5">
+            <Link href={adminEntryHref} className="menuary-admin-brand">
+              Menuary · controllo
+            </Link>
+            <button className="lg:hidden" onClick={() => setOpen(false)} aria-label="Chiudi">
+              <X size={22} />
+            </button>
+          </div>
+          <nav className="flex-1 space-y-1 p-3">
+            {navItems.map((it) => {
+              const active =
+                !it.external &&
+                (it.href === "/admin/crm"
+                  ? pathname === it.href ||
+                    (Boolean(pathname?.startsWith("/admin/crm/")) &&
+                      !pathname?.startsWith("/admin/crm/nuovo"))
+                  : pathname === it.href ||
+                    (it.href !== "/admin" && pathname?.startsWith(it.href)));
+              const Icon = it.icon;
+              return (
+                <Link
+                  key={it.href}
+                  href={it.href}
+                  onClick={() => setOpen(false)}
+                  target={it.external ? "_blank" : undefined}
+                  className="menuary-admin-nav-link"
+                  data-active={active}
+                >
+                  <Icon size={18} />
+                  {it.label}
+                  {it.external && <span className="menuary-admin-nav-tag">nuova tab</span>}
+                </Link>
+              );
+            })}
+          </nav>
+          <button onClick={logout} className="menuary-admin-logout">
+            <LogOut size={18} /> Esci
+          </button>
+        </aside>
+
+        {open && (
+          <div
+            className="menuary-admin-backdrop fixed inset-0 z-20 lg:hidden"
+            onClick={() => setOpen(false)}
+            aria-hidden
+          />
+        )}
+
+        <div className="lg:pl-64">
+          <header className="menuary-admin-topbar sticky top-0 z-10 flex items-center justify-between px-5 py-3 lg:hidden">
+            <button
+              className="menuary-admin-topbar-button"
+              onClick={() => setOpen(true)}
+              aria-label="Apri menu"
+            >
+              <MenuIcon size={20} />
+            </button>
+            <span className="menuary-admin-topbar-title">Controllo</span>
+            <div className="w-10" />
+          </header>
+
+          <main className="p-5 sm:p-8">{children}</main>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -175,7 +281,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             href={adminEntryHref}
             className="headline text-2xl text-pork-mustard"
           >
-            {mode === "platform-admin" ? "Menuary · controllo" : `${tenant.name} · gestione`}
+            {`${tenant.name} · gestione`}
           </Link>
           <button
             className="lg:hidden"
