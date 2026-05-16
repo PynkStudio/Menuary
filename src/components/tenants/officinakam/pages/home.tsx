@@ -189,22 +189,29 @@ export function OfficinaKamHomePage() {
   const [activeGroup, setActiveGroup] = useState(0);
   const [requestSent, setRequestSent] = useState(false);
   const showroomRef = useRef<HTMLElement | null>(null);
-  const [showroom, setShowroom] = useState(() => getShowroomState(0));
+  const bikeRef = useRef<HTMLDivElement | null>(null);
+  const progressBarRef = useRef<HTMLDivElement | null>(null);
+  const stickyRef = useRef<HTMLDivElement | null>(null);
+  const scrollCueRef = useRef<HTMLDivElement | null>(null);
+  const [stageIndex, setStageIndex] = useState(0);
 
   const menuGroups = useMemo(() => officinaKamMenu, []);
   const currentGroup = menuGroups[activeGroup] ?? menuGroups[0];
   const tenantGoogleRating = getGoogleRatingForTenant(tenant.id);
   const reviewSample = getReviewsForTenant(tenant.id).slice(0, 3);
-  const currentStage = stages[showroom.index] ?? stages[0];
+  const currentStage = stages[stageIndex] ?? stages[0];
 
   useEffect(() => {
     let frame = 0;
-    let lastProgress = -1;
+    let lastIndex = -1;
 
     const update = () => {
       frame = 0;
       const el = showroomRef.current;
-      if (!el) return;
+      const bike = bikeRef.current;
+      const bar = progressBarRef.current;
+      const sticky = stickyRef.current;
+      if (!el || !bike || !bar || !sticky) return;
       const scrollable = Math.max(1, el.offsetHeight - window.innerHeight);
       const scrollTop =
         window.scrollY ||
@@ -212,9 +219,26 @@ export function OfficinaKamHomePage() {
         document.body.scrollTop ||
         0;
       const progress = clamp((scrollTop - el.offsetTop) / scrollable);
-      if (Math.abs(progress - lastProgress) < 0.001) return;
-      lastProgress = progress;
-      setShowroom(getShowroomState(progress));
+      const s = getShowroomState(progress);
+
+      bike.style.transform = `scale(${s.scale}) translate3d(${s.tx}%, ${s.ty}%, 0)`;
+      bar.style.width = `${progress * 100}%`;
+      const cue = scrollCueRef.current;
+      if (cue) cue.style.opacity = progress < 0.05 ? "1" : "0";
+      if (progress >= 1) {
+        sticky.style.position = "absolute";
+        sticky.style.top = "auto";
+        sticky.style.bottom = "0";
+      } else {
+        sticky.style.position = "fixed";
+        sticky.style.top = "0";
+        sticky.style.bottom = "auto";
+      }
+
+      if (s.index !== lastIndex) {
+        lastIndex = s.index;
+        setStageIndex(s.index);
+      }
     };
 
     const schedule = () => {
@@ -223,12 +247,10 @@ export function OfficinaKamHomePage() {
     };
 
     update();
-    const interval = window.setInterval(schedule, 80);
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
-      window.clearInterval(interval);
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
     };
@@ -270,26 +292,23 @@ export function OfficinaKamHomePage() {
 
       <section id="top" ref={showroomRef} className="kam-showroom">
         <div
+          ref={stickyRef}
           className="kam-showroom-sticky"
-          style={{
-            position: showroom.progress >= 1 ? "absolute" : "fixed",
-            top: showroom.progress >= 1 ? "auto" : 0,
-            bottom: showroom.progress >= 1 ? 0 : "auto",
-          }}
+          style={{ position: "fixed", top: 0 }}
         >
           <div
+            ref={progressBarRef}
             className="kam-scroll-progress-top"
             aria-hidden="true"
-            style={{ width: `${showroom.progress * 100}%` }}
+            style={{ width: "0%" }}
           />
           <div className="kam-grid-bg" />
           <div className="kam-showroom-vignette" />
           <div className="kam-showroom-media">
             <div
+              ref={bikeRef}
               className="kam-bike-frame"
-              style={{
-                transform: `scale(${showroom.scale}) translate3d(${showroom.tx}%, ${showroom.ty}%, 0)`,
-              }}
+              style={{ transform: "scale(1) translate3d(0%, 0%, 0)" }}
             >
               <Image
                 src={content.hero.backdrop}
@@ -305,7 +324,7 @@ export function OfficinaKamHomePage() {
                   return (
                     <span
                       key={item.code}
-                      className={showroom.index === realIndex ? "is-active" : ""}
+                      className={stageIndex === realIndex ? "is-active" : ""}
                       style={{
                         left: `${item.focal.x * 100}%`,
                         top: `${item.focal.y * 100}%`,
@@ -331,11 +350,13 @@ export function OfficinaKamHomePage() {
             </div>
           </div>
 
-          {showroom.progress < 0.05 && (
-            <div className="kam-scroll-cue" aria-hidden="true">
-              ↓ Scorri per ispezionare
-            </div>
-          )}
+          <div
+            ref={scrollCueRef}
+            className="kam-scroll-cue"
+            aria-hidden="true"
+          >
+            ↓ Scorri per ispezionare
+          </div>
 
           <div className="kam-container kam-hud">
             <div className="kam-hud-left">
@@ -354,7 +375,7 @@ export function OfficinaKamHomePage() {
 
             <aside className="kam-hud-right" aria-label="Diagnostica in evidenza">
               <div className="kam-stage-counter">
-                <strong>{String(showroom.index + 1).padStart(2, "0")}</strong>
+                <strong>{String(stageIndex + 1).padStart(2, "0")}</strong>
                 <span>/ {String(stages.length).padStart(2, "0")}</span>
               </div>
 
@@ -365,9 +386,9 @@ export function OfficinaKamHomePage() {
                     type="button"
                     onClick={() => jumpToStage(index)}
                     className={
-                      index === showroom.index
+                      index === stageIndex
                         ? "is-active"
-                        : index < showroom.index
+                        : index < stageIndex
                           ? "is-done"
                           : ""
                     }
