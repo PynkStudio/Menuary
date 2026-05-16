@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { LogOut, MapPin } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   getEffectiveCapabilities,
   type StoreCapabilities,
   type EmployeeRole,
 } from "@/lib/store-roles";
+import type { TenantLocation } from "@/lib/tenant";
+import { isMultiLocation } from "@/lib/location";
 
 interface Tenant {
   id: string;
@@ -33,14 +35,27 @@ interface NavItem {
 export function GestioneShell({
   tenant,
   currentUser,
+  locations = [],
   children,
 }: {
   tenant: Tenant;
   currentUser: CurrentUser;
+  locations?: TenantLocation[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const isMulti = isMultiLocation(locations);
+  const activeLocationSlug = searchParams.get("loc") ?? locations.find((l) => l.isDefault)?.slug ?? locations[0]?.slug;
+  const activeLocation = locations.find((l) => l.slug === activeLocationSlug) ?? locations[0];
+
+  function handleLocationChange(slug: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("loc", slug);
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   const cap = getEffectiveCapabilities(
     currentUser.role ?? "personale_cucina",
@@ -109,6 +124,26 @@ export function GestioneShell({
               </button>
             </div>
           </div>
+
+          {/* Selettore sede — visibile solo con 2+ sedi */}
+          {isMulti && (
+            <div className="mt-3 flex items-center gap-2 text-sm">
+              <MapPin className="w-3.5 h-3.5 opacity-50 shrink-0" />
+              <select
+                value={activeLocation?.slug ?? ""}
+                onChange={(e) => handleLocationChange(e.target.value)}
+                className="appearance-none bg-transparent font-semibold cursor-pointer focus:outline-none"
+                aria-label="Sede attiva"
+                style={{ color: tenant.theme.ink }}
+              >
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.slug}>
+                    {loc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Nav primario */}
           <nav className="mt-4 -mb-1 flex flex-wrap gap-1 text-sm">

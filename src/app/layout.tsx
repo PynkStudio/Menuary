@@ -26,6 +26,10 @@ import { getTenantContent } from "@/lib/tenant-content";
 import { buildIconSet, themeColor } from "@/lib/favicon";
 import { CLIENTS_PUBLIC_ORIGIN, clientsSite } from "@/lib/clients-config";
 import { STUDIO_PUBLIC_ORIGIN, studioSite } from "@/lib/studio-config";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { fetchLocations } from "@/lib/location";
+import { LocationProvider } from "@/components/core/location-provider";
+import { Suspense } from "react";
 
 const display = Bagel_Fat_One({
   subsets: ["latin"],
@@ -337,10 +341,21 @@ const restaurantSchema = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const host = (await headers()).get("host");
+  const reqHeaders = await headers();
+  const host = reqHeaders.get("host");
   const tenant = resolveTenantFromHost(host);
   const mode = getPlatformModeFromHost(host);
   const themeVars = tenantThemeCssVars(tenant.theme);
+
+  // Fetch sedi solo per tenant con multiLocation abilitato in modalità tenant site.
+  // In tutti gli altri mode (marketing, admin, gestione…) le sedi non servono al root layout.
+  const locations =
+    mode === "tenant" && tenant.features.multiLocation
+      ? await fetchLocations(await createSupabaseServerClient(), tenant.id)
+      : [];
+
+  // Slug sede da sottodominio (es. milano.bepork.it → "milano"), impostato dal middleware.
+  const locationSlug = reqHeaders.get("x-location-slug") ?? undefined;
   // Per i mode Bizery il contenuto tenant non è rilevante (shell propria, nessun JSON-LD).
   const isBizeryMode =
     mode === "marketing-bizery" || mode === "gestione-bizery" || mode === "preview-bizery";
@@ -382,11 +397,15 @@ export default async function RootLayout({
         <Analytics />
         <PlatformModeProvider mode={mode}>
           <TenantProvider tenant={tenant}>
-            <Providers>
-              <SiteChrome />
-              <main className="min-w-0 overflow-x-hidden">{children}</main>
-              <SiteFooterGate />
-            </Providers>
+            <Suspense>
+              <LocationProvider locations={locations} activeSlug={locationSlug}>
+                <Providers>
+                  <SiteChrome />
+                  <main className="min-w-0 overflow-x-hidden">{children}</main>
+                  <SiteFooterGate />
+                </Providers>
+              </LocationProvider>
+            </Suspense>
           </TenantProvider>
         </PlatformModeProvider>
       </body>

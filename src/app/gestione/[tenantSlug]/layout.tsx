@@ -7,6 +7,7 @@ import { GestioneShell } from "@/components/gestione/gestione-shell";
 import { GestioneLoginGate } from "@/components/gestione/gestione-login-gate";
 import { PortalSwitcher } from "@/components/portal-switcher/portal-switcher";
 import type { EmployeeRole } from "@/lib/store-roles";
+import { fetchLocations, fetchStaffAllowedLocationIds, filterAllowedLocations } from "@/lib/location";
 
 interface Props {
   children: React.ReactNode;
@@ -54,10 +55,11 @@ export default async function GestioneLayout({ children, params }: Props) {
     redirect(`https://login.menuary.it?from=gestione.${tenantSlug}&next=${next}`);
   }
 
-  const [{ data: sa }, { data: ta }, { data: emp }] = await Promise.all([
+  const [{ data: sa }, { data: ta }, { data: emp }, adminUserRow] = await Promise.all([
     supabase.from("siteadmin").select("role").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
     supabase.from("tenantadmin").select("email, display_name").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
     supabase.from("employee").select("email, display_name, role, permissions").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
+    supabase.from("admin_users").select("id").eq("auth_user_id", user.id).eq("tenant_id", tenantSlug).maybeSingle(),
   ]);
 
   const isSiteadmin = !!sa;
@@ -89,6 +91,23 @@ export default async function GestioneLayout({ children, params }: Props) {
 
   const cssVars = tenantThemeCssVars(tenant.theme);
 
+  // Sedi: solo se il tenant ha multiLocation abilitato.
+  const allLocations = tenant.features.multiLocation
+    ? await fetchLocations(supabase, tenantSlug)
+    : [];
+
+  // Staff con restrizioni di sede vede solo le sedi assegnate.
+  // Admin (isTenantAdmin) vede sempre tutto.
+  const isAdmin = isTenantAdmin || isSiteadmin;
+  const visibleLocations = isAdmin
+    ? allLocations
+    : await (async () => {
+        const adminId = adminUserRow?.data?.id;
+        if (!adminId) return allLocations;
+        const allowed = await fetchStaffAllowedLocationIds(supabase, adminId);
+        return filterAllowedLocations(allLocations, allowed);
+      })();
+
   return (
     <div
       data-gestione-tenant={tenantSlug}
@@ -108,6 +127,7 @@ export default async function GestioneLayout({ children, params }: Props) {
           permissions: (emp?.permissions as Record<string, boolean>) ?? {},
           isTenantAdmin: isTenantAdmin || isSiteadmin,
         }}
+        locations={visibleLocations}
       >
         {children}
       </GestioneShell>
