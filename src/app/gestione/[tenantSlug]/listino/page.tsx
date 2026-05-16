@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import AdminMenuPage from "@/app/admin/menu/page";
+import { OfficinakamListinoEditor } from "@/components/tenants/officinakam/admin/listino-editor";
 import { TENANTS } from "@/lib/tenant-registry";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 
@@ -14,6 +15,8 @@ export default async function GestioneListinoPage({
 
   const access = getGestioneModuleAccess(tenant.features);
   if (!access.canManageMenu) notFound();
+
+  if (tenant.id === "officinakam") return <OfficinakamListinoEditor />;
 
   return <AdminMenuPage />;
 }

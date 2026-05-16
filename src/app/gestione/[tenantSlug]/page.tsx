@@ -20,15 +20,9 @@ export default async function GestioneDashboardPage({
 
   return (
     <div>
-      <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-50">
-        Pannello di controllo
-      </p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-        Benvenuto su {tenant?.name}
-      </h1>
-      <p className="mt-3 max-w-xl opacity-70">
-        {dashboardCopy}
-      </p>
+      <span className="ga-eyebrow">Pannello di controllo</span>
+      <h1 className="ga-heading">Benvenuto su {tenant?.name}</h1>
+      <p className="ga-lead">{dashboardCopy}</p>
     </div>
   );
 }

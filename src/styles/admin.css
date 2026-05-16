@@ -154,52 +154,258 @@
     background: var(--menuary-copper-dark);
   }
 
-  /* Gestione Bizery / tenant scuri: le pagine admin condivise usano molte card
-     bianche food-oriented. Qui le riportiamo su superfici scure tenant-aware. */
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .bg-white {
-    background-color: rgb(var(--tenant-brick)) !important;
-    color: rgb(var(--tenant-ink)) !important;
+  /* ============================================================
+     Gestione admin — modulo condiviso della piattaforma.
+     Stile platform-neutral (dark) IDENTICO per tutti i tenant.
+     L'unico elemento variabile è l'accent (--ga-accent), passato
+     dal layout via inline style dal tenant.theme.red, ma il sistema
+     di token NON eredita né nomi né valori da nessun tenant specifico.
+     ============================================================ */
+  .gestione-admin {
+    --ga-bg:          #0A0A0B;
+    --ga-surface:     #131316;
+    --ga-surface-2:   #18181B;
+    --ga-surface-3:   #232329;
+    --ga-border:      rgba(255, 255, 255, 0.08);
+    --ga-border-soft: rgba(255, 255, 255, 0.05);
+    --ga-ink:         #F5F5F7;
+    --ga-ink-muted:   rgba(245, 245, 247, 0.6);
+    --ga-ink-faint:   rgba(245, 245, 247, 0.4);
+    --ga-ink-dim:     rgba(245, 245, 247, 0.25);
+    --ga-accent:      #2563EB;        /* override via inline style dal layout */
+    --ga-accent-soft: rgba(37, 99, 235, 0.14);
+    --ga-accent-ring: rgba(37, 99, 235, 0.32);
+    --ga-radius:      14px;
+    --ga-radius-lg:   18px;
+
+    min-height: 100vh;
+    background: var(--ga-bg);
+    color: var(--ga-ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   }
 
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .bg-pork-cream {
-    background-color: rgb(var(--tenant-cream)) !important;
+  .gestione-admin a { color: inherit; }
+
+  /* Layout primitives */
+  .ga-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(10, 10, 11, 0.82);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--ga-border);
+  }
+  .ga-header-row {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .ga-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ga-brand-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--ga-accent);
+    color: #0A0A0B;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .ga-brand-name { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+
+  .ga-user { display: inline-flex; align-items: center; gap: 12px; font-size: 13px; }
+  .ga-user span { color: var(--ga-ink-muted); }
+
+  .ga-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--ga-border);
+    background: transparent;
+    color: var(--ga-ink);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease;
+  }
+  .ga-logout:hover { border-color: var(--ga-accent-ring); background: rgba(255,255,255,0.03); }
+
+  .ga-location-select {
+    appearance: none;
+    background: transparent;
+    color: var(--ga-ink);
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    font-size: 13px;
+  }
+  .ga-location-select option { background: var(--ga-bg); color: var(--ga-ink); }
+
+  .ga-nav {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 24px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .ga-nav-link {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ga-ink-muted);
+    transition: color 160ms ease, background 160ms ease;
+  }
+  .ga-nav-link:hover { color: var(--ga-ink); background: rgba(255,255,255,0.04); }
+  .ga-nav-link[data-active="true"] {
+    background: var(--ga-ink);
+    color: var(--ga-bg);
   }
 
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink {
-    color: rgb(var(--tenant-ink)) !important;
+  .ga-main {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
   }
 
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/30 {
-    color: rgb(var(--tenant-ink) / 0.3) !important;
+  /* Content primitives */
+  .ga-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ga-accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .ga-eyebrow::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--ga-accent);
+    box-shadow: 0 0 0 4px var(--ga-accent-soft);
+  }
+  .ga-heading {
+    margin: 8px 0 0;
+    font-size: clamp(28px, 3.5vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .ga-lead {
+    max-width: 56rem;
+    margin: 12px 0 0;
+    color: var(--ga-ink-muted);
+    font-size: 15px;
+    line-height: 1.55;
   }
 
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/40 {
-    color: rgb(var(--tenant-ink) / 0.4) !important;
+  .ga-card {
+    background: var(--ga-surface-2);
+    border: 1px solid var(--ga-border);
+    border-radius: var(--ga-radius-lg);
+    padding: 20px;
+  }
+  .ga-card-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ga-ink);
+  }
+  .ga-card-hint {
+    margin-top: 8px;
+    color: var(--ga-ink-faint);
+    font-size: 11px;
   }
 
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/50 {
-    color: rgb(var(--tenant-ink) / 0.5) !important;
+  .ga-input,
+  .ga-select,
+  .ga-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--ga-border);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--ga-ink);
+    font-size: 13px;
+    outline: none;
+    color-scheme: dark;
+    transition: border-color 160ms ease, background 160ms ease;
+  }
+  .ga-input:focus,
+  .ga-select:focus,
+  .ga-textarea:focus {
+    border-color: var(--ga-accent-ring);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .ga-input:disabled,
+  .ga-select:disabled,
+  .ga-textarea:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .ga-input::placeholder,
+  .ga-textarea::placeholder { color: var(--ga-ink-dim); }
+
+  .ga-label-text {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--ga-ink-muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/55 {
-    color: rgb(var(--tenant-ink) / 0.55) !important;
-  }
+  .ga-checkbox { accent-color: var(--ga-accent); }
 
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/60 {
-    color: rgb(var(--tenant-ink) / 0.6) !important;
+  .ga-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, opacity 160ms ease;
   }
+  .ga-btn:hover:not(:disabled) { transform: translateY(-1px); }
+  .ga-btn-primary { background: var(--ga-accent); color: #0A0A0B; border-color: var(--ga-accent); }
+  .ga-btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+  .ga-btn-ghost { background: transparent; color: var(--ga-ink); border-color: var(--ga-border); }
+  .ga-btn-ghost:hover:not(:disabled) { border-color: var(--ga-accent-ring); background: rgba(255,255,255,0.03); }
+  .ga-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/70 {
-    color: rgb(var(--tenant-ink) / 0.7) !important;
+  .ga-pill-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--ga-border);
+    color: var(--ga-ink-muted);
+    font-size: 11px;
+    font-weight: 700;
   }
-
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] .text-pork-ink\/80 {
-    color: rgb(var(--tenant-ink) / 0.8) !important;
-  }
-
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] input,
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] select,
-  html[data-platform="gestione-bizery"] [data-gestione-tenant] textarea {
-    color: rgb(var(--tenant-ink));
-  }
+  .ga-pill-link:hover { color: var(--ga-ink); border-color: var(--ga-accent-ring); }
 }

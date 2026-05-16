@@ -104,50 +104,32 @@ export function GestioneShell({
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Header brandizzato tenant */}
-      <header
-        className="border-b backdrop-blur"
-        style={{ borderColor: `${tenant.theme.ink}1A`, backgroundColor: `${tenant.theme.cream}E6` }}
-      >
-        <div className="mx-auto max-w-7xl px-6 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span
-                className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white"
-                style={{ backgroundColor: tenant.theme.red }}
-              >
-                Gestione
-              </span>
-              <span className="text-lg font-bold">{tenant.name}</span>
-            </div>
-
-            <div className="flex items-center gap-3 text-sm">
-              <span className="opacity-60">
-                {currentUser.displayName ?? currentUser.email}
-              </span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold text-white transition-opacity hover:opacity-80"
-                style={{ backgroundColor: tenant.theme.ink }}
-              >
-                <LogOut size={12} strokeWidth={2} />
-                Esci
-              </button>
-            </div>
+    <>
+      <header className="ga-header">
+        <div className="ga-header-row">
+          <div className="ga-brand">
+            <span className="ga-brand-tag">Gestione</span>
+            <span className="ga-brand-name">{tenant.name}</span>
           </div>
 
-          {/* Selettore sede — visibile solo con 2+ sedi */}
-          {isMulti && (
-            <div className="mt-3 flex items-center gap-2 text-sm">
-              <MapPin className="w-3.5 h-3.5 opacity-50 shrink-0" />
+          <div className="ga-user">
+            <span>{currentUser.displayName ?? currentUser.email}</span>
+            <button type="button" onClick={handleLogout} className="ga-logout">
+              <LogOut size={12} strokeWidth={2} />
+              Esci
+            </button>
+          </div>
+        </div>
+
+        {isMulti && (
+          <div className="ga-header-row" style={{ paddingTop: 0, paddingBottom: 12 }}>
+            <div className="flex items-center gap-2">
+              <MapPin size={14} style={{ opacity: 0.5 }} />
               <select
                 value={activeLocation?.slug ?? ""}
                 onChange={(e) => handleLocationChange(e.target.value)}
-                className="appearance-none bg-transparent font-semibold cursor-pointer focus:outline-none"
+                className="ga-location-select"
                 aria-label="Sede attiva"
-                style={{ color: tenant.theme.ink }}
               >
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.slug}>
@@ -156,35 +138,30 @@ export function GestioneShell({
                 ))}
               </select>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Nav primario */}
-          <nav className="mt-4 -mb-1 flex flex-wrap gap-1 text-sm">
-            {visibleItems.map((item) => {
-              const active =
-                item.href === dashboardHref
-                  ? (pathname || "/") === dashboardHref
-                  : pathname === item.href || pathname?.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-full px-3 py-1.5 font-semibold transition-colors"
-                  style={
-                    active
-                      ? { backgroundColor: tenant.theme.ink, color: tenant.theme.cream }
-                      : { color: `${tenant.theme.ink}99` }
-                  }
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
+        <nav className="ga-nav">
+          {visibleItems.map((item) => {
+            const active =
+              item.href === dashboardHref
+                ? (pathname || "/") === dashboardHref
+                : pathname === item.href || pathname?.startsWith(`${item.href}/`);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="ga-nav-link"
+                data-active={active}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
-    </div>
+      <main className="ga-main">{children}</main>
+    </>
   );
 }

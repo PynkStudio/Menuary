@@ -143,12 +143,12 @@ export default async function GestioneLayout({ children, params }: Props) {
 
   return (
     <div
+      className="gestione-admin"
       data-gestione-tenant={tenantSlug}
       style={{
-        ...cssVars,
-        backgroundColor: tenant.theme.cream,
-        color: tenant.theme.ink,
-        minHeight: "100vh",
+        ["--ga-accent" as string]: tenant.theme.red,
+        ["--ga-accent-soft" as string]: `${tenant.theme.red}24`,
+        ["--ga-accent-ring" as string]: `${tenant.theme.red}52`,
       } as React.CSSProperties}
     >
       <GestioneShell
