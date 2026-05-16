@@ -33,7 +33,7 @@ export async function resolveUserAccess(
     supabase.from("siteadmin").select("role").eq("user_id", userId).eq("enabled", true).maybeSingle(),
     supabase.from("tenantadmin").select("tenant_id").eq("user_id", userId).eq("enabled", true).maybeSingle(),
     supabase.from("employee").select("tenant_id,role").eq("user_id", userId).eq("enabled", true).maybeSingle(),
-    supabase.from("customer").select("consumer_active").eq("user_id", userId).maybeSingle(),
+    supabase.from("clients").select("user_id").eq("user_id", userId).maybeSingle(),
   ]);
 
   return {
@@ -41,7 +41,7 @@ export async function resolveUserAccess(
     siteadminRole: (sa?.role as SiteadminRole | null) ?? null,
     tenantId: ta?.tenant_id ?? emp?.tenant_id ?? null,
     employeeRole: (emp?.role as EmployeeRole | null) ?? null,
-    isCustomer: cust?.consumer_active ?? false,
+    isCustomer: !!cust,
   };
 }
 

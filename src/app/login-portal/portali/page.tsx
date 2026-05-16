@@ -15,12 +15,21 @@ const COLORS: Record<PortalKey, string> = {
   admin: "#B8332E",
 };
 
+function portalHref(portal: PortalEntry): string {
+  // I portali su sottodomini *.menuary.it vanno attraverso il route handler
+  // che riscrive il cookie con Domain=.menuary.it prima del redirect finale.
+  if (portal.key === "admin" || portal.key === "gestione") {
+    return `/api/auth/elevate-session?destination=${encodeURIComponent(portal.href)}`;
+  }
+  return portal.href;
+}
+
 function PortalCard({ portal }: { portal: PortalEntry }) {
   const Icon = ICONS[portal.key];
   const color = COLORS[portal.key];
   return (
     <a
-      href={portal.href}
+      href={portalHref(portal)}
       className="group flex items-center gap-4 rounded-2xl border border-black/8 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
     >
       <div

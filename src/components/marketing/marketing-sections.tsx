@@ -9,8 +9,11 @@ import {
   Calculator,
   Check,
   Clock,
+  Megaphone,
+  MessageSquare,
   Phone,
   Plus,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   Star,
@@ -1635,6 +1638,532 @@ export function BigNumbersSection() {
               </p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   GOOGLE SYNC — "Google sempre aggiornato"
+   ============================================================ */
+
+const GOOGLE_SYNC_CARDS: {
+  icon: LucideIcon;
+  title: string;
+  body: string;
+  note?: string;
+}[] = [
+  {
+    icon: Star,
+    title: "Recensioni sincronizzate",
+    body: "Le recensioni Google vengono aggiornate automaticamente sul sito.",
+    note: "Aggiornamento periodico automatico.",
+  },
+  {
+    icon: Clock,
+    title: "Orari sempre corretti",
+    body: "Aggiorna aperture, chiusure straordinarie e festività da un solo posto.",
+  },
+  {
+    icon: Megaphone,
+    title: "Eventi e promozioni",
+    body: "Pubblica novità e aggiornamenti direttamente sulla tua scheda Google.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Meno errori, meno chiamate",
+    body: "Evita clienti che trovano informazioni sbagliate online.",
+  },
+];
+
+export function GoogleSyncSection() {
+  return (
+    <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
+      <div className="menuary-container py-24 lg:py-32">
+        <div className="max-w-3xl">
+          <p className="menuary-section-label">Integrazione Google</p>
+          <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
+            Google sempre aggiornato.
+          </h2>
+          <p className="mt-6 max-w-xl text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
+            Gestisci sito, orari e presenza locale da un unico pannello.
+          </p>
+        </div>
+
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {GOOGLE_SYNC_CARDS.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.title}
+                className="group flex flex-col rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--menuary-ink)] hover:shadow-[0_18px_50px_-20px_rgba(24,35,31,0.18)]"
+              >
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--menuary-ink)]/5 text-[var(--menuary-ink)]">
+                  <Icon size={20} strokeWidth={1.6} />
+                </span>
+                <h3 className="menuary-display mt-6 text-[1.35rem] leading-tight">
+                  {card.title}
+                </h3>
+                <p className="mt-3 text-[15px] leading-[1.6] text-[var(--menuary-muted)]">
+                  {card.body}
+                </p>
+                {card.note ? (
+                  <p className="mt-5 border-t border-[var(--menuary-line)] pt-4 text-[11px] uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
+                    {card.note}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   LOCAL PRESENCE — Google / Yelp / TripAdvisor
+   ============================================================ */
+
+export function LocalPresenceSection() {
+  return (
+    <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
+      <div className="menuary-container py-24 lg:py-32">
+        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+          <div>
+            <p className="menuary-section-label">Presenza locale</p>
+            <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
+              La tua presenza online,
+              <br />
+              <span className="italic text-[var(--menuary-copper)]">
+                tutta insieme.
+              </span>
+            </h2>
+            <p className="mt-7 max-w-lg text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
+              Menuary collega sito, Google Maps e strumenti operativi per
+              mantenere il tuo locale aggiornato e professionale.
+            </p>
+            <Link href="/contatti" className="menuary-link mt-8 inline-flex">
+              Parla con noi
+              <ArrowUpRight size={14} strokeWidth={1.6} />
+            </Link>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-md">
+            {/* Google card */}
+            <div className="relative z-20 rounded-2xl border border-[var(--menuary-line)] bg-white p-5 shadow-[0_24px_60px_-24px_rgba(24,35,31,0.22)]">
+              <div className="flex items-center gap-3">
+                <GoogleGlyph />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                    Google
+                  </p>
+                  <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">
+                    La tua scheda · Aperto
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center gap-2">
+                <div className="flex gap-0.5 text-[var(--menuary-copper)]">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      size={14}
+                      fill="currentColor"
+                      strokeWidth={0}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-semibold text-[var(--menuary-ink)]">
+                  4,7
+                </span>
+                <span className="text-xs text-[var(--menuary-muted)]">
+                  · aggiornato oggi
+                </span>
+              </div>
+            </div>
+
+            {/* TripAdvisor card */}
+            <div className="relative z-10 -mt-3 ml-12 rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_20px_50px_-24px_rgba(24,35,31,0.18)]">
+              <div className="flex items-center gap-3">
+                <TripAdvisorGlyph />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                    Tripadvisor
+                  </p>
+                  <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">
+                    Eccellenza · 2026
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Yelp card */}
+            <div className="relative z-0 -mt-3 ml-4 mr-12 rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_16px_40px_-24px_rgba(24,35,31,0.18)]">
+              <div className="flex items-center gap-3">
+                <YelpGlyph />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                    Yelp
+                  </p>
+                  <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">
+                    128 recensioni · 4,3
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GoogleGlyph() {
+  return (
+    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-[inset_0_0_0_1px_var(--menuary-line)]">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+        <path
+          fill="#4285F4"
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        />
+        <path
+          fill="#34A853"
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        />
+        <path
+          fill="#FBBC04"
+          d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.99 10.99 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z"
+        />
+        <path
+          fill="#EA4335"
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
+        />
+      </svg>
+    </span>
+  );
+}
+
+function TripAdvisorGlyph() {
+  return (
+    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#00AF87] text-white font-black">
+      <span className="text-xs tracking-tight">Ta</span>
+    </span>
+  );
+}
+
+function YelpGlyph() {
+  return (
+    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#D32323] text-white font-black">
+      <span className="text-xs tracking-tight">Y</span>
+    </span>
+  );
+}
+
+/* ============================================================
+   BENEFITS — editorial 4-card grid
+   ============================================================ */
+
+const BENEFIT_CARDS: { n: string; title: string; body: string }[] = [
+  {
+    n: "01",
+    title: "Sito professionale",
+    body: "Responsive, veloce e progettato per valorizzare il tuo locale.",
+  },
+  {
+    n: "02",
+    title: "Prenotazioni semplici",
+    body: "Gestisci richieste e prenotazioni senza caos.",
+  },
+  {
+    n: "03",
+    title: "Google Maps integrato",
+    body: "Orari, recensioni ed eventi aggiornati da un unico pannello.",
+  },
+  {
+    n: "04",
+    title: "Strumenti operativi",
+    body: "Tutto ciò che serve per partire, senza software complicati.",
+  },
+];
+
+export function BenefitsEditorialSection() {
+  return (
+    <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
+      <div className="menuary-container py-24 lg:py-32">
+        <div className="max-w-3xl">
+          <p className="menuary-section-label">Cosa trovi dentro</p>
+          <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
+            Tutto quello che serve.
+            <br />
+            <span className="italic text-[var(--menuary-copper)]">
+              Niente di più.
+            </span>
+          </h2>
+        </div>
+
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {BENEFIT_CARDS.map((card) => (
+            <div
+              key={card.n}
+              className="flex flex-col rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--menuary-ink)]"
+            >
+              <p
+                className="menuary-display text-base font-medium text-[var(--menuary-copper)]"
+                aria-hidden
+              >
+                {card.n}
+              </p>
+              <h3 className="menuary-display mt-6 text-[1.45rem] leading-tight">
+                {card.title}
+              </h3>
+              <p className="mt-3 text-[15px] leading-[1.6] text-[var(--menuary-muted)]">
+                {card.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   HOME PRICING — 3 piani (Presenza / Prenotazioni / Operatività)
+   ============================================================ */
+
+type HomePricingPlan = {
+  id: string;
+  eyebrow: string;
+  name: string;
+  monthly: string;
+  setup: string;
+  inherits?: string;
+  features: string[];
+  ctaLabel: string;
+  highlighted?: boolean;
+};
+
+const HOME_PRICING_PLANS: HomePricingPlan[] = [
+  {
+    id: "presenza",
+    eyebrow: "Piano",
+    name: "Presenza",
+    monthly: "39",
+    setup: "da 690 €",
+    features: [
+      "Sito responsive",
+      "Dominio personalizzato",
+      "Hosting + SSL",
+      "Menu digitale",
+      "Recensioni Google integrate",
+      "Orari e contatti",
+      "Google Maps integrato",
+      "Aggiornamenti tecnici",
+    ],
+    ctaLabel: "Inizia",
+  },
+  {
+    id: "prenotazioni",
+    eyebrow: "Più scelto",
+    name: "Prenotazioni",
+    monthly: "89",
+    setup: "da 1.190 €",
+    inherits: "Tutto di Presenza, più",
+    features: [
+      "Prenotazioni online",
+      "Email automatiche",
+      "Notifiche",
+      "Calendario prenotazioni",
+      "Click-to-WhatsApp",
+      "Pannello richieste",
+    ],
+    ctaLabel: "Inizia ora",
+    highlighted: true,
+  },
+  {
+    id: "operativita",
+    eyebrow: "Piano",
+    name: "Operatività",
+    monthly: "169",
+    setup: "da 1.990 €",
+    inherits: "Tutto di Prenotazioni, più",
+    features: [
+      "CRM clienti",
+      "Newsletter",
+      "Analytics",
+      "Dashboard operativa",
+      "Gestione ordini",
+      "Gestione staff light",
+    ],
+    ctaLabel: "Parlane con noi",
+  },
+];
+
+export function HomePricingSection() {
+  return (
+    <section
+      id="prezzi"
+      className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]"
+    >
+      <div className="menuary-container py-24 lg:py-32">
+        <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-3xl">
+            <p className="menuary-section-label">Piani</p>
+            <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
+              Tre piani.
+              <br />
+              <span className="italic text-[var(--menuary-copper)]">
+                Nessuna sorpresa.
+              </span>
+            </h2>
+          </div>
+          <p className="max-w-sm text-[15px] leading-[1.6] text-[var(--menuary-muted)]">
+            Setup una tantum, canone mensile fisso. IVA esclusa. Configurazione
+            e onboarding inclusi nel setup.
+          </p>
+        </div>
+
+        <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:items-stretch">
+          {HOME_PRICING_PLANS.map((plan) => {
+            const highlighted = plan.highlighted === true;
+            return (
+              <article
+                key={plan.id}
+                className={
+                  "relative flex flex-col rounded-3xl border bg-[var(--menuary-paper)] p-8 transition-all duration-200 " +
+                  (highlighted
+                    ? "border-[var(--menuary-ink)] shadow-[0_30px_70px_-30px_rgba(24,35,31,0.32)] lg:scale-[1.02]"
+                    : "border-[var(--menuary-line)] hover:border-[var(--menuary-ink)]")
+                }
+              >
+                {highlighted ? (
+                  <span className="absolute -top-3 left-8 inline-flex items-center rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
+                    Più scelto
+                  </span>
+                ) : null}
+
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                  {highlighted ? "Piano" : plan.eyebrow}
+                </p>
+                <h3 className="menuary-display mt-2 text-[1.9rem] leading-tight">
+                  {plan.name}
+                </h3>
+
+                <div className="mt-6 flex items-baseline gap-1">
+                  <span className="menuary-display text-[3.4rem] leading-none tabular-nums">
+                    {plan.monthly}
+                  </span>
+                  <span className="text-sm text-[var(--menuary-muted)]">
+                    €/mese
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-[var(--menuary-muted)]">
+                  Setup {plan.setup}
+                </p>
+
+                <div className="my-7 h-px bg-[var(--menuary-line)]" />
+
+                {plan.inherits ? (
+                  <p className="mb-4 text-[13px] font-semibold uppercase tracking-[0.14em] text-[var(--menuary-ink)]">
+                    {plan.inherits}
+                  </p>
+                ) : null}
+
+                <ul className="space-y-3">
+                  {plan.features.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-3 text-[15px] leading-[1.5] text-[var(--menuary-ink)]"
+                    >
+                      <Check
+                        size={16}
+                        strokeWidth={2}
+                        className="mt-1 shrink-0 text-[var(--menuary-sage)]"
+                      />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-auto pt-8">
+                  <Link
+                    href="/contatti"
+                    className={
+                      "menuary-button " +
+                      (highlighted
+                        ? "menuary-button-accent"
+                        : "menuary-button-light")
+                    }
+                  >
+                    {plan.ctaLabel}
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <p className="mt-8 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
+          IVA esclusa · Nessuna penale di disdetta
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   AI INTEGRATIONS — sezione secondaria opzionale
+   ============================================================ */
+
+export function AIIntegrationsTeaserSection() {
+  return (
+    <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
+      <div className="menuary-container py-16 lg:py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+          <div>
+            <p className="menuary-section-label">Avanzato · opzionale</p>
+            <h2 className="menuary-display mt-6 text-[clamp(1.7rem,3.2vw,2.4rem)] leading-tight">
+              Integrazioni AI disponibili.
+            </h2>
+            <p className="mt-5 max-w-lg text-[15px] leading-[1.7] text-[var(--menuary-muted)]">
+              Per alcune attività è possibile integrare assistente telefonico AI
+              e automazioni avanzate.
+            </p>
+            <Link href="/contatti" className="menuary-link mt-6 inline-flex">
+              Scopri le integrazioni
+              <ArrowUpRight size={14} strokeWidth={1.6} />
+            </Link>
+          </div>
+
+          <aside
+            aria-hidden
+            className="rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-5"
+          >
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                <Phone size={12} strokeWidth={2} />
+                Chiamata gestita
+              </span>
+              <span className="text-[11px] text-[var(--menuary-muted)]">
+                14:32 · 2 min
+              </span>
+            </div>
+            <div className="mt-4 space-y-3 text-sm">
+              <p className="rounded-xl bg-[var(--menuary-ink)]/5 px-3 py-2 text-[var(--menuary-ink)]">
+                &ldquo;Vorrei prenotare per 4 venerdì sera.&rdquo;
+              </p>
+              <p className="flex items-start gap-2 text-[var(--menuary-muted)]">
+                <Check
+                  size={14}
+                  strokeWidth={2.2}
+                  className="mt-1 shrink-0 text-[var(--menuary-sage)]"
+                />
+                Prenotazione creata · ven 22:00 · 4 coperti
+              </p>
+            </div>
+          </aside>
         </div>
       </div>
     </section>

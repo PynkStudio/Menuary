@@ -1,73 +1,55 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Phone, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  ArrowUpRight,
+  CalendarCheck,
+  Check,
+  Clock,
+  ShieldCheck,
+  Star,
+} from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import {
-  AIPhoneSection,
-  AudiencesSection,
-  BigNumbersSection,
-  ComparisonSection,
-  DemosSection,
+  AIIntegrationsTeaserSection,
+  BenefitsEditorialSection,
   FAQSection,
-  FeaturesSection,
   FinalCTASection,
-  IntegrationsSection,
+  GoogleSyncSection,
+  HomePricingSection,
+  LocalPresenceSection,
   LogosStripSection,
-  ModuleShowcasesSection,
-  PricingTeaserSection,
-  ProcessSection,
-  ProductLevelsSection,
-  ProductPreviewSection,
   TestimonialsSection,
 } from "@/components/marketing/marketing-sections";
 import { getMarketingHomeData } from "@/lib/marketing-data";
 
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1400&q=80";
-
 const HOMEPAGE_FAQ = [
   {
-    q: "Posso usare solo il sito, senza il gestionale?",
-    a: "Sì. Menuary è modulare: parti dal piano Vetrina con solo sito + menu digitale, e quando vuoi accendi prenotazioni, ordini, delivery, magazzino o food cost senza dover rifare nulla.",
-  },
-  {
-    q: "Come funziona l'IA al telefono?",
-    a: "L'assistente vocale risponde 24/7 con la voce del locale: prende prenotazioni e le scrive in agenda, accetta ordini d'asporto, suggerisce piatti del giorno. Cloning vocale opzionale e cinque lingue native (IT, EN, FR, ES, DE).",
-  },
-  {
-    q: "Cosa gestisce esattamente il modulo magazzino?",
-    a: "Ingredienti, scorte, fornitori, scadenze e alert sotto soglia. Le ricette legate al menu scalano automaticamente le quantità quando un piatto esce in cucina, così l'inventario resta allineato senza inserimento manuale.",
-  },
-  {
-    q: "Come funziona il food cost?",
-    a: "Definisci la ricetta di ciascun piatto (ingredienti + grammature). Menuary calcola costo materia prima per porzione, margine percentuale e suggerisce un prezzo target. Quando aumenta il costo di un fornitore, il margine si aggiorna in tempo reale.",
-  },
-  {
     q: "Quanto tempo serve per andare online?",
-    a: "Per il piano Vetrina, in media 3–5 settimane dalla prima chiamata al go-live. Operatività richiede 4–6 settimane. Autopilota aggiunge 2 settimane per il training della voce e la calibrazione dei flussi telefonici.",
+    a: "Per il piano Presenza, in media 2–4 settimane dalla prima chiamata al go-live. Prenotazioni richiede 3–5 settimane. Operatività 4–6 settimane.",
   },
   {
-    q: "Chi gestisce sicurezza, hosting e manutenzione?",
-    a: "Tutto incluso. Hosting, certificati SSL, backup, aggiornamenti tecnici e nuove funzioni del prodotto fanno parte del canone annuale — incluse le evoluzioni della piattaforma su tutti i moduli. Il contratto è annuale, senza possibilità di recesso anticipato, ma puoi cambiare piano in qualsiasi momento.",
+    q: "Come si aggiorna Google?",
+    a: "Aggiorni orari, eventi e descrizione dal pannello Menuary. Le modifiche vengono pubblicate sulla scheda Google e propagate sul sito. Le recensioni Google vengono riportate sul sito con aggiornamento periodico automatico.",
+  },
+  {
+    q: "Posso disdire quando voglio?",
+    a: "Sì. Il canone è mensile, senza penali di disdetta. Il setup iniziale è una tantum.",
+  },
+  {
+    q: "Cosa è incluso nel canone?",
+    a: "Hosting, dominio, certificati SSL, backup, aggiornamenti tecnici, supporto e nuove funzioni della piattaforma — incluse nel canone mensile.",
   },
   {
     q: "Lavorate solo a Milano o in tutta Italia?",
-    a: "Lo studio è a Milano, ma seguiamo ristoranti in tutta Italia. La maggior parte del lavoro avviene da remoto, con uno o due sopralluoghi quando serve davvero.",
+    a: "Lo studio è a Milano, ma seguiamo locali in tutta Italia. La maggior parte del lavoro avviene da remoto, con sopralluoghi quando serve.",
+  },
+  {
+    q: "Posso cambiare piano in seguito?",
+    a: "Sì, in qualsiasi momento. Si parte spesso da Presenza e si attivano Prenotazioni o Operatività quando serve, senza rifare nulla.",
   },
 ];
 
 export async function MarketingHomePage() {
-  const { activeTenants, testimonials, activeCount } =
-    await getMarketingHomeData("food");
-
-  const heroStats: [string, string][] = [
-    ["9", "moduli integrati"],
-    ...((activeCount > 0
-      ? ([[`+${activeCount}`, "ristoranti attivi"]] as [string, string][])
-      : []) as [string, string][]),
-    ["24/7", "assistente IA"],
-    ["0", "commissioni"],
-  ];
+  const { activeTenants, testimonials } = await getMarketingHomeData("food");
 
   return (
     <MarketingShell>
@@ -75,35 +57,31 @@ export async function MarketingHomePage() {
       <section className="relative overflow-hidden">
         <div className="menuary-hero absolute inset-0" aria-hidden />
         <div className="menuary-container relative pt-16 pb-20 lg:pt-24 lg:pb-28">
-          <div className="grid items-end gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+          <div className="grid items-end gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
             <div className="menuary-fade-up">
               <p className="menuary-section-label">
-                Piattaforma operativa per ristoranti
+                Per ristoranti, bar, trattorie
               </p>
-              <h1 className="menuary-display mt-7 text-[clamp(2.8rem,7vw,6.2rem)]">
-                Il sistema operativo
-                <br />
-                del tuo ristorante.
+              <h1 className="menuary-display mt-7 text-[clamp(2.6rem,6.4vw,5.6rem)] text-balance">
+                Il tuo locale online,
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
-                  Sito, sala, cucina, IA.
+                  senza complicazioni.
                 </span>
               </h1>
               <p className="mt-8 max-w-xl text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
-                Menuary è una piattaforma modulare: dal sito su misura al
-                gestionale completo — menu, prenotazioni, ordini, delivery,
-                magazzino, food cost, CRM. E un&apos;IA che risponde al
-                telefono con la voce del locale, 24/7.
+                Sito professionale, prenotazioni online e gestione semplificata
+                di Google Maps e presenza digitale.
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <Link
                   href="/contatti"
                   className="menuary-button menuary-button-accent"
                 >
-                  Richiedi una proposta
+                  Richiedi una demo
                 </Link>
-                <Link href="#livelli" className="menuary-link">
-                  Come puoi usarlo
+                <Link href="#esempio" className="menuary-link">
+                  Guarda un esempio
                   <ArrowUpRight size={16} strokeWidth={1.6} />
                 </Link>
               </div>
@@ -117,133 +95,171 @@ export async function MarketingHomePage() {
                   Prima chiamata gratuita
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Sparkles
+                  <Clock
                     size={14}
                     strokeWidth={1.7}
                     className="text-[var(--menuary-gold)]"
                   />
-                  Sito · gestionale · IA in un unico canone
+                  Online in 2–4 settimane
                 </span>
               </div>
             </div>
 
-            {/* HERO COMPOSITION — photo + floating IA badge */}
-            <figure className="menuary-fade-up menuary-fade-up-d2 relative">
-              <div className="menuary-photo aspect-[4/5] w-full">
-                <Image
-                  src={HERO_IMAGE}
-                  alt="Servizio in sala in un ristorante"
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 44vw"
-                  className="object-cover"
-                />
-              </div>
-
-              {/* Floating IA card */}
-              <div
-                aria-hidden
-                className="absolute -bottom-6 -left-6 hidden w-[16rem] rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)]/95 p-4 backdrop-blur-md shadow-[0_24px_60px_-20px_rgba(24,35,31,0.32)] sm:block"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--menuary-ink)] text-[var(--menuary-gold)]">
-                    <Phone size={16} strokeWidth={1.8} />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--menuary-muted)] font-bold">
-                      IA al telefono
-                    </p>
-                    <p className="text-sm font-semibold truncate">
-                      Prenotazione · 21:00 · 2 cop.
-                    </p>
+            {/* HERO MOCKUP — dashboard + mobile + Google card */}
+            <figure
+              className="menuary-fade-up menuary-fade-up-d2 relative"
+              aria-hidden
+            >
+              {/* Dashboard frame */}
+              <div className="menuary-product-frame p-4">
+                <div className="menuary-browser-bar">
+                  <span />
+                  <span />
+                  <span />
+                  <p>app.menuary.it</p>
+                </div>
+                <div className="menuary-admin-preview">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="menuary-module-tile">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                        Oggi
+                      </p>
+                      <p className="menuary-display mt-1 text-2xl">
+                        12
+                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">
+                          prenotazioni
+                        </span>
+                      </p>
+                    </div>
+                    <div className="menuary-module-tile">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                        Google
+                      </p>
+                      <p className="menuary-display mt-1 text-2xl">
+                        4,7
+                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">
+                          ★ media
+                        </span>
+                      </p>
+                    </div>
+                    <div className="menuary-module-tile">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                        Orari
+                      </p>
+                      <p className="menuary-display mt-1 text-base leading-tight">
+                        Aggiornati
+                        <br />
+                        <span className="text-xs font-medium text-[var(--menuary-muted)]">
+                          ieri
+                        </span>
+                      </p>
+                    </div>
                   </div>
-                  <span className="relative inline-flex h-2 w-2 shrink-0">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--menuary-sage)] opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--menuary-sage)]" />
-                  </span>
                 </div>
               </div>
 
-              {/* Floating stat */}
-              <div
-                aria-hidden
-                className="absolute -top-5 right-3 hidden rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)]/95 px-4 py-3 backdrop-blur-md shadow-[0_24px_60px_-20px_rgba(24,35,31,0.28)] md:block"
-              >
-                <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--menuary-muted)] font-bold">
-                  Food cost · live
-                </p>
-                <p className="menuary-display text-xl mt-1">
-                  Margine{" "}
-                  <span className="text-[#3f4f37]">68%</span>
+              {/* Google Business card */}
+              <div className="absolute -top-6 -right-2 hidden w-[15rem] rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_24px_60px_-20px_rgba(24,35,31,0.28)] sm:block">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-5 w-5 items-center justify-center">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC04"
+                        d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.99 10.99 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
+                      />
+                    </svg>
+                  </span>
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
+                    Google · scheda
+                  </p>
+                </div>
+                <div className="mt-3 flex items-center gap-1.5">
+                  <div className="flex gap-0.5 text-[var(--menuary-copper)]">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        size={12}
+                        fill="currentColor"
+                        strokeWidth={0}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-[var(--menuary-ink)]">
+                    4,7
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-[var(--menuary-muted)]">
+                  Aperto · chiude alle 23:00
                 </p>
               </div>
 
-              <figcaption className="mt-4 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-                <span>— Studio Menuary</span>
-                <span>Milano · Italia</span>
-              </figcaption>
+              {/* Mobile site preview */}
+              <div className="absolute -bottom-8 -left-4 hidden w-[11rem] rounded-3xl border border-[var(--menuary-line)] bg-[var(--menuary-ink)] p-3 shadow-[0_30px_70px_-24px_rgba(24,35,31,0.4)] sm:block">
+                <div className="menuary-phone-top" />
+                <div className="rounded-2xl bg-[var(--menuary-paper)] p-3 text-[var(--menuary-ink)]">
+                  <p className="menuary-display text-base leading-tight">
+                    Trattoria
+                    <br />
+                    Da Marco
+                  </p>
+                  <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[var(--menuary-muted)] font-bold">
+                    Bologna · cucina tipica
+                  </p>
+                  <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[var(--menuary-ink)]">
+                    <CalendarCheck
+                      size={12}
+                      strokeWidth={1.8}
+                      className="text-[var(--menuary-copper)]"
+                    />
+                    Prenota un tavolo
+                  </div>
+                  <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--menuary-muted)]">
+                    <Check
+                      size={11}
+                      strokeWidth={2}
+                      className="text-[var(--menuary-sage)]"
+                    />
+                    Aperto oggi
+                  </div>
+                </div>
+              </div>
             </figure>
-          </div>
-
-          <div
-            className={
-              "mt-20 grid gap-8 sm:grid-cols-2 lg:mt-24 lg:gap-14 " +
-              (heroStats.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4")
-            }
-          >
-            {heroStats.map(([n, l]) => (
-              <div key={l} className="menuary-stat">
-                <p className="menuary-display text-4xl">{n}</p>
-                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-                  {l}
-                </p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
-      {/* SOCIAL PROOF MARQUEE */}
+      {/* SOCIAL PROOF — locali clienti (mostra solo se ci sono tenant attivi) */}
       <LogosStripSection tenants={activeTenants} />
 
-      {/* PRODUCT LEVELS — how do you want to use Menuary? */}
-      <ProductLevelsSection />
+      {/* GOOGLE SEMPRE AGGIORNATO */}
+      <GoogleSyncSection />
 
-      {/* FEATURES (9 modules) */}
-      <FeaturesSection />
+      {/* PRESENZA LOCALE — Google, Yelp, TripAdvisor */}
+      <LocalPresenceSection />
 
-      {/* MODULE DEEP-DIVES — food cost, magazzino, CRM mini mockups */}
-      <ModuleShowcasesSection />
+      {/* BENEFICI */}
+      <BenefitsEditorialSection />
 
-      {/* AI PHONE — live, full receptionist */}
-      <AIPhoneSection />
-
-      {/* PRODUCT PREVIEW — menu editor mockup */}
-      <ProductPreviewSection />
-
-      {/* COMPARISON — Menuary vs tradizionale */}
-      <ComparisonSection />
-
-      {/* BIG NUMBERS — impact metrics */}
-      <BigNumbersSection />
-
-      {/* AUDIENCES */}
-      <AudiencesSection />
-
-      {/* TESTIMONIALS */}
+      {/* TESTIMONIALS — recensioni reali da Google Places (mostra solo se popolato) */}
       <TestimonialsSection reviews={testimonials} />
 
-      {/* INTEGRATIONS */}
-      <IntegrationsSection />
+      {/* PRICING */}
+      <HomePricingSection />
 
-      {/* PROCESS */}
-      <ProcessSection />
-
-      {/* DEMOS */}
-      <DemosSection tenants={activeTenants} />
-
-      {/* PRICING TEASER */}
-      <PricingTeaserSection />
+      {/* AI INTEGRATIONS — secondaria, opzionale */}
+      <AIIntegrationsTeaserSection />
 
       {/* FAQ */}
       <FAQSection items={HOMEPAGE_FAQ} />

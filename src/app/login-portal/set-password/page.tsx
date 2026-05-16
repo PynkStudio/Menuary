@@ -86,12 +86,11 @@ export default function SetPasswordPage() {
       return;
     }
 
-    // Enrollment: se l'utente ha scelto di abilitare il profilo cliente
+    // Enrollment: inserisce in clients se l'utente ha scelto l'accesso B2C
     if (!isRecovery && consumerOptIn) {
       await supabase
-        .from("customer")
-        .update({ consumer_active: true })
-        .eq("user_id", updateData.user.id);
+        .from("clients")
+        .upsert({ user_id: updateData.user.id }, { ignoreDuplicates: true });
     }
 
     // Redirect a /portali (server component) invece di andare direttamente

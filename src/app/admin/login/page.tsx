@@ -13,20 +13,20 @@ export default async function AdminLoginPage({
   if (next && next !== "/") loginUrl.searchParams.set("next", next);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-pork-ink p-6">
-      <div className="w-full max-w-sm rounded-3xl bg-pork-cream p-8 shadow-2xl text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-pork-red text-white">
+    <div className="flex min-h-screen items-center justify-center bg-neutral-900 p-6">
+      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#B8332E] text-white">
           <Lock size={22} />
         </div>
-        <p className="impact-title text-xs text-pork-red">Menuary</p>
-        <h1 className="headline mt-1 text-3xl">Area riservata</h1>
-        <p className="mt-1 text-sm text-pork-ink/60">Back-office piattaforma</p>
-        <p className="mt-5 text-sm text-pork-ink/70">
+        <p className="text-xs font-bold uppercase tracking-widest text-[#B8332E]">Menuary</p>
+        <h1 className="mt-1 text-3xl font-bold text-neutral-900">Area riservata</h1>
+        <p className="mt-1 text-sm text-neutral-500">Back-office piattaforma</p>
+        <p className="mt-5 text-sm text-neutral-600">
           Accedi con il tuo account Menuary per continuare.
         </p>
         <a
           href={loginUrl.toString()}
-          className="btn-primary mt-6 block w-full text-center"
+          className="mt-6 block w-full rounded-full bg-[#B8332E] px-6 py-3 text-center font-semibold text-white shadow-lg transition-opacity hover:opacity-90"
         >
           Accedi
         </a>

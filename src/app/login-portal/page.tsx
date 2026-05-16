@@ -37,7 +37,9 @@ export default async function LoginPortalPage({
           isSiteadmin: access.isSiteadmin,
           tenantId: access.tenantId,
         });
-        redirect(destination);
+        // Passa per il route handler che riscrive il cookie con Domain=.menuary.it
+        // prima di atterrare sul sottodominio di destinazione (es. admin.menuary.it).
+        redirect(`/api/auth/elevate-session?destination=${encodeURIComponent(destination)}`);
       }
       // Nessun from: mostra la pagina di selezione portali
       redirect("/portali");

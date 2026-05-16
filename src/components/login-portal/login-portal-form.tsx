@@ -73,6 +73,19 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
         refreshToken: data.session.refresh_token,
       });
     } else {
+      // Eleva il cookie a Domain=.menuary.it prima di navigare su un sottodominio.
+      try {
+        await fetch("/api/auth/elevate-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          }),
+        });
+      } catch {
+        // Non bloccante: il redirect avviene comunque
+      }
       window.location.href = destination;
     }
   }
