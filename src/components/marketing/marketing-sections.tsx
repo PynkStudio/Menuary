@@ -220,10 +220,10 @@ export function ProductLevelsSection() {
               <article
                 key={lvl.index}
                 className={
-                  "relative flex flex-col gap-6 border bg-[var(--menuary-porcelain)] p-8 sm:p-10 transition-colors " +
+                  "relative flex flex-col gap-6 border p-8 sm:p-10 transition-colors " +
                   (isAI
                     ? "border-[var(--menuary-gold)] bg-[var(--menuary-ink)] text-[var(--menuary-paper)]"
-                    : "border-[var(--menuary-line)] hover:border-[var(--menuary-ink)]/40")
+                    : "border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] hover:border-[var(--menuary-ink)]/40")
                 }
               >
                 {isAI && (
@@ -823,10 +823,10 @@ export function PricingTeaserSection() {
             <article
               key={p.name}
               className={
-                "relative flex flex-col gap-5 border bg-[var(--menuary-porcelain)] p-8 transition-colors " +
+                "relative flex flex-col gap-5 border p-8 transition-colors " +
                 (p.featured
                   ? "border-[var(--menuary-copper)] bg-[var(--menuary-paper)]"
-                  : "border-[var(--menuary-line)] hover:border-[var(--menuary-ink)]/40")
+                  : "border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] hover:border-[var(--menuary-ink)]/40")
               }
             >
               {p.featured && (
