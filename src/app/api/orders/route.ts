@@ -26,6 +26,8 @@ export type CreateOrderBody = {
   sessionCode?: string;
   dinerClientId?: string;
   dinerNickname?: string;
+  /** ID sede da cui proviene l'ordine — null per tenant single-location */
+  locationId?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
 
   const body: CreateOrderBody = await req.json();
-  const { tenantId, type, lines, total, ...rest } = body;
+  const { tenantId, type, lines, total, locationId, ...rest } = body;
 
   if (!tenantId || !type || !lines?.length) {
     return NextResponse.json({ error: "missing required fields" }, { status: 400 });
@@ -63,6 +65,7 @@ export async function POST(req: NextRequest) {
       customer_name: rest.customerName ?? null,
       pickup_time: rest.pickupTime ?? null,
       notes: rest.notes ?? null,
+      location_id: locationId ?? null,
     })
     .select("id, code")
     .single();

@@ -15,6 +15,7 @@ import {
   TENANT_MODULE_BY_KEY,
   TENANT_MODULE_CATEGORIES,
 } from "@/lib/tenant-modules";
+import { AdminTenantLocationsPanel } from "@/components/admin/tenant-locations-panel";
 
 export default function AdminTenantPage() {
   const mode = usePlatformMode();
@@ -182,6 +183,13 @@ export default function AdminTenantPage() {
                   <RotateCcw size={15} />
                   Ripristina profilo
                 </button>
+              </div>
+
+              <div className="mt-4">
+                <AdminTenantLocationsPanel
+                  tenantId={tenant.id}
+                  multiLocationEnabled={effective.features.multiLocation}
+                />
               </div>
             </section>
           );

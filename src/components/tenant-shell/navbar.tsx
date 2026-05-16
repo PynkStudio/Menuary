@@ -11,6 +11,7 @@ import { useFavoritesStore } from "@/store/favorites-store";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
+import { LocationPicker } from "@/components/core/location-picker";
 
 const navBase = [
   { label: "Menu", href: "/menu" },
@@ -116,7 +117,8 @@ export function Navbar() {
             )}
           </nav>
 
-          <div className="hidden items-center gap-2 lg:flex">
+          <div className="hidden items-center gap-3 lg:flex">
+            <LocationPicker />
             <a
               href={whatsappUrl()}
               target="_blank"
@@ -174,16 +176,19 @@ export function Navbar() {
               ),
             )}
           </nav>
-          <a
-            href={whatsappUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-mustard w-full text-lg"
-            onClick={() => setOpen(false)}
-          >
-            <MessageCircle size={22} />
-            {content.hero.ctaLabel}
-          </a>
+          <div className="flex flex-col gap-3">
+            <LocationPicker />
+            <a
+              href={whatsappUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-mustard w-full text-lg"
+              onClick={() => setOpen(false)}
+            >
+              <MessageCircle size={22} />
+              {content.hero.ctaLabel}
+            </a>
+          </div>
         </div>
       </div>
     </>

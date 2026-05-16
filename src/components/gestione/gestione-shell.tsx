@@ -78,6 +78,7 @@ export function GestioneShell({
     { label: "Google", href: `${base}/google`, visible: () => isAdmin },
     { label: "Analytics", href: `${base}/analytics`, visible: (c) => c.can_view_analytics },
     { label: "Fatturazione", href: `${base}/fatturazione`, visible: (c) => c.can_view_financials },
+    { label: "Sedi", href: `${base}/sedi`, visible: () => isAdmin },
   ];
 
   const visibleItems = items.filter((i) => i.visible(cap));
