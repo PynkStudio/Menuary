@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { GestioneStaffManager } from "@/components/gestione/gestione-staff-manager";
+import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 
 export default async function StaffPage({
   params,
@@ -8,7 +10,8 @@ export default async function StaffPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const supabase = await createSupabaseServerClient(".menuary.it");
+  const host = (await headers()).get("host");
+  const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);

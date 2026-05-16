@@ -1,5 +1,6 @@
 import {
   findTenantByDomain,
+  findTenantByManagementHost,
   findTenantByPreviewSlug,
   getDefaultTenantForVertical,
 } from "./tenant-registry";
@@ -14,10 +15,19 @@ function verticalFromMode(mode: ReturnType<typeof getPlatformModeFromHost>): Ten
 
 export function resolveTenantFromHost(host: string | null | undefined): TenantProfile {
   if (!host) return getDefaultTenantForVertical("food");
+  const managementTenant = findTenantByManagementHost(host);
+  if (managementTenant) return managementTenant;
   const tenant = findTenantByDomain(host);
   if (tenant) return tenant;
   const vertical = verticalFromMode(getPlatformModeFromHost(host));
   return getDefaultTenantForVertical(vertical);
+}
+
+export function resolveTenantFromManagementHost(
+  host: string | null | undefined,
+): TenantProfile | undefined {
+  if (!host) return undefined;
+  return findTenantByManagementHost(host);
 }
 
 export function resolveTenantFromPreviewSlug(

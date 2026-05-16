@@ -8,6 +8,9 @@ import { GestioneLoginGate } from "@/components/gestione/gestione-login-gate";
 import { PortalSwitcher } from "@/components/portal-switcher/portal-switcher";
 import type { EmployeeRole } from "@/lib/store-roles";
 import { fetchLocations, fetchStaffAllowedLocationIds, filterAllowedLocations } from "@/lib/location";
+import { getPlatformModeFromHost } from "@/lib/platform";
+import { resolveSessionCookieDomain, usesSharedMenuarySession } from "@/lib/session-cookie-domain";
+import type { LoginFrom } from "@/lib/login-url";
 
 interface Props {
   children: React.ReactNode;
@@ -20,17 +23,27 @@ export default async function GestioneLayout({ children, params }: Props) {
   if (!tenant) notFound();
 
   const host = (await headers()).get("host") ?? "";
-  const isBizery =
-    host.endsWith(".bizery.it") || host.endsWith(".bizery.localhost");
+  const mode = getPlatformModeFromHost(host);
+  const isDemoGestione =
+    host === "demo.menuary.it" || host === "demo.menuary.localhost";
+  const loginFrom: LoginFrom =
+    mode === "gestione-bizery"
+      ? `gestione-bizery.${tenantSlug}`
+      : mode === "gestione-custom"
+        ? `gestione-custom.${tenantSlug}`
+        : isDemoGestione
+          ? `gestione-demo.${tenantSlug}`
+          : `gestione.${tenantSlug}`;
+  const usesPopupLogin = !usesSharedMenuarySession(host) || isDemoGestione;
 
   // Bizery: cookie origin-scoped (set via popup postMessage + set-session).
   // Menuary: cookie condiviso su .menuary.it (redirect-based login).
-  const cookieDomain = isBizery ? undefined : ".menuary.it";
+  const cookieDomain = resolveSessionCookieDomain(host);
   const supabase = await createSupabaseServerClient(cookieDomain);
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    if (isBizery) {
+    if (usesPopupLogin) {
       // Cross-domain: non si può fare redirect + aspettarsi il cookie .bizery.it.
       // Mostriamo il login gate client-side che apre il popup su login.menuary.it.
       const cssVars = tenantThemeCssVars(tenant.theme);
@@ -47,12 +60,14 @@ export default async function GestioneLayout({ children, params }: Props) {
             tenantSlug={tenantSlug}
             tenantName={tenant.name}
             accentColor={tenant.theme.red}
+            loginFrom={loginFrom}
+            brandLabel={tenant.name}
           />
         </div>
       );
     }
     const next = encodeURIComponent("/");
-    redirect(`https://login.menuary.it?from=gestione.${tenantSlug}&next=${next}`);
+    redirect(`https://login.menuary.it?from=${encodeURIComponent(loginFrom)}&next=${next}`);
   }
 
   const [{ data: sa }, { data: ta }, { data: emp }, adminUserRow] = await Promise.all([
@@ -67,7 +82,7 @@ export default async function GestioneLayout({ children, params }: Props) {
   const hasAccess = isSiteadmin || isTenantAdmin || !!emp;
 
   if (!hasAccess) {
-    if (isBizery) {
+    if (usesPopupLogin) {
       const cssVars = tenantThemeCssVars(tenant.theme);
       return (
         <div
@@ -82,14 +97,22 @@ export default async function GestioneLayout({ children, params }: Props) {
             tenantSlug={tenantSlug}
             tenantName={tenant.name}
             accentColor={tenant.theme.red}
+            loginFrom={loginFrom}
+            brandLabel={tenant.name}
           />
         </div>
       );
     }
-    redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);
+    redirect(`https://login.menuary.it?from=${encodeURIComponent(loginFrom)}`);
   }
 
   const cssVars = tenantThemeCssVars(tenant.theme);
+  const navBaseHref =
+    mode === "gestione-custom"
+      ? ""
+      : isDemoGestione
+        ? `/${tenant.id}/gestione`
+        : undefined;
 
   // Sedi: solo se il tenant ha multiLocation abilitato.
   const allLocations = tenant.features.multiLocation
@@ -128,10 +151,12 @@ export default async function GestioneLayout({ children, params }: Props) {
           isTenantAdmin: isTenantAdmin || isSiteadmin,
         }}
         locations={visibleLocations}
+        navBaseHref={navBaseHref}
+        loginFrom={loginFrom}
       >
         {children}
       </GestioneShell>
-      <PortalSwitcher current="gestione" cookieDomain={isBizery ? undefined : ".menuary.it"} />
+      <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
+import { TENANTS } from "@/lib/tenant-registry";
 
 const POPUP_NAME = "menuary_login";
 const POPUP_W = 480;
@@ -164,7 +165,15 @@ function isBizerySubdomain(origin: string): boolean {
 function isAllowedOrigin(origin: string): boolean {
   if (isMenuarySubdomain(origin)) return true;
   if (isBizerySubdomain(origin)) return true;
-  // Tenant con dominio custom — in futuro leggere da un registry
-  const ALLOWED_CUSTOM = ["https://bepork.it", "https://www.bepork.it", "https://faak.it"];
-  return ALLOWED_CUSTOM.includes(origin);
+  try {
+    const { hostname } = new URL(origin);
+    return TENANTS.some((tenant) =>
+      tenant.domains.some((domain) => {
+        const normalized = domain.toLowerCase();
+        return hostname === normalized || hostname === `gestione.${normalized}`;
+      }),
+    );
+  } catch {
+    return false;
+  }
 }

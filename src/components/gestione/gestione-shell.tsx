@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LogOut, MapPin } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
 import {
   getEffectiveCapabilities,
   type StoreCapabilities,
@@ -36,11 +37,15 @@ export function GestioneShell({
   tenant,
   currentUser,
   locations = [],
+  navBaseHref,
+  loginFrom,
   children,
 }: {
   tenant: Tenant;
   currentUser: CurrentUser;
   locations?: TenantLocation[];
+  navBaseHref?: string;
+  loginFrom?: LoginFrom;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -62,23 +67,25 @@ export function GestioneShell({
     currentUser.permissions,
   );
 
-  const base = `/gestione/${tenant.id}`;
+  const base = navBaseHref ?? `/gestione/${tenant.id}`;
+  const dashboardHref = base || "/";
+  const sectionHref = (section: string) => `${base}/${section}`;
 
   const isAdmin = currentUser.isTenantAdmin;
 
   const items: NavItem[] = [
-    { label: "Dashboard", href: base, visible: () => true },
-    { label: "Ordini", href: `${base}/ordini`, visible: () => true },
-    { label: "Menu", href: `${base}/menu`, visible: (c) => c.can_edit_menu },
-    { label: "Tavoli", href: `${base}/tavoli`, visible: (c) => c.can_manage_reservations },
-    { label: "Prenotazioni", href: `${base}/prenotazioni`, visible: (c) => c.can_manage_reservations },
-    { label: "Cassa", href: `${base}/cassa`, visible: (c) => c.can_cassa },
-    { label: "Turni", href: `${base}/turni`, visible: () => true },
-    { label: "Staff", href: `${base}/staff`, visible: (c) => c.can_manage_staff },
-    { label: "Google", href: `${base}/google`, visible: () => isAdmin },
-    { label: "Analytics", href: `${base}/analytics`, visible: (c) => c.can_view_analytics },
-    { label: "Fatturazione", href: `${base}/fatturazione`, visible: (c) => c.can_view_financials },
-    { label: "Sedi", href: `${base}/sedi`, visible: () => isAdmin },
+    { label: "Dashboard", href: dashboardHref, visible: () => true },
+    { label: "Ordini", href: sectionHref("ordini"), visible: () => true },
+    { label: "Menu", href: sectionHref("menu"), visible: (c) => c.can_edit_menu },
+    { label: "Tavoli", href: sectionHref("tavoli"), visible: (c) => c.can_manage_reservations },
+    { label: "Prenotazioni", href: sectionHref("prenotazioni"), visible: (c) => c.can_manage_reservations },
+    { label: "Cassa", href: sectionHref("cassa"), visible: (c) => c.can_cassa },
+    { label: "Turni", href: sectionHref("turni"), visible: () => true },
+    { label: "Staff", href: sectionHref("staff"), visible: (c) => c.can_manage_staff },
+    { label: "Google", href: sectionHref("google"), visible: () => isAdmin },
+    { label: "Analytics", href: sectionHref("analytics"), visible: (c) => c.can_view_analytics },
+    { label: "Fatturazione", href: sectionHref("fatturazione"), visible: (c) => c.can_view_financials },
+    { label: "Sedi", href: sectionHref("sedi"), visible: () => isAdmin },
   ];
 
   const visibleItems = items.filter((i) => i.visible(cap));
@@ -86,9 +93,7 @@ export function GestioneShell({
   async function handleLogout() {
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
-    router.push(
-      `https://login.menuary.it?from=gestione.${tenant.id}` as never as string,
-    );
+    router.push(buildLoginUrl({ from: loginFrom ?? `gestione.${tenant.id}` }));
   }
 
   return (
@@ -150,8 +155,8 @@ export function GestioneShell({
           <nav className="mt-4 -mb-1 flex flex-wrap gap-1 text-sm">
             {visibleItems.map((item) => {
               const active =
-                item.href === base
-                  ? pathname === base
+                item.href === dashboardHref
+                  ? (pathname || "/") === dashboardHref
                   : pathname === item.href || pathname?.startsWith(`${item.href}/`);
               return (
                 <Link

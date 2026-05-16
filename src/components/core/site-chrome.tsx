@@ -24,6 +24,7 @@ const EXCLUDED_MODES = new Set([
   "login",
   "gestione",
   "gestione-bizery",
+  "gestione-custom",
 ] as const);
 
 function isInternal(pathname: string | null): boolean {

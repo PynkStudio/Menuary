@@ -232,6 +232,13 @@ src/components/
       home.tsx
 ```
 
+Requisito footer tenant: `tenant-shell/footer.tsx` deve mostrare sempre un link
+`Staff` verso il gestionale del tenant. Sui siti pubblici la destinazione primaria è
+`https://gestione.[dominio-tenant]`; nelle preview/demo deve restare sul dominio demo
+e puntare a `/[tenant]/gestione`. Se il tenant non ha un dominio pubblico registrato,
+il fallback è il corrispondente host demo (`demo.menuary.it` o `demo.bizery.it`) con
+path `/[tenant]/gestione`.
+
 ---
 
 ## 5b. Struttura `src/styles/` — CSS per tenant

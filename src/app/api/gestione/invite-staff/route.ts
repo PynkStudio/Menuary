@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { buildAuthCallbackUrl } from "@/lib/login-url";
+import { buildAuthCallbackUrl, type LoginFrom } from "@/lib/login-url";
 import { type EmployeeRole } from "@/lib/store-roles";
+import { getPlatformModeFromHost } from "@/lib/platform";
+import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 
 const INVITABLE_ROLES: readonly EmployeeRole[] = [
   "manager",
@@ -18,7 +20,8 @@ const INVITABLE_ROLES: readonly EmployeeRole[] = [
  * Body: { tenant_slug, email, display_name?, role, permissions? }
  */
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient(".menuary.it");
+  const host = request.headers.get("host");
+  const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autenticato." }, { status: 401 });
 
@@ -59,9 +62,16 @@ export async function POST(request: Request) {
 
   // Invia invito Supabase — il trigger crea customer, poi qui inseriamo employee
   const adminClient = createSupabaseAdminClient();
+  const mode = getPlatformModeFromHost(host);
+  const loginFrom: LoginFrom =
+    mode === "gestione-bizery"
+      ? `gestione-bizery.${tenant_slug}`
+      : mode === "gestione-custom"
+        ? `gestione-custom.${tenant_slug}`
+        : `gestione.${tenant_slug}`;
   const { data: inviteData, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
     email,
-    { redirectTo: buildAuthCallbackUrl(`gestione.${tenant_slug}`) },
+    { redirectTo: buildAuthCallbackUrl(loginFrom) },
   );
 
   if (inviteError) {

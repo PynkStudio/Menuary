@@ -384,26 +384,26 @@ const officinakamContent: TenantContent = {
     facebookLabel: "Facebook Officina KAM",
   },
   contact: {
-    phone: "+39 0XX XXX XXXX",
-    whatsappDigits: "39XXXXXXXXXX",
+    phone: "+39 333 456 7890",
+    whatsappDigits: "393334567890",
     whatsappMessage:
       "Ciao Officina KAM! Vorrei prenotare un appuntamento per il mio veicolo. Grazie!",
   },
   address: {
-    street: "Via Example 123",
-    zip: "00100",
-    city: "Roma",
-    province: "RM",
-    full: "Via Example 123 - 00100 Roma (RM)",
+    street: "Via Bonfadini, 71",
+    zip: "20138",
+    city: "Milano",
+    province: "MI",
+    full: "Via Bonfadini, 71 - 20138 Milano (MI)",
   },
   maps: {
     searchUrl:
-      "https://www.google.com/maps/search/?api=1&query=Officina+KAM+Roma",
+      "https://www.google.com/maps/search/?api=1&query=Via+Bonfadini+71+Milano",
     embedUrl:
-      "https://www.google.com/maps?q=Officina+KAM+Roma&output=embed",
+      "https://www.google.com/maps?q=Via+Bonfadini+71+Milano&output=embed",
   },
   hero: {
-    eyebrow: "Officina auto e moto · Roma",
+    eyebrow: "Officina auto e moto · Milano",
     titleLead: "Precisione meccanica.",
     titleAccent: "Diagnostica avanzata.",
     body:
@@ -504,7 +504,7 @@ const officinakamContent: TenantContent = {
   findUs: {
     eyebrow: "Dove siamo",
     titleLead: "Vieni a trovarci,",
-    titleAccent: "siamo a Roma.",
+    titleAccent: "siamo a Milano.",
     body:
       "Lavoriamo solo su appuntamento per garantire tempi certi e qualità costante. Contattaci per prenotare o richiedere un preventivo.",
     mapTitle: "Mappa Officina KAM",
@@ -512,7 +512,7 @@ const officinakamContent: TenantContent = {
   footer: {
     tagline: "Precisione meccanica. Diagnostica avanzata.",
     body:
-      "Officina KAM — manutenzione professionale per auto e moto a Roma. Interventi su appuntamento, preventivi chiari, nessuna sorpresa.",
+      "Officina KAM — manutenzione professionale per auto e moto a Milano. Interventi su appuntamento, preventivi chiari, nessuna sorpresa.",
   },
   delivery: {
     title: "Ritiro e consegna a domicilio",

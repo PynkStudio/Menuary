@@ -8,6 +8,8 @@ interface Props {
   tenantSlug: string;
   tenantName: string;
   accentColor: string;
+  loginFrom?: LoginFrom;
+  brandLabel?: string;
 }
 
 /**
@@ -20,9 +22,15 @@ interface Props {
  *   3. Il client chiama /api/auth/set-session → cookie origin-scoped
  *   4. router.refresh() → il server component rileva la sessione
  */
-export function GestioneLoginGate({ tenantSlug, tenantName, accentColor }: Props) {
+export function GestioneLoginGate({
+  tenantSlug,
+  tenantName,
+  accentColor,
+  loginFrom,
+  brandLabel,
+}: Props) {
   const router = useRouter();
-  const from: LoginFrom = `gestione-bizery.${tenantSlug}`;
+  const from: LoginFrom = loginFrom ?? `gestione-bizery.${tenantSlug}`;
 
   function handleLogin() {
     openLoginPopup({
@@ -40,7 +48,7 @@ export function GestioneLoginGate({ tenantSlug, tenantName, accentColor }: Props
           className="mb-1 text-xs font-bold uppercase tracking-[0.2em] opacity-40"
           style={{ color: "inherit" }}
         >
-          Bizery · {tenantName}
+          {brandLabel ?? tenantName}
         </p>
         <h1 className="mt-2 text-2xl font-bold">Accesso richiesto</h1>
         <p className="mt-3 text-sm opacity-60">

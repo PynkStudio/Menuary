@@ -3,8 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Instagram, Facebook, Phone, MapPin, Lock } from "lucide-react";
+import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
+import {
+  buildTenantDemoManagementUrl,
+  buildTenantManagementUrl,
+} from "@/lib/login-url";
 import {
   VenueAddressBlock,
   VenueCopyrightAddress,
@@ -16,8 +21,14 @@ import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 export function Footer() {
   const tenant = useTenant();
+  const mode = usePlatformMode();
   const content = getTenantContent(tenant.id);
   const features = useEffectiveFeatures();
+  const isDemo = mode === "preview" || mode === "preview-bizery";
+  const staffHref = isDemo
+    ? `/${tenant.id}/gestione`
+    : buildTenantManagementUrl(tenant.id) ?? buildTenantDemoManagementUrl(tenant.id);
+
   return (
     <footer className="relative mt-16 bg-pork-ink pb-[env(safe-area-inset-bottom)] text-pork-cream">
       <div className="container-wide grid gap-12 pt-16 pb-8 md:grid-cols-4">
@@ -90,13 +101,13 @@ export function Footer() {
             <span>
               © {new Date().getFullYear()} {tenant.name} — <VenueCopyrightAddress />
             </span>
-            <Link
-              href="/admin/login"
+            <a
+              href={staffHref}
               className="inline-flex items-center gap-1 text-pork-cream/30 hover:text-pork-mustard"
               aria-label="Area riservata"
             >
               <Lock size={10} /> Staff
-            </Link>
+            </a>
           </p>
           <p className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {tenant.id === "bepork" && (

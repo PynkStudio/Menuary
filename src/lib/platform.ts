@@ -11,6 +11,7 @@
 // "login"             → login.menuary.it        auth centralizzato (popup + redirect)
 // "gestione"          → gestione.menuary.it     pannello gestione tenant food
 // "gestione-bizery"   → gestione.bizery.it      pannello gestione tenant bizery (cross-domain popup auth)
+// "gestione-custom"   → gestione.[dominio]      pannello gestione sul dominio del tenant
 export type PlatformMode =
   | "tenant"
   | "marketing"
@@ -23,7 +24,8 @@ export type PlatformMode =
   | "studio-bizery"
   | "login"
   | "gestione"
-  | "gestione-bizery";
+  | "gestione-bizery"
+  | "gestione-custom";
 
 export const PLATFORM_HOSTS = {
   marketing:          ["menuary.it", "www.menuary.it", "menuary.localhost"],
@@ -58,6 +60,7 @@ export function getPlatformModeFromHost(
   if (PLATFORM_HOSTS.login.includes(normalized as never))              return "login";
   if (PLATFORM_HOSTS.gestione.includes(normalized as never))           return "gestione";
   if (PLATFORM_HOSTS["gestione-bizery"].includes(normalized as never)) return "gestione-bizery";
+  if (normalized.startsWith("gestione."))                              return "gestione-custom";
   return "tenant";
 }
 

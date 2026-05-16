@@ -1,8 +1,10 @@
 import { notFound, redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { TENANTS } from "@/lib/tenant-registry";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchLocations } from "@/lib/location";
 import { GestioneLocationsManager } from "@/components/gestione/gestione-locations-manager";
+import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 
 export default async function SediPage({
   params,
@@ -13,7 +15,8 @@ export default async function SediPage({
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) notFound();
 
-  const supabase = await createSupabaseServerClient(".menuary.it");
+  const host = (await headers()).get("host");
+  const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);
 

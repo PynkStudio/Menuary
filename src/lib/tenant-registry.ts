@@ -176,6 +176,14 @@ export function findTenantByDomain(hostname: string): TenantProfile | undefined 
   );
 }
 
+export function findTenantByManagementHost(hostname: string): TenantProfile | undefined {
+  const normalized = hostname.toLowerCase().split(":")[0] ?? hostname;
+  const prefix = "gestione.";
+  if (!normalized.startsWith(prefix)) return undefined;
+  const tenantDomain = normalized.slice(prefix.length);
+  return findTenantByDomain(tenantDomain);
+}
+
 export function findTenantByPreviewSlug(slug: string): TenantProfile | undefined {
   return TENANTS.find((tenant) => tenant.previewSlug === slug);
 }

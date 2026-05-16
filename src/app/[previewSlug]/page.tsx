@@ -11,6 +11,7 @@ import { DeliveryStrip } from "@/components/modules/shop/delivery-strip";
 import { ServicesHero } from "@/components/tenants/_shared/services-hero";
 import { ServicesCategories } from "@/components/tenants/_shared/services-categories";
 import { ServicesContact } from "@/components/tenants/_shared/services-contact";
+import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
@@ -40,9 +41,15 @@ export default async function PreviewTenantHome({
           data-tenant-surface={tenant.id}
           style={themeVars as React.CSSProperties}
         >
-          <ServicesHero />
-          <ServicesCategories />
-          <ServicesContact />
+          {tenant.id === "officinakam" ? (
+            <OfficinaKamHomePage />
+          ) : (
+            <>
+              <ServicesHero />
+              <ServicesCategories />
+              <ServicesContact />
+            </>
+          )}
         </div>
       </TenantProvider>
     );

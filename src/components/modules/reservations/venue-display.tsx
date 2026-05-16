@@ -8,7 +8,19 @@ import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 
 function usePublicHours(): DaySchedule[] {
+  const tenant = useTenant();
   const hw = useSettingsStore((s) => s.hoursWeek);
+  if (tenant.id === "officinakam") {
+    return [
+      { label: "Lunedì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },
+      { label: "Martedì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },
+      { label: "Mercoledì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },
+      { label: "Giovedì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },
+      { label: "Venerdì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },
+      { label: "Sabato", closed: false, slots: ["09:00 – 13:00"] },
+      { label: "Domenica", closed: true, slots: [] },
+    ];
+  }
   if (hw && hw.length === 7) return hw;
   return defaultHoursWeek();
 }

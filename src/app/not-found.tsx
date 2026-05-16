@@ -19,6 +19,7 @@ export default async function NotFound() {
       login: "Menuary · Accesso",
       gestione: "Menuary · Gestione",
       "gestione-bizery": "Bizery · Gestione",
+      "gestione-custom": "Gestione",
       "preview-bizery": "Bizery",
     };
     const label = labelByMode[mode] ?? "Menuary";

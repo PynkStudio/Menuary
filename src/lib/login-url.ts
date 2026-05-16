@@ -7,9 +7,13 @@
  *   "clienti"                → clienti.menuary.it            (portale clienti)
  *   "gestione.bepork"        → gestione.menuary.it/bepork    (pannello store food)
  *   "gestione-bizery.acme"   → gestione.bizery.it/acme       (pannello store bizery, cross-domain popup)
+ *   "gestione-custom.bepork" → gestione.bepork.it            (pannello store sul dominio tenant)
+ *   "gestione-demo.bepork"   → demo.menuary.it/bepork/gestione
  *   "app.ios"                → deep link iOS app (futuro)
  *   "app.android"            → deep link Android app (futuro)
  */
+
+import { findTenantById } from "@/lib/tenant-registry";
 
 export type LoginFrom =
   | "admin"
@@ -17,6 +21,8 @@ export type LoginFrom =
   | "clienti"
   | `gestione.${string}`
   | `gestione-bizery.${string}`
+  | `gestione-custom.${string}`
+  | `gestione-demo.${string}`
   | `app.${string}`;
 
 const LOGIN_BASE =
@@ -69,6 +75,8 @@ export function parseFrom(raw: string | null | undefined): LoginFrom | null {
   if ((allowed as string[]).includes(raw)) return raw as LoginFrom;
   if (/^gestione\.[a-z0-9-]+$/.test(raw)) return raw as LoginFrom;
   if (/^gestione-bizery\.[a-z0-9-]+$/.test(raw)) return raw as LoginFrom;
+  if (/^gestione-custom\.[a-z0-9-]+$/.test(raw)) return raw as LoginFrom;
+  if (/^gestione-demo\.[a-z0-9-]+$/.test(raw)) return raw as LoginFrom;
   if (/^app\.(ios|android)$/.test(raw)) return raw as LoginFrom;
   return null;
 }
@@ -84,8 +92,40 @@ export function parseNext(raw: string | null | undefined): string | null {
 export function tenantSlugFromFrom(from: LoginFrom | null): string | null {
   if (!from) return null;
   if (from.startsWith("gestione-bizery.")) return from.slice("gestione-bizery.".length) || null;
+  if (from.startsWith("gestione-custom.")) return from.slice("gestione-custom.".length) || null;
+  if (from.startsWith("gestione-demo.")) return from.slice("gestione-demo.".length) || null;
   if (from.startsWith("gestione.")) return from.split(".")[1] ?? null;
   return null;
+}
+
+function firstPublicTenantDomain(tenantId: string): string | null {
+  const tenant = findTenantById(tenantId);
+  const domains = tenant?.domains ?? [];
+  return (
+    domains.find((domain) => !domain.startsWith("www.") && !domain.includes("localhost") && domain !== "127.0.0.1") ??
+    domains.find((domain) => !domain.startsWith("www.")) ??
+    domains[0] ??
+    null
+  );
+}
+
+export function buildTenantManagementUrl(tenantId: string, next: string | null = null): string | null {
+  const domain = firstPublicTenantDomain(tenantId);
+  if (!domain) return null;
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const port = process.env.NODE_ENV === "production" ? "" : ":3000";
+  return `${protocol}://gestione.${domain}${port}${next ?? ""}`;
+}
+
+export function buildTenantDemoManagementUrl(tenantId: string, next: string | null = null): string {
+  const tenant = findTenantById(tenantId);
+  const isServices = tenant?.vertical === "services";
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const host = process.env.NODE_ENV === "production"
+    ? isServices ? "demo.bizery.it" : "demo.menuary.it"
+    : isServices ? "demo.bizery.localhost" : "demo.menuary.localhost";
+  const port = process.env.NODE_ENV === "production" ? "" : ":3000";
+  return `${protocol}://${host}${port}/${tenantId}/gestione${next ?? ""}`;
 }
 
 /** Risolve l'URL di destinazione post-login */
@@ -112,6 +152,18 @@ export function resolveDestination(options: {
     const slug = tenantSlugFromFrom(from);
     if (slug && (isSiteadmin || tenantId === slug))
       return `https://gestione.bizery.it/${slug}${next ?? ""}`;
+  }
+  if (from?.startsWith("gestione-custom.")) {
+    const slug = tenantSlugFromFrom(from);
+    if (slug && (isSiteadmin || tenantId === slug)) {
+      const destination = buildTenantManagementUrl(slug, next);
+      if (destination) return destination;
+    }
+  }
+  if (from?.startsWith("gestione-demo.")) {
+    const slug = tenantSlugFromFrom(from);
+    if (slug && (isSiteadmin || tenantId === slug))
+      return buildTenantDemoManagementUrl(slug, next);
   }
 
   // Fallback per ruolo

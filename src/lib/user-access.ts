@@ -1,5 +1,6 @@
 import type { SiteadminRole, EmployeeRole } from "@/lib/store-roles";
 import { TENANTS } from "@/lib/tenant-registry";
+import { buildTenantDemoManagementUrl, buildTenantManagementUrl } from "@/lib/login-url";
 import type { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -64,14 +65,12 @@ export async function getUserPortalAccess(supabase: AnySupabase): Promise<Portal
 
   if (access.tenantId) {
     const tenant = TENANTS.find((t) => t.id === access.tenantId);
-    const isBizery = tenant?.vertical === "services";
+    const customManagementUrl = buildTenantManagementUrl(access.tenantId);
     portals.push({
       key: "gestione",
       label: tenant?.name ?? "Gestione locale",
       description: "Pannello operativo del tuo locale",
-      href: isBizery
-        ? `https://gestione.bizery.it/${access.tenantId}`
-        : `https://gestione.menuary.it/${access.tenantId}`,
+      href: customManagementUrl ?? buildTenantDemoManagementUrl(access.tenantId),
     });
   }
 

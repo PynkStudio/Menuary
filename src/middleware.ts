@@ -8,7 +8,14 @@ import {
   type SiteadminRole,
 } from "@/lib/admin-permissions";
 import { getPlatformModeFromHost } from "@/lib/platform";
-import { resolveTenantFromHost, resolveLocationSlugFromHost } from "@/lib/tenant-runtime";
+import { findTenantById } from "@/lib/tenant-registry";
+import {
+  resolveLocationSlugFromHost,
+  resolveTenantFromHost,
+  resolveTenantFromManagementHost,
+  resolveTenantFromPreviewSlug,
+} from "@/lib/tenant-runtime";
+import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 
 /** Portale clienti B2C — path pubblici */
 const CLIENTS_PATHS = new Set([
@@ -30,17 +37,6 @@ function allowStaticAssets(pathname: string) {
   if (pathname === "/robots.txt" || pathname === "/sitemap.xml") return true;
   if (/\.[a-z0-9]{2,5}$/i.test(pathname)) return true;
   return false;
-}
-
-function resolveSessionCookieDomain(host: string | null): string | undefined {
-  if (!host) return undefined;
-  const h = host.split(":")[0].toLowerCase();
-  // Sottodomini Menuary: cookie condiviso su .menuary.it
-  if (h === "menuary.it" || h.endsWith(".menuary.it")) return ".menuary.it";
-  // Sottodomini Bizery: gestione.bizery.it usa cookie origin-scoped (set-session via popup)
-  // Non impostiamo .bizery.it come domain perché il cookie è già scoped al request origin.
-  // Domini custom (bepork.it, ecc.): nessun domain override
-  return undefined;
 }
 
 async function getSessionUser(
@@ -249,10 +245,30 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── Preview Bizery (demo.bizery.it/[previewSlug]) ─────────────────────────
-  if (mode === "preview-bizery") {
-    // Stesso meccanismo di demo.menuary.it: risoluzione tenant via previewSlug
+  // ── Gestione tenant su dominio cliente (gestione.[dominio].it) ───────────
+  // Mantiene intatti i legacy gestione.menuary.it/[slug] e gestione.bizery.it/[slug],
+  // ma per i domini tenant monta lo stesso gestionale senza slug pubblico.
+  if (mode === "gestione-custom") {
+    const tenant = resolveTenantFromManagementHost(host);
+    if (!tenant) return NextResponse.next();
+    if (!pathname.startsWith(`/gestione/${tenant.id}`)) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = `/gestione/${tenant.id}` + (pathname === "/" ? "" : pathname);
+      return NextResponse.rewrite(rewritten);
+    }
     return NextResponse.next();
+  }
+
+  // ── Demo gestione (demo.menuary.it/[tenant]/gestione) ────────────────────
+  if (mode === "preview" || mode === "preview-bizery") {
+    const match = pathname.match(/^\/([a-z0-9-]+)\/gestione(\/.*)?$/);
+    if (match) {
+      const tenant = findTenantById(match[1]) ?? resolveTenantFromPreviewSlug(match[1], host);
+      const rest = match[2] ?? "";
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = `/gestione/${tenant.id}${rest}`;
+      return NextResponse.rewrite(rewritten);
+    }
   }
 
   // ── Marketing Bizery (bizery.it) ─────────────────────────────────────────

@@ -77,10 +77,10 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
-  if (mode === "gestione") {
+  if (mode === "gestione" || mode === "gestione-custom") {
     return {
-      metadataBase: new URL("https://gestione.menuary.it"),
-      title: { default: "Menuary · gestione", template: "%s · Menuary" },
+      metadataBase: new URL(mode === "gestione-custom" ? `https://gestione.${tenant.domains[0] ?? "menuary.it"}` : "https://gestione.menuary.it"),
+      title: { default: `${tenant.name} · gestione`, template: `%s · ${tenant.name}` },
       robots: { index: false, follow: false },
       icons: buildIconSet(mode, tenant),
     };
