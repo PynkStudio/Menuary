@@ -121,7 +121,6 @@ export default async function GestioneLayout({ children, params }: Props) {
     redirect(`https://login.menuary.it?from=${encodeURIComponent(loginFrom)}`);
   }
 
-  const cssVars = tenantThemeCssVars(tenant.theme);
   const navBaseHref = getGestioneBaseHref(host, tenant);
 
   // Sedi: solo se il tenant ha multiLocation abilitato.

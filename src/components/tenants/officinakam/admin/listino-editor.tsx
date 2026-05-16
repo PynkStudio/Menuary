@@ -42,11 +42,6 @@ function seed(): Category[] {
   }));
 }
 
-function priceLabel(price: Price): string {
-  if (price.kind === "range") return "Da preventivo";
-  return price.value === 0 ? "Gratuito" : `€${price.value}`;
-}
-
 function newId(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 7)}`;
 }
