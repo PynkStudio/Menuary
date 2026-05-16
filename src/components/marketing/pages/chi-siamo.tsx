@@ -202,7 +202,7 @@ export function MarketingAboutPage() {
                 </span>
               </h2>
               <p className="mt-7 max-w-md text-[15px] leading-[1.75] text-[var(--menuary-muted)]">
-                Non a "esserci online". Serve a controllare come vieni trovato,
+                Non a &ldquo;esserci online&rdquo;. Serve a controllare come vieni trovato,
                 come vieni percepito e quante prenotazioni passano per le
                 piattaforme che ti prendono la commissione invece che arrivare
                 direttamente da te.
