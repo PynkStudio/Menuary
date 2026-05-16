@@ -10,7 +10,6 @@ import {
   Check,
   Clock,
   Megaphone,
-  MessageSquare,
   Phone,
   Plus,
   ShieldCheck,
