@@ -247,16 +247,20 @@
 
   .kam-hotspots em {
     position: absolute;
-    top: 20px;
-    left: 20px;
+    top: 16px;
+    left: 18px;
+    padding: 4px 8px;
+    border: 1px solid var(--kam-orange-ring);
+    border-radius: 4px;
+    background: rgba(10, 10, 11, 0.78);
     color: var(--kam-orange);
-    font-family: var(--kam-mono);
-    font-size: 9px;
+    font-family: var(--kam-display);
+    font-size: 12px;
     font-style: normal;
-    letter-spacing: 0.16em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     white-space: nowrap;
     opacity: 0;
-    text-transform: uppercase;
     transition: opacity 180ms ease;
   }
 
