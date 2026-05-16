@@ -7,7 +7,6 @@ import {
   ROLE_LABELS,
   ROLE_DEFAULTS,
   EMPLOYEE_ROLES,
-  type EmployeeRole,
 } from "@/lib/store-roles";
 
 type StoreRole = (typeof EMPLOYEE_ROLES)[number];

@@ -21,7 +21,6 @@ import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
 export default function SetPasswordPage() {
   const searchParams = useSearchParams();
   const from = parseFrom(searchParams.get("from"));
-  const next = searchParams.get("next");
   const isRecovery = searchParams.get("mode") === "recovery";
 
   const slug = tenantSlugFromFrom(from);

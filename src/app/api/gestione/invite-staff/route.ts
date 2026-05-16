@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildAuthCallbackUrl } from "@/lib/login-url";
-import { EMPLOYEE_ROLES, type EmployeeRole } from "@/lib/store-roles";
+import { type EmployeeRole } from "@/lib/store-roles";
 
 const INVITABLE_ROLES: readonly EmployeeRole[] = [
   "manager",
