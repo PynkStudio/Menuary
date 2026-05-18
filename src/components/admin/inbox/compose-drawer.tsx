@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition, useRef } from "react";
-import { X, Send, ChevronDown } from "lucide-react";
+import { X, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
 
@@ -11,6 +11,8 @@ type Props = {
   onClose: () => void;
   onSent: () => void;
   defaultBrand?: InboundEmailBrand;
+  initialTo?: string;
+  initialSubject?: string;
 };
 
 const BRAND_FROM: Record<InboundEmailBrand, string> = {
@@ -23,12 +25,28 @@ const BRAND_LABELS: Record<InboundEmailBrand, string> = {
   bizery:  "Bizery",
 };
 
-export function ComposeDrawer({ open, canCompose, onClose, onSent, defaultBrand = "menuary" }: Props) {
+const BRAND_ORDER: InboundEmailBrand[] = ["menuary", "bizery"];
+
+const BRAND_PILL_ACTIVE: Record<InboundEmailBrand, string> = {
+  menuary: "bg-[#a95f45] text-white shadow-sm",
+  bizery:  "bg-[#3b6cb5] text-white shadow-sm",
+};
+
+export function ComposeDrawer({
+  open,
+  canCompose,
+  onClose,
+  onSent,
+  defaultBrand = "menuary",
+  initialTo,
+  initialSubject,
+}: Props) {
   const [brand, setBrand]       = useState<InboundEmailBrand>(defaultBrand);
-  const [to, setTo]             = useState("");
-  const [subject, setSubject]   = useState("");
+  const [to, setTo]             = useState(initialTo ?? "");
+  const [subject, setSubject]   = useState(initialSubject ?? "");
   const [body, setBody]         = useState("");
   const [signature, setSignature] = useState("");
+  const [signatureFromName, setSignatureFromName] = useState("");
   const [error, setError]       = useState<string | null>(null);
   const [isPending, start]      = useTransition();
   const toRef = useRef<HTMLInputElement>(null);
@@ -38,15 +56,33 @@ export function ComposeDrawer({ open, canCompose, onClose, onSent, defaultBrand 
     if (!open || !canCompose) return;
     fetch(`/api/email/signature?brand=${brand}`)
       .then((r) => r.json())
-      .then((d: { signature?: { html?: string } }) => {
+      .then((d: { signature?: { html?: string; fromName?: string } }) => {
         setSignature(d.signature?.html ?? "");
+        setSignatureFromName(d.signature?.fromName ?? "");
       })
-      .catch(() => setSignature(""));
+      .catch(() => {
+        setSignature("");
+        setSignatureFromName("");
+      });
   }, [brand, open, canCompose]);
 
-  // Focus su "A:" all'apertura
+  // All'apertura applica i prefill (To / Oggetto / Brand) e gestisce il focus
   useEffect(() => {
-    if (open) setTimeout(() => toRef.current?.focus(), 100);
+    if (!open) return;
+    if (initialTo !== undefined) setTo(initialTo);
+    if (initialSubject !== undefined) setSubject(initialSubject);
+    setBrand(defaultBrand);
+    setError(null);
+    setTimeout(() => {
+      if (initialTo) {
+        // Se "A:" è già compilato porta il focus all'oggetto
+        const el = document.activeElement as HTMLElement | null;
+        el?.blur();
+      } else {
+        toRef.current?.focus();
+      }
+    }, 80);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   function reset() {
@@ -60,10 +96,8 @@ export function ComposeDrawer({ open, canCompose, onClose, onSent, defaultBrand 
 
   function buildHtml(): string {
     const bodyHtml = body.replace(/\n/g, "<br>");
-    const sigBlock = signature
-      ? `<br><br><hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0"><p style="font-size:13px;color:#374151;line-height:1.6">${signature}</p>`
-      : "";
-    return `<p style="font-size:15px;color:#111;line-height:1.7">${bodyHtml}</p>${sigBlock}`;
+    const sigBlock = signature ? `<br><br>${signature}` : "";
+    return `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#111;line-height:1.7">${bodyHtml}</div>${sigBlock}`;
   }
 
   function handleSend() {
@@ -72,7 +106,7 @@ export function ComposeDrawer({ open, canCompose, onClose, onSent, defaultBrand 
     if (!toList.length) { setError("Inserisci almeno un destinatario."); return; }
     if (!subject.trim()) { setError("L'oggetto è obbligatorio."); return; }
 
-    const fromName = signature ? signature.split("<br>")[0].replace(/<[^>]+>/g, "") : BRAND_LABELS[brand];
+    const fromName = signatureFromName || BRAND_LABELS[brand];
     const fromOverride = `${fromName} <${BRAND_FROM[brand]}>`;
     const replyTo = BRAND_FROM[brand];
 
@@ -115,27 +149,47 @@ export function ComposeDrawer({ open, canCompose, onClose, onSent, defaultBrand 
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--ma-line)] px-5 py-4">
           <h2 className="font-semibold text-[var(--ma-ink)]">Nuovo messaggio</h2>
-          <div className="flex items-center gap-2">
-            {/* Selettore brand */}
-            <div className="relative">
-              <select
-                value={brand}
-                onChange={(e) => setBrand(e.target.value as InboundEmailBrand)}
-                className="appearance-none rounded-lg border border-[var(--ma-line)] bg-[var(--ma-surface)] py-1.5 pl-3 pr-8 text-sm font-medium text-[var(--ma-ink)] focus:outline-none"
-              >
-                <option value="menuary">menuary.it</option>
-                <option value="bizery">bizery.it</option>
-              </select>
-              <ChevronDown size={13} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[var(--ma-muted)]" />
-            </div>
-            <button onClick={handleClose} className="menuary-admin-nav-link !w-auto !px-2 !py-1.5">
-              <X size={16} />
-            </button>
-          </div>
+          <button onClick={handleClose} className="menuary-admin-nav-link !w-auto !px-2 !py-1.5" aria-label="Chiudi">
+            <X size={16} />
+          </button>
         </div>
 
         {/* Campi */}
         <div className="divide-y divide-[var(--ma-line)]">
+          {/* Da: picker brand sempre visibile, preselezionato in base al contesto. */}
+          <div className="flex items-center gap-3 px-5 py-3">
+            <span className="w-14 shrink-0 text-sm text-[var(--ma-muted)]">Da</span>
+            <div
+              role="radiogroup"
+              aria-label="Casella di invio"
+              className="inline-flex rounded-full bg-[var(--ma-surface)] p-1"
+            >
+              {BRAND_ORDER.map((b) => {
+                const active = brand === b;
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setBrand(b)}
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                      active
+                        ? BRAND_PILL_ACTIVE[b]
+                        : "text-[var(--ma-muted)] hover:text-[var(--ma-ink)]",
+                    )}
+                  >
+                    {BRAND_LABELS[b]}{" "}
+                    <span className={cn("font-normal", active ? "opacity-80" : "opacity-60")}>
+                      · {BRAND_FROM[b]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex items-center px-5 py-2.5">
             <span className="w-14 shrink-0 text-sm text-[var(--ma-muted)]">A</span>
             <input
@@ -166,12 +220,14 @@ export function ComposeDrawer({ open, canCompose, onClose, onSent, defaultBrand 
           className="flex-1 resize-none px-5 py-4 text-sm text-[var(--ma-ink)] placeholder:text-[var(--ma-muted)] focus:outline-none"
         />
 
-        {/* Anteprima firma */}
+        {/* Anteprima firma automatica (sola lettura) */}
         {signature && (
           <div className="border-t border-[var(--ma-line)] px-5 py-3">
-            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--ma-muted)]">Firma</p>
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
+              Firma automatica
+            </p>
             <div
-              className="text-xs text-[var(--ma-muted)]"
+              className="text-sm"
               dangerouslySetInnerHTML={{ __html: signature }}
             />
           </div>
@@ -180,10 +236,7 @@ export function ComposeDrawer({ open, canCompose, onClose, onSent, defaultBrand 
         {/* Footer */}
         <div className={cn("flex items-center justify-between border-t border-[var(--ma-line)] px-5 py-3", error && "flex-col gap-2 items-start")}>
           {error && <p className="text-xs text-red-600">{error}</p>}
-          <div className="flex w-full items-center justify-between">
-            <span className="text-xs text-[var(--ma-muted)]">
-              Da: {BRAND_FROM[brand]}
-            </span>
+          <div className="flex w-full items-center justify-end">
             <button
               onClick={handleSend}
               disabled={isPending || !canCompose}

@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ArrowLeft, X } from "lucide-react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { ArrowLeft, Link2, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTrackingEventsForEmail } from "@/lib/email/tracking-queries";
 import { TRACKING_EVENT_LABELS, TRACKING_EVENT_COLORS } from "@/lib/email/tracking-types";
+import { findLeadsByEmails, searchLeads, linkSentEmailToLead } from "@/lib/email/lead-link-queries";
 import type { SentEmail } from "@/lib/email/sent-queries";
 import type { TrackingEvent } from "@/lib/email/tracking-queries";
 import type { ResendTrackingEventType } from "@/lib/email/tracking-types";
+import type { LeadMatch } from "@/lib/email/lead-link-queries";
 
 type Props = {
   email: SentEmail;
@@ -30,6 +32,11 @@ const STATUS_LABELS: Record<SentEmail["status"], string> = {
   complained:       "Segnata spam",
 };
 
+const VERTICAL_LABELS: Record<string, string> = {
+  food: "Menuary",
+  services: "Bizery",
+};
+
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("it-IT", {
     day: "2-digit", month: "short", year: "numeric",
@@ -41,8 +48,136 @@ function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
 }
 
+// ─── LeadPanel ────────────────────────────────────────────────────────────────
+
+type LeadPanelProps = {
+  emailId: string;
+  linkedLeadId: string | null;
+  autoMatches: LeadMatch[];
+  onLinked: (leadId: string | null) => void;
+};
+
+function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelProps) {
+  const [isPending, startTransition] = useTransition();
+  const [searchQuery, setSearchQuery]     = useState("");
+  const [searchResults, setSearchResults] = useState<LeadMatch[]>([]);
+  const [searching, setSearching]         = useState(false);
+  const [open, setOpen]                   = useState(false);
+  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleSearch(q: string) {
+    setSearchQuery(q);
+    if (searchRef.current) clearTimeout(searchRef.current);
+    if (!q.trim()) { setSearchResults([]); return; }
+    setSearching(true);
+    searchRef.current = setTimeout(async () => {
+      try {
+        const r = await searchLeads(q);
+        setSearchResults(r);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+  }
+
+  function handleLink(leadId: string | null) {
+    startTransition(async () => {
+      await linkSentEmailToLead(emailId, leadId);
+      onLinked(leadId);
+      setOpen(false);
+      setSearchQuery("");
+      setSearchResults([]);
+    });
+  }
+
+  const displayResults = searchQuery.trim() ? searchResults : autoMatches;
+
+  return (
+    <div className="border-b border-[var(--ma-line)] px-5 py-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
+          Lead collegato
+        </p>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs gap-1"
+        >
+          <Link2 size={12} />
+          {linkedLeadId ? "Cambia" : "Collega"}
+        </button>
+      </div>
+
+      {linkedLeadId ? (
+        <div className="mt-2 flex items-center gap-2">
+          <span className="flex-1 rounded-lg bg-[var(--ma-surface)] px-3 py-1.5 text-sm font-medium text-[var(--ma-ink)]">
+            Lead #{linkedLeadId.slice(0, 8)}…
+          </span>
+          <button
+            onClick={() => handleLink(null)}
+            disabled={isPending}
+            className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs text-red-500"
+            title="Scollega"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      ) : (
+        <p className="mt-1 text-xs text-[var(--ma-muted)]">Nessun lead collegato</p>
+      )}
+
+      {open && (
+        <div className="mt-2 space-y-1.5">
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--ma-muted)]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Cerca per nome o email…"
+              className="menuary-admin-input w-full !pl-8 !py-1.5 text-sm"
+            />
+          </div>
+
+          {searching && <p className="text-xs text-[var(--ma-muted)]">Ricerca…</p>}
+
+          {displayResults.length > 0 && (
+            <ul className="rounded-lg border border-[var(--ma-line)] bg-[var(--ma-paper)] divide-y divide-[var(--ma-line)] overflow-hidden">
+              {displayResults.map((lead) => (
+                <li key={lead.id}>
+                  <button
+                    onClick={() => handleLink(lead.id)}
+                    disabled={isPending}
+                    className="w-full px-3 py-2 text-left hover:bg-[var(--ma-surface)] transition-colors"
+                  >
+                    <span className="block text-sm font-medium text-[var(--ma-ink)]">
+                      {lead.business_name}
+                    </span>
+                    <span className="block text-xs text-[var(--ma-muted)]">
+                      {lead.contact_name} · {lead.contact_email} ·{" "}
+                      {VERTICAL_LABELS[lead.business_vertical] ?? lead.business_vertical}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {!searching && searchQuery.trim() && searchResults.length === 0 && (
+            <p className="text-xs text-[var(--ma-muted)]">Nessun lead trovato</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── SentDetail ───────────────────────────────────────────────────────────────
+
 export function SentDetail({ email, onClose }: Props) {
-  const [events, setEvents] = useState<TrackingEvent[]>([]);
+  const [events, setEvents]             = useState<TrackingEvent[]>([]);
+  const [linkedLeadId, setLinkedLeadId] = useState(email.lead_id);
+  const [autoMatches, setAutoMatches]   = useState<LeadMatch[]>([]);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     if (!email.resend_message_id) return;
@@ -50,6 +185,28 @@ export function SentDetail({ email, onClose }: Props) {
       .then(setEvents)
       .catch(console.error);
   }, [email.resend_message_id]);
+
+  // Auto-match dal primo destinatario (email in uscita)
+  useEffect(() => {
+    const first = email.to_addresses[0];
+    if (!first) return;
+    findLeadsByEmails([first])
+      .then(setAutoMatches)
+      .catch(() => {});
+  }, [email.to_addresses]);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    function resize() {
+      try {
+        const h = iframe!.contentDocument?.documentElement?.scrollHeight;
+        if (h && h > 0) iframe!.style.height = `${h + 16}px`;
+      } catch {}
+    }
+    iframe.addEventListener("load", resize);
+    return () => iframe.removeEventListener("load", resize);
+  }, [email.html_body]);
 
   const displayFrom = email.from_name
     ? `${email.from_name} <${email.from_address}>`
@@ -118,12 +275,22 @@ export function SentDetail({ email, onClose }: Props) {
         </div>
       )}
 
+      {/* Lead panel */}
+      <LeadPanel
+        emailId={email.id}
+        linkedLeadId={linkedLeadId}
+        autoMatches={autoMatches}
+        onLinked={setLinkedLeadId}
+      />
+
       {/* Corpo */}
       <div className="flex-1 overflow-y-auto p-5">
         {email.html_body ? (
           <iframe
+            ref={iframeRef}
             srcDoc={email.html_body}
-            className="h-full min-h-96 w-full rounded-lg border border-[var(--ma-line)]"
+            className="w-full rounded-lg border border-[var(--ma-line)]"
+            style={{ minHeight: "400px", height: "400px" }}
             sandbox="allow-same-origin"
             title="Corpo email"
           />

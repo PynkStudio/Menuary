@@ -48,6 +48,7 @@ export type InboundEmail = {
   read: boolean;
   starred: boolean;
   archived: boolean;
+  lead_id: string | null;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

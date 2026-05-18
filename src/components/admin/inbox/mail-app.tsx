@@ -43,6 +43,7 @@ function sentToListItem(e: SentEmail): InboundEmail {
     read:         true,
     starred:      false,
     archived:     false,
+    lead_id:      e.lead_id,
   };
 }
 

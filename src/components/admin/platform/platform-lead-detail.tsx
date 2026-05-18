@@ -64,6 +64,7 @@ import {
 } from "@/lib/platform-admin-data";
 import { getModuleLabel } from "@/lib/vertical";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
+import { useMailLauncher } from "@/components/admin/inbox/mail-launcher";
 
 type Tab = "anagrafica" | "fatturazione" | "abbonamento" | "pagamenti" | "note";
 
@@ -588,6 +589,7 @@ function TabAnagrafica({
 }) {
   const phoneHref = lead.contact_phone ? `tel:${lead.contact_phone.replace(/\s/g, "")}` : null;
   const whatsappHref = lead.contact_phone ? `https://wa.me/${lead.contact_phone.replace(/[^\d]/g, "")}` : null;
+  const mailLauncher = useMailLauncher();
 
   return (
     <div className="space-y-6">
@@ -617,7 +619,11 @@ function TabAnagrafica({
         <ActionField
           label="Email"
           value={lead.contact_email}
-          href={`mailto:${lead.contact_email}`}
+          onClick={lead.contact_email ? () => mailLauncher.open({
+            to:      lead.contact_email,
+            brand:   lead.business_vertical === "services" ? "bizery" : "menuary",
+            subject: lead.business_name ? `${lead.business_name} · contatto da Menuary` : undefined,
+          }) : undefined}
           icon={Mail}
         />
         <ActionField
@@ -1039,21 +1045,30 @@ function ActionField({
   label,
   value,
   href,
+  onClick,
   icon: Icon,
   extra,
 }: {
   label: string;
   value: string | null | undefined;
-  href: string | null;
+  href?: string | null;
+  onClick?: () => void;
   icon: React.ElementType;
   extra?: React.ReactNode;
 }) {
+  const linkClass =
+    "inline-flex items-center gap-1.5 text-sm font-semibold text-pork-ink hover:text-pork-red";
   return (
     <div>
       <p className="text-[10px] font-bold uppercase tracking-wide text-pork-ink/40">{label}</p>
       <div className="mt-1 flex flex-wrap items-center gap-2">
-        {value && href ? (
-          <a href={href} className="inline-flex items-center gap-1.5 text-sm font-semibold text-pork-ink hover:text-pork-red">
+        {value && onClick ? (
+          <button type="button" onClick={onClick} className={linkClass}>
+            <Icon size={13} />
+            {value}
+          </button>
+        ) : value && href ? (
+          <a href={href} className={linkClass}>
             <Icon size={13} />
             {value}
           </a>

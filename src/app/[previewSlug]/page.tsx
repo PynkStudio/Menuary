@@ -13,6 +13,7 @@ import { ServicesHero } from "@/components/tenants/_shared/services-hero";
 import { ServicesCategories } from "@/components/tenants/_shared/services-categories";
 import { ServicesContact } from "@/components/tenants/_shared/services-contact";
 import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home";
+import { Footer } from "@/components/tenant-shell/footer";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
@@ -116,6 +117,7 @@ export default async function PreviewTenantHome({
         <ReviewsSection />
         <FindUs />
         <DeliveryStrip />
+        <Footer />
       </div>
     </TenantProvider>
   );

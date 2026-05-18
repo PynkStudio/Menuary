@@ -18,6 +18,7 @@ export type SentEmail = {
   sent_by_user_id: string | null;
   sent_by_name: string | null;
   status: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained";
+  lead_id: string | null;
 };
 
 export type SentPage = {

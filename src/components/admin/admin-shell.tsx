@@ -16,6 +16,7 @@ import {
   QrCode,
   Settings,
   Users,
+  UserCircle,
   UtensilsCrossed,
   X,
   CreditCard,
@@ -26,6 +27,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clearAdminSession } from "@/lib/admin-auth";
+import { MailLauncherProvider } from "@/components/admin/inbox/mail-launcher";
 import { hasAdminPermission, type AdminPermission, type SiteadminRole } from "@/lib/admin-permissions";
 import { cn } from "@/lib/utils";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
@@ -196,6 +198,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   if (isPlatform) {
     return (
+      <MailLauncherProvider>
       <div className="menuary-admin-root">
         <aside
           className={cn(
@@ -238,6 +241,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
+          <Link
+            href="/admin/profilo"
+            onClick={() => setOpen(false)}
+            className="menuary-admin-nav-link mx-3 mb-1"
+            data-active={pathname === "/admin/profilo"}
+          >
+            <UserCircle size={18} />
+            Profilo
+          </Link>
           <button onClick={logout} className="menuary-admin-logout">
             <LogOut size={18} /> Esci
           </button>
@@ -267,6 +279,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <main className="p-5 sm:p-8">{children}</main>
         </div>
       </div>
+      </MailLauncherProvider>
     );
   }
 

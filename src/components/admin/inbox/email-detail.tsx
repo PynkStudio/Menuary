@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Archive, ArrowLeft, Star, Trash2, X } from "lucide-react";
+import { useState, useTransition, useEffect, useRef } from "react";
+import { Archive, ArrowLeft, Download, Link2, Search, Star, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { markEmailRead, starEmail, archiveEmail, deleteEmail } from "@/lib/email/inbound-queries";
+import { findLeadsByEmails, searchLeads, linkInboundEmailToLead } from "@/lib/email/lead-link-queries";
 import type { InboundEmail } from "@/lib/email/inbound-types";
+import type { LeadMatch } from "@/lib/email/lead-link-queries";
 
 type Props = {
   email: InboundEmail;
@@ -14,11 +16,8 @@ type Props = {
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("it-IT", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
   });
 }
 
@@ -27,9 +26,187 @@ const BRAND_BADGE: Record<string, string> = {
   bizery:  "bg-[#3b6cb5]/12 text-[#234a85]",
 };
 
+const VERTICAL_LABELS: Record<string, string> = {
+  food: "Menuary",
+  services: "Bizery",
+};
+
+/** Converte URL in testo plain in link cliccabili. */
+function linkifyText(text: string): React.ReactNode[] {
+  const urlRe = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRe);
+  return parts.map((part, i) =>
+    urlRe.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[var(--ma-accent)] underline underline-offset-2 break-all"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
+
+// ─── LeadPanel ────────────────────────────────────────────────────────────────
+
+type LeadPanelProps = {
+  emailId: string;
+  linkedLeadId: string | null;
+  autoMatches: LeadMatch[];
+  onLinked: (leadId: string | null) => void;
+};
+
+function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelProps) {
+  const [isPending, startTransition] = useTransition();
+  const [searchQuery, setSearchQuery]   = useState("");
+  const [searchResults, setSearchResults] = useState<LeadMatch[]>([]);
+  const [searching, setSearching]       = useState(false);
+  const [open, setOpen]                 = useState(false);
+  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleSearch(q: string) {
+    setSearchQuery(q);
+    if (searchRef.current) clearTimeout(searchRef.current);
+    if (!q.trim()) { setSearchResults([]); return; }
+    setSearching(true);
+    searchRef.current = setTimeout(async () => {
+      try {
+        const r = await searchLeads(q);
+        setSearchResults(r);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+  }
+
+  function handleLink(leadId: string | null) {
+    startTransition(async () => {
+      await linkInboundEmailToLead(emailId, leadId);
+      onLinked(leadId);
+      setOpen(false);
+      setSearchQuery("");
+      setSearchResults([]);
+    });
+  }
+
+  const displayResults = searchQuery.trim() ? searchResults : autoMatches;
+
+  return (
+    <div className="border-b border-[var(--ma-line)] px-5 py-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
+          Lead collegato
+        </p>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs gap-1"
+          title="Collega lead"
+        >
+          <Link2 size={12} />
+          {linkedLeadId ? "Cambia" : "Collega"}
+        </button>
+      </div>
+
+      {linkedLeadId ? (
+        <div className="mt-2 flex items-center gap-2">
+          <span className="flex-1 rounded-lg bg-[var(--ma-surface)] px-3 py-1.5 text-sm font-medium text-[var(--ma-ink)]">
+            Lead #{linkedLeadId.slice(0, 8)}…
+          </span>
+          <button
+            onClick={() => handleLink(null)}
+            disabled={isPending}
+            className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs text-red-500"
+            title="Scollega"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      ) : (
+        <p className="mt-1 text-xs text-[var(--ma-muted)]">Nessun lead collegato</p>
+      )}
+
+      {open && (
+        <div className="mt-2 space-y-1.5">
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--ma-muted)]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Cerca per nome o email…"
+              className="menuary-admin-input w-full !pl-8 !py-1.5 text-sm"
+            />
+          </div>
+
+          {searching && (
+            <p className="text-xs text-[var(--ma-muted)]">Ricerca…</p>
+          )}
+
+          {displayResults.length > 0 && (
+            <ul className="rounded-lg border border-[var(--ma-line)] bg-[var(--ma-paper)] divide-y divide-[var(--ma-line)] overflow-hidden">
+              {displayResults.map((lead) => (
+                <li key={lead.id}>
+                  <button
+                    onClick={() => handleLink(lead.id)}
+                    disabled={isPending}
+                    className="w-full px-3 py-2 text-left hover:bg-[var(--ma-surface)] transition-colors"
+                  >
+                    <span className="block text-sm font-medium text-[var(--ma-ink)]">
+                      {lead.business_name}
+                    </span>
+                    <span className="block text-xs text-[var(--ma-muted)]">
+                      {lead.contact_name} · {lead.contact_email} ·{" "}
+                      {VERTICAL_LABELS[lead.business_vertical] ?? lead.business_vertical}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {!searching && searchQuery.trim() && searchResults.length === 0 && (
+            <p className="text-xs text-[var(--ma-muted)]">Nessun lead trovato</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── EmailDetail ──────────────────────────────────────────────────────────────
+
 export function EmailDetail({ email, onClose, onMutated }: Props) {
   const [isPending, startTransition] = useTransition();
-  const [starred, setStarred] = useState(email.starred);
+  const [starred, setStarred]       = useState(email.starred);
+  const [linkedLeadId, setLinkedLeadId] = useState(email.lead_id);
+  const [autoMatches, setAutoMatches]   = useState<LeadMatch[]>([]);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Auto-match lead dal mittente
+  useEffect(() => {
+    findLeadsByEmails([email.from_address])
+      .then(setAutoMatches)
+      .catch(() => {});
+  }, [email.from_address]);
+
+  // Adatta l'altezza dell'iframe al suo contenuto
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    function resize() {
+      try {
+        const h = iframe!.contentDocument?.documentElement?.scrollHeight;
+        if (h && h > 0) iframe!.style.height = `${h + 16}px`;
+      } catch {}
+    }
+    iframe.addEventListener("load", resize);
+    return () => iframe.removeEventListener("load", resize);
+  }, [email.html_body]);
 
   function handleStar() {
     const next = !starred;
@@ -75,7 +252,6 @@ export function EmailDetail({ email, onClose, onMutated }: Props) {
         <button
           onClick={onClose}
           className="menuary-admin-nav-link mr-2 !w-auto gap-1.5 !px-2 !py-1.5 text-sm"
-          aria-label="Torna alla lista"
         >
           <ArrowLeft size={15} />
           <span className="hidden sm:inline">Indietro</span>
@@ -84,10 +260,7 @@ export function EmailDetail({ email, onClose, onMutated }: Props) {
         <button
           onClick={handleStar}
           disabled={isPending}
-          className={cn(
-            "menuary-admin-nav-link !w-auto !px-2 !py-1.5",
-            starred && "text-yellow-500",
-          )}
+          className={cn("menuary-admin-nav-link !w-auto !px-2 !py-1.5", starred && "text-yellow-500")}
           title={starred ? "Rimuovi stella" : "Aggiungi stella"}
         >
           <Star size={16} fill={starred ? "currentColor" : "none"} />
@@ -125,7 +298,6 @@ export function EmailDetail({ email, onClose, onMutated }: Props) {
         <button
           onClick={onClose}
           className="menuary-admin-nav-link !w-auto !px-2 !py-1.5 lg:hidden"
-          aria-label="Chiudi"
         >
           <X size={16} />
         </button>
@@ -158,33 +330,71 @@ export function EmailDetail({ email, onClose, onMutated }: Props) {
           <span>{fmtDate(email.created_at)}</span>
         </div>
 
+        {/* Allegati */}
         {email.attachments.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {email.attachments.map((att, i) => (
-              <span
-                key={i}
-                className="rounded-md border border-[var(--ma-line)] bg-[var(--ma-paper)] px-2 py-1 text-xs text-[var(--ma-muted)]"
-              >
-                📎 {att.filename ?? `allegato-${i + 1}`}
-              </span>
-            ))}
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            {email.attachments.map((att, i) => {
+              const name = att.filename ?? `allegato-${i + 1}`;
+              const hasContent = !!att.content;
+              const href = hasContent
+                ? `data:${att.content_type ?? "application/octet-stream"};base64,${att.content}`
+                : undefined;
+              return hasContent ? (
+                <a
+                  key={i}
+                  href={href}
+                  download={name}
+                  className="flex items-center gap-1.5 rounded-md border border-[var(--ma-line)] bg-[var(--ma-surface)] px-2.5 py-1 text-xs text-[var(--ma-ink)] hover:bg-[var(--ma-paper)] transition-colors"
+                >
+                  <Download size={11} />
+                  {name}
+                  {att.size ? (
+                    <span className="text-[var(--ma-muted)]">
+                      ({(att.size / 1024).toFixed(0)} KB)
+                    </span>
+                  ) : null}
+                </a>
+              ) : (
+                <span
+                  key={i}
+                  className="flex items-center gap-1.5 rounded-md border border-[var(--ma-line)] bg-[var(--ma-surface)] px-2.5 py-1 text-xs text-[var(--ma-muted)]"
+                >
+                  📎 {name}
+                  {att.size ? (
+                    <span>({(att.size / 1024).toFixed(0)} KB)</span>
+                  ) : null}
+                </span>
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Lead panel */}
+      <LeadPanel
+        emailId={email.id}
+        linkedLeadId={linkedLeadId}
+        autoMatches={autoMatches}
+        onLinked={setLinkedLeadId}
+      />
 
       {/* Corpo email */}
       <div className="flex-1 overflow-y-auto p-5">
         {email.html_body ? (
           <iframe
+            ref={iframeRef}
             srcDoc={email.html_body}
-            className="h-full min-h-96 w-full rounded-lg border border-[var(--ma-line)]"
+            className="w-full rounded-lg border border-[var(--ma-line)]"
+            style={{ minHeight: "400px", height: "400px" }}
             sandbox="allow-same-origin"
             title="Corpo email"
           />
-        ) : (
+        ) : email.text_body ? (
           <pre className="whitespace-pre-wrap font-sans text-sm text-[var(--ma-ink)] leading-relaxed">
-            {email.text_body ?? "(Nessun contenuto)"}
+            {linkifyText(email.text_body)}
           </pre>
+        ) : (
+          <p className="text-sm text-[var(--ma-muted)]">(Nessun contenuto)</p>
         )}
       </div>
     </div>

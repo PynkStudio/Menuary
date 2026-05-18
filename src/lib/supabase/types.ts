@@ -28,6 +28,7 @@ export type Database = {
           sent_by_user_id: string | null
           sent_by_name: string | null
           status: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
+          lead_id: string | null
         }
         Insert: {
           id?: string
@@ -42,6 +43,7 @@ export type Database = {
           sent_by_user_id?: string | null
           sent_by_name?: string | null
           status?: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
+          lead_id?: string | null
         }
         Update: {
           id?: string
@@ -56,8 +58,17 @@ export type Database = {
           sent_by_user_id?: string | null
           sent_by_name?: string | null
           status?: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
+          lead_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sent_emails_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_tracking_events: {
         Row: {
@@ -154,6 +165,7 @@ export type Database = {
           read: boolean
           starred: boolean
           archived: boolean
+          lead_id: string | null
         }
         Insert: {
           id?: string
@@ -171,6 +183,7 @@ export type Database = {
           read?: boolean
           starred?: boolean
           archived?: boolean
+          lead_id?: string | null
         }
         Update: {
           id?: string
@@ -188,8 +201,17 @@ export type Database = {
           read?: boolean
           starred?: boolean
           archived?: boolean
+          lead_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "inbound_emails_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_users: {
         Row: {
@@ -1736,10 +1758,14 @@ export type Database = {
           display_name: string | null
           email: string
           enabled: boolean
+          first_name: string | null
           id: string
           invited_by: string | null
+          last_name: string | null
+          phone: string | null
           role: Database["public"]["Enums"]["siteadmin_role"]
           user_id: string
+          work_hours: string | null
         }
         Insert: {
           commission_rate?: number
@@ -1747,10 +1773,14 @@ export type Database = {
           display_name?: string | null
           email: string
           enabled?: boolean
+          first_name?: string | null
           id?: string
           invited_by?: string | null
+          last_name?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["siteadmin_role"]
           user_id: string
+          work_hours?: string | null
         }
         Update: {
           commission_rate?: number
@@ -1758,10 +1788,14 @@ export type Database = {
           display_name?: string | null
           email?: string
           enabled?: boolean
+          first_name?: string | null
           id?: string
           invited_by?: string | null
+          last_name?: string | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["siteadmin_role"]
           user_id?: string
+          work_hours?: string | null
         }
         Relationships: [
           {

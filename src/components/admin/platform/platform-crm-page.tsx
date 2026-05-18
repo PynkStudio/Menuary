@@ -33,6 +33,7 @@ import {
 } from "@/lib/platform-crm-types";
 import { cn } from "@/lib/utils";
 import { PLATFORM_LEADS } from "@/lib/platform-admin-data";
+import { MailLink } from "@/components/admin/inbox/mail-launcher";
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
@@ -386,10 +387,15 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-pork-ink/60">
           <span>{lead.contact_name}</span>
           {lead.contact_email && (
-            <a href={`mailto:${lead.contact_email}`} className="inline-flex items-center gap-1 font-semibold hover:text-pork-red">
+            <MailLink
+              to={lead.contact_email}
+              brand={lead.business_vertical === "services" ? "bizery" : "menuary"}
+              subject={lead.business_name ? `${lead.business_name} · contatto da Menuary` : undefined}
+              className="inline-flex items-center gap-1 font-semibold hover:text-pork-red"
+            >
               <Mail size={12} />
               {lead.contact_email}
-            </a>
+            </MailLink>
           )}
           {lead.contact_phone && phoneHref && (
             <a href={phoneHref} className="inline-flex items-center gap-1 font-semibold hover:text-pork-red">

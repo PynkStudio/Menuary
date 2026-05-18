@@ -109,11 +109,11 @@ export function MailSidebar({ view, brand, unreadCount, canCompose, onViewChange
 
       <div className="mt-auto">
         <Link
-          href="/admin/inbox/impostazioni"
+          href="/admin/profilo"
           className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-[var(--ma-muted)] transition-colors hover:bg-[var(--ma-line)] hover:text-[var(--ma-ink)]"
         >
           <Settings size={15} />
-          Firma e impostazioni
+          Profilo e firma
         </Link>
       </div>
     </div>
