@@ -186,7 +186,7 @@ export default async function GestioneLayout({ children, params }: Props) {
         {children}
       </GestioneShell>
       {!isDemo && <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />}
-      {isDemo && <DemoModeInstaller tenantId={tenantSlug} />}
+      {isDemo && <DemoModeInstaller />}
     </div>
   );
 }
