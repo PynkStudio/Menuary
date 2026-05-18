@@ -1,3 +1,5 @@
+export const SUPERADMIN_EMAIL = "info@menuary.it";
+
 export const SITEADMIN_ROLES = [
   "superadmin",
   "admin",

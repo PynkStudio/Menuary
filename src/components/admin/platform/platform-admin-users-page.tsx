@@ -7,6 +7,7 @@ import {
   SITEADMIN_ROLE_DESCRIPTIONS,
   SITEADMIN_ROLE_LABELS,
   SITEADMIN_ROLES,
+  SUPERADMIN_EMAIL,
   type SiteadminRole,
 } from "@/lib/admin-permissions";
 import { cn } from "@/lib/utils";
@@ -265,7 +266,9 @@ export function PlatformAdminUsersPage() {
           </div>
         )}
 
-        {users.map((user) => (
+        {users.map((user) => {
+          const isSuperadmin = user.email.toLowerCase() === SUPERADMIN_EMAIL;
+          return (
           <div key={user.id} className={cn("rounded-2xl bg-white p-5 ring-1 ring-pork-ink/10", user.status === "revoked" && "opacity-60")}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -295,7 +298,7 @@ export function PlatformAdminUsersPage() {
                     });
                   }}
                   className="rounded-full border border-pork-ink/15 bg-white px-3 py-2 text-xs font-black"
-                  disabled={!canManage || saving || user.status === "revoked"}
+                  disabled={!canManage || saving || user.status === "revoked" || isSuperadmin}
                 >
                   {SITEADMIN_ROLES.map((key) => (
                     <option key={key} value={key}>{SITEADMIN_ROLE_LABELS[key]}</option>
@@ -312,10 +315,10 @@ export function PlatformAdminUsersPage() {
                       void updateUser(user.id, { commission_rate: Math.max(0, Math.min(100, Number(event.target.value))) })
                     }
                     className="w-12 bg-transparent tabular-nums outline-none"
-                    disabled={!canManage || saving || user.status === "revoked"}
+                    disabled={!canManage || saving || user.status === "revoked" || isSuperadmin}
                   />
                 </label>
-                {user.status === "revoked" ? (
+                {!isSuperadmin && (user.status === "revoked" ? (
                   <button
                     disabled={!canManage || saving}
                     onClick={() => void updateUser(user.id, { enabled: true })}
@@ -331,7 +334,7 @@ export function PlatformAdminUsersPage() {
                   >
                     <Ban size={13} /> Revoca
                   </button>
-                )}
+                ))}
               </div>
             </div>
             <div className="mt-4 rounded-2xl bg-pork-cream p-3 text-xs text-pork-ink/60">
@@ -339,7 +342,8 @@ export function PlatformAdminUsersPage() {
               {SITEADMIN_ROLE_DESCRIPTIONS[user.role]}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

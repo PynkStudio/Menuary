@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildAuthCallbackUrl } from "@/lib/login-url";
-import { DEFAULT_COMMISSION_BY_SITEADMIN_ROLE, SITEADMIN_ROLES } from "@/lib/admin-permissions";
+import { DEFAULT_COMMISSION_BY_SITEADMIN_ROLE, SITEADMIN_ROLES, SUPERADMIN_EMAIL } from "@/lib/admin-permissions";
 import type { Database } from "@/lib/supabase/types";
 
 type SiteadminRole = Database["public"]["Enums"]["siteadmin_role"];
@@ -223,6 +223,16 @@ export async function PATCH(request: Request) {
   if (!id) return NextResponse.json({ error: "id richiesto." }, { status: 400 });
   if (role && !INVITABLE_ROLES.includes(role)) {
     return NextResponse.json({ error: "Ruolo non valido." }, { status: 400 });
+  }
+
+  const { data: target } = await supabase
+    .from("siteadmin")
+    .select("email")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (target?.email && target.email.toLowerCase() === SUPERADMIN_EMAIL) {
+    return NextResponse.json({ error: "Il profilo superadmin non può essere modificato." }, { status: 403 });
   }
 
   const update: Database["public"]["Tables"]["siteadmin"]["Update"] = {};
