@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, Trash2, RefreshCcw } from "lucide-react";
 import {
@@ -8,6 +8,7 @@ import {
   ROLE_DEFAULTS,
   EMPLOYEE_ROLES,
 } from "@/lib/store-roles";
+import { isDemoBrowser, readDemoStaff, type StaffRecord } from "@/lib/demo-mode";
 
 type StoreRole = (typeof EMPLOYEE_ROLES)[number];
 
@@ -32,10 +33,28 @@ const INVITABLE_ROLES: StoreRole[] = [
   "personale_cucina",
 ];
 
+function hydrateStaffFromDemo(tenantSlug: string): StaffRow[] | null {
+  if (!isDemoBrowser()) return null;
+  const persisted: StaffRecord[] = readDemoStaff(tenantSlug);
+  return persisted.map((s) => ({
+    id: s.id,
+    email: s.email,
+    role: s.role,
+    displayName: s.display_name,
+    permissions: s.permissions ?? {},
+    enabled: s.enabled,
+  }));
+}
+
 export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
   const router = useRouter();
-  const [staff] = useState<StaffRow[]>(initialStaff);
+  const [staff, setStaff] = useState<StaffRow[]>(initialStaff);
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const hydrated = hydrateStaffFromDemo(tenantSlug);
+    if (hydrated) setStaff(hydrated);
+  }, [tenantSlug]);
 
   // Form invito
   const [email, setEmail] = useState("");
@@ -74,10 +93,19 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
       setInviteError(json.error ?? "Errore durante l'invito.");
       return;
     }
-    setInviteSuccess(`Invito inviato a ${email}. Controllerà la sua casella per impostare la password.`);
+    if (isDemoBrowser() && json.employee) {
+      const e = json.employee as StaffRecord;
+      setStaff((prev) => [...prev, {
+        id: e.id, email: e.email, role: e.role,
+        displayName: e.display_name, permissions: e.permissions ?? {}, enabled: e.enabled,
+      }]);
+      setInviteSuccess(`(Demo) ${email} aggiunto allo staff localmente.`);
+    } else {
+      setInviteSuccess(`Invito inviato a ${email}. Controllerà la sua casella per impostare la password.`);
+      startTransition(() => router.refresh());
+    }
     setEmail("");
     setDisplayName("");
-    startTransition(() => router.refresh());
   }
 
   async function handleRevoke(adminUserId: string) {
@@ -91,7 +119,11 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
       alert("Errore durante la revoca.");
       return;
     }
-    startTransition(() => router.refresh());
+    if (isDemoBrowser()) {
+      setStaff((prev) => prev.map((s) => (s.id === adminUserId ? { ...s, enabled: false } : s)));
+    } else {
+      startTransition(() => router.refresh());
+    }
   }
 
   async function handleRestore(adminUserId: string) {
@@ -104,7 +136,11 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
       alert("Errore durante il ripristino.");
       return;
     }
-    startTransition(() => router.refresh());
+    if (isDemoBrowser()) {
+      setStaff((prev) => prev.map((s) => (s.id === adminUserId ? { ...s, enabled: true } : s)));
+    } else {
+      startTransition(() => router.refresh());
+    }
   }
 
   return (

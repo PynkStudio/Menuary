@@ -1,6 +1,6 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { Inbox, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InboundEmail } from "@/lib/email/inbound-types";
 
@@ -24,16 +24,21 @@ function fmtDate(iso: string) {
   return d.toLocaleDateString("it-IT", { day: "2-digit", month: "short" });
 }
 
-const BRAND_DOT: Record<string, string> = {
-  menuary: "bg-red-500",
-  bizery:  "bg-blue-500",
+const BRAND_STYLE: Record<string, { bg: string; ring: string }> = {
+  menuary: { bg: "bg-[#a95f45]",  ring: "ring-[#a95f45]/30" },
+  bizery:  { bg: "bg-[#3b6cb5]",  ring: "ring-[#3b6cb5]/30" },
 };
+
+function initialFor(email: InboundEmail): string {
+  const src = (email.from_name || email.from_address || "?").trim();
+  return src.charAt(0).toUpperCase();
+}
 
 export function EmailList({ emails, selectedId, onSelect }: Props) {
   if (emails.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center text-[var(--ma-muted)]">
-        <span className="mb-2 text-3xl">📭</span>
+        <Inbox size={28} className="mb-2 opacity-40" />
         <p className="text-sm">Nessuna email</p>
       </div>
     );
@@ -44,73 +49,79 @@ export function EmailList({ emails, selectedId, onSelect }: Props) {
       {emails.map((email) => {
         const isSelected = email.id === selectedId;
         const isUnread = !email.read;
+        const brand = BRAND_STYLE[email.brand] ?? { bg: "bg-gray-400", ring: "ring-gray-300" };
 
         return (
-          <li key={email.id}>
+          <li key={email.id} className="relative">
+            {isUnread && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-[var(--ma-accent)]"
+              />
+            )}
             <button
               onClick={() => onSelect(email)}
               className={cn(
-                "w-full px-4 py-3 text-left transition-colors hover:bg-[var(--ma-surface)]",
+                "w-full px-4 py-3 text-left transition-colors",
+                "hover:bg-[var(--ma-surface)]",
                 isSelected && "bg-[var(--ma-surface)]",
+                isUnread && "pl-[calc(1rem+3px)]",
               )}
             >
-              <div className="flex items-start gap-2.5">
-                {/* Dot non letta / brand */}
-                <div className="mt-1.5 flex shrink-0 flex-col items-center gap-1">
-                  {isUnread && (
-                    <span className="block h-2 w-2 rounded-full bg-[var(--ma-accent)]" />
+              <div className="flex items-start gap-3">
+                <div
+                  className={cn(
+                    "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ring-2 ring-offset-1 ring-offset-transparent",
+                    brand.bg,
+                    brand.ring,
                   )}
-                  {!isUnread && (
-                    <span className="block h-2 w-2 rounded-full bg-transparent" />
-                  )}
-                  <span
-                    className={cn(
-                      "block h-1.5 w-1.5 rounded-full",
-                      BRAND_DOT[email.brand] ?? "bg-gray-400",
-                    )}
-                    title={email.brand}
-                  />
+                  title={email.brand}
+                >
+                  {initialFor(email)}
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  {/* Mittente + ora */}
                   <div className="flex items-center justify-between gap-2">
                     <span
                       className={cn(
                         "truncate text-sm",
                         isUnread
                           ? "font-semibold text-[var(--ma-ink)]"
-                          : "text-[var(--ma-muted)]",
+                          : "text-[var(--ma-ink)]/80",
                       )}
                     >
                       {email.from_name ?? email.from_address}
                     </span>
-                    <span className="shrink-0 text-[11px] text-[var(--ma-muted)]">
+                    <span
+                      className={cn(
+                        "shrink-0 text-[11px] tabular-nums",
+                        isUnread ? "font-semibold text-[var(--ma-accent)]" : "text-[var(--ma-muted)]",
+                      )}
+                    >
                       {fmtDate(email.created_at)}
                     </span>
                   </div>
 
-                  {/* Oggetto */}
                   <p
                     className={cn(
-                      "truncate text-sm",
+                      "mt-0.5 truncate text-sm",
                       isUnread
                         ? "font-medium text-[var(--ma-ink)]"
-                        : "text-[var(--ma-muted)]",
+                        : "text-[var(--ma-ink)]/75",
                     )}
                   >
                     {email.subject || "(nessun oggetto)"}
                   </p>
 
-                  {/* Anteprima testo */}
-                  <p className="truncate text-xs text-[var(--ma-muted)]">
-                    {email.text_body?.slice(0, 100) ?? ""}
-                  </p>
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <p className="min-w-0 flex-1 truncate text-xs text-[var(--ma-muted)]">
+                      {email.text_body?.slice(0, 120) ?? ""}
+                    </p>
+                    {email.starred && (
+                      <Star size={12} className="shrink-0 fill-amber-400 text-amber-400" />
+                    )}
+                  </div>
                 </div>
-
-                {email.starred && (
-                  <Star size={13} className="mt-1 shrink-0 fill-yellow-400 text-yellow-400" />
-                )}
               </div>
             </button>
           </li>

@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchLocations } from "@/lib/location";
 import { GestioneLocationsManager } from "@/components/gestione/gestione-locations-manager";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
+import { isDemoHost } from "@/lib/platform";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 export default async function SediPage({
@@ -17,18 +18,19 @@ export default async function SediPage({
   if (!tenant || !getGestioneModuleAccess(tenant.features).canManageLocations) notFound();
 
   const host = (await headers()).get("host");
+  const demo = isDemoHost(host);
   const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);
-
-  // Solo admin (tenantadmin o siteadmin) può gestire le sedi
-  const [{ data: ta }, { data: sa }] = await Promise.all([
-    supabase.from("tenantadmin").select("id").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
-    supabase.from("siteadmin").select("id").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
-  ]);
-  if (!ta && !sa) redirect(getGestioneBaseHref(host, tenant) || "/");
-
-  const locations = await fetchLocations(supabase, tenantSlug);
+  const locations = await (async () => {
+    if (demo) return [];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);
+    const [{ data: ta }, { data: sa }] = await Promise.all([
+      supabase.from("tenantadmin").select("id").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
+      supabase.from("siteadmin").select("id").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
+    ]);
+    if (!ta && !sa) redirect(getGestioneBaseHref(host, tenant) || "/");
+    return fetchLocations(supabase, tenantSlug);
+  })();
 
   return (
     <div>

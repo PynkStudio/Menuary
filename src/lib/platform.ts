@@ -69,6 +69,16 @@ export function isMarketingMode(mode: PlatformMode): boolean {
   return mode === "marketing" || mode === "marketing-bizery";
 }
 
+// demo.menuary.it / demo.bizery.it: ambiente vetrina senza auth e con scritture
+// solo-locali (localStorage). Vale anche sui loro alias .localhost.
+export function isDemoHost(host: string | null | undefined): boolean {
+  const normalized = normalizeHost(host);
+  return (
+    PLATFORM_HOSTS.preview.includes(normalized as never) ||
+    PLATFORM_HOSTS["preview-bizery"].includes(normalized as never)
+  );
+}
+
 export function isClientsPortalMode(mode: PlatformMode): boolean {
   return mode === "clients";
 }

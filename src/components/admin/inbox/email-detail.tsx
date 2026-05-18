@@ -23,8 +23,8 @@ function fmtDate(iso: string) {
 }
 
 const BRAND_BADGE: Record<string, string> = {
-  menuary: "bg-red-100 text-red-700",
-  bizery:  "bg-blue-100 text-blue-700",
+  menuary: "bg-[#a95f45]/12 text-[#743d2f]",
+  bizery:  "bg-[#3b6cb5]/12 text-[#234a85]",
 };
 
 export function EmailDetail({ email, onClose, onMutated }: Props) {

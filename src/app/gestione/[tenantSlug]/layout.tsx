@@ -9,7 +9,8 @@ import { GestioneLoginGate } from "@/components/gestione/gestione-login-gate";
 import { PortalSwitcher } from "@/components/portal-switcher/portal-switcher";
 import type { EmployeeRole } from "@/lib/store-roles";
 import { fetchLocations, fetchStaffAllowedLocationIds, filterAllowedLocations } from "@/lib/location";
-import { getPlatformModeFromHost } from "@/lib/platform";
+import { getPlatformModeFromHost, isDemoHost } from "@/lib/platform";
+import { DemoModeInstaller } from "@/components/gestione/demo-mode-installer";
 import { resolveSessionCookieDomain, usesSharedMenuarySession } from "@/lib/session-cookie-domain";
 import type { LoginFrom } from "@/lib/login-url";
 import { getGestioneBaseHref } from "@/lib/gestione-routing";
@@ -39,6 +40,7 @@ export default async function GestioneLayout({ children, params }: Props) {
 
   const host = (await headers()).get("host") ?? "";
   const mode = getPlatformModeFromHost(host);
+  const isDemo = isDemoHost(host);
   const isDemoGestione =
     host === "demo.menuary.it" || host === "demo.menuary.localhost";
   const loginFrom: LoginFrom =
@@ -55,9 +57,11 @@ export default async function GestioneLayout({ children, params }: Props) {
   // Menuary: cookie condiviso su .menuary.it (redirect-based login).
   const cookieDomain = resolveSessionCookieDomain(host);
   const supabase = await createSupabaseServerClient(cookieDomain);
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = isDemo
+    ? { data: { user: null } }
+    : await supabase.auth.getUser();
 
-  if (!user) {
+  if (!user && !isDemo) {
     if (usesPopupLogin) {
       // Cross-domain: non si può fare redirect + aspettarsi il cookie .bizery.it.
       // Mostriamo il login gate client-side che apre il popup su login.menuary.it.
@@ -85,16 +89,23 @@ export default async function GestioneLayout({ children, params }: Props) {
     redirect(`https://login.menuary.it?from=${encodeURIComponent(loginFrom)}&next=${next}`);
   }
 
-  const [{ data: sa }, { data: ta }, { data: emp }, adminUserRow] = await Promise.all([
-    supabase.from("siteadmin").select("role").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
-    supabase.from("tenantadmin").select("email, display_name").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
-    supabase.from("employee").select("email, display_name, role, permissions").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
-    supabase.from("admin_users").select("id").eq("auth_user_id", user.id).eq("tenant_id", tenantSlug).maybeSingle(),
-  ]);
+  const [{ data: sa }, { data: ta }, { data: emp }, adminUserRow] = isDemo
+    ? [
+        { data: null as null },
+        { data: null as null },
+        { data: null as null },
+        { data: null as null },
+      ]
+    : await Promise.all([
+        supabase.from("siteadmin").select("role").eq("user_id", user!.id).eq("enabled", true).maybeSingle(),
+        supabase.from("tenantadmin").select("email, display_name").eq("user_id", user!.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
+        supabase.from("employee").select("email, display_name, role, permissions").eq("user_id", user!.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
+        supabase.from("admin_users").select("id").eq("auth_user_id", user!.id).eq("tenant_id", tenantSlug).maybeSingle(),
+      ]);
 
-  const isSiteadmin = !!sa;
-  const isTenantAdmin = !!ta;
-  const hasAccess = isSiteadmin || isTenantAdmin || !!emp;
+  const isSiteadmin = isDemo || !!sa;
+  const isTenantAdmin = isDemo || !!ta;
+  const hasAccess = isDemo || isSiteadmin || isTenantAdmin || !!emp;
 
   if (!hasAccess) {
     if (usesPopupLogin) {
@@ -124,9 +135,12 @@ export default async function GestioneLayout({ children, params }: Props) {
   const navBaseHref = getGestioneBaseHref(host, tenant);
 
   // Sedi: solo se il tenant ha multiLocation abilitato.
-  const allLocations = tenant.features.multiLocation
-    ? await fetchLocations(supabase, tenantSlug)
-    : [];
+  // Su demo non interroghiamo il DB: l'idratazione avviene client-side da localStorage.
+  const allLocations = isDemo
+    ? []
+    : tenant.features.multiLocation
+      ? await fetchLocations(supabase, tenantSlug)
+      : [];
 
   // Staff con restrizioni di sede vede solo le sedi assegnate.
   // Admin (isTenantAdmin) vede sempre tutto.
@@ -159,8 +173,8 @@ export default async function GestioneLayout({ children, params }: Props) {
           features: tenant.features,
         }}
         currentUser={{
-          email: ta?.email ?? emp?.email ?? user.email ?? "",
-          displayName: ta?.display_name ?? emp?.display_name ?? null,
+          email: ta?.email ?? emp?.email ?? user?.email ?? (isDemo ? "demo@menuary.it" : ""),
+          displayName: ta?.display_name ?? emp?.display_name ?? (isDemo ? "Demo" : null),
           role: (emp?.role as EmployeeRole | null) ?? null,
           permissions: (emp?.permissions as Record<string, boolean>) ?? {},
           isTenantAdmin: isTenantAdmin || isSiteadmin,
@@ -171,7 +185,8 @@ export default async function GestioneLayout({ children, params }: Props) {
       >
         {children}
       </GestioneShell>
-      <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />
+      {!isDemo && <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />}
+      {isDemo && <DemoModeInstaller tenantId={tenantSlug} />}
     </div>
   );
 }

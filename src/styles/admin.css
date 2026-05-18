@@ -408,4 +408,89 @@
     font-weight: 700;
   }
   .ga-pill-link:hover { color: var(--ga-ink); border-color: var(--ga-accent-ring); }
+
+  /* ============================================================
+     Menuary admin — Inbox / pagine contenuto
+     Token --ma-* mappati sulla palette Menuary (paper + rame).
+     Scoped a platform-admin per non sporcare gli altri tenant.
+     ============================================================ */
+  html[data-platform="platform-admin"] {
+    --ma-paper:   #fffaf2;
+    --ma-surface: #f3efe7;
+    --ma-line:    rgba(24, 35, 31, 0.12);
+    --ma-ink:     #18231f;
+    --ma-muted:   rgba(24, 35, 31, 0.58);
+    --ma-accent:  #a95f45;
+    --ma-accent-dark: #743d2f;
+  }
+
+  .menuary-admin-page-title {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--menuary-ink);
+  }
+  .menuary-admin-page-subtitle {
+    margin-top: 4px;
+    color: rgba(24, 35, 31, 0.6);
+    font-size: 0.875rem;
+  }
+
+  .menuary-admin-card {
+    background: #fffaf2;
+    border: 1px solid var(--menuary-line);
+    border-radius: 16px;
+    box-shadow:
+      0 1px 0 rgba(24, 35, 31, 0.04),
+      0 8px 24px -16px rgba(24, 35, 31, 0.18);
+  }
+
+  .menuary-admin-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    background: var(--menuary-copper);
+    color: #fffaf2;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    border: 1px solid transparent;
+    transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    cursor: pointer;
+  }
+  .menuary-admin-action-btn:hover:not(:disabled) {
+    background: var(--menuary-copper-dark);
+  }
+  .menuary-admin-action-btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .menuary-admin-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Tasti compatti della toolbar inbox: ereditano il nome .menuary-admin-nav-link
+     (definito per la sidebar scura) ma vivono su fondo chiaro. */
+  .menuary-admin-card .menuary-admin-nav-link {
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgba(24, 35, 31, 0.62);
+    background: transparent;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+  .menuary-admin-card .menuary-admin-nav-link:hover {
+    background: rgba(24, 35, 31, 0.06);
+    color: var(--menuary-ink);
+  }
+  .menuary-admin-card .menuary-admin-nav-link:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }

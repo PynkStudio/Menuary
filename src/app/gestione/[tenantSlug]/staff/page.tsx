@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { GestioneStaffManager } from "@/components/gestione/gestione-staff-manager";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
+import { isDemoHost } from "@/lib/platform";
 import { TENANTS } from "@/lib/tenant-registry";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 
@@ -16,16 +17,20 @@ export default async function StaffPage({
   if (!tenant || !getGestioneModuleAccess(tenant.features).canManageStaff) notFound();
 
   const host = (await headers()).get("host");
+  const demo = isDemoHost(host);
   const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);
-
-  const { data: staff } = await supabase
-    .from("employee")
-    .select("id, email, role, display_name, permissions, enabled, created_at")
-    .eq("tenant_id", tenantSlug)
-    .order("created_at", { ascending: true });
+  const staff = await (async () => {
+    if (demo) return [] as Array<{ id: string; email: string; role: string; display_name: string | null; permissions: unknown; enabled: boolean }>;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) redirect(`https://login.menuary.it?from=gestione.${tenantSlug}`);
+    const { data } = await supabase
+      .from("employee")
+      .select("id, email, role, display_name, permissions, enabled, created_at")
+      .eq("tenant_id", tenantSlug)
+      .order("created_at", { ascending: true });
+    return data ?? [];
+  })();
 
   return (
     <div>
@@ -42,7 +47,7 @@ export default async function StaffPage({
       <div className="mt-8">
         <GestioneStaffManager
           tenantSlug={tenantSlug}
-          initialStaff={(staff ?? []).map((row) => ({
+          initialStaff={staff.map((row) => ({
             id: row.id,
             email: row.email,
             role: row.role,

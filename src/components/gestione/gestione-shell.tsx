@@ -68,7 +68,7 @@ export function GestioneShell({
   }
 
   const cap = getEffectiveCapabilities(
-    currentUser.role ?? "personale_cucina",
+    currentUser.isTenantAdmin ? null : (currentUser.role ?? "personale_cucina"),
     currentUser.permissions,
   );
   const access = getGestioneModuleAccess(tenant.features);

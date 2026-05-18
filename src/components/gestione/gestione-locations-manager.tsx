@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MapPin, Plus, Pencil, Trash2, Star, Check, X } from "lucide-react";
 import type { TenantLocation, LocationRoutingMode } from "@/lib/tenant";
+import { isDemoBrowser, readDemoLocations } from "@/lib/demo-mode";
 
 interface Props {
   tenantId: string;
@@ -28,6 +29,27 @@ const emptyForm = {
 
 export function GestioneLocationsManager({ tenantId, initialLocations, multiLocationEnabled }: Props) {
   const [locations, setLocations] = useState(initialLocations);
+
+  // Su demo idratiamo le sedi da localStorage al mount: il layout server
+  // non interroga Supabase quindi initialLocations è sempre [].
+  useEffect(() => {
+    if (!isDemoBrowser()) return;
+    const persisted = readDemoLocations(tenantId);
+    if (persisted.length === 0) return;
+    setLocations(persisted.map((l) => ({
+      id: l.id,
+      tenantId: l.tenant_id,
+      name: l.name,
+      slug: l.slug,
+      address: l.address,
+      city: l.city,
+      phone: l.phone,
+      email: l.email,
+      isDefault: l.is_default,
+      routingMode: l.routing_mode,
+    })));
+  }, [tenantId]);
+
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
