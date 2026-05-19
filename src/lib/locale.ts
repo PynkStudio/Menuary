@@ -1,8 +1,17 @@
-const LOCALE_COOKIE = "NEXT_LOCALE";
+export type { AppLocale } from "@/i18n/locales";
+export {
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  LOCALE_COOKIE,
+  isAppLocale,
+} from "@/i18n/locales";
 
-export type AppLocale = "it" | "en";
+import { isAppLocale, DEFAULT_LOCALE, LOCALE_COOKIE } from "@/i18n/locales";
+import type { AppLocale } from "@/i18n/locales";
 
-export function readLocaleFromCookies(getCookie: (name: string) => string | undefined): AppLocale {
+export function readLocaleFromCookies(
+  getCookie: (name: string) => string | undefined,
+): AppLocale {
   const v = getCookie(LOCALE_COOKIE);
-  return v === "en" ? "en" : "it";
+  return isAppLocale(v) ? v : DEFAULT_LOCALE;
 }

@@ -13,6 +13,7 @@ import { ServicesHero } from "@/components/tenants/_shared/services-hero";
 import { ServicesCategories } from "@/components/tenants/_shared/services-categories";
 import { ServicesContact } from "@/components/tenants/_shared/services-contact";
 import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home";
+import { LibritechHomePage } from "@/components/tenants/libritech/pages/home";
 import { Footer } from "@/components/tenant-shell/footer";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
@@ -34,7 +35,9 @@ export async function generateMetadata({
   const title =
     tenant.id === "officinakam"
       ? "Officina KAM - Meccanica di precisione"
-      : isServices
+      : tenant.id === "libritech"
+        ? "LibriTech - Tech & Startup Books"
+        : isServices
         ? `${tenant.name} - servizi, appuntamenti e listino prezzi`
         : tenant.id === "faak"
           ? `${tenant.name} - cibo e vino a ribellione naturale`
@@ -90,6 +93,8 @@ export default async function PreviewTenantHome({
         >
           {tenant.id === "officinakam" ? (
             <OfficinaKamHomePage />
+          ) : tenant.id === "libritech" ? (
+            <LibritechHomePage />
           ) : (
             <>
               <ServicesHero />

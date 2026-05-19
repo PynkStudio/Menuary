@@ -85,6 +85,20 @@ function extractMessageId(headers: ResendInboundHeader[]): string | null {
 
 // ─── Handler inbound email ────────────────────────────────────────────────────
 
+// Estrae il corpo HTML da un payload Resend, provando più varianti di campo.
+// Resend ha usato nomi diversi nel tempo (html / html_body / body_html).
+function extractHtmlBody(p: Record<string, unknown>): string | null {
+  const v = p.html ?? p.html_body ?? p.body_html ?? p.body ?? null;
+  if (typeof v === "string" && v.trim()) return v;
+  return null;
+}
+
+function extractTextBody(p: Record<string, unknown>): string | null {
+  const v = p.text ?? p.text_body ?? p.body_text ?? p.plain ?? p.plain_text ?? null;
+  if (typeof v === "string" && v.trim()) return v;
+  return null;
+}
+
 async function handleInbound(
   payload: ResendInboundPayload,
   svc: NonNullable<ReturnType<typeof createSupabaseServiceClient>>,
@@ -94,10 +108,22 @@ async function handleInbound(
     return NextResponse.json({ error: "Campi from/to mancanti." }, { status: 400 });
   }
 
-  const brand    = detectBrandFromRecipients(toAddresses);
+  const raw = payload as unknown as Record<string, unknown>;
+
+  // Log per diagnosticare il payload reale di Resend (rimuovere dopo verifica)
+  console.log("[webhook:inbound] keys:", Object.keys(raw).join(", "));
+  console.log("[webhook:inbound] html present:", "html" in raw, "| text present:", "text" in raw);
+  console.log("[webhook:inbound] html_body present:", "html_body" in raw, "| text_body present:", "text_body" in raw);
+
+  const brand      = detectBrandFromRecipients(toAddresses);
   const { name: fromName, address: fromAddress } = parseEmailAddress(payload.from);
-  const headers  = normalizeHeaders(payload.headers);
-  const messageId = extractMessageId(headers);
+  const headers    = normalizeHeaders(payload.headers);
+  const messageId  = extractMessageId(headers);
+  const htmlBody   = extractHtmlBody(raw);
+  const textBody   = extractTextBody(raw);
+
+  console.log("[webhook:inbound] html_body salvato:", htmlBody ? `${htmlBody.length} chars` : "null");
+  console.log("[webhook:inbound] text_body salvato:", textBody ? `${textBody.length} chars` : "null");
 
   const { error } = await svc.from("inbound_emails").insert({
     message_id:   messageId,
@@ -105,8 +131,8 @@ async function handleInbound(
     from_name:    fromName,
     to_addresses: toAddresses,
     subject:      payload.subject ?? "(nessun oggetto)",
-    text_body:    payload.text ?? null,
-    html_body:    payload.html ?? null,
+    text_body:    textBody,
+    html_body:    htmlBody,
     headers:      headers as unknown as never,
     attachments:  (payload.attachments ?? []) as unknown as never,
     brand,

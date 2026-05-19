@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import type { messages as itMessages } from "@/i18n/messages/it";
+
+type LeadFormT = typeof itMessages["marketing"]["leadForm"];
 
 type FormStatus =
   | { type: "idle" }
@@ -8,7 +11,7 @@ type FormStatus =
   | { type: "success" }
   | { type: "error"; message: string };
 
-export function MarketingLeadForm() {
+export function MarketingLeadForm({ t }: { t: LeadFormT }) {
   const [status, setStatus] = useState<FormStatus>({ type: "idle" });
 
   async function submit(formData: FormData) {
@@ -21,7 +24,7 @@ export function MarketingLeadForm() {
     }).catch(() => null);
 
     if (!response) {
-      setStatus({ type: "error", message: "Connessione non disponibile." });
+      setStatus({ type: "error", message: t.errorConnection });
       return;
     }
 
@@ -32,7 +35,7 @@ export function MarketingLeadForm() {
     if (!response.ok || !data?.ok) {
       setStatus({
         type: "error",
-        message: data?.error ?? "Invio non riuscito.",
+        message: data?.error ?? t.errorDefault,
       });
       return;
     }
@@ -47,36 +50,36 @@ export function MarketingLeadForm() {
     >
       <div className="rounded-[calc(2rem-1px)] bg-[var(--menuary-ink)] p-5 text-[var(--menuary-paper)] sm:p-7">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Nome">
+          <Field label={t.name}>
             <input name="name" required autoComplete="name" />
           </Field>
-          <Field label="Ristorante">
+          <Field label={t.restaurant}>
             <input name="restaurantName" required />
           </Field>
-          <Field label="Email">
+          <Field label={t.email}>
             <input name="email" type="email" required autoComplete="email" />
           </Field>
-          <Field label="Telefono">
+          <Field label={t.phone}>
             <input name="phone" autoComplete="tel" />
           </Field>
-          <Field label="Citta">
+          <Field label={t.city}>
             <input name="city" />
           </Field>
-          <Field label="Interesse">
+          <Field label={t.interest}>
             <select name="interest" defaultValue="demo">
-              <option value="demo">Capire come sarebbe il mio sito</option>
-              <option value="new-site">Nuovo sito per il ristorante</option>
-              <option value="migration">Rifacimento sito esistente</option>
-              <option value="modules">Menu, prenotazioni, ordini o QR</option>
+              <option value="demo">{t.interestDemo}</option>
+              <option value="new-site">{t.interestNewSite}</option>
+              <option value="migration">{t.interestMigration}</option>
+              <option value="modules">{t.interestModules}</option>
             </select>
           </Field>
         </div>
 
-        <Field label="Obiettivo" full>
+        <Field label={t.message} full>
           <textarea
             name="message"
             rows={5}
-            placeholder="Che tipo di locale hai, cosa vuoi comunicare meglio e quali servizi vorresti gestire online?"
+            placeholder={t.messagePlaceholder}
           />
         </Field>
 
@@ -89,15 +92,13 @@ export function MarketingLeadForm() {
         />
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-white/58">
-            Ti rispondiamo con un&apos;idea concreta per il tuo ristorante.
-          </p>
+          <p className="text-sm text-white/58">{t.tagline}</p>
           <button
             type="submit"
             disabled={status.type === "sending" || status.type === "success"}
             className="menuary-button menuary-button-accent disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {status.type === "success" ? "Richiesta inviata" : "Invia richiesta"}
+            {status.type === "success" ? t.success : t.submit}
           </button>
         </div>
 
@@ -108,7 +109,7 @@ export function MarketingLeadForm() {
         )}
         {status.type === "success" && (
           <p className="mt-4 rounded-2xl bg-emerald-400/15 px-4 py-3 text-sm font-semibold text-emerald-100 ring-1 ring-emerald-300/20">
-            Richiesta ricevuta. Ti ricontatteremo con una proposta pensata per il tuo locale.
+            {t.successMsg}
           </p>
         )}
       </div>
@@ -122,9 +123,7 @@ function Field({
   full,
 }: {
   label: string;
-  children: React.ReactElement<{
-    className?: string;
-  }>;
+  children: React.ReactElement<{ className?: string }>;
   full?: boolean;
 }) {
   return (

@@ -12,7 +12,35 @@ export const DEFAULT_SERVICES_TENANT_ID = "bizery-demo";
 export const DEFAULT_TENANT_ID = DEFAULT_FOOD_TENANT_ID;
 
 /** Be Pork: stack demo/produzione con tutti i moduli piattaforma attivi (nei limiti dell’implementazione). */
-export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = allTenantFeatures(true);
+export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = { ...allTenantFeatures(true), shop: false, slabbby: false };
+
+/** LibriTech: libreria tech/startup demo su verticale services. */
+export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: true,        // "Catalogo libri"
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: false,
+  tablePlanner: false,
+  productAvailability: true,
+  upselling: false,
+  crm: false,
+  analytics: true,
+  takeawaySlots: false,
+  deliveryHub: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: false,
+  multiLocation: false,
+  favorites: true,
+  reviews: true,
+  gallery: false,
+  shop: true,
+  slabbby: true,
+};
 
 /** Officina KAM: primo tenant reale Bizery — officina auto e moto. */
 export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
@@ -38,6 +66,8 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   favorites: false,
   reviews: true,
   gallery: true,
+  shop: false,
+  slabbby: true,
 };
 
 /** Bizery demo: moduli appropriati per il verticale services (no food-specific). */
@@ -64,6 +94,8 @@ export const BIZERY_DEMO_MODULE_FLAGS: TenantFeatureFlags = {
   favorites: true,
   reviews: true,
   gallery: true,
+  shop: false,
+  slabbby: true,
 };
 
 export const TENANTS: TenantProfile[] = [
@@ -112,7 +144,7 @@ export const TENANTS: TenantProfile[] = [
       green: "#2E4560",
       pink: "#CD562F",
     },
-    features: allTenantFeatures(true),
+    features: { ...allTenantFeatures(true), shop: false, slabbby: false },
   },
 
   // ── Verticale services (Bizery — bizery.it) ──────────────────────────────
@@ -139,6 +171,31 @@ export const TENANTS: TenantProfile[] = [
     },
     features: BIZERY_DEMO_MODULE_FLAGS,
   },
+  // ── Tenant Bizery demo aggiuntivi ───────────────────────────────────────────
+  {
+    id: "libritech",
+    name: "LibriTech",
+    label: "Demo · LibriTech",
+    vertical: "services",
+    domains: [],
+    previewSlug: "libritech",
+    enabled: true,
+    status: "trial",
+    theme: {
+      red: "#6c47ff",
+      redDark: "#5335cc",
+      peach: "#ede9ff",
+      cream: "#fafaf8",
+      ink: "#1a1433",
+      brick: "#2a2350",
+      mustard: "#f5a524",
+      mustardSoft: "#fdd976",
+      green: "#22c55e",
+      pink: "#e63946",
+    },
+    features: LIBRITECH_MODULE_FLAGS,
+  },
+
   // ── Tenant Bizery reali ──────────────────────────────────────────────────────
   {
     id: "officinakam",

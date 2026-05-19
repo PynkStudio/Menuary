@@ -5,7 +5,8 @@ export type TenantModuleCategory =
   | "Ordini"
   | "Operatività"
   | "Crescita"
-  | "Gestione";
+  | "Gestione"
+  | "Integrazioni";
 
 // Copy alternativo per vertical diversi dal default ("food").
 // Se non specificato per un vertical, si usano label e description di default.
@@ -54,6 +55,19 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
       services: {
         label: "Listino prezzi",
         description: "Pubblica servizi, prezzi, disponibilità, foto e cataloghi consultabili da sito e QR.",
+      },
+    },
+  },
+  {
+    key: "shop",
+    label: "Shop online",
+    description: "Abilita carrello, checkout e pagamento online sul catalogo prodotti.",
+    category: "Ordini",
+    requires: ["onlineMenu"],
+    verticalCopy: {
+      services: {
+        label: "Shop online",
+        description: "Abilita carrello, checkout e pagamento online sul listino servizi e prodotti.",
       },
     },
   },
@@ -311,6 +325,13 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
       },
     },
   },
+  {
+    key: "slabbby",
+    label: "Slabbby",
+    description: "Wishlist multisito: permette ai clienti di salvare prodotti del catalogo su una lista desideri personale.",
+    category: "Integrazioni",
+    requires: ["shop"],
+  },
 ];
 
 export const TENANT_MODULE_CATEGORIES: TenantModuleCategory[] = [
@@ -319,6 +340,7 @@ export const TENANT_MODULE_CATEGORIES: TenantModuleCategory[] = [
   "Operatività",
   "Crescita",
   "Gestione",
+  "Integrazioni",
 ];
 
 export const TENANT_MODULE_BY_KEY = Object.fromEntries(

@@ -16,6 +16,48 @@ import {
   resolveTenantFromPreviewSlug,
 } from "@/lib/tenant-runtime";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
+import {
+  SUPPORTED_LOCALES,
+  DEFAULT_LOCALE,
+  LOCALE_HEADER,
+  LOCALE_COOKIE,
+  isAppLocale,
+  detectLocaleFromAcceptLanguage,
+  type AppLocale,
+} from "@/i18n/locales";
+
+const LOCALE_SET = new Set<string>(SUPPORTED_LOCALES);
+
+function extractLocaleFromPath(pathname: string): { locale: AppLocale | null; rest: string } {
+  const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
+  if (match && LOCALE_SET.has(match[1])) {
+    return { locale: match[1] as AppLocale, rest: match[2] ?? "/" };
+  }
+  return { locale: null, rest: pathname };
+}
+
+function detectLocaleFromRequest(request: NextRequest): AppLocale {
+  const cookie = request.cookies.get(LOCALE_COOKIE)?.value;
+  if (isAppLocale(cookie)) return cookie;
+  return detectLocaleFromAcceptLanguage(request.headers.get("accept-language"));
+}
+
+function localeRedirect(request: NextRequest, locale: AppLocale, rest: string): NextResponse {
+  const url = request.nextUrl.clone();
+  url.pathname = `/${locale}${rest === "/" ? "" : rest}`;
+  const res = NextResponse.redirect(url, 302);
+  res.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  return res;
+}
+
+function rewriteWithLocale(request: NextRequest, targetPath: string, locale: AppLocale): NextResponse {
+  const url = request.nextUrl.clone();
+  url.pathname = targetPath;
+  const res = NextResponse.rewrite(url);
+  res.headers.set(LOCALE_HEADER, locale);
+  res.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  return res;
+}
 
 /** Portale clienti B2C — path pubblici */
 const CLIENTS_PATHS = new Set([
@@ -271,14 +313,25 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // ── Marketing Menuary (menuary.it) ────────────────────────────────────────
+  if (mode === "marketing") {
+    const { locale, rest } = extractLocaleFromPath(pathname);
+    if (locale) {
+      return rewriteWithLocale(request, rest, locale);
+    }
+    const detected = detectLocaleFromRequest(request);
+    return localeRedirect(request, detected, pathname);
+  }
+
   // ── Marketing Bizery (bizery.it) ─────────────────────────────────────────
   if (mode === "marketing-bizery") {
-    if (!pathname.startsWith("/bizery")) {
-      const rewritten = request.nextUrl.clone();
-      rewritten.pathname = "/bizery" + (pathname === "/" ? "" : pathname);
-      return NextResponse.rewrite(rewritten);
+    const { locale, rest } = extractLocaleFromPath(pathname);
+    if (locale) {
+      const bizeryPath = "/bizery" + (rest === "/" ? "" : rest);
+      return rewriteWithLocale(request, bizeryPath, locale);
     }
-    return NextResponse.next();
+    const detected = detectLocaleFromRequest(request);
+    return localeRedirect(request, detected, pathname);
   }
 
   // ── Studio (deprecato) → reindirizza tutto su gestione.menuary.it ──────

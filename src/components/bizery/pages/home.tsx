@@ -19,145 +19,20 @@ import {
 import { BizeryShell } from "@/components/bizery/bizery-shell";
 import { BIZERY_PRICING_PLANS, AI_ADDON, annualSaving } from "@/lib/platform-pricing";
 import { getMarketingHomeData } from "@/lib/marketing-data";
+import { getTranslations } from "@/i18n";
 
-// ─── Dati statici ─────────────────────────────────────────────────────────────
-
-const GOOGLE_SYNC_CARDS: {
-  icon: typeof Star;
-  title: string;
-  body: string;
-  note?: string;
-}[] = [
-  {
-    icon: Star,
-    title: "Recensioni sincronizzate",
-    body: "Le recensioni Google vengono aggiornate automaticamente sul sito.",
-    note: "Aggiornamento periodico automatico.",
-  },
-  {
-    icon: Clock,
-    title: "Orari sempre corretti",
-    body: "Aggiorna orari di apertura, chiusure e festività da un solo posto.",
-  },
-  {
-    icon: Megaphone,
-    title: "Novità e promozioni",
-    body: "Pubblica aggiornamenti e offerte direttamente sulla tua scheda Google.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Meno errori, meno chiamate",
-    body: "Evita clienti che trovano informazioni sbagliate online.",
-  },
-];
-
-const BENEFIT_CARDS: { n: string; title: string; body: string }[] = [
-  {
-    n: "01",
-    title: "Sito professionale",
-    body: "Responsive, veloce e progettato per valorizzare il tuo studio.",
-  },
-  {
-    n: "02",
-    title: "Appuntamenti semplici",
-    body: "Gestisci richieste e prenotazioni senza caos, via web o WhatsApp.",
-  },
-  {
-    n: "03",
-    title: "Google Maps integrato",
-    body: "Orari, recensioni e informazioni aggiornati da un unico pannello.",
-  },
-  {
-    n: "04",
-    title: "Strumenti operativi",
-    body: "CRM, analytics e gestione staff. Tutto integrato, niente plugin.",
-  },
-];
-
-const AI_CAPABILITIES: {
-  icon: typeof PhoneCall;
-  title: string;
-  body: string;
-  badge: string;
-}[] = [
-  {
-    icon: PhoneCall,
-    title: "Inbound vocale H24",
-    body: "Risponde a qualsiasi ora con italiano naturale. Fissa, sposta o cancella un appuntamento mentre parla, senza mettere il cliente in attesa.",
-    badge: "Telefono in",
-  },
-  {
-    icon: MessageCircle,
-    title: "WhatsApp inbound",
-    body: "Risponde 24/7 ai messaggi: propone slot, conferma servizio e durata, gestisce richieste di modifica o cancellazione.",
-    badge: "WhatsApp in",
-  },
-  {
-    icon: Send,
-    title: "Promemoria & recall",
-    body: "Sequenze automatiche su WhatsApp, SMS ed email. Il cliente può rispondere e spostare l'appuntamento in chat — senza chiamarti.",
-    badge: "Outbound",
-  },
-  {
-    icon: Bell,
-    title: "Conferme automatiche",
-    body: "Logica configurabile per servizio: 24h prima, 2h prima, conferma con un tap. Tasso di no-show ridotto in media del 60–70%.",
-    badge: "Reminder",
-  },
-  {
-    icon: CalendarClock,
-    title: "Riprogrammazione",
-    body: "Se il cliente non può venire, l'IA propone subito un nuovo slot. Tu vedi solo il risultato aggiornato in agenda.",
-    badge: "Reschedule",
-  },
-  {
-    icon: Phone,
-    title: "Cloning vocale",
-    body: "L'IA risponde con una voce coerente al tuo brand — clonata in modo etico. Continuità di identità anche al telefono.",
-    badge: "Voice ID",
-  },
-];
-
-const FAQ = [
-  {
-    q: "A cosa serve un sito per uno studio professionale nel 2026?",
-    a: "Serve a controllare come vieni trovato e percepito, prima ancora che il cliente chiami. Google Maps, recensioni, orari aggiornati, appuntamenti online: chi non gestisce questi punti lascia spazio ai concorrenti. Un sito professionale è la prima sala d'attesa del tuo studio.",
-  },
-  {
-    q: "Non basta un profilo LinkedIn o Instagram?",
-    a: "No. LinkedIn e Instagram non gestiscono appuntamenti, non appaiono nelle ricerche Google Maps e non sono tuoi — l'algoritmo può cambiare, il profilo può essere sospeso. Il sito è un asset che possiedi, che si accumula nel tempo e che Google indicizza.",
-  },
-  {
-    q: "Come funziona l'IA al telefono?",
-    a: "L'assistente risponde 24/7 con la voce e il tono dello studio. Fissa, sposta e cancella appuntamenti direttamente in agenda, gestisce richieste fuori orario, manda promemoria automatici su WhatsApp e SMS. Supporta cloning vocale e parla in 5 lingue. Disponibile dal piano Appuntamenti.",
-  },
-  {
-    q: "Quanto tempo serve per andare online?",
-    a: "Entro 7 giorni dalla firma del contratto. La configurazione iniziale — onboarding, design, personalizzazione — avviene prima, in media 2–4 settimane.",
-  },
-  {
-    q: "Il contratto è annuale?",
-    a: "Sì, con pagamento anticipato di 12 mesi. Il rinnovo automatico si può disdire con 30 giorni di preavviso; il contratto scade al termine del periodo pagato. Upgrade attivo immediatamente; downgrade dal rinnovo successivo.",
-  },
-  {
-    q: "Ci sono commissioni su prenotazioni?",
-    a: "Zero. Bizery non trattiene nulla sulle tue prenotazioni o transazioni. Quello che incassi è tuo, integrale.",
-  },
-  {
-    q: "Posso aggiornare il sito da solo?",
-    a: "Sì. Listino, orari, foto, eventi: tutto si aggiorna dal pannello senza toccare il codice, anche dallo smartphone tra un appuntamento e l'altro.",
-  },
-  {
-    q: "Il sito è disponibile in più lingue?",
-    a: "Sì. Ogni sito viene realizzato in versione multilingua di default, coprendo le principali lingue europee: italiano, inglese, francese, tedesco e spagnolo. Su richiesta è possibile aggiungere altre lingue in base all'utenza tipica dello studio — ad esempio russo, arabo, cinese o giapponese. Il costo delle lingue aggiuntive viene concordato in fase di preventivo.",
-  },
-];
-
-// ─── Componente ───────────────────────────────────────────────────────────────
+const AI_ICONS: Record<string, typeof PhoneCall> = {
+  "Telefono in": PhoneCall,
+  "WhatsApp in": MessageCircle,
+  "Outbound": Send,
+  "Reminder": Bell,
+  "Reschedule": CalendarClock,
+  "Voice ID": Phone,
+};
 
 export async function BizeryHomePage() {
-  const { testimonials, activeTenants, activeCount } =
-    await getMarketingHomeData("services");
+  const { testimonials, activeTenants, activeCount } = await getMarketingHomeData("services");
+  const t = (await getTranslations("bizery")).home;
 
   return (
     <BizeryShell>
@@ -174,47 +49,46 @@ export async function BizeryHomePage() {
         <div className="menuary-container relative pt-16 pb-20 lg:pt-24 lg:pb-28">
           <div className="grid items-end gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
             <div className="menuary-fade-up">
-              <p className="menuary-section-label">Per studi e aziende di servizi</p>
+              <p className="menuary-section-label">{t.heroLabel}</p>
               <h1
                 className="mt-7 text-[clamp(2.6rem,6.4vw,5.6rem)] font-medium leading-[1.05] tracking-[-0.02em] text-balance"
                 style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
               >
-                La tua attività online,
+                {t.heroH1a}
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
-                  senza complicazioni.
+                  {t.heroH1b}
                 </span>
               </h1>
               <p className="mt-8 max-w-xl text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
-                Sito professionale, appuntamenti online e gestione semplificata
-                di Google Maps e presenza digitale.
+                {t.heroSub}
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <Link href="/contatti" className="menuary-button menuary-button-accent">
-                  Richiedi una demo
+                  {t.ctaDemo}
                 </Link>
                 <Link href="#google" className="menuary-link">
-                  Come funziona
+                  {t.ctaHow}
                   <ArrowUpRight size={16} strokeWidth={1.6} />
                 </Link>
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
                 <span className="inline-flex items-center gap-2">
                   <ShieldCheck size={14} strokeWidth={1.7} className="text-[var(--menuary-sage)]" />
-                  Prima chiamata gratuita
+                  {t.badgeFreeCall}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Clock size={14} strokeWidth={1.7} className="text-[var(--menuary-copper)]" />
-                  Online in 2–4 settimane
+                  {t.badgeOnline}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Globe size={14} strokeWidth={1.7} className="text-[var(--menuary-muted)]" />
-                  Multilingua · IT EN FR DE ES +
+                  {t.badgeMultilang}
                 </span>
               </div>
             </div>
 
-            {/* Mockup composito */}
+            {/* Mockup */}
             <figure className="menuary-fade-up menuary-fade-up-d2 relative" aria-hidden>
               <div className="menuary-product-frame p-4">
                 <div className="menuary-browser-bar">
@@ -224,41 +98,31 @@ export async function BizeryHomePage() {
                 <div className="menuary-admin-preview">
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="menuary-module-tile">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Oggi</p>
-                      <p
-                        className="mt-1 text-2xl font-medium"
-                        style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                      >
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.mockupToday}</p>
+                      <p className="mt-1 text-2xl font-medium" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
                         8
-                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">appuntamenti</span>
+                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">{t.mockupAppointments}</span>
                       </p>
                     </div>
                     <div className="menuary-module-tile">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Google</p>
-                      <p
-                        className="mt-1 text-2xl font-medium"
-                        style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                      >
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.mockupGoogle}</p>
+                      <p className="mt-1 text-2xl font-medium" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
                         4,8
-                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">★ media</span>
+                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">{t.mockupAvg}</span>
                       </p>
                     </div>
                     <div className="menuary-module-tile">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Orari</p>
-                      <p
-                        className="mt-1 text-base font-medium leading-tight"
-                        style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                      >
-                        Aggiornati
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.mockupHours}</p>
+                      <p className="mt-1 text-base font-medium leading-tight" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
+                        {t.mockupUpdated}
                         <br />
-                        <span className="text-xs font-medium text-[var(--menuary-muted)]">oggi</span>
+                        <span className="text-xs font-medium text-[var(--menuary-muted)]">{t.mockupToday2}</span>
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Google Business card */}
               <div className="absolute -top-6 -right-2 hidden w-[15rem] rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.22)] sm:block">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex h-5 w-5 items-center justify-center">
@@ -269,9 +133,7 @@ export async function BizeryHomePage() {
                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
                     </svg>
                   </span>
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                    Google · scheda
-                  </p>
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.mockupGoogleCard}</p>
                 </div>
                 <div className="mt-3 flex items-center gap-1.5">
                   <div className="flex gap-0.5 text-[var(--menuary-copper)]">
@@ -281,17 +143,13 @@ export async function BizeryHomePage() {
                   </div>
                   <span className="text-sm font-semibold text-[var(--menuary-ink)]">4,8</span>
                 </div>
-                <p className="mt-2 text-xs text-[var(--menuary-muted)]">Aperto · chiude alle 19:00</p>
+                <p className="mt-2 text-xs text-[var(--menuary-muted)]">{t.mockupOpen}</p>
               </div>
 
-              {/* Mobile preview */}
               <div className="absolute -bottom-8 -left-4 hidden w-[11rem] rounded-3xl border border-[var(--menuary-line)] bg-[var(--menuary-ink)] p-3 shadow-[0_30px_70px_-24px_rgba(15,23,42,0.4)] sm:block">
                 <div className="menuary-phone-top" />
                 <div className="rounded-2xl bg-[var(--menuary-paper)] p-3 text-[var(--menuary-ink)]">
-                  <p
-                    className="text-base font-medium leading-tight"
-                    style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                  >
+                  <p className="text-base font-medium leading-tight" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
                     Studio
                     <br />
                     Legale Rossi
@@ -301,24 +159,23 @@ export async function BizeryHomePage() {
                   </p>
                   <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[var(--menuary-ink)]">
                     <CalendarCheck size={12} strokeWidth={1.8} className="text-[var(--menuary-copper)]" />
-                    Prenota un appuntamento
+                    {t.mockupBook}
                   </div>
                   <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--menuary-muted)]">
                     <Check size={11} strokeWidth={2} className="text-[var(--menuary-sage)]" />
-                    Aperto oggi
+                    {t.mockupOpenToday}
                   </div>
                 </div>
               </div>
             </figure>
           </div>
 
-          {/* Stats */}
           {activeCount > 0 && (
             <div className="mt-20 grid gap-8 sm:grid-cols-3 lg:mt-24 lg:gap-14">
               {([
-                [`+${activeCount}`, "studi attivi"],
-                ["7gg", "attivazione"],
-                ["0", "commissioni"],
+                [`+${activeCount}`, t.statsStudios],
+                ["7gg", t.statsActivation],
+                ["0", t.statsCommissions],
               ] as [string, string][]).map(([n, l]) => (
                 <div key={l} className="menuary-stat">
                   <p className="text-4xl font-medium" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>{n}</p>
@@ -330,17 +187,17 @@ export async function BizeryHomePage() {
         </div>
       </section>
 
-      {/* ── SOCIAL PROOF — studi clienti ── */}
+      {/* ── LOGOS STRIP ── */}
       {activeTenants.length > 0 && (
         <section className="border-t border-[var(--menuary-line)]">
           <div className="menuary-container py-10">
             <p className="mb-8 text-center text-xs uppercase tracking-[0.22em] text-[var(--menuary-muted)] font-bold">
-              Studi e aziende che usano Bizery
+              {t.logosLabel}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-10">
-              {activeTenants.slice(0, 6).map((t) => (
-                <p key={t.id} className="text-sm font-semibold text-[var(--menuary-ink)] opacity-50">
-                  {t.name}
+              {activeTenants.slice(0, 6).map((tenant) => (
+                <p key={tenant.id} className="text-sm font-semibold text-[var(--menuary-ink)] opacity-50">
+                  {tenant.name}
                 </p>
               ))}
             </div>
@@ -352,21 +209,23 @@ export async function BizeryHomePage() {
       <section id="google" className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
         <div className="menuary-container py-24 lg:py-32">
           <div className="max-w-3xl">
-            <p className="menuary-section-label">Integrazione Google</p>
+            <p className="menuary-section-label">{t.googleSyncLabel}</p>
             <h2
               className="mt-6 text-[clamp(2.2rem,4.8vw,4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
               style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
             >
-              Google sempre aggiornato.
+              {t.googleSyncH2}
             </h2>
             <p className="mt-6 max-w-xl text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
-              Gestisci sito, orari e presenza locale da un unico pannello.
+              {t.googleSyncSub}
             </p>
           </div>
-
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {GOOGLE_SYNC_CARDS.map((card) => {
-              const Icon = card.icon;
+            {t.googleSyncCards.map((card) => {
+              const Icon = card.title.includes("Recens") ? Star
+                : card.title.includes("Orari") ? Clock
+                : card.title.includes("Novità") || card.title.includes("News") || card.title.includes("Nouve") ? Megaphone
+                : ShieldCheck;
               return (
                 <div
                   key={card.title}
@@ -399,27 +258,25 @@ export async function BizeryHomePage() {
         <div className="menuary-container py-24 lg:py-32">
           <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
             <div>
-              <p className="menuary-section-label">Presenza locale</p>
+              <p className="menuary-section-label">{t.localLabel}</p>
               <h2
                 className="mt-6 text-[clamp(2.2rem,4.8vw,4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
                 style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
               >
-                La tua presenza online,
+                {t.localH2a}
                 <br />
-                <span className="italic text-[var(--menuary-copper)]">tutta insieme.</span>
+                <span className="italic text-[var(--menuary-copper)]">{t.localH2b}</span>
               </h2>
               <p className="mt-7 max-w-lg text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
-                Bizery collega sito, Google Maps e strumenti operativi per
-                mantenere il tuo studio aggiornato e professionale.
+                {t.localSub}
               </p>
               <Link href="/contatti" className="menuary-link mt-8 inline-flex">
-                Parla con noi
+                {t.localCta}
                 <ArrowUpRight size={14} strokeWidth={1.6} />
               </Link>
             </div>
 
             <div className="relative mx-auto w-full max-w-md">
-              {/* Google card */}
               <div className="relative z-20 rounded-2xl border border-[var(--menuary-line)] bg-white p-5 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.22)]">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-[inset_0_0_0_1px_var(--menuary-line)]">
@@ -432,7 +289,7 @@ export async function BizeryHomePage() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Google</p>
-                    <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">La tua scheda · Aperto</p>
+                    <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">{t.localGoogleOpen}</p>
                   </div>
                 </div>
                 <div className="mt-4 flex items-center gap-2">
@@ -442,35 +299,27 @@ export async function BizeryHomePage() {
                     ))}
                   </div>
                   <span className="text-sm font-semibold text-[var(--menuary-ink)]">4,8</span>
-                  <span className="text-xs text-[var(--menuary-muted)]">· aggiornato oggi</span>
+                  <span className="text-xs text-[var(--menuary-muted)]">{t.localGoogleUpdated}</span>
                 </div>
               </div>
 
-              {/* TripAdvisor */}
               <div className="relative z-10 -mt-3 ml-12 rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_20px_50px_-24px_rgba(15,23,42,0.18)]">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full">
                     <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden>
                       <circle cx="20" cy="20" r="20" fill="#00AF87" />
-                      <circle cx="13" cy="21" r="6" fill="white" />
-                      <circle cx="13" cy="21" r="3.5" fill="#00AF87" />
-                      <circle cx="13" cy="21" r="2" fill="#1A1A1A" />
-                      <circle cx="12" cy="20" r="0.7" fill="white" />
-                      <circle cx="27" cy="21" r="6" fill="white" />
-                      <circle cx="27" cy="21" r="3.5" fill="#00AF87" />
-                      <circle cx="27" cy="21" r="2" fill="#1A1A1A" />
-                      <circle cx="26" cy="20" r="0.7" fill="white" />
+                      <circle cx="13" cy="21" r="6" fill="white" /><circle cx="13" cy="21" r="3.5" fill="#00AF87" /><circle cx="13" cy="21" r="2" fill="#1A1A1A" /><circle cx="12" cy="20" r="0.7" fill="white" />
+                      <circle cx="27" cy="21" r="6" fill="white" /><circle cx="27" cy="21" r="3.5" fill="#00AF87" /><circle cx="27" cy="21" r="2" fill="#1A1A1A" /><circle cx="26" cy="20" r="0.7" fill="white" />
                       <ellipse cx="20" cy="27" rx="2.5" ry="1.5" fill="white" opacity="0.9" />
                     </svg>
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Tripadvisor</p>
-                    <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">Eccellenza · 2026</p>
+                    <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">{t.localTaExcellence}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Yelp */}
               <div className="relative z-0 -mt-3 ml-4 mr-12 rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_16px_40px_-24px_rgba(15,23,42,0.18)]">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#D32323]">
@@ -493,18 +342,18 @@ export async function BizeryHomePage() {
       <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
         <div className="menuary-container py-24 lg:py-32">
           <div className="max-w-3xl">
-            <p className="menuary-section-label">Cosa trovi dentro</p>
+            <p className="menuary-section-label">{t.benefitsLabel}</p>
             <h2
               className="mt-6 text-[clamp(2.2rem,4.8vw,4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
               style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
             >
-              Tutto quello che serve.
+              {t.benefitsH2a}
               <br />
-              <span className="italic text-[var(--menuary-copper)]">Niente di più.</span>
+              <span className="italic text-[var(--menuary-copper)]">{t.benefitsH2b}</span>
             </h2>
           </div>
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {BENEFIT_CARDS.map((card) => (
+            {t.benefitCards.map((card) => (
               <div
                 key={card.n}
                 className="flex flex-col rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--menuary-ink)]"
@@ -526,31 +375,31 @@ export async function BizeryHomePage() {
       {testimonials.length > 0 && (
         <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
           <div className="menuary-container py-24 lg:py-28">
-            <p className="menuary-section-label">Voci dei clienti · Google</p>
+            <p className="menuary-section-label">{t.testimonialsLabel}</p>
             <h2
               className="mt-6 text-[clamp(2rem,4vw,3.4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
               style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
             >
-              Lo dicono meglio loro.
+              {t.testimonialsH2}
             </h2>
             <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {testimonials.slice(0, 3).map((t) => (
+              {testimonials.slice(0, 3).map((review) => (
                 <figure
-                  key={t.id}
+                  key={review.id}
                   className="flex flex-col gap-5 border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-7 rounded-2xl"
                 >
                   <div className="flex gap-0.5 text-[var(--menuary-copper)]">
-                    {Array.from({ length: t.rating }).map((_, i) => (
+                    {Array.from({ length: review.rating }).map((_, i) => (
                       <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
                     ))}
                   </div>
                   <blockquote className="text-[15px] leading-7 text-[var(--menuary-ink)]/85">
-                    &laquo;{t.text}&raquo;
+                    &laquo;{review.text}&raquo;
                   </blockquote>
                   <figcaption className="mt-auto border-t border-[var(--menuary-line)] pt-4">
-                    <p className="text-sm font-semibold">{t.author}</p>
+                    <p className="text-sm font-semibold">{review.author}</p>
                     <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-                      {t.tenantName}{t.tenantCity ? ` · ${t.tenantCity}` : ""}
+                      {review.tenantName}{review.tenantCity ? ` · ${review.tenantCity}` : ""}
                     </p>
                   </figcaption>
                 </figure>
@@ -565,18 +414,18 @@ export async function BizeryHomePage() {
         <div className="menuary-container py-24 lg:py-28">
           <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div className="max-w-3xl">
-              <p className="menuary-section-label">Piani</p>
+              <p className="menuary-section-label">{t.pricingLabel}</p>
               <h2
                 className="mt-6 text-[clamp(2.2rem,4.8vw,4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
                 style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
               >
-                Tre piani.
+                {t.pricingH2a}
                 <br />
-                <span className="italic text-[var(--menuary-copper)]">Nessuna sorpresa.</span>
+                <span className="italic text-[var(--menuary-copper)]">{t.pricingH2b}</span>
               </h2>
             </div>
             <p className="max-w-sm text-[15px] leading-[1.6] text-[var(--menuary-muted)]">
-              Setup una tantum, canone mensile fisso. IVA esclusa. Contratto annuale.
+              {t.pricingSub}
             </p>
           </div>
 
@@ -596,10 +445,10 @@ export async function BizeryHomePage() {
                 >
                   {highlighted && (
                     <span className="absolute -top-3 left-8 inline-flex items-center rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
-                      Più scelto
+                      {t.pricingMostChosen}
                     </span>
                   )}
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Piano</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.pricingPlanLabel}</p>
                   <h3
                     className="mt-2 text-[1.9rem] font-medium leading-tight"
                     style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
@@ -607,22 +456,23 @@ export async function BizeryHomePage() {
                     {plan.marketing_name}
                   </h3>
                   <div className="mt-6 flex items-baseline gap-1">
-                    <span
-                      className="text-[3.4rem] font-medium leading-none tabular-nums"
-                      style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                    >
+                    <span className="text-[3.4rem] font-medium leading-none tabular-nums" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
                       {plan.price_annual}
                     </span>
-                    <span className="text-sm text-[var(--menuary-muted)]">€/mese</span>
+                    <span className="text-sm text-[var(--menuary-muted)]">{t.pricingPerMonth}</span>
                   </div>
                   <p className="mt-1.5 text-xs text-[var(--menuary-muted)]">
-                    Pagamento annuale anticipato
+                    {t.pricingAnnualBilling}
                     {saving > 0 && (
-                      <span className="ml-1 font-semibold text-[var(--menuary-sage)]">· risparmi €{saving}/anno</span>
+                      <span className="ml-1 font-semibold text-[var(--menuary-sage)]">
+                        · {t.pricingSavings.replace("{amount}", String(saving))}
+                      </span>
                     )}
                   </p>
                   <p className="mt-1 text-xs text-[var(--menuary-muted)]">
-                    Mensile: €{plan.price_monthly}/mese · Setup {plan.setup_from}
+                    {t.pricingMonthly
+                      .replace("{price}", String(plan.price_monthly))
+                      .replace("{setup}", plan.setup_from)}
                   </p>
                   <div className="my-7 h-px bg-[var(--menuary-line)]" />
                   <ul className="space-y-3">
@@ -641,7 +491,7 @@ export async function BizeryHomePage() {
                         (highlighted ? "menuary-button-accent" : "menuary-button-light")
                       }
                     >
-                      {plan.cta_label ?? "Richiedi proposta"}
+                      {plan.cta_label ?? t.pricingRequestProposal}
                     </Link>
                   </div>
                 </article>
@@ -650,69 +500,56 @@ export async function BizeryHomePage() {
           </div>
 
           <p className="mt-8 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-            IVA esclusa · Nessuna penale di disdetta · Attivazione entro 7 giorni
+            {t.pricingVatNote}
           </p>
 
-          {/* AI callout */}
           <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-6 sm:flex-row sm:items-center sm:gap-8">
             <div className="flex items-center gap-4 shrink-0">
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--menuary-ink)] text-[var(--menuary-paper)]">
                 <Phone size={18} strokeWidth={1.7} />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">Dal piano Appuntamenti in su</p>
-                <p
-                  className="text-lg font-medium"
-                  style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-                >
-                  IA al telefono{" "}
-                  <span className="text-[var(--menuary-copper)]">+€{AI_ADDON.monthly}/mese</span>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.pricingFromAppointments}</p>
+                <p className="text-lg font-medium" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
+                  {t.pricingAiAddon.replace("{price}", String(AI_ADDON.monthly))}
                 </p>
               </div>
             </div>
             <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">
-              Assistente vocale 24/7 che risponde con la voce dello studio, fissa e
-              sposta appuntamenti, manda promemoria. Quota minuti mensile inclusa;
-              oltre la soglia, addebiti a prezzo di costo senza markup.
+              {t.pricingAiDesc}
             </p>
             <Link href="/pricing" className="menuary-button menuary-button-light shrink-0 text-sm">
-              Scopri
+              {t.pricingDiscover}
             </Link>
           </div>
         </div>
       </section>
 
       {/* ── AI SHOWCASE ── */}
-      <section
-        id="ia"
-        className="border-t border-[var(--menuary-line)]"
-        style={{ background: "var(--menuary-ink)" }}
-      >
+      <section id="ia" className="border-t border-[var(--menuary-line)]" style={{ background: "var(--menuary-ink)" }}>
         <div className="menuary-container py-24 lg:py-32 text-[var(--menuary-paper)]">
           <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20 lg:items-end">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--menuary-copper)] font-bold">
-                Integrazione AI · add-on
+                {t.aiEyebrow}
               </p>
               <h2
                 className="mt-6 text-[clamp(2.4rem,5.4vw,4.8rem)] font-medium leading-[1.05] tracking-[-0.02em]"
                 style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
               >
-                Un assistente che
+                {t.aiH2a}
                 <br />
-                <span className="italic text-[var(--menuary-copper)]">non stacca mai.</span>
+                <span className="italic text-[var(--menuary-copper)]">{t.aiH2b}</span>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-[1.8] text-[var(--menuary-paper)]/70 lg:justify-self-end lg:text-right">
-              Risponde al telefono, scrive su WhatsApp, manda promemoria e
-              riprogramma gli appuntamenti. Lavora dentro la tua agenda,
-              parla il linguaggio dello studio, 24 ore su 24.
+              {t.aiSub}
             </p>
           </div>
 
           <div className="mt-16 grid gap-px sm:grid-cols-2 lg:grid-cols-3 bg-[var(--menuary-paper)]/10">
-            {AI_CAPABILITIES.map((c) => {
-              const Icon = c.icon;
+            {t.aiCapabilities.map((c) => {
+              const Icon = AI_ICONS[c.badge] ?? Phone;
               return (
                 <article
                   key={c.title}
@@ -737,10 +574,10 @@ export async function BizeryHomePage() {
 
           <div className="mt-16 flex flex-wrap items-center gap-4">
             <Link href="/contatti" className="menuary-button menuary-button-accent">
-              Aggiungi l&apos;IA al tuo piano
+              {t.aiCta}
             </Link>
             <Link href="/pricing" className="menuary-link menuary-link-light">
-              Vedi i piani
+              {t.aiCtaPlans}
               <ArrowUpRight size={16} strokeWidth={1.6} />
             </Link>
           </div>
@@ -751,15 +588,15 @@ export async function BizeryHomePage() {
       <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
         <div className="menuary-container py-24 lg:py-28">
           <div className="mx-auto max-w-3xl">
-            <p className="menuary-section-label">FAQ</p>
+            <p className="menuary-section-label">{t.faqKicker}</p>
             <h2
               className="mt-6 mb-12 text-[clamp(2.2rem,4vw,3.6rem)] font-medium leading-[1.05] tracking-[-0.02em]"
               style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
             >
-              Domande frequenti.
+              {t.faqH2}
             </h2>
             <div>
-              {FAQ.map((item) => (
+              {t.faqItems.map((item) => (
                 <details key={item.q} className="menuary-faq-item group">
                   <summary>
                     <span>{item.q}</span>
@@ -772,9 +609,9 @@ export async function BizeryHomePage() {
               ))}
             </div>
             <p className="mt-10 text-[14px] text-[var(--menuary-muted)]">
-              Non hai trovato quello che cercavi?{" "}
+              {t.faqNotFound}{" "}
               <Link href="/contatti" className="menuary-link">
-                Scrivici
+                {t.faqCtaLink}
                 <ArrowUpRight size={13} strokeWidth={1.8} />
               </Link>
             </p>
@@ -786,27 +623,27 @@ export async function BizeryHomePage() {
       <section className="border-t border-[var(--menuary-line)]" style={{ background: "var(--menuary-ink)" }}>
         <div className="menuary-container py-24 text-center lg:py-28">
           <p className="text-xs uppercase tracking-[0.24em] text-[var(--menuary-paper)]/40 font-bold">
-            Inizia oggi
+            {t.finalCtaLabel}
           </p>
           <h2
             className="mt-6 text-[clamp(2.6rem,6vw,5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[var(--menuary-paper)]"
             style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
           >
-            La tua attività merita
+            {t.finalCtaH2a}
             <br />
             <span className="italic text-[var(--menuary-copper)]">
-              un partner digitale concreto.
+              {t.finalCtaH2b}
             </span>
           </h2>
           <p className="mt-8 text-[16px] leading-7 text-[var(--menuary-paper)]/60 max-w-md mx-auto">
-            Prima chiamata gratuita. Proposta su misura in 48 ore. Nessun vincolo prima di firmare.
+            {t.finalCtaSub}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link href="/contatti" className="menuary-button menuary-button-accent">
-              Richiedi una demo
+              {t.finalCtaDemo}
             </Link>
             <Link href="/pricing" className="menuary-link menuary-link-light">
-              Vedi i piani
+              {t.finalCtaPlans}
               <ArrowUpRight size={16} strokeWidth={1.6} />
             </Link>
           </div>

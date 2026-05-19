@@ -21,40 +21,12 @@ import {
   TestimonialsSection,
 } from "@/components/marketing/marketing-sections";
 import { getMarketingHomeData } from "@/lib/marketing-data";
-
-const HOMEPAGE_FAQ = [
-  {
-    q: "Quanto tempo serve per andare online?",
-    a: "Per il piano Presenza, in media 2–4 settimane dalla prima chiamata al go-live. Prenotazioni richiede 3–5 settimane. Operatività 4–6 settimane.",
-  },
-  {
-    q: "Come si aggiorna Google?",
-    a: "Aggiorni orari, eventi e descrizione dal pannello Menuary. Le modifiche vengono pubblicate sulla scheda Google e propagate sul sito. Le recensioni Google vengono riportate sul sito con aggiornamento periodico automatico.",
-  },
-  {
-    q: "Posso disdire quando voglio?",
-    a: "Sì. Il canone è mensile, senza penali di disdetta. Il setup iniziale è una tantum.",
-  },
-  {
-    q: "Cosa è incluso nel canone?",
-    a: "Hosting, dominio, certificati SSL, backup, aggiornamenti tecnici, supporto e nuove funzioni della piattaforma — incluse nel canone mensile.",
-  },
-  {
-    q: "Lavorate solo a Milano o in tutta Italia?",
-    a: "Lo studio è a Milano, ma seguiamo locali in tutta Italia. La maggior parte del lavoro avviene da remoto, con sopralluoghi quando serve.",
-  },
-  {
-    q: "Posso cambiare piano in seguito?",
-    a: "Sì, in qualsiasi momento. Si parte spesso da Presenza e si attivano Prenotazioni o Operatività quando serve, senza rifare nulla.",
-  },
-  {
-    q: "Il sito è disponibile in più lingue?",
-    a: "Sì. Ogni sito viene realizzato in versione multilingua di default, coprendo le principali lingue europee: italiano, inglese, francese, tedesco e spagnolo. Su richiesta è possibile aggiungere altre lingue in base all'utenza tipica del locale — ad esempio russo, arabo, cinese o giapponese per zone ad alta frequentazione turistica internazionale. Il costo delle lingue aggiuntive viene concordato in fase di preventivo.",
-  },
-];
+import { getTranslations } from "@/i18n";
 
 export async function MarketingHomePage() {
   const { activeTenants, testimonials } = await getMarketingHomeData("food");
+  const t = await getTranslations("marketing");
+  const h = t.home;
 
   return (
     <MarketingShell>
@@ -65,28 +37,27 @@ export async function MarketingHomePage() {
           <div className="grid items-end gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
             <div className="menuary-fade-up">
               <p className="menuary-section-label">
-                Per ristoranti, bar, trattorie
+                {h.heroLabel}
               </p>
               <h1 className="menuary-display mt-7 text-[clamp(2.6rem,6.4vw,5.6rem)] text-balance">
-                Il tuo locale online,
+                {h.heroH1a}
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
-                  senza complicazioni.
+                  {h.heroH1b}
                 </span>
               </h1>
               <p className="mt-8 max-w-xl text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
-                Sito professionale, prenotazioni online e gestione semplificata
-                di Google Maps e presenza digitale.
+                {h.heroSub}
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <Link
                   href="/contatti"
                   className="menuary-button menuary-button-accent"
                 >
-                  Richiedi una demo
+                  {h.ctaDemo}
                 </Link>
                 <Link href="#esempio" className="menuary-link">
-                  Guarda un esempio
+                  {h.ctaExample}
                   <ArrowUpRight size={16} strokeWidth={1.6} />
                 </Link>
               </div>
@@ -97,7 +68,7 @@ export async function MarketingHomePage() {
                     strokeWidth={1.7}
                     className="text-[var(--menuary-sage)]"
                   />
-                  Prima chiamata gratuita
+                  {h.badgeFreeCall}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Clock
@@ -105,7 +76,7 @@ export async function MarketingHomePage() {
                     strokeWidth={1.7}
                     className="text-[var(--menuary-gold)]"
                   />
-                  Online in 2–4 settimane
+                  {h.badgeOnline}
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Globe
@@ -113,7 +84,7 @@ export async function MarketingHomePage() {
                     strokeWidth={1.7}
                     className="text-[var(--menuary-muted)]"
                   />
-                  Multilingua · IT EN FR DE ES +
+                  {h.badgeMultilang}
                 </span>
               </div>
             </div>
@@ -176,22 +147,10 @@ export async function MarketingHomePage() {
                 <div className="flex items-center gap-2">
                   <span className="inline-flex h-5 w-5 items-center justify-center">
                     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
-                      <path
-                        fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="#FBBC04"
-                        d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.99 10.99 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
-                      />
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC04" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.99 10.99 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
                     </svg>
                   </span>
                   <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
@@ -201,17 +160,10 @@ export async function MarketingHomePage() {
                 <div className="mt-3 flex items-center gap-1.5">
                   <div className="flex gap-0.5 text-[var(--menuary-copper)]">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        size={12}
-                        fill="currentColor"
-                        strokeWidth={0}
-                      />
+                      <Star key={i} size={12} fill="currentColor" strokeWidth={0} />
                     ))}
                   </div>
-                  <span className="text-sm font-semibold text-[var(--menuary-ink)]">
-                    4,7
-                  </span>
+                  <span className="text-sm font-semibold text-[var(--menuary-ink)]">4,7</span>
                 </div>
                 <p className="mt-2 text-xs text-[var(--menuary-muted)]">
                   Aperto · chiude alle 23:00
@@ -231,19 +183,11 @@ export async function MarketingHomePage() {
                     Bologna · cucina tipica
                   </p>
                   <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[var(--menuary-ink)]">
-                    <CalendarCheck
-                      size={12}
-                      strokeWidth={1.8}
-                      className="text-[var(--menuary-copper)]"
-                    />
+                    <CalendarCheck size={12} strokeWidth={1.8} className="text-[var(--menuary-copper)]" />
                     Prenota un tavolo
                   </div>
                   <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--menuary-muted)]">
-                    <Check
-                      size={11}
-                      strokeWidth={2}
-                      className="text-[var(--menuary-sage)]"
-                    />
+                    <Check size={11} strokeWidth={2} className="text-[var(--menuary-sage)]" />
                     Aperto oggi
                   </div>
                 </div>
@@ -253,31 +197,14 @@ export async function MarketingHomePage() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF — locali clienti (mostra solo se ci sono tenant attivi) */}
       <LogosStripSection tenants={activeTenants} />
-
-      {/* GOOGLE SEMPRE AGGIORNATO */}
       <GoogleSyncSection />
-
-      {/* PRESENZA LOCALE — Google, Yelp, TripAdvisor */}
       <LocalPresenceSection />
-
-      {/* BENEFICI */}
       <BenefitsEditorialSection />
-
-      {/* TESTIMONIALS — recensioni reali da Google Places (mostra solo se popolato) */}
       <TestimonialsSection reviews={testimonials} />
-
-      {/* PRICING */}
       <HomePricingSection />
-
-      {/* AI INTEGRATIONS — secondaria, opzionale */}
       <AIIntegrationsTeaserSection />
-
-      {/* FAQ */}
-      <FAQSection items={HOMEPAGE_FAQ} />
-
-      {/* FINAL CTA */}
+      <FAQSection items={[...h.faq]} />
       <FinalCTASection />
     </MarketingShell>
   );

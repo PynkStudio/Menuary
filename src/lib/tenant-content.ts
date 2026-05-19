@@ -369,6 +369,125 @@ const faakContent: TenantContent = {
   },
 };
 
+const libritechContent: TenantContent = {
+  logoSrc: "/libritech/logo.svg",
+  logoAlt: "LibriTech",
+  showcaseLogoSrc: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=900&q=80",
+  showcaseLogoAlt: "LibriTech — Tech & Startup Books",
+  description:
+    "LibriTech: libreria specializzata in tecnologia, startup e innovazione digitale. 30 titoli tra satira, strategia e tecnica per chi fa impresa.",
+  url: "https://libritech.it",
+  social: {
+    instagram: "https://www.instagram.com/libritech/",
+    facebook: "https://www.facebook.com/libritech",
+    instagramLabel: "Instagram LibriTech",
+    facebookLabel: "Facebook LibriTech",
+  },
+  contact: {
+    phone: "+39 02 1234 5678",
+    whatsappDigits: "390212345678",
+    whatsappMessage: "Ciao LibriTech! Vorrei informazioni su un libro. Grazie!",
+  },
+  address: {
+    street: "Via della Startup, 42",
+    zip: "20124",
+    city: "Milano",
+    province: "MI",
+    full: "Via della Startup, 42 - 20124 Milano (MI)",
+  },
+  maps: {
+    searchUrl: "https://www.google.com/maps/search/?api=1&query=Via+della+Startup+42+Milano",
+    embedUrl: "https://www.google.com/maps?q=Via+della+Startup+42+Milano&output=embed",
+  },
+  hero: {
+    eyebrow: "Libreria tech & startup · Milano",
+    titleLead: "Libri per chi",
+    titleAccent: "non sceglie il facile.",
+    body: "30 titoli tra satira, strategia e tecnica per founder, investitori e chiunque lavori con un foglio Excel aperto e troppe aspettative.",
+    backdrop: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1600&q=80",
+    ctaLabel: "Vai al catalogo",
+  },
+  soulsIntro: {
+    eyebrow: "Tre sezioni, una libreria",
+    titleLead: "Startup, Tecnologia",
+    titleAccent: "e Finanza.",
+    body: "Tre aree tematiche per coprire tutto quello che serve sapere — e qualcosa che è meglio scoprire prima degli altri.",
+  },
+  souls: [
+    {
+      id: "startup",
+      kicker: "Sezione Startup",
+      title: "Dai pitch alle exit",
+      desc: "Tutto il ciclo di vita di una startup raccontato senza filtri: fundraising, team, crescita e quei momenti in cui il runway finisce prima del previsto.",
+      href: "#catalogo",
+      image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=900&q=80",
+    },
+    {
+      id: "tech",
+      kicker: "Sezione Tech",
+      title: "IA, dati e algoritmi",
+      desc: "Intelligenza artificiale, machine learning e automazione spiegati a chi vuole capire davvero — senza il vocabolario da convegno.",
+      href: "#catalogo",
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80",
+    },
+    {
+      id: "finanza",
+      kicker: "Sezione Finanza",
+      title: "Soldi, metriche e KPI",
+      desc: "Cashflow, valutazioni, debito e tutto quello che sta in mezzo: libri che trasformano i numeri da nemici in alleati (o almeno in conoscenti tollerabili).",
+      href: "#catalogo",
+      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "I più venduti",
+    title: "I libri che non possiamo smettere di consigliare.",
+    subtitle: "Dalla satira all'utilità pratica: i titoli che i lettori salvano di più nella wishlist.",
+  },
+  dishes: [
+    {
+      name: "Prompt Engineering per C-Level Ansiosi",
+      desc: "Come parlare con l'IA senza aspettarsi miracoli o licenziamenti di massa.",
+      price: "€29.90",
+      image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=900&q=80",
+      variant: "red",
+      href: "#catalogo",
+    },
+    {
+      name: "Il Piccolo Manuale del Mega Round",
+      desc: "Term sheet, governance e euforia pre-scaling con il tono giusto.",
+      price: "€32.90",
+      image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=900&q=80",
+      variant: "mustard",
+      href: "#catalogo",
+    },
+    {
+      name: "Cap Table al Tramonto",
+      desc: "Tutto su quote, dilution e soci entusiasti prima del post-money.",
+      price: "€26.90",
+      image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=900&q=80",
+      variant: "green",
+      href: "#catalogo",
+    },
+  ],
+  findUs: {
+    eyebrow: "Dove siamo",
+    titleLead: "Milano,",
+    titleAccent: "Via della Startup.",
+    body: "Vieni a sfogliare il catalogo di persona. Oppure acquista online e scegli tra spedizione e ritiro in sede.",
+    mapTitle: "Mappa LibriTech",
+  },
+  footer: {
+    tagline: "Libri per chi non sceglie il facile.",
+    body: "LibriTech — libreria specializzata in tecnologia, startup e innovazione digitale. Demo tenant su piattaforma Bizery.",
+  },
+  delivery: {
+    title: "Spedizione in tutta Italia",
+    body: "Ordini online con consegna in 2-3 giorni lavorativi. Ritiro gratuito in sede a Milano.",
+    partners: [],
+  },
+};
+
 const officinakamContent: TenantContent = {
   logoSrc: "/officinakam/logo.svg",
   logoAlt: "Officina KAM",
@@ -525,6 +644,7 @@ import { findTenantById } from "./tenant-registry";
 
 export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "faak") return faakContent;
+  if (tenantId === "libritech") return libritechContent;
   if (tenantId === "officinakam") return officinakamContent;
   // Ogni tenant deve avere il proprio blocco content sopra.
   // Fallback per verticale: non restituire mai contenuto BePork per tenant services.

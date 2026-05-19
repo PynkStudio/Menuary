@@ -2,8 +2,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CLIENTS_PUBLIC_ORIGIN } from "@/lib/clients-config";
 import { STUDIO_PUBLIC_ORIGIN } from "@/lib/studio-config";
+import { getTranslations } from "@/i18n";
 
-export function MarketingShell({ children }: { children: ReactNode }) {
+export async function MarketingShell({ children }: { children: ReactNode }) {
   return (
     <div className="menuary-shell min-h-screen bg-[var(--menuary-paper)] text-[var(--menuary-ink)]">
       <MarketingHeader />
@@ -13,7 +14,8 @@ export function MarketingShell({ children }: { children: ReactNode }) {
   );
 }
 
-function MarketingHeader() {
+async function MarketingHeader() {
+  const t = (await getTranslations("marketing")).shell;
   return (
     <header className="border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70 sticky top-0 z-40">
       <div className="menuary-container flex items-center justify-between py-5">
@@ -22,10 +24,10 @@ function MarketingHeader() {
           <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
-          <Link href="/pricing" className="menuary-nav-link">Offerta</Link>
-          <Link href="/chi-siamo" className="menuary-nav-link">Studio</Link>
+          <Link href="/pricing" className="menuary-nav-link">{t.nav.offer}</Link>
+          <Link href="/chi-siamo" className="menuary-nav-link">{t.nav.about}</Link>
           <a href={`${CLIENTS_PUBLIC_ORIGIN}/login`} className="menuary-nav-link">
-            Area personale
+            {t.nav.myAccount}
           </a>
         </nav>
         <div className="flex items-center gap-2">
@@ -33,10 +35,10 @@ function MarketingHeader() {
             href={`${CLIENTS_PUBLIC_ORIGIN}/login`}
             className="menuary-button menuary-button-light text-sm md:hidden"
           >
-            Accedi
+            {t.nav.signIn}
           </a>
           <Link href="/contatti" className="menuary-button menuary-button-dark">
-            Parla con noi
+            {t.nav.contact}
           </Link>
         </div>
       </div>
@@ -44,7 +46,8 @@ function MarketingHeader() {
   );
 }
 
-function MarketingFooter() {
+async function MarketingFooter() {
+  const t = (await getTranslations("marketing")).shell;
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
@@ -56,8 +59,7 @@ function MarketingFooter() {
               <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
             </p>
             <p className="mt-5 max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
-              La piattaforma operativa per ristoranti: sito, gestionale completo e assistente
-              IA al telefono. Costruita su misura, mantenuta nel tempo.
+              {t.footer.desc}
             </p>
             <p className="mt-6 text-[13px] leading-6 text-[var(--menuary-muted)]">
               Un servizio di{" "}
@@ -75,40 +77,28 @@ function MarketingFooter() {
           </div>
 
           <FooterColumn
-            title="Navigazione"
+            title={t.footer.nav}
             links={[
               { href: "/", label: "Home" },
-              { href: "/chi-siamo", label: "Studio" },
-              { href: "/pricing", label: "Offerta" },
+              { href: "/chi-siamo", label: t.nav.about },
+              { href: "/pricing", label: t.nav.offer },
               { href: "/contatti", label: "Contatti" },
             ]}
           />
           <FooterColumn
-            title="Contatti"
+            title={t.footer.contacts}
             links={[
               { href: "mailto:hello@menuary.it", label: "hello@menuary.it" },
               { href: "tel:+393513768607", label: "+39 351 3768607" },
-              { href: "/contatti", label: "Richiedi proposta" },
+              { href: "/contatti", label: t.footer.requestProposal },
             ]}
           />
           <FooterColumn
-            title="Per i locali"
+            title={t.footer.forRestaurants}
             links={[
-              {
-                href: `${STUDIO_PUBLIC_ORIGIN}/login`,
-                label: "Login ristoratori",
-                external: true,
-              },
-              {
-                href: STUDIO_PUBLIC_ORIGIN,
-                label: "Fatturazione e abbonamenti",
-                external: true,
-              },
-              {
-                href: `${CLIENTS_PUBLIC_ORIGIN}/login`,
-                label: "Area personale clienti",
-                external: true,
-              },
+              { href: `${STUDIO_PUBLIC_ORIGIN}/login`, label: t.footer.loginRestaurants, external: true },
+              { href: STUDIO_PUBLIC_ORIGIN, label: t.footer.billing, external: true },
+              { href: `${CLIENTS_PUBLIC_ORIGIN}/login`, label: t.footer.personalArea, external: true },
             ]}
           />
         </div>
@@ -117,8 +107,8 @@ function MarketingFooter() {
         <div className="mt-6 flex flex-col gap-3 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} · Menuary · PynkStudio</p>
           <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-[var(--menuary-ink)]">Privacy</Link>
-            <Link href="/cookie" className="hover:text-[var(--menuary-ink)]">Cookie</Link>
+            <Link href="/privacy" className="hover:text-[var(--menuary-ink)]">{t.footer.privacy}</Link>
+            <Link href="/cookie" className="hover:text-[var(--menuary-ink)]">{t.footer.cookie}</Link>
           </div>
         </div>
       </div>

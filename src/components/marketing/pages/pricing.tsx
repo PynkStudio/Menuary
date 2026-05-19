@@ -416,9 +416,6 @@ function PlanCard({
             </span>
           </p>
         )}
-        <p className="mt-1.5 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-          setup {plan.setup_from}
-        </p>
       </div>
 
       <p className="text-[15px] leading-7 text-[var(--menuary-muted)]">

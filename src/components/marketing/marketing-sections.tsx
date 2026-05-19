@@ -591,11 +591,10 @@ export function ProductPreviewSection() {
    LOGOS MARQUEE
    ============================================================ */
 
-export function LogosStripSection({ tenants }: { tenants: MarketingTenant[] }) {
+export async function LogosStripSection({ tenants }: { tenants: MarketingTenant[] }) {
   if (tenants.length === 0) return null;
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.logosStrip;
   const labels = tenants.map((t) => t.name);
-  // Duplichiamo per il marquee infinito; se ne abbiamo pochi, ripetiamo abbastanza
-  // volte da riempire la striscia in modo credibile.
   const minMarqueeItems = 8;
   const repeats = Math.max(2, Math.ceil(minMarqueeItems / labels.length));
   const track = Array.from({ length: repeats }, () => labels).flat();
@@ -604,7 +603,7 @@ export function LogosStripSection({ tenants }: { tenants: MarketingTenant[] }) {
       <div className="menuary-container py-10 lg:py-14">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-12">
           <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--menuary-muted)] sm:max-w-[12rem] sm:text-right">
-            Ristoranti che hanno scelto Menuary
+            {t.label}
           </p>
           <div className="menuary-marquee flex-1">
             <div className="menuary-marquee-track">
@@ -629,8 +628,9 @@ export function LogosStripSection({ tenants }: { tenants: MarketingTenant[] }) {
    TESTIMONIALS
    ============================================================ */
 
-export function TestimonialsSection({ reviews }: { reviews: MarketingReview[] }) {
+export async function TestimonialsSection({ reviews }: { reviews: MarketingReview[] }) {
   if (reviews.length === 0) return null;
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.testimonials;
   const visible = reviews.slice(0, 3);
   const avg =
     reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
@@ -639,9 +639,9 @@ export function TestimonialsSection({ reviews }: { reviews: MarketingReview[] })
       <div className="menuary-container py-24 lg:py-32">
         <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-3xl">
-            <p className="menuary-section-label">Voci dei locali · Google</p>
+            <p className="menuary-section-label">{t.label}</p>
             <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.6vw,4rem)]">
-              Lo dicono meglio loro.
+              {t.h2}
             </h2>
           </div>
           <div className="flex items-center gap-3 text-sm text-[var(--menuary-muted)]">
@@ -654,7 +654,7 @@ export function TestimonialsSection({ reviews }: { reviews: MarketingReview[] })
               <strong className="text-[var(--menuary-ink)]">
                 {avg.toFixed(1).replace(".", ",")} / 5
               </strong>{" "}
-              media Google
+              {t.avgGoogle}
             </span>
           </div>
         </div>
@@ -700,28 +700,30 @@ export function TestimonialsSection({ reviews }: { reviews: MarketingReview[] })
 
 type FAQItem = { q: string; a: string };
 
-export function FAQSection({
+export async function FAQSection({
   items,
   title,
-  kicker = "Domande frequenti",
+  kicker,
 }: {
   items: FAQItem[];
   title?: string;
   kicker?: string;
 }) {
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.faq;
+  const resolvedKicker = kicker ?? t.kicker;
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-24 lg:py-32">
         <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div>
-            <p className="menuary-section-label">{kicker}</p>
+            <p className="menuary-section-label">{resolvedKicker}</p>
             <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.4vw,3.6rem)]">
               {title ?? "Le risposte alle cose che ci chiedete sempre."}
             </h2>
             <p className="mt-6 max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
-              Non hai trovato quello che cercavi?{" "}
+              {t.notFound}{" "}
               <Link href="/contatti" className="menuary-link">
-                Scrivici
+                {t.ctaLink}
                 <ArrowUpRight size={14} strokeWidth={1.6} />
               </Link>
             </p>
@@ -972,7 +974,8 @@ export function ProcessSection() {
    FINAL CTA
    ============================================================ */
 
-export function FinalCTASection() {
+export async function FinalCTASection() {
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.finalCta;
   return (
     <section className="bg-[var(--menuary-ink)] text-[var(--menuary-paper)]">
       <div className="menuary-container py-24 lg:py-28">
@@ -982,18 +985,17 @@ export function FinalCTASection() {
               className="menuary-section-label"
               style={{ color: "rgba(255,250,242,0.55)" }}
             >
-              Iniziamo
+              {t.label}
             </p>
             <h2 className="menuary-display mt-6 text-[clamp(2.6rem,5.2vw,5rem)]">
-              Raccontaci il tuo ristorante.
+              {t.h2a}
               <br />
               <span className="italic text-[var(--menuary-gold)]">
-                Ti rispondiamo con un&apos;idea concreta.
+                {t.h2b}
               </span>
             </h2>
             <p className="mt-6 max-w-md text-[15px] leading-7 text-white/65">
-              Prima chiamata gratuita di 30 minuti. Capiamo se ha senso lavorare
-              insieme — e ti diamo comunque qualche consiglio utile.
+              {t.sub}
             </p>
           </div>
           <div className="flex flex-col items-start gap-5">
@@ -1001,7 +1003,7 @@ export function FinalCTASection() {
               href="/contatti"
               className="menuary-button menuary-button-accent"
             >
-              Prenota la prima chiamata
+              {t.cta}
             </Link>
             <a
               href="mailto:hello@menuary.it"
@@ -1676,23 +1678,27 @@ const GOOGLE_SYNC_CARDS: {
   },
 ];
 
-export function GoogleSyncSection() {
+const GOOGLE_SYNC_ICONS = [Star, Clock, Megaphone, ShieldCheck] as const;
+
+export async function GoogleSyncSection() {
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.googleSync;
+  const cards = t.cards;
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-24 lg:py-32">
         <div className="max-w-3xl">
-          <p className="menuary-section-label">Integrazione Google</p>
+          <p className="menuary-section-label">{t.label}</p>
           <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
-            Google sempre aggiornato.
+            {t.h2}
           </h2>
           <p className="mt-6 max-w-xl text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
-            Gestisci sito, orari e presenza locale da un unico pannello.
+            {t.sub}
           </p>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {GOOGLE_SYNC_CARDS.map((card) => {
-            const Icon = card.icon;
+          {cards.map((card, idx) => {
+            const Icon = GOOGLE_SYNC_ICONS[idx] ?? Star;
             return (
               <div
                 key={card.title}
@@ -1725,26 +1731,26 @@ export function GoogleSyncSection() {
    LOCAL PRESENCE — Google / Yelp / TripAdvisor
    ============================================================ */
 
-export function LocalPresenceSection() {
+export async function LocalPresenceSection() {
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.localPresence;
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
       <div className="menuary-container py-24 lg:py-32">
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
           <div>
-            <p className="menuary-section-label">Presenza locale</p>
+            <p className="menuary-section-label">{t.label}</p>
             <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
-              La tua presenza online,
+              {t.h2a}
               <br />
               <span className="italic text-[var(--menuary-copper)]">
-                tutta insieme.
+                {t.h2b}
               </span>
             </h2>
             <p className="mt-7 max-w-lg text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
-              Menuary collega sito, Google Maps e strumenti operativi per
-              mantenere il tuo locale aggiornato e professionale.
+              {t.sub}
             </p>
             <Link href="/contatti" className="menuary-link mt-8 inline-flex">
-              Parla con noi
+              {t.cta}
               <ArrowUpRight size={14} strokeWidth={1.6} />
             </Link>
           </div>
@@ -1759,7 +1765,7 @@ export function LocalPresenceSection() {
                     Google
                   </p>
                   <p className="text-sm font-semibold truncate text-[var(--menuary-ink)]">
-                    La tua scheda · Aperto
+                    {t.googleOpen}
                   </p>
                 </div>
               </div>
@@ -1905,23 +1911,24 @@ const BENEFIT_CARDS: { n: string; title: string; body: string }[] = [
   },
 ];
 
-export function BenefitsEditorialSection() {
+export async function BenefitsEditorialSection() {
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.benefits;
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-24 lg:py-32">
         <div className="max-w-3xl">
-          <p className="menuary-section-label">Cosa trovi dentro</p>
+          <p className="menuary-section-label">{t.label}</p>
           <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
-            Tutto quello che serve.
+            {t.h2a}
             <br />
             <span className="italic text-[var(--menuary-copper)]">
-              Niente di più.
+              {t.h2b}
             </span>
           </h2>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {BENEFIT_CARDS.map((card) => (
+          {t.cards.map((card) => (
             <div
               key={card.n}
               className="flex flex-col rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--menuary-ink)]"
@@ -2018,7 +2025,14 @@ const HOME_PRICING_PLANS: HomePricingPlan[] = [
   },
 ];
 
-export function HomePricingSection() {
+export async function HomePricingSection() {
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.homePricing;
+  const PRICING_DATA = [
+    { id: "presenza",     monthly: "39",  monthlyBilling: "49",  setup: "da 690 €",   highlighted: false },
+    { id: "prenotazioni", monthly: "89",  monthlyBilling: "99",  setup: "da 1.190 €", highlighted: true  },
+    { id: "operativita",  monthly: "169", monthlyBilling: "199", setup: "da 1.990 €", highlighted: false },
+  ];
+  const plans = t.plans.map((p, i) => ({ ...p, ...PRICING_DATA[i] }));
   return (
     <section
       id="prezzi"
@@ -2027,24 +2041,24 @@ export function HomePricingSection() {
       <div className="menuary-container py-24 lg:py-32">
         <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-3xl">
-            <p className="menuary-section-label">Piani</p>
+            <p className="menuary-section-label">{t.label}</p>
             <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
-              Tre piani.
+              {t.h2a}
               <br />
               <span className="italic text-[var(--menuary-copper)]">
-                Nessuna sorpresa.
+                {t.h2b}
               </span>
             </h2>
           </div>
           <p className="max-w-sm text-[15px] leading-[1.6] text-[var(--menuary-muted)]">
-            Setup una tantum, canone mensile fisso. IVA esclusa. Configurazione
-            e onboarding inclusi nel setup.
+            {t.sub}
           </p>
         </div>
 
         <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:items-stretch">
-          {HOME_PRICING_PLANS.map((plan) => {
+          {plans.map((plan) => {
             const highlighted = plan.highlighted === true;
+            const saving = (Number(plan.monthlyBilling) - Number(plan.monthly)) * 12;
             return (
               <article
                 key={plan.id}
@@ -2057,7 +2071,7 @@ export function HomePricingSection() {
               >
                 {highlighted ? (
                   <span className="absolute -top-3 left-8 inline-flex items-center rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
-                    Più scelto
+                    {t.mostChosen}
                   </span>
                 ) : null}
 
@@ -2073,17 +2087,19 @@ export function HomePricingSection() {
                     {plan.monthly}
                   </span>
                   <span className="text-sm text-[var(--menuary-muted)]">
-                    €/mese
+                    {t.perMonth}
                   </span>
                 </div>
                 <p className="mt-1.5 text-xs text-[var(--menuary-muted)]">
-                  Pagamento annuale anticipato ·{" "}
+                  {t.annualBilling} ·{" "}
                   <span className="font-semibold text-[var(--menuary-sage)]">
-                    risparmi €{(Number(plan.monthlyBilling) - Number(plan.monthly)) * 12}/anno
+                    {t.savingsLabel.replace("{amount}", String(saving))}
                   </span>
                 </p>
                 <p className="mt-1 text-xs text-[var(--menuary-muted)]">
-                  Mensile: €{plan.monthlyBilling}/mese · Setup {plan.setup}
+                  {t.monthlyLabel
+                    .replace("{price}", plan.monthlyBilling)
+                    .replace("{setup}", plan.setup)}
                 </p>
 
                 <div className="my-7 h-px bg-[var(--menuary-line)]" />
@@ -2129,7 +2145,7 @@ export function HomePricingSection() {
         </div>
 
         <p className="mt-8 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-          IVA esclusa · Contratto annuale · Attivazione entro 7 giorni
+          {t.vatNote}
         </p>
 
         {/* AI add-on callout */}
@@ -2140,25 +2156,19 @@ export function HomePricingSection() {
             </span>
             <div>
               <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                Add-on disponibile per tutti
+                {t.aiEyebrow}
               </p>
-              <p className="menuary-display text-lg">
-                IA al telefono{" "}
-                <span className="text-[var(--menuary-copper)]">+€60/mese</span>
-              </p>
+              <p className="menuary-display text-lg">{t.aiTitle}</p>
             </div>
           </div>
           <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">
-            Assistente vocale 24/7 che risponde con la voce del locale, prende
-            prenotazioni e gestisce ordini. Disponibile dai piani Prenotazioni
-            e Operatività. Quota minuti mensile inclusa; oltre la soglia,
-            addebiti a prezzo di costo senza markup.
+            {t.aiDesc}
           </p>
           <Link
             href="/pricing#ai"
             className="menuary-button menuary-button-light shrink-0 text-sm"
           >
-            Scopri
+            {t.aiCta}
           </Link>
         </div>
       </div>
@@ -2170,22 +2180,22 @@ export function HomePricingSection() {
    AI INTEGRATIONS — sezione secondaria opzionale
    ============================================================ */
 
-export function AIIntegrationsTeaserSection() {
+export async function AIIntegrationsTeaserSection() {
+  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.aiTeaser;
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-16 lg:py-20">
         <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
           <div>
-            <p className="menuary-section-label">Avanzato · opzionale</p>
+            <p className="menuary-section-label">{t.label}</p>
             <h2 className="menuary-display mt-6 text-[clamp(1.7rem,3.2vw,2.4rem)] leading-tight">
-              Integrazioni AI disponibili.
+              {t.h2}
             </h2>
             <p className="mt-5 max-w-lg text-[15px] leading-[1.7] text-[var(--menuary-muted)]">
-              Per alcune attività è possibile integrare assistente telefonico AI
-              e automazioni avanzate.
+              {t.sub}
             </p>
             <Link href="/contatti" className="menuary-link mt-6 inline-flex">
-              Scopri le integrazioni
+              {t.cta}
               <ArrowUpRight size={14} strokeWidth={1.6} />
             </Link>
           </div>
@@ -2197,7 +2207,7 @@ export function AIIntegrationsTeaserSection() {
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
                 <Phone size={12} strokeWidth={2} />
-                Chiamata gestita
+                {t.mockupCallHandled}
               </span>
               <span className="text-[11px] text-[var(--menuary-muted)]">
                 14:32 · 2 min
@@ -2205,7 +2215,7 @@ export function AIIntegrationsTeaserSection() {
             </div>
             <div className="mt-4 space-y-3 text-sm">
               <p className="rounded-xl bg-[var(--menuary-ink)]/5 px-3 py-2 text-[var(--menuary-ink)]">
-                &ldquo;Vorrei prenotare per 4 venerdì sera.&rdquo;
+                {t.mockupMessage}
               </p>
               <p className="flex items-start gap-2 text-[var(--menuary-muted)]">
                 <Check
@@ -2213,7 +2223,7 @@ export function AIIntegrationsTeaserSection() {
                   strokeWidth={2.2}
                   className="mt-1 shrink-0 text-[var(--menuary-sage)]"
                 />
-                Prenotazione creata · ven 22:00 · 4 coperti
+                {t.mockupBooked}
               </p>
             </div>
           </aside>

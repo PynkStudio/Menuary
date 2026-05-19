@@ -26,6 +26,7 @@ import { getTenantContent } from "@/lib/tenant-content";
 import { buildIconSet, themeColor } from "@/lib/favicon";
 import { CLIENTS_PUBLIC_ORIGIN, clientsSite } from "@/lib/clients-config";
 import { STUDIO_PUBLIC_ORIGIN, studioSite } from "@/lib/studio-config";
+import { isAppLocale, LOCALE_HEADER } from "@/i18n/locales";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchLocations } from "@/lib/location";
 import { LocationProvider } from "@/components/core/location-provider";
@@ -381,6 +382,8 @@ export default async function RootLayout({
 
   // Slug sede da sottodominio (es. milano.bepork.it → "milano"), impostato dal middleware.
   const locationSlug = reqHeaders.get("x-location-slug") ?? undefined;
+  const localeHeader = reqHeaders.get(LOCALE_HEADER);
+  const lang = isAppLocale(localeHeader) ? localeHeader : "it";
   // Per i mode Bizery il contenuto tenant non è rilevante (shell propria, nessun JSON-LD).
   const isBizeryMode =
     mode === "marketing-bizery" || mode === "gestione-bizery" || mode === "preview-bizery";
@@ -404,7 +407,7 @@ export default async function RootLayout({
 
   return (
     <html
-      lang="it"
+      lang={lang}
       className={`${display.variable} ${impact.variable} ${body.variable} ${menuaryDisplay.variable} ${menuaryBody.variable}`}
       style={themeVars as React.CSSProperties}
       data-tenant={tenant.id}
@@ -417,6 +420,13 @@ export default async function RootLayout({
             type="application/ld+json"
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(tenantRestaurantSchema) }}
+          />
+        ) : null}
+        {tenant.features.slabbby && mode !== "gestione-bizery" ? (
+          <Script
+            id="slabbby-widget"
+            src="https://slabbby.com/widget.js"
+            strategy="afterInteractive"
           />
         ) : null}
         <Analytics />

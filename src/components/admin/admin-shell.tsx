@@ -112,6 +112,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [platformRole, setPlatformRole] = useState<SiteadminRole | null>(null);
+  const [inboxUnread, setInboxUnread] = useState(0);
   const mode = usePlatformMode();
 
   const tenant = useTenant();
@@ -136,6 +137,25 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       });
     return () => {
       active = false;
+    };
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "platform-admin") return;
+
+    function fetchUnread() {
+      void fetch("/api/admin/inbox/unread", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data: { unread?: number }) => setInboxUnread(data.unread ?? 0))
+        .catch(() => {});
+    }
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 60_000);
+    window.addEventListener("focus", fetchUnread);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchUnread);
     };
   }, [mode]);
 
@@ -237,6 +257,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   <Icon size={18} />
                   {it.label}
                   {it.external && <span className="menuary-admin-nav-tag">nuova tab</span>}
+                  {it.href === "/admin/inbox" && inboxUnread > 0 && (
+                    <span className={cn(
+                      "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      active ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
+                    )}>
+                      {inboxUnread}
+                    </span>
+                  )}
                 </Link>
               );
             })}
