@@ -1905,18 +1905,6 @@ export async function BenefitsEditorialSection() {
    HOME PRICING — 3 piani (Presenza / Prenotazioni / Operatività)
    ============================================================ */
 
-type HomePricingPlan = {
-  id: string;
-  eyebrow: string;
-  name: string;
-  monthly: string;
-  monthlyBilling: string;
-  setup: string;
-  inherits?: string;
-  features: string[];
-  ctaLabel: string;
-  highlighted?: boolean;
-};
 
 
 export async function HomePricingSection() {
