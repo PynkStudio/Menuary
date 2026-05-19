@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRight,
   Briefcase,
-  Building2,
   CheckCircle,
   Clock,
-  FileText,
   Heart,
   Mail,
   MapPin,
@@ -19,7 +18,6 @@ import {
   Shield,
   Star,
   TrendingUp,
-  Users,
 } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
@@ -551,9 +549,9 @@ export function StudioAranzullaHomePage() {
 
             <div className="ara-footer-col">
               <h4>Legale</h4>
-              <a href="/privacy">Privacy Policy</a>
-              <a href="/cookie">Cookie Policy</a>
-              <a href="/privacy">Trattamento dati</a>
+              <Link href="/privacy">Privacy Policy</Link>
+              <Link href="/cookie">Cookie Policy</Link>
+              <Link href="/privacy">Trattamento dati</Link>
             </div>
           </div>
 
