@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check, Minus, Phone, ArrowRight } from "lucide-react";
-import { BizeryShell } from "@/components/bizery/bizery-shell";
 import {
   BIZERY_PRICING_PLANS,
   AI_ADDON,
@@ -97,7 +96,7 @@ export function BizeryPricingPage({ plans = BIZERY_PRICING_PLANS }: { plans?: Pr
   const maxSaving = Math.max(...plans.map(annualSaving));
 
   return (
-    <BizeryShell>
+    <>
       {/* Hero */}
       <section className="border-b border-[var(--menuary-line)]">
         <div className="menuary-container pt-20 pb-20 lg:pt-28 lg:pb-24">
@@ -374,7 +373,7 @@ export function BizeryPricingPage({ plans = BIZERY_PRICING_PLANS }: { plans?: Pr
           </div>
         </div>
       </section>
-    </BizeryShell>
+    </>
   );
 }
 

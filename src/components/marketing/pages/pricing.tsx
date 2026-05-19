@@ -3,11 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check, Minus, Phone, ArrowRight } from "lucide-react";
-import { MarketingShell } from "@/components/marketing/marketing-shell";
-import {
-  FAQSection,
-  FinalCTASection,
-} from "@/components/marketing/marketing-sections";
 import {
   PRICING_PLANS,
   AI_ADDON,
@@ -58,7 +53,7 @@ const COMPARE_ROWS: Row[] = [
 
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 
-const PRICING_FAQ = [
+export const PRICING_FAQ = [
   {
     q: "Come funziona il contratto?",
     a: "Il contratto è annuale con pagamento anticipato di 12 mesi. Non è previsto il recesso anticipato, ma puoi disdire il rinnovo automatico con un preavviso di 30 giorni: il contratto scade naturalmente al termine del periodo pagato.",
@@ -112,7 +107,7 @@ export function MarketingPricingPage({ plans = PRICING_PLANS }: { plans?: Pricin
   const maxSaving = Math.max(...plans.map(annualSaving));
 
   return (
-    <MarketingShell>
+    <>
       {/* HERO */}
       <section className="border-b border-[var(--menuary-line)]">
         <div className="menuary-container pt-20 pb-20 lg:pt-28 lg:pb-24">
@@ -349,13 +344,7 @@ export function MarketingPricingPage({ plans = PRICING_PLANS }: { plans?: Pricin
       </section>
 
       {/* FAQ */}
-      <FAQSection
-        items={PRICING_FAQ}
-        title="Tutto quello che vuoi sapere prima di iniziare."
-      />
-
-      <FinalCTASection />
-    </MarketingShell>
+    </>
   );
 }
 

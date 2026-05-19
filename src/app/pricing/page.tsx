@@ -3,7 +3,12 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { fetchPricingPlans } from "@/lib/marketing-data";
-import { MarketingPricingPage } from "@/components/marketing/pages/pricing";
+import { MarketingPricingPage, PRICING_FAQ } from "@/components/marketing/pages/pricing";
+import { MarketingShell } from "@/components/marketing/marketing-shell";
+import {
+  FAQSection,
+  FinalCTASection,
+} from "@/components/marketing/marketing-sections";
 
 export const metadata: Metadata = {
   title: "Offerta",
@@ -16,5 +21,14 @@ export default async function PricingPage() {
     notFound();
   }
   const plans = await fetchPricingPlans();
-  return <MarketingPricingPage plans={plans} />;
+  return (
+    <MarketingShell>
+      <MarketingPricingPage plans={plans} />
+      <FAQSection
+        items={PRICING_FAQ}
+        title="Tutto quello che vuoi sapere prima di iniziare."
+      />
+      <FinalCTASection />
+    </MarketingShell>
+  );
 }
