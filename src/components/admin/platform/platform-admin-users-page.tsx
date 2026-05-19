@@ -7,7 +7,6 @@ import {
   SITEADMIN_ROLE_DESCRIPTIONS,
   SITEADMIN_ROLE_LABELS,
   SITEADMIN_ROLES,
-  SUPERADMIN_EMAIL,
   type SiteadminRole,
 } from "@/lib/admin-permissions";
 import { cn } from "@/lib/utils";

@@ -18,7 +18,6 @@ import {
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import {
   SUPPORTED_LOCALES,
-  DEFAULT_LOCALE,
   LOCALE_HEADER,
   LOCALE_COOKIE,
   isAppLocale,

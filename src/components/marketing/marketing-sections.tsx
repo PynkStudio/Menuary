@@ -1649,35 +1649,6 @@ export function BigNumbersSection() {
    GOOGLE SYNC — "Google sempre aggiornato"
    ============================================================ */
 
-const GOOGLE_SYNC_CARDS: {
-  icon: LucideIcon;
-  title: string;
-  body: string;
-  note?: string;
-}[] = [
-  {
-    icon: Star,
-    title: "Recensioni sincronizzate",
-    body: "Le recensioni Google vengono aggiornate automaticamente sul sito.",
-    note: "Aggiornamento periodico automatico.",
-  },
-  {
-    icon: Clock,
-    title: "Orari sempre corretti",
-    body: "Aggiorna aperture, chiusure straordinarie e festività da un solo posto.",
-  },
-  {
-    icon: Megaphone,
-    title: "Eventi e promozioni",
-    body: "Pubblica novità e aggiornamenti direttamente sulla tua scheda Google.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Meno errori, meno chiamate",
-    body: "Evita clienti che trovano informazioni sbagliate online.",
-  },
-];
-
 const GOOGLE_SYNC_ICONS = [Star, Clock, Megaphone, ShieldCheck] as const;
 
 export async function GoogleSyncSection() {
@@ -1888,29 +1859,6 @@ function YelpGlyph() {
    BENEFITS — editorial 4-card grid
    ============================================================ */
 
-const BENEFIT_CARDS: { n: string; title: string; body: string }[] = [
-  {
-    n: "01",
-    title: "Sito professionale",
-    body: "Responsive, veloce e progettato per valorizzare il tuo locale.",
-  },
-  {
-    n: "02",
-    title: "Prenotazioni semplici",
-    body: "Gestisci richieste e prenotazioni senza caos.",
-  },
-  {
-    n: "03",
-    title: "Google Maps integrato",
-    body: "Orari, recensioni ed eventi aggiornati da un unico pannello.",
-  },
-  {
-    n: "04",
-    title: "Strumenti operativi",
-    body: "Tutto ciò che serve per partire, senza software complicati.",
-  },
-];
-
 export async function BenefitsEditorialSection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.benefits;
   return (
@@ -1970,60 +1918,6 @@ type HomePricingPlan = {
   highlighted?: boolean;
 };
 
-const HOME_PRICING_PLANS: HomePricingPlan[] = [
-  {
-    id: "presenza",
-    eyebrow: "Piano",
-    name: "Presenza",
-    monthly: "39",
-    monthlyBilling: "49",
-    setup: "da 690 €",
-    features: [
-      "Sito su misura, dominio personalizzato",
-      "Menu digitale aggiornabile",
-      "Recensioni Google integrate sul sito",
-      "Orari e festività su Google Maps",
-      "Hosting, SSL, backup inclusi",
-      "Aggiornamenti tecnici continui",
-    ],
-    ctaLabel: "Inizia",
-  },
-  {
-    id: "prenotazioni",
-    eyebrow: "Più scelto",
-    name: "Prenotazioni",
-    monthly: "89",
-    monthlyBilling: "99",
-    setup: "da 1.190 €",
-    inherits: "Tutto di Presenza, più",
-    features: [
-      "Prenotazioni online",
-      "Conferme e reminder automatici",
-      "Calendario di sala",
-      "Click-to-WhatsApp",
-      "Pannello richieste",
-    ],
-    ctaLabel: "Inizia ora",
-    highlighted: true,
-  },
-  {
-    id: "operativita",
-    eyebrow: "Piano",
-    name: "Operatività",
-    monthly: "169",
-    monthlyBilling: "199",
-    setup: "da 1.990 €",
-    inherits: "Tutto di Prenotazioni, più",
-    features: [
-      "Ordini sala & asporto",
-      "Delivery integrato",
-      "CRM clienti & analytics",
-      "Dashboard operativa",
-      "Gestione staff e cucina",
-    ],
-    ctaLabel: "Parlane con noi",
-  },
-];
 
 export async function HomePricingSection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.homePricing;
