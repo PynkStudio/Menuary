@@ -16,6 +16,7 @@ import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home
 import { LibritechHomePage } from "@/components/tenants/libritech/pages/home";
 import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pages/home";
 import { Footer } from "@/components/tenant-shell/footer";
+import { SlabbbyScriptGate } from "@/components/core/slabbby-script-gate";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
@@ -89,6 +90,7 @@ export default async function PreviewTenantHome({
   if (tenant.vertical === "services") {
     return (
       <TenantProvider tenant={tenant}>
+        <SlabbbyScriptGate />
         <div
           className="min-h-screen"
           data-tenant-surface={tenant.id}
@@ -115,6 +117,7 @@ export default async function PreviewTenantHome({
   // ── Verticale food (Menuary) — layout di default ─────────────────────────────
   return (
     <TenantProvider tenant={tenant}>
+      <SlabbbyScriptGate />
       <div
         className="tenant-preview-surface min-h-screen"
         data-tenant-surface={tenant.id}

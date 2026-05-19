@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/next";
 // styles/tenants/faak.css, styles/marketing.css
 import "./globals.css";
 import { Providers } from "@/components/core/providers";
+import { SlabbbyScriptGate } from "@/components/core/slabbby-script-gate";
 import { SiteChrome, SiteFooterGate } from "@/components/core/site-chrome";
 import { TenantProvider } from "@/components/core/tenant-provider";
 import { PlatformModeProvider } from "@/components/core/platform-mode-provider";
@@ -422,16 +423,12 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(tenantRestaurantSchema) }}
           />
         ) : null}
-        {tenant.features.slabbby && mode !== "gestione-bizery" ? (
-          <Script
-            id="slabbby-widget"
-            src="https://slabbby.com/widget.js"
-            strategy="afterInteractive"
-          />
-        ) : null}
         <Analytics />
         <PlatformModeProvider mode={mode}>
           <TenantProvider tenant={tenant}>
+            {/* skipInPreview: in preview mode il tenant dell'host è il default del
+                verticale, non quello dello slug. La pagina preview gestisce il proprio gate. */}
+            <SlabbbyScriptGate skipInPreview />
             <Suspense>
               <LocationProvider locations={locations} activeSlug={locationSlug}>
                 <Providers>
