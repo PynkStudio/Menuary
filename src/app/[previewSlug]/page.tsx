@@ -14,6 +14,7 @@ import { ServicesCategories } from "@/components/tenants/_shared/services-catego
 import { ServicesContact } from "@/components/tenants/_shared/services-contact";
 import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home";
 import { LibritechHomePage } from "@/components/tenants/libritech/pages/home";
+import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pages/home";
 import { Footer } from "@/components/tenant-shell/footer";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
@@ -37,7 +38,9 @@ export async function generateMetadata({
       ? "Officina KAM - Meccanica di precisione"
       : tenant.id === "libritech"
         ? "LibriTech - Tech & Startup Books"
-        : isServices
+        : tenant.id === "studioaranzulla"
+          ? "Studio Legale Aranzulla - Avv. Lara Aranzulla"
+          : isServices
         ? `${tenant.name} - servizi, appuntamenti e listino prezzi`
         : tenant.id === "faak"
           ? `${tenant.name} - cibo e vino a ribellione naturale`
@@ -95,6 +98,8 @@ export default async function PreviewTenantHome({
             <OfficinaKamHomePage />
           ) : tenant.id === "libritech" ? (
             <LibritechHomePage />
+          ) : tenant.id === "studioaranzulla" ? (
+            <StudioAranzullaHomePage />
           ) : (
             <>
               <ServicesHero />

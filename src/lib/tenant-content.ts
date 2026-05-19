@@ -640,12 +640,161 @@ const officinakamContent: TenantContent = {
   },
 };
 
+const studioaranzullaContent: TenantContent = {
+  logoSrc: "/studioaranzulla/logo.svg",
+  logoAlt: "Studio Legale Aranzulla",
+  showcaseLogoSrc: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?auto=format&fit=crop&w=900&q=80",
+  showcaseLogoAlt: "Studio Legale Aranzulla — Avv. Lara Aranzulla",
+  description:
+    "Studio Legale Aranzulla — assistenza legale professionale in diritto civile, famiglia, lavoro e penale. Consulenza chiara, difesa concreta.",
+  url: "https://www.studiolegalearanzulla.it",
+  social: {
+    instagram: "https://www.instagram.com/studiolegalearanzulla/",
+    facebook: "https://www.facebook.com/studiolegalearanzulla/",
+    instagramLabel: "Instagram Studio Legale Aranzulla",
+    facebookLabel: "Facebook Studio Legale Aranzulla",
+  },
+  contact: {
+    phone: "+39 0000 000000",
+    whatsappDigits: "390000000000",
+    whatsappMessage:
+      "Buongiorno, sono interessato/a a una consulenza legale. Potete ricontattarmi? Grazie.",
+  },
+  address: {
+    street: "Via Roma 1",
+    zip: "00000",
+    city: "— da completare —",
+    province: "—",
+    full: "Contattare lo studio per l'indirizzo",
+  },
+  maps: {
+    searchUrl: "https://www.google.com/maps/search/?api=1&query=Studio+Legale+Aranzulla",
+    embedUrl: "https://www.google.com/maps?q=Studio+Legale+Aranzulla&output=embed",
+  },
+  hero: {
+    eyebrow: "Studio Legale · Assistenza Legale Professionale",
+    titleLead: "Il diritto",
+    titleAccent: "spiegato chiaro.",
+    body:
+      "Avvocato Lara Aranzulla. Assistenza legale concreta in diritto civile, famiglia, lavoro e penale. Prima consulenza per capire dove sei e cosa puoi fare.",
+    backdrop: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?auto=format&fit=crop&w=1600&q=80",
+    ctaLabel: "Richiedi una consulenza",
+  },
+  soulsIntro: {
+    eyebrow: "Aree di pratica",
+    titleLead: "Ogni situazione merita",
+    titleAccent: "la giusta competenza.",
+    body:
+      "Dallo studio legale alle aule di tribunale: affrontiamo ogni materia con preparazione specifica e attenzione al risultato concreto.",
+  },
+  souls: [
+    {
+      id: "civile",
+      kicker: "Diritto Civile",
+      title: "Tutela dei diritti",
+      desc: "Contratti, responsabilità civile, risarcimenti, recupero crediti e controversie tra privati. Assistenza in ogni fase del procedimento.",
+      href: "#aree",
+      image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=80",
+    },
+    {
+      id: "famiglia",
+      kicker: "Diritto di Famiglia",
+      title: "Separazioni e affidi",
+      desc: "Separazione, divorzio, affidamento dei figli, mantenimento e modifica delle condizioni. Assistenza attenta anche nelle fasi più delicate.",
+      href: "#aree",
+      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=900&q=80",
+    },
+    {
+      id: "lavoro",
+      kicker: "Diritto del Lavoro",
+      title: "Tutela del lavoratore",
+      desc: "Licenziamenti, mobbing, discriminazioni, mancato pagamento di stipendi e accordi sindacali. Difesa dei diritti in sede giudiziale e stragiudiziale.",
+      href: "#aree",
+      image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=900&q=80",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "Servizi legali",
+    title: "Quello di cui hai bisogno, quando ne hai bisogno.",
+    subtitle: "Consulenza chiara prima di ogni decisione. Assistenza concreta in ogni fase.",
+  },
+  dishes: [
+    {
+      name: "Prima Consulenza",
+      desc: "Colloquio iniziale per analizzare la situazione, capire i rischi e definire la strategia più adatta.",
+      price: "Su appuntamento",
+      image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=80",
+      variant: "red",
+      href: "#consulenza",
+    },
+    {
+      name: "Diritto Penale",
+      desc: "Difesa in sede penale, indagini preliminari, udienza preliminare e dibattimento. Assistenza dal primo atto.",
+      price: "Da preventivo",
+      image: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?auto=format&fit=crop&w=900&q=80",
+      variant: "mustard",
+      href: "#aree",
+    },
+    {
+      name: "Diritto Commerciale",
+      desc: "Contratti commerciali, costituzione societaria, controversie tra soci e recupero crediti commerciali.",
+      price: "Da preventivo",
+      image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=900&q=80",
+      variant: "green",
+      href: "#aree",
+    },
+    {
+      name: "Stragiudiziale",
+      desc: "Mediazione, negoziazione assistita e accordi extragiudiziali. Soluzioni rapide quando è possibile evitare il tribunale.",
+      price: "Da preventivo",
+      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=900&q=80",
+      variant: "pink",
+      href: "#consulenza",
+    },
+    {
+      name: "Diritto Successorio",
+      desc: "Testamenti, successioni, divisioni ereditarie e impugnazioni. Tutela del patrimonio familiare.",
+      price: "Da preventivo",
+      image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=80",
+      variant: "red",
+      href: "#aree",
+    },
+    {
+      name: "Assistenza Continuativa",
+      desc: "Supporto legale regolare per privati e piccole imprese: contratti, pareri e gestione del rischio.",
+      price: "Formula mensile",
+      image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=900&q=80",
+      variant: "mustard",
+      href: "#consulenza",
+    },
+  ],
+  findUs: {
+    eyebrow: "Contatti",
+    titleLead: "Vieni in studio",
+    titleAccent: "o scrivici.",
+    body:
+      "Primo contatto via email o telefono. Fissato l'appuntamento, l'incontro avviene in studio oppure, su richiesta, in videochiamata.",
+    mapTitle: "Mappa Studio Legale Aranzulla",
+  },
+  footer: {
+    tagline: "Il diritto spiegato chiaro.",
+    body:
+      "Studio Legale Aranzulla — Avv. Lara Aranzulla. Assistenza legale professionale in diritto civile, famiglia, lavoro e penale.",
+  },
+  delivery: {
+    title: "",
+    body: "",
+    partners: [],
+  },
+};
+
 import { findTenantById } from "./tenant-registry";
 
 export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "faak") return faakContent;
   if (tenantId === "libritech") return libritechContent;
   if (tenantId === "officinakam") return officinakamContent;
+  if (tenantId === "studioaranzulla") return studioaranzullaContent;
   // Ogni tenant deve avere il proprio blocco content sopra.
   // Fallback per verticale: non restituire mai contenuto BePork per tenant services.
   const profile = findTenantById(tenantId);

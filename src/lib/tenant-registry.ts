@@ -42,6 +42,34 @@ export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: true,
 };
 
+/** Studio Legale Aranzulla: studio legale su verticale services. */
+export const STUDIOARANZULLA_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: false,
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: true,      // "Richiesta consulenza"
+  tablePlanner: false,
+  productAvailability: false,
+  upselling: false,
+  crm: true,
+  analytics: true,
+  takeawaySlots: false,
+  deliveryHub: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: false,
+  multiLocation: false,
+  favorites: false,
+  reviews: true,
+  gallery: false,
+  shop: false,
+  slabbby: false,
+};
+
 /** Officina KAM: primo tenant reale Bizery — officina auto e moto. */
 export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
@@ -197,6 +225,29 @@ export const TENANTS: TenantProfile[] = [
   },
 
   // ── Tenant Bizery reali ──────────────────────────────────────────────────────
+  {
+    id: "studioaranzulla",
+    name: "Studio Legale Aranzulla",
+    label: "Lead · Studio Legale Aranzulla",
+    vertical: "services",
+    domains: ["studiolegalearanzulla.it", "www.studiolegalearanzulla.it"],
+    previewSlug: "studioaranzulla",
+    enabled: true,
+    status: "trattativa",
+    theme: {
+      red: "#9B7E46",       // gold primario (brand legale)
+      redDark: "#7A6235",   // gold scuro
+      peach: "#EDE8DE",     // warm cream accent
+      cream: "#F8F6F1",     // sfondo off-white
+      ink: "#1A1612",       // near-black con calore
+      brick: "#1C2B4A",     // navy profondo per accenti
+      mustard: "#9B7E46",   // alias gold
+      mustardSoft: "#EDE8DE",
+      green: "#2A5C3F",
+      pink: "#8B2635",
+    },
+    features: STUDIOARANZULLA_MODULE_FLAGS,
+  },
   {
     id: "officinakam",
     name: "Officina KAM",
