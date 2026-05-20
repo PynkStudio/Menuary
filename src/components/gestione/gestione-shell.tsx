@@ -89,9 +89,10 @@ export function GestioneShell({
     { label: "Cassa", href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
     { label: "Turni", href: sectionHref("turni"), visible: () => access.canManageShifts },
     { label: "Staff", href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
+    { label: "Kiosk", href: sectionHref("kiosk"), visible: () => isAdmin && tenant.features.orderKiosk },
     { label: "Google", href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },
     { label: "Analytics", href: sectionHref("analytics"), visible: (c) => access.canViewAnalytics && c.can_view_analytics },
-    { label: "Fatturazione", href: sectionHref("fatturazione"), visible: (c) => c.can_view_financials },
+    { label: "Fatturazione", href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: "Sedi", href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
   ];
 

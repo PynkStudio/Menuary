@@ -14,6 +14,180 @@ export type Database = {
   }
   public: {
     Tables: {
+      cash_sessions: {
+        Row: {
+          id: string
+          tenant_id: string
+          location_id: string | null
+          opened_at: string
+          closed_at: string | null
+          opened_by: string | null
+          closed_by: string | null
+          opening_amount: number
+          closing_amount: number | null
+          expected_amount: number | null
+          status: string
+          note: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          location_id?: string | null
+          opened_at?: string
+          closed_at?: string | null
+          opened_by?: string | null
+          closed_by?: string | null
+          opening_amount?: number
+          closing_amount?: number | null
+          expected_amount?: number | null
+          status?: string
+          note?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          location_id?: string | null
+          opened_at?: string
+          closed_at?: string | null
+          opened_by?: string | null
+          closed_by?: string | null
+          opening_amount?: number
+          closing_amount?: number | null
+          expected_amount?: number | null
+          status?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      cash_movements: {
+        Row: {
+          id: string
+          tenant_id: string
+          session_id: string
+          order_id: string | null
+          kind: string
+          method: string
+          amount: number
+          note: string | null
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          session_id: string
+          order_id?: string | null
+          kind: string
+          method?: string
+          amount: number
+          note?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          session_id?: string
+          order_id?: string | null
+          kind?: string
+          method?: string
+          amount?: number
+          note?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: []
+      }
+      kiosk_devices: {
+        Row: {
+          id: string
+          tenant_id: string
+          location_id: string | null
+          name: string
+          pairing_code: string
+          device_token: string | null
+          enabled: boolean
+          paired_at: string | null
+          last_seen_at: string | null
+          config: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          location_id?: string | null
+          name: string
+          pairing_code: string
+          device_token?: string | null
+          enabled?: boolean
+          paired_at?: string | null
+          last_seen_at?: string | null
+          config?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          location_id?: string | null
+          name?: string
+          pairing_code?: string
+          device_token?: string | null
+          enabled?: boolean
+          paired_at?: string | null
+          last_seen_at?: string | null
+          config?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shifts: {
+        Row: {
+          id: string
+          tenant_id: string
+          location_id: string | null
+          employee_id: string
+          start_at: string
+          end_at: string
+          role: string | null
+          status: string
+          note: string | null
+          created_at: string
+          updated_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          location_id?: string | null
+          employee_id: string
+          start_at: string
+          end_at: string
+          role?: string | null
+          status?: string
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          location_id?: string | null
+          employee_id?: string
+          start_at?: string
+          end_at?: string
+          role?: string | null
+          status?: string
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+          created_by?: string | null
+        }
+        Relationships: []
+      }
       sent_emails: {
         Row: {
           id: string
@@ -956,11 +1130,13 @@ export type Database = {
           abv: string | null
           allergens: string[]
           available: boolean
+          bookable: boolean
           bundle_slots: Json | null
           category_id: string
           code: string
           created_at: string
           description: string | null
+          duration_minutes: number | null
           extra_list_id: string | null
           id: string
           image: string | null
@@ -979,11 +1155,13 @@ export type Database = {
           abv?: string | null
           allergens?: string[]
           available?: boolean
+          bookable?: boolean
           bundle_slots?: Json | null
           category_id: string
           code: string
           created_at?: string
           description?: string | null
+          duration_minutes?: number | null
           extra_list_id?: string | null
           id?: string
           image?: string | null
@@ -1002,11 +1180,13 @@ export type Database = {
           abv?: string | null
           allergens?: string[]
           available?: boolean
+          bookable?: boolean
           bundle_slots?: Json | null
           category_id?: string
           code?: string
           created_at?: string
           description?: string | null
+          duration_minutes?: number | null
           extra_list_id?: string | null
           id?: string
           image?: string | null
@@ -1573,12 +1753,14 @@ export type Database = {
           created_at: string
           customer_name: string
           customer_phone: string
+          duration_minutes: number | null
           id: string
           location_id: string | null
           menuary_user_id: string | null
           notes: string | null
           reservation_date: string
           reservation_time: string
+          service_id: string | null
           special_request_tags: string[]
           status: string
           table_id: string | null
@@ -1592,12 +1774,14 @@ export type Database = {
           created_at?: string
           customer_name: string
           customer_phone: string
+          duration_minutes?: number | null
           id?: string
           location_id?: string | null
           menuary_user_id?: string | null
           notes?: string | null
           reservation_date: string
           reservation_time: string
+          service_id?: string | null
           special_request_tags?: string[]
           status?: string
           table_id?: string | null
@@ -1611,12 +1795,14 @@ export type Database = {
           created_at?: string
           customer_name?: string
           customer_phone?: string
+          duration_minutes?: number | null
           id?: string
           location_id?: string | null
           menuary_user_id?: string | null
           notes?: string | null
           reservation_date?: string
           reservation_time?: string
+          service_id?: string | null
           special_request_tags?: string[]
           status?: string
           table_id?: string | null
@@ -1629,6 +1815,13 @@ export type Database = {
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservation_requests_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
             referencedColumns: ["id"]
           },
           {

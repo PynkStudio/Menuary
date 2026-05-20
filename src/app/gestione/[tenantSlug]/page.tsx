@@ -170,13 +170,17 @@ export default async function GestioneDashboardPage({
     },
   ].filter((a) => a.show);
 
-  const moduleEntries = TENANT_MODULES.map((mod) => ({
+  // Moduli effettivamente attivati per il tenant dal control panel di
+  // admin.menuary.it (passa per resolveTenantFeatures dentro getGestioneModuleAccess,
+  // così rispettiamo dependency e implies). Stato di default "ok": la diagnostica
+  // reale (warn/error) verrà popolata in seguito.
+  type ModuleStatus = "ok" | "warn" | "error";
+  const enabledModules = TENANT_MODULES.filter((mod) => access.modules[mod.key]).map((mod) => ({
     key: mod.key,
     name: getModuleLabel(mod.key, tenant.vertical),
-    on: Boolean(tenant.features[mod.key]),
+    status: "ok" as ModuleStatus,
+    note: null as string | null,
   }));
-  const enabledModules = moduleEntries.filter((m) => m.on);
-  const disabledModules = moduleEntries.filter((m) => !m.on);
 
   return (
     <div className="ga-dashboard">
@@ -227,19 +231,21 @@ export default async function GestioneDashboardPage({
 
       <section className="ga-section" aria-labelledby="ga-modules-title">
         <div className="ga-section-head">
-          <h2 id="ga-modules-title" className="ga-section-title">Moduli</h2>
-          <span className="ga-section-hint">
-            {enabledModules.length} attivi · {disabledModules.length} disponibili
-          </span>
+          <h2 id="ga-modules-title" className="ga-section-title">Diagnostica moduli</h2>
+          <span className="ga-section-hint">{enabledModules.length} attivi</span>
         </div>
         {enabledModules.length === 0 ? (
-          <div className="ga-empty">Nessun modulo attivo per questo tenant.</div>
+          <div className="ga-empty">
+            Nessun modulo attivato per questo tenant. Abilitali da admin.menuary.it.
+          </div>
         ) : (
           <div className="ga-modules-grid">
             {enabledModules.map((m) => (
               <div key={m.key} className="ga-module">
                 <span className="ga-module-name">{m.name}</span>
-                <span className="ga-module-status" data-on="true">attivo</span>
+                <span className="ga-module-status" data-status={m.status}>
+                  {m.status === "ok" ? "online" : m.status === "warn" ? "verifica" : "problema"}
+                </span>
               </div>
             ))}
           </div>

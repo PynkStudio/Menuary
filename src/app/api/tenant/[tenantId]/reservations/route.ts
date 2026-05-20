@@ -18,6 +18,12 @@ type CreateBody = {
   notes?: string;
   specialRequestTags?: string[];
   menuaryUserId?: string | null;
+  /** Servizio prenotato (verticale services). Se valorizzato, la durata viene
+   *  derivata da menu_items.duration_minutes. */
+  serviceId?: string | null;
+  /** Override durata in minuti. Se omesso e serviceId è valorizzato, viene
+   *  popolato dalla durata del servizio. */
+  durationMinutes?: number | null;
 };
 
 function normalizeDate(raw: string): string | null {
@@ -63,6 +69,27 @@ export async function POST(
   const tags = Array.isArray(body.specialRequestTags) ? body.specialRequestTags : [];
   const notes = body.notes?.trim() ?? "";
   const manual = reservationNeedsManualApproval(notes, tags);
+
+  // Servizio prenotato (services vertical): valida il servizio appartenga al
+  // tenant ed eredita la durata se non fornita esplicitamente.
+  let serviceId: string | null = null;
+  let durationMinutes: number | null =
+    typeof body.durationMinutes === "number" && body.durationMinutes > 0
+      ? body.durationMinutes
+      : null;
+  if (body.serviceId) {
+    const { data: svcRow } = await svc
+      .from("menu_items")
+      .select("id, duration_minutes, bookable")
+      .eq("id", body.serviceId)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+    if (!svcRow || !svcRow.bookable) {
+      return NextResponse.json({ error: "service_not_bookable" }, { status: 400 });
+    }
+    serviceId = svcRow.id;
+    if (durationMinutes === null) durationMinutes = svcRow.duration_minutes ?? null;
+  }
 
   const { data: tablesRaw, error: te } = await svc
     .from("tables")
@@ -115,6 +142,8 @@ export async function POST(
       table_id: tableId,
       assigned_area: assignedArea,
       menuary_user_id: body.menuaryUserId ?? null,
+      service_id: serviceId,
+      duration_minutes: durationMinutes,
       // TODO(google-reserve): quando la prenotazione arriva da Google Actions Center,
       // impostare channel: "google_reserve" e popolare `location_id` dalla location collegata.
       // Il campo `location_id` è già nella tabella `reservation_requests` (FK → tenant_google_locations).

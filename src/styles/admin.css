@@ -397,26 +397,37 @@
   }
   .ga-module-name { font-size: 13px; font-weight: 600; }
   .ga-module-status {
+    --ga-status-color: var(--ga-ink-faint);
+    --ga-status-halo: rgba(127, 127, 127, 0.18);
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--ga-ink-faint);
+    color: var(--ga-status-color);
   }
-  .ga-module-status[data-on="true"] { color: var(--ga-accent); }
+  .ga-module-status[data-status="ok"] {
+    --ga-status-color: #16A34A;
+    --ga-status-halo: rgba(22, 163, 74, 0.22);
+  }
+  .ga-module-status[data-status="warn"] {
+    --ga-status-color: #F59E0B;
+    --ga-status-halo: rgba(245, 158, 11, 0.24);
+  }
+  .ga-module-status[data-status="error"] {
+    --ga-status-color: #DC2626;
+    --ga-status-halo: rgba(220, 38, 38, 0.26);
+  }
   .ga-module-status::before {
     content: "";
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background: currentColor;
-    box-shadow: 0 0 0 3px var(--ga-accent-soft);
-    opacity: 0.6;
+    background: var(--ga-status-color);
+    box-shadow: 0 0 0 3px var(--ga-status-halo);
   }
-  .ga-module-status[data-on="true"]::before { opacity: 1; }
 
   .ga-empty {
     border: 1px dashed var(--ga-border);
@@ -424,6 +435,525 @@
     padding: 14px 16px;
     color: var(--ga-ink-faint);
     font-size: 12px;
+  }
+
+  .ga-coming { display: grid; gap: 14px; }
+  .ga-coming-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .ga-coming-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--ga-accent-soft);
+    color: var(--ga-accent);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .ga-coming-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    color: var(--ga-ink-muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .ga-coming-list li {
+    padding-left: 18px;
+    position: relative;
+  }
+  .ga-coming-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 1.5px;
+    background: var(--ga-accent);
+    border-radius: 2px;
+  }
+
+  /* Filtri a pillola */
+  .ga-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ga-pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--ga-border);
+    background: var(--ga-surface);
+    color: var(--ga-ink-muted);
+    font-size: 12px;
+    font-weight: 600;
+    transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+  }
+  .ga-pill:hover { color: var(--ga-ink); border-color: var(--ga-accent-ring); }
+  .ga-pill[data-active="true"] {
+    background: var(--ga-ink);
+    color: var(--ga-bg);
+    border-color: var(--ga-ink);
+  }
+
+  /* Lista prenotazioni */
+  .ga-reservation-list {
+    display: grid;
+    gap: 10px;
+  }
+  .ga-reservation {
+    display: grid;
+    grid-template-columns: 84px 1fr auto;
+    gap: 18px;
+    align-items: start;
+    padding: 16px 18px;
+    border-radius: var(--ga-radius-lg);
+    border: 1px solid var(--ga-border);
+    background: var(--ga-surface-2);
+  }
+  @media (max-width: 640px) {
+    .ga-reservation {
+      grid-template-columns: 1fr;
+    }
+  }
+  .ga-reservation-when {
+    display: grid;
+    gap: 2px;
+    padding-top: 2px;
+  }
+  .ga-reservation-date {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ga-ink-muted);
+  }
+  .ga-reservation-time {
+    font-family: var(--ga-font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ga-ink);
+    line-height: 1;
+  }
+  .ga-reservation-body { display: grid; gap: 6px; min-width: 0; }
+  .ga-reservation-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .ga-reservation-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ga-ink);
+  }
+  .ga-reservation-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: var(--ga-ink-muted);
+    font-size: 12px;
+  }
+  .ga-reservation-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ga-reservation-notes {
+    margin: 4px 0 0;
+    color: var(--ga-ink-muted);
+    font-size: 12px;
+    line-height: 1.5;
+    display: grid;
+    gap: 6px;
+  }
+  .ga-reservation-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+  .ga-reservation-tag {
+    display: inline-flex;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--ga-accent-soft);
+    color: var(--ga-accent);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ga-reservation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .ga-reservation-actions .ga-btn {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  .ga-order-lines {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 3px;
+    font-size: 12px;
+    color: var(--ga-ink-muted);
+  }
+  .ga-order-lines li {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 6px;
+    line-height: 1.45;
+  }
+  .ga-order-qty {
+    color: var(--ga-ink);
+    font-weight: 700;
+    text-align: right;
+  }
+
+  /* Form inline (cassa, turni) */
+  .ga-form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .ga-form-inline > * { flex: 1 1 140px; min-width: 0; }
+  .ga-form-inline .ga-btn { flex: 0 0 auto; }
+
+  /* Planner tavoli */
+  .ga-tables-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .ga-table {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: var(--ga-radius-lg);
+    border: 1px solid var(--ga-border);
+    background: var(--ga-surface-2);
+  }
+  .ga-table[data-open="true"] {
+    border-color: var(--ga-accent-ring);
+  }
+  .ga-table > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .ga-table-label {
+    font-family: var(--ga-font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ga-ink);
+  }
+  .ga-table-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--ga-ink-muted);
+    font-size: 12px;
+  }
+  .ga-table-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .ga-table-actions { display: flex; gap: 6px; align-items: center; }
+  .ga-table-actions form { display: contents; }
+  .ga-table-input { max-width: 100px; }
+
+  /* Cassa movimenti */
+  .ga-movements { display: grid; gap: 4px; }
+  .ga-movement {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: var(--ga-radius);
+    border: 1px solid var(--ga-border-soft);
+    background: var(--ga-surface);
+  }
+  .ga-movement-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--ga-accent-soft);
+    color: var(--ga-accent);
+  }
+  .ga-movement-icon[data-out="true"] { color: #DC2626; background: rgba(220, 38, 38, 0.12); }
+  .ga-movement-kind { font-size: 13px; font-weight: 700; color: var(--ga-ink); }
+  .ga-movement-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ga-ink-faint);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .ga-movement-amount {
+    font-family: var(--ga-font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: #16A34A;
+  }
+  .ga-movement-amount[data-out="true"] { color: #DC2626; }
+
+  /* Turni — vista settimana */
+  .ga-shifts-week {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(7, 1fr);
+  }
+  @media (max-width: 900px) {
+    .ga-shifts-week { grid-template-columns: 1fr; }
+  }
+  .ga-shifts-day {
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border-radius: var(--ga-radius);
+    border: 1px solid var(--ga-border-soft);
+    background: var(--ga-surface);
+    min-height: 110px;
+  }
+  .ga-shifts-day > header {
+    display: flex;
+    justify-content: space-between;
+    color: var(--ga-ink-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--ga-border-soft);
+    padding-bottom: 6px;
+  }
+  .ga-shifts-day-date { color: var(--ga-ink-faint); }
+  .ga-shifts-empty {
+    color: var(--ga-ink-dim);
+    font-size: 12px;
+    text-align: center;
+    padding: 16px 0;
+  }
+  .ga-shift {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--ga-accent-soft);
+    color: var(--ga-ink);
+  }
+  .ga-shift-name { font-size: 12px; font-weight: 700; }
+  .ga-shift-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--ga-ink-muted);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .ga-shift-delete {
+    background: transparent;
+    border: 0;
+    color: var(--ga-ink-faint);
+    cursor: pointer;
+    padding: 2px;
+    line-height: 0;
+  }
+  .ga-shift-delete:hover { color: #DC2626; }
+  .ga-shift-delete:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Analytics chart + top list */
+  .ga-chart {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    align-items: end;
+    height: 160px;
+  }
+  .ga-chart-bar {
+    display: grid;
+    gap: 4px;
+    text-align: center;
+    align-content: end;
+  }
+  .ga-chart-bar-track {
+    height: 110px;
+    border-radius: 6px;
+    background: var(--ga-border-soft);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+  .ga-chart-bar-fill {
+    width: 100%;
+    background: linear-gradient(180deg, var(--ga-accent), var(--ga-accent-soft));
+    border-radius: 6px;
+    min-height: 2px;
+    transition: height 200ms ease;
+  }
+  .ga-chart-bar-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ga-ink-muted);
+  }
+  .ga-chart-bar-value {
+    font-size: 10px;
+    color: var(--ga-ink-faint);
+  }
+
+  .ga-top-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+  }
+  .ga-top-list li {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--ga-radius);
+    border: 1px solid var(--ga-border-soft);
+    background: var(--ga-surface);
+    font-size: 13px;
+  }
+  .ga-top-rank {
+    font-family: var(--ga-font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--ga-accent);
+  }
+  .ga-top-name { font-weight: 600; color: var(--ga-ink); }
+  .ga-top-qty { color: var(--ga-ink-muted); font-weight: 700; }
+
+  /* Kiosk gestione */
+  .ga-kiosk { display: grid; gap: 16px; }
+  .ga-kiosk-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .ga-kiosk-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ga-ink);
+  }
+  .ga-kiosk-title h2 { margin: 0; }
+  .ga-kiosk-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .ga-kiosk-pairing {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-end;
+    padding-top: 12px;
+    border-top: 1px solid var(--ga-border-soft);
+  }
+  .ga-kiosk-pairing > div:first-child { flex: 1 1 160px; }
+  .ga-kiosk-code {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 6px 14px;
+    background: var(--ga-surface-3);
+    border: 1px dashed var(--ga-border);
+    border-radius: 10px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--ga-accent);
+  }
+  .ga-kiosk-paired {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .ga-kiosk-config {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 12px;
+    border-top: 1px solid var(--ga-border-soft);
+  }
+  @media (max-width: 720px) {
+    .ga-kiosk-config { grid-template-columns: 1fr; }
+  }
+  .ga-kiosk-group { display: grid; gap: 8px; }
+  .ga-kiosk-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--ga-surface);
+    border: 1px solid var(--ga-border-soft);
+    color: var(--ga-ink);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 160ms ease;
+  }
+  .ga-kiosk-toggle:hover { border-color: var(--ga-accent-ring); }
+  .ga-kiosk-toggle[data-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .ga-kiosk-toggle input[type="checkbox"] {
+    accent-color: var(--ga-accent);
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+  }
+  .ga-kiosk-toggle em {
+    color: var(--ga-ink-faint);
+    font-style: italic;
+    font-size: 11px;
+  }
+  .ga-kiosk-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--ga-border-soft);
+  }
+
+  /* Stato "pending" usa lo stesso meccanismo di .ga-module-status */
+  .ga-module-status[data-status="pending"] {
+    --ga-status-color: #2563EB;
+    --ga-status-halo: rgba(37, 99, 235, 0.22);
+  }
+  .ga-module-status[data-status="muted"] {
+    --ga-status-color: var(--ga-ink-faint);
+    --ga-status-halo: rgba(127, 127, 127, 0.16);
   }
 
   .ga-main {

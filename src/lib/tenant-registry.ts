@@ -79,8 +79,8 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   orderKiosk: false,
   kitchenDisplay: false,
   dinerSeparation: false,
-  reservations: true,      // "Appuntamenti"
-  tablePlanner: true,      // "Agenda e postazioni"
+  reservations: false,     // "Appuntamenti" — non attivo per officinakam
+  tablePlanner: false,     // "Agenda e postazioni" — non attivo per officinakam
   productAvailability: true,
   upselling: true,         // "Servizi aggiuntivi"
   crm: true,

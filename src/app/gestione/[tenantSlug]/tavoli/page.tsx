@@ -1,0 +1,170 @@
+import { notFound } from "next/navigation";
+import { Users, Clock, Power } from "lucide-react";
+import { TENANTS } from "@/lib/tenant-registry";
+import { authorizeGestione } from "@/lib/gestione-auth";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { openTableSession, closeTableSession } from "./actions";
+
+type Table = { id: string; label: string; area: string; seats: number | null };
+type Session = { id: string; table_id: string; opened_at: string; declared_covers: number | null; code: string };
+
+async function fetchPlanner(tenantSlug: string): Promise<{ tables: Table[]; openByTable: Map<string, Session> }> {
+  const svc = createSupabaseServiceClient();
+  if (!svc) return { tables: [], openByTable: new Map() };
+
+  const [{ data: tables }, { data: sessions }] = await Promise.all([
+    svc.from("tables").select("id, label, area, seats").eq("tenant_id", tenantSlug).order("area").order("label"),
+    svc
+      .from("table_sessions")
+      .select("id, table_id, opened_at, declared_covers, code")
+      .eq("tenant_id", tenantSlug)
+      .eq("status", "aperta"),
+  ]);
+
+  const map = new Map<string, Session>();
+  for (const s of sessions ?? []) map.set(s.table_id, s as Session);
+  return { tables: (tables ?? []) as Table[], openByTable: map };
+}
+
+function durationSince(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const mins = Math.max(0, Math.floor(ms / 60000));
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h}h ${m.toString().padStart(2, "0")}m`;
+}
+
+export default async function TavoliPage({
+  params,
+}: {
+  params: Promise<{ tenantSlug: string }>;
+}) {
+  const { tenantSlug } = await params;
+  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  if (!tenant) return null;
+
+  const auth = await authorizeGestione(tenantSlug);
+  if (!auth.ok) notFound();
+
+  const isServices = tenant.vertical === "services";
+  const planner = auth.isDemo
+    ? { tables: [] as Table[], openByTable: new Map<string, Session>() }
+    : await fetchPlanner(tenantSlug);
+
+  const byArea = new Map<string, Table[]>();
+  for (const t of planner.tables) {
+    const arr = byArea.get(t.area) ?? [];
+    arr.push(t);
+    byArea.set(t.area, arr);
+  }
+  const areas = [...byArea.keys()].sort();
+
+  const totals = {
+    total: planner.tables.length,
+    open: planner.openByTable.size,
+    free: planner.tables.length - planner.openByTable.size,
+  };
+
+  return (
+    <div className="ga-dashboard">
+      <header>
+        <span className="ga-eyebrow">Operatività</span>
+        <h1 className="ga-heading">{isServices ? "Agenda e postazioni" : "Gestione sala"}</h1>
+        <p className="ga-lead">
+          {isServices
+            ? "Stato in tempo reale delle postazioni: libere, in lavorazione, e tempo trascorso."
+            : "Stato in tempo reale dei tavoli: liberi, occupati, sessione aperta e tempo trascorso."}
+        </p>
+      </header>
+
+      <section className="ga-kpi-grid">
+        <div className="ga-kpi">
+          <span className="ga-kpi-label">{isServices ? "Postazioni" : "Tavoli"}</span>
+          <span className="ga-kpi-value">{totals.total}</span>
+        </div>
+        <div className="ga-kpi">
+          <span className="ga-kpi-label">{isServices ? "In lavorazione" : "Occupati"}</span>
+          <span className="ga-kpi-value">{totals.open}</span>
+        </div>
+        <div className="ga-kpi">
+          <span className="ga-kpi-label">Liberi</span>
+          <span className="ga-kpi-value">{totals.free}</span>
+        </div>
+      </section>
+
+      {planner.tables.length === 0 ? (
+        <div className="ga-empty">
+          {auth.isDemo
+            ? "In modalità demo non vengono mostrati i dati reali."
+            : `Nessun${isServices ? "a postazione" : " tavolo"} configurato. Aggiungili dalla sezione Sedi.`}
+        </div>
+      ) : (
+        areas.map((area) => (
+          <section key={area} className="ga-section">
+            <div className="ga-section-head">
+              <h2 className="ga-section-title">{area}</h2>
+              <span className="ga-section-hint">
+                {byArea.get(area)!.length} {isServices ? "postazioni" : "tavoli"}
+              </span>
+            </div>
+            <div className="ga-tables-grid">
+              {byArea.get(area)!.map((t) => {
+                const session = planner.openByTable.get(t.id);
+                const isOpen = Boolean(session);
+                return (
+                  <article key={t.id} className="ga-table" data-open={isOpen}>
+                    <header>
+                      <span className="ga-table-label">{t.label}</span>
+                      <span className="ga-module-status" data-status={isOpen ? "warn" : "ok"}>
+                        {isOpen ? (isServices ? "In lavorazione" : "Occupato") : "Libero"}
+                      </span>
+                    </header>
+                    <div className="ga-table-meta">
+                      {t.seats != null && (
+                        <span><Users size={12} strokeWidth={2.2} /> {t.seats} posti</span>
+                      )}
+                      {session && (
+                        <span><Clock size={12} strokeWidth={2.2} /> {durationSince(session.opened_at)}</span>
+                      )}
+                      {session?.declared_covers && (
+                        <span><Users size={12} strokeWidth={2.2} /> {session.declared_covers} pers.</span>
+                      )}
+                    </div>
+                    <div className="ga-table-actions">
+                      {isOpen && session ? (
+                        <form action={closeTableSession}>
+                          <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                          <input type="hidden" name="sessionId" value={session.id} />
+                          <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
+                            <Power size={14} strokeWidth={2.4} /> Chiudi
+                          </button>
+                        </form>
+                      ) : (
+                        <form action={openTableSession}>
+                          <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                          <input type="hidden" name="tableId" value={t.id} />
+                          <input
+                            type="number"
+                            name="covers"
+                            min={1}
+                            max={t.seats ?? 99}
+                            placeholder={isServices ? "Clienti" : "Coperti"}
+                            className="ga-input ga-table-input"
+                          />
+                          <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
+                            <Power size={14} strokeWidth={2.4} /> Apri
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ))
+      )}
+    </div>
+  );
+}
