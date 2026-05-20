@@ -762,7 +762,7 @@ export function OfficinaKamHomePage() {
             </div>
             <div className="kam-footer-bottom">
               <span>{tenant.name} · {content.footer.tagline}</span>
-              <span>Powered by Bizery</span>
+              <a href="https://bizery.it" target="_blank" rel="noopener noreferrer">Powered by Bizery</a>
             </div>
           </footer>
         </div>

@@ -173,6 +173,15 @@ export function Footer() {
               >
                 PynkStudio
               </a>
+              {" · "}
+              <a
+                href="https://menuary.it"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-pork-cream/70 transition-colors hover:text-pork-mustard hover:underline"
+              >
+                Powered by Menuary
+              </a>
             </span>
           </p>
         </div>

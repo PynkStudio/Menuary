@@ -4,10 +4,14 @@ import { useState, useEffect } from "react";
 import { libritechCatalog } from "@/lib/libritech-catalog";
 import { useShopCartStore, shopCartCount } from "@/store/shop-cart-store";
 import { LtCartDrawer } from "@/components/tenants/libritech/lt-cart-drawer";
+import { useTenant } from "@/components/core/tenant-provider";
+import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 
 const BASE_PATH = "/libritech";
 
 export function LibritechHomePage() {
+  const tenant = useTenant();
+  const staffHref = getTenantGestioneExternalHref(tenant.id);
   const lines = useShopCartStore((s) => s.lines);
   const setOpen = useShopCartStore((s) => s.setOpen);
   const openDrawer = useShopCartStore((s) => s.openDrawer);
@@ -173,8 +177,12 @@ export function LibritechHomePage() {
         {/* ── Footer ── */}
         <footer id="contatti" style={{ borderTop: "1px solid var(--lt-border)", paddingTop: "2rem", color: "#64748b", fontSize: "0.875rem" }}>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "0.5rem" }}>
-            <span>© {new Date().getFullYear()} LibriTech · Via della Startup, 42 · 20124 Milano</span>
-            <span>Demo tenant su piattaforma Bizery</span>
+            <span>
+              © {new Date().getFullYear()} LibriTech · Via della Startup, 42 · 20124 Milano
+              {" · "}
+              <a href={staffHref} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", opacity: 0.6 }}>Staff</a>
+            </span>
+            <a href="https://bizery.it" target="_blank" rel="noopener noreferrer" style={{ color: "inherit" }}>Powered by Bizery</a>
           </div>
         </footer>
       </main>

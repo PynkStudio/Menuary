@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
+import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 
 const practiceAreas = [
   {
@@ -127,6 +128,7 @@ export function StudioAranzullaHomePage() {
   const [formState, setFormState] = useState<FormState>("idle");
 
   const studioEmail = "info@studiolegalearanzulla.it";
+  const staffHref = getTenantGestioneExternalHref(tenant.id);
   const phoneHref = `tel:${content.contact.phone.replace(/\s/g, "")}`;
   const emailHref = `mailto:${studioEmail}`;
   const waHref = `https://wa.me/${content.contact.whatsappDigits}?text=${encodeURIComponent(content.contact.whatsappMessage)}`;
@@ -532,11 +534,12 @@ export function StudioAranzullaHomePage() {
           <div className="ara-footer-bottom">
             <span>
               © {new Date().getFullYear()} Studio Legale Aranzulla · Avv. Lara Aranzulla · {content.footer.tagline}
+              {" · "}
+              <a href={staffHref} target="_blank" rel="noopener noreferrer">Staff</a>
             </span>
-            <span>
-              Powered by{" "}
-              <a href="https://bizery.it" target="_blank" rel="noopener noreferrer">Bizery</a>
-            </span>
+            <a href="https://bizery.it" target="_blank" rel="noopener noreferrer">
+              Powered by Bizery
+            </a>
           </div>
         </div>
       </footer>
