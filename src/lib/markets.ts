@@ -17,6 +17,11 @@ export type MarketCode =
   | "FI"
   | "PL"
   | "CZ"
+  | "SI"
+  | "HR"
+  | "AL"
+  | "GR"
+  | "BR"
   | "AU";
 
 export type Market = {
@@ -48,6 +53,11 @@ export const MARKETS: Market[] = [
   { code: "FI", name: "Finlandia", flag: "🇫🇮", currency: "EUR", locale: "fi-FI" },
   { code: "PL", name: "Polonia", flag: "🇵🇱", currency: "PLN", locale: "pl-PL" },
   { code: "CZ", name: "Repubblica Ceca", flag: "🇨🇿", currency: "CZK", locale: "cs-CZ" },
+  { code: "SI", name: "Slovenia", flag: "🇸🇮", currency: "EUR", locale: "sl-SI" },
+  { code: "HR", name: "Croazia", flag: "🇭🇷", currency: "EUR", locale: "hr-HR" },
+  { code: "AL", name: "Albania", flag: "🇦🇱", currency: "ALL", locale: "sq-AL" },
+  { code: "GR", name: "Grecia", flag: "🇬🇷", currency: "EUR", locale: "el-GR" },
+  { code: "BR", name: "Brasile", flag: "🇧🇷", currency: "BRL", locale: "pt-BR" },
   { code: "AU", name: "Australia", flag: "🇦🇺", currency: "AUD", locale: "en-AU" },
 ];
 
@@ -79,8 +89,9 @@ export function localeForMarket(market: MarketCode): AppLocale {
   if (market === "FR" || market === "BE") return "fr";
   if (market === "DE" || market === "AT" || market === "CH") return "de";
   if (market === "ES") return "es";
-  if (market === "PT") return "pt";
+  if (market === "PT" || market === "BR") return "pt";
   if (market === "IE" || market === "AU") return "en";
+  if (market === "SI" || market === "HR" || market === "AL" || market === "GR") return "en";
   return "it";
 }
 

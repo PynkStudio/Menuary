@@ -112,72 +112,92 @@ from (
   values
     -- Italia
     ('presenza', 'IT', 'EUR', 39, 49, 'da €690'),
-    ('prenotazioni', 'IT', 'EUR', 89, 99, 'da €1.190'),
-    ('operativita', 'IT', 'EUR', 169, 199, 'da €1.990'),
+    ('prenotazioni', 'IT', 'EUR', 89, 109, 'da €1.190'),
+    ('operativita', 'IT', 'EUR', 169, 209, 'da €1.990'),
     -- Francia
-    ('presenza', 'FR', 'EUR', 49, 59, 'da €790'),
-    ('prenotazioni', 'FR', 'EUR', 99, 119, 'da €1.390'),
-    ('operativita', 'FR', 'EUR', 189, 229, 'da €2.290'),
+    ('presenza', 'FR', 'EUR', 49, 59, 'da €890'),
+    ('prenotazioni', 'FR', 'EUR', 109, 129, 'da €1.590'),
+    ('operativita', 'FR', 'EUR', 209, 249, 'da €2.490'),
     -- Germania
-    ('presenza', 'DE', 'EUR', 49, 59, 'da €790'),
-    ('prenotazioni', 'DE', 'EUR', 109, 129, 'da €1.490'),
-    ('operativita', 'DE', 'EUR', 199, 239, 'da €2.390'),
+    ('presenza', 'DE', 'EUR', 55, 65, 'da €990'),
+    ('prenotazioni', 'DE', 'EUR', 119, 139, 'da €1.690'),
+    ('operativita', 'DE', 'EUR', 229, 269, 'da €2.690'),
     -- Spagna
     ('presenza', 'ES', 'EUR', 39, 49, 'da €690'),
-    ('prenotazioni', 'ES', 'EUR', 89, 109, 'da €1.190'),
-    ('operativita', 'ES', 'EUR', 169, 199, 'da €1.990'),
+    ('prenotazioni', 'ES', 'EUR', 85, 99, 'da €1.190'),
+    ('operativita', 'ES', 'EUR', 159, 189, 'da €1.890'),
     -- Portogallo
     ('presenza', 'PT', 'EUR', 35, 45, 'da €590'),
-    ('prenotazioni', 'PT', 'EUR', 79, 95, 'da €1.090'),
-    ('operativita', 'PT', 'EUR', 149, 179, 'da €1.790'),
+    ('prenotazioni', 'PT', 'EUR', 75, 89, 'da €990'),
+    ('operativita', 'PT', 'EUR', 139, 169, 'da €1.590'),
     -- Paesi Bassi
-    ('presenza', 'NL', 'EUR', 49, 59, 'da €790'),
-    ('prenotazioni', 'NL', 'EUR', 109, 129, 'da €1.490'),
-    ('operativita', 'NL', 'EUR', 199, 239, 'da €2.390'),
+    ('presenza', 'NL', 'EUR', 55, 65, 'da €990'),
+    ('prenotazioni', 'NL', 'EUR', 119, 139, 'da €1.690'),
+    ('operativita', 'NL', 'EUR', 229, 269, 'da €2.690'),
     -- Belgio
-    ('presenza', 'BE', 'EUR', 45, 55, 'da €750'),
-    ('prenotazioni', 'BE', 'EUR', 99, 119, 'da €1.390'),
-    ('operativita', 'BE', 'EUR', 189, 229, 'da €2.290'),
+    ('presenza', 'BE', 'EUR', 49, 59, 'da €890'),
+    ('prenotazioni', 'BE', 'EUR', 109, 129, 'da €1.490'),
+    ('operativita', 'BE', 'EUR', 209, 249, 'da €2.390'),
     -- Austria
-    ('presenza', 'AT', 'EUR', 45, 55, 'da €750'),
-    ('prenotazioni', 'AT', 'EUR', 99, 119, 'da €1.390'),
-    ('operativita', 'AT', 'EUR', 189, 229, 'da €2.290'),
+    ('presenza', 'AT', 'EUR', 49, 59, 'da €890'),
+    ('prenotazioni', 'AT', 'EUR', 109, 129, 'da €1.490'),
+    ('operativita', 'AT', 'EUR', 209, 249, 'da €2.390'),
     -- Svizzera
-    ('presenza', 'CH', 'CHF', 59, 69, 'da CHF 890'),
-    ('prenotazioni', 'CH', 'CHF', 129, 149, 'da CHF 1.690'),
-    ('operativita', 'CH', 'CHF', 249, 289, 'da CHF 2.790'),
+    ('presenza', 'CH', 'CHF', 69, 79, 'da CHF 1.090'),
+    ('prenotazioni', 'CH', 'CHF', 149, 179, 'da CHF 1.990'),
+    ('operativita', 'CH', 'CHF', 289, 339, 'da CHF 3.290'),
     -- Irlanda
-    ('presenza', 'IE', 'EUR', 49, 59, 'da €790'),
-    ('prenotazioni', 'IE', 'EUR', 109, 129, 'da €1.490'),
-    ('operativita', 'IE', 'EUR', 199, 239, 'da €2.390'),
+    ('presenza', 'IE', 'EUR', 49, 59, 'da €890'),
+    ('prenotazioni', 'IE', 'EUR', 109, 129, 'da €1.590'),
+    ('operativita', 'IE', 'EUR', 209, 249, 'da €2.490'),
     -- Danimarca
-    ('presenza', 'DK', 'DKK', 399, 499, 'fra DKK 5.900'),
-    ('prenotazioni', 'DK', 'DKK', 849, 999, 'fra DKK 10.900'),
-    ('operativita', 'DK', 'DKK', 1599, 1899, 'fra DKK 17.900'),
+    ('presenza', 'DK', 'DKK', 399, 499, 'fra DKK 6.900'),
+    ('prenotazioni', 'DK', 'DKK', 899, 1099, 'fra DKK 11.900'),
+    ('operativita', 'DK', 'DKK', 1699, 1999, 'fra DKK 19.900'),
     -- Svezia
-    ('presenza', 'SE', 'SEK', 549, 649, 'från SEK 8.900'),
-    ('prenotazioni', 'SE', 'SEK', 1190, 1390, 'från SEK 15.900'),
-    ('operativita', 'SE', 'SEK', 2190, 2590, 'från SEK 25.900'),
+    ('presenza', 'SE', 'SEK', 590, 690, 'från SEK 9.900'),
+    ('prenotazioni', 'SE', 'SEK', 1290, 1490, 'från SEK 17.900'),
+    ('operativita', 'SE', 'SEK', 2490, 2890, 'från SEK 29.900'),
     -- Norvegia
-    ('presenza', 'NO', 'NOK', 590, 690, 'fra NOK 9.900'),
-    ('prenotazioni', 'NO', 'NOK', 1290, 1490, 'fra NOK 17.900'),
-    ('operativita', 'NO', 'NOK', 2390, 2790, 'fra NOK 29.900'),
+    ('presenza', 'NO', 'NOK', 649, 749, 'fra NOK 10.900'),
+    ('prenotazioni', 'NO', 'NOK', 1390, 1590, 'fra NOK 19.900'),
+    ('operativita', 'NO', 'NOK', 2690, 3090, 'fra NOK 32.900'),
     -- Finlandia
-    ('presenza', 'FI', 'EUR', 49, 59, 'da €790'),
-    ('prenotazioni', 'FI', 'EUR', 109, 129, 'da €1.490'),
-    ('operativita', 'FI', 'EUR', 199, 239, 'da €2.390'),
+    ('presenza', 'FI', 'EUR', 49, 59, 'da €890'),
+    ('prenotazioni', 'FI', 'EUR', 109, 129, 'da €1.590'),
+    ('operativita', 'FI', 'EUR', 209, 249, 'da €2.490'),
     -- Polonia
-    ('presenza', 'PL', 'PLN', 199, 249, 'od PLN 3.490'),
-    ('prenotazioni', 'PL', 'PLN', 449, 549, 'od PLN 5.990'),
-    ('operativita', 'PL', 'PLN', 849, 999, 'od PLN 9.990'),
+    ('presenza', 'PL', 'PLN', 179, 229, 'od PLN 2.990'),
+    ('prenotazioni', 'PL', 'PLN', 399, 499, 'od PLN 5.490'),
+    ('operativita', 'PL', 'PLN', 749, 899, 'od PLN 8.990'),
     -- Repubblica Ceca
-    ('presenza', 'CZ', 'CZK', 990, 1190, 'od CZK 17.900'),
+    ('presenza', 'CZ', 'CZK', 990, 1190, 'od CZK 16.900'),
     ('prenotazioni', 'CZ', 'CZK', 2190, 2590, 'od CZK 29.900'),
-    ('operativita', 'CZ', 'CZK', 4190, 4990, 'od CZK 49.900'),
+    ('operativita', 'CZ', 'CZK', 3990, 4790, 'od CZK 49.900'),
+    -- Slovenia
+    ('presenza', 'SI', 'EUR', 35, 45, 'da €590'),
+    ('prenotazioni', 'SI', 'EUR', 79, 95, 'da €1.090'),
+    ('operativita', 'SI', 'EUR', 149, 179, 'da €1.690'),
+    -- Croazia
+    ('presenza', 'HR', 'EUR', 35, 45, 'da €590'),
+    ('prenotazioni', 'HR', 'EUR', 79, 95, 'da €1.090'),
+    ('operativita', 'HR', 'EUR', 149, 179, 'da €1.690'),
+    -- Albania
+    ('presenza', 'AL', 'ALL', 2900, 3900, 'nga ALL 49.000'),
+    ('prenotazioni', 'AL', 'ALL', 6900, 8500, 'nga ALL 89.000'),
+    ('operativita', 'AL', 'ALL', 12900, 15900, 'nga ALL 149.000'),
+    -- Grecia
+    ('presenza', 'GR', 'EUR', 35, 45, 'da €590'),
+    ('prenotazioni', 'GR', 'EUR', 75, 89, 'da €990'),
+    ('operativita', 'GR', 'EUR', 139, 169, 'da €1.590'),
+    -- Brasile
+    ('presenza', 'BR', 'BRL', 199, 249, 'a partir de R$ 3.490'),
+    ('prenotazioni', 'BR', 'BRL', 449, 549, 'a partir de R$ 5.990'),
+    ('operativita', 'BR', 'BRL', 849, 999, 'a partir de R$ 9.900'),
     -- Australia
-    ('presenza', 'AU', 'AUD', 79, 95, 'from A$1,190'),
-    ('prenotazioni', 'AU', 'AUD', 179, 209, 'from A$2,190'),
-    ('operativita', 'AU', 'AUD', 329, 389, 'from A$3,690')
+    ('presenza', 'AU', 'AUD', 89, 109, 'from A$1,390'),
+    ('prenotazioni', 'AU', 'AUD', 199, 239, 'from A$2,490'),
+    ('operativita', 'AU', 'AUD', 379, 449, 'from A$4,190')
 ) as x(package_slug, country_code, currency, price_monthly, price_monthly_billing, setup_from)
 join public.platform_packages p on p.slug = x.package_slug
 on conflict (package_slug, country_code) do update set
@@ -201,22 +221,27 @@ select p.id, x.package_slug, x.country_code, x.currency, x.price_monthly, x.pric
 from (
   values
     ('ai-phone', 'IT', 'EUR', 60, 60),
-    ('ai-phone', 'FR', 'EUR', 69, 69),
-    ('ai-phone', 'DE', 'EUR', 75, 75),
+    ('ai-phone', 'FR', 'EUR', 75, 75),
+    ('ai-phone', 'DE', 'EUR', 85, 85),
     ('ai-phone', 'ES', 'EUR', 60, 60),
     ('ai-phone', 'PT', 'EUR', 55, 55),
-    ('ai-phone', 'NL', 'EUR', 75, 75),
-    ('ai-phone', 'BE', 'EUR', 69, 69),
-    ('ai-phone', 'AT', 'EUR', 69, 69),
-    ('ai-phone', 'CH', 'CHF', 89, 89),
-    ('ai-phone', 'IE', 'EUR', 75, 75),
-    ('ai-phone', 'DK', 'DKK', 549, 549),
-    ('ai-phone', 'SE', 'SEK', 790, 790),
-    ('ai-phone', 'NO', 'NOK', 849, 849),
-    ('ai-phone', 'FI', 'EUR', 75, 75),
-    ('ai-phone', 'PL', 'PLN', 299, 299),
-    ('ai-phone', 'CZ', 'CZK', 1490, 1490),
-    ('ai-phone', 'AU', 'AUD', 119, 119)
+    ('ai-phone', 'NL', 'EUR', 85, 85),
+    ('ai-phone', 'BE', 'EUR', 75, 75),
+    ('ai-phone', 'AT', 'EUR', 75, 75),
+    ('ai-phone', 'CH', 'CHF', 109, 109),
+    ('ai-phone', 'IE', 'EUR', 79, 79),
+    ('ai-phone', 'DK', 'DKK', 599, 599),
+    ('ai-phone', 'SE', 'SEK', 890, 890),
+    ('ai-phone', 'NO', 'NOK', 990, 990),
+    ('ai-phone', 'FI', 'EUR', 79, 79),
+    ('ai-phone', 'PL', 'PLN', 249, 249),
+    ('ai-phone', 'CZ', 'CZK', 1290, 1290),
+    ('ai-phone', 'SI', 'EUR', 55, 55),
+    ('ai-phone', 'HR', 'EUR', 55, 55),
+    ('ai-phone', 'AL', 'ALL', 4500, 4500),
+    ('ai-phone', 'GR', 'EUR', 55, 55),
+    ('ai-phone', 'BR', 'BRL', 299, 299),
+    ('ai-phone', 'AU', 'AUD', 139, 139)
 ) as x(package_slug, country_code, currency, price_monthly, price_monthly_billing)
 join public.platform_packages p on p.slug = x.package_slug
 on conflict (package_slug, country_code) do update set
