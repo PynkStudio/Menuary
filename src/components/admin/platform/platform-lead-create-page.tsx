@@ -14,6 +14,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { DEFAULT_MARKET, MARKETS } from "@/lib/markets";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -172,7 +173,7 @@ function computeScores(data: WizardData): { matchingScore: number; priorityScore
 // ─── Initial state ────────────────────────────────────────────────────────────
 
 function makeLocation(): Location {
-  return { id: crypto.randomUUID(), street: "", street_number: "", city: "", country: "IT" };
+  return { id: crypto.randomUUID(), street: "", street_number: "", city: "", country: DEFAULT_MARKET };
 }
 
 const INITIAL: WizardData = {
@@ -620,14 +621,10 @@ function StepMaps({ data, set, step, total }: StepProps) {
   );
 }
 
-const COUNTRY_OPTIONS = [
-  { value: "IT", label: "Italia" },
-  { value: "CH", label: "Svizzera" },
-  { value: "AT", label: "Austria" },
-  { value: "FR", label: "Francia" },
-  { value: "DE", label: "Germania" },
-  { value: "ES", label: "Spagna" },
-];
+const COUNTRY_OPTIONS = MARKETS.map((market) => ({
+  value: market.code,
+  label: `${market.flag} ${market.name}`,
+}));
 
 function StepContacts({ data, set, step, total }: StepProps) {
   function updateLocation(id: string, field: keyof Location, value: string) {

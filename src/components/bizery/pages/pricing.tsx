@@ -7,6 +7,7 @@ import {
   BIZERY_PRICING_PLANS,
   AI_ADDON,
   annualSaving,
+  type PricingAddon,
   type PricingPlan,
 } from "@/lib/platform-pricing";
 
@@ -91,9 +92,16 @@ const PRICING_FAQ = [
 
 // ─── Componente principale ────────────────────────────────────────────────────
 
-export function BizeryPricingPage({ plans = BIZERY_PRICING_PLANS }: { plans?: PricingPlan[] }) {
+export function BizeryPricingPage({
+  plans = BIZERY_PRICING_PLANS,
+  aiAddon = AI_ADDON,
+}: {
+  plans?: PricingPlan[];
+  aiAddon?: PricingAddon;
+}) {
   const [billing, setBilling] = useState<"annual" | "monthly">("annual");
   const maxSaving = Math.max(...plans.map(annualSaving));
+  const displayCurrency = plans[0]?.currency ?? "EUR";
 
   return (
     <>
@@ -152,7 +160,7 @@ export function BizeryPricingPage({ plans = BIZERY_PRICING_PLANS }: { plans?: Pr
             </div>
             {billing === "annual" && maxSaving > 0 && (
               <p className="text-xs font-semibold text-[var(--menuary-sage)]">
-                Risparmi fino a €{maxSaving}/anno
+                Risparmi fino a {formatPlanPrice(maxSaving, displayCurrency)}/anno
               </p>
             )}
           </div>
@@ -183,19 +191,19 @@ export function BizeryPricingPage({ plans = BIZERY_PRICING_PLANS }: { plans?: Pr
                 Integrazione AI al telefono.
               </h2>
               <p className="mt-6 text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
-                {AI_ADDON.description}
+                {aiAddon.description}
               </p>
               <div className="mt-8 inline-flex items-baseline gap-2">
                 <span
                   className="text-[3rem] font-medium leading-none"
                   style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
                 >
-                  +€{AI_ADDON.monthly}
+                  +{formatPlanPrice(aiAddon.monthly, aiAddon.currency ?? displayCurrency)}
                 </span>
                 <span className="text-sm text-[var(--menuary-muted)]">/mese</span>
               </div>
               <p className="mt-3 max-w-sm text-sm leading-[1.65] text-[var(--menuary-muted)]">
-                {AI_ADDON.minutesNote}
+                {aiAddon.minutesNote}
               </p>
               <Link href="/contatti" className="menuary-link mt-7 inline-flex">
                 Scopri l&apos;integrazione IA
@@ -210,18 +218,18 @@ export function BizeryPricingPage({ plans = BIZERY_PRICING_PLANS }: { plans?: Pr
                 </span>
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                    IA al telefono · 24/7
+                    {aiAddon.tagline}
                   </p>
                   <p
                     className="text-base font-medium"
                     style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
                   >
-                    Assistente vocale
+                    {aiAddon.marketing_name}
                   </p>
                 </div>
               </div>
               <ul className="mt-8 space-y-4">
-                {AI_ADDON.items.map((item) => (
+                {aiAddon.items.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-[15px] leading-[1.5]">
                     <Check size={16} strokeWidth={2} className="mt-0.5 shrink-0 text-[var(--menuary-sage)]" />
                     {item}
@@ -382,6 +390,7 @@ export function BizeryPricingPage({ plans = BIZERY_PRICING_PLANS }: { plans?: Pr
 function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "monthly" }) {
   const price = billing === "annual" ? plan.price_annual : plan.price_monthly;
   const saving = annualSaving(plan);
+  const currency = plan.currency ?? "EUR";
 
   return (
     <article
@@ -412,7 +421,7 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
 
       <div>
         <span className="menuary-price-tag">
-          <span className="amount">€{price}</span>
+          <span className="amount">{formatPlanPrice(price, currency)}</span>
           <span className="unit">/mese</span>
         </span>
         {billing === "annual" ? (
@@ -420,7 +429,7 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
             Pagamento annuale anticipato
             {saving > 0 && (
               <span className="ml-1 font-semibold text-[var(--menuary-sage)]">
-                · risparmi €{saving}/anno
+                · risparmi {formatPlanPrice(saving, currency)}/anno
               </span>
             )}
           </p>
@@ -428,7 +437,7 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
             Con pagamento annuale:{" "}
             <span className="font-semibold text-[var(--menuary-sage)]">
-              €{plan.price_annual}/mese · risparmi €{saving}/anno
+              {formatPlanPrice(plan.price_annual, currency)}/mese · risparmi {formatPlanPrice(saving, currency)}/anno
             </span>
           </p>
         )}
@@ -460,6 +469,14 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
       </Link>
     </article>
   );
+}
+
+function formatPlanPrice(amount: number, currency = "EUR"): string {
+  return new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function CellMark({ value }: { value: boolean | string }) {

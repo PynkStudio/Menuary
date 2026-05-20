@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DEFAULT_MARKET, MARKETS, MARKET_COOKIE, normalizeMarketCode } from "@/lib/markets";
 
 type FormStatus =
   | { type: "idle" }
@@ -10,6 +11,14 @@ type FormStatus =
 
 export function BizeryContactForm() {
   const [status, setStatus] = useState<FormStatus>({ type: "idle" });
+  const [market, setMarket] = useState(() => {
+    if (typeof document === "undefined") return DEFAULT_MARKET;
+    const cookieMarket = document.cookie
+      .split("; ")
+      .find((part) => part.startsWith(`${MARKET_COOKIE}=`))
+      ?.split("=")[1];
+    return normalizeMarketCode(cookieMarket) ?? DEFAULT_MARKET;
+  });
 
   async function submit(formData: FormData) {
     setStatus({ type: "sending" });
@@ -19,6 +28,7 @@ export function BizeryContactForm() {
       businessName: raw.azienda,
       email: raw.email,
       phone: raw.telefono,
+      country: market,
       interest: raw.settore,
       message: raw.messaggio,
       website: raw.website,
@@ -112,6 +122,22 @@ export function BizeryContactForm() {
           />
         </label>
       </div>
+
+      <label className="block">
+        <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--menuary-muted)]">Nazione</span>
+        <select
+          name="country"
+          value={market}
+          onChange={(event) => setMarket(normalizeMarketCode(event.target.value) ?? DEFAULT_MARKET)}
+          className="mt-2 w-full border border-[var(--menuary-line)] bg-[var(--menuary-paper)] px-4 py-3 text-sm outline-none transition focus:border-[var(--menuary-copper)]"
+        >
+          {MARKETS.map((item) => (
+            <option key={item.code} value={item.code}>
+              {item.flag} {item.name}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <label className="block">
         <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--menuary-muted)]">Settore</span>

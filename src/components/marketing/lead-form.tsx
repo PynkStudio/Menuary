@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { messages as itMessages } from "@/i18n/messages/it";
+import { DEFAULT_MARKET, MARKETS, MARKET_COOKIE, normalizeMarketCode } from "@/lib/markets";
 
 type LeadFormT = typeof itMessages["marketing"]["leadForm"];
 
@@ -13,10 +14,18 @@ type FormStatus =
 
 export function MarketingLeadForm({ t }: { t: LeadFormT }) {
   const [status, setStatus] = useState<FormStatus>({ type: "idle" });
+  const [market, setMarket] = useState(() => {
+    if (typeof document === "undefined") return DEFAULT_MARKET;
+    const cookieMarket = document.cookie
+      .split("; ")
+      .find((part) => part.startsWith(`${MARKET_COOKIE}=`))
+      ?.split("=")[1];
+    return normalizeMarketCode(cookieMarket) ?? DEFAULT_MARKET;
+  });
 
   async function submit(formData: FormData) {
     setStatus({ type: "sending" });
-    const payload = { ...Object.fromEntries(formData.entries()), vertical: "food" };
+    const payload = { ...Object.fromEntries(formData.entries()), vertical: "food", country: market };
     const response = await fetch("/api/marketing-leads", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -64,6 +73,15 @@ export function MarketingLeadForm({ t }: { t: LeadFormT }) {
           </Field>
           <Field label={t.city}>
             <input name="city" />
+          </Field>
+          <Field label={t.country}>
+            <select name="country" value={market} onChange={(event) => setMarket(normalizeMarketCode(event.target.value) ?? DEFAULT_MARKET)}>
+              {MARKETS.map((item) => (
+                <option key={item.code} value={item.code}>
+                  {item.flag} {item.name}
+                </option>
+              ))}
+            </select>
           </Field>
           <Field label={t.interest}>
             <select name="interest" defaultValue="demo">

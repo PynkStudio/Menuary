@@ -20,6 +20,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import type { PlatformLead, LeadStatus, LeadVertical } from "@/lib/platform-crm-types";
+import { getMarket, normalizeMarketCode } from "@/lib/markets";
 import {
   LEAD_STATUS_LABELS,
   LEAD_STATUS_COLORS,
@@ -323,6 +324,7 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
   const whatsappHref = lead.contact_phone
     ? `https://wa.me/${lead.contact_phone.replace(/[^\d]/g, "")}`
     : undefined;
+  const market = getMarket(normalizeMarketCode(lead.country) ?? "IT");
 
   return (
     <article className="flex items-center justify-between gap-4 rounded-2xl bg-white p-5 ring-1 ring-pork-ink/10 transition hover:ring-pork-red/30">
@@ -423,6 +425,9 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
                 {lead.province && ` (${lead.province})`}
               </>
             )}
+          </span>
+          <span className="rounded-full bg-pork-ink/5 px-2 py-0.5 text-xs font-bold text-pork-ink/55">
+            {market.flag} {market.code}
           </span>
           {lead.locations.length > 1 && (
             <span className="rounded-full bg-pork-ink/5 px-2 py-0.5 text-xs font-bold text-pork-ink/50">

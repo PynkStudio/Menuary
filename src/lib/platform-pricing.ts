@@ -37,6 +37,8 @@ export type PricingPlan = {
   price_annual: number;
   /** Canone mensile con fatturazione mensile (IVA esclusa) */
   price_monthly: number;
+  /** Valuta del mercato corrente */
+  currency?: string;
   /** Testo costo di attivazione, es. "da €690" */
   setup_from: string;
   /** Feature visibili sul sito (bullet list) */
@@ -49,8 +51,31 @@ export type PricingPlan = {
   ai_addon?: boolean;
 };
 
+export type PricingAddon = {
+  slug: string;
+  marketing_name: string;
+  tagline: string;
+  description: string;
+  monthly: number;
+  currency?: string;
+  minPlan: string;
+  setup_from?: string;
+  items: string[];
+  minutesNote: string;
+  settings: {
+    includedMinutes?: number;
+    overageMode?: "cost" | "fixed";
+    voiceCloning?: boolean;
+    channels?: string[];
+    languages?: string[];
+  };
+};
+
 /** Integrazione AI: add-on disponibile dai piani Prenotazioni e Operatività */
-export const AI_ADDON = {
+export const AI_ADDON: PricingAddon = {
+  slug: "ai-phone",
+  marketing_name: "Assistente vocale AI",
+  tagline: "IA al telefono · 24/7",
   monthly: 60,
   minPlan: "prenotazioni" as const,
   description:
@@ -65,6 +90,13 @@ export const AI_ADDON = {
   ],
   minutesNote:
     "Ogni piano include una quota mensile di minuti. Superata la soglia, gli addebiti sono a prezzo di costo — senza nessun markup da parte nostra.",
+  settings: {
+    includedMinutes: 120,
+    overageMode: "cost",
+    voiceCloning: true,
+    channels: ["phone"],
+    languages: ["it", "en", "fr", "es", "de"],
+  },
 } as const;
 
 export const PRICING_PLANS: PricingPlan[] = [
@@ -215,6 +247,7 @@ export function mergeBizeryPlans(dbPlans: PricingPlan[]): PricingPlan[] {
       ...base,
       price_annual: fromDb.price_annual,
       price_monthly: fromDb.price_monthly,
+      currency: fromDb.currency,
       setup_from: fromDb.setup_from,
       is_featured: fromDb.is_featured ?? base.is_featured,
     };

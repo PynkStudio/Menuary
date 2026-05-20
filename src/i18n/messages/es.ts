@@ -226,6 +226,7 @@ export const messages = {
       email: "Correo electrónico",
       phone: "Teléfono",
       city: "Ciudad",
+      country: "País",
       interest: "Interés",
       message: "Objetivo",
       messagePlaceholder:

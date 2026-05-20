@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 import { CLIENTS_PUBLIC_ORIGIN } from "@/lib/clients-config";
 import { STUDIO_PUBLIC_ORIGIN } from "@/lib/studio-config";
 import { getTranslations } from "@/i18n";
+import { headers } from "next/headers";
+import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
+import { MarketSelector } from "@/components/marketing/market-selector";
 
 export async function MarketingShell({ children }: { children: ReactNode }) {
   return (
@@ -16,6 +19,7 @@ export async function MarketingShell({ children }: { children: ReactNode }) {
 
 async function MarketingHeader() {
   const t = (await getTranslations("marketing")).shell;
+  const currentMarket = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;
   return (
     <header className="border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70 sticky top-0 z-40">
       <div className="menuary-container flex items-center justify-between py-5">
@@ -31,6 +35,9 @@ async function MarketingHeader() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
+          <div className="hidden sm:block">
+            <MarketSelector currentMarket={currentMarket} />
+          </div>
           <a
             href={`${CLIENTS_PUBLIC_ORIGIN}/login`}
             className="menuary-button menuary-button-light text-sm md:hidden"
@@ -41,6 +48,9 @@ async function MarketingHeader() {
             {t.nav.contact}
           </Link>
         </div>
+      </div>
+      <div className="menuary-container pb-4 sm:hidden">
+        <MarketSelector currentMarket={currentMarket} />
       </div>
     </header>
   );

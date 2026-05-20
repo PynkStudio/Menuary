@@ -2,7 +2,14 @@ import { TENANTS } from "./tenant-registry";
 import { getTenantContent } from "./tenant-content";
 import { createSupabaseServiceClient } from "./supabase/service";
 import type { TenantProfile } from "./tenant";
-import { PRICING_PLANS, mergeBizeryPlans, type PricingPlan } from "./platform-pricing";
+import {
+  AI_ADDON,
+  PRICING_PLANS,
+  mergeBizeryPlans,
+  type PricingAddon,
+  type PricingPlan,
+} from "./platform-pricing";
+import { DEFAULT_MARKET, getMarket, type MarketCode } from "./markets";
 
 export type MarketingTenant = {
   id: string;
@@ -121,9 +128,71 @@ export async function getMarketingHomeData(
 /**
  * Piani Bizery: prezzi da Supabase, copy adattata per il verticale services.
  */
-export async function fetchBizeryPricingPlans(): Promise<PricingPlan[]> {
-  const dbPlans = await fetchPricingPlans();
+export async function fetchBizeryPricingPlans(marketCode: MarketCode = DEFAULT_MARKET): Promise<PricingPlan[]> {
+  const dbPlans = await fetchPricingPlans(marketCode);
   return mergeBizeryPlans(dbPlans);
+}
+
+export async function fetchPricingAddons(marketCode: MarketCode = DEFAULT_MARKET): Promise<PricingAddon[]> {
+  const supabase = createSupabaseServiceClient();
+  if (!supabase) return [AI_ADDON];
+
+  const { data, error } = await (supabase as unknown as {
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (column: string, value: unknown) => {
+          eq: (column: string, value: unknown) => {
+            order: (column: string, options: { ascending: boolean }) => Promise<{ data: Array<Record<string, unknown>> | null; error: unknown }>;
+          };
+        };
+      };
+    };
+  })
+    .from("platform_packages")
+    .select(
+      "slug, marketing_name, tagline, marketing_description, price_monthly, price_monthly_billing, setup_from, marketing_items, min_package_slug, settings",
+    )
+    .eq("package_kind", "addon")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error || !data || data.length === 0) return [AI_ADDON];
+
+  const slugs = data.map((row) => String(row.slug));
+  const { data: marketRows } = await (supabase as unknown as {
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (column: string, value: string) => {
+          in: (column: string, values: string[]) => Promise<{ data: Array<Record<string, unknown>> | null }>;
+        };
+      };
+    };
+  })
+    .from("platform_package_market_prices")
+    .select("package_slug, currency, price_monthly, setup_from")
+    .eq("country_code", marketCode)
+    .in("package_slug", slugs);
+
+  const marketBySlug = new Map((marketRows ?? []).map((row) => [String(row.package_slug), row]));
+  const fallbackMarket = getMarket(marketCode);
+
+  return data.map((row) => {
+    const market = marketBySlug.get(String(row.slug));
+    const settings = (row.settings && typeof row.settings === "object" ? row.settings : {}) as PricingAddon["settings"];
+    return {
+      slug: String(row.slug),
+      marketing_name: String(row.marketing_name ?? row.slug),
+      tagline: String(row.tagline ?? ""),
+      description: String(row.marketing_description ?? ""),
+      monthly: Number(market?.price_monthly ?? row.price_monthly ?? 0),
+      currency: String(market?.currency ?? fallbackMarket.currency),
+      minPlan: String(row.min_package_slug ?? "prenotazioni"),
+      setup_from: market?.setup_from != null ? String(market.setup_from) : (row.setup_from ? String(row.setup_from) : undefined),
+      items: Array.isArray(row.marketing_items) ? row.marketing_items.map(String) : [],
+      minutesNote: String(settings.overageMode === "fixed" ? "Extra minuti addebitati secondo listino concordato." : AI_ADDON.minutesNote),
+      settings,
+    };
+  });
 }
 
 /**
@@ -134,30 +203,63 @@ export async function fetchBizeryPricingPlans(): Promise<PricingPlan[]> {
  *   price_monthly          → price_annual  (canone mensile equiv. pagamento annuale)
  *   price_monthly_billing  → price_monthly (canone mensile con fatturazione mensile)
  */
-export async function fetchPricingPlans(): Promise<PricingPlan[]> {
+export async function fetchPricingPlans(marketCode: MarketCode = DEFAULT_MARKET): Promise<PricingPlan[]> {
   const supabase = createSupabaseServiceClient();
   if (!supabase) return PRICING_PLANS;
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as unknown as {
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (column: string, value: unknown) => {
+          eq: (column: string, value: unknown) => {
+            order: (column: string, options: { ascending: boolean }) => Promise<{ data: Array<Record<string, unknown>> | null; error: unknown }>;
+          };
+        };
+      };
+    };
+  })
     .from("platform_packages")
     .select(
       "slug, marketing_name, tagline, marketing_description, price_monthly, price_monthly_billing, setup_from, marketing_items, is_featured, cta_label",
     )
+    .eq("package_kind", "base")
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
 
   if (error || !data || data.length === 0) return PRICING_PLANS;
 
-  return data.map((row) => ({
-    slug: row.slug,
-    marketing_name: row.marketing_name ?? row.slug,
-    tagline: row.tagline ?? "",
-    description: row.marketing_description ?? "",
-    price_annual: row.price_monthly,
-    price_monthly: row.price_monthly_billing ?? row.price_monthly,
-    setup_from: row.setup_from ?? "",
-    marketing_items: row.marketing_items ?? [],
-    is_featured: row.is_featured,
-    cta_label: row.cta_label ?? undefined,
-  }));
+  const packageIds = data.map((row) => String(row.slug));
+  const { data: marketRows } = await (supabase as unknown as {
+    from: (table: string) => {
+      select: (columns: string) => {
+        eq: (column: string, value: string) => {
+          in: (column: string, values: string[]) => Promise<{ data: Array<Record<string, unknown>> | null }>;
+        };
+      };
+    };
+  })
+    .from("platform_package_market_prices")
+    .select("package_slug, currency, price_monthly, price_monthly_billing, setup_from")
+    .eq("country_code", marketCode)
+    .in("package_slug", packageIds);
+
+  const marketBySlug = new Map((marketRows ?? []).map((row) => [String(row.package_slug), row]));
+
+  return data.map((row) => {
+    const market = marketBySlug.get(String(row.slug));
+    const fallbackMarket = getMarket(marketCode);
+    return {
+    slug: String(row.slug),
+    marketing_name: String(row.marketing_name ?? row.slug),
+    tagline: String(row.tagline ?? ""),
+    description: String(row.marketing_description ?? ""),
+    price_annual: Number(market?.price_monthly ?? row.price_monthly),
+    price_monthly: Number(market?.price_monthly_billing ?? row.price_monthly_billing ?? row.price_monthly),
+    currency: String(market?.currency ?? fallbackMarket.currency),
+    setup_from: String(market?.setup_from ?? row.setup_from ?? ""),
+    marketing_items: Array.isArray(row.marketing_items) ? row.marketing_items.map(String) : [],
+    is_featured: row.is_featured === true,
+    cta_label: row.cta_label ? String(row.cta_label) : undefined,
+  };
+  });
 }

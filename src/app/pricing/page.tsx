@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getPlatformModeFromHost } from "@/lib/platform";
-import { fetchPricingPlans } from "@/lib/marketing-data";
+import { fetchPricingAddons, fetchPricingPlans } from "@/lib/marketing-data";
+import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
 import { MarketingPricingPage, PRICING_FAQ } from "@/components/marketing/pages/pricing";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import {
@@ -17,13 +18,18 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  if (getPlatformModeFromHost((await headers()).get("host")) !== "marketing") {
+  const h = await headers();
+  if (getPlatformModeFromHost(h.get("host")) !== "marketing") {
     notFound();
   }
-  const plans = await fetchPricingPlans();
+  const market = normalizeMarketCode(h.get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const [plans, addons] = await Promise.all([
+    fetchPricingPlans(market),
+    fetchPricingAddons(market),
+  ]);
   return (
     <MarketingShell>
-      <MarketingPricingPage plans={plans} />
+      <MarketingPricingPage plans={plans} aiAddon={addons[0]} />
       <FAQSection
         items={PRICING_FAQ}
         title="Tutto quello che vuoi sapere prima di iniziare."

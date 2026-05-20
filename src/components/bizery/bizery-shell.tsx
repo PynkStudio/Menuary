@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { getTranslations } from "@/i18n";
+import { headers } from "next/headers";
+import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
+import { MarketSelector } from "@/components/marketing/market-selector";
 
 const BIZERY_VARS: Record<string, string> = {
   "--menuary-ink":        "#0F172A",
@@ -35,6 +38,7 @@ export async function BizeryShell({ children }: { children: ReactNode }) {
 
 async function BizeryHeader() {
   const t = (await getTranslations("bizery")).shell;
+  const currentMarket = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;
   return (
     <header className="border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70 sticky top-0 z-40">
       <div className="menuary-container flex items-center justify-between py-5">
@@ -53,6 +57,9 @@ async function BizeryHeader() {
           <a href={GESTIONE_URL} className="menuary-nav-link">{t.nav.access}</a>
         </nav>
         <div className="flex items-center gap-2">
+          <div className="hidden sm:block">
+            <MarketSelector currentMarket={currentMarket} />
+          </div>
           <a
             href={GESTIONE_URL}
             className="menuary-button menuary-button-light text-sm md:hidden"
@@ -63,6 +70,9 @@ async function BizeryHeader() {
             {t.nav.contact}
           </Link>
         </div>
+      </div>
+      <div className="menuary-container pb-4 sm:hidden">
+        <MarketSelector currentMarket={currentMarket} />
       </div>
     </header>
   );

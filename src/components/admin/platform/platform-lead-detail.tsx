@@ -67,6 +67,7 @@ import {
 import { getModuleLabel } from "@/lib/vertical";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import { useMailLauncher } from "@/components/admin/inbox/mail-launcher";
+import { getMarket, normalizeMarketCode } from "@/lib/markets";
 
 type Tab = "anagrafica" | "fatturazione" | "abbonamento" | "pagamenti" | "note";
 
@@ -122,6 +123,7 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   const [showUpdateAnimaModal, setShowUpdateAnimaModal] = useState(false);
   const [venditori, setVenditori] = useState<Venditore[]>([]);
   const [assignSaving, setAssignSaving] = useState(false);
+  const market = getMarket(normalizeMarketCode(lead.country) ?? "IT");
 
   useEffect(() => {
     fetch("/api/admin/venditori")
@@ -290,6 +292,9 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
             >
               <Flame size={12} />
               {LEAD_TEMPERATURE_LABELS[lead.temperature]}
+            </span>
+            <span className="rounded-full bg-pork-ink/5 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-pork-ink/60">
+              {market.flag} {market.code}
             </span>
           </div>
           <p className="mt-1 text-sm text-pork-ink/55">
@@ -621,6 +626,7 @@ function TabAnagrafica({
   const phoneHref = lead.contact_phone ? `tel:${lead.contact_phone.replace(/\s/g, "")}` : null;
   const whatsappHref = lead.contact_phone ? `https://wa.me/${lead.contact_phone.replace(/[^\d]/g, "")}` : null;
   const mailLauncher = useMailLauncher();
+  const market = getMarket(normalizeMarketCode(lead.country) ?? "IT");
 
   return (
     <div className="space-y-6">
@@ -642,6 +648,7 @@ function TabAnagrafica({
       <FieldGrid>
         <Field label="Nome attività" value={lead.business_name} />
         <Field label="Slug / futuro ID tenant" value={lead.business_slug} />
+        <Field label="Nazione / mercato" value={`${market.flag} ${market.name} (${market.code})`} />
       </FieldGrid>
 
       <SectionTitle icon={User}>Responsabile</SectionTitle>

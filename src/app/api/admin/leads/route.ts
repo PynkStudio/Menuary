@@ -6,6 +6,7 @@ import {
 } from "@/lib/admin-permissions";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { DEFAULT_MARKET, normalizeMarketCode } from "@/lib/markets";
 
 type LocationInput = {
   name?: string | null;
@@ -53,6 +54,7 @@ type LeadCreateBody = {
   city?: string | null;
   province?: string | null;
   postal_code?: string | null;
+  country?: string | null;
 };
 
 function normalizeText(value: unknown): string | null {
@@ -144,6 +146,7 @@ export async function POST(request: Request) {
   const legacyAddress =
     [firstStreet, firstStreetNum].filter(Boolean).join(" ") || normalizeText(body.address);
   const legacyCity = normalizeText(firstLoc?.city) ?? normalizeText(body.city);
+  const legacyCountry = normalizeMarketCode(firstLoc?.country ?? body.country) ?? DEFAULT_MARKET;
 
   const admin = createSupabaseAdminClient();
 
@@ -182,7 +185,7 @@ export async function POST(request: Request) {
       city: legacyCity,
       province: normalizeText(body.province),
       postal_code: normalizeText(body.postal_code),
-      country: "IT",
+      country: legacyCountry,
     } as never)
     .select("id")
     .single();
@@ -195,7 +198,7 @@ export async function POST(request: Request) {
     const streetNum = normalizeText(loc.street_number);
     const city = normalizeText(loc.city);
     const address = [street, streetNum].filter(Boolean).join(" ") || null;
-    const country = normalizeText(loc.country) ?? "IT";
+    const country = normalizeMarketCode(loc.country) ?? legacyCountry;
     return {
       lead_id: lead.id,
       name: normalizeText(loc.name) ?? (idx === 0 ? "Sede principale" : `Sede ${idx + 1}`),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Package,
   Plus,
@@ -15,16 +15,21 @@ import {
   Check,
   ExternalLink,
   Globe,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PlatformPackage } from "@/lib/platform-crm-types";
 import { TENANT_MODULES, TENANT_MODULE_CATEGORIES } from "@/lib/tenant-modules";
 import type { TenantFeatureKey } from "@/lib/tenant";
 import { PRICING_PLANS } from "@/lib/platform-pricing";
+import { MARKETS, type MarketCode } from "@/lib/markets";
 
 // ─── Tipo esteso con campi marketing ─────────────────────────────────────────
 
 type PlatformPackageExtended = PlatformPackage & {
+  package_kind?: "base" | "addon";
+  min_package_slug?: string | null;
+  settings?: Record<string, unknown> | null;
   marketing_name: string | null;
   tagline: string | null;
   marketing_description: string | null;
@@ -33,6 +38,15 @@ type PlatformPackageExtended = PlatformPackage & {
   marketing_items: string[];
   is_featured: boolean;
   cta_label: string | null;
+  market_prices?: PackageMarketPrice[];
+};
+
+type PackageMarketPrice = {
+  country_code: MarketCode;
+  currency: string;
+  price_monthly: number | null;
+  price_monthly_billing: number | null;
+  setup_from: string | null;
 };
 
 // ─── Mock dati (da platform-pricing.ts come fonte) ───────────────────────────
@@ -83,6 +97,19 @@ type PackageForm = {
   marketing_items_raw: string; // newline-separated
   is_featured: boolean;
   cta_label: string;
+  package_kind: "base" | "addon";
+  min_package_slug: string;
+  included_minutes: string;
+  overage_mode: "cost" | "fixed";
+  voice_cloning: boolean;
+  channels_raw: string;
+  languages_raw: string;
+  market_prices: Record<MarketCode, {
+    currency: string;
+    price_monthly: string;
+    price_monthly_billing: string;
+    setup_from: string;
+  }>;
   // Tecnico
   slug: string;
   modules: TenantFeatureKey[];
@@ -100,13 +127,46 @@ function emptyForm(): PackageForm {
     marketing_items_raw: "",
     is_featured: false,
     cta_label: "",
+    package_kind: "base",
+    min_package_slug: "",
+    included_minutes: "",
+    overage_mode: "cost",
+    voice_cloning: false,
+    channels_raw: "",
+    languages_raw: "",
+    market_prices: emptyMarketPrices(),
     slug: "",
     modules: [],
     is_active: true,
   };
 }
 
+function emptyMarketPrices() {
+  return Object.fromEntries(
+    MARKETS.map((market) => [
+      market.code,
+      {
+        currency: market.currency,
+        price_monthly: "",
+        price_monthly_billing: "",
+        setup_from: "",
+      },
+    ]),
+  ) as PackageForm["market_prices"];
+}
+
 function pkgToForm(p: PlatformPackageExtended): PackageForm {
+  const marketPrices = emptyMarketPrices();
+  for (const price of p.market_prices ?? []) {
+    marketPrices[price.country_code] = {
+      currency: price.currency,
+      price_monthly: price.price_monthly != null ? String(price.price_monthly) : "",
+      price_monthly_billing:
+        price.price_monthly_billing != null ? String(price.price_monthly_billing) : "",
+      setup_from: price.setup_from ?? "",
+    };
+  }
+  const settings = (p.settings ?? {}) as Record<string, unknown>;
   return {
     marketing_name: p.marketing_name ?? "",
     tagline: p.tagline ?? "",
@@ -117,6 +177,14 @@ function pkgToForm(p: PlatformPackageExtended): PackageForm {
     marketing_items_raw: p.marketing_items.join("\n"),
     is_featured: p.is_featured,
     cta_label: p.cta_label ?? "",
+    package_kind: p.package_kind === "addon" ? "addon" : "base",
+    min_package_slug: p.min_package_slug ?? "",
+    included_minutes: settings.includedMinutes != null ? String(settings.includedMinutes) : "",
+    overage_mode: settings.overageMode === "fixed" ? "fixed" : "cost",
+    voice_cloning: settings.voiceCloning === true,
+    channels_raw: Array.isArray(settings.channels) ? settings.channels.join(", ") : "",
+    languages_raw: Array.isArray(settings.languages) ? settings.languages.join(", ") : "",
+    market_prices: marketPrices,
     slug: p.slug,
     modules: [...p.modules],
     is_active: p.is_active,
@@ -130,6 +198,37 @@ export function PlatformPackagesPage() {
   const [editing, setEditing] = useState<string | "new" | null>(null);
   const [form, setForm] = useState<PackageForm>(emptyForm());
   const [tab, setTab] = useState<"marketing" | "tech">("marketing");
+  const [kindFilter, setKindFilter] = useState<"base" | "addon">("base");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/admin/packages")
+      .then((res) => res.json())
+      .then((json: { packages?: PlatformPackageExtended[]; market_prices?: PackageMarketPrice[]; error?: string }) => {
+        if (!alive) return;
+        if (json.error) throw new Error(json.error);
+        const marketPrices = json.market_prices ?? [];
+        setPackages(
+          (json.packages ?? []).map((pkg) => ({
+            ...pkg,
+            market_prices: marketPrices.filter((price) => price.country_code && (price as PackageMarketPrice & { package_slug?: string }).package_slug === pkg.slug),
+          })),
+        );
+      })
+      .catch((err) => {
+        if (!alive) return;
+        setError(err instanceof Error ? err.message : "Non riesco a caricare i pacchetti.");
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   function startNew() {
     setForm(emptyForm());
@@ -147,64 +246,65 @@ export function PlatformPackagesPage() {
     setEditing(null);
   }
 
-  function savePackage() {
+  async function savePackage() {
+    setSaving(true);
+    setError(null);
     const annual = parseFloat(form.price_annual) || 0;
     const monthly = form.price_monthly_billing ? parseFloat(form.price_monthly_billing) : null;
     const items = form.marketing_items_raw.split("\n").map((l) => l.trim()).filter(Boolean);
+    const marketPrices = MARKETS.map((market) => ({
+      country_code: market.code,
+      currency: form.market_prices[market.code].currency,
+      price_monthly: form.market_prices[market.code].price_monthly || null,
+      price_monthly_billing: form.market_prices[market.code].price_monthly_billing || null,
+      setup_from: form.market_prices[market.code].setup_from || null,
+    })).filter((row) => row.price_monthly || row.price_monthly_billing || row.setup_from);
 
-    if (editing === "new") {
-      const newPkg: PlatformPackageExtended = {
-        id: `pkg-${Date.now()}`,
-        name: form.slug || form.marketing_name.toLowerCase().replace(/\s+/g, "-"),
-        slug: form.slug || form.marketing_name.toLowerCase().replace(/\s+/g, "-"),
-        description: form.marketing_description || null,
-        price_monthly: annual,
-        price_yearly: annual * 10,
-        currency: "EUR",
-        vertical: "both",
-        adapted_name: form.slug === "prenotazioni" ? "Appuntamenti" : null,
-        modules: form.modules,
-        is_active: form.is_active,
-        sort_order: packages.length + 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        marketing_name: form.marketing_name || null,
-        tagline: form.tagline || null,
-        marketing_description: form.marketing_description || null,
-        price_monthly_billing: monthly,
-        setup_from: form.setup_from || null,
-        marketing_items: items,
-        is_featured: form.is_featured,
-        cta_label: form.cta_label || null,
-      };
-      setPackages((prev) => [...prev, newPkg]);
-    } else {
+    try {
+      const res = await fetch("/api/admin/packages", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editing === "new" ? null : editing,
+          slug: form.slug,
+          marketing_name: form.marketing_name,
+          tagline: form.tagline,
+          marketing_description: form.marketing_description,
+          price_monthly: annual,
+          price_monthly_billing: monthly,
+          setup_from: form.setup_from || null,
+          marketing_items: items,
+          is_featured: form.is_featured,
+          cta_label: form.cta_label || null,
+          package_kind: form.package_kind,
+          min_package_slug: form.min_package_slug || null,
+          settings: {
+            includedMinutes: form.included_minutes ? Number(form.included_minutes) : undefined,
+            overageMode: form.overage_mode,
+            voiceCloning: form.voice_cloning,
+            channels: form.channels_raw.split(",").map((item) => item.trim()).filter(Boolean),
+            languages: form.languages_raw.split(",").map((item) => item.trim()).filter(Boolean),
+          },
+          modules: form.modules,
+          is_active: form.is_active,
+          sort_order: editing === "new" ? packages.length + 1 : packages.find((p) => p.id === editing)?.sort_order,
+          market_prices: marketPrices,
+        }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { error?: string; package?: PlatformPackageExtended; market_prices?: PackageMarketPrice[] };
+      if (!res.ok || json.error || !json.package) throw new Error(json.error ?? "Salvataggio non riuscito.");
+      const saved = { ...json.package, market_prices: json.market_prices ?? [] };
       setPackages((prev) =>
-        prev.map((p) =>
-          p.id === editing
-            ? {
-                ...p,
-                slug: form.slug,
-                description: form.marketing_description || null,
-                price_monthly: annual,
-                price_yearly: annual * 10,
-                modules: form.modules,
-                is_active: form.is_active,
-                updated_at: new Date().toISOString(),
-                marketing_name: form.marketing_name || null,
-                tagline: form.tagline || null,
-                marketing_description: form.marketing_description || null,
-                price_monthly_billing: monthly,
-                setup_from: form.setup_from || null,
-                marketing_items: items,
-                is_featured: form.is_featured,
-                cta_label: form.cta_label || null,
-              }
-            : p,
-        ),
+        editing === "new"
+          ? [...prev, saved]
+          : prev.map((p) => (p.id === editing ? saved : p)),
       );
+      setEditing(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Salvataggio non riuscito.");
+    } finally {
+      setSaving(false);
     }
-    setEditing(null);
   }
 
   function toggleModule(key: TenantFeatureKey) {
@@ -271,6 +371,34 @@ export function PlatformPackagesPage() {
         )}
       </header>
 
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+          {error}
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex items-center gap-2 rounded-2xl bg-white px-5 py-4 text-sm font-bold text-pork-ink/60 ring-1 ring-pork-ink/10">
+          <Loader2 size={16} className="animate-spin" />
+          Caricamento pacchetti da Supabase…
+        </div>
+      )}
+
+      <div className="inline-flex rounded-xl bg-white p-1 ring-1 ring-pork-ink/10">
+        {(["base", "addon"] as const).map((kind) => (
+          <button
+            key={kind}
+            onClick={() => setKindFilter(kind)}
+            className={cn(
+              "rounded-lg px-4 py-2 text-sm font-black transition",
+              kindFilter === kind ? "bg-pork-ink text-white" : "text-pork-ink/55 hover:text-pork-ink",
+            )}
+          >
+            {kind === "base" ? "Piani principali" : "Piani aggiuntivi"}
+          </button>
+        ))}
+      </div>
+
       {/* Form */}
       {editing && (
         <PackageFormPanel
@@ -280,6 +408,8 @@ export function PlatformPackagesPage() {
           onChange={setForm}
           onToggleModule={toggleModule}
           onSave={savePackage}
+          saving={saving}
+          basePackages={packages.filter((p) => (p.package_kind ?? "base") === "base")}
           onCancel={cancelEdit}
           onTabChange={setTab}
         />
@@ -287,12 +417,12 @@ export function PlatformPackagesPage() {
 
       {/* Lista */}
       <div className="space-y-4">
-        {packages.map((pkg, idx) => (
+        {packages.filter((pkg) => (pkg.package_kind ?? "base") === kindFilter).map((pkg, idx, visible) => (
           <PackageCard
             key={pkg.id}
             pkg={pkg}
             isFirst={idx === 0}
-            isLast={idx === packages.length - 1}
+            isLast={idx === visible.length - 1}
             isEditing={editing === pkg.id}
             onEdit={() => startEdit(pkg)}
             onMoveUp={() => moveUp(pkg.id)}
@@ -454,6 +584,8 @@ function PackageFormPanel({
   onChange,
   onToggleModule,
   onSave,
+  saving,
+  basePackages,
   onCancel,
   onTabChange,
 }: {
@@ -463,6 +595,8 @@ function PackageFormPanel({
   onChange: (f: PackageForm) => void;
   onToggleModule: (k: TenantFeatureKey) => void;
   onSave: () => void;
+  saving: boolean;
+  basePackages: PlatformPackageExtended[];
   onCancel: () => void;
   onTabChange: (t: "marketing" | "tech") => void;
 }) {
@@ -503,6 +637,12 @@ function PackageFormPanel({
             <FormField label="Nome commerciale *">
               <input value={form.marketing_name} onChange={(e) => set("marketing_name", e.target.value)} className="input-base" placeholder="Es. Operatività" />
             </FormField>
+            <FormField label="Tipo piano">
+              <select value={form.package_kind} onChange={(e) => set("package_kind", e.target.value === "addon" ? "addon" : "base")} className="input-base">
+                <option value="base">Piano principale</option>
+                <option value="addon">Piano aggiuntivo / add-on</option>
+              </select>
+            </FormField>
             <FormField label="Tagline breve">
               <input value={form.tagline} onChange={(e) => set("tagline", e.target.value)} className="input-base" placeholder="Es. Sito + gestionale" />
             </FormField>
@@ -541,6 +681,43 @@ function PackageFormPanel({
             <p className="mt-1 text-[11px] text-pork-ink/40">Ogni riga diventa un bullet nella card del sito.</p>
           </FormField>
 
+          {form.package_kind === "addon" && (
+            <div className="grid gap-4 rounded-2xl bg-white p-5 ring-1 ring-pork-ink/10 sm:grid-cols-2">
+              <FormField label="Piano minimo richiesto">
+                <select value={form.min_package_slug} onChange={(e) => set("min_package_slug", e.target.value)} className="input-base">
+                  <option value="">Nessuno</option>
+                  {basePackages.map((pkg) => (
+                    <option key={pkg.slug} value={pkg.slug}>{pkg.marketing_name ?? pkg.slug}</option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="Minuti inclusi / mese">
+                <input type="number" value={form.included_minutes} onChange={(e) => set("included_minutes", e.target.value)} className="input-base" placeholder="120" />
+              </FormField>
+              <FormField label="Extra minuti">
+                <select value={form.overage_mode} onChange={(e) => set("overage_mode", e.target.value === "fixed" ? "fixed" : "cost")} className="input-base">
+                  <option value="cost">Prezzo di costo</option>
+                  <option value="fixed">Listino fisso concordato</option>
+                </select>
+              </FormField>
+              <FormField label="Cloning vocale">
+                <button
+                  type="button"
+                  onClick={() => set("voice_cloning", !form.voice_cloning)}
+                  className={cn("rounded-full px-4 py-3 text-sm font-bold", form.voice_cloning ? "bg-pork-green/15 text-pork-green" : "bg-pork-ink/5 text-pork-ink/50")}
+                >
+                  {form.voice_cloning ? "Incluso / disponibile" : "Non incluso"}
+                </button>
+              </FormField>
+              <FormField label="Canali" hint="Separati da virgola">
+                <input value={form.channels_raw} onChange={(e) => set("channels_raw", e.target.value)} className="input-base" placeholder="phone, whatsapp" />
+              </FormField>
+              <FormField label="Lingue" hint="Codici separati da virgola">
+                <input value={form.languages_raw} onChange={(e) => set("languages_raw", e.target.value)} className="input-base" placeholder="it, en, fr, es, de" />
+              </FormField>
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -553,6 +730,8 @@ function PackageFormPanel({
               {form.is_featured ? "★ In evidenza" : "☆ Segna come consigliato"}
             </button>
           </div>
+
+          <MarketPricesEditor form={form} onChange={onChange} />
         </div>
       )}
 
@@ -601,10 +780,11 @@ function PackageFormPanel({
       <div className="mt-6 flex gap-3">
         <button
           onClick={onSave}
-          disabled={!form.marketing_name || !form.price_annual}
+          disabled={saving || !form.marketing_name || !form.price_annual}
           className="inline-flex items-center gap-2 rounded-full bg-pork-red px-5 py-2.5 font-bold text-white disabled:opacity-40"
         >
-          <Save size={15} /> {isNew ? "Crea pacchetto" : "Salva modifiche"}
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+          {isNew ? "Crea pacchetto" : "Salva modifiche"}
         </button>
         <button onClick={onCancel} className="rounded-full border border-pork-ink/15 px-5 py-2.5 font-bold text-pork-ink/60">
           Annulla
@@ -615,6 +795,86 @@ function PackageFormPanel({
 }
 
 // ─── Primitivi ────────────────────────────────────────────────────────────────
+
+function MarketPricesEditor({
+  form,
+  onChange,
+}: {
+  form: PackageForm;
+  onChange: (f: PackageForm) => void;
+}) {
+  function setMarket(
+    code: MarketCode,
+    field: keyof PackageForm["market_prices"][MarketCode],
+    value: string,
+  ) {
+    onChange({
+      ...form,
+      market_prices: {
+        ...form.market_prices,
+        [code]: {
+          ...form.market_prices[code],
+          [field]: value,
+        },
+      },
+    });
+  }
+
+  return (
+    <div className="rounded-2xl bg-white p-5 ring-1 ring-pork-ink/10">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-sm font-black text-pork-ink">Listini per paese</p>
+          <p className="mt-1 text-xs text-pork-ink/45">
+            Se un campo resta vuoto, quel mercato usa il prezzo base del pacchetto.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-3">
+        {MARKETS.map((market) => {
+          const row = form.market_prices[market.code];
+          return (
+            <div
+              key={market.code}
+              className="grid gap-2 rounded-2xl border border-pork-ink/10 p-3 md:grid-cols-[1.2fr_0.7fr_1fr_1fr_1.2fr]"
+            >
+              <div className="flex items-center gap-2 text-sm font-black">
+                <span>{market.flag}</span>
+                <span>{market.name}</span>
+              </div>
+              <input
+                value={row.currency}
+                onChange={(event) => setMarket(market.code, "currency", event.target.value.toUpperCase())}
+                className="input-base font-mono text-xs"
+                placeholder={market.currency}
+              />
+              <input
+                type="number"
+                value={row.price_monthly}
+                onChange={(event) => setMarket(market.code, "price_monthly", event.target.value)}
+                className="input-base text-xs"
+                placeholder="annuale/mese"
+              />
+              <input
+                type="number"
+                value={row.price_monthly_billing}
+                onChange={(event) => setMarket(market.code, "price_monthly_billing", event.target.value)}
+                className="input-base text-xs"
+                placeholder="mensile/mese"
+              />
+              <input
+                value={row.setup_from}
+                onChange={(event) => setMarket(market.code, "setup_from", event.target.value)}
+                className="input-base text-xs"
+                placeholder={`setup ${market.currency}`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function FormField({
   label,

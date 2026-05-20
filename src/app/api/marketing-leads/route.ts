@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, resolveSender } from "@/lib/email/sender";
 import { buildContactConfirmationEmail } from "@/lib/email/templates/contact-confirmation";
+import { DEFAULT_MARKET, normalizeMarketCode } from "@/lib/markets";
 
 type LeadRequest = {
   name?: string;
@@ -10,6 +11,7 @@ type LeadRequest = {
   email?: string;
   phone?: string;
   city?: string;
+  country?: string;
   vertical?: string;
   interest?: string;
   message?: string;
@@ -57,6 +59,7 @@ export async function POST(request: Request) {
   const email = clean(body.email, 180).toLowerCase();
   const phone = clean(body.phone, 60);
   const city = clean(body.city, 120);
+  const country = normalizeMarketCode(clean(body.country, 8)) ?? DEFAULT_MARKET;
   const interest = clean(body.interest, 160);
   const message = clean(body.message, 1600);
   const website = clean(body.website, 160);
@@ -95,6 +98,7 @@ export async function POST(request: Request) {
       contact_email: email,
       contact_phone: phone || null,
       city: city || null,
+      country,
       status: "lead",
       source,
       notes: buildNotes(interest, message),

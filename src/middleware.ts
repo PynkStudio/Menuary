@@ -24,6 +24,14 @@ import {
   detectLocaleFromAcceptLanguage,
   type AppLocale,
 } from "@/i18n/locales";
+import {
+  DEFAULT_MARKET,
+  MARKET_COOKIE,
+  MARKET_HEADER,
+  localeForMarket,
+  marketForLocale,
+  normalizeMarketCode,
+} from "@/lib/markets";
 
 const LOCALE_SET = new Set<string>(SUPPORTED_LOCALES);
 
@@ -35,10 +43,35 @@ function extractLocaleFromPath(pathname: string): { locale: AppLocale | null; re
   return { locale: null, rest: pathname };
 }
 
+function detectGeoMarketFromRequest(request: NextRequest) {
+  return (
+    normalizeMarketCode(request.headers.get("x-vercel-ip-country")) ??
+    normalizeMarketCode(request.headers.get("cf-ipcountry")) ??
+    normalizeMarketCode(request.headers.get("x-country-code"))
+  );
+}
+
 function detectLocaleFromRequest(request: NextRequest): AppLocale {
   const cookie = request.cookies.get(LOCALE_COOKIE)?.value;
   if (isAppLocale(cookie)) return cookie;
+  const manualMarket =
+    normalizeMarketCode(request.nextUrl.searchParams.get("market")) ??
+    normalizeMarketCode(request.nextUrl.searchParams.get("country")) ??
+    normalizeMarketCode(request.cookies.get(MARKET_COOKIE)?.value) ??
+    detectGeoMarketFromRequest(request);
+  if (manualMarket) return localeForMarket(manualMarket);
   return detectLocaleFromAcceptLanguage(request.headers.get("accept-language"));
+}
+
+function detectMarketFromRequest(request: NextRequest, locale: AppLocale) {
+  return (
+    normalizeMarketCode(request.nextUrl.searchParams.get("market")) ??
+    normalizeMarketCode(request.nextUrl.searchParams.get("country")) ??
+    normalizeMarketCode(request.cookies.get(MARKET_COOKIE)?.value) ??
+    detectGeoMarketFromRequest(request) ??
+    marketForLocale(locale) ??
+    DEFAULT_MARKET
+  );
 }
 
 function localeRedirect(request: NextRequest, locale: AppLocale, rest: string): NextResponse {
@@ -46,15 +79,23 @@ function localeRedirect(request: NextRequest, locale: AppLocale, rest: string): 
   url.pathname = `/${locale}${rest === "/" ? "" : rest}`;
   const res = NextResponse.redirect(url, 302);
   res.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  res.cookies.set(MARKET_COOKIE, detectMarketFromRequest(request, locale), {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
   return res;
 }
 
 function rewriteWithLocale(request: NextRequest, targetPath: string, locale: AppLocale): NextResponse {
   const url = request.nextUrl.clone();
   url.pathname = targetPath;
+  const market = detectMarketFromRequest(request, locale);
   const res = NextResponse.rewrite(url);
   res.headers.set(LOCALE_HEADER, locale);
+  res.headers.set(MARKET_HEADER, market);
   res.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  res.cookies.set(MARKET_COOKIE, market, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   return res;
 }
 
