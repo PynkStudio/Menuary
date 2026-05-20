@@ -127,18 +127,19 @@
     white-space: nowrap;
   }
 
-  .ara-btn-primary { background: var(--ara-navy); color: #fff; }
-  .ara-btn-primary:hover { background: #0e1c2f; }
+  /* .ara-site prefix needed: specificity 0-2-0 beats .ara-site a at 0-1-1 */
+  .ara-site .ara-btn-primary { background: var(--ara-navy); color: #fff; }
+  .ara-site .ara-btn-primary:hover { background: #0e1c2f; color: #fff; }
 
-  .ara-btn-outline {
+  .ara-site .ara-btn-outline {
     background: transparent;
     color: var(--ara-ink);
     border: 1px solid var(--ara-rule-dk);
   }
-  .ara-btn-outline:hover { border-color: var(--ara-navy); color: var(--ara-navy); }
+  .ara-site .ara-btn-outline:hover { border-color: var(--ara-navy); color: var(--ara-navy); }
 
-  .ara-btn-ghost { background: transparent; color: var(--ara-muted); }
-  .ara-btn-ghost:hover { color: var(--ara-ink); }
+  .ara-site .ara-btn-ghost { background: transparent; color: var(--ara-muted); }
+  .ara-site .ara-btn-ghost:hover { color: var(--ara-ink); }
 
   /* ─── Hero ──────────────────────────────────────────────── */
   .ara-hero {
