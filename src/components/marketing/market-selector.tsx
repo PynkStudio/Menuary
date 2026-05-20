@@ -11,6 +11,7 @@ import {
   normalizeMarketCode,
   type MarketCode,
 } from "@/lib/markets";
+import { LOCALE_COOKIE } from "@/i18n/locales";
 
 function currentLocalePath(pathname: string): { locale: string | null; rest: string } {
   const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
@@ -36,6 +37,7 @@ export function MarketSelector({ currentMarket }: { currentMarket: MarketCode })
 
     const { rest } = currentLocalePath(pathname);
     const locale = localeForMarket(next);
+    document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${maxAge}; samesite=lax`;
     const params = new URLSearchParams(searchParams.toString());
     params.set("market", next);
 
@@ -58,7 +60,7 @@ export function MarketSelector({ currentMarket }: { currentMarket: MarketCode })
       >
         {options.map((item) => (
           <option key={item.code} value={item.code}>
-            {item.name}
+            {item.flag} {item.nativeName}
           </option>
         ))}
       </select>

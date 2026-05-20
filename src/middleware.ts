@@ -52,14 +52,14 @@ function detectGeoMarketFromRequest(request: NextRequest) {
 }
 
 function detectLocaleFromRequest(request: NextRequest): AppLocale {
-  const cookie = request.cookies.get(LOCALE_COOKIE)?.value;
-  if (isAppLocale(cookie)) return cookie;
   const manualMarket =
     normalizeMarketCode(request.nextUrl.searchParams.get("market")) ??
     normalizeMarketCode(request.nextUrl.searchParams.get("country")) ??
     normalizeMarketCode(request.cookies.get(MARKET_COOKIE)?.value) ??
     detectGeoMarketFromRequest(request);
   if (manualMarket) return localeForMarket(manualMarket);
+  const cookie = request.cookies.get(LOCALE_COOKIE)?.value;
+  if (isAppLocale(cookie)) return cookie;
   return detectLocaleFromAcceptLanguage(request.headers.get("accept-language"));
 }
 

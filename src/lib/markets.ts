@@ -27,6 +27,7 @@ export type MarketCode =
 export type Market = {
   code: MarketCode;
   name: string;
+  nativeName: string;
   flag: string;
   currency: string;
   locale: string;
@@ -37,28 +38,28 @@ export const MARKET_HEADER = "x-market";
 export const DEFAULT_MARKET: MarketCode = "IT";
 
 export const MARKETS: Market[] = [
-  { code: "IT", name: "Italia", flag: "🇮🇹", currency: "EUR", locale: "it-IT" },
-  { code: "FR", name: "Francia", flag: "🇫🇷", currency: "EUR", locale: "fr-FR" },
-  { code: "DE", name: "Germania", flag: "🇩🇪", currency: "EUR", locale: "de-DE" },
-  { code: "ES", name: "Spagna", flag: "🇪🇸", currency: "EUR", locale: "es-ES" },
-  { code: "PT", name: "Portogallo", flag: "🇵🇹", currency: "EUR", locale: "pt-PT" },
-  { code: "NL", name: "Paesi Bassi", flag: "🇳🇱", currency: "EUR", locale: "nl-NL" },
-  { code: "BE", name: "Belgio", flag: "🇧🇪", currency: "EUR", locale: "fr-BE" },
-  { code: "AT", name: "Austria", flag: "🇦🇹", currency: "EUR", locale: "de-AT" },
-  { code: "CH", name: "Svizzera", flag: "🇨🇭", currency: "CHF", locale: "de-CH" },
-  { code: "IE", name: "Irlanda", flag: "🇮🇪", currency: "EUR", locale: "en-IE" },
-  { code: "DK", name: "Danimarca", flag: "🇩🇰", currency: "DKK", locale: "da-DK" },
-  { code: "SE", name: "Svezia", flag: "🇸🇪", currency: "SEK", locale: "sv-SE" },
-  { code: "NO", name: "Norvegia", flag: "🇳🇴", currency: "NOK", locale: "nb-NO" },
-  { code: "FI", name: "Finlandia", flag: "🇫🇮", currency: "EUR", locale: "fi-FI" },
-  { code: "PL", name: "Polonia", flag: "🇵🇱", currency: "PLN", locale: "pl-PL" },
-  { code: "CZ", name: "Repubblica Ceca", flag: "🇨🇿", currency: "CZK", locale: "cs-CZ" },
-  { code: "SI", name: "Slovenia", flag: "🇸🇮", currency: "EUR", locale: "sl-SI" },
-  { code: "HR", name: "Croazia", flag: "🇭🇷", currency: "EUR", locale: "hr-HR" },
-  { code: "AL", name: "Albania", flag: "🇦🇱", currency: "ALL", locale: "sq-AL" },
-  { code: "GR", name: "Grecia", flag: "🇬🇷", currency: "EUR", locale: "el-GR" },
-  { code: "BR", name: "Brasile", flag: "🇧🇷", currency: "BRL", locale: "pt-BR" },
-  { code: "AU", name: "Australia", flag: "🇦🇺", currency: "AUD", locale: "en-AU" },
+  { code: "IT", name: "Italia", nativeName: "Italia", flag: "🇮🇹", currency: "EUR", locale: "it-IT" },
+  { code: "FR", name: "Francia", nativeName: "France", flag: "🇫🇷", currency: "EUR", locale: "fr-FR" },
+  { code: "DE", name: "Germania", nativeName: "Deutschland", flag: "🇩🇪", currency: "EUR", locale: "de-DE" },
+  { code: "ES", name: "Spagna", nativeName: "España", flag: "🇪🇸", currency: "EUR", locale: "es-ES" },
+  { code: "PT", name: "Portogallo", nativeName: "Portugal", flag: "🇵🇹", currency: "EUR", locale: "pt-PT" },
+  { code: "NL", name: "Paesi Bassi", nativeName: "Nederland", flag: "🇳🇱", currency: "EUR", locale: "nl-NL" },
+  { code: "BE", name: "Belgio", nativeName: "Belgique / België", flag: "🇧🇪", currency: "EUR", locale: "fr-BE" },
+  { code: "AT", name: "Austria", nativeName: "Österreich", flag: "🇦🇹", currency: "EUR", locale: "de-AT" },
+  { code: "CH", name: "Svizzera", nativeName: "Schweiz / Suisse", flag: "🇨🇭", currency: "CHF", locale: "de-CH" },
+  { code: "IE", name: "Irlanda", nativeName: "Ireland", flag: "🇮🇪", currency: "EUR", locale: "en-IE" },
+  { code: "DK", name: "Danimarca", nativeName: "Danmark", flag: "🇩🇰", currency: "DKK", locale: "da-DK" },
+  { code: "SE", name: "Svezia", nativeName: "Sverige", flag: "🇸🇪", currency: "SEK", locale: "sv-SE" },
+  { code: "NO", name: "Norvegia", nativeName: "Norge", flag: "🇳🇴", currency: "NOK", locale: "nb-NO" },
+  { code: "FI", name: "Finlandia", nativeName: "Suomi", flag: "🇫🇮", currency: "EUR", locale: "fi-FI" },
+  { code: "PL", name: "Polonia", nativeName: "Polska", flag: "🇵🇱", currency: "PLN", locale: "pl-PL" },
+  { code: "CZ", name: "Repubblica Ceca", nativeName: "Česko", flag: "🇨🇿", currency: "CZK", locale: "cs-CZ" },
+  { code: "SI", name: "Slovenia", nativeName: "Slovenija", flag: "🇸🇮", currency: "EUR", locale: "sl-SI" },
+  { code: "HR", name: "Croazia", nativeName: "Hrvatska", flag: "🇭🇷", currency: "EUR", locale: "hr-HR" },
+  { code: "AL", name: "Albania", nativeName: "Shqipëria", flag: "🇦🇱", currency: "ALL", locale: "sq-AL" },
+  { code: "GR", name: "Grecia", nativeName: "Ελλάδα", flag: "🇬🇷", currency: "EUR", locale: "el-GR" },
+  { code: "BR", name: "Brasile", nativeName: "Brasil", flag: "🇧🇷", currency: "BRL", locale: "pt-BR" },
+  { code: "AU", name: "Australia", nativeName: "Australia", flag: "🇦🇺", currency: "AUD", locale: "en-AU" },
 ];
 
 const MARKET_SET = new Set<string>(MARKETS.map((market) => market.code));
@@ -97,7 +98,23 @@ export function marketForLocale(locale: AppLocale): MarketCode {
 }
 
 export function localeForMarket(market: MarketCode): AppLocale {
-  return market === "IT" ? "it" : "en";
+  if (market === "IT") return "it";
+  if (market === "FR" || market === "BE") return "fr";
+  if (market === "DE" || market === "AT" || market === "CH") return "de";
+  if (market === "ES") return "es";
+  if (market === "PT" || market === "BR") return "pt";
+  if (market === "NL") return "nl";
+  if (market === "DK") return "da";
+  if (market === "SE") return "sv";
+  if (market === "NO") return "nb";
+  if (market === "FI") return "fi";
+  if (market === "PL") return "pl";
+  if (market === "CZ") return "cs";
+  if (market === "SI") return "sl";
+  if (market === "HR") return "hr";
+  if (market === "AL") return "sq";
+  if (market === "GR") return "el";
+  return "en";
 }
 
 export const MARKET_LANGUAGE_CODES: Record<MarketCode, string[]> = {

@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { TenantProvider } from "@/components/core/tenant-provider";
-import { SlabbbyScriptGate } from "@/components/core/slabbby-script-gate";
 import { LibritechBookDetailPage } from "@/components/tenants/libritech/pages/book-detail";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
@@ -29,7 +28,6 @@ export default async function BookDetailRoute({
 
   return (
     <TenantProvider tenant={tenant}>
-      <SlabbbyScriptGate />
       <div
         className="min-h-screen"
         data-tenant-surface={tenant.id}
