@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { gh, extractAnimaFiles, commitAnimaToGitHub, type AnimaFile } from "@/lib/github-anima";
+import { gh, extractAnimaFiles, commitAnimaToGitHub } from "@/lib/github-anima";
 
 function enc(str: string): string {
   return Buffer.from(str, "utf-8").toString("base64");

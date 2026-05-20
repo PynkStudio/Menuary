@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import { X, GitBranch, Loader2, ExternalLink, CheckCircle2, MonitorUp, Figma, FileX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PlatformLead } from "@/lib/platform-crm-types";
-import { PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
 
 type Props = {
   lead: PlatformLead;
