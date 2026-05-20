@@ -59,4 +59,30 @@
   .paper-card {
     @apply relative rounded-3xl bg-pork-cream text-pork-ink shadow-xl shadow-pork-ink/10;
   }
+
+  /* Pannello gestione — identità BePork (cream + red, light) */
+  .gestione-admin[data-gestione-tenant="bepork"] {
+    --ga-bg:          #FFF4E6;
+    --ga-surface:     #FFFFFF;
+    --ga-surface-2:   #FFFAF0;
+    --ga-surface-3:   #F7E9D2;
+    --ga-border:      rgba(20, 16, 16, 0.10);
+    --ga-border-soft: rgba(20, 16, 16, 0.06);
+    --ga-ink:         #141010;
+    --ga-ink-muted:   rgba(20, 16, 16, 0.65);
+    --ga-ink-faint:   rgba(20, 16, 16, 0.45);
+    --ga-ink-dim:     rgba(20, 16, 16, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: var(--font-display), "Bagel Fat One", cursive;
+    --ga-font-body:    var(--font-body), "Manrope", system-ui, sans-serif;
+  }
+  .gestione-admin[data-gestione-tenant="bepork"] .ga-header {
+    background: rgba(255, 244, 230, 0.85);
+  }
+  .gestione-admin[data-gestione-tenant="bepork"] .ga-input,
+  .gestione-admin[data-gestione-tenant="bepork"] .ga-select,
+  .gestione-admin[data-gestione-tenant="bepork"] .ga-textarea {
+    background: #FFFFFF;
+    color-scheme: light;
+  }
 }

@@ -135,3 +135,28 @@ html[data-tenant="faak"] header.bg-pork-cream {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow: none;
 }
+
+@layer components {
+  /* Pannello gestione — identità FAAK (bianco + arancio, light) */
+  .gestione-admin[data-gestione-tenant="faak"] {
+    --ga-bg:          #FFFFFF;
+    --ga-surface:     #FFFFFF;
+    --ga-surface-2:   #FAFAFA;
+    --ga-surface-3:   #F1F1EE;
+    --ga-border:      rgba(0, 0, 0, 0.10);
+    --ga-border-soft: rgba(0, 0, 0, 0.06);
+    --ga-ink:         #000000;
+    --ga-ink-muted:   rgba(0, 0, 0, 0.66);
+    --ga-ink-faint:   rgba(0, 0, 0, 0.45);
+    --ga-ink-dim:     rgba(0, 0, 0, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    --ga-font-body:    "Faak Avenir", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  }
+  .gestione-admin[data-gestione-tenant="faak"] .ga-header {
+    background: rgba(255, 255, 255, 0.85);
+  }
+  .gestione-admin[data-gestione-tenant="faak"] .ga-input,
+  .gestione-admin[data-gestione-tenant="faak"] .ga-select,
+  .gestione-admin[data-gestione-tenant="faak"] .ga-textarea { color-scheme: light; }
+}

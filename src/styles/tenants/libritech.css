@@ -1077,4 +1077,27 @@
     .lt-nav .lt-nav-link { display: none; }
     .lt-nav .lt-nav-link:last-child { display: inline-flex; }
   }
+
+  /* Pannello gestione — identità LibriTech (paper + violet, light) */
+  .gestione-admin[data-gestione-tenant="libritech"] {
+    --ga-bg:          #f8f7f4;
+    --ga-surface:     #ffffff;
+    --ga-surface-2:   #ffffff;
+    --ga-surface-3:   #eef2ff;
+    --ga-border:      rgba(15, 23, 42, 0.08);
+    --ga-border-soft: rgba(15, 23, 42, 0.05);
+    --ga-ink:         #1a1433;
+    --ga-ink-muted:   rgba(26, 20, 51, 0.65);
+    --ga-ink-faint:   rgba(26, 20, 51, 0.45);
+    --ga-ink-dim:     rgba(26, 20, 51, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: var(--font-menuary-display), Georgia, serif;
+    --ga-font-body:    var(--font-menuary-body), system-ui, sans-serif;
+  }
+  .gestione-admin[data-gestione-tenant="libritech"] .ga-header {
+    background: rgba(248, 247, 244, 0.85);
+  }
+  .gestione-admin[data-gestione-tenant="libritech"] .ga-input,
+  .gestione-admin[data-gestione-tenant="libritech"] .ga-select,
+  .gestione-admin[data-gestione-tenant="libritech"] .ga-textarea { color-scheme: light; }
 }

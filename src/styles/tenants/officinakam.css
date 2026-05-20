@@ -1353,4 +1353,24 @@
       flex-direction: column;
     }
   }
+
+  /* Pannello gestione — identità Officina KAM (dark + orange) */
+  .gestione-admin[data-gestione-tenant="officinakam"] {
+    --ga-bg:          #0A0A0B;
+    --ga-surface:     #131316;
+    --ga-surface-2:   #18181B;
+    --ga-surface-3:   #232329;
+    --ga-border:      rgba(248, 250, 252, 0.10);
+    --ga-border-soft: rgba(248, 250, 252, 0.06);
+    --ga-ink:         #F8FAFC;
+    --ga-ink-muted:   rgba(248, 250, 252, 0.66);
+    --ga-ink-faint:   rgba(248, 250, 252, 0.45);
+    --ga-ink-dim:     rgba(248, 250, 252, 0.28);
+    --ga-accent-ink:  #0A0A0B;
+    --ga-font-display: "Inter", system-ui, -apple-system, sans-serif;
+    --ga-font-body:    "Inter", system-ui, -apple-system, sans-serif;
+  }
+  .gestione-admin[data-gestione-tenant="officinakam"] .ga-header {
+    background: rgba(10, 10, 11, 0.82);
+  }
 }
