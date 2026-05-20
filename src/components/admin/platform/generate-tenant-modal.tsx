@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { X, GitBranch, Loader2, ExternalLink, CheckCircle2, MonitorUp } from "lucide-react";
+import { useRef, useState } from "react";
+import { X, GitBranch, Loader2, ExternalLink, CheckCircle2, MonitorUp, Figma, FileX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PlatformLead } from "@/lib/platform-crm-types";
 import { PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
@@ -28,10 +28,14 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
   const [slug, setSlug] = useState(defaultSlug);
   const [domain, setDomain] = useState(defaultDomain);
   const [primary, setPrimary] = useState("#0f172a");
+  const [animaFile, setAnimaFile] = useState<File | null>(null);
+  const [animaDragging, setAnimaDragging] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prUrl, setPrUrl] = useState<string | null>(null);
   const [demoUrl, setDemoUrl] = useState<string | null>(null);
+  const [figmaUrl, setFigmaUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,22 +43,27 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
     setError(null);
 
     try {
+      const fd = new FormData();
+      fd.append("leadId", lead.id);
+      fd.append("tenantSlug", slug);
+      fd.append("domain", domain);
+      fd.append("vertical", lead.business_vertical);
+      fd.append("businessName", lead.business_name);
+      fd.append("primaryColor", primary);
+      if (animaFile) fd.append("animaFile", animaFile);
+
       const res = await fetch("/api/admin/generate-tenant", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          leadId: lead.id,
-          tenantSlug: slug,
-          domain,
-          vertical: lead.business_vertical,
-          businessName: lead.business_name,
-          primaryColor: primary,
-          initialModules: PLATFORM_PACKAGES.find((pkg) => pkg.slug === "presenza")?.modules ?? [],
-          locations: lead.locations,
-        }),
+        body: fd,
       });
 
-      const data = (await res.json()) as { success?: boolean; pr_url?: string; demo_url?: string; error?: string };
+      const data = (await res.json()) as {
+        success?: boolean;
+        pr_url?: string;
+        demo_url?: string;
+        figma_url?: string;
+        error?: string;
+      };
 
       if (!res.ok || data.error) {
         setError(data.error ?? "Errore sconosciuto");
@@ -63,6 +72,7 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
 
       setPrUrl(data.pr_url!);
       setDemoUrl(data.demo_url ?? null);
+      setFigmaUrl(data.figma_url ?? null);
     } finally {
       setLoading(false);
     }
@@ -104,6 +114,16 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
                   className="inline-flex items-center gap-2 rounded-full bg-pork-red px-5 py-2.5 text-sm font-bold text-white"
                 >
                   Apri demo <ExternalLink size={13} />
+                </a>
+              )}
+              {figmaUrl && (
+                <a
+                  href={figmaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-violet-600 px-5 py-2.5 text-sm font-bold text-white"
+                >
+                  Preview Figma <ExternalLink size={13} />
                 </a>
               )}
               <a
@@ -193,6 +213,72 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
                   />
                 </div>
               </FormField>
+
+              {/* Upload design Figma — opzionale */}
+              <div className="space-y-1.5">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wide text-pork-ink/60">
+                    Design Figma
+                    <span className="ml-1.5 font-normal normal-case text-pork-ink/30">opzionale</span>
+                  </p>
+                  <p className="text-[10px] text-pork-ink/40">
+                    Export ZIP da Anima plugin — va in{" "}
+                    <code className="font-mono">public/{slug || "…"}/anima/</code> sulla PR
+                  </p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".zip,.html"
+                  className="hidden"
+                  onChange={(e) => setAnimaFile(e.target.files?.[0] ?? null)}
+                />
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setAnimaDragging(true); }}
+                  onDragLeave={() => setAnimaDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setAnimaDragging(false);
+                    const f = e.dataTransfer.files[0];
+                    if (f) setAnimaFile(f);
+                  }}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-dashed px-4 py-3.5 transition",
+                    animaDragging
+                      ? "border-violet-400 bg-violet-50"
+                      : animaFile
+                        ? "border-violet-300 bg-violet-50/60"
+                        : "border-pork-ink/15 bg-pork-cream hover:border-pork-ink/30",
+                  )}
+                >
+                  <Figma
+                    size={18}
+                    className={animaFile ? "text-violet-500" : "text-pork-ink/30"}
+                  />
+                  {animaFile ? (
+                    <div className="flex flex-1 items-center justify-between gap-2 min-w-0">
+                      <span className="truncate text-sm font-bold text-violet-700">
+                        {animaFile.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setAnimaFile(null); }}
+                        className="shrink-0 rounded-full p-0.5 text-violet-400 hover:text-violet-700"
+                      >
+                        <FileX size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-pork-ink/40">
+                      {animaDragging ? "Rilascia qui" : "Trascina il file o clicca per sfogliare"}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Errore */}

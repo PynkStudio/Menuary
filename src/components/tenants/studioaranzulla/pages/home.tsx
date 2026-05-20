@@ -28,65 +28,65 @@ const practiceAreas = [
     icon: Scale,
     kicker: "Diritto Civile",
     title: "Tutela dei diritti",
-    desc: "Contratti, responsabilità civile, risarcimenti e recupero crediti. Assistenza in ogni fase del procedimento civile, dalla diffida al giudizio di merito.",
+    desc: "Contratti, responsabilità civile, risarcimenti e recupero crediti. Assistenza dalla diffida al giudizio di merito, con un approccio orientato al risultato concreto.",
   },
   {
     id: "famiglia",
     icon: Heart,
     kicker: "Diritto di Famiglia",
     title: "Separazioni e affidamento",
-    desc: "Separazione, divorzio, affidamento dei figli e assegno di mantenimento. Assistenza attenta anche nei momenti più delicati.",
+    desc: "Separazione, divorzio, affidamento e mantenimento. Ogni fase è gestita con rigore tecnico e attenzione alla persona, in sede giudiziale e stragiudiziale.",
   },
   {
     id: "lavoro",
     icon: Briefcase,
     kicker: "Diritto del Lavoro",
     title: "Tutela del lavoratore",
-    desc: "Licenziamenti illegittimi, mobbing, mancato pagamento di retribuzioni. Difesa in sede giudiziale e stragiudiziale.",
+    desc: "Licenziamenti illegittimi, mobbing, mancato pagamento di retribuzioni e accordi sindacali. Difesa in ogni sede, con focus sui diritti effettivi.",
   },
   {
     id: "penale",
     icon: Shield,
     kicker: "Diritto Penale",
     title: "Difesa penale",
-    desc: "Assistenza dal primo atto investigativo fino all'udienza dibattimentale. Garanzia di una difesa tempestiva e preparata.",
+    desc: "Assistenza dal primo atto investigativo all'udienza dibattimentale. Garanzia di una difesa tempestiva, preparata e riservata.",
   },
   {
     id: "commerciale",
     icon: TrendingUp,
     kicker: "Diritto Commerciale",
     title: "Contratti e società",
-    desc: "Redazione e revisione di contratti, controversie societarie e recupero crediti commerciali. Supporto continuativo per imprese.",
+    desc: "Redazione e revisione di contratti, controversie societarie, recupero crediti commerciali. Supporto continuativo per imprese e professionisti.",
   },
   {
     id: "successorio",
     icon: ScrollText,
     kicker: "Diritto Successorio",
     title: "Testamenti ed eredità",
-    desc: "Successioni legali e testamentarie, divisioni ereditarie e impugnazioni. Tutela del patrimonio familiare nel tempo.",
+    desc: "Successioni legali e testamentarie, divisioni ereditarie e impugnazioni. Tutela del patrimonio familiare nel lungo periodo.",
   },
 ];
 
 const processSteps = [
   {
-    n: "01",
+    n: "I",
     title: "Prima consulenza",
-    desc: "Ascoltiamo la tua situazione, analizziamo i fatti e rispondiamo alle domande essenziali. Senza impegni.",
+    desc: "Ascoltiamo la tua situazione, analizziamo i fatti e rispondiamo alle domande fondamentali. Senza impegni, senza tecnicismi inutili.",
   },
   {
-    n: "02",
+    n: "II",
     title: "Analisi del caso",
-    desc: "Studio approfondito della documentazione, valutazione dei rischi e definizione della strategia più efficace.",
+    desc: "Studio approfondito degli atti e della documentazione. Valutazione dei rischi, delle tempistiche e della strategia più efficace.",
   },
   {
-    n: "03",
+    n: "III",
     title: "Strategia legale",
-    desc: "Presentazione chiara delle opzioni: stragiudiziale, mediazione o contenzioso. Decidi tu con le informazioni giuste.",
+    desc: "Ti presentiamo le opzioni disponibili — accordo stragiudiziale, mediazione o contenzioso — con un'analisi chiara di costi e benefici.",
   },
   {
-    n: "04",
+    n: "IV",
     title: "Assistenza attiva",
-    desc: "Gestione completa della pratica, aggiornamenti costanti e rappresentanza in ogni sede giudiziaria.",
+    desc: "Gestione completa della pratica con aggiornamenti regolari. Rappresentanza in ogni sede giudiziaria e amministrativa.",
   },
 ];
 
@@ -95,21 +95,21 @@ const mockReviews = [
     id: "r1",
     author: "Marco T.",
     role: "Causa di lavoro",
-    text: "Professionalità e chiarezza che non ti aspetti. Mi ha spiegato ogni passo, nessuna sorpresa. Causa vinta in appello.",
+    text: "Professionalità e chiarezza che non ti aspetti. Mi ha spiegato ogni passo senza tecnicismi. Causa vinta in appello.",
     rating: 5,
   },
   {
     id: "r2",
     author: "Giulia M.",
     role: "Diritto di famiglia",
-    text: "Periodo difficile, gestito con sensibilità e competenza. I figli sono stati tutelati come meritavano. Non potevo chiedere di meglio.",
+    text: "Periodo difficile, gestito con sensibilità e competenza rara. I figli sono stati tutelati come meritavano. Non potevo chiedere di meglio.",
     rating: 5,
   },
   {
     id: "r3",
     author: "Claudio F.",
     role: "Contratto commerciale",
-    text: "Avevo firmato un contratto con clausole capestro. L'avvocato Aranzulla ha trovato la via d'uscita in pochi giorni.",
+    text: "Avevo firmato un contratto con clausole capestro che nessuno aveva rilevato. L'avvocato Aranzulla ha trovato la via d'uscita in pochi giorni.",
     rating: 5,
   },
 ];
@@ -139,75 +139,78 @@ export function StudioAranzullaHomePage() {
 
   return (
     <main className="ara-site">
-      {/* ── Nav ──────────────────────────────────────────── */}
+
+      {/* ── Nav ─────────────────────────────────────────────── */}
       <nav className="ara-nav">
-        <div className="ara-container ara-nav-row">
-          <a href="#top" className="ara-logo" aria-label="Studio Legale Aranzulla — home">
+        <div className="ara-container ara-nav-inner">
+          <a href="#top" className="ara-logo" aria-label="Studio Legale Aranzulla">
             <span className="ara-logo-seal">A</span>
-            <span>
+            <span className="ara-logo-text">
               Studio Legale Aranzulla
-              <small>Avv. Lara Aranzulla · Iscritto all&apos;Ordine</small>
+              <small>Avv. Lara Aranzulla · Iscritta all&apos;Ordine</small>
             </span>
           </a>
-          <div className="ara-nav-links">
+          <nav className="ara-nav-links" aria-label="Menu principale">
             <a href="#aree">Aree di pratica</a>
             <a href="#chi-siamo">Chi siamo</a>
             <a href="#processo">Come lavoriamo</a>
             <a href="#recensioni">Recensioni</a>
             <a href="#contatti">Contatti</a>
-          </div>
+          </nav>
           <a href="#contatti" className="ara-btn ara-btn-primary">
-            Consulenza <ArrowRight size={15} />
+            Consulenza <ArrowRight size={14} />
           </a>
         </div>
       </nav>
 
-      {/* ── Hero ─────────────────────────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────────── */}
       <section id="top" className="ara-hero">
-        <div className="ara-container" style={{ display: "contents" }}>
-          <div className="ara-hero-content ara-container" style={{ gridColumn: "1", paddingLeft: "24px" }}>
+        <div className="ara-hero-content">
+          <div className="ara-hero-label">
             <span className="ara-eyebrow">{content.hero.eyebrow}</span>
-            <h1 className="ara-hero-title">
-              {content.hero.titleLead}
-              <span className="ara-hero-title-accent">{content.hero.titleAccent}</span>
-            </h1>
-            <p className="ara-hero-body">{content.hero.body}</p>
-            <div className="ara-hero-actions">
-              <a href="#contatti" className="ara-btn ara-btn-primary">
-                {content.hero.ctaLabel} <ArrowRight size={16} />
-              </a>
-              <a href="#aree" className="ara-btn ara-btn-outline">
-                Aree di pratica
-              </a>
-            </div>
           </div>
+          <h1 className="ara-hero-title">
+            {content.hero.titleLead}
+            <br />
+            <em>{content.hero.titleAccent}</em>
+          </h1>
+          <div className="ara-hero-divider" aria-hidden="true" />
+          <p className="ara-hero-body">{content.hero.body}</p>
+          <div className="ara-hero-actions">
+            <a href="#contatti" className="ara-btn ara-btn-primary">
+              {content.hero.ctaLabel} <ArrowRight size={15} />
+            </a>
+            <a href="#aree" className="ara-btn ara-btn-outline">
+              Aree di pratica
+            </a>
+          </div>
+        </div>
 
-          <div className="ara-hero-image">
-            <Image
-              src={content.hero.backdrop}
-              alt="Studio Legale Aranzulla"
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
-            />
-            <div className="ara-hero-badge">
-              <strong>20+</strong>
-              <span>anni di esperienza</span>
-            </div>
+        <div className="ara-hero-media">
+          <Image
+            src={content.hero.backdrop}
+            alt="Studio Legale Aranzulla"
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="object-cover"
+          />
+          <div className="ara-hero-badge" aria-hidden="true">
+            <strong>20+</strong>
+            <span>anni di<br />esperienza</span>
           </div>
         </div>
       </section>
 
-      {/* ── Stats ────────────────────────────────────────── */}
-      <section className="ara-stats" aria-label="Indicatori Studio Legale Aranzulla">
+      {/* ── Stats ─────────────────────────────────────────────── */}
+      <section className="ara-stats" aria-label="Numeri chiave dello studio">
         <div className="ara-container">
-          <div className="ara-stats-grid">
+          <div className="ara-stats-inner">
             {[
-              ["20+", "anni di attività"],
-              ["6", "aree di pratica"],
-              ["500+", "pratiche gestite"],
-              ["100%", "riservatezza"],
+              ["20+", "Anni di attività"],
+              ["6", "Aree di pratica"],
+              ["500+", "Pratiche gestite"],
+              ["100%", "Riservatezza"],
             ].map(([value, label]) => (
               <div key={label} className="ara-stat">
                 <strong>{value}</strong>
@@ -218,83 +221,90 @@ export function StudioAranzullaHomePage() {
         </div>
       </section>
 
-      {/* ── Aree di pratica ──────────────────────────────── */}
+      {/* ── Aree di pratica ──────────────────────────────────── */}
       <section id="aree" className="ara-section">
         <div className="ara-container">
-          <div className="ara-section-head-split">
+          <div className="ara-section-head-2col">
             <div>
               <span className="ara-eyebrow">{content.soulsIntro.eyebrow}</span>
               <h2 className="ara-section-title">
                 {content.soulsIntro.titleLead}
-                <span> {content.soulsIntro.titleAccent}</span>
+                <br />
+                <em>{content.soulsIntro.titleAccent}</em>
               </h2>
             </div>
             <p className="ara-section-desc">{content.soulsIntro.body}</p>
           </div>
 
-          <div className="ara-areas-grid">
-            {practiceAreas.map((area) => {
-              const Icon = area.icon;
-              return (
-                <div key={area.id} className="ara-area-card">
-                  <div className="ara-area-icon">
-                    <Icon size={22} />
-                  </div>
+          <div className="ara-areas-list" role="list">
+            {practiceAreas.map((area, i) => (
+              <div key={area.id} className="ara-area-row" role="listitem">
+                <span className="ara-area-num" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="ara-area-head">
                   <span className="ara-area-kicker">{area.kicker}</span>
                   <h3 className="ara-area-title">{area.title}</h3>
-                  <p className="ara-area-desc">{area.desc}</p>
                 </div>
-              );
-            })}
+                <p className="ara-area-desc">{area.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Chi siamo ────────────────────────────────────── */}
+      {/* ── Chi siamo ─────────────────────────────────────────── */}
       <section id="chi-siamo" className="ara-section ara-section-alt">
         <div className="ara-container">
           <div className="ara-team-grid">
-            <div className="ara-team-photo">
+            <div className="ara-team-media">
               <Image
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80"
-                alt="Avv. Lara Aranzulla"
+                src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=800&q=80"
+                alt="Studio Legale Aranzulla — libreria legale"
                 fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover object-top"
+                sizes="(max-width: 1024px) 100vw, 42vw"
+                className="object-cover"
               />
-              <div className="ara-team-photo-badge">
+              <div className="ara-team-badge">
                 <strong>Avv. Lara Aranzulla</strong>
                 <span>Fondatrice e titolare dello studio</span>
               </div>
             </div>
 
             <div className="ara-team-content">
-              <span className="ara-eyebrow">Il team</span>
-              <h2 className="ara-section-title">
-                Una professionista,
-                <span> un impegno concreto.</span>
-              </h2>
+              <div>
+                <span className="ara-eyebrow">Chi siamo</span>
+                <h2 className="ara-section-title">
+                  Una professionista,
+                  <br />
+                  <em>un impegno concreto.</em>
+                </h2>
+              </div>
+
+              <div className="ara-pull-quote">
+                <p>
+                  &ldquo;Un cliente informato è un cliente più tutelato. Per questo ogni consulenza inizia con un ascolto vero, prima ancora di parlare di strategie.&rdquo;
+                </p>
+              </div>
+
               <p className="ara-team-bio">
-                L&apos;Avvocato Lara Aranzulla ha fondato lo studio con un obiettivo preciso: rendere il diritto accessibile e comprensibile, senza rinunciare alla qualità della difesa. Ogni cliente riceve attenzione diretta, non delegata.
-              </p>
-              <p className="ara-team-bio">
-                Il lavoro dello studio si basa su una convinzione semplice: un cliente informato è un cliente più tutelato. Per questo ogni consulenza inizia con un ascolto attento e una spiegazione chiara della situazione, prima ancora di parlare di strategie.
+                L&apos;Avvocato Lara Aranzulla ha fondato lo studio con un obiettivo preciso: rendere il diritto accessibile e comprensibile senza rinunciare alla qualità della difesa. Ogni incarico è seguito personalmente, con aggiornamenti puntuali e totale trasparenza.
               </p>
 
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ara-muted)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ara-faint)", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 12 }}>
                   Competenze
                 </p>
-                <div className="ara-competencies">
+                <div className="ara-chips">
                   {competencies.map((c) => (
-                    <span key={c} className="ara-competency-chip">{c}</span>
+                    <span key={c} className="ara-chip">{c}</span>
                   ))}
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+              <div>
                 <a href="#contatti" className="ara-btn ara-btn-primary">
-                  Prenota una consulenza <ArrowRight size={15} />
+                  Prenota una consulenza <ArrowRight size={14} />
                 </a>
               </div>
             </div>
@@ -302,61 +312,67 @@ export function StudioAranzullaHomePage() {
         </div>
       </section>
 
-      {/* ── Processo ─────────────────────────────────────── */}
+      {/* ── Processo ─────────────────────────────────────────── */}
       <section id="processo" className="ara-section">
         <div className="ara-container">
-          <div className="ara-section-head" style={{ textAlign: "center" }}>
-            <span className="ara-eyebrow" style={{ justifyContent: "center" }}>
-              Come lavoriamo
-            </span>
-            <h2 className="ara-section-title" style={{ textAlign: "center" }}>
+          <div className="ara-section-head-center">
+            <span className="ara-eyebrow">Come lavoriamo</span>
+            <h2 className="ara-section-title">
               Nessuna sorpresa.
-              <span> Nessun passo al buio.</span>
+              <br />
+              <em>Nessun passo al buio.</em>
             </h2>
-            <p className="ara-section-desc" style={{ margin: "16px auto 0", textAlign: "center" }}>
-              Ogni incarico segue un percorso chiaro: ascolto, analisi, strategia e assistenza attiva. Tu sai sempre dove sei e cosa succede.
+            <p className="ara-section-desc">
+              Ogni incarico segue una sequenza chiara. Tu sai sempre dove sei e cosa succede, prima di ogni decisione.
             </p>
           </div>
 
-          <div className="ara-process-grid">
+          <div className="ara-process-list" role="list">
             {processSteps.map((step) => (
-              <div key={step.n} className="ara-process-step">
-                <div className="ara-process-num">{step.n}</div>
-                <h3 className="ara-process-title">{step.title}</h3>
-                <p className="ara-process-desc">{step.desc}</p>
+              <div key={step.n} className="ara-process-row" role="listitem">
+                <span className="ara-process-index" aria-hidden="true">{step.n}</span>
+                <div className="ara-process-body">
+                  <h3 className="ara-process-title">{step.title}</h3>
+                  <p className="ara-process-desc">{step.desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Reviews ──────────────────────────────────────── */}
+      {/* ── Recensioni ───────────────────────────────────────── */}
       <section id="recensioni" className="ara-section ara-section-dark">
         <div className="ara-container">
-          <div className="ara-section-head-split">
+          <div className="ara-section-head-2col">
             <div>
-              <span className="ara-eyebrow">Recensioni clienti</span>
-              <h2 className="ara-section-title ara-section-title-dark">
+              <span className="ara-eyebrow" style={{ color: "var(--ara-gold-lt)" }}>Recensioni clienti</span>
+              <h2 className="ara-section-title ara-section-title-wht">
                 Risultati reali.
-                <span> Clienti soddisfatti.</span>
+                <br />
+                <em style={{ color: "var(--ara-gold-lt)" }}>Clienti soddisfatti.</em>
               </h2>
             </div>
-            <p className="ara-section-desc ara-section-desc-dark">
-              La reputazione dello studio si costruisce caso per caso. Ogni cliente è un impegno preso sul serio.
+            <p className="ara-section-desc ara-section-desc-wht">
+              La reputazione dello studio si costruisce caso per caso. Ogni cliente è un impegno preso sul serio, senza eccezioni.
             </p>
           </div>
 
           <div className="ara-reviews-grid">
             {mockReviews.map((review) => (
               <article key={review.id} className="ara-review-card">
-                <div className="ara-review-stars">
+                <div className="ara-review-mark" aria-hidden="true">&ldquo;</div>
+                <div className="ara-review-stars" aria-label={`${review.rating} stelle su 5`}>
                   {Array.from({ length: review.rating }).map((_, i) => (
-                    <Star key={i} size={14} fill="currentColor" />
+                    <Star key={i} size={13} fill="currentColor" />
                   ))}
                 </div>
-                <p className="ara-review-text">&ldquo;{review.text}&rdquo;</p>
+                <p className="ara-review-text">{review.text}</p>
+                <div className="ara-review-sep" aria-hidden="true" />
                 <div className="ara-review-author">
-                  <div className="ara-review-avatar">{review.author.slice(0, 1)}</div>
+                  <div className="ara-review-avatar" aria-hidden="true">
+                    {review.author.slice(0, 1)}
+                  </div>
                   <div>
                     <strong>{review.author}</strong>
                     <small>{review.role}</small>
@@ -368,71 +384,58 @@ export function StudioAranzullaHomePage() {
         </div>
       </section>
 
-      {/* ── Contatti ─────────────────────────────────────── */}
-      <section id="contatti" className="ara-section ara-section-alt">
+      {/* ── Contatti ─────────────────────────────────────────── */}
+      <section id="contatti" className="ara-section">
         <div className="ara-container">
-          <div className="ara-section-head" style={{ textAlign: "center" }}>
-            <span className="ara-eyebrow" style={{ justifyContent: "center" }}>
-              {content.findUs.eyebrow}
-            </span>
-            <h2 className="ara-section-title" style={{ textAlign: "center" }}>
+          <div className="ara-section-head-center">
+            <span className="ara-eyebrow">{content.findUs.eyebrow}</span>
+            <h2 className="ara-section-title">
               {content.findUs.titleLead}
-              <span> {content.findUs.titleAccent}</span>
+              <br />
+              <em>{content.findUs.titleAccent}</em>
             </h2>
-            <p className="ara-section-desc" style={{ margin: "16px auto 0", textAlign: "center" }}>
-              {content.findUs.body}
-            </p>
+            <p className="ara-section-desc">{content.findUs.body}</p>
           </div>
 
-          <div className="ara-contact-grid">
-            <div className="ara-contact-info">
-              <a href={phoneHref} className="ara-contact-row">
-                <div className="ara-contact-icon">
-                  <Phone size={18} />
-                </div>
+          <div className="ara-contact-layout">
+            <div className="ara-contact-details">
+              <a href={phoneHref} className="ara-contact-item">
+                <div className="ara-contact-item-icon"><Phone size={18} /></div>
                 <div>
                   <small>Telefono</small>
                   <span>{content.contact.phone}</span>
                 </div>
               </a>
 
-              <a href={emailHref} className="ara-contact-row">
-                <div className="ara-contact-icon">
-                  <Mail size={18} />
-                </div>
+              <a href={emailHref} className="ara-contact-item">
+                <div className="ara-contact-item-icon"><Mail size={18} /></div>
                 <div>
                   <small>Email</small>
-                  <span>info@studiolegalearanzulla.it</span>
+                  <span>{studioEmail}</span>
                 </div>
               </a>
 
-              <a href={waHref} target="_blank" rel="noopener noreferrer" className="ara-contact-row">
-                <div className="ara-contact-icon">
-                  <MessageCircle size={18} />
-                </div>
+              <a href={waHref} target="_blank" rel="noopener noreferrer" className="ara-contact-item">
+                <div className="ara-contact-item-icon"><MessageCircle size={18} /></div>
                 <div>
                   <small>WhatsApp · risposta rapida</small>
                   <span>{content.contact.phone}</span>
                 </div>
               </a>
 
-              <div className="ara-contact-row">
-                <div className="ara-contact-icon">
-                  <MapPin size={18} />
-                </div>
+              <div className="ara-contact-item">
+                <div className="ara-contact-item-icon"><MapPin size={18} /></div>
                 <div>
                   <small>Indirizzo</small>
-                  <span>{content.address.full}</span>
+                  <strong>{content.address.full}</strong>
                 </div>
               </div>
 
-              <div className="ara-contact-row">
-                <div className="ara-contact-icon">
-                  <Clock size={18} />
-                </div>
+              <div className="ara-contact-item">
+                <div className="ara-contact-item-icon"><Clock size={18} /></div>
                 <div>
                   <small>Orari ricevimento</small>
-                  <span>Lun–Ven · 9:00–13:00 / 15:00–18:00</span>
+                  <strong>Lun–Ven · 9:00–13:00 / 15:00–18:00</strong>
                 </div>
               </div>
             </div>
@@ -440,8 +443,8 @@ export function StudioAranzullaHomePage() {
             <div>
               {formState === "sent" ? (
                 <div className="ara-form ara-form-success">
-                  <div className="ara-form-success-icon">
-                    <CheckCircle size={32} />
+                  <div className="ara-form-success-mark">
+                    <CheckCircle size={26} />
                   </div>
                   <h3>Richiesta inviata.</h3>
                   <p>
@@ -458,19 +461,14 @@ export function StudioAranzullaHomePage() {
               ) : (
                 <form
                   className="ara-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setFormState("sent");
-                  }}
+                  onSubmit={(e) => { e.preventDefault(); setFormState("sent"); }}
                 >
-                  <div>
-                    <h3 className="ara-form-title">Richiedi una consulenza</h3>
-                    <p className="ara-form-subtitle">
-                      Compila il modulo. Ti ricontattiamo entro un giorno lavorativo.
-                    </p>
+                  <div className="ara-form-heading">
+                    <h3>Richiedi una consulenza</h3>
+                    <p>Compila il modulo. Ti ricontattiamo entro un giorno lavorativo.</p>
                   </div>
 
-                  <div className="ara-form-grid">
+                  <div className="ara-form-row">
                     <label>
                       Nome e cognome
                       <input type="text" placeholder="Mario Rossi" required />
@@ -509,7 +507,7 @@ export function StudioAranzullaHomePage() {
                   </label>
 
                   <button type="submit" className="ara-btn ara-btn-primary">
-                    Invia richiesta <ArrowRight size={15} />
+                    Invia richiesta <ArrowRight size={14} />
                   </button>
                 </form>
               )}
@@ -518,14 +516,14 @@ export function StudioAranzullaHomePage() {
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────── */}
+      {/* ── Footer ───────────────────────────────────────────── */}
       <footer className="ara-footer">
         <div className="ara-container">
           <div className="ara-footer-top">
             <div className="ara-footer-brand">
               <a href="#top" className="ara-footer-logo" aria-label="Torna all'inizio">
-                <span className="ara-footer-logo-seal">A</span>
-                Studio Legale Aranzulla
+                <span className="ara-footer-seal">A</span>
+                <span className="ara-footer-name">Studio Legale Aranzulla</span>
               </a>
               <p className="ara-footer-desc">{content.footer.body}</p>
             </div>
@@ -541,10 +539,8 @@ export function StudioAranzullaHomePage() {
             <div className="ara-footer-col">
               <h4>Contatti</h4>
               <a href={phoneHref}>{content.contact.phone}</a>
-              <a href={emailHref}>info@studiolegalearanzulla.it</a>
-              <a href={waHref} target="_blank" rel="noopener noreferrer">
-                WhatsApp
-              </a>
+              <a href={emailHref}>{studioEmail}</a>
+              <a href={waHref} target="_blank" rel="noopener noreferrer">WhatsApp</a>
             </div>
 
             <div className="ara-footer-col">
@@ -557,14 +553,11 @@ export function StudioAranzullaHomePage() {
 
           <div className="ara-footer-bottom">
             <span>
-              © {new Date().getFullYear()} Studio Legale Aranzulla · Avv. Lara Aranzulla ·{" "}
-              {content.footer.tagline}
+              © {new Date().getFullYear()} Studio Legale Aranzulla · Avv. Lara Aranzulla · {content.footer.tagline}
             </span>
             <span>
               Powered by{" "}
-              <a href="https://bizery.it" target="_blank" rel="noopener noreferrer">
-                Bizery
-              </a>
+              <a href="https://bizery.it" target="_blank" rel="noopener noreferrer">Bizery</a>
             </span>
           </div>
         </div>

@@ -27,8 +27,10 @@ import {
   ExternalLink,
   MonitorUp,
   BadgeEuro,
+  Figma,
 } from "lucide-react";
 import { GenerateTenantModal } from "./generate-tenant-modal";
+import { UpdateAnimaModal } from "./update-anima-modal";
 import { cn } from "@/lib/utils";
 import type {
   PlatformLead,
@@ -117,6 +119,7 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   const [noteText, setNoteText] = useState(lead.notes ?? "");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showSaleModal, setShowSaleModal] = useState(false);
+  const [showUpdateAnimaModal, setShowUpdateAnimaModal] = useState(false);
   const [venditori, setVenditori] = useState<Venditore[]>([]);
   const [assignSaving, setAssignSaving] = useState(false);
 
@@ -326,6 +329,12 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
                 </a>
               )}
               <button
+                onClick={() => setShowUpdateAnimaModal(true)}
+                className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700 hover:bg-violet-100"
+              >
+                <Figma size={14} /> Aggiorna Figma
+              </button>
+              <button
                 onClick={() => setShowSaleModal(true)}
                 className="inline-flex items-center gap-2 rounded-full bg-pork-green px-4 py-2 text-sm font-bold text-white hover:bg-pork-green/90"
               >
@@ -344,6 +353,12 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
               >
                 Pannello tenant <ExternalLink size={13} />
               </Link>
+              <button
+                onClick={() => setShowUpdateAnimaModal(true)}
+                className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-bold text-violet-700 hover:bg-violet-100"
+              >
+                <Figma size={14} /> Aggiorna Figma
+              </button>
             </>
           )}
         </div>
@@ -423,6 +438,22 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
         <GenerateTenantModal
           lead={lead}
           onClose={() => setShowGenerateModal(false)}
+        />
+      )}
+      {showUpdateAnimaModal && (lead.business_slug ?? lead.demo_url) && (
+        <UpdateAnimaModal
+          tenantSlug={
+            lead.business_slug ??
+            lead.business_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+          }
+          figmaUrl={
+            lead.demo_url
+              ? `${lead.demo_url}/figma`
+              : lead.business_vertical === "services"
+                ? `https://demo.bizery.it/${lead.business_slug}/figma`
+                : `https://demo.menuary.it/${lead.business_slug}/figma`
+          }
+          onClose={() => setShowUpdateAnimaModal(false)}
         />
       )}
       {showSaleModal && (

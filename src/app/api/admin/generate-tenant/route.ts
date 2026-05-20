@@ -1,34 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-const GITHUB_OWNER = process.env.GITHUB_REPO_OWNER ?? "PynkStudio";
-const GITHUB_REPO = process.env.GITHUB_REPO_NAME ?? "Menuary";
-
-function ghHeaders() {
-  return {
-    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-    "Content-Type": "application/json",
-  };
-}
-
-async function gh<T = unknown>(path: string, method = "GET", body?: unknown): Promise<T> {
-  const res = await fetch(
-    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}${path}`,
-    {
-      method,
-      headers: ghHeaders(),
-      body: body ? JSON.stringify(body) : undefined,
-    },
-  );
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`GitHub ${method} ${path} → ${res.status}: ${text}`);
-  }
-  return res.json() as T;
-}
+import { gh, extractAnimaFiles, commitAnimaToGitHub, type AnimaFile } from "@/lib/github-anima";
 
 function enc(str: string): string {
   return Buffer.from(str, "utf-8").toString("base64");
@@ -244,15 +217,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autorizzato." }, { status: 403 });
   }
 
-  const { tenantSlug, domain, vertical, businessName, primaryColor, leadId } =
-    (await req.json()) as {
-      tenantSlug: string;
-      domain: string;
-      vertical: "food" | "services";
-      businessName: string;
-      primaryColor: string;
-      leadId: string;
-    };
+  // Supporta sia multipart/form-data (con file) che application/json (senza)
+  const ct = req.headers.get("content-type") ?? "";
+  let tenantSlug: string, domain: string, vertical: "food" | "services",
+    businessName: string, primaryColor: string, leadId: string;
+  let animaFile: File | null = null;
+
+  if (ct.includes("multipart/form-data")) {
+    const fd = await req.formData();
+    tenantSlug    = fd.get("tenantSlug") as string;
+    domain        = fd.get("domain") as string;
+    vertical      = fd.get("vertical") as "food" | "services";
+    businessName  = fd.get("businessName") as string;
+    primaryColor  = fd.get("primaryColor") as string;
+    leadId        = fd.get("leadId") as string;
+    animaFile     = (fd.get("animaFile") as File | null) ?? null;
+    // Scarta il file se è vuoto (input non compilato)
+    if (animaFile && animaFile.size === 0) animaFile = null;
+  } else {
+    ({ tenantSlug, domain, vertical, businessName, primaryColor, leadId } =
+      (await req.json()) as {
+        tenantSlug: string; domain: string; vertical: "food" | "services";
+        businessName: string; primaryColor: string; leadId: string;
+      });
+  }
 
   if (!tenantSlug || !domain || !vertical || !businessName) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -314,7 +302,47 @@ export async function POST(req: NextRequest) {
       content: enc(patchContent(dec(cntFile.content), tenantSlug, businessName)),
     });
 
-    // 6. Apri PR
+    // 6. Commit Anima/Figma (opzionale) — un solo commit via GitHub Tree API
+    let animaFileCount = 0;
+    let animaError: string | null = null;
+    if (animaFile) {
+      try {
+        const buffer = new Uint8Array(await animaFile.arrayBuffer());
+        const files = extractAnimaFiles(animaFile, buffer);
+        await commitAnimaToGitHub(branch, tenantSlug, files);
+        animaFileCount = files.length;
+      } catch (err) {
+        // Non blocca la creazione della PR — segnala solo nel body
+        animaError = err instanceof Error ? err.message : "Errore sconosciuto";
+      }
+    }
+
+    const figmaUrl = animaFileCount > 0
+      ? (vertical === "services"
+          ? `https://demo.bizery.it/${tenantSlug}/figma`
+          : `https://demo.menuary.it/${tenantSlug}/figma`)
+      : null;
+
+    // 7. Apri PR
+    const animaSection = animaFile
+      ? animaError
+        ? [
+            "",
+            "### ⚠️ Import Figma (errore)",
+            `\`\`\``,
+            animaError,
+            `\`\`\``,
+          ]
+        : [
+            "",
+            "### Design Figma importato",
+            `- **File**: \`${animaFile.name}\` (${animaFileCount} file in \`public/${tenantSlug}/anima/\`)`,
+            `- **Preview Figma**: ${figmaUrl}`,
+            `- [ ] Sostituire le sezioni statiche con i moduli reali (\`<AnimaSlot />\`)`,
+            `- [ ] Collegare i dati del tenant al design importato`,
+          ]
+      : [];
+
     const pr = await gh<{ html_url: string; number: number }>("/pulls", "POST", {
       title: `Demo tenant: ${businessName} (${tenantSlug})`,
       head: branch,
@@ -328,6 +356,7 @@ export async function POST(req: NextRequest) {
         `- **Dominio ufficiale previsto**: ${domain}`,
         `- **Verticale**: ${vertical}`,
         `- **Lead CRM**: ${leadId}`,
+        ...animaSection,
         "",
         "### Checklist dev prima della presentazione demo",
         `- [ ] UI custom in \`src/components/tenants/${tenantSlug}/\``,
@@ -338,7 +367,13 @@ export async function POST(req: NextRequest) {
       ].join("\n"),
     });
 
-    return NextResponse.json({ success: true, pr_url: pr.html_url, pr_number: pr.number, demo_url: demoUrl });
+    return NextResponse.json({
+      success: true,
+      pr_url: pr.html_url,
+      pr_number: pr.number,
+      demo_url: demoUrl,
+      figma_url: figmaUrl,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

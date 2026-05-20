@@ -1,211 +1,186 @@
 "use client";
 
-import { libritechCatalog, type LibritechBook } from "@/lib/libritech-catalog";
+import { useState, useEffect } from "react";
+import { libritechCatalog } from "@/lib/libritech-catalog";
+import { useShopCartStore, shopCartCount } from "@/store/shop-cart-store";
+import { LtCartDrawer } from "@/components/tenants/libritech/lt-cart-drawer";
 
-const SITE_URL = "https://demo.bizery.it/libritech";
-
-function BookCard({ book }: { book: LibritechBook }) {
-  const productUrl = `${SITE_URL}/shop/${book.id}`;
-
-  return (
-    <article className="lt-book-card">
-      <div className="lt-book-cover">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={book.imageUrl} alt={book.name} loading="lazy" />
-        <div className="lt-book-cover-overlay" />
-      </div>
-
-      <div className="lt-book-body">
-        <h3 className="lt-book-title">{book.name}</h3>
-        <p className="lt-book-desc">{book.description}</p>
-
-        <div className="lt-book-footer">
-          <span className="lt-book-price">€{book.price.toFixed(2)}</span>
-          <div className="lt-book-actions">
-            <button
-              type="button"
-              className="lt-wishlist-btn"
-              data-slabbby-add
-              data-slabbby-product-id={book.id}
-              data-slabbby-product-name={book.name}
-              data-slabbby-product-price={book.price.toFixed(2)}
-              data-slabbby-product-image={book.imageUrl}
-              data-slabbby-product-url={productUrl}
-              aria-label={`Aggiungi "${book.name}" alla wishlist Slabbby`}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-              </svg>
-              Wishlist
-            </button>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
+const BASE_PATH = "/libritech";
 
 export function LibritechHomePage() {
+  const lines = useShopCartStore((s) => s.lines);
+  const setOpen = useShopCartStore((s) => s.setOpen);
+  const openDrawer = useShopCartStore((s) => s.openDrawer);
+  const [hydrated, setHydrated] = useState(false);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => { setHydrated(true); }, []);
+
+  const count = hydrated ? shopCartCount(lines) : 0;
+  const filtered = search.trim()
+    ? libritechCatalog.filter(
+        (b) =>
+          b.name.toLowerCase().includes(search.toLowerCase()) ||
+          b.description.toLowerCase().includes(search.toLowerCase()),
+      )
+    : libritechCatalog;
+
   return (
-    <div className="lt-site">
-      {/* ── Nav ── */}
-      <nav className="lt-nav">
-        <div className="lt-container lt-nav-row">
-          <a href="#" className="lt-logo">
-            <span className="lt-logo-mark">L</span>
-            <span>
-              LibriTech
-              <small>Tech &amp; Startup Books</small>
-            </span>
-          </a>
+    <div className="lt-site lt-mesh-bg">
+      {/* ── Header ── */}
+      <header className="lt-header">
+        <div className="lt-wrap">
+          <div className="lt-header-inner lt-glass-panel">
+            <a href={BASE_PATH} className="lt-logo-link">
+              <div className="lt-logo-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+              </div>
+              <span className="lt-logo-name">LibriTech</span>
+            </a>
 
-          <div className="lt-nav-links">
-            <a href="#catalogo">Catalogo</a>
-            <a href="#wishlist">Wishlist</a>
-            <a href="#contatti">Contatti</a>
+            <nav className="lt-nav">
+              <a href="#catalogo" className="lt-nav-link">Catalogo</a>
+              <a href="#contatti" className="lt-nav-link">Contatti</a>
+              <button
+                type="button"
+                className="lt-cart-btn"
+                onClick={() => setOpen(true)}
+                aria-label="Apri carrello"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
+                Carrello
+                {count > 0 && <span className="lt-cart-badge">{count}</span>}
+              </button>
+            </nav>
           </div>
-
-          <a href="#catalogo" className="lt-btn lt-btn-primary">
-            Esplora i libri
-          </a>
         </div>
-      </nav>
+      </header>
 
-      {/* ── Hero ── */}
-      <section className="lt-hero">
-        <div className="lt-container lt-hero-inner">
-          <div>
-            <span className="lt-eyebrow">Libreria tech &amp; startup · Milano</span>
+      <main className="lt-wrap" style={{ paddingTop: "1.5rem", paddingBottom: "4rem", display: "flex", flexDirection: "column", gap: "2.5rem" }}>
+        {/* ── Hero ── */}
+        <section className="lt-hero lt-fade-up">
+          <div className="lt-hero-blob-1" />
+          <div className="lt-hero-blob-2" />
+          <div className="lt-hero-inner">
             <h1>
-              Libri per chi
-              <span>non sceglie il facile.</span>
+              La tua prossima lettura inizia{" "}
+              <span className="lt-gradient-text">da qui.</span>
             </h1>
-            <p className="lt-hero-body">
+            <p className="lt-hero-subtitle">
               30 titoli tra satira, strategia e tecnica per founder, investitori e
               chiunque lavori con un foglio Excel aperto e troppe aspettative.
-              Salva i tuoi preferiti nella wishlist Slabbby e trovali ovunque.
             </p>
             <div className="lt-hero-actions">
-              <a href="#catalogo" className="lt-btn lt-btn-primary">
-                Vai al catalogo
-              </a>
-              <a href="#contatti" className="lt-btn lt-btn-ghost">
-                Contattaci
+              <a href="#catalogo" className="lt-btn-primary" style={{ padding: "0.75rem 1.5rem", fontSize: "0.9375rem" }}>
+                <span>Sfoglia il catalogo</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                </svg>
               </a>
             </div>
           </div>
+        </section>
 
-          <div className="lt-hero-stats">
-            <div className="lt-stat-card">
-              <strong>
-                30<em>+</em>
-              </strong>
-              <span>Titoli disponibili</span>
-            </div>
-            <div className="lt-stat-card">
-              <strong>
-                €16<em>–</em>33
-              </strong>
-              <span>Fascia di prezzo</span>
-            </div>
-            <div className="lt-stat-card">
-              <strong>
-                ♡<em> </em>
-              </strong>
-              <span>Wishlist Slabbby integrata</span>
-            </div>
-          </div>
+        {/* ── Search ── */}
+        <div style={{ position: "relative" }}>
+          <svg
+            width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }}
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Cerca titolo o descrizione…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="lt-form-input"
+            style={{ paddingLeft: "2.75rem", borderRadius: "0.875rem" }}
+          />
         </div>
-      </section>
 
-      {/* ── Catalog ── */}
-      <section id="catalogo" className="lt-catalog">
-        <div className="lt-container">
-          <div className="lt-section-head">
+        {/* ── Catalog ── */}
+        <section id="catalogo">
+          <div className="lt-section-head" style={{ marginBottom: "1.5rem" }}>
             <div>
-              <span className="lt-eyebrow">Shop online</span>
-              <h2>
-                Il catalogo
-                <span>completo</span>
+              <p className="lt-section-eyebrow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+                Catalogo
+              </p>
+              <h2 className="lt-section-title">
+                {search ? <>Risultati per &ldquo;{search}&rdquo;</> : "I titoli del momento"}
               </h2>
-              <p>
-                Tutti i titoli disponibili. Usa il tasto wishlist per salvare i
-                preferiti su Slabbby e ritrovarli su qualunque dispositivo.
-              </p>
             </div>
-            <span className="lt-catalog-count">
-              {libritechCatalog.length} titoli
-            </span>
+            <p className="lt-count">
+              {filtered.length} {filtered.length === 1 ? "libro" : "libri"} disponibil{filtered.length === 1 ? "e" : "i"}
+            </p>
           </div>
 
-          <div className="lt-book-grid">
-            {libritechCatalog.map((book) => (
-              <BookCard key={book.id} book={book} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer ── */}
-      <footer id="contatti" className="lt-footer">
-        <div className="lt-container">
-          <div className="lt-footer-inner">
-            <div className="lt-footer-brand">
-              <div className="lt-logo">
-                <span className="lt-logo-mark">L</span>
-                <span>LibriTech</span>
-              </div>
-              <p>
-                Libreria specializzata in tecnologia, startup e innovazione
-                digitale. Libri che fanno ridere, pensare e — a volte — rileggere
-                il proprio business plan.
-              </p>
-              <div style={{ marginTop: 16 }}>
-                <span className="lt-slabbby-badge">♡ Powered by Slabbby</span>
-              </div>
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "4rem 0", color: "#94a3b8" }}>
+              <p style={{ fontSize: "1rem" }}>Nessun titolo trovato per &ldquo;{search}&rdquo;</p>
             </div>
-
-            <div className="lt-footer-col">
-              <h4>Catalogo</h4>
-              <a href="#catalogo">Tutti i titoli</a>
-              <a href="#catalogo">Startup &amp; VC</a>
-              <a href="#catalogo">Tecnologia</a>
-              <a href="#catalogo">Finanza</a>
+          ) : (
+            <div className="lt-book-grid">
+              {filtered.map((book) => (
+                <article key={book.id} className="lt-book-card lt-card-elevated">
+                  <div className="lt-book-img-wrap">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={book.imageUrl} alt={book.name} className="lt-book-img" loading="lazy" />
+                    <div className="lt-book-img-overlay" />
+                    <div className="lt-book-badge">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                      In vetrina
+                    </div>
+                  </div>
+                  <div className="lt-book-body">
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <h2 className="lt-book-title">{book.name}</h2>
+                      <p className="lt-book-desc">{book.description}</p>
+                    </div>
+                    <div className="lt-book-footer">
+                      <span className="lt-book-price">€{book.price.toFixed(2)}</span>
+                      <a
+                        href={`${BASE_PATH}/${book.id}`}
+                        className="lt-btn-primary"
+                        style={{ padding: "0.625rem 1rem", fontSize: "0.875rem" }}
+                      >
+                        <span>Scopri</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
+          )}
+        </section>
 
-            <div className="lt-footer-col">
-              <h4>Servizi</h4>
-              <span>Spedizione in Italia</span>
-              <span>Ritiro in sede</span>
-              <span>Gift card</span>
-              <a href="#wishlist">Wishlist Slabbby</a>
-            </div>
-
-            <div className="lt-footer-col">
-              <h4>Contatti</h4>
-              <span>Via della Startup, 42</span>
-              <span>20124 Milano (MI)</span>
-              <a href="mailto:ciao@libritech.it">ciao@libritech.it</a>
-              <a href="tel:+390212345678">+39 02 1234 5678</a>
-            </div>
-          </div>
-
-          <div className="lt-footer-bottom">
-            <span>© {new Date().getFullYear()} LibriTech · P.IVA demo</span>
+        {/* ── Footer ── */}
+        <footer id="contatti" style={{ borderTop: "1px solid var(--lt-border)", paddingTop: "2rem", color: "#64748b", fontSize: "0.875rem" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "0.5rem" }}>
+            <span>© {new Date().getFullYear()} LibriTech · Via della Startup, 42 · 20124 Milano</span>
             <span>Demo tenant su piattaforma Bizery</span>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </main>
+
+      {/* ── Cart drawer ── */}
+      {hydrated && openDrawer && <LtCartDrawer />}
     </div>
   );
 }

@@ -1,97 +1,102 @@
 @layer components {
+
+  /* ─── Token ─────────────────────────────────────────────── */
   .ara-site {
-    --ara-bg: #F8F6F1;
-    --ara-surface: #FFFFFF;
-    --ara-surface-alt: #F0ECE3;
-    --ara-ink: #1A1612;
-    --ara-muted: #6B6459;
-    --ara-faint: #A09A90;
-    --ara-gold: #9B7E46;
-    --ara-gold-dark: #7A6235;
-    --ara-gold-soft: rgba(155, 126, 70, 0.1);
-    --ara-gold-ring: rgba(155, 126, 70, 0.25);
-    --ara-navy: #1C2B4A;
-    --ara-navy-soft: rgba(28, 43, 74, 0.06);
-    --ara-rule: rgba(26, 22, 18, 0.1);
-    --ara-rule-strong: rgba(26, 22, 18, 0.2);
-    --ara-display: "Palatino Linotype", "Book Antiqua", Georgia, ui-serif, serif;
-    --ara-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ara-bg:          #F7F4EF;
+    --ara-surface:     #FFFFFF;
+    --ara-surface-alt: #EDE9E1;
+    --ara-ink:         #18130E;
+    --ara-muted:       #6B6055;
+    --ara-faint:       #A09590;
+    --ara-gold:        #9A7B40;
+    --ara-gold-dk:     #7B6230;
+    --ara-gold-lt:     #C8A96A;
+    --ara-gold-soft:   rgba(154, 123, 64, 0.09);
+    --ara-gold-ring:   rgba(154, 123, 64, 0.22);
+    --ara-navy:        #1A2840;
+    --ara-navy-dk:     #111B2B;
+    --ara-rule:        rgba(24, 19, 14, 0.1);
+    --ara-rule-md:     rgba(24, 19, 14, 0.16);
+    --ara-rule-dk:     rgba(24, 19, 14, 0.25);
+    --ara-serif:       "Palatino Linotype", "Book Antiqua", Georgia, ui-serif, serif;
+    --ara-sans:        system-ui, -apple-system, "Segoe UI", sans-serif;
     min-height: 100vh;
     background: var(--ara-bg);
     color: var(--ara-ink);
-    font-family: var(--ara-body);
+    font-family: var(--ara-sans);
     font-size: 16px;
     line-height: 1.6;
   }
 
-  .ara-site * {
-    box-sizing: border-box;
-  }
+  .ara-site * { box-sizing: border-box; }
+  .ara-site a { color: inherit; text-decoration: none; }
+  .ara-site button, .ara-site input,
+  .ara-site select, .ara-site textarea { font: inherit; }
 
-  .ara-site a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  /* ── Container ──────────────────────────────────────────── */
+  /* ─── Layout ────────────────────────────────────────────── */
   .ara-container {
-    width: min(100% - 48px, 1200px);
-    margin: 0 auto;
+    width: min(100% - 48px, 1240px);
+    margin-inline: auto;
   }
 
-  /* ── Nav ────────────────────────────────────────────────── */
+  /* ─── Nav ───────────────────────────────────────────────── */
   .ara-nav {
     position: fixed;
     inset: 0 0 auto;
     z-index: 60;
     border-bottom: 1px solid var(--ara-rule);
-    background: rgba(248, 246, 241, 0.9);
-    backdrop-filter: blur(20px) saturate(150%);
+    background: rgba(247, 244, 239, 0.88);
+    backdrop-filter: blur(24px) saturate(160%);
   }
 
-  .ara-nav-row {
+  .ara-nav-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    min-height: 72px;
+    min-height: 68px;
   }
 
   .ara-logo {
     display: flex;
     align-items: center;
     gap: 14px;
-    font-family: var(--ara-display);
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0;
-    line-height: 1.2;
     color: var(--ara-ink);
-  }
-
-  .ara-logo small {
-    display: block;
-    margin-top: 3px;
-    color: var(--ara-muted);
-    font-family: var(--ara-body);
-    font-size: 10px;
-    font-weight: 400;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    flex-shrink: 0;
   }
 
   .ara-logo-seal {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     border: 1.5px solid var(--ara-gold);
     display: grid;
     place-items: center;
-    color: var(--ara-gold);
-    font-family: var(--ara-display);
+    font-family: var(--ara-serif);
     font-weight: 700;
-    font-size: 15px;
+    font-size: 16px;
+    color: var(--ara-gold);
     flex-shrink: 0;
+    letter-spacing: 0;
+  }
+
+  .ara-logo-text {
+    font-family: var(--ara-serif);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--ara-ink);
+  }
+
+  .ara-logo-text small {
+    display: block;
+    margin-top: 2px;
+    font-family: var(--ara-sans);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ara-faint);
   }
 
   .ara-nav-links {
@@ -101,32 +106,31 @@
   }
 
   .ara-nav-links a {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--ara-muted);
-    letter-spacing: 0.02em;
-    transition: color 0.2s;
+    letter-spacing: 0.03em;
+    transition: color 0.18s;
   }
 
-  .ara-nav-links a:hover {
-    color: var(--ara-ink);
-  }
+  .ara-nav-links a:hover { color: var(--ara-ink); }
 
-  /* ── Buttons ────────────────────────────────────────────── */
+  /* ─── Buttons ───────────────────────────────────────────── */
   .ara-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 22px;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 11px 24px;
+    border-radius: 3px;
+    font-family: var(--ara-sans);
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
     cursor: pointer;
     border: none;
-    transition: all 0.2s;
+    transition: all 0.18s;
     text-decoration: none;
-    font-family: var(--ara-body);
+    white-space: nowrap;
   }
 
   .ara-btn-primary {
@@ -134,14 +138,12 @@
     color: #fff;
   }
 
-  .ara-btn-primary:hover {
-    background: var(--ara-gold-dark);
-  }
+  .ara-btn-primary:hover { background: var(--ara-gold-dk); }
 
   .ara-btn-outline {
     background: transparent;
     color: var(--ara-ink);
-    border: 1.5px solid var(--ara-rule-strong);
+    border: 1.5px solid var(--ara-rule-dk);
   }
 
   .ara-btn-outline:hover {
@@ -154,130 +156,148 @@
     color: var(--ara-muted);
   }
 
-  .ara-btn-ghost:hover {
-    color: var(--ara-ink);
+  .ara-btn-ghost:hover { color: var(--ara-ink); }
+
+  /* ─── Eyebrow ───────────────────────────────────────────── */
+  .ara-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ara-gold);
   }
 
-  /* ── Hero ───────────────────────────────────────────────── */
+  .ara-eyebrow::before {
+    content: "";
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--ara-gold-lt);
+    flex-shrink: 0;
+  }
+
+  /* ─── Hero ──────────────────────────────────────────────── */
   .ara-hero {
-    min-height: 100vh;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding-top: 72px;
+    grid-template-columns: 55% 45%;
+    min-height: 100vh;
+    padding-top: 68px;
     overflow: hidden;
-    position: relative;
   }
 
   .ara-hero-content {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 80px 60px 80px 0;
-    position: relative;
-    z-index: 2;
+    /* align with container on the left edge */
+    padding-top: 80px;
+    padding-bottom: 80px;
+    padding-right: 72px;
+    padding-left: max(24px, calc((100vw - 1240px) / 2 + 24px));
   }
 
-  .ara-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ara-gold);
-    margin-bottom: 24px;
-  }
-
-  .ara-eyebrow::before {
-    content: "";
-    display: block;
-    width: 32px;
-    height: 1px;
-    background: var(--ara-gold);
-    flex-shrink: 0;
+  .ara-hero-label {
+    margin-bottom: 32px;
   }
 
   .ara-hero-title {
-    font-family: var(--ara-display);
-    font-size: clamp(48px, 6vw, 80px);
+    font-family: var(--ara-serif);
+    font-size: clamp(52px, 6.5vw, 88px);
     font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
     color: var(--ara-ink);
-    margin: 0 0 8px;
+    margin: 0;
   }
 
-  .ara-hero-title-accent {
+  .ara-hero-title em {
+    font-style: italic;
     color: var(--ara-gold);
-    display: block;
+  }
+
+  .ara-hero-divider {
+    width: 56px;
+    height: 2px;
+    background: var(--ara-gold);
+    margin: 36px 0;
+    flex-shrink: 0;
   }
 
   .ara-hero-body {
     font-size: 17px;
-    line-height: 1.7;
+    line-height: 1.75;
     color: var(--ara-muted);
-    max-width: 480px;
-    margin: 24px 0 40px;
+    max-width: 440px;
+    margin: 0 0 40px;
   }
 
   .ara-hero-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
   }
 
-  .ara-hero-image {
+  .ara-hero-media {
     position: relative;
     overflow: hidden;
   }
 
-  .ara-hero-image img {
+  .ara-hero-media img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 30%;
+    object-position: center 25%;
   }
 
-  .ara-hero-image::after {
+  /* dark-to-transparent overlay on the left edge of the image */
+  .ara-hero-media::before {
     content: "";
     position: absolute;
     inset: 0;
     background: linear-gradient(
-      to right,
+      90deg,
       var(--ara-bg) 0%,
-      rgba(248, 246, 241, 0.2) 40%,
-      transparent 60%
+      rgba(247, 244, 239, 0.3) 30%,
+      transparent 55%
     );
     z-index: 1;
   }
 
+  /* subtle navy tint on the image to give it authority */
+  .ara-hero-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 40, 64, 0.18);
+    z-index: 0;
+  }
+
   .ara-hero-badge {
     position: absolute;
-    bottom: 48px;
-    right: 48px;
+    bottom: 40px;
+    right: 40px;
     z-index: 2;
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: rgba(248, 246, 241, 0.9);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--ara-rule);
+    padding: 18px 24px;
+    background: rgba(247, 244, 239, 0.92);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--ara-rule-md);
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    align-items: flex-end;
     gap: 2px;
-    padding: 12px;
+    min-width: 130px;
   }
 
   .ara-hero-badge strong {
-    font-family: var(--ara-display);
-    font-size: 28px;
+    font-family: var(--ara-serif);
+    font-size: 36px;
     font-weight: 700;
     color: var(--ara-gold);
     line-height: 1;
@@ -285,344 +305,373 @@
 
   .ara-hero-badge span {
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--ara-muted);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     line-height: 1.3;
+    text-align: right;
   }
 
-  /* ── Stats ──────────────────────────────────────────────── */
+  /* ─── Stats strip ───────────────────────────────────────── */
   .ara-stats {
-    background: var(--ara-navy);
-    padding: 48px 0;
+    background: var(--ara-navy-dk);
+    border-top: 1px solid rgba(154, 123, 64, 0.25);
   }
 
-  .ara-stats-grid {
+  .ara-stats-inner {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0;
   }
 
   .ara-stat {
-    text-align: center;
-    padding: 24px;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 36px 32px;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    text-align: left;
   }
 
-  .ara-stat:last-child {
-    border-right: none;
-  }
+  .ara-stat:last-child { border-right: none; }
 
   .ara-stat strong {
     display: block;
-    font-family: var(--ara-display);
-    font-size: 40px;
+    font-family: var(--ara-serif);
+    font-size: 44px;
     font-weight: 700;
-    color: var(--ara-gold);
+    color: var(--ara-gold-lt);
     line-height: 1;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
   }
 
   .ara-stat span {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.55);
-    letter-spacing: 0.04em;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-weight: 500;
   }
 
-  /* ── Sections ───────────────────────────────────────────── */
+  /* ─── Section base ──────────────────────────────────────── */
   .ara-section {
-    padding: 96px 0;
+    padding: 100px 0;
   }
 
-  .ara-section-alt {
-    background: var(--ara-surface-alt);
-  }
+  .ara-section-alt { background: var(--ara-surface-alt); }
 
   .ara-section-dark {
     background: var(--ara-navy);
     color: #fff;
   }
 
-  .ara-section-head {
-    margin-bottom: 64px;
+  .ara-section-title {
+    font-family: var(--ara-serif);
+    font-size: clamp(34px, 4vw, 56px);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin: 14px 0 0;
+    color: var(--ara-ink);
   }
 
-  .ara-section-head-split {
+  .ara-section-title em {
+    font-style: italic;
+    color: var(--ara-gold);
+  }
+
+  .ara-section-title-wht { color: #fff; }
+
+  .ara-section-head-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 48px;
     align-items: end;
-    margin-bottom: 64px;
+    margin-bottom: 72px;
   }
 
-  .ara-section-title {
-    font-family: var(--ara-display);
-    font-size: clamp(32px, 4vw, 52px);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    color: var(--ara-ink);
-    margin: 12px 0 0;
+  .ara-section-head-center {
+    text-align: center;
+    max-width: 680px;
+    margin-inline: auto;
+    margin-bottom: 72px;
   }
 
-  .ara-section-title-dark {
-    color: #fff;
-  }
-
-  .ara-section-title span {
-    color: var(--ara-gold);
-  }
+  .ara-section-head-center .ara-eyebrow { justify-content: center; }
 
   .ara-section-desc {
     font-size: 16px;
-    line-height: 1.7;
+    line-height: 1.75;
     color: var(--ara-muted);
-    max-width: 520px;
     margin-top: 16px;
   }
 
-  .ara-section-desc-dark {
-    color: rgba(255, 255, 255, 0.6);
+  .ara-section-desc-wht { color: rgba(255, 255, 255, 0.55); }
+
+  /* ─── Practice areas — editorial list ──────────────────── */
+  .ara-areas-list {
+    border-top: 1px solid var(--ara-rule-md);
   }
 
-  /* ── Practice Areas grid ────────────────────────────────── */
-  .ara-areas-grid {
+  .ara-area-row {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--ara-rule);
-    border: 1px solid var(--ara-rule);
-    border-radius: 12px;
-    overflow: hidden;
+    grid-template-columns: 56px 1fr 2fr;
+    gap: 0 48px;
+    align-items: start;
+    padding: 44px 0;
+    border-bottom: 1px solid var(--ara-rule);
+    transition: background 0.18s;
+    position: relative;
   }
 
-  .ara-area-card {
-    background: var(--ara-surface);
-    padding: 40px 36px;
+  .ara-area-row:hover { background: rgba(154, 123, 64, 0.04); }
+
+  .ara-area-num {
+    font-family: var(--ara-serif);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ara-gold);
+    letter-spacing: 0.1em;
+    padding-top: 5px;
+  }
+
+  .ara-area-head {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    transition: background 0.2s;
-    cursor: default;
-  }
-
-  .ara-area-card:hover {
-    background: var(--ara-surface-alt);
-  }
-
-  .ara-area-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    background: var(--ara-gold-soft);
-    display: grid;
-    place-items: center;
-    color: var(--ara-gold);
-    flex-shrink: 0;
+    gap: 8px;
   }
 
   .ara-area-kicker {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.18em;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--ara-gold);
   }
 
   .ara-area-title {
-    font-family: var(--ara-display);
-    font-size: 22px;
+    font-family: var(--ara-serif);
+    font-size: 24px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
     color: var(--ara-ink);
     margin: 0;
   }
 
   .ara-area-desc {
-    font-size: 14px;
-    line-height: 1.7;
+    font-size: 15px;
+    line-height: 1.75;
     color: var(--ara-muted);
     margin: 0;
-    flex: 1;
+    padding-top: 5px;
   }
 
-  /* ── Team section ───────────────────────────────────────── */
+  /* ─── Chi siamo ─────────────────────────────────────────── */
   .ara-team-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
+    grid-template-columns: 5fr 6fr;
+    gap: 96px;
     align-items: center;
   }
 
-  .ara-team-photo {
+  .ara-team-media {
     position: relative;
-    border-radius: 12px;
+    border-radius: 4px;
     overflow: hidden;
-    aspect-ratio: 4/5;
+    aspect-ratio: 3/4;
   }
 
-  .ara-team-photo img {
+  .ara-team-media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center top;
   }
 
-  .ara-team-photo::before {
+  /* subtle gold frame offset */
+  .ara-team-media::after {
     content: "";
     position: absolute;
     inset: 0;
-    border: 1px solid var(--ara-rule);
-    border-radius: 12px;
+    border: 1px solid var(--ara-rule-md);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  .ara-team-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px;
+    background: linear-gradient(to top, rgba(26, 40, 64, 0.85) 0%, transparent 100%);
     z-index: 1;
   }
 
-  .ara-team-photo-badge {
-    position: absolute;
-    bottom: 24px;
-    left: 24px;
-    background: rgba(248, 246, 241, 0.9);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--ara-rule);
-    border-radius: 8px;
-    padding: 12px 16px;
-    z-index: 2;
-  }
-
-  .ara-team-photo-badge strong {
+  .ara-team-badge strong {
     display: block;
-    font-family: var(--ara-display);
-    font-size: 15px;
+    font-family: var(--ara-serif);
+    font-size: 17px;
     font-weight: 700;
-    color: var(--ara-ink);
+    color: #fff;
+    line-height: 1.2;
   }
 
-  .ara-team-photo-badge span {
+  .ara-team-badge span {
     font-size: 12px;
-    color: var(--ara-muted);
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.06em;
   }
 
   .ara-team-content {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
+  }
+
+  .ara-pull-quote {
+    border-left: 3px solid var(--ara-gold);
+    padding: 20px 24px;
+    background: var(--ara-gold-soft);
+    border-radius: 0 4px 4px 0;
+    margin: 4px 0;
+  }
+
+  .ara-pull-quote p {
+    font-family: var(--ara-serif);
+    font-size: 19px;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--ara-ink);
+    margin: 0;
   }
 
   .ara-team-bio {
     font-size: 16px;
-    line-height: 1.75;
+    line-height: 1.8;
     color: var(--ara-muted);
     margin: 0;
   }
 
-  .ara-competencies {
+  .ara-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 8px;
   }
 
-  .ara-competency-chip {
+  .ara-chip {
     padding: 6px 14px;
-    border-radius: 100px;
-    background: var(--ara-gold-soft);
-    color: var(--ara-gold-dark);
-    font-size: 13px;
-    font-weight: 500;
+    border-radius: 2px;
     border: 1px solid var(--ara-gold-ring);
+    background: var(--ara-gold-soft);
+    color: var(--ara-gold-dk);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
   }
 
-  /* ── Process ────────────────────────────────────────────── */
-  .ara-process-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    position: relative;
-  }
-
-  .ara-process-grid::before {
-    content: "";
-    position: absolute;
-    top: 28px;
-    left: calc(12.5% + 12px);
-    right: calc(12.5% + 12px);
-    height: 1px;
-    background: var(--ara-rule-strong);
-    z-index: 0;
-  }
-
-  .ara-process-step {
+  /* ─── Process ───────────────────────────────────────────── */
+  .ara-process-list {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 0 24px;
-    position: relative;
-    z-index: 1;
+    gap: 0;
+    border-top: 1px solid var(--ara-rule-md);
   }
 
-  .ara-process-num {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: 1.5px solid var(--ara-gold);
-    background: var(--ara-bg);
+  .ara-process-row {
     display: grid;
-    place-items: center;
-    font-family: var(--ara-display);
-    font-size: 18px;
+    grid-template-columns: 72px 1fr;
+    gap: 0 48px;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--ara-rule);
+    align-items: start;
+  }
+
+  .ara-process-index {
+    font-family: var(--ara-serif);
+    font-size: 40px;
     font-weight: 700;
-    color: var(--ara-gold);
-    margin-bottom: 24px;
-    flex-shrink: 0;
+    color: var(--ara-gold-soft);
+    /* rendered with a gold stroke */
+    -webkit-text-stroke: 1.5px var(--ara-gold);
+    color: transparent;
+    line-height: 1;
+    padding-top: 4px;
+    letter-spacing: -0.02em;
+    user-select: none;
+  }
+
+  .ara-process-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 4px;
   }
 
   .ara-process-title {
-    font-family: var(--ara-display);
-    font-size: 18px;
+    font-family: var(--ara-serif);
+    font-size: 22px;
     font-weight: 700;
     color: var(--ara-ink);
-    margin: 0 0 10px;
-  }
-
-  .ara-process-desc {
-    font-size: 14px;
-    line-height: 1.65;
-    color: var(--ara-muted);
     margin: 0;
   }
 
-  /* ── Reviews ────────────────────────────────────────────── */
+  .ara-process-desc {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--ara-muted);
+    margin: 0;
+    max-width: 560px;
+  }
+
+  /* ─── Reviews ───────────────────────────────────────────── */
   .ara-reviews-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    overflow: hidden;
   }
 
   .ara-review-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 32px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 40px 36px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
+    position: relative;
+  }
+
+  .ara-review-mark {
+    font-family: var(--ara-serif);
+    font-size: 72px;
+    line-height: 0.7;
+    color: var(--ara-gold);
+    opacity: 0.35;
+    user-select: none;
+    margin-bottom: 4px;
   }
 
   .ara-review-stars {
     display: flex;
     gap: 3px;
-    color: var(--ara-gold);
+    color: var(--ara-gold-lt);
   }
 
   .ara-review-text {
-    font-size: 15px;
-    line-height: 1.7;
-    color: rgba(255, 255, 255, 0.75);
+    font-family: var(--ara-serif);
+    font-size: 16px;
+    line-height: 1.75;
     font-style: italic;
+    color: rgba(255, 255, 255, 0.8);
     flex: 1;
     margin: 0;
+  }
+
+  .ara-review-sep {
+    width: 32px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
   }
 
   .ara-review-author {
@@ -632,16 +681,17 @@
   }
 
   .ara-review-avatar {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background: var(--ara-gold-soft);
-    border: 1px solid var(--ara-gold-ring);
+    border: 1px solid rgba(154, 123, 64, 0.3);
     display: grid;
     place-items: center;
+    font-family: var(--ara-serif);
     font-weight: 700;
-    font-size: 14px;
-    color: var(--ara-gold);
+    font-size: 15px;
+    color: var(--ara-gold-lt);
     flex-shrink: 0;
   }
 
@@ -649,131 +699,123 @@
     display: block;
     font-size: 14px;
     font-weight: 600;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
   }
 
   .ara-review-author small {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.38);
+    letter-spacing: 0.04em;
   }
 
-  /* ── Contact ────────────────────────────────────────────── */
-  .ara-contact-grid {
+  /* ─── Contact ───────────────────────────────────────────── */
+  .ara-contact-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
+    grid-template-columns: 5fr 6fr;
+    gap: 96px;
     align-items: start;
   }
 
-  .ara-contact-info {
+  .ara-contact-details {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 0;
+    border-top: 1px solid var(--ara-rule-md);
   }
 
-  .ara-contact-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 20px;
-    border-radius: 10px;
-    background: var(--ara-surface);
-    border: 1px solid var(--ara-rule);
-    transition: border-color 0.2s;
+  .ara-contact-item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 0 20px;
+    align-items: start;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--ara-rule);
+    color: var(--ara-ink);
+    transition: color 0.18s;
   }
 
-  .ara-contact-row:hover {
-    border-color: var(--ara-gold-ring);
-  }
+  a.ara-contact-item:hover { color: var(--ara-gold); }
 
-  .ara-contact-icon {
+  .ara-contact-item-icon {
     width: 40px;
     height: 40px;
-    border-radius: 8px;
-    background: var(--ara-gold-soft);
     display: grid;
     place-items: center;
     color: var(--ara-gold);
     flex-shrink: 0;
+    padding-top: 2px;
   }
 
-  .ara-contact-row small {
+  .ara-contact-item small {
     display: block;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ara-faint);
-    margin-bottom: 4px;
+    margin-bottom: 5px;
   }
 
-  .ara-contact-row span {
+  .ara-contact-item span, .ara-contact-item strong {
     display: block;
     font-size: 15px;
     font-weight: 500;
-    color: var(--ara-ink);
+    color: inherit;
+    line-height: 1.4;
   }
 
-  .ara-contact-row a {
-    display: block;
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--ara-ink);
-    transition: color 0.2s;
-  }
-
-  .ara-contact-row a:hover {
-    color: var(--ara-gold);
-  }
-
-  /* ── Form ───────────────────────────────────────────────── */
+  /* ─── Form ──────────────────────────────────────────────── */
   .ara-form {
     background: var(--ara-surface);
-    border: 1px solid var(--ara-rule);
-    border-radius: 16px;
+    border: 1px solid var(--ara-rule-md);
+    border-radius: 4px;
     padding: 48px;
     display: flex;
     flex-direction: column;
     gap: 20px;
   }
 
-  .ara-form-title {
-    font-family: var(--ara-display);
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--ara-ink);
-    margin: 0 0 4px;
+  .ara-form-heading {
+    margin-bottom: 4px;
   }
 
-  .ara-form-subtitle {
+  .ara-form-heading h3 {
+    font-family: var(--ara-serif);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ara-ink);
+    margin: 0 0 6px;
+  }
+
+  .ara-form-heading p {
     font-size: 14px;
     color: var(--ara-muted);
-    margin: 0 0 8px;
+    margin: 0;
   }
 
   .ara-form label {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     color: var(--ara-muted);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
-  .ara-form input,
-  .ara-form select,
-  .ara-form textarea {
-    padding: 12px 14px;
-    border: 1px solid var(--ara-rule-strong);
-    border-radius: 6px;
+  .ara-form input, .ara-form select, .ara-form textarea {
+    padding: 13px 14px;
+    border: 1px solid var(--ara-rule-dk);
+    border-radius: 3px;
     font-size: 15px;
     color: var(--ara-ink);
     background: var(--ara-bg);
-    font-family: var(--ara-body);
-    transition: border-color 0.2s;
+    transition: border-color 0.18s, box-shadow 0.18s;
     outline: none;
     width: 100%;
+    font-family: var(--ara-sans);
   }
 
   .ara-form input:focus,
@@ -783,7 +825,7 @@
     box-shadow: 0 0 0 3px var(--ara-gold-soft);
   }
 
-  .ara-form-grid {
+  .ara-form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
@@ -791,26 +833,27 @@
 
   .ara-form-success {
     text-align: center;
-    padding: 32px 0;
+    padding: 24px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 16px;
   }
 
-  .ara-form-success-icon {
-    width: 64px;
-    height: 64px;
+  .ara-form-success-mark {
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: var(--ara-gold-soft);
+    border: 1px solid var(--ara-gold-ring);
     display: grid;
     place-items: center;
     color: var(--ara-gold);
   }
 
   .ara-form-success h3 {
-    font-family: var(--ara-display);
-    font-size: 24px;
+    font-family: var(--ara-serif);
+    font-size: 22px;
     font-weight: 700;
     color: var(--ara-ink);
     margin: 0;
@@ -820,195 +863,141 @@
     font-size: 15px;
     color: var(--ara-muted);
     margin: 0;
-    max-width: 360px;
+    max-width: 320px;
+    line-height: 1.65;
   }
 
-  /* ── Footer ─────────────────────────────────────────────── */
+  /* ─── Footer ────────────────────────────────────────────── */
   .ara-footer {
     background: var(--ara-ink);
-    color: rgba(255, 255, 255, 0.6);
-    padding: 64px 0 40px;
+    padding: 72px 0 40px;
   }
 
   .ara-footer-top {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;
     gap: 48px;
-    padding-bottom: 48px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 56px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     margin-bottom: 32px;
   }
 
   .ara-footer-brand {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
   }
 
   .ara-footer-logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-family: var(--ara-display);
-    font-size: 16px;
-    font-weight: 700;
     color: #fff;
   }
 
-  .ara-footer-logo-seal {
-    width: 36px;
-    height: 36px;
+  .ara-footer-seal {
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     border: 1.5px solid var(--ara-gold);
     display: grid;
     place-items: center;
-    color: var(--ara-gold);
+    font-family: var(--ara-serif);
     font-weight: 700;
     font-size: 13px;
+    color: var(--ara-gold);
     flex-shrink: 0;
+  }
+
+  .ara-footer-name {
+    font-family: var(--ara-serif);
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
   }
 
   .ara-footer-desc {
     font-size: 14px;
     line-height: 1.65;
-    color: rgba(255, 255, 255, 0.45);
-    max-width: 300px;
+    color: rgba(255, 255, 255, 0.38);
+    max-width: 280px;
     margin: 0;
   }
 
   .ara-footer-col h4 {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.28);
     margin: 0 0 20px;
   }
 
   .ara-footer-col a {
     display: block;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.5);
     margin-bottom: 10px;
-    transition: color 0.2s;
+    transition: color 0.18s;
   }
 
-  .ara-footer-col a:hover {
-    color: var(--ara-gold);
-  }
+  .ara-footer-col a:hover { color: var(--ara-gold-lt); }
 
   .ara-footer-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.25);
+    letter-spacing: 0.02em;
   }
 
-  .ara-footer-bottom a {
-    color: inherit;
-    transition: color 0.2s;
-  }
+  .ara-footer-bottom a { color: inherit; transition: color 0.18s; }
+  .ara-footer-bottom a:hover { color: rgba(255, 255, 255, 0.5); }
 
-  .ara-footer-bottom a:hover {
-    color: rgba(255, 255, 255, 0.55);
-  }
-
-  /* ── Responsive ─────────────────────────────────────────── */
+  /* ─── Responsive ────────────────────────────────────────── */
   @media (max-width: 1024px) {
-    .ara-hero {
-      grid-template-columns: 1fr;
-      min-height: auto;
-    }
+    .ara-hero { grid-template-columns: 1fr; min-height: auto; }
 
     .ara-hero-content {
-      padding: 48px 0;
+      padding: 56px 24px;
+      padding-left: 24px;
     }
 
-    .ara-hero-image {
-      height: 420px;
-    }
+    .ara-hero-media { height: 480px; order: -1; }
 
-    .ara-hero-image::after {
+    .ara-hero-media::before {
       background: linear-gradient(
-        to bottom,
-        var(--ara-bg) 0%,
-        transparent 30%,
-        transparent 100%
+        to bottom, transparent 60%, var(--ara-bg) 100%
       );
     }
 
-    .ara-areas-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
+    .ara-stats-inner { grid-template-columns: repeat(2, 1fr); }
 
-    .ara-stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
+    .ara-section-head-2col { grid-template-columns: 1fr; gap: 16px; }
 
-    .ara-team-grid {
-      grid-template-columns: 1fr;
-      gap: 48px;
-    }
+    .ara-area-row { grid-template-columns: 40px 1fr; }
+    .ara-area-desc { display: none; }
 
-    .ara-team-photo {
-      aspect-ratio: 16/9;
-    }
+    .ara-team-grid { grid-template-columns: 1fr; gap: 48px; }
+    .ara-team-media { aspect-ratio: 16/9; }
 
-    .ara-process-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 40px;
-    }
+    .ara-contact-layout { grid-template-columns: 1fr; gap: 48px; }
 
-    .ara-process-grid::before {
-      display: none;
-    }
+    .ara-footer-top { grid-template-columns: 1fr 1fr; }
 
-    .ara-contact-grid {
-      grid-template-columns: 1fr;
-      gap: 48px;
-    }
-
-    .ara-footer-top {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .ara-nav-links {
-      display: none;
-    }
+    .ara-nav-links { display: none; }
   }
 
   @media (max-width: 640px) {
-    .ara-areas-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .ara-stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .ara-process-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .ara-reviews-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .ara-form {
-      padding: 32px 24px;
-    }
-
-    .ara-form-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .ara-footer-top {
-      grid-template-columns: 1fr;
-    }
-
-    .ara-section-head-split {
-      grid-template-columns: 1fr;
-    }
+    .ara-stats-inner { grid-template-columns: repeat(2, 1fr); }
+    .ara-area-row { grid-template-columns: 36px 1fr; gap: 0 20px; }
+    .ara-process-row { grid-template-columns: 48px 1fr; gap: 0 24px; }
+    .ara-process-index { font-size: 28px; }
+    .ara-reviews-grid { grid-template-columns: 1fr; }
+    .ara-form { padding: 28px 20px; }
+    .ara-form-row { grid-template-columns: 1fr; }
+    .ara-footer-top { grid-template-columns: 1fr; }
   }
 }
