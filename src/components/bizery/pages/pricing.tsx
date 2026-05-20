@@ -10,6 +10,8 @@ import {
   type PricingAddon,
   type PricingPlan,
 } from "@/lib/platform-pricing";
+import type { AppLocale } from "@/i18n";
+import { getPlanLabels, localizePricingPlanName } from "@/lib/localized-commercial-copy";
 
 // ─── Tabella confronto ────────────────────────────────────────────────────────
 
@@ -95,13 +97,18 @@ const PRICING_FAQ = [
 export function BizeryPricingPage({
   plans = BIZERY_PRICING_PLANS,
   aiAddon = AI_ADDON,
+  locale = "it",
+  priceLocale = "it-IT",
 }: {
   plans?: PricingPlan[];
   aiAddon?: PricingAddon;
+  locale?: AppLocale;
+  priceLocale?: string;
 }) {
   const [billing, setBilling] = useState<"annual" | "monthly">("annual");
   const maxSaving = Math.max(...plans.map(annualSaving));
   const displayCurrency = plans[0]?.currency ?? "EUR";
+  const [presenceName, appointmentsName, operationsName] = getPlanLabels(locale, "services");
 
   return (
     <>
@@ -160,14 +167,14 @@ export function BizeryPricingPage({
             </div>
             {billing === "annual" && maxSaving > 0 && (
               <p className="text-xs font-semibold text-[var(--menuary-sage)]">
-                Risparmi fino a {formatPlanPrice(maxSaving, displayCurrency)}/anno
+                Risparmi fino a {formatPlanPrice(maxSaving, displayCurrency, priceLocale)}/anno
               </p>
             )}
           </div>
 
           <div className="grid gap-px sm:gap-6 lg:grid-cols-3">
             {plans.map((plan) => (
-              <PlanCard key={plan.slug} plan={plan} billing={billing} />
+              <PlanCard key={plan.slug} plan={plan} billing={billing} locale={locale} priceLocale={priceLocale} />
             ))}
           </div>
 
@@ -183,7 +190,7 @@ export function BizeryPricingPage({
         <div className="menuary-container py-20 lg:py-24">
           <div className="grid items-start gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
             <div>
-              <p className="menuary-section-label">Dal piano Appuntamenti in su</p>
+              <p className="menuary-section-label">Dal piano {appointmentsName} in su</p>
               <h2
                 className="mt-6 text-[clamp(2rem,4.2vw,3.4rem)] font-medium leading-[1.05] tracking-[-0.02em] text-balance"
                 style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
@@ -198,7 +205,7 @@ export function BizeryPricingPage({
                   className="text-[3rem] font-medium leading-none"
                   style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
                 >
-                  +{formatPlanPrice(aiAddon.monthly, aiAddon.currency ?? displayCurrency)}
+                  +{formatPlanPrice(aiAddon.monthly, aiAddon.currency ?? displayCurrency, priceLocale)}
                 </span>
                 <span className="text-sm text-[var(--menuary-muted)]">/mese</span>
               </div>
@@ -293,9 +300,9 @@ export function BizeryPricingPage({
                 <thead>
                   <tr className="border-b border-[var(--menuary-ink)]">
                     <th className="py-4 pr-4 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-semibold">Funzione</th>
-                    <th className="py-4 px-4 text-center font-semibold">Presenza</th>
-                    <th className="py-4 px-4 text-center font-semibold text-[var(--menuary-copper)]">Appuntamenti</th>
-                    <th className="py-4 pl-4 text-center font-semibold">Operatività</th>
+                    <th className="py-4 px-4 text-center font-semibold">{presenceName}</th>
+                    <th className="py-4 px-4 text-center font-semibold text-[var(--menuary-copper)]">{appointmentsName}</th>
+                    <th className="py-4 pl-4 text-center font-semibold">{operationsName}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -387,10 +394,21 @@ export function BizeryPricingPage({
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "monthly" }) {
+function PlanCard({
+  plan,
+  billing,
+  locale,
+  priceLocale,
+}: {
+  plan: PricingPlan;
+  billing: "annual" | "monthly";
+  locale: AppLocale;
+  priceLocale: string;
+}) {
   const price = billing === "annual" ? plan.price_annual : plan.price_monthly;
   const saving = annualSaving(plan);
   const currency = plan.currency ?? "EUR";
+  const planName = localizePricingPlanName(plan, locale, "services");
 
   return (
     <article
@@ -412,7 +430,7 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
           className="text-3xl font-medium tracking-[-0.02em]"
           style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
         >
-          {plan.marketing_name}
+          {planName}
         </h2>
         <p className="mt-1 text-xs uppercase tracking-[0.22em] text-[var(--menuary-copper)]">
           {plan.tagline}
@@ -421,7 +439,7 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
 
       <div>
         <span className="menuary-price-tag">
-          <span className="amount">{formatPlanPrice(price, currency)}</span>
+          <span className="amount">{formatPlanPrice(price, currency, priceLocale)}</span>
           <span className="unit">/mese</span>
         </span>
         {billing === "annual" ? (
@@ -429,7 +447,7 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
             Pagamento annuale anticipato
             {saving > 0 && (
               <span className="ml-1 font-semibold text-[var(--menuary-sage)]">
-                · risparmi {formatPlanPrice(saving, currency)}/anno
+                · risparmi {formatPlanPrice(saving, currency, priceLocale)}/anno
               </span>
             )}
           </p>
@@ -437,7 +455,7 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
             Con pagamento annuale:{" "}
             <span className="font-semibold text-[var(--menuary-sage)]">
-              {formatPlanPrice(plan.price_annual, currency)}/mese · risparmi {formatPlanPrice(saving, currency)}/anno
+              {formatPlanPrice(plan.price_annual, currency, priceLocale)}/mese · risparmi {formatPlanPrice(saving, currency, priceLocale)}/anno
             </span>
           </p>
         )}
@@ -471,8 +489,8 @@ function PlanCard({ plan, billing }: { plan: PricingPlan; billing: "annual" | "m
   );
 }
 
-function formatPlanPrice(amount: number, currency = "EUR"): string {
-  return new Intl.NumberFormat("it-IT", {
+function formatPlanPrice(amount: number, currency = "EUR", locale = "it-IT"): string {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     maximumFractionDigits: 0,

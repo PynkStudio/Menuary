@@ -150,12 +150,20 @@ export function LibritechBookDetailPage({ bookId }: { bookId: string }) {
                 <button
                   type="button"
                   className="lt-wishlist-btn"
-                  data-slabbby-add
-                  data-slabbby-product-id={book.id}
-                  data-slabbby-product-name={book.name}
-                  data-slabbby-product-price={book.price.toFixed(2)}
-                  data-slabbby-product-image={book.imageUrl}
-                  data-slabbby-product-url={productUrl}
+                  onClick={() => {
+                    // Chiamata diretta all'API Slabbby — nessun auto-inject del widget
+                    const w = window as unknown as Record<string, unknown>;
+                    const api = w["Slabbby"] as { add?: (p: Record<string, string>) => void } | undefined;
+                    if (typeof api?.add === "function") {
+                      api.add({
+                        id: book.id,
+                        name: book.name,
+                        price: book.price.toFixed(2),
+                        image: book.imageUrl,
+                        url: productUrl,
+                      });
+                    }
+                  }}
                   aria-label={`Salva "${book.name}" nella wishlist Slabbby`}
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

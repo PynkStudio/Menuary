@@ -1,24 +1,44 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { getPlatformModeFromHost } from "@/lib/platform";
+import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
+import {
+  BIZERY_ORIGIN,
+  MENUARY_ORIGIN,
+  marketingLanguageAlternates,
+} from "@/lib/marketing-seo";
 import { MarketingAboutPage } from "@/components/marketing/pages/chi-siamo";
 import { BizeryAboutPage } from "@/components/bizery/pages/chi-siamo";
 import { BeporkAboutPage } from "@/components/tenants/bepork/pages/chi-siamo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const mode = getPlatformModeFromHost((await headers()).get("host"));
+  const h = await headers();
+  const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
   if (mode === "marketing") {
     return {
-      title: "Studio",
+      title: "Studio per siti web ristoranti",
       description:
-        "Menuary è uno studio digitale per ristoranti. Disegniamo siti su misura e li teniamo vivi nel tempo, un locale alla volta.",
+        "Menuary è uno studio digitale per ristoranti, bar, pizzerie e locali. Disegniamo siti web su misura e li teniamo vivi nel tempo.",
+      alternates: {
+        canonical: `${MENUARY_ORIGIN}/chi-siamo`,
+        languages: {
+          ...marketingLanguageAlternates(MENUARY_ORIGIN, "/chi-siamo"),
+          "x-default": `${MENUARY_ORIGIN}/chi-siamo`,
+        },
+      },
     };
   }
   if (mode === "marketing-bizery") {
     return {
-      title: "Studio",
+      title: "Studio per siti web aziende di servizi",
       description:
-        "Bizery è la piattaforma digitale per studi professionali e aziende di servizi. Siti su misura, appuntamenti e presenza locale gestita in un posto solo.",
+        "Bizery è la piattaforma digitale per studi medici, saloni, barbieri, studi legali, commercialisti e aziende di servizi. Siti su misura, appuntamenti e presenza locale in un posto solo.",
+      alternates: {
+        canonical: `${BIZERY_ORIGIN}/chi-siamo`,
+        languages: {
+          ...marketingLanguageAlternates(BIZERY_ORIGIN, "/chi-siamo"),
+          "x-default": `${BIZERY_ORIGIN}/chi-siamo`,
+        },
+      },
     };
   }
   return {
@@ -29,7 +49,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ChiSiamoPage() {
-  const mode = getPlatformModeFromHost((await headers()).get("host"));
+  const h = await headers();
+  const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
   if (mode === "marketing") return <MarketingAboutPage />;
   if (mode === "marketing-bizery") return <BizeryAboutPage />;
   return <BeporkAboutPage />;

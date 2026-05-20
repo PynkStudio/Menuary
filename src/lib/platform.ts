@@ -27,6 +27,8 @@ export type PlatformMode =
   | "gestione-bizery"
   | "gestione-custom";
 
+export const PLATFORM_MODE_HEADER = "x-platform-mode";
+
 export const PLATFORM_HOSTS = {
   marketing:          ["menuary.it", "www.menuary.it", "menuary.localhost"],
   "marketing-bizery": ["bizery.it", "www.bizery.it", "bizery.localhost"],
@@ -40,6 +42,26 @@ export const PLATFORM_HOSTS = {
   gestione:           ["gestione.menuary.it", "gestione.menuary.localhost"],
   "gestione-bizery":  ["gestione.bizery.it", "gestione.bizery.localhost"],
 } as const;
+
+const PLATFORM_MODES: PlatformMode[] = [
+  "tenant",
+  "marketing",
+  "marketing-bizery",
+  "platform-admin",
+  "preview",
+  "preview-bizery",
+  "clients",
+  "studio",
+  "studio-bizery",
+  "login",
+  "gestione",
+  "gestione-bizery",
+  "gestione-custom",
+];
+
+export function isPlatformMode(value: unknown): value is PlatformMode {
+  return typeof value === "string" && PLATFORM_MODES.includes(value as PlatformMode);
+}
 
 export function normalizeHost(host: string | null | undefined): string {
   return (host ?? "").toLowerCase().split(":")[0] ?? "";
@@ -62,6 +84,13 @@ export function getPlatformModeFromHost(
   if (PLATFORM_HOSTS["gestione-bizery"].includes(normalized as never)) return "gestione-bizery";
   if (normalized.startsWith("gestione."))                              return "gestione-custom";
   return "tenant";
+}
+
+export function getPlatformModeFromHeaderValue(
+  modeHeader: string | null | undefined,
+  host: string | null | undefined,
+): PlatformMode {
+  return isPlatformMode(modeHeader) ? modeHeader : getPlatformModeFromHost(host);
 }
 
 // Utility: i marketing mode

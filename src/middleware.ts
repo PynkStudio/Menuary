@@ -7,7 +7,7 @@ import {
   isSiteadminRole,
   type SiteadminRole,
 } from "@/lib/admin-permissions";
-import { getPlatformModeFromHost } from "@/lib/platform";
+import { PLATFORM_MODE_HEADER, getPlatformModeFromHost, type PlatformMode } from "@/lib/platform";
 import { findTenantById } from "@/lib/tenant-registry";
 import {
   resolveLocationSlugFromHost,
@@ -87,13 +87,19 @@ function localeRedirect(request: NextRequest, locale: AppLocale, rest: string): 
   return res;
 }
 
-function rewriteWithLocale(request: NextRequest, targetPath: string, locale: AppLocale): NextResponse {
+function rewriteWithLocale(
+  request: NextRequest,
+  targetPath: string,
+  locale: AppLocale,
+  mode: PlatformMode,
+): NextResponse {
   const url = request.nextUrl.clone();
   url.pathname = targetPath;
   const market = detectMarketFromRequest(request, locale);
   const res = NextResponse.rewrite(url);
   res.headers.set(LOCALE_HEADER, locale);
   res.headers.set(MARKET_HEADER, market);
+  res.headers.set(PLATFORM_MODE_HEADER, mode);
   res.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   res.cookies.set(MARKET_COOKIE, market, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   return res;
@@ -351,13 +357,20 @@ export async function middleware(request: NextRequest) {
       rewritten.pathname = `/gestione/${tenant.id}${rest}`;
       return NextResponse.rewrite(rewritten);
     }
+    // Demo kiosk: demo.menuary.it/[slug]/k/[code] o anche solo /k/[code] sul demo.
+    const kioskMatch = pathname.match(/^\/(?:[a-z0-9-]+\/)?k\/([A-Z0-9]+)$/i);
+    if (kioskMatch) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = `/k/${kioskMatch[1].toUpperCase()}`;
+      return NextResponse.rewrite(rewritten);
+    }
   }
 
   // ── Marketing Menuary (menuary.it) ────────────────────────────────────────
   if (mode === "marketing") {
     const { locale, rest } = extractLocaleFromPath(pathname);
     if (locale) {
-      return rewriteWithLocale(request, rest, locale);
+      return rewriteWithLocale(request, rest, locale, mode);
     }
     const detected = detectLocaleFromRequest(request);
     return localeRedirect(request, detected, pathname);
@@ -368,7 +381,7 @@ export async function middleware(request: NextRequest) {
     const { locale, rest } = extractLocaleFromPath(pathname);
     if (locale) {
       const bizeryPath = "/bizery" + (rest === "/" ? "" : rest);
-      return rewriteWithLocale(request, bizeryPath, locale);
+      return rewriteWithLocale(request, bizeryPath, locale, mode);
     }
     const detected = detectLocaleFromRequest(request);
     return localeRedirect(request, detected, pathname);

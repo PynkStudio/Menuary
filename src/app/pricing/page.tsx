@@ -3,7 +3,13 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { fetchPricingAddons, fetchPricingPlans } from "@/lib/marketing-data";
-import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
+import { DEFAULT_MARKET, MARKET_HEADER, getMarket, normalizeMarketCode } from "@/lib/markets";
+import { getLocale } from "@/i18n";
+import {
+  MENUARY_MARKETING_DESCRIPTION,
+  MENUARY_ORIGIN,
+  marketingLanguageAlternates,
+} from "@/lib/marketing-seo";
 import { MarketingPricingPage, PRICING_FAQ } from "@/components/marketing/pages/pricing";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import {
@@ -12,9 +18,16 @@ import {
 } from "@/components/marketing/marketing-sections";
 
 export const metadata: Metadata = {
-  title: "Offerta",
+  title: "Prezzi siti web per ristoranti",
   description:
-    "Tre piani Menuary per ristoranti di ogni dimensione: sito su misura, prenotazioni e gestionale completo. Prezzi chiari, zero commissioni.",
+    `Tre piani Menuary per ristoranti, bar e pizzerie: sito su misura, menu digitale, prenotazioni e gestionale completo. ${MENUARY_MARKETING_DESCRIPTION}`,
+  alternates: {
+    canonical: `${MENUARY_ORIGIN}/pricing`,
+    languages: {
+      ...marketingLanguageAlternates(MENUARY_ORIGIN, "/pricing"),
+      "x-default": `${MENUARY_ORIGIN}/pricing`,
+    },
+  },
 };
 
 export default async function PricingPage() {
@@ -23,13 +36,14 @@ export default async function PricingPage() {
     notFound();
   }
   const market = normalizeMarketCode(h.get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const locale = await getLocale();
   const [plans, addons] = await Promise.all([
     fetchPricingPlans(market),
     fetchPricingAddons(market),
   ]);
   return (
     <MarketingShell>
-      <MarketingPricingPage plans={plans} aiAddon={addons[0]} />
+      <MarketingPricingPage plans={plans} aiAddon={addons[0]} locale={locale} priceLocale={getMarket(market).locale} />
       <FAQSection
         items={PRICING_FAQ}
         title="Tutto quello che vuoi sapere prima di iniziare."

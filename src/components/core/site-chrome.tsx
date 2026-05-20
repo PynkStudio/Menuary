@@ -29,7 +29,11 @@ const EXCLUDED_MODES = new Set([
 
 function isInternal(pathname: string | null): boolean {
   if (!pathname) return false;
-  return pathname.startsWith("/admin") || pathname.startsWith("/cucina");
+  return (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/cucina") ||
+    pathname.startsWith("/k/")
+  );
 }
 
 /**

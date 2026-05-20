@@ -1,4 +1,22 @@
-export const SUPPORTED_LOCALES = ["it", "en", "fr", "es", "de", "pt"] as const;
+export const SUPPORTED_LOCALES = [
+  "it",
+  "en",
+  "fr",
+  "es",
+  "de",
+  "pt",
+  "nl",
+  "da",
+  "sv",
+  "nb",
+  "fi",
+  "pl",
+  "cs",
+  "sl",
+  "hr",
+  "sq",
+  "el",
+] as const;
 export type AppLocale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: AppLocale = "it";
 export const LOCALE_COOKIE = "NEXT_LOCALE";

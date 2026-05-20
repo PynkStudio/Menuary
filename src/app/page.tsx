@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { getPlatformModeFromHost } from "@/lib/platform";
+import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
 import { MarketingHomePage } from "@/components/marketing/pages/home";
 import { TenantHomePage } from "@/components/tenants/_shared/pages/home";
 import { ClientsHomePage } from "@/components/clients/clients-home-page";
@@ -10,7 +10,8 @@ import { BizeryStudioHomePage } from "@/components/bizery-studio/bizery-studio-h
 import { BizeryStudioShell } from "@/components/bizery-studio/bizery-studio-shell";
 
 export default async function HomePage() {
-  const mode = getPlatformModeFromHost((await headers()).get("host"));
+  const h = await headers();
+  const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
 
   if (mode === "marketing") return <MarketingHomePage />;
   // marketing-bizery → gestito dal middleware con rewrite su /bizery

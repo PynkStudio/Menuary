@@ -1,0 +1,204 @@
+import type { MetadataRoute } from "next";
+import { SUPPORTED_LOCALES, type AppLocale } from "@/i18n/locales";
+
+export const MENUARY_ORIGIN = "https://menuary.it";
+export const BIZERY_ORIGIN = "https://bizery.it";
+
+export const MENUARY_MARKETING_DESCRIPTION =
+  "Menuary crea siti web per ristoranti, bar, pizzerie, trattorie e locali: menu digitale, prenotazioni online, ordini, recensioni Google e gestione semplice.";
+
+export const BIZERY_MARKETING_DESCRIPTION =
+  "Bizery crea siti web per studi medici, saloni di bellezza, barbieri, studi legali, commercialisti e aziende di servizi: appuntamenti online, listino digitale, CRM e Google Maps.";
+
+export const MENUARY_KEYWORDS = [
+  "siti web per ristoranti",
+  "sito per ristorante",
+  "siti per pizzerie",
+  "siti per bar",
+  "siti per trattorie",
+  "menu digitale ristorante",
+  "prenotazioni online ristorante",
+  "ordini online ristorante",
+  "gestionale ristorante",
+  "Google Maps ristoranti",
+  "Menuary",
+];
+
+export const BIZERY_KEYWORDS = [
+  "siti web per attività",
+  "siti web per studi medici",
+  "siti web per saloni di bellezza",
+  "siti web per barbieri",
+  "siti web per studi legali",
+  "siti web per commercialisti",
+  "sito per azienda di servizi",
+  "prenotazioni online appuntamenti",
+  "listino servizi online",
+  "CRM aziende servizi",
+  "Google Maps aziende",
+  "Bizery",
+];
+
+export const MARKETING_ROUTES = ["", "/chi-siamo", "/pricing", "/contatti"] as const;
+
+type Brand = "menuary" | "bizery";
+
+export function brandOrigin(brand: Brand): string {
+  return brand === "bizery" ? BIZERY_ORIGIN : MENUARY_ORIGIN;
+}
+
+export function localizedPath(path: string, locale: AppLocale): string {
+  if (locale === "it") return path || "/";
+  return `/${locale}${path}`;
+}
+
+export function marketingLanguageAlternates(origin: string, path = ""): Record<string, string> {
+  return Object.fromEntries(
+    SUPPORTED_LOCALES.map((locale) => [
+      locale,
+      `${origin}${localizedPath(path, locale) === "/" ? "" : localizedPath(path, locale)}`,
+    ]),
+  );
+}
+
+export function marketingSitemap(origin: string): MetadataRoute.Sitemap {
+  const now = new Date();
+  return MARKETING_ROUTES.flatMap((path) =>
+    SUPPORTED_LOCALES.map((locale) => {
+      const publicPath = localizedPath(path, locale);
+      return {
+        url: `${origin}${publicPath === "/" ? "" : publicPath}`,
+        lastModified: now,
+        changeFrequency: path === "" ? "weekly" : "monthly",
+        priority: path === "" ? 1 : path === "/pricing" ? 0.9 : 0.8,
+        alternates: {
+          languages: {
+            ...marketingLanguageAlternates(origin, path),
+            "x-default": `${origin}${path}`,
+          },
+        },
+      } satisfies MetadataRoute.Sitemap[number];
+    }),
+  );
+}
+
+export function marketingOrganizationSchema(brand: Brand) {
+  const isBizery = brand === "bizery";
+  const origin = brandOrigin(brand);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: isBizery ? "Bizery" : "Menuary",
+    url: origin,
+    logo: `${origin}/logo-payoff.png`,
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "sales",
+      areaServed: ["IT", "FR", "DE", "ES", "PT", "NL", "BE", "AT", "CH", "IE"],
+      availableLanguage: ["it", "en", "fr", "de", "es", "pt"],
+    },
+    sameAs: isBizery ? [MENUARY_ORIGIN] : [BIZERY_ORIGIN],
+  };
+}
+
+export function marketingWebsiteSchema(brand: Brand) {
+  const isBizery = brand === "bizery";
+  const origin = brandOrigin(brand);
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: isBizery ? "Bizery" : "Menuary",
+    url: origin,
+    inLanguage: ["it", "en", "fr", "de", "es"],
+    description: isBizery ? BIZERY_MARKETING_DESCRIPTION : MENUARY_MARKETING_DESCRIPTION,
+  };
+}
+
+export function marketingServiceSchema(brand: Brand) {
+  const isBizery = brand === "bizery";
+  const origin = brandOrigin(brand);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: isBizery
+      ? "Siti web e piattaforma digitale per aziende di servizi"
+      : "Siti web e piattaforma digitale per ristoranti",
+    provider: {
+      "@type": "Organization",
+      name: isBizery ? "Bizery" : "Menuary",
+      url: origin,
+    },
+    areaServed: ["Italia", "Francia", "Germania", "Spagna", "Portogallo", "Svizzera", "Belgio"],
+    serviceType: isBizery
+      ? [
+          "Siti web per studi medici",
+          "Siti web per saloni di bellezza",
+          "Siti web per barbieri",
+          "Siti web per studi legali",
+          "Siti web per commercialisti",
+          "Prenotazioni online per aziende di servizi",
+        ]
+      : [
+          "Siti web per ristoranti",
+          "Siti web per pizzerie",
+          "Siti web per bar",
+          "Menu digitale",
+          "Prenotazioni online per ristoranti",
+          "Ordini online per locali",
+        ],
+    audience: {
+      "@type": "BusinessAudience",
+      audienceType: isBizery
+        ? "Studi professionali, saloni, barbieri, studi medici, studi legali, commercialisti e aziende di servizi"
+        : "Ristoranti, bar, pizzerie, trattorie, bistrot e locali food",
+    },
+    url: origin,
+  };
+}
+
+export function marketingFaqSchema(brand: Brand) {
+  const isBizery = brand === "bizery";
+  const questions = isBizery
+    ? [
+        [
+          "Bizery realizza siti web per studi medici, saloni, barbieri e professionisti?",
+          "Sì. Bizery è pensato per attività di servizi: studi medici, saloni di bellezza, barbieri, studi legali, commercialisti, consulenti, centri benessere e attività con appuntamenti.",
+        ],
+        [
+          "Il sito include prenotazioni online e gestione degli appuntamenti?",
+          "Sì. I piani Bizery possono includere appuntamenti online, listino servizi, CRM, gestione staff, recensioni e sincronizzazione della presenza locale.",
+        ],
+        [
+          "Bizery lavora anche fuori dall'Italia?",
+          "Sì. Bizery supporta mercati e lingue europee, con siti multilingua e impostazioni locali per presenza digitale e comunicazioni.",
+        ],
+      ]
+    : [
+        [
+          "Menuary realizza siti web per ristoranti, bar e pizzerie?",
+          "Sì. Menuary è pensato per ristoranti, bar, pizzerie, trattorie e locali food che vogliono sito, menu digitale, prenotazioni, ordini e gestione Google in un unico sistema.",
+        ],
+        [
+          "Il sito ristorante include menu digitale e prenotazioni online?",
+          "Sì. Menuary può includere menu digitale, prenotazioni tavoli, ordini online o al tavolo, recensioni, galleria e aggiornamenti da pannello.",
+        ],
+        [
+          "Menuary lavora anche fuori dall'Italia?",
+          "Sì. Menuary supporta mercati e lingue europee, con siti multilingua e contenuti adatti al pubblico locale e turistico.",
+        ],
+      ];
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: questions.map(([name, text]) => ({
+      "@type": "Question",
+      name,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text,
+      },
+    })),
+  };
+}
+

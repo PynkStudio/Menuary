@@ -10,6 +10,8 @@ import {
   type PricingAddon,
   type PricingPlan,
 } from "@/lib/platform-pricing";
+import type { AppLocale } from "@/i18n";
+import { getPlanLabels, localizePricingPlanName } from "@/lib/localized-commercial-copy";
 
 // ─── Tabella di confronto ─────────────────────────────────────────────────────
 
@@ -106,13 +108,18 @@ export const PRICING_FAQ = [
 export function MarketingPricingPage({
   plans = PRICING_PLANS,
   aiAddon = AI_ADDON,
+  locale = "it",
+  priceLocale = "it-IT",
 }: {
   plans?: PricingPlan[];
   aiAddon?: PricingAddon;
+  locale?: AppLocale;
+  priceLocale?: string;
 }) {
   const [billing, setBilling] = useState<"annual" | "monthly">("annual");
   const maxSaving = Math.max(...plans.map(annualSaving));
   const displayCurrency = plans[0]?.currency ?? "EUR";
+  const [presenceName, bookingName, operationsName] = getPlanLabels(locale, "food");
 
   return (
     <>
@@ -169,14 +176,14 @@ export function MarketingPricingPage({
             </div>
             {billing === "annual" && maxSaving > 0 && (
               <p className="text-xs font-semibold text-[var(--menuary-sage)]">
-                Risparmi fino a {formatPlanPrice(maxSaving, displayCurrency)}/anno
+                Risparmi fino a {formatPlanPrice(maxSaving, displayCurrency, priceLocale)}/anno
               </p>
             )}
           </div>
 
           <div className="grid gap-px sm:gap-6 lg:grid-cols-3">
             {plans.map((plan) => (
-              <PlanCard key={plan.slug} plan={plan} billing={billing} />
+              <PlanCard key={plan.slug} plan={plan} billing={billing} locale={locale} priceLocale={priceLocale} />
             ))}
           </div>
 
@@ -194,7 +201,7 @@ export function MarketingPricingPage({
         <div className="menuary-container py-20 lg:py-24">
           <div className="grid items-start gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
             <div>
-              <p className="menuary-section-label">Dal piano Prenotazioni in su</p>
+              <p className="menuary-section-label">Dal piano {bookingName} in su</p>
               <h2 className="menuary-display mt-6 text-[clamp(2rem,4.2vw,3.4rem)] text-balance">
                 Integrazione AI al telefono.
               </h2>
@@ -203,7 +210,7 @@ export function MarketingPricingPage({
               </p>
               <div className="mt-8 inline-flex items-baseline gap-2">
                 <span className="menuary-display text-[3rem] leading-none">
-                  +{formatPlanPrice(aiAddon.monthly, aiAddon.currency ?? displayCurrency)}
+                  +{formatPlanPrice(aiAddon.monthly, aiAddon.currency ?? displayCurrency, priceLocale)}
                 </span>
                 <span className="text-sm text-[var(--menuary-muted)]">/mese</span>
               </div>
@@ -322,11 +329,11 @@ export function MarketingPricingPage({
                     <th className="py-4 pr-4 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-semibold">
                       Funzione
                     </th>
-                    <th className="py-4 px-4 text-center font-semibold">Presenza</th>
+                    <th className="py-4 px-4 text-center font-semibold">{presenceName}</th>
                     <th className="py-4 px-4 text-center font-semibold text-[var(--menuary-copper)]">
-                      Prenotazioni
+                      {bookingName}
                     </th>
-                    <th className="py-4 pl-4 text-center font-semibold">Operatività</th>
+                    <th className="py-4 pl-4 text-center font-semibold">{operationsName}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -361,13 +368,18 @@ export function MarketingPricingPage({
 function PlanCard({
   plan,
   billing,
+  locale,
+  priceLocale,
 }: {
   plan: PricingPlan;
   billing: "annual" | "monthly";
+  locale: AppLocale;
+  priceLocale: string;
 }) {
   const price = billing === "annual" ? plan.price_annual : plan.price_monthly;
   const saving = annualSaving(plan);
   const currency = plan.currency ?? "EUR";
+  const planName = localizePricingPlanName(plan, locale, "food");
 
   return (
     <article
@@ -385,7 +397,7 @@ function PlanCard({
       )}
 
       <div>
-        <h2 className="menuary-display text-3xl">{plan.marketing_name}</h2>
+        <h2 className="menuary-display text-3xl">{planName}</h2>
         <p className="mt-1 text-xs uppercase tracking-[0.22em] text-[var(--menuary-copper)]">
           {plan.tagline}
         </p>
@@ -394,7 +406,7 @@ function PlanCard({
       {/* Prezzo */}
       <div>
         <span className="menuary-price-tag">
-          <span className="amount">{formatPlanPrice(price, currency)}</span>
+          <span className="amount">{formatPlanPrice(price, currency, priceLocale)}</span>
           <span className="unit">/mese</span>
         </span>
         {billing === "annual" ? (
@@ -402,7 +414,7 @@ function PlanCard({
             Fatturazione annuale anticipata
             {saving > 0 && (
               <span className="ml-1 font-semibold text-[var(--menuary-sage)]">
-                · risparmi {formatPlanPrice(saving, currency)}/anno
+                · risparmi {formatPlanPrice(saving, currency, priceLocale)}/anno
               </span>
             )}
           </p>
@@ -410,7 +422,7 @@ function PlanCard({
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
             Con pagamento annuale:{" "}
             <span className="font-semibold text-[var(--menuary-sage)]">
-              {formatPlanPrice(plan.price_annual, currency)}/mese · risparmi {formatPlanPrice(saving, currency)}/anno
+              {formatPlanPrice(plan.price_annual, currency, priceLocale)}/mese · risparmi {formatPlanPrice(saving, currency, priceLocale)}/anno
             </span>
           </p>
         )}
@@ -449,8 +461,8 @@ function PlanCard({
   );
 }
 
-function formatPlanPrice(amount: number, currency = "EUR"): string {
-  return new Intl.NumberFormat("it-IT", {
+function formatPlanPrice(amount: number, currency = "EUR", locale = "it-IT"): string {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     maximumFractionDigits: 0,

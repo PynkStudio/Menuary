@@ -22,12 +22,25 @@ import { googleRating, reviews } from "@/lib/reviews-data";
 import { menu, priceFromNumber } from "@/lib/menu-data";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
-import { getPlatformModeFromHost } from "@/lib/platform";
+import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
 import { getTenantContent } from "@/lib/tenant-content";
 import { buildIconSet, themeColor } from "@/lib/favicon";
 import { CLIENTS_PUBLIC_ORIGIN, clientsSite } from "@/lib/clients-config";
 import { STUDIO_PUBLIC_ORIGIN, studioSite } from "@/lib/studio-config";
 import { isAppLocale, LOCALE_HEADER } from "@/i18n/locales";
+import {
+  BIZERY_MARKETING_DESCRIPTION,
+  BIZERY_ORIGIN,
+  BIZERY_KEYWORDS,
+  MENUARY_MARKETING_DESCRIPTION,
+  MENUARY_ORIGIN,
+  MENUARY_KEYWORDS,
+  marketingFaqSchema,
+  marketingLanguageAlternates,
+  marketingOrganizationSchema,
+  marketingServiceSchema,
+  marketingWebsiteSchema,
+} from "@/lib/marketing-seo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchLocations } from "@/lib/location";
 import { LocationProvider } from "@/components/core/location-provider";
@@ -66,9 +79,11 @@ const menuaryBody = DM_Sans({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const host = (await headers()).get("host");
+  const h = await headers();
+  const host = h.get("host");
+  const modeHeader = h.get(PLATFORM_MODE_HEADER);
   const tenant = resolveTenantFromHost(host);
-  const mode = getPlatformModeFromHost(host);
+  const mode = getPlatformModeFromHeaderValue(modeHeader, host);
 
   if (mode === "platform-admin") {
     return {
@@ -126,37 +141,33 @@ export async function generateMetadata(): Promise<Metadata> {
 
   if (mode === "marketing-bizery") {
     return {
-      metadataBase: new URL("https://bizery.it"),
+      metadataBase: new URL(BIZERY_ORIGIN),
       title: {
-        default: "Bizery - la piattaforma digitale per la tua azienda",
+        default: "Bizery - siti web per studi, saloni e aziende di servizi",
         template: "%s · Bizery",
       },
-      description:
-        "Bizery crea siti su misura per aziende di servizi, con appuntamenti, listino digitale, CRM e gestione team.",
-      keywords: [
-        "Bizery",
-        "siti per aziende",
-        "gestione appuntamenti",
-        "listino servizi online",
-        "CRM aziende",
-        "piattaforma digitale servizi",
-      ],
+      description: BIZERY_MARKETING_DESCRIPTION,
+      keywords: BIZERY_KEYWORDS,
       openGraph: {
-        title: "Bizery - la piattaforma digitale per la tua azienda",
-        description:
-          "Bizery crea siti su misura per aziende di servizi, con appuntamenti, listino digitale, CRM e gestione team.",
-        url: "https://bizery.it",
+        title: "Bizery - siti web per studi, saloni e aziende di servizi",
+        description: BIZERY_MARKETING_DESCRIPTION,
+        url: BIZERY_ORIGIN,
         siteName: "Bizery",
         locale: "it_IT",
         type: "website",
       },
       twitter: {
-        card: "summary",
-        title: "Bizery",
-        description:
-          "Bizery crea siti su misura per aziende di servizi, con appuntamenti, listino digitale, CRM e gestione team.",
+        card: "summary_large_image",
+        title: "Bizery - siti web per aziende di servizi",
+        description: BIZERY_MARKETING_DESCRIPTION,
       },
-      alternates: { canonical: "https://bizery.it" },
+      alternates: {
+        canonical: BIZERY_ORIGIN,
+        languages: {
+          ...marketingLanguageAlternates(BIZERY_ORIGIN),
+          "x-default": BIZERY_ORIGIN,
+        },
+      },
       icons: buildIconSet(mode, tenant),
     };
   }
@@ -208,11 +219,11 @@ export async function generateMetadata(): Promise<Metadata> {
         : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
-    metadataBase: new URL(mode === "marketing" ? siteConfig.url : content.url),
+    metadataBase: new URL(mode === "marketing" ? MENUARY_ORIGIN : content.url),
     title:
       mode === "marketing"
         ? {
-            default: "Menuary - siti personalizzati per ristoranti",
+            default: "Menuary - siti web per ristoranti, bar e pizzerie",
             template: "%s · Menuary",
           }
         : {
@@ -221,17 +232,11 @@ export async function generateMetadata(): Promise<Metadata> {
           },
     description:
       mode === "marketing"
-        ? "Menuary crea siti su misura per ristoranti, con menu digitale, prenotazioni, ordini e gestione semplice dei contenuti."
+        ? MENUARY_MARKETING_DESCRIPTION
         : content.description,
     keywords:
       mode === "marketing"
-        ? [
-            "Menuary",
-            "siti per ristoranti",
-            "menu digitale",
-            "ordini ristorante",
-            "sito ristorante online",
-          ]
+        ? MENUARY_KEYWORDS
         : tenant.id === "faak"
           ? [
               tenant.name,
@@ -254,13 +259,13 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title:
         mode === "marketing"
-          ? "Menuary - siti personalizzati per ristoranti"
+          ? "Menuary - siti web per ristoranti, bar e pizzerie"
           : tenantTitle,
       description:
         mode === "marketing"
-          ? "Menuary crea siti su misura per ristoranti, con menu digitale, prenotazioni, ordini e gestione semplice dei contenuti."
+          ? MENUARY_MARKETING_DESCRIPTION
           : content.description,
-      url: mode === "marketing" ? "https://menuary.it" : content.url,
+      url: mode === "marketing" ? MENUARY_ORIGIN : content.url,
       siteName: mode === "marketing" ? "Menuary" : tenant.name,
       locale: "it_IT",
       type: "website",
@@ -277,21 +282,30 @@ export async function generateMetadata(): Promise<Metadata> {
       title: mode === "marketing" ? "Menuary" : tenant.name,
       description:
         mode === "marketing"
-          ? "Menuary crea siti su misura per ristoranti, con menu digitale, prenotazioni, ordini e gestione semplice dei contenuti."
+          ? MENUARY_MARKETING_DESCRIPTION
           : content.description,
       ...(mode === "marketing" ? {} : { images: [content.showcaseLogoSrc] }),
     },
     alternates: {
-      canonical: mode === "marketing" ? "https://menuary.it" : content.url,
+      canonical: mode === "marketing" ? MENUARY_ORIGIN : content.url,
+      ...(mode === "marketing"
+        ? {
+            languages: {
+              ...marketingLanguageAlternates(MENUARY_ORIGIN),
+              "x-default": MENUARY_ORIGIN,
+            },
+          }
+        : {}),
     },
     icons: buildIconSet(mode, tenant),
   };
 }
 
 export async function generateViewport(): Promise<Viewport> {
-  const host = (await headers()).get("host");
+  const h = await headers();
+  const host = h.get("host");
   const tenant = resolveTenantFromHost(host);
-  const mode = getPlatformModeFromHost(host);
+  const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), host);
   return {
     themeColor: themeColor(mode, tenant),
     width: "device-width",
@@ -368,7 +382,7 @@ export default async function RootLayout({
   const reqHeaders = await headers();
   const host = reqHeaders.get("host");
   const tenant = resolveTenantFromHost(host);
-  const mode = getPlatformModeFromHost(host);
+  const mode = getPlatformModeFromHeaderValue(reqHeaders.get(PLATFORM_MODE_HEADER), host);
   const themeVars = tenantThemeCssVars(tenant.theme);
   const tenantSiteDisabled =
     (mode === "tenant" || mode === "preview" || mode === "preview-bizery") &&
@@ -390,6 +404,16 @@ export default async function RootLayout({
     mode === "marketing-bizery" || mode === "gestione-bizery" || mode === "preview-bizery";
   const content = isBizeryMode ? null : getTenantContent(tenant.id);
   const showRestaurantJsonLd = (mode === "tenant" || mode === "preview") && content !== null;
+  const marketingBrand =
+    mode === "marketing" ? "menuary" : mode === "marketing-bizery" ? "bizery" : null;
+  const marketingSchemas = marketingBrand
+    ? [
+        marketingOrganizationSchema(marketingBrand),
+        marketingWebsiteSchema(marketingBrand),
+        marketingServiceSchema(marketingBrand),
+        marketingFaqSchema(marketingBrand),
+      ]
+    : [];
   const tenantRestaurantSchema = content ? {
     ...restaurantSchema,
     name: tenant.name,
@@ -423,6 +447,15 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(tenantRestaurantSchema) }}
           />
         ) : null}
+        {marketingSchemas.map((schema, index) => (
+          <Script
+            key={`schema-marketing-${index}`}
+            id={`schema-marketing-${index}`}
+            type="application/ld+json"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ))}
         <Analytics />
         <PlatformModeProvider mode={mode}>
           <TenantProvider tenant={tenant}>

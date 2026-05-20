@@ -21,12 +21,53 @@ import {
   TestimonialsSection,
 } from "@/components/marketing/marketing-sections";
 import { getMarketingHomeData } from "@/lib/marketing-data";
-import { getTranslations } from "@/i18n";
+import { DEFAULT_MARKET, MARKET_HEADER, formatMarketLanguageBadge, normalizeMarketCode } from "@/lib/markets";
+import { getMockupCopy } from "@/lib/localized-commercial-copy";
+import { getLocale, getTranslations } from "@/i18n";
+import { headers } from "next/headers";
+
+const MENUARY_SEO_VERTICALS = {
+  it: [
+    {
+      title: "Siti web per ristoranti",
+      body: "Menu digitale, prenotazioni tavoli, galleria, recensioni Google e contenuti aggiornabili dal pannello.",
+    },
+    {
+      title: "Siti per pizzerie e trattorie",
+      body: "Menu stagionali, piatti del giorno, ordini online, allergeni e informazioni sempre disponibili da mobile.",
+    },
+    {
+      title: "Siti per bar, bistrot e locali",
+      body: "Orari, eventi, promozioni, Google Maps e pagine multilingua per clienti locali e turisti.",
+    },
+  ],
+  en: [
+    {
+      title: "Websites for restaurants",
+      body: "Digital menu, table bookings, gallery, Google reviews and content updates from one dashboard.",
+    },
+    {
+      title: "Websites for pizzerias and trattorias",
+      body: "Seasonal menus, daily specials, online orders, allergens and mobile-first information.",
+    },
+    {
+      title: "Websites for bars, bistros and venues",
+      body: "Opening hours, events, promotions, Google Maps and multilingual pages for locals and tourists.",
+    },
+  ],
+};
 
 export async function MarketingHomePage() {
   const { activeTenants, testimonials } = await getMarketingHomeData("food");
+  const locale = await getLocale();
   const t = await getTranslations("marketing");
   const h = t.home;
+  const requestHeaders = await headers();
+  const market = normalizeMarketCode(requestHeaders.get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const multilangPrefix = h.badgeMultilang.split("·")[0]?.trim() || h.badgeMultilang;
+  const multilangBadge = formatMarketLanguageBadge(multilangPrefix, market);
+  const mockup = getMockupCopy(locale, market, "food");
+  const seoVerticals = locale === "it" ? MENUARY_SEO_VERTICALS.it : MENUARY_SEO_VERTICALS.en;
 
   return (
     <MarketingShell>
@@ -84,7 +125,7 @@ export async function MarketingHomePage() {
                     strokeWidth={1.7}
                     className="text-[var(--menuary-muted)]"
                   />
-                  {h.badgeMultilang}
+                  {multilangBadge}
                 </span>
               </div>
             </div>
@@ -106,12 +147,12 @@ export async function MarketingHomePage() {
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="menuary-module-tile">
                       <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                        Oggi
+                        {mockup.dashboardToday}
                       </p>
                       <p className="menuary-display mt-1 text-2xl">
                         12
                         <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">
-                          prenotazioni
+                          {mockup.dashboardBookings}
                         </span>
                       </p>
                     </div>
@@ -122,19 +163,19 @@ export async function MarketingHomePage() {
                       <p className="menuary-display mt-1 text-2xl">
                         4,7
                         <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">
-                          ★ media
+                          {mockup.dashboardAverage}
                         </span>
                       </p>
                     </div>
                     <div className="menuary-module-tile">
                       <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                        Orari
+                        {mockup.dashboardHours}
                       </p>
                       <p className="menuary-display mt-1 text-base leading-tight">
-                        Aggiornati
+                        {mockup.dashboardUpdated}
                         <br />
                         <span className="text-xs font-medium text-[var(--menuary-muted)]">
-                          ieri
+                          {mockup.dashboardUpdatedWhen}
                         </span>
                       </p>
                     </div>
@@ -154,7 +195,7 @@ export async function MarketingHomePage() {
                     </svg>
                   </span>
                   <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                    Google · scheda
+                    {mockup.googleCard}
                   </p>
                 </div>
                 <div className="mt-3 flex items-center gap-1.5">
@@ -166,7 +207,7 @@ export async function MarketingHomePage() {
                   <span className="text-sm font-semibold text-[var(--menuary-ink)]">4,7</span>
                 </div>
                 <p className="mt-2 text-xs text-[var(--menuary-muted)]">
-                  Aperto · chiude alle 23:00
+                  {mockup.googleOpen}
                 </p>
               </div>
 
@@ -175,20 +216,20 @@ export async function MarketingHomePage() {
                 <div className="menuary-phone-top" />
                 <div className="rounded-2xl bg-[var(--menuary-paper)] p-3 text-[var(--menuary-ink)]">
                   <p className="menuary-display text-base leading-tight">
-                    Trattoria
+                    {mockup.phoneName[0]}
                     <br />
-                    Da Marco
+                    {mockup.phoneName[1]}
                   </p>
                   <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[var(--menuary-muted)] font-bold">
-                    Bologna · cucina tipica
+                    {mockup.phoneMeta}
                   </p>
                   <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[var(--menuary-ink)]">
                     <CalendarCheck size={12} strokeWidth={1.8} className="text-[var(--menuary-copper)]" />
-                    Prenota un tavolo
+                    {mockup.phoneAction}
                   </div>
                   <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--menuary-muted)]">
                     <Check size={11} strokeWidth={2} className="text-[var(--menuary-sage)]" />
-                    Aperto oggi
+                    {mockup.phoneStatus}
                   </div>
                 </div>
               </div>
@@ -199,6 +240,38 @@ export async function MarketingHomePage() {
 
       <LogosStripSection tenants={activeTenants} />
       <GoogleSyncSection />
+      <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
+        <div className="menuary-container py-20 lg:py-24">
+          <div className="max-w-3xl">
+            <p className="menuary-section-label">
+              {locale === "it" ? "Mercati food" : "Food markets"}
+            </p>
+            <h2 className="menuary-display mt-6 text-[clamp(2.1rem,4.4vw,3.8rem)] leading-[1.05]">
+              {locale === "it"
+                ? "Siti web per ristoranti, pizzerie, bar e locali."
+                : "Websites for restaurants, pizzerias, bars and venues."}
+            </h2>
+            <p className="mt-6 max-w-2xl text-[16px] leading-[1.75] text-[var(--menuary-muted)]">
+              {locale === "it"
+                ? "Menuary copre le ricerche più importanti per chi vuole farsi trovare online: sito per ristorante, menu digitale, prenotazioni online, ordini e presenza locale su Google."
+                : "Menuary covers the main discovery paths for food businesses: restaurant website, digital menu, online bookings, ordering and local Google presence."}
+            </p>
+          </div>
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {seoVerticals.map((item) => (
+              <article
+                key={item.title}
+                className="rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-7"
+              >
+                <h3 className="menuary-display text-[1.55rem] leading-tight">{item.title}</h3>
+                <p className="mt-4 text-[15px] leading-[1.65] text-[var(--menuary-muted)]">
+                  {item.body}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
       <LocalPresenceSection />
       <BenefitsEditorialSection />
       <TestimonialsSection reviews={testimonials} />

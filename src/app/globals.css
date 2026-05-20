@@ -11,6 +11,7 @@
 @import "../styles/tenants/studioaranzulla.css";
 @import "../styles/marketing.css";
 @import "../styles/admin.css";
+@import "../styles/kiosk.css";
 
 @tailwind base;
 @tailwind components;

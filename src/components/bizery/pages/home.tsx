@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   ArrowUpRight,
   Bell,
@@ -19,7 +20,9 @@ import {
 import { BizeryShell } from "@/components/bizery/bizery-shell";
 import { BIZERY_PRICING_PLANS, AI_ADDON, annualSaving } from "@/lib/platform-pricing";
 import { getMarketingHomeData } from "@/lib/marketing-data";
-import { getTranslations } from "@/i18n";
+import { DEFAULT_MARKET, MARKET_HEADER, formatMarketLanguageBadge, normalizeMarketCode } from "@/lib/markets";
+import { getMockupCopy } from "@/lib/localized-commercial-copy";
+import { getLocale, getTranslations } from "@/i18n";
 
 const AI_ICONS: Record<string, typeof PhoneCall> = {
   "Telefono in": PhoneCall,
@@ -30,9 +33,47 @@ const AI_ICONS: Record<string, typeof PhoneCall> = {
   "Voice ID": Phone,
 };
 
+const BIZERY_SEO_VERTICALS = {
+  it: [
+    {
+      title: "Siti web per studi medici",
+      body: "Prenotazioni online, servizi, orari, recensioni e scheda Google sempre coerenti.",
+    },
+    {
+      title: "Siti per saloni e barbieri",
+      body: "Listino servizi, appuntamenti, promemoria, foto lavori e gestione clienti da un unico pannello.",
+    },
+    {
+      title: "Siti per studi legali e commercialisti",
+      body: "Presenza professionale, richieste di contatto qualificate, agenda e contenuti aggiornabili senza codice.",
+    },
+  ],
+  en: [
+    {
+      title: "Websites for medical practices",
+      body: "Online bookings, services, opening hours, reviews and consistent Google Business information.",
+    },
+    {
+      title: "Websites for salons and barbers",
+      body: "Service list, appointments, reminders, work gallery and client management from one dashboard.",
+    },
+    {
+      title: "Websites for lawyers and accountants",
+      body: "Professional presence, qualified contact requests, calendar tools and editable content.",
+    },
+  ],
+};
+
 export async function BizeryHomePage() {
   const { testimonials, activeTenants, activeCount } = await getMarketingHomeData("services");
+  const locale = await getLocale();
   const t = (await getTranslations("bizery")).home;
+  const requestHeaders = await headers();
+  const market = normalizeMarketCode(requestHeaders.get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const multilangPrefix = t.badgeMultilang.split("·")[0]?.trim() || t.badgeMultilang;
+  const multilangBadge = formatMarketLanguageBadge(multilangPrefix, market);
+  const mockup = getMockupCopy(locale, market, "services");
+  const seoVerticals = locale === "it" ? BIZERY_SEO_VERTICALS.it : BIZERY_SEO_VERTICALS.en;
 
   return (
     <BizeryShell>
@@ -83,7 +124,7 @@ export async function BizeryHomePage() {
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Globe size={14} strokeWidth={1.7} className="text-[var(--menuary-muted)]" />
-                  {t.badgeMultilang}
+                  {multilangBadge}
                 </span>
               </div>
             </div>
@@ -98,25 +139,25 @@ export async function BizeryHomePage() {
                 <div className="menuary-admin-preview">
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="menuary-module-tile">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.mockupToday}</p>
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{mockup.dashboardToday}</p>
                       <p className="mt-1 text-2xl font-medium" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
                         8
-                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">{t.mockupAppointments}</span>
+                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">{mockup.dashboardBookings}</span>
                       </p>
                     </div>
                     <div className="menuary-module-tile">
                       <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.mockupGoogle}</p>
                       <p className="mt-1 text-2xl font-medium" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
                         4,8
-                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">{t.mockupAvg}</span>
+                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">{mockup.dashboardAverage}</span>
                       </p>
                     </div>
                     <div className="menuary-module-tile">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.mockupHours}</p>
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{mockup.dashboardHours}</p>
                       <p className="mt-1 text-base font-medium leading-tight" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
-                        {t.mockupUpdated}
+                        {mockup.dashboardUpdated}
                         <br />
-                        <span className="text-xs font-medium text-[var(--menuary-muted)]">{t.mockupToday2}</span>
+                        <span className="text-xs font-medium text-[var(--menuary-muted)]">{mockup.dashboardUpdatedWhen}</span>
                       </p>
                     </div>
                   </div>
@@ -133,7 +174,7 @@ export async function BizeryHomePage() {
                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
                     </svg>
                   </span>
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.mockupGoogleCard}</p>
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{mockup.googleCard}</p>
                 </div>
                 <div className="mt-3 flex items-center gap-1.5">
                   <div className="flex gap-0.5 text-[var(--menuary-copper)]">
@@ -143,27 +184,27 @@ export async function BizeryHomePage() {
                   </div>
                   <span className="text-sm font-semibold text-[var(--menuary-ink)]">4,8</span>
                 </div>
-                <p className="mt-2 text-xs text-[var(--menuary-muted)]">{t.mockupOpen}</p>
+                <p className="mt-2 text-xs text-[var(--menuary-muted)]">{mockup.googleOpen}</p>
               </div>
 
               <div className="absolute -bottom-8 -left-4 hidden w-[11rem] rounded-3xl border border-[var(--menuary-line)] bg-[var(--menuary-ink)] p-3 shadow-[0_30px_70px_-24px_rgba(15,23,42,0.4)] sm:block">
                 <div className="menuary-phone-top" />
                 <div className="rounded-2xl bg-[var(--menuary-paper)] p-3 text-[var(--menuary-ink)]">
                   <p className="text-base font-medium leading-tight" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
-                    Studio
+                    {mockup.phoneName[0]}
                     <br />
-                    Legale Rossi
+                    {mockup.phoneName[1]}
                   </p>
                   <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[var(--menuary-muted)] font-bold">
-                    Milano · diritto civile
+                    {mockup.phoneMeta}
                   </p>
                   <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[var(--menuary-ink)]">
                     <CalendarCheck size={12} strokeWidth={1.8} className="text-[var(--menuary-copper)]" />
-                    {t.mockupBook}
+                    {mockup.phoneAction}
                   </div>
                   <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--menuary-muted)]">
                     <Check size={11} strokeWidth={2} className="text-[var(--menuary-sage)]" />
-                    {t.mockupOpenToday}
+                    {mockup.phoneStatus}
                   </div>
                 </div>
               </div>
@@ -249,6 +290,48 @@ export async function BizeryHomePage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── MERCATI SERVIZI ── */}
+      <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
+        <div className="menuary-container py-20 lg:py-24">
+          <div className="max-w-3xl">
+            <p className="menuary-section-label">
+              {locale === "it" ? "Mercati servizi" : "Service markets"}
+            </p>
+            <h2
+              className="mt-6 text-[clamp(2.1rem,4.4vw,3.8rem)] font-medium leading-[1.05] tracking-[-0.02em]"
+              style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+            >
+              {locale === "it"
+                ? "Siti web per studi, saloni, barbieri e professionisti."
+                : "Websites for studios, salons, barbers and professionals."}
+            </h2>
+            <p className="mt-6 max-w-2xl text-[16px] leading-[1.75] text-[var(--menuary-muted)]">
+              {locale === "it"
+                ? "Bizery copre le ricerche delle attività che vivono di appuntamenti e fiducia: studi medici, saloni di bellezza, barbieri, studi legali, commercialisti, consulenti e centri servizi."
+                : "Bizery covers discovery for appointment-led service businesses: medical practices, beauty salons, barbers, law firms, accountants, consultants and service centers."}
+            </p>
+          </div>
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {seoVerticals.map((item) => (
+              <article
+                key={item.title}
+                className="rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-7"
+              >
+                <h3
+                  className="text-[1.45rem] font-medium leading-tight"
+                  style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                >
+                  {item.title}
+                </h3>
+                <p className="mt-4 text-[15px] leading-[1.65] text-[var(--menuary-muted)]">
+                  {item.body}
+                </p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
