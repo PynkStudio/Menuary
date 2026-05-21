@@ -18,10 +18,11 @@ import {
   Star,
 } from "lucide-react";
 import { BizeryShell } from "@/components/bizery/bizery-shell";
-import { BIZERY_PRICING_PLANS, AI_ADDON, annualSaving } from "@/lib/platform-pricing";
-import { getMarketingHomeData } from "@/lib/marketing-data";
-import { DEFAULT_MARKET, MARKET_HEADER, formatMarketLanguageBadge, normalizeMarketCode } from "@/lib/markets";
-import { getMockupCopy } from "@/lib/localized-commercial-copy";
+import { annualSaving } from "@/lib/platform-pricing";
+import { fetchBizeryPricingPlans, fetchPricingAddons, getMarketingHomeData } from "@/lib/marketing-data";
+import { DEFAULT_MARKET, MARKET_HEADER, formatMarketLanguageBadge, getMarket, normalizeMarketCode } from "@/lib/markets";
+import { getMockupCopy, localizePricingPlanName } from "@/lib/localized-commercial-copy";
+import { formatPricingAmount, formatSetupFrom, replacePriceToken } from "@/lib/pricing-format";
 import { getLocale, getTranslations } from "@/i18n";
 
 const AI_ICONS: Record<string, typeof PhoneCall> = {
@@ -70,10 +71,17 @@ export async function BizeryHomePage() {
   const t = (await getTranslations("bizery")).home;
   const requestHeaders = await headers();
   const market = normalizeMarketCode(requestHeaders.get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const marketData = getMarket(market);
+  const [pricingPlans, pricingAddons] = await Promise.all([
+    fetchBizeryPricingPlans(market),
+    fetchPricingAddons(market),
+  ]);
+  const aiAddon = pricingAddons[0];
   const multilangPrefix = t.badgeMultilang.split("·")[0]?.trim() || t.badgeMultilang;
   const multilangBadge = formatMarketLanguageBadge(multilangPrefix, market);
   const mockup = getMockupCopy(locale, market, "services");
   const seoVerticals = locale === "it" ? BIZERY_SEO_VERTICALS.it : BIZERY_SEO_VERTICALS.en;
+  const perMonthLabel = t.pricingPerMonth.replace(/[€$£]\s*/, "");
 
   return (
     <BizeryShell>
@@ -513,9 +521,14 @@ export async function BizeryHomePage() {
           </div>
 
           <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:items-stretch">
-            {BIZERY_PRICING_PLANS.map((plan) => {
+            {pricingPlans.map((plan) => {
               const highlighted = plan.is_featured === true;
               const saving = annualSaving(plan);
+              const currency = plan.currency ?? marketData.currency;
+              const annualPrice = formatPricingAmount(plan.price_annual, currency, marketData.locale);
+              const monthlyPrice = formatPricingAmount(plan.price_monthly, currency, marketData.locale);
+              const formattedSaving = formatPricingAmount(saving, currency, marketData.locale);
+              const setup = formatSetupFrom(plan.setup_from, currency, marketData.locale);
               return (
                 <article
                   key={plan.slug}
@@ -536,26 +549,26 @@ export async function BizeryHomePage() {
                     className="mt-2 text-[1.9rem] font-medium leading-tight"
                     style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
                   >
-                    {plan.marketing_name}
+                    {localizePricingPlanName(plan, locale, "services")}
                   </h3>
                   <div className="mt-6 flex items-baseline gap-1">
                     <span className="text-[3.4rem] font-medium leading-none tabular-nums" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
-                      {plan.price_annual}
+                      {annualPrice}
                     </span>
-                    <span className="text-sm text-[var(--menuary-muted)]">{t.pricingPerMonth}</span>
+                    <span className="text-sm text-[var(--menuary-muted)]">{perMonthLabel}</span>
                   </div>
                   <p className="mt-1.5 text-xs text-[var(--menuary-muted)]">
                     {t.pricingAnnualBilling}
                     {saving > 0 && (
                       <span className="ml-1 font-semibold text-[var(--menuary-sage)]">
-                        · {t.pricingSavings.replace("{amount}", String(saving))}
+                        · {replacePriceToken(t.pricingSavings, "amount", formattedSaving)}
                       </span>
                     )}
                   </p>
                   <p className="mt-1 text-xs text-[var(--menuary-muted)]">
                     {t.pricingMonthly
-                      .replace("{price}", String(plan.price_monthly))
-                      .replace("{setup}", plan.setup_from)}
+                      .replace(/[€$£]?\{price\}/, monthlyPrice)
+                      .replace("{setup}", setup)}
                   </p>
                   <div className="my-7 h-px bg-[var(--menuary-line)]" />
                   <ul className="space-y-3">
@@ -594,7 +607,10 @@ export async function BizeryHomePage() {
               <div>
                 <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">{t.pricingFromAppointments}</p>
                 <p className="text-lg font-medium" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
-                  {t.pricingAiAddon.replace("{price}", String(AI_ADDON.monthly))}
+                  {t.pricingAiAddon.replace(
+                    /\+?€?\{price\}/,
+                    `+${formatPricingAmount(aiAddon.monthly, aiAddon.currency ?? marketData.currency, marketData.locale)}`,
+                  )}
                 </p>
               </div>
             </div>

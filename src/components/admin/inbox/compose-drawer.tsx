@@ -1,9 +1,41 @@
 "use client";
 
 import { useState, useEffect, useTransition, useRef } from "react";
-import { X, Send } from "lucide-react";
+import { X, Send, Paperclip, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
+
+export type ComposeAttachment = {
+  filename: string;
+  /** Base64 senza prefisso `data:` */
+  content: string;
+  contentType?: string;
+  /** Dimensione in byte, calcolata dal base64. */
+  size: number;
+};
+
+const MAX_ATTACHMENT_MB = 8;
+const MAX_TOTAL_MB = 20;
+
+function fmtSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+async function fileToAttachment(file: File): Promise<ComposeAttachment> {
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  const content = btoa(binary);
+  return {
+    filename: file.name,
+    content,
+    contentType: file.type || undefined,
+    size: file.size,
+  };
+}
 
 type Props = {
   open: boolean;
@@ -14,6 +46,7 @@ type Props = {
   initialTo?: string;
   initialSubject?: string;
   initialBody?: string;
+  initialAttachments?: ComposeAttachment[];
 };
 
 const BRAND_FROM: Record<InboundEmailBrand, string> = {
@@ -42,11 +75,14 @@ export function ComposeDrawer({
   initialTo,
   initialSubject,
   initialBody,
+  initialAttachments,
 }: Props) {
   const [brand, setBrand]       = useState<InboundEmailBrand>(defaultBrand);
   const [to, setTo]             = useState(initialTo ?? "");
   const [subject, setSubject]   = useState(initialSubject ?? "");
   const [body, setBody]         = useState(initialBody ?? "");
+  const [attachments, setAttachments] = useState<ComposeAttachment[]>(initialAttachments ?? []);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [signature, setSignature] = useState("");
   const [signatureFromName, setSignatureFromName] = useState("");
   const [error, setError]       = useState<string | null>(null);
@@ -74,6 +110,7 @@ export function ComposeDrawer({
     if (initialTo !== undefined) setTo(initialTo);
     if (initialSubject !== undefined) setSubject(initialSubject);
     if (initialBody !== undefined) setBody(initialBody);
+    if (initialAttachments !== undefined) setAttachments(initialAttachments);
     setBrand(defaultBrand);
     setError(null);
     setTimeout(() => {
@@ -89,7 +126,32 @@ export function ComposeDrawer({
   }, [open]);
 
   function reset() {
-    setTo(""); setSubject(""); setBody(""); setError(null);
+    setTo(""); setSubject(""); setBody(""); setError(null); setAttachments([]);
+  }
+
+  async function handleFiles(files: FileList | null) {
+    if (!files || !files.length) return;
+    setError(null);
+    const next: ComposeAttachment[] = [...attachments];
+    for (const file of Array.from(files)) {
+      if (file.size > MAX_ATTACHMENT_MB * 1024 * 1024) {
+        setError(`L'allegato "${file.name}" supera ${MAX_ATTACHMENT_MB} MB.`);
+        continue;
+      }
+      const att = await fileToAttachment(file);
+      next.push(att);
+    }
+    const total = next.reduce((s, a) => s + a.size, 0);
+    if (total > MAX_TOTAL_MB * 1024 * 1024) {
+      setError(`Dimensione totale degli allegati superiore a ${MAX_TOTAL_MB} MB.`);
+      return;
+    }
+    setAttachments(next);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeAttachment(i: number) {
+    setAttachments((list) => list.filter((_, idx) => idx !== i));
   }
 
   function handleClose() {
@@ -124,6 +186,15 @@ export function ComposeDrawer({
             html: buildHtml(),
             fromOverride,
             replyTo,
+            ...(attachments.length
+              ? {
+                  attachments: attachments.map((a) => ({
+                    filename: a.filename,
+                    content: a.content,
+                    contentType: a.contentType,
+                  })),
+                }
+              : {}),
           }),
         });
         const data = (await res.json()) as { ok?: boolean; error?: string };
@@ -223,6 +294,35 @@ export function ComposeDrawer({
           className="flex-1 resize-none px-5 py-4 text-sm text-[var(--ma-ink)] placeholder:text-[var(--ma-muted)] focus:outline-none"
         />
 
+        {/* Allegati */}
+        {attachments.length > 0 && (
+          <div className="border-t border-[var(--ma-line)] px-5 py-3">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
+              Allegati ({attachments.length})
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              {attachments.map((a, i) => (
+                <li
+                  key={`${a.filename}-${i}`}
+                  className="inline-flex items-center gap-2 rounded-md border border-[var(--ma-line)] bg-[var(--ma-surface)] px-2 py-1 text-xs text-[var(--ma-ink)]"
+                >
+                  <Paperclip size={12} />
+                  <span className="max-w-[200px] truncate" title={a.filename}>{a.filename}</span>
+                  <span className="text-[var(--ma-muted)]">{fmtSize(a.size)}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(i)}
+                    className="text-[var(--ma-muted)] hover:text-red-600"
+                    aria-label={`Rimuovi ${a.filename}`}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Anteprima firma automatica (sola lettura) */}
         {signature && (
           <div className="border-t border-[var(--ma-line)] px-5 py-3">
@@ -239,7 +339,21 @@ export function ComposeDrawer({
         {/* Footer */}
         <div className={cn("flex items-center justify-between border-t border-[var(--ma-line)] px-5 py-3", error && "flex-col gap-2 items-start")}>
           {error && <p className="text-xs text-red-600">{error}</p>}
-          <div className="flex w-full items-center justify-end">
+          <div className="flex w-full items-center justify-between gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => handleFiles(e.target.files)}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--ma-line)] px-3 py-1.5 text-xs font-medium text-[var(--ma-ink)] hover:bg-[var(--ma-surface)]"
+            >
+              <Paperclip size={13} /> Allega file
+            </button>
             <button
               onClick={handleSend}
               disabled={isPending || !canCompose}

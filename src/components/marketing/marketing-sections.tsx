@@ -23,7 +23,10 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { MarketingReview, MarketingTenant } from "@/lib/marketing-data";
+import { fetchPricingAddons, fetchPricingPlans, type MarketingReview, type MarketingTenant } from "@/lib/marketing-data";
+import { DEFAULT_MARKET, MARKET_HEADER, getMarket, normalizeMarketCode } from "@/lib/markets";
+import { formatPricingAmount, formatSetupFrom, replacePriceToken } from "@/lib/pricing-format";
+import { headers } from "next/headers";
 
 /* ============================================================
    FEATURES
@@ -1909,12 +1912,31 @@ export async function BenefitsEditorialSection() {
 
 export async function HomePricingSection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.homePricing;
-  const PRICING_DATA = [
-    { id: "presenza",     monthly: "39",  monthlyBilling: "49",  setup: "da 690 €",   highlighted: false },
-    { id: "prenotazioni", monthly: "89",  monthlyBilling: "99",  setup: "da 1.190 €", highlighted: true  },
-    { id: "operativita",  monthly: "169", monthlyBilling: "199", setup: "da 1.990 €", highlighted: false },
-  ];
-  const plans = t.plans.map((p, i) => ({ ...p, ...PRICING_DATA[i] }));
+  const h = await headers();
+  const marketCode = normalizeMarketCode(h.get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const market = getMarket(marketCode);
+  const [pricingPlans, pricingAddons] = await Promise.all([
+    fetchPricingPlans(marketCode),
+    fetchPricingAddons(marketCode),
+  ]);
+  const aiAddon = pricingAddons[0];
+  const perMonthLabel = t.perMonth.replace(/[€$£]\s*/, "");
+  const copyById = new Map(t.plans.map((plan) => [plan.id, plan]));
+  const plans = pricingPlans.map((plan) => {
+    const copy = copyById.get(plan.slug) ?? t.plans[0];
+    const currency = plan.currency ?? market.currency;
+    return {
+      ...copy,
+      id: plan.slug,
+      price_annual: plan.price_annual,
+      price_monthly: plan.price_monthly,
+      currency,
+      monthly: formatPricingAmount(plan.price_annual, currency, market.locale),
+      monthlyBilling: formatPricingAmount(plan.price_monthly, currency, market.locale),
+      setup: formatSetupFrom(plan.setup_from, currency, market.locale),
+      highlighted: plan.is_featured === true,
+    };
+  });
   return (
     <section
       id="prezzi"
@@ -1940,7 +1962,8 @@ export async function HomePricingSection() {
         <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:items-stretch">
           {plans.map((plan) => {
             const highlighted = plan.highlighted === true;
-            const saving = (Number(plan.monthlyBilling) - Number(plan.monthly)) * 12;
+            const saving = (plan.price_monthly - plan.price_annual) * 12;
+            const formattedSaving = formatPricingAmount(saving, plan.currency, market.locale);
             return (
               <article
                 key={plan.id}
@@ -1969,18 +1992,18 @@ export async function HomePricingSection() {
                     {plan.monthly}
                   </span>
                   <span className="text-sm text-[var(--menuary-muted)]">
-                    {t.perMonth}
+                    {perMonthLabel}
                   </span>
                 </div>
                 <p className="mt-1.5 text-xs text-[var(--menuary-muted)]">
                   {t.annualBilling} ·{" "}
                   <span className="font-semibold text-[var(--menuary-sage)]">
-                    {t.savingsLabel.replace("{amount}", String(saving))}
+                    {replacePriceToken(t.savingsLabel, "amount", formattedSaving)}
                   </span>
                 </p>
                 <p className="mt-1 text-xs text-[var(--menuary-muted)]">
                   {t.monthlyLabel
-                    .replace("{price}", plan.monthlyBilling)
+                    .replace(/[€$£]?\{price\}/, plan.monthlyBilling)
                     .replace("{setup}", plan.setup)}
                 </p>
 
@@ -2040,7 +2063,12 @@ export async function HomePricingSection() {
               <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
                 {t.aiEyebrow}
               </p>
-              <p className="menuary-display text-lg">{t.aiTitle}</p>
+              <p className="menuary-display text-lg">
+                {t.aiTitle.replace(
+                  /\+\s*[€$£]?\d+/,
+                  `+${formatPricingAmount(aiAddon.monthly, aiAddon.currency ?? market.currency, market.locale)}`,
+                )}
+              </p>
             </div>
           </div>
           <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">
@@ -2114,4 +2142,3 @@ export async function AIIntegrationsTeaserSection() {
     </section>
   );
 }
-

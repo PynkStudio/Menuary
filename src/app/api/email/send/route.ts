@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { sendEmail } from "@/lib/email/sender";
+import { sendEmail, type EmailAttachment } from "@/lib/email/sender";
 import { buildMarketingEmail } from "@/lib/email/templates/marketing";
 import { resolveSender } from "@/lib/email/sender";
 import { parseEmailAddress } from "@/lib/email/inbound-types";
@@ -46,7 +46,11 @@ type RequestBody = {
   replyTo?: string;
   /** Solo siteadmin: sovrascrive mittente automatico. */
   fromOverride?: string;
+  attachments?: EmailAttachment[];
 };
+
+const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024; // 8 MB per file (limite Resend ~10MB totale)
+const MAX_TOTAL_ATTACHMENT_BYTES = 20 * 1024 * 1024; // 20 MB totali (margine per multi-allegati)
 
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient(".menuary.it");
@@ -65,13 +69,46 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Body non valido." }, { status: 400 });
   }
 
-  const { to, subject, tenantId, html, template, replyTo, fromOverride } = body;
+  const { to, subject, tenantId, html, template, replyTo, fromOverride, attachments } = body;
 
   if (!to || !subject) {
     return NextResponse.json({ error: "to e subject sono richiesti." }, { status: 400 });
   }
   if (!html && !template) {
     return NextResponse.json({ error: "Fornire html oppure template." }, { status: 400 });
+  }
+
+  let safeAttachments: EmailAttachment[] | undefined;
+  if (attachments?.length) {
+    let totalBytes = 0;
+    safeAttachments = [];
+    for (const a of attachments) {
+      if (!a?.filename || !a?.content) {
+        return NextResponse.json(
+          { error: "Allegato malformato: filename e content sono obbligatori." },
+          { status: 400 },
+        );
+      }
+      const bytes = Math.ceil((a.content.length * 3) / 4);
+      if (bytes > MAX_ATTACHMENT_BYTES) {
+        return NextResponse.json(
+          { error: `Allegato "${a.filename}" supera 8 MB.` },
+          { status: 413 },
+        );
+      }
+      totalBytes += bytes;
+      safeAttachments.push({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType,
+      });
+    }
+    if (totalBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
+      return NextResponse.json(
+        { error: "Dimensione totale degli allegati superiore a 20 MB." },
+        { status: 413 },
+      );
+    }
   }
 
   // ── Autorizzazione ──────────────────────────────────────────────────────────
@@ -123,6 +160,7 @@ export async function POST(request: Request) {
     tenantId,
     replyTo,
     fromOverride: isSiteAdmin ? fromOverride : undefined,
+    attachments: safeAttachments,
   });
 
   if (!result.ok) {

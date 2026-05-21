@@ -141,19 +141,58 @@ export function ContractEditor({ contractId }: Props) {
     return saved;
   }
 
-  function handleSendViaInbox() {
-    const saved = stored ?? handleSave();
-    const updated = markSent(saved.id);
-    if (updated) setStored(updated);
+  async function handleSendViaInbox() {
+    setGeneratingPdf(true);
+    setFeedback("Preparo il PDF e apro la mail…");
+    try {
+      const saved = stored ?? handleSave();
 
-    const lead = leadId ? PLATFORM_LEADS.find((l) => l.id === leadId) : null;
-    const dest = lead?.contact_email || data.cliente.email || data.cliente.pec;
-    const subject = `Contratto ${data.numero} — ${data.cliente.ragioneSociale || "—"}`;
-    const body = buildEmailBody(data);
-    setFeedback(
-      "Contratto marcato come 'Inviato'. Apri la modale email per completare l'invio.",
-    );
-    launcher.open({ to: dest || "", subject, body, brand: "menuary" });
+      const pdfRes = await fetch("/api/admin/contracts/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data, overrides }),
+      });
+      if (!pdfRes.ok) {
+        setFeedback("Errore nella generazione del PDF — riprova.");
+        return;
+      }
+      const arrayBuf = await pdfRes.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuf);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      const base64 = btoa(binary);
+      const filename = `Contratto-${data.numero}.pdf`;
+
+      const updated = markSent(saved.id);
+      if (updated) setStored(updated);
+
+      const lead = leadId ? PLATFORM_LEADS.find((l) => l.id === leadId) : null;
+      const dest = lead?.contact_email || data.cliente.email || data.cliente.pec;
+      const brand: "menuary" | "bizery" =
+        lead?.business_vertical === "services" ? "bizery" : "menuary";
+      const subject = `Contratto ${data.numero} — ${data.cliente.ragioneSociale || "Menuary"}`;
+      const body = buildEmailBody(data);
+
+      launcher.open({
+        to: dest || "",
+        subject,
+        body,
+        brand,
+        attachments: [
+          {
+            filename,
+            content: base64,
+            contentType: "application/pdf",
+            size: arrayBuf.byteLength,
+          },
+        ],
+      });
+      setFeedback(
+        "Mail pronta con contratto allegato. Verifica destinatario e premi Invia.",
+      );
+    } finally {
+      setGeneratingPdf(false);
+    }
   }
 
   async function handleDownloadPdf(): Promise<Blob | null> {
@@ -668,31 +707,40 @@ function buildEmailBody(data: ContractData): string {
     data.economiche.scontoAnnuale,
   );
   const canone = annuale
-    ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}%)`
+    ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% sul listino annuo)`
     : `${formatEUR(data.economiche.canoneMensile)} + IVA / mese`;
-  return `Gentile ${data.cliente.legaleRappresentante || data.cliente.ragioneSociale || "Cliente"},
 
-a seguito dei nostri accordi, in allegato le inviamo il contratto n. ${data.numero} relativo al piano "${data.servizio.pianoNome}" della piattaforma Menuary.
+  const saluto =
+    data.cliente.legaleRappresentante?.trim() ||
+    data.cliente.ragioneSociale?.trim() ||
+    "Cliente";
 
-Riepilogo condizioni:
+  return `Gentile ${saluto},
+
+come da accordi intercorsi, le inviamo in allegato la proposta contrattuale n. ${data.numero} per l'attivazione del servizio "${data.servizio.pianoNome}" sulla piattaforma Menuary, comprensiva degli allegati tecnici e regolamentari (DPA art. 28 GDPR, informativa privacy, SLA e condizioni d'uso).
+
+Riepilogo delle condizioni economiche:
 • Piano: ${data.servizio.pianoNome}
 • Setup una tantum: ${formatEUR(data.economiche.setup)} + IVA
 • Canone: ${canone}
-• Durata: 12 mesi con rinnovo tacito (recesso con 30 gg di preavviso)
+• Durata: 12 mesi con rinnovo tacito · preavviso di recesso 30 giorni
 • Foro competente: Milano
 
-Per attivare il servizio le chiediamo cortesemente di:
-1) stampare il contratto e i relativi allegati;
-2) firmarlo in ogni pagina, incluso il riquadro di approvazione specifica delle clausole vessatorie (artt. 1341-1342 c.c.) e gli allegati A, B, C, D;
-3) restituirlo entro 5 (cinque) giorni lavorativi, scansionato in formato PDF, rispondendo a questa email oppure via PEC a ${FORNITORE.pec}.
+Per perfezionare la sottoscrizione le chiediamo cortesemente di:
 
-Decorso il termine di 5 giorni senza ricezione del contratto controfirmato, la presente proposta si intenderà non accettata e dovrà essere rinnovata.
+1. stampare il documento integralmente, comprensivo di tutti gli allegati;
+2. apporre firma e timbro su ciascuna pagina, prestando particolare attenzione alle clausole vessatorie ex artt. 1341-1342 c.c. che richiedono una seconda firma di accettazione specifica;
+3. restituire il contratto controfirmato, scansionato in formato PDF, in risposta alla presente email entro e non oltre 5 (cinque) giorni lavorativi dalla data di ricezione, oppure via PEC all'indirizzo ${FORNITORE.pec}.
 
-Per qualsiasi chiarimento siamo a disposizione.
+In assenza di ricezione del documento controfirmato entro il termine indicato, la presente proposta si intenderà automaticamente decaduta e dovrà essere rinnovata su nuova base economica.
 
-Cordiali saluti,
+Per qualsiasi chiarimento, anche operativo, rimaniamo a sua completa disposizione.
+
+Cordialmente,
+
 ${FORNITORE.legaleRappresentante}
-${FORNITORE.ragioneSociale}`;
+${FORNITORE.ragioneSociale}
+PEC: ${FORNITORE.pec}`;
 }
 
 const CONTRACT_STYLES = `

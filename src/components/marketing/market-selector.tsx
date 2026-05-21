@@ -6,7 +6,6 @@ import {
   DEFAULT_MARKET,
   MARKETS,
   MARKET_COOKIE,
-  getMarket,
   localeForMarket,
   normalizeMarketCode,
   type MarketCode,
@@ -24,7 +23,6 @@ export function MarketSelector({ currentMarket }: { currentMarket: MarketCode })
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [value, setValue] = useState<MarketCode>(currentMarket);
-  const market = getMarket(value);
 
   const options = useMemo(() => MARKETS, []);
 
@@ -48,9 +46,6 @@ export function MarketSelector({ currentMarket }: { currentMarket: MarketCode })
 
   return (
     <label className="relative inline-flex items-center rounded-full border border-[var(--menuary-line)] bg-[var(--menuary-paper)] px-3 py-2 text-sm font-semibold text-[var(--menuary-ink)]">
-      <span className="mr-2" aria-hidden>
-        {market.flag}
-      </span>
       <span className="sr-only">Paese</span>
       <select
         value={value}

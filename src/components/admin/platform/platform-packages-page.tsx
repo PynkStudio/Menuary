@@ -23,6 +23,7 @@ import { TENANT_MODULES, TENANT_MODULE_CATEGORIES } from "@/lib/tenant-modules";
 import type { TenantFeatureKey } from "@/lib/tenant";
 import { PRICING_PLANS } from "@/lib/platform-pricing";
 import { MARKETS, type MarketCode } from "@/lib/markets";
+import { sanitizeAmountInput } from "@/lib/pricing-format";
 
 // ─── Tipo esteso con campi marketing ─────────────────────────────────────────
 
@@ -163,7 +164,7 @@ function pkgToForm(p: PlatformPackageExtended): PackageForm {
       price_monthly: price.price_monthly != null ? String(price.price_monthly) : "",
       price_monthly_billing:
         price.price_monthly_billing != null ? String(price.price_monthly_billing) : "",
-      setup_from: price.setup_from ?? "",
+      setup_from: sanitizeAmountInput(price.setup_from ?? ""),
     };
   }
   const settings = (p.settings ?? {}) as Record<string, unknown>;
@@ -173,7 +174,7 @@ function pkgToForm(p: PlatformPackageExtended): PackageForm {
     marketing_description: p.marketing_description ?? "",
     price_annual: String(p.price_monthly),
     price_monthly_billing: p.price_monthly_billing != null ? String(p.price_monthly_billing) : "",
-    setup_from: p.setup_from ?? "",
+    setup_from: sanitizeAmountInput(p.setup_from ?? ""),
     marketing_items_raw: p.marketing_items.join("\n"),
     is_featured: p.is_featured,
     cta_label: p.cta_label ?? "",
@@ -257,7 +258,7 @@ export function PlatformPackagesPage() {
       currency: form.market_prices[market.code].currency,
       price_monthly: form.market_prices[market.code].price_monthly || null,
       price_monthly_billing: form.market_prices[market.code].price_monthly_billing || null,
-      setup_from: form.market_prices[market.code].setup_from || null,
+      setup_from: sanitizeAmountInput(form.market_prices[market.code].setup_from) || null,
     })).filter((row) => row.price_monthly || row.price_monthly_billing || row.setup_from);
 
     try {
@@ -272,7 +273,7 @@ export function PlatformPackagesPage() {
           marketing_description: form.marketing_description,
           price_monthly: annual,
           price_monthly_billing: monthly,
-          setup_from: form.setup_from || null,
+          setup_from: sanitizeAmountInput(form.setup_from) || null,
           marketing_items: items,
           is_featured: form.is_featured,
           cta_label: form.cta_label || null,
@@ -658,8 +659,8 @@ function PackageFormPanel({
                 <input type="number" value={form.price_monthly_billing} onChange={(e) => set("price_monthly_billing", e.target.value)} className="input-base pl-8" placeholder="99" />
               </div>
             </FormField>
-            <FormField label="Costo attivazione">
-              <input value={form.setup_from} onChange={(e) => set("setup_from", e.target.value)} className="input-base" placeholder="da € 1.490" />
+            <FormField label="Costo attivazione" hint="Solo importo numerico; valuta e prefisso vengono risolti dal mercato.">
+              <input type="number" value={form.setup_from} onChange={(e) => set("setup_from", e.target.value)} className="input-base" placeholder="1490" />
             </FormField>
             <FormField label="Label CTA">
               <input value={form.cta_label} onChange={(e) => set("cta_label", e.target.value)} className="input-base" placeholder="Inizia con Operatività" />
@@ -863,10 +864,11 @@ function MarketPricesEditor({
                 placeholder="mensile/mese"
               />
               <input
+                type="number"
                 value={row.setup_from}
                 onChange={(event) => setMarket(market.code, "setup_from", event.target.value)}
                 className="input-base text-xs"
-                placeholder={`setup ${market.currency}`}
+                placeholder={`setup numerico (${market.currency})`}
               />
             </div>
           );

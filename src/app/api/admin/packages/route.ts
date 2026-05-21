@@ -3,6 +3,7 @@ import { hasAdminPermission, isSiteadminRole, type SiteadminRole } from "@/lib/a
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeMarketCode } from "@/lib/markets";
+import { sanitizeAmountInput } from "@/lib/pricing-format";
 
 async function requirePackagesPermission() {
   const supabase = await createSupabaseServerClient();
@@ -91,7 +92,7 @@ export async function PUT(request: Request) {
     tagline: typeof body.tagline === "string" ? body.tagline : null,
     marketing_description:
       typeof body.marketing_description === "string" ? body.marketing_description : null,
-    setup_from: typeof body.setup_from === "string" ? body.setup_from : null,
+    setup_from: typeof body.setup_from === "string" ? sanitizeAmountInput(body.setup_from) || null : null,
     marketing_items: Array.isArray(body.marketing_items) ? body.marketing_items : [],
     is_featured: body.is_featured === true,
     cta_label: typeof body.cta_label === "string" ? body.cta_label : null,
@@ -122,7 +123,7 @@ export async function PUT(request: Request) {
         currency,
         price_monthly: priceMonthly,
         price_monthly_billing: numeric(row.price_monthly_billing),
-        setup_from: typeof row.setup_from === "string" ? row.setup_from : null,
+        setup_from: typeof row.setup_from === "string" ? sanitizeAmountInput(row.setup_from) || null : null,
         updated_at: new Date().toISOString(),
       };
     })

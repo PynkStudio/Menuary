@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { ComposeDrawer } from "./compose-drawer";
+import { ComposeDrawer, type ComposeAttachment } from "./compose-drawer";
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
 
 type OpenOptions = {
@@ -9,6 +9,7 @@ type OpenOptions = {
   subject?: string;
   brand?: InboundEmailBrand;
   body?: string;
+  attachments?: ComposeAttachment[];
 };
 
 type LauncherCtx = {
@@ -74,6 +75,7 @@ export function MailLauncherProvider({ children }: { children: React.ReactNode }
         initialTo={prefill.to}
         initialSubject={prefill.subject}
         initialBody={prefill.body}
+        initialAttachments={prefill.attachments}
         onClose={() => setOpen(false)}
         onSent={() => setOpen(false)}
       />

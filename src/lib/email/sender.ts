@@ -69,6 +69,14 @@ export function resolveSender(tenantId?: string): ResolvedSender {
 
 // ─── Send ─────────────────────────────────────────────────────────────────────
 
+export type EmailAttachment = {
+  filename: string;
+  /** Contenuto base64 (senza prefisso data:). */
+  content: string;
+  /** Optional MIME hint — Resend lo inferisce dall'estensione. */
+  contentType?: string;
+};
+
 export type SendEmailParams = {
   to: string | string[];
   subject: string;
@@ -77,6 +85,7 @@ export type SendEmailParams = {
   /** Sovrascrive il mittente risolto automaticamente (solo per siteadmin). */
   fromOverride?: string;
   replyTo?: string;
+  attachments?: EmailAttachment[];
 };
 
 export type SendEmailResult =
@@ -89,12 +98,21 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
 
   const { from, replyTo } = resolveSender(params.tenantId);
 
+  const attachments = params.attachments?.length
+    ? params.attachments.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        ...(a.contentType ? { content_type: a.contentType } : {}),
+      }))
+    : undefined;
+
   const body = {
     from: params.fromOverride ?? from,
     to: Array.isArray(params.to) ? params.to : [params.to],
     subject: params.subject,
     html: params.html,
     ...(params.replyTo ?? replyTo ? { reply_to: params.replyTo ?? replyTo } : {}),
+    ...(attachments ? { attachments } : {}),
   };
 
   const res = await fetch("https://api.resend.com/emails", {

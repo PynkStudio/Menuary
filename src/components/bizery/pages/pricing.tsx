@@ -12,6 +12,7 @@ import {
 } from "@/lib/platform-pricing";
 import type { AppLocale } from "@/i18n";
 import { getPlanLabels, localizePricingPlanName } from "@/lib/localized-commercial-copy";
+import { formatSetupFrom } from "@/lib/pricing-format";
 
 // ─── Tabella confronto ────────────────────────────────────────────────────────
 
@@ -460,7 +461,7 @@ function PlanCard({
           </p>
         )}
         <p className="mt-1.5 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-          setup {plan.setup_from}
+          setup {formatSetupFrom(plan.setup_from, currency, priceLocale)}
         </p>
       </div>
 
