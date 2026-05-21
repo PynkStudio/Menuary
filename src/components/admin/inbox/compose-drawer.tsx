@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition, useRef } from "react";
-import { X, Send, Paperclip, Trash2 } from "lucide-react";
+import { Bold, IndentDecrease, IndentIncrease, Italic, Link2, List, ListOrdered, Paperclip, Quote, Send, Trash2, Underline, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
 
@@ -16,6 +16,7 @@ export type ComposeAttachment = {
 
 const MAX_ATTACHMENT_MB = 8;
 const MAX_TOTAL_MB = 20;
+const EMPTY_EDITOR_HTML = "<p><br></p>";
 
 function fmtSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -35,6 +36,38 @@ async function fileToAttachment(file: File): Promise<ComposeAttachment> {
     contentType: file.type || undefined,
     size: file.size,
   };
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function plainTextToHtml(text: string): string {
+  if (!text.trim()) return EMPTY_EDITOR_HTML;
+
+  const lines = text.split(/\r?\n/);
+  let html = "";
+  let quoteDepth = 0;
+
+  for (const line of lines) {
+    const match = line.match(/^(>+)\s?(.*)$/);
+    const depth = Math.min(match?.[1].length ?? 0, 4);
+    while (quoteDepth < depth) { html += "<blockquote>"; quoteDepth += 1; }
+    while (quoteDepth > depth) { html += "</blockquote>"; quoteDepth -= 1; }
+    const content = escapeHtml(match?.[2] ?? line);
+    html += `<p>${content || "<br>"}</p>`;
+  }
+
+  while (quoteDepth > 0) { html += "</blockquote>"; quoteDepth -= 1; }
+  return html;
+}
+
+function normalizeEditorHtml(html: string): string {
+  return html.trim() || EMPTY_EDITOR_HTML;
 }
 
 type Props = {
@@ -80,9 +113,11 @@ export function ComposeDrawer({
   const [brand, setBrand]       = useState<InboundEmailBrand>(defaultBrand);
   const [to, setTo]             = useState(initialTo ?? "");
   const [subject, setSubject]   = useState(initialSubject ?? "");
-  const [body, setBody]         = useState(initialBody ?? "");
+  const [bodyHtml, setBodyHtml] = useState(plainTextToHtml(initialBody ?? ""));
+  const bodyHtmlRef = useRef(bodyHtml);
   const [attachments, setAttachments] = useState<ComposeAttachment[]>(initialAttachments ?? []);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
   const [signature, setSignature] = useState("");
   const [signatureFromName, setSignatureFromName] = useState("");
   const [error, setError]       = useState<string | null>(null);
@@ -109,7 +144,10 @@ export function ComposeDrawer({
     if (!open) return;
     if (initialTo !== undefined) setTo(initialTo);
     if (initialSubject !== undefined) setSubject(initialSubject);
-    if (initialBody !== undefined) setBody(initialBody);
+    const nextBodyHtml = plainTextToHtml(initialBody ?? "");
+    bodyHtmlRef.current = nextBodyHtml;
+    setBodyHtml(nextBodyHtml);
+    if (editorRef.current) editorRef.current.innerHTML = nextBodyHtml;
     if (initialAttachments !== undefined) setAttachments(initialAttachments);
     setBrand(defaultBrand);
     setError(null);
@@ -126,7 +164,9 @@ export function ComposeDrawer({
   }, [open]);
 
   function reset() {
-    setTo(""); setSubject(""); setBody(""); setError(null); setAttachments([]);
+    bodyHtmlRef.current = EMPTY_EDITOR_HTML;
+    setTo(""); setSubject(""); setBodyHtml(EMPTY_EDITOR_HTML); setError(null); setAttachments([]);
+    if (editorRef.current) editorRef.current.innerHTML = EMPTY_EDITOR_HTML;
   }
 
   async function handleFiles(files: FileList | null) {
@@ -159,10 +199,27 @@ export function ComposeDrawer({
     onClose();
   }
 
+  function syncEditor() {
+    bodyHtmlRef.current = normalizeEditorHtml(editorRef.current?.innerHTML ?? "");
+  }
+
+  function runCommand(command: string, value?: string) {
+    editorRef.current?.focus();
+    document.execCommand(command, false, value);
+    syncEditor();
+  }
+
+  function insertLink() {
+    const raw = window.prompt("URL del link");
+    if (!raw) return;
+    const href = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    runCommand("createLink", href);
+  }
+
   function buildHtml(): string {
-    const bodyHtml = body.replace(/\n/g, "<br>");
+    const currentBody = normalizeEditorHtml(editorRef.current?.innerHTML ?? bodyHtmlRef.current);
     const sigBlock = signature ? `<br><br>${signature}` : "";
-    return `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#111;line-height:1.7">${bodyHtml}</div>${sigBlock}`;
+    return `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#111;line-height:1.7">${currentBody}</div>${sigBlock}`;
   }
 
   function handleSend() {
@@ -170,6 +227,8 @@ export function ComposeDrawer({
     const toList = to.split(/[,;]/).map((s) => s.trim()).filter(Boolean);
     if (!toList.length) { setError("Inserisci almeno un destinatario."); return; }
     if (!subject.trim()) { setError("L'oggetto è obbligatorio."); return; }
+    const editorText = editorRef.current?.textContent?.trim() ?? "";
+    if (!editorText) { setError("Scrivi il corpo del messaggio."); return; }
 
     const fromName = signatureFromName || BRAND_LABELS[brand];
     const fromOverride = `${fromName} <${BRAND_FROM[brand]}>`;
@@ -286,12 +345,48 @@ export function ComposeDrawer({
         </div>
 
         {/* Corpo */}
-        <textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Scrivi il tuo messaggio..."
-          rows={10}
-          className="flex-1 resize-none px-5 py-4 text-sm text-[var(--ma-ink)] placeholder:text-[var(--ma-muted)] focus:outline-none"
+        <div className="border-b border-[var(--ma-line)] px-4 py-2">
+          <div className="flex flex-wrap items-center gap-1">
+            <button type="button" onClick={() => runCommand("bold")} className="menuary-admin-nav-link !w-auto !p-1.5" title="Grassetto">
+              <Bold size={14} />
+            </button>
+            <button type="button" onClick={() => runCommand("italic")} className="menuary-admin-nav-link !w-auto !p-1.5" title="Corsivo">
+              <Italic size={14} />
+            </button>
+            <button type="button" onClick={() => runCommand("underline")} className="menuary-admin-nav-link !w-auto !p-1.5" title="Sottolineato">
+              <Underline size={14} />
+            </button>
+            <span className="mx-1 h-5 w-px bg-[var(--ma-line)]" />
+            <button type="button" onClick={() => runCommand("insertUnorderedList")} className="menuary-admin-nav-link !w-auto !p-1.5" title="Elenco puntato">
+              <List size={14} />
+            </button>
+            <button type="button" onClick={() => runCommand("insertOrderedList")} className="menuary-admin-nav-link !w-auto !p-1.5" title="Elenco numerato">
+              <ListOrdered size={14} />
+            </button>
+            <button type="button" onClick={() => runCommand("formatBlock", "blockquote")} className="menuary-admin-nav-link !w-auto !p-1.5" title="Citazione">
+              <Quote size={14} />
+            </button>
+            <button type="button" onClick={() => runCommand("indent")} className="menuary-admin-nav-link !w-auto !p-1.5" title="Aumenta livello citazione">
+              <IndentIncrease size={14} />
+            </button>
+            <button type="button" onClick={() => runCommand("outdent")} className="menuary-admin-nav-link !w-auto !p-1.5" title="Riduci livello citazione">
+              <IndentDecrease size={14} />
+            </button>
+            <span className="mx-1 h-5 w-px bg-[var(--ma-line)]" />
+            <button type="button" onClick={insertLink} className="menuary-admin-nav-link !w-auto !p-1.5" title="Inserisci link">
+              <Link2 size={14} />
+            </button>
+          </div>
+        </div>
+
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          onInput={syncEditor}
+          className="compose-rich-editor min-h-[220px] flex-1 overflow-y-auto px-5 py-4 text-sm text-[var(--ma-ink)] focus:outline-none"
+          dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          data-placeholder="Scrivi il tuo messaggio..."
         />
 
         {/* Allegati */}

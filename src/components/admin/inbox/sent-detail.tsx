@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { getTrackingEventsForEmail } from "@/lib/email/tracking-queries";
 import { TRACKING_EVENT_LABELS, TRACKING_EVENT_COLORS } from "@/lib/email/tracking-types";
 import { findLeadsByEmails, searchLeads, linkSentEmailToLead } from "@/lib/email/lead-link-queries";
+import { buildEmailSrcDoc } from "@/lib/email/render-html";
 import type { SentEmail } from "@/lib/email/sent-queries";
 import type { TrackingEvent } from "@/lib/email/tracking-queries";
 import type { ResendTrackingEventType } from "@/lib/email/tracking-types";
@@ -288,7 +289,7 @@ export function SentDetail({ email, onClose }: Props) {
         {email.html_body ? (
           <iframe
             ref={iframeRef}
-            srcDoc={email.html_body}
+            srcDoc={buildEmailSrcDoc(email.html_body)}
             className="w-full rounded-lg border border-[var(--ma-line)]"
             style={{ minHeight: "400px", height: "400px" }}
             sandbox="allow-same-origin"

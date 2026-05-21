@@ -8,7 +8,7 @@ import { MailSidebar } from "./mail-sidebar";
 import { EmailList } from "./email-list";
 import { EmailDetail } from "./email-detail";
 import { SentDetail } from "./sent-detail";
-import { ComposeDrawer } from "./compose-drawer";
+import { ComposeDrawer, type ComposeAttachment } from "./compose-drawer";
 
 import { getInboundEmails, markEmailRead } from "@/lib/email/inbound-queries";
 import { getSentEmails } from "@/lib/email/sent-queries";
@@ -23,6 +23,14 @@ type Props = {
   initialSent: SentPage;
   unreadTotal: number;
   canCompose: boolean;
+};
+
+type ComposePrefill = {
+  to?: string;
+  subject?: string;
+  body?: string;
+  brand?: InboundEmail["brand"];
+  attachments?: ComposeAttachment[];
 };
 
 // Adatta SentEmail alla forma che EmailList si aspetta per il pannello inviata
@@ -47,6 +55,42 @@ function sentToListItem(e: SentEmail): InboundEmail {
   };
 }
 
+function htmlToText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function quoteText(text: string): string {
+  return text.split(/\r?\n/).map((line) => `> ${line}`).join("\n");
+}
+
+function replySubject(subject: string): string {
+  return /^re:/i.test(subject.trim()) ? subject : `Re: ${subject}`;
+}
+
+function buildReplyBody(email: InboundEmail): string {
+  const original = email.text_body ?? (email.html_body ? htmlToText(email.html_body) : "");
+  const from = email.from_name ? `${email.from_name} <${email.from_address}>` : email.from_address;
+  const date = new Date(email.created_at).toLocaleString("it-IT", {
+    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+  return `\n\nIl ${date}, ${from} ha scritto:\n${quoteText(original)}`;
+}
+
 export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: Props) {
   const [view, setView]         = useState<MailView>("inbox");
   const [brand, setBrand]       = useState<BrandFilter>("all");
@@ -56,6 +100,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
   const [selectedInbound, setSelectedInbound] = useState<InboundEmail | null>(null);
   const [selectedSent, setSelectedSent]       = useState<SentEmail | null>(null);
   const [composeOpen, setComposeOpen]         = useState(false);
+  const [composePrefill, setComposePrefill]   = useState<ComposePrefill>({});
   const [isPending, startTransition]          = useTransition();
 
   const reload = useCallback(
@@ -114,6 +159,21 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
     setSelectedInbound(null);
   }
 
+  function openBlankCompose() {
+    setComposePrefill({});
+    setComposeOpen(true);
+  }
+
+  function handleReply(email: InboundEmail) {
+    setComposePrefill({
+      to: email.from_address,
+      subject: replySubject(email.subject),
+      body: buildReplyBody(email),
+      brand: email.brand,
+    });
+    setComposeOpen(true);
+  }
+
   const isSentView = view === "sent";
   const listEmails = isSentView
     ? sent.emails.map(sentToListItem)
@@ -135,7 +195,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
               canCompose={canCompose}
               onViewChange={handleViewChange}
               onBrandChange={handleBrandChange}
-              onCompose={() => setComposeOpen(true)}
+              onCompose={openBlankCompose}
             />
           </div>
 
@@ -198,6 +258,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
                   email={selectedInbound}
                   onClose={() => setSelectedInbound(null)}
                   onMutated={() => reload()}
+                  onReply={handleReply}
                 />
               ) : null}
             </div>
@@ -215,7 +276,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
       {/* Mobile: scrivi */}
       {canCompose && (
         <button
-          onClick={() => setComposeOpen(true)}
+          onClick={openBlankCompose}
           className="menuary-admin-action-btn fixed bottom-6 right-6 z-40 flex items-center gap-2 shadow-lg lg:hidden"
         >
           ✏️ Scrivi
@@ -225,7 +286,11 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
       <ComposeDrawer
         open={composeOpen}
         canCompose={canCompose}
-        defaultBrand={brand === "all" ? "menuary" : brand}
+        defaultBrand={composePrefill.brand ?? (brand === "all" ? "menuary" : brand)}
+        initialTo={composePrefill.to}
+        initialSubject={composePrefill.subject}
+        initialBody={composePrefill.body}
+        initialAttachments={composePrefill.attachments}
         onClose={() => setComposeOpen(false)}
         onSent={() => { if (view === "sent") reload("sent", brand); }}
       />

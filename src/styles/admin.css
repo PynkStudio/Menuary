@@ -1205,4 +1205,31 @@
     background: rgba(24, 35, 31, 0.04);
     cursor: not-allowed;
   }
+
+  .compose-rich-editor:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(24, 35, 31, 0.36);
+    pointer-events: none;
+  }
+
+  .compose-rich-editor p {
+    margin: 0 0 10px;
+  }
+
+  .compose-rich-editor ul,
+  .compose-rich-editor ol {
+    margin: 0 0 10px 22px;
+    padding: 0;
+  }
+
+  .compose-rich-editor blockquote {
+    margin: 10px 0;
+    padding-left: 12px;
+    border-left: 3px solid rgba(169, 95, 69, 0.32);
+    color: rgba(24, 35, 31, 0.68);
+  }
+
+  .compose-rich-editor blockquote blockquote {
+    border-left-color: rgba(169, 95, 69, 0.48);
+  }
 }

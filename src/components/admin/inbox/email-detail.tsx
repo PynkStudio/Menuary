@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
-import { Archive, ArrowLeft, Download, ExternalLink, Link2, Paperclip, Search, Star, Trash2, X } from "lucide-react";
+import { Archive, ArrowLeft, Download, ExternalLink, Link2, Paperclip, Reply, Search, Star, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { markEmailRead, starEmail, archiveEmail, deleteEmail } from "@/lib/email/inbound-queries";
 import { findLeadsByEmails, searchLeads, linkInboundEmailToLead } from "@/lib/email/lead-link-queries";
+import { buildEmailSrcDoc } from "@/lib/email/render-html";
 import type { InboundEmail } from "@/lib/email/inbound-types";
 import type { ResendInboundAttachment } from "@/lib/email/inbound-types";
 import type { LeadMatch } from "@/lib/email/lead-link-queries";
@@ -13,6 +14,7 @@ type Props = {
   email: InboundEmail;
   onClose: () => void;
   onMutated: () => void;
+  onReply?: (email: InboundEmail) => void;
 };
 
 function fmtDate(iso: string) {
@@ -50,6 +52,29 @@ function linkifyText(text: string): React.ReactNode[] {
     ) : (
       part
     ),
+  );
+}
+
+function PlainTextEmail({ text }: { text: string }) {
+  return (
+    <div className="space-y-1 text-sm leading-relaxed text-[var(--ma-ink)]">
+      {text.split(/\r?\n/).map((line, i) => {
+        const match = line.match(/^(>+)\s?(.*)$/);
+        const depth = Math.min(match?.[1].length ?? 0, 4);
+        return (
+          <div
+            key={i}
+            className={cn(
+              "min-h-[1em] whitespace-pre-wrap",
+              depth > 0 && "border-l-2 border-[var(--ma-line)] pl-3 text-[var(--ma-muted)]",
+            )}
+            style={depth > 0 ? { marginLeft: `${(depth - 1) * 14}px` } : undefined}
+          >
+            {linkifyText(match?.[2] ?? line)}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -209,7 +234,7 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
 
 // ─── EmailDetail ──────────────────────────────────────────────────────────────
 
-export function EmailDetail({ email, onClose, onMutated }: Props) {
+export function EmailDetail({ email, onClose, onMutated, onReply }: Props) {
   const [isPending, startTransition] = useTransition();
   const [starred, setStarred]       = useState(email.starred);
   const [linkedLeadId, setLinkedLeadId] = useState(email.lead_id);
@@ -305,6 +330,16 @@ export function EmailDetail({ email, onClose, onMutated }: Props) {
         </button>
 
         <div className="flex-1" />
+
+        {onReply && (
+          <button
+            onClick={() => onReply(email)}
+            className="menuary-admin-nav-link !w-auto !px-2 !py-1.5"
+            title="Rispondi"
+          >
+            <Reply size={16} />
+          </button>
+        )}
 
         <button
           onClick={handleArchive}
@@ -420,16 +455,14 @@ export function EmailDetail({ email, onClose, onMutated }: Props) {
         {email.html_body ? (
           <iframe
             ref={iframeRef}
-            srcDoc={email.html_body}
+            srcDoc={buildEmailSrcDoc(email.html_body)}
             className="w-full rounded-lg border border-[var(--ma-line)]"
             style={{ minHeight: "400px", height: "400px" }}
             sandbox="allow-same-origin"
             title="Corpo email"
           />
         ) : email.text_body ? (
-          <pre className="whitespace-pre-wrap font-sans text-sm text-[var(--ma-ink)] leading-relaxed">
-            {linkifyText(email.text_body)}
-          </pre>
+          <PlainTextEmail text={email.text_body} />
         ) : (
           <p className="text-sm text-[var(--ma-muted)]">(Nessun contenuto)</p>
         )}
