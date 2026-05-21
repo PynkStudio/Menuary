@@ -5,6 +5,7 @@ import {
   Archive,
   Briefcase,
   Inbox,
+  LifeBuoy,
   Mail,
   Pencil,
   Send,
@@ -16,7 +17,7 @@ import { cn } from "@/lib/utils";
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
 
 export type MailView = "inbox" | "sent" | "starred" | "archived";
-export type BrandFilter = InboundEmailBrand | "all";
+export type BrandFilter = InboundEmailBrand | "all" | "support";
 
 type Props = {
   view: MailView;
@@ -39,6 +40,7 @@ const BRANDS: { value: BrandFilter; label: string; icon: React.ElementType }[] =
   { value: "all",     label: "Tutte",   icon: Mail },
   { value: "menuary", label: "Menuary", icon: UtensilsCrossed },
   { value: "bizery",  label: "Bizery",  icon: Briefcase },
+  { value: "support", label: "Supporto", icon: LifeBuoy },
 ];
 
 export function MailSidebar({ view, brand, unreadCount, canCompose, onViewChange, onBrandChange, onCompose }: Props) {

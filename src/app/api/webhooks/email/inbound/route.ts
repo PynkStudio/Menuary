@@ -84,6 +84,10 @@ function extractMessageId(headers: ResendInboundHeader[]): string | null {
   return headers.find((h) => h.name.toLowerCase() === "message-id")?.value ?? null;
 }
 
+function isSupportRecipient(toAddresses: string[]): boolean {
+  return toAddresses.some((address) => /^support@(menuary|bizery)\.it$/i.test(parseEmailAddress(address).address));
+}
+
 // ─── Handler inbound email ────────────────────────────────────────────────────
 
 type ResendReceivedEmail = {
@@ -206,6 +210,10 @@ async function handleInbound(
   if (error) {
     console.error("[webhook:inbound] Errore inserimento:", error.message);
     return NextResponse.json({ error: "Errore salvataggio." }, { status: 500 });
+  }
+
+  if (isSupportRecipient(toAddresses)) {
+    // TODO: generare automaticamente un ticket di supporto collegato a questa email inbound.
   }
 
   return NextResponse.json({ ok: true, type: "inbound", brand });

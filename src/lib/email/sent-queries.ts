@@ -29,7 +29,7 @@ export type SentPage = {
 };
 
 export async function getSentEmails(
-  brand?: InboundEmailBrand | "all",
+  brand?: InboundEmailBrand | "all" | "support",
   page = 1,
 ): Promise<SentPage> {
   const admin = createSupabaseAdminClient();
@@ -42,7 +42,11 @@ export async function getSentEmails(
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (brand && brand !== "all") query = query.eq("brand", brand);
+  if (brand === "support") {
+    query = query.in("from_address", ["support@menuary.it", "support@bizery.it"]);
+  } else if (brand && brand !== "all") {
+    query = query.eq("brand", brand);
+  }
 
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);

@@ -6,7 +6,7 @@ import { parseEmailAddress, type InboundEmail, type InboundEmailBrand, type Rese
 const PAGE_SIZE = 30;
 
 export type InboxFilter = {
-  brand?: InboundEmailBrand | "all";
+  brand?: InboundEmailBrand | "all" | "support";
   onlyUnread?: boolean;
   onlyStarred?: boolean;
   archived?: boolean;
@@ -34,7 +34,11 @@ export async function getInboundEmails(filter: InboxFilter = {}): Promise<InboxP
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (filter.brand && filter.brand !== "all") query = query.eq("brand", filter.brand);
+  if (filter.brand === "support") {
+    query = query.or("to_addresses.cs.{support@menuary.it},to_addresses.cs.{support@bizery.it}");
+  } else if (filter.brand && filter.brand !== "all") {
+    query = query.eq("brand", filter.brand);
+  }
   if (filter.onlyUnread) query = query.eq("read", false);
   if (filter.onlyStarred) query = query.eq("starred", true);
 

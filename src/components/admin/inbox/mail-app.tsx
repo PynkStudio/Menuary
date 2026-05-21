@@ -91,6 +91,10 @@ function buildReplyBody(email: InboundEmail): string {
   return `\n\nIl ${date}, ${from} ha scritto:\n${quoteText(original)}`;
 }
 
+function composeBrandFromFilter(filter: BrandFilter): InboundEmail["brand"] {
+  return filter === "bizery" ? "bizery" : "menuary";
+}
+
 export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: Props) {
   const [view, setView]         = useState<MailView>("inbox");
   const [brand, setBrand]       = useState<BrandFilter>("all");
@@ -107,11 +111,11 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
     (v: MailView = view, b: BrandFilter = brand) => {
       startTransition(async () => {
         if (v === "sent") {
-          const fresh = await getSentEmails(b === "all" ? undefined : b);
+          const fresh = await getSentEmails(b);
           setSent(fresh);
         } else {
           const fresh = await getInboundEmails({
-            brand:       b === "all" ? "all" : b,
+            brand:       b,
             onlyStarred: v === "starred",
             archived:    v === "archived",
           });
@@ -222,6 +226,20 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
                     {v === "inbox" ? "Arrivo" : v === "sent" ? "Inviata" : v === "starred" ? "Stellate" : "Archivio"}
                   </button>
                 ))}
+                {(["all","menuary","bizery","support"] as BrandFilter[]).map((b) => (
+                  <button
+                    key={b}
+                    onClick={() => handleBrandChange(b)}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors",
+                      brand === b
+                        ? "bg-[var(--ma-line)] text-[var(--ma-ink)]"
+                        : "bg-[var(--ma-surface)] text-[var(--ma-muted)]",
+                    )}
+                  >
+                    {b === "all" ? "Tutte" : b === "menuary" ? "Menuary" : b === "bizery" ? "Bizery" : "Supporto"}
+                  </button>
+                ))}
               </div>
               <p className="hidden text-xs text-[var(--ma-muted)] lg:block">
                 {isSentView ? sent.total : inbox.total} email
@@ -286,7 +304,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
       <ComposeDrawer
         open={composeOpen}
         canCompose={canCompose}
-        defaultBrand={composePrefill.brand ?? (brand === "all" ? "menuary" : brand)}
+        defaultBrand={composePrefill.brand ?? composeBrandFromFilter(brand)}
         initialTo={composePrefill.to}
         initialSubject={composePrefill.subject}
         initialBody={composePrefill.body}

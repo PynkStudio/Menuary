@@ -14,7 +14,7 @@ import type { TenantFeatureFlags, TenantLocation } from "@/lib/tenant";
 import type { TenantVertical } from "@/lib/tenant";
 import { isMultiLocation } from "@/lib/location";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
-import { getModuleLabel } from "@/lib/vertical";
+import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 
 interface Tenant {
   id: string;
@@ -78,6 +78,8 @@ export function GestioneShell({
   const sectionHref = (section: string) => `${base}/${section}`;
 
   const isAdmin = currentUser.isTenantAdmin;
+  const verticalMeta = getVerticalMeta(tenant.vertical);
+  const supportEmail = `support@${verticalMeta.marketingDomain}`;
 
   const items: NavItem[] = [
     { label: "Dashboard", href: dashboardHref, visible: () => true },
@@ -114,6 +116,9 @@ export function GestioneShell({
           </div>
 
           <div className="ga-user">
+            <a href={`mailto:${supportEmail}`} className="ga-support-link">
+              Problemi tecnici? {supportEmail}
+            </a>
             <span>{currentUser.displayName ?? currentUser.email}</span>
             <button type="button" onClick={handleLogout} className="ga-logout">
               <LogOut size={12} strokeWidth={2} />

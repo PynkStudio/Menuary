@@ -236,6 +236,14 @@
   .ga-user { display: inline-flex; align-items: center; gap: 12px; font-size: 13px; }
   .ga-user span { color: var(--ga-ink-muted); }
 
+  .ga-support-link {
+    color: var(--ga-ink-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .ga-support-link:hover { color: var(--ga-ink); }
+
   .ga-logout {
     display: inline-flex;
     align-items: center;
