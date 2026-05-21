@@ -27,6 +27,8 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
   const [slug, setSlug] = useState(defaultSlug);
   const [domain, setDomain] = useState(defaultDomain);
   const [primary, setPrimary] = useState("#0f172a");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
   const [animaFile, setAnimaFile] = useState<File | null>(null);
   const [animaDragging, setAnimaDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,6 +51,8 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
       fd.append("vertical", lead.business_vertical);
       fd.append("businessName", lead.business_name);
       fd.append("primaryColor", primary);
+      fd.append("address", address);
+      fd.append("city", city);
       if (animaFile) fd.append("animaFile", animaFile);
 
       const res = await fetch("/api/admin/generate-tenant", {
@@ -186,6 +190,25 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
                 />
               </FormField>
 
+              <FormField label="Indirizzo sede" hint="Ogni tenant nasce con una sede principale">
+                <input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full rounded-xl border border-pork-ink/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pork-ink/20"
+                  placeholder="es. Via Roma 12"
+                  required
+                />
+              </FormField>
+
+              <FormField label="Città" hint="opzionale">
+                <input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full rounded-xl border border-pork-ink/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pork-ink/20"
+                  placeholder="es. Milano"
+                />
+              </FormField>
+
               <div className="rounded-2xl bg-pork-cream p-4 text-xs text-pork-ink/60">
                 <p className="font-bold text-pork-ink">Link demo: {lead.business_vertical === "services" ? "demo.bizery.it" : "demo.menuary.it"}/{slug || "…"}</p>
                 <p className="mt-1">
@@ -298,10 +321,10 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
               </button>
               <button
                 type="submit"
-                disabled={loading || !slug || !domain}
+                disabled={loading || !slug || !domain || !address.trim()}
                 className={cn(
                   "inline-flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-sm font-bold text-white transition",
-                  loading || !slug || !domain
+                  loading || !slug || !domain || !address.trim()
                     ? "cursor-not-allowed bg-pork-ink/30"
                     : "bg-pork-ink hover:bg-pork-ink/80",
                 )}

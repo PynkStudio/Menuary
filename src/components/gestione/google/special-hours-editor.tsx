@@ -7,6 +7,7 @@ import type { SpecialHourRow } from "@/lib/data/special-hours";
 interface Props {
   tenantId: string;
   initialData: SpecialHourRow[];
+  locationId?: string | null;
 }
 
 function parseDate(d: string) {
@@ -15,7 +16,7 @@ function parseDate(d: string) {
   });
 }
 
-export function SpecialHoursEditor({ tenantId, initialData }: Props) {
+export function SpecialHoursEditor({ tenantId, initialData, locationId }: Props) {
   const [items, setItems] = useState<SpecialHourRow[]>(initialData);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -46,6 +47,7 @@ export function SpecialHoursEditor({ tenantId, initialData }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tenantId,
+          locationId: locationId ?? null,
           date: form.date,
           closed: form.closed,
           slots,
@@ -60,6 +62,7 @@ export function SpecialHoursEditor({ tenantId, initialData }: Props) {
           slots,
           label: form.label || null,
           synced_to_google: false,
+          location_id: locationId ?? null,
         };
         setItems((prev) => {
           const filtered = prev.filter((i) => i.date !== form.date);

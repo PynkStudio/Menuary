@@ -13,6 +13,7 @@ type Props = {
   defaultBrand?: InboundEmailBrand;
   initialTo?: string;
   initialSubject?: string;
+  initialBody?: string;
 };
 
 const BRAND_FROM: Record<InboundEmailBrand, string> = {
@@ -40,11 +41,12 @@ export function ComposeDrawer({
   defaultBrand = "menuary",
   initialTo,
   initialSubject,
+  initialBody,
 }: Props) {
   const [brand, setBrand]       = useState<InboundEmailBrand>(defaultBrand);
   const [to, setTo]             = useState(initialTo ?? "");
   const [subject, setSubject]   = useState(initialSubject ?? "");
-  const [body, setBody]         = useState("");
+  const [body, setBody]         = useState(initialBody ?? "");
   const [signature, setSignature] = useState("");
   const [signatureFromName, setSignatureFromName] = useState("");
   const [error, setError]       = useState<string | null>(null);
@@ -71,6 +73,7 @@ export function ComposeDrawer({
     if (!open) return;
     if (initialTo !== undefined) setTo(initialTo);
     if (initialSubject !== undefined) setSubject(initialSubject);
+    if (initialBody !== undefined) setBody(initialBody);
     setBrand(defaultBrand);
     setError(null);
     setTimeout(() => {

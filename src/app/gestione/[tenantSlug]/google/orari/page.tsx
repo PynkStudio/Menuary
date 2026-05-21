@@ -14,25 +14,68 @@ import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-rou
 
 interface Props {
   params: Promise<{ tenantSlug: string }>;
+  searchParams: Promise<{ loc?: string; location?: string }>;
 }
 
-export default async function OrariPage({ params }: Props) {
+type LocationRow = {
+  id: string;
+  slug: string;
+  name: string;
+  is_default: boolean;
+  hours: unknown;
+};
+
+export default async function OrariPage({ params, searchParams }: Props) {
   const { tenantSlug } = await params;
+  const { loc, location } = await searchParams;
+  const activeSlug = loc ?? location ?? null;
+
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant || !getGestioneModuleAccess(tenant.features).canManageReservations) notFound();
 
   const db = createSupabaseServiceClient();
-  const [location, specialHours, tenantRow] = await Promise.all([
-    getPrimaryLocation(tenantSlug),
-    getSpecialHours(tenantSlug),
-    db
-      ? db.from("tenants").select("hours").eq("id", tenantSlug).single().then((r) => r.data)
-      : Promise.resolve(null),
-  ]);
+  if (!db) notFound();
 
-  const hours: DaySchedule[] = (tenantRow?.hours as DaySchedule[] | null) ?? defaultHoursWeek();
-  const googleConnected = !!location;
+  // Sedi del tenant (ordinate default-first). locations.hours dalla
+  // migrazione 20260526: cast finché i tipi non vengono rigenerati.
+  const { data: locationsRaw } = (await db
+    .from("locations")
+    .select("id,slug,name,is_default,hours" as never)
+    .eq("tenant_id", tenantSlug)
+    .order("is_default", { ascending: false })
+    .order("name")) as { data: LocationRow[] | null };
+
+  const locations: LocationRow[] = locationsRaw ?? [];
+
+  // Risolvi sede attiva: query param → default → prima sede
+  const activeLocation: LocationRow | undefined =
+    (activeSlug && locations.find((l) => l.slug === activeSlug)) ||
+    locations.find((l) => l.is_default) ||
+    locations[0];
+
+  // Fallback orari: location.hours → tenants.hours → default
+  let hours: DaySchedule[] = [];
+  if (activeLocation) {
+    const locHours = activeLocation.hours as DaySchedule[] | null;
+    if (locHours?.length) hours = locHours;
+  }
+  if (hours.length === 0) {
+    const { data: tenantRow } = await db
+      .from("tenants")
+      .select("hours")
+      .eq("id", tenantSlug)
+      .single();
+    const tHours = tenantRow?.hours as DaySchedule[] | null;
+    hours = tHours?.length ? tHours : defaultHoursWeek();
+  }
+
+  const [googleLoc, specialHours] = await Promise.all([
+    getPrimaryLocation(tenantSlug),
+    getSpecialHours(tenantSlug, activeLocation?.id),
+  ]);
+  const googleConnected = !!googleLoc;
   const googleHref = `${getGestioneBaseHref((await headers()).get("host"), tenant)}/google`;
+  const isMulti = locations.length > 1;
 
   return (
     <div className="space-y-8">
@@ -48,6 +91,30 @@ export default async function OrariPage({ params }: Props) {
           <h1 className="headline text-2xl">Orari</h1>
         </div>
       </div>
+
+      {/* Selettore sede (solo se multi-location) */}
+      {isMulti && activeLocation && (
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border-2 border-pork-ink/10 bg-white px-4 py-3">
+          <span className="text-xs font-bold uppercase tracking-wide text-pork-ink/50">
+            Sede
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {locations.map((l) => (
+              <Link
+                key={l.id}
+                href={`?loc=${encodeURIComponent(l.slug)}`}
+                className={
+                  l.id === activeLocation.id
+                    ? "rounded-full bg-pork-ink px-3 py-1 text-xs font-bold text-pork-cream"
+                    : "rounded-full border-2 border-pork-ink/15 px-3 py-1 text-xs font-bold text-pork-ink/70 hover:border-pork-ink/40"
+                }
+              >
+                {l.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {googleConnected && (
         <div className="flex items-center justify-end">
@@ -69,14 +136,19 @@ export default async function OrariPage({ params }: Props) {
       <section className="rounded-2xl border-2 border-pork-ink/10 bg-white p-6 space-y-4">
         <div>
           <p className="impact-title text-xs text-pork-red">Orario tipo</p>
-          <h2 className="headline text-xl">Settimana standard</h2>
+          <h2 className="headline text-xl">
+            Settimana standard{activeLocation && isMulti ? ` · ${activeLocation.name}` : ""}
+          </h2>
           <p className="text-sm text-pork-ink/50 mt-1">
-            Questi orari compaiono sulla tua scheda Google Maps ogni settimana.
+            {isMulti
+              ? "Ogni sede ha i propri orari. Cambia sede in alto per modificare un'altra."
+              : "Questi orari compaiono sulla tua scheda Google Maps ogni settimana."}
             {googleConnected && " Dopo la modifica, usa il pulsante Sync per aggiornarli su Google."}
           </p>
         </div>
         <HoursSyncPanel
           tenantId={tenantSlug}
+          locationId={activeLocation?.id}
           initialHours={hours}
           googleConnected={googleConnected}
         />
@@ -92,7 +164,11 @@ export default async function OrariPage({ params }: Props) {
             festività, eventi. Vengono pubblicati su Google Maps come «orario speciale».
           </p>
         </div>
-        <SpecialHoursEditor tenantId={tenantSlug} initialData={specialHours} />
+        <SpecialHoursEditor
+          tenantId={tenantSlug}
+          initialData={specialHours}
+          locationId={activeLocation?.id}
+        />
 
         {googleConnected && specialHours.some((s) => !s.synced_to_google) && (
           <div className="flex items-center justify-between rounded-xl bg-orange-50 px-4 py-3">

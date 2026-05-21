@@ -31,13 +31,37 @@ export async function POST(request: Request) {
 
   // ── Orari settimanali standard ─────────────────────────────────────────────
   if (mode === "regular" || mode === "all") {
-    const { data: tenantRow } = await db
-      .from("tenants")
-      .select("hours")
-      .eq("id", tenantId)
-      .single();
+    // Risolvi la location collegata a Google: i suoi orari hanno priorità.
+    // Fallback su tenants.hours se la location non ha orari propri (es. tenant
+    // single-location pre-migrazione).
+    const { data: googleLink } = await db
+      .from("tenant_google_locations")
+      .select("location_id")
+      .eq("tenant_id", tenantId)
+      .order("is_primary", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    const week = tenantRow?.hours as DaySchedule[] | null;
+    let week: DaySchedule[] | null = null;
+    if (googleLink?.location_id) {
+      // locations.hours: tipi non rigenerati post-migrazione 20260526
+      const { data: locRow } = (await db
+        .from("locations")
+        .select("hours" as never)
+        .eq("id", googleLink.location_id)
+        .single()) as { data: { hours: DaySchedule[] | null } | null };
+      const locHours = locRow?.hours ?? null;
+      if (locHours?.length) week = locHours;
+    }
+    if (!week) {
+      const { data: tenantRow } = await db
+        .from("tenants")
+        .select("hours")
+        .eq("id", tenantId)
+        .single();
+      week = (tenantRow?.hours as DaySchedule[] | null) ?? null;
+    }
+
     if (week?.length) {
       try {
         await syncRegularHours(tenantId, location.locationResourceName, week);

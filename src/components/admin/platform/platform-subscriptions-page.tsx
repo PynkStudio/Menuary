@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { listDerivedSubscriptions } from "@/lib/contracts/contract-to-subscription";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -56,7 +57,15 @@ const STATUS_FILTERS: { value: SubscriptionStatus | "all"; label: string }[] = [
 ];
 
 export function PlatformSubscriptionsPage() {
-  const [subscriptions] = useState<PlatformSubscription[]>(PLATFORM_SUBSCRIPTIONS);
+  const [subscriptions, setSubscriptions] = useState<PlatformSubscription[]>(PLATFORM_SUBSCRIPTIONS);
+
+  useEffect(() => {
+    const derived = listDerivedSubscriptions();
+    if (derived.length) {
+      setSubscriptions([...derived, ...PLATFORM_SUBSCRIPTIONS]);
+    }
+  }, []);
+
   const [payments] = useState<PlatformPayment[]>(PLATFORM_PAYMENTS);
   const [activeFilter, setActiveFilter] = useState<SubscriptionStatus | "all">("all");
 

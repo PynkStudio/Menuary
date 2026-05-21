@@ -339,6 +339,12 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
               >
                 <Figma size={14} /> Aggiorna Figma
               </button>
+              <Link
+                href={`/admin/contratti/nuovo?leadId=${lead.id}`}
+                className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 hover:border-pork-red/30 hover:text-pork-red"
+              >
+                <FileText size={14} /> Genera contratto
+              </Link>
               <button
                 onClick={() => setShowSaleModal(true)}
                 className="inline-flex items-center gap-2 rounded-full bg-pork-green px-4 py-2 text-sm font-bold text-white hover:bg-pork-green/90"

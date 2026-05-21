@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { gh, extractAnimaFiles, commitAnimaToGitHub } from "@/lib/github-anima";
+
+function buildTheme(primary: string) {
+  return {
+    red: primary, redDark: primary,
+    peach: "#f1f5f9", cream: "#ffffff",
+    ink: "#0f172a", brick: "#1e293b",
+    mustard: primary, mustardSoft: "#f1f5f9",
+    green: "#22c55e", pink: "#ec4899",
+  };
+}
+
+function buildFeatures(vertical: "food" | "services") {
+  const base = {
+    website: true, onlineMenu: true, takeaway: false, tableOrders: false,
+    orderKiosk: false, kitchenDisplay: false, dinerSeparation: false,
+    reservations: true, productAvailability: true, upselling: false,
+    crm: false, analytics: false, takeawaySlots: false, deliveryHub: false,
+    inventoryFoodCost: false, printStations: false, staffRoles: false,
+    multiLocation: false, favorites: false, reviews: true, gallery: true,
+  };
+  return vertical === "services" ? { ...base, tablePlanner: true } : { ...base, tablePlanner: false };
+}
 
 function enc(str: string): string {
   return Buffer.from(str, "utf-8").toString("base64");
@@ -220,7 +243,8 @@ export async function POST(req: NextRequest) {
   // Supporta sia multipart/form-data (con file) che application/json (senza)
   const ct = req.headers.get("content-type") ?? "";
   let tenantSlug: string, domain: string, vertical: "food" | "services",
-    businessName: string, primaryColor: string, leadId: string;
+    businessName: string, primaryColor: string, leadId: string,
+    address: string, city: string;
   let animaFile: File | null = null;
 
   if (ct.includes("multipart/form-data")) {
@@ -231,19 +255,30 @@ export async function POST(req: NextRequest) {
     businessName  = fd.get("businessName") as string;
     primaryColor  = fd.get("primaryColor") as string;
     leadId        = fd.get("leadId") as string;
+    address       = (fd.get("address") as string | null) ?? "";
+    city          = (fd.get("city") as string | null) ?? "";
     animaFile     = (fd.get("animaFile") as File | null) ?? null;
     // Scarta il file se è vuoto (input non compilato)
     if (animaFile && animaFile.size === 0) animaFile = null;
   } else {
-    ({ tenantSlug, domain, vertical, businessName, primaryColor, leadId } =
-      (await req.json()) as {
-        tenantSlug: string; domain: string; vertical: "food" | "services";
-        businessName: string; primaryColor: string; leadId: string;
-      });
+    const body = (await req.json()) as {
+      tenantSlug: string; domain: string; vertical: "food" | "services";
+      businessName: string; primaryColor: string; leadId: string;
+      address?: string; city?: string;
+    };
+    ({ tenantSlug, domain, vertical, businessName, primaryColor, leadId } = body);
+    address = body.address ?? "";
+    city = body.city ?? "";
   }
 
   if (!tenantSlug || !domain || !vertical || !businessName) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+  if (!address.trim()) {
+    return NextResponse.json(
+      { error: "Indirizzo della sede obbligatorio: ogni tenant nasce con una sede." },
+      { status: 400 },
+    );
   }
 
   const branch = `demo/${tenantSlug}`;
@@ -367,12 +402,57 @@ export async function POST(req: NextRequest) {
       ].join("\n"),
     });
 
+    // 8. INSERT tenant + prima sede in DB (atomico via RPC)
+    //    La PR sopra modifica il registry in codice; qui creiamo la riga DB
+    //    che alimenta le query runtime (hours, locations, admin_users, ecc.).
+    //    Un tenant non può esistere senza almeno una sede → indirizzo richiesto.
+    let dbTenantCreated = false;
+    let dbLocationId: string | null = null;
+    let dbError: string | null = null;
+    const db = createSupabaseServiceClient();
+    if (db) {
+      // Cast RPC: i tipi vengono dalla migrazione 20260526; rigenera con `supabase gen types`.
+      const rpcCall = db.rpc as unknown as (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ data: { tenant_id: string; location_id: string }[] | null; error: { message: string } | null }>;
+      const { data: rpcData, error: rpcErr } = await rpcCall("create_tenant_with_location", {
+        p_tenant_id:      tenantSlug,
+        p_name:           businessName,
+        p_label:          businessName,
+        p_vertical:       vertical,
+        p_status:         "trattativa",
+        p_domains:        [],
+        p_preview_slug:   tenantSlug,
+        p_theme:          buildTheme(primaryColor),
+        p_features:       buildFeatures(vertical),
+        p_location_slug:  "principale",
+        p_location_name:  "Sede principale",
+        p_address:        address.trim(),
+        p_city:           city.trim() || null,
+        p_phone:          null,
+        p_email:          null,
+      });
+      if (rpcErr) {
+        dbError = rpcErr.message;
+      } else {
+        dbTenantCreated = true;
+        const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+        dbLocationId = row?.location_id ?? null;
+      }
+    } else {
+      dbError = "Supabase service client non disponibile";
+    }
+
     return NextResponse.json({
       success: true,
       pr_url: pr.html_url,
       pr_number: pr.number,
       demo_url: demoUrl,
       figma_url: figmaUrl,
+      db_tenant_created: dbTenantCreated,
+      db_location_id: dbLocationId,
+      db_error: dbError,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

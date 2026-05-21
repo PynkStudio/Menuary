@@ -8,6 +8,7 @@ type OpenOptions = {
   to: string;
   subject?: string;
   brand?: InboundEmailBrand;
+  body?: string;
 };
 
 type LauncherCtx = {
@@ -72,6 +73,7 @@ export function MailLauncherProvider({ children }: { children: React.ReactNode }
         defaultBrand={prefill.brand ?? "menuary"}
         initialTo={prefill.to}
         initialSubject={prefill.subject}
+        initialBody={prefill.body}
         onClose={() => setOpen(false)}
         onSent={() => setOpen(false)}
       />

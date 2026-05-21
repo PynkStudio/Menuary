@@ -7,13 +7,14 @@ import type { DaySchedule } from "@/lib/venue-hours";
 
 interface Props {
   tenantId: string;
+  locationId?: string;
   initialHours: DaySchedule[];
   googleConnected: boolean;
 }
 
 type SyncStatus = "idle" | "syncing" | "ok" | "error";
 
-export function HoursSyncPanel({ tenantId, initialHours, googleConnected }: Props) {
+export function HoursSyncPanel({ tenantId, locationId, initialHours, googleConnected }: Props) {
   const [hours, setHours] = useState<DaySchedule[]>(initialHours);
   const [saving, setSaving] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
@@ -24,12 +25,13 @@ export function HoursSyncPanel({ tenantId, initialHours, googleConnected }: Prop
     setSaving(true);
     setSaveMessage(null);
     try {
-      const res = await fetch("/api/admin/impostazioni", {
+      const res = await fetch("/api/gestione/hours", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId, hours }),
+        body: JSON.stringify({ tenantId, locationId, hours }),
       });
-      setSaveMessage(res.ok ? "Orari salvati" : "Errore nel salvataggio");
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      setSaveMessage(res.ok ? "Orari salvati" : json.error ?? "Errore nel salvataggio");
     } catch {
       setSaveMessage("Errore di rete");
     } finally {

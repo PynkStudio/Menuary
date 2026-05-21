@@ -14,8 +14,8 @@ type Props = {
 
 export function LtBookModal({ book, onClose }: Props) {
   const addLine = useShopCartStore((s) => s.addLine);
-  const setOpen = useShopCartStore((s) => s.setOpen);
-  const [qty, setQty] = useState(1);
+  const setOpen  = useShopCartStore((s) => s.setOpen);
+  const [qty,   setQty]   = useState(1);
   const [added, setAdded] = useState(false);
 
   // Blocca lo scroll del body
@@ -25,11 +25,9 @@ export function LtBookModal({ book, onClose }: Props) {
     return () => { document.body.style.overflow = prev; };
   }, []);
 
-  // Chiude con Escape
+  // Escape per chiudere
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
@@ -42,7 +40,7 @@ export function LtBookModal({ book, onClose }: Props) {
     setTimeout(() => {
       setAdded(false);
       onClose();
-      setOpen(true); // apre il cassetto carrello
+      setOpen(true);
     }, 900);
   }
 
@@ -57,56 +55,71 @@ export function LtBookModal({ book, onClose }: Props) {
       aria-label={book.name}
     >
       <div className="lt-modal">
-        {/* Colonna immagine */}
+
+        {/* ── Colonna immagine (dark) ── */}
         <div className="lt-modal-img-col">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={book.imageUrl} alt={book.name} className="lt-modal-img" />
           <div className="lt-modal-img-scrim" />
-          <button
-            type="button"
-            className="lt-modal-close"
-            onClick={onClose}
-            aria-label="Chiudi"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
+
+          {/* Prezzo sovrapposto in basso */}
+          <div className="lt-modal-img-footer">
+            <div className="lt-modal-img-price">
+              <small>Prezzo</small>
+              €{book.price.toFixed(2)}
+            </div>
+            <span className="lt-modal-img-tag">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+              LibriTech
+            </span>
+          </div>
+
+          {/* Tasto chiudi */}
+          <button type="button" className="lt-modal-close" onClick={onClose} aria-label="Chiudi">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6"  x2="6"  y2="18" />
+              <line x1="6"  y1="6"  x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        {/* Colonna dettaglio */}
+        {/* ── Colonna dettaglio (chiaro) ── */}
         <div className="lt-modal-panel">
-          <p className="lt-modal-eyebrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-            </svg>
-            Dettaglio libro
-          </p>
 
-          <h2 className="lt-modal-title">{book.name}</h2>
-          <p className="lt-modal-desc">{book.description}</p>
-
-          <div className="lt-modal-divider" />
-
-          {/* Prezzo */}
-          <div className="lt-modal-price-row">
-            <span className="lt-modal-price-label">Prezzo</span>
-            <span className="lt-modal-price">€{book.price.toFixed(2)}</span>
+          {/* Bar in cima */}
+          <div className="lt-modal-panel-bar">
+            <div className="lt-modal-panel-dot" />
+            <span className="lt-modal-panel-label">Dettaglio libro</span>
           </div>
 
-          {/* Quantità */}
-          <div className="lt-modal-qty-row">
-            <span className="lt-modal-qty-label">Quantità</span>
-            <div className="lt-modal-qty-controls">
+          {/* Titolo */}
+          <h2 className="lt-modal-title">{book.name}</h2>
+
+          {/* Descrizione */}
+          <p className="lt-modal-desc">{book.description}</p>
+
+          <div className="lt-modal-sep" />
+
+          {/* Prezzo + quantità sulla stessa riga */}
+          <div className="lt-modal-buy-row">
+            {/* Stepper quantità */}
+            <div className="lt-modal-qty-box">
               <button type="button" className="lt-qty-btn" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Diminuisci">−</button>
               <span>{qty}</span>
               <button type="button" className="lt-qty-btn" onClick={() => setQty((q) => q + 1)} aria-label="Aumenta">+</button>
             </div>
+
+            {/* Prezzo */}
+            <div className="lt-modal-price-chip">
+              <small>Totale</small>
+              <strong>€{(book.price * qty).toFixed(2)}</strong>
+            </div>
           </div>
 
-          {/* Azioni */}
+          {/* Bottoni */}
           <div className="lt-modal-actions">
             <button
               type="button"
@@ -120,7 +133,7 @@ export function LtBookModal({ book, onClose }: Props) {
                   : (<><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></>)
                 }
               </svg>
-              <span>{added ? "Aggiunto! Apro il carrello…" : "Aggiungi al carrello"}</span>
+              <span>{added ? "Aggiunto!" : "Aggiungi al carrello"}</span>
             </button>
 
             <SlabbbyWishlistButton
@@ -128,6 +141,7 @@ export function LtBookModal({ book, onClose }: Props) {
             />
           </div>
         </div>
+
       </div>
     </div>
   );
