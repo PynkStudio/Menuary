@@ -8,14 +8,21 @@ export type ResendInboundHeader = {
 };
 
 export type ResendInboundAttachment = {
+  id?: string;
   filename?: string;
   content_type?: string;
+  content_disposition?: string | null;
+  content_id?: string | null;
   size?: number;
   content?: string; // base64
+  download_url?: string;
+  expires_at?: string;
 };
 
 /** Payload grezzo del webhook Resend Inbound. */
 export type ResendInboundPayload = {
+  id?: string;
+  email_id?: string;
   from: string;
   to: string | string[];
   subject?: string;

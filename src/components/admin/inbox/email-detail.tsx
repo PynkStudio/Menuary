@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
-import { Archive, ArrowLeft, Download, Link2, Search, Star, Trash2, X } from "lucide-react";
+import { Archive, ArrowLeft, Download, ExternalLink, Link2, Paperclip, Search, Star, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { markEmailRead, starEmail, archiveEmail, deleteEmail } from "@/lib/email/inbound-queries";
 import { findLeadsByEmails, searchLeads, linkInboundEmailToLead } from "@/lib/email/lead-link-queries";
 import type { InboundEmail } from "@/lib/email/inbound-types";
+import type { ResendInboundAttachment } from "@/lib/email/inbound-types";
 import type { LeadMatch } from "@/lib/email/lead-link-queries";
 
 type Props = {
@@ -50,6 +51,34 @@ function linkifyText(text: string): React.ReactNode[] {
       part
     ),
   );
+}
+
+function base64ToBlob(content: string, contentType: string): Blob {
+  const binary = window.atob(content);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: contentType });
+}
+
+function openAttachment(att: ResendInboundAttachment) {
+  if (!att.content) return;
+  const blob = base64ToBlob(att.content, att.content_type ?? "application/octet-stream");
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank", "noopener,noreferrer");
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+function downloadAttachment(att: ResendInboundAttachment, fallbackName: string) {
+  if (!att.content) return;
+  const blob = base64ToBlob(att.content, att.content_type ?? "application/octet-stream");
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = att.filename ?? fallbackName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 // ─── LeadPanel ────────────────────────────────────────────────────────────────
@@ -336,30 +365,38 @@ export function EmailDetail({ email, onClose, onMutated }: Props) {
             {email.attachments.map((att, i) => {
               const name = att.filename ?? `allegato-${i + 1}`;
               const hasContent = !!att.content;
-              const href = hasContent
-                ? `data:${att.content_type ?? "application/octet-stream"};base64,${att.content}`
-                : undefined;
               return hasContent ? (
-                <a
+                <div
                   key={i}
-                  href={href}
-                  download={name}
-                  className="flex items-center gap-1.5 rounded-md border border-[var(--ma-line)] bg-[var(--ma-surface)] px-2.5 py-1 text-xs text-[var(--ma-ink)] hover:bg-[var(--ma-paper)] transition-colors"
+                  className="flex items-center gap-1.5 rounded-md border border-[var(--ma-line)] bg-[var(--ma-surface)] px-2 py-1 text-xs text-[var(--ma-ink)]"
                 >
-                  <Download size={11} />
-                  {name}
-                  {att.size ? (
-                    <span className="text-[var(--ma-muted)]">
-                      ({(att.size / 1024).toFixed(0)} KB)
-                    </span>
-                  ) : null}
-                </a>
+                  <Paperclip size={12} className="text-[var(--ma-muted)]" />
+                  <span className="max-w-[220px] truncate">{name}</span>
+                  {att.size ? <span className="text-[var(--ma-muted)]">({(att.size / 1024).toFixed(0)} KB)</span> : null}
+                  <button
+                    type="button"
+                    onClick={() => openAttachment(att)}
+                    className="ml-1 rounded p-0.5 text-[var(--ma-muted)] hover:bg-[var(--ma-paper)] hover:text-[var(--ma-ink)]"
+                    title="Apri allegato"
+                  >
+                    <ExternalLink size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadAttachment(att, name)}
+                    className="rounded p-0.5 text-[var(--ma-muted)] hover:bg-[var(--ma-paper)] hover:text-[var(--ma-ink)]"
+                    title="Scarica allegato"
+                  >
+                    <Download size={12} />
+                  </button>
+                </div>
               ) : (
                 <span
                   key={i}
                   className="flex items-center gap-1.5 rounded-md border border-[var(--ma-line)] bg-[var(--ma-surface)] px-2.5 py-1 text-xs text-[var(--ma-muted)]"
                 >
-                  📎 {name}
+                  <Paperclip size={12} />
+                  {name}
                   {att.size ? (
                     <span>({(att.size / 1024).toFixed(0)} KB)</span>
                   ) : null}

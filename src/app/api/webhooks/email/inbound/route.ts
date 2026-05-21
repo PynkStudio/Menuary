@@ -4,6 +4,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import {
   type ResendInboundPayload,
   type ResendInboundHeader,
+  type ResendInboundAttachment,
   parseEmailAddress,
   detectBrandFromRecipients,
 } from "@/lib/email/inbound-types";
@@ -85,6 +86,67 @@ function extractMessageId(headers: ResendInboundHeader[]): string | null {
 
 // ─── Handler inbound email ────────────────────────────────────────────────────
 
+type ResendReceivedEmail = {
+  id?: string;
+  from?: string;
+  to?: string[];
+  subject?: string;
+  html?: string | null;
+  text?: string | null;
+  headers?: ResendInboundHeader[] | Record<string, string>;
+  message_id?: string | null;
+  attachments?: ResendInboundAttachment[];
+};
+
+type ResendAttachmentListResponse = {
+  data?: ResendInboundAttachment[];
+};
+
+async function fetchResendJson<T>(path: string): Promise<T | null> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+
+  const res = await fetch(`https://api.resend.com${path}`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+
+  if (!res.ok) {
+    console.error("[webhook:inbound] Resend API error:", path, res.status, await res.text());
+    return null;
+  }
+
+  return (await res.json()) as T;
+}
+
+async function fetchReceivedEmail(emailId: string | null): Promise<ResendReceivedEmail | null> {
+  if (!emailId) return null;
+  return fetchResendJson<ResendReceivedEmail>(`/emails/receiving/${encodeURIComponent(emailId)}`);
+}
+
+async function fetchAttachmentContent(downloadUrl: string): Promise<string | null> {
+  const res = await fetch(downloadUrl);
+  if (!res.ok) return null;
+  const buffer = Buffer.from(await res.arrayBuffer());
+  return buffer.toString("base64");
+}
+
+async function fetchReceivedAttachments(emailId: string | null): Promise<ResendInboundAttachment[]> {
+  if (!emailId) return [];
+
+  const list = await fetchResendJson<ResendAttachmentListResponse>(
+    `/emails/receiving/${encodeURIComponent(emailId)}/attachments`,
+  );
+
+  const attachments = list?.data ?? [];
+  return Promise.all(
+    attachments.map(async (attachment) => {
+      if (!attachment.download_url) return attachment;
+      const content = await fetchAttachmentContent(attachment.download_url).catch(() => null);
+      return content ? { ...attachment, content } : attachment;
+    }),
+  );
+}
+
 // Estrae il corpo HTML da un payload Resend, provando più varianti di campo.
 // Resend ha usato nomi diversi nel tempo (html / html_body / body_html).
 function extractHtmlBody(p: Record<string, unknown>): string | null {
@@ -103,38 +165,41 @@ async function handleInbound(
   payload: ResendInboundPayload,
   svc: NonNullable<ReturnType<typeof createSupabaseServiceClient>>,
 ): Promise<NextResponse> {
-  const toAddresses = Array.isArray(payload.to) ? payload.to : [payload.to].filter(Boolean);
-  if (!payload.from || toAddresses.length === 0) {
+  const raw = payload as unknown as Record<string, unknown>;
+  const resendEmailId =
+    (typeof raw.email_id === "string" && raw.email_id) ||
+    (typeof raw.id === "string" && raw.id) ||
+    null;
+  const receivedEmail = await fetchReceivedEmail(resendEmailId);
+  const source = receivedEmail ? ({ ...raw, ...receivedEmail } as Record<string, unknown>) : raw;
+
+  const from = typeof source.from === "string" ? source.from : payload.from;
+  const rawTo = source.to ?? payload.to;
+  const toAddresses = Array.isArray(rawTo) ? rawTo.filter(Boolean) as string[] : [rawTo].filter(Boolean) as string[];
+  if (!from || toAddresses.length === 0) {
     return NextResponse.json({ error: "Campi from/to mancanti." }, { status: 400 });
   }
 
-  const raw = payload as unknown as Record<string, unknown>;
-
-  // Log per diagnosticare il payload reale di Resend (rimuovere dopo verifica)
-  console.log("[webhook:inbound] keys:", Object.keys(raw).join(", "));
-  console.log("[webhook:inbound] html present:", "html" in raw, "| text present:", "text" in raw);
-  console.log("[webhook:inbound] html_body present:", "html_body" in raw, "| text_body present:", "text_body" in raw);
-
   const brand      = detectBrandFromRecipients(toAddresses);
-  const { name: fromName, address: fromAddress } = parseEmailAddress(payload.from);
-  const headers    = normalizeHeaders(payload.headers);
-  const messageId  = extractMessageId(headers);
-  const htmlBody   = extractHtmlBody(raw);
-  const textBody   = extractTextBody(raw);
-
-  console.log("[webhook:inbound] html_body salvato:", htmlBody ? `${htmlBody.length} chars` : "null");
-  console.log("[webhook:inbound] text_body salvato:", textBody ? `${textBody.length} chars` : "null");
+  const { name: fromName, address: fromAddress } = parseEmailAddress(from);
+  const headers    = normalizeHeaders(source.headers);
+  const messageId  = (typeof source.message_id === "string" && source.message_id) || extractMessageId(headers);
+  const htmlBody   = extractHtmlBody(source);
+  const textBody   = extractTextBody(source);
+  const attachments = resendEmailId
+    ? await fetchReceivedAttachments(resendEmailId)
+    : ((payload.attachments ?? []) as ResendInboundAttachment[]);
 
   const { error } = await svc.from("inbound_emails").insert({
     message_id:   messageId,
     from_address: fromAddress,
     from_name:    fromName,
     to_addresses: toAddresses,
-    subject:      payload.subject ?? "(nessun oggetto)",
+    subject:      (typeof source.subject === "string" ? source.subject : payload.subject) ?? "(nessun oggetto)",
     text_body:    textBody,
     html_body:    htmlBody,
     headers:      headers as unknown as never,
-    attachments:  (payload.attachments ?? []) as unknown as never,
+    attachments:  attachments as unknown as never,
     brand,
   });
 

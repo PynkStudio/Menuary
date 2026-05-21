@@ -11,7 +11,7 @@ import {
   Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { markEmailRead, getInboundEmails } from "@/lib/email/inbound-queries";
+import { markEmailRead, getInboundEmails, hydrateInboundEmailContent } from "@/lib/email/inbound-queries";
 import { EmailList } from "./email-list";
 import { EmailDetail } from "./email-detail";
 import type { InboundEmail, InboundEmailBrand } from "@/lib/email/inbound-types";
@@ -75,6 +75,14 @@ export function InboxPage({ initialData }: Props) {
       setData((prev) => ({
         ...prev,
         emails: prev.emails.map((e) => (e.id === email.id ? { ...e, read: true } : e)),
+      }));
+    }
+    const hydrated = await hydrateInboundEmailContent(email.id);
+    if (hydrated) {
+      setSelectedEmail(hydrated);
+      setData((prev) => ({
+        ...prev,
+        emails: prev.emails.map((e) => (e.id === hydrated.id ? hydrated : e)),
       }));
     }
   }
