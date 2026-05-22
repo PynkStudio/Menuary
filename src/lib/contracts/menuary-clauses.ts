@@ -1,5 +1,6 @@
 import {
   FORNITORE,
+  BRAND_INFO,
   formatEUR,
   computeYearlyTotal,
   paymentMethodLabel,
@@ -12,8 +13,14 @@ export type ClauseBlock = {
   body: string;
 };
 
+const ITALIAN_NUMBERS = ["zero", "una", "due", "tre", "quattro", "cinque", "sei"];
+function numberToItalian(n: number): string {
+  return ITALIAN_NUMBERS[n] ?? String(n);
+}
+
 export function buildClauses(data: ContractData): ClauseBlock[] {
   const { cliente, servizio, economiche } = data;
+  const brandInfo = BRAND_INFO[data.brand];
   const annuale = economiche.cicloFatturazione === "yearly";
   const totaleAnnuale = computeYearlyTotal(
     economiche.canoneMensile,
@@ -24,14 +31,14 @@ export function buildClauses(data: ContractData): ClauseBlock[] {
     {
       id: "premesse",
       title: "Premesse",
-      body: `Il presente contratto (di seguito "Contratto") è stipulato tra ${FORNITORE.ragioneSociale}, P.IVA ${FORNITORE.piva}, con sede in ${FORNITORE.indirizzo}, PEC ${FORNITORE.pec}, in persona del legale rappresentante ${FORNITORE.legaleRappresentante} (di seguito "Fornitore" o "Menuary"), e ${cliente.ragioneSociale || "_______________"}, P.IVA ${cliente.piva || "_______________"}, C.F. ${cliente.cf || "_______________"}, con sede in ${cliente.sedeLegale || "_______________"}, PEC ${cliente.pec || "_______________"}, in persona del legale rappresentante ${cliente.legaleRappresentante || "_______________"} (di seguito "Cliente").
+      body: `Il presente contratto (di seguito "Contratto") è stipulato tra ${FORNITORE.ragioneSociale}, P.IVA ${FORNITORE.piva}, con sede in ${FORNITORE.indirizzo}, PEC ${FORNITORE.pec}, in persona del legale rappresentante ${FORNITORE.legaleRappresentante} (di seguito "Fornitore" o "${brandInfo.platformName}"), e ${cliente.ragioneSociale || "_______________"}, P.IVA ${cliente.piva || "_______________"}, C.F. ${cliente.cf || "_______________"}, con sede in ${cliente.sedeLegale || "_______________"}, PEC ${cliente.pec || "_______________"}, in persona del legale rappresentante ${cliente.legaleRappresentante || "_______________"} (di seguito "Cliente").
 
-Premesso che il Fornitore eroga una piattaforma SaaS multi-tenant denominata "Menuary" (e relativo verticale "Bizery") per la pubblicazione e gestione di siti web e moduli operativi per attività commerciali, e che il Cliente intende acquistare il servizio nei termini di seguito indicati.`,
+Premesso che il Fornitore eroga "${brandInfo.platformName}", ${brandInfo.verticalDescription}, e che il Cliente intende acquistare il servizio nei termini di seguito indicati.`,
     },
     {
       id: "oggetto",
       title: "1. Oggetto del Contratto",
-      body: `Il Fornitore concede al Cliente, in modalità SaaS (Software as a Service), il diritto non esclusivo, non trasferibile e revocabile di accedere e utilizzare la piattaforma Menuary nella configurazione corrispondente al piano "${servizio.pianoNome}".
+      body: `Il Fornitore concede al Cliente, in modalità SaaS (Software as a Service), il diritto non esclusivo, non trasferibile e revocabile di accedere e utilizzare la piattaforma ${brandInfo.platformName} nella configurazione corrispondente al piano "${servizio.pianoNome}".
 
 Il servizio include in particolare:
 ${servizio.moduliInclusi.map((m) => `  • ${m}`).join("\n")}
@@ -51,7 +58,16 @@ Il recesso non dà diritto ad alcun rimborso, totale o parziale, dei canoni e de
       id: "corrispettivi",
       title: "3. Corrispettivi e modalità di pagamento",
       body: `Il Cliente si obbliga a corrispondere al Fornitore:
-  a) Una quota una tantum di attivazione (setup) pari a ${formatEUR(economiche.setup)} oltre IVA di legge, dovuta alla sottoscrizione del Contratto;
+  a) Una quota una tantum di attivazione (setup) pari a ${formatEUR(economiche.setup)} oltre IVA di legge${
+    economiche.setupRateale && economiche.setupRate.length > 1
+      ? `, suddivisa in ${economiche.setupRate.length} (${numberToItalian(economiche.setupRate.length)}) rate mensili consecutive secondo il piano riportato di seguito:\n${economiche.setupRate
+          .map(
+            (r, i) =>
+              `     • Rata ${i + 1} di ${economiche.setupRate.length}: ${formatEUR(r)} oltre IVA — dovuta entro il ${i === 0 ? "5° giorno successivo alla sottoscrizione del Contratto" : `${i * 30 + 5}° giorno successivo alla sottoscrizione`}`,
+          )
+          .join("\n")}\n     Il mancato pagamento anche di una sola rata comporta la decadenza dal beneficio del termine ai sensi dell'art. 1186 c.c. ed il diritto del Fornitore di esigere immediatamente l'intero importo residuo del setup, oltre agli effetti previsti al successivo art. 4.`
+      : ", dovuta alla sottoscrizione del Contratto"
+  };
   b) Un canone${annuale ? " annuale anticipato" : " mensile"} pari a ${annuale ? `${formatEUR(totaleAnnuale)} oltre IVA (sconto del ${economiche.scontoAnnuale}% sul totale annuo)` : `${formatEUR(economiche.canoneMensile)} oltre IVA`}, dovuto a fronte dell'erogazione continuativa del servizio.
 
 Modalità di pagamento: ${paymentMethodLabel(economiche.metodoPagamento)}.
@@ -108,7 +124,7 @@ Gli SLA si intendono calcolati su giorni lavorativi e non si applicano in caso d
     {
       id: "proprieta",
       title: "8. Proprietà intellettuale",
-      body: `La piattaforma Menuary, il relativo codice sorgente, l'architettura tecnica, le interfacce, i marchi, i loghi e ogni elemento distintivo sono e restano di esclusiva proprietà del Fornitore. Il Contratto attribuisce al Cliente unicamente un diritto d'uso del servizio nei termini sopra indicati, senza alcun trasferimento di titolarità.
+      body: `La piattaforma ${brandInfo.platformName}, il relativo codice sorgente, l'architettura tecnica, le interfacce, i marchi, i loghi e ogni elemento distintivo sono e restano di esclusiva proprietà del Fornitore. Il Contratto attribuisce al Cliente unicamente un diritto d'uso del servizio nei termini sopra indicati, senza alcun trasferimento di titolarità.
 
 I contenuti caricati dal Cliente (testi, immagini, menu, listini, dati di prenotazione, dati commerciali) restano di proprietà esclusiva del Cliente, il quale concede al Fornitore una licenza non esclusiva, gratuita e limitata al periodo contrattuale, al solo fine di erogare il servizio.`,
     },

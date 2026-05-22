@@ -30,8 +30,8 @@ export function ContractsList() {
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+    <div style={{ padding: "16px 12px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontSize: 24, margin: 0 }}>Storico contratti</h1>
           <p style={{ color: "#6b7280", fontSize: 13, margin: "4px 0 0" }}>
@@ -76,12 +76,15 @@ export function ContractsList() {
             borderRadius: 12,
             overflow: "hidden",
             background: "#fff",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
         >
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 720 }}>
             <thead style={{ background: "#f9fafb", textAlign: "left" }}>
               <tr>
                 <th style={th}>Numero</th>
+                <th style={th}>Brand</th>
                 <th style={th}>Cliente</th>
                 <th style={th}>Piano</th>
                 <th style={th}>Canone</th>
@@ -104,6 +107,22 @@ export function ContractsList() {
                     <td style={td}>
                       <strong>{c.numero}</strong>
                     </td>
+                    <td style={td}>
+                      <span
+                        style={{
+                          padding: "2px 8px",
+                          borderRadius: 999,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
+                          background: c.data.brand === "bizery" ? "#dbeafe" : "#fef3c7",
+                          color: c.data.brand === "bizery" ? "#1e40af" : "#92400e",
+                        }}
+                      >
+                        {c.data.brand === "bizery" ? "Bizery" : "Menuary"}
+                      </span>
+                    </td>
                     <td style={td}>{c.data.cliente.ragioneSociale || "—"}</td>
                     <td style={td}>{c.data.servizio.pianoNome}</td>
                     <td style={td}>
@@ -112,6 +131,19 @@ export function ContractsList() {
                         {" "}
                         / {annuale ? "anno" : "mese"}
                       </span>
+                      {c.data.economiche.setupRateale &&
+                      c.data.economiche.setupRate.length > 1 ? (
+                        <span
+                          style={{
+                            display: "block",
+                            color: "#6b7280",
+                            fontSize: 10,
+                            marginTop: 2,
+                          }}
+                        >
+                          + setup in {c.data.economiche.setupRate.length} rate
+                        </span>
+                      ) : null}
                     </td>
                     <td style={td}>
                       <span

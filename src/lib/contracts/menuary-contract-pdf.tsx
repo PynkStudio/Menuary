@@ -6,6 +6,7 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 import {
+  BRAND_INFO,
   FORNITORE,
   computeYearlyTotal,
   formatEUR,
@@ -25,6 +26,18 @@ const styles = StyleSheet.create({
     color: "#111827",
     lineHeight: 1.5,
   },
+  brandBadge: {
+    alignSelf: "flex-start",
+    padding: "3 8",
+    borderRadius: 10,
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginBottom: 6,
+  },
+  brandBadgeMenuary: { backgroundColor: "#fef3c7", color: "#92400e" },
+  brandBadgeBizery: { backgroundColor: "#dbeafe", color: "#1e40af" },
   h1: { fontSize: 18, fontFamily: "Helvetica-Bold", marginBottom: 4 },
   subtitle: { fontSize: 10, color: "#6b7280", marginBottom: 16 },
   partiesRow: { flexDirection: "row", marginVertical: 12, gap: 16 },
@@ -114,14 +127,24 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
     data.economiche.scontoAnnuale,
   );
 
+  const brandName = BRAND_INFO[data.brand].platformName;
+
   return (
     <Document
-      title={`Contratto Menuary ${data.numero}`}
+      title={`Contratto ${brandName} ${data.numero}`}
       author={FORNITORE.ragioneSociale}
-      subject="Contratto di fornitura del servizio Menuary"
+      subject={`Contratto di fornitura del servizio ${brandName}`}
     >
       <Page size="A4" style={styles.page} wrap>
-        <Text style={styles.h1}>Contratto di fornitura del servizio Menuary</Text>
+        <Text
+          style={[
+            styles.brandBadge,
+            data.brand === "bizery" ? styles.brandBadgeBizery : styles.brandBadgeMenuary,
+          ]}
+        >
+          {brandName}
+        </Text>
+        <Text style={styles.h1}>Contratto di fornitura del servizio {brandName}</Text>
         <Text style={styles.subtitle}>
           Contratto n. {data.numero} — Milano, {data.dataStipula}
         </Text>
@@ -158,7 +181,11 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
           />
           <SummaryItem
             dt="Setup una tantum"
-            dd={`${formatEUR(data.economiche.setup)} + IVA`}
+            dd={
+              data.economiche.setupRateale && data.economiche.setupRate.length > 1
+                ? `${formatEUR(data.economiche.setup)} + IVA — ${data.economiche.setupRate.length} rate mensili (${data.economiche.setupRate.map((r) => formatEUR(r)).join(" + ")})`
+                : `${formatEUR(data.economiche.setup)} + IVA`
+            }
           />
           <SummaryItem
             dt="Canone"

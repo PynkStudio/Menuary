@@ -16,12 +16,18 @@ import {
 } from "lucide-react";
 import { PLATFORM_LEADS, PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
 import {
+  BRAND_INFO,
   FORNITORE,
+  MAX_SETUP_RATE,
   computeYearlyTotal,
   defaultContractData,
   formatEUR,
   paymentMethodLabel,
+  round2,
+  setupRateTotal,
+  splitSetupEvenly,
   type BillingCycle,
+  type ContractBrand,
   type ContractData,
   type PaymentMethod,
 } from "@/lib/contracts/menuary-contract";
@@ -62,7 +68,15 @@ export function ContractEditor({ contractId }: Props) {
       const c = getContract(contractId);
       if (c) {
         setStored(c);
-        setData(c.data);
+        setData({
+          ...c.data,
+          brand: c.data.brand ?? "menuary",
+          economiche: {
+            ...c.data.economiche,
+            setupRateale: c.data.economiche.setupRateale ?? false,
+            setupRate: c.data.economiche.setupRate ?? [c.data.economiche.setup],
+          },
+        });
         setOverrides(c.clauseOverrides);
         setLeadId(c.leadId ?? "");
         setPackageSlug(c.packageSlug ?? "");
@@ -90,8 +104,11 @@ export function ContractEditor({ contractId }: Props) {
     const lead = PLATFORM_LEADS.find((l) => l.id === id);
     if (!lead) return;
     setLeadId(id);
+    const inferredBrand: ContractBrand =
+      lead.business_vertical === "services" ? "bizery" : "menuary";
     setData((d) => ({
       ...d,
+      brand: inferredBrand,
       cliente: {
         ragioneSociale: lead.billing_name ?? lead.business_name,
         legaleRappresentante: lead.contact_name,
@@ -141,7 +158,22 @@ export function ContractEditor({ contractId }: Props) {
     return saved;
   }
 
+  function validateRate(): string | null {
+    if (!data.economiche.setupRateale) return null;
+    const sum = setupRateTotal(data.economiche.setupRate);
+    const delta = round2(sum - data.economiche.setup);
+    if (Math.abs(delta) >= 0.005) {
+      return `Le rate del setup non coincidono col totale (${formatEUR(sum)} vs ${formatEUR(data.economiche.setup)}, differenza ${formatEUR(delta)}).`;
+    }
+    return null;
+  }
+
   async function handleSendViaInbox() {
+    const rateErr = validateRate();
+    if (rateErr) {
+      setFeedback(rateErr);
+      return;
+    }
     setGeneratingPdf(true);
     setFeedback("Preparo il PDF e apro la mail…");
     try {
@@ -168,9 +200,8 @@ export function ContractEditor({ contractId }: Props) {
 
       const lead = leadId ? PLATFORM_LEADS.find((l) => l.id === leadId) : null;
       const dest = lead?.contact_email || data.cliente.email || data.cliente.pec;
-      const brand: "menuary" | "bizery" =
-        lead?.business_vertical === "services" ? "bizery" : "menuary";
-      const subject = `Contratto ${data.numero} — ${data.cliente.ragioneSociale || "Menuary"}`;
+      const brand = data.brand;
+      const subject = `Contratto ${data.numero} ${BRAND_INFO[brand].platformName} — ${data.cliente.ragioneSociale || "—"}`;
       const body = buildEmailBody(data);
 
       launcher.open({
@@ -196,6 +227,11 @@ export function ContractEditor({ contractId }: Props) {
   }
 
   async function handleDownloadPdf(): Promise<Blob | null> {
+    const rateErr = validateRate();
+    if (rateErr) {
+      setFeedback(rateErr);
+      return null;
+    }
     setGeneratingPdf(true);
     try {
       const res = await fetch("/api/admin/contracts/pdf", {
@@ -268,6 +304,25 @@ export function ContractEditor({ contractId }: Props) {
         </div>
 
         {feedback && <div className="contract-feedback">{feedback}</div>}
+
+        <h3>Brand</h3>
+        <div className="brand-picker">
+          {(Object.keys(BRAND_INFO) as ContractBrand[]).map((b) => (
+            <button
+              key={b}
+              type="button"
+              onClick={() => setData((d) => ({ ...d, brand: b }))}
+              className={data.brand === b ? "brand-pill active" : "brand-pill"}
+            >
+              {BRAND_INFO[b].label}
+            </button>
+          ))}
+        </div>
+        <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 12px" }}>
+          {data.brand === "menuary"
+            ? "Verticale food (HORECA)"
+            : "Verticale services (non-HORECA)"}
+        </p>
 
         <h3>Lead</h3>
         <select value={leadId} onChange={(e) => applyLead(e.target.value)}>
@@ -435,15 +490,130 @@ export function ContractEditor({ contractId }: Props) {
               type="number"
               step="0.01"
               value={data.economiche.setup}
-              onChange={(e) =>
+              onChange={(e) => {
+                const value = Number(e.target.value);
                 setData((d) => ({
                   ...d,
-                  economiche: { ...d.economiche, setup: Number(e.target.value) },
-                }))
-              }
+                  economiche: {
+                    ...d.economiche,
+                    setup: value,
+                    setupRate: d.economiche.setupRateale
+                      ? splitSetupEvenly(value, d.economiche.setupRate.length)
+                      : [value],
+                  },
+                }));
+              }}
             />
           </div>
         </div>
+
+        <label className="rate-toggle">
+          <input
+            type="checkbox"
+            checked={data.economiche.setupRateale}
+            onChange={(e) => {
+              const enabled = e.target.checked;
+              setData((d) => ({
+                ...d,
+                economiche: {
+                  ...d.economiche,
+                  setupRateale: enabled,
+                  setupRate: enabled
+                    ? splitSetupEvenly(d.economiche.setup, 3)
+                    : [d.economiche.setup],
+                },
+              }));
+            }}
+          />
+          Rateizza setup (fino a {MAX_SETUP_RATE} mensilità)
+        </label>
+
+        {data.economiche.setupRateale && (
+          <div className="rate-box">
+            <label>Numero rate</label>
+            <select
+              value={data.economiche.setupRate.length}
+              onChange={(e) => {
+                const count = Number(e.target.value);
+                setData((d) => ({
+                  ...d,
+                  economiche: {
+                    ...d.economiche,
+                    setupRate: splitSetupEvenly(d.economiche.setup, count),
+                  },
+                }));
+              }}
+            >
+              {Array.from({ length: MAX_SETUP_RATE - 1 }, (_, i) => i + 2).map((n) => (
+                <option key={n} value={n}>
+                  {n} rate
+                </option>
+              ))}
+            </select>
+
+            <div className="rate-list">
+              {data.economiche.setupRate.map((rata, i) => (
+                <div key={i} className="rate-row">
+                  <span>Rata {i + 1}</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={rata}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setData((d) => ({
+                        ...d,
+                        economiche: {
+                          ...d.economiche,
+                          setupRate: d.economiche.setupRate.map((r, idx) =>
+                            idx === i ? v : r,
+                          ),
+                        },
+                      }));
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {(() => {
+              const sum = setupRateTotal(data.economiche.setupRate);
+              const target = round2(data.economiche.setup);
+              const delta = round2(sum - target);
+              const ok = Math.abs(delta) < 0.005;
+              return (
+                <div className={ok ? "rate-check ok" : "rate-check err"}>
+                  <strong>
+                    Totale rate: {formatEUR(sum)} / {formatEUR(target)}
+                  </strong>
+                  {!ok && (
+                    <span>
+                      Differenza: {delta > 0 ? "+" : ""}
+                      {formatEUR(delta)}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setData((d) => ({
+                        ...d,
+                        economiche: {
+                          ...d.economiche,
+                          setupRate: splitSetupEvenly(
+                            d.economiche.setup,
+                            d.economiche.setupRate.length,
+                          ),
+                        },
+                      }))
+                    }
+                  >
+                    Suddividi automaticamente
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+        )}
         {annuale && (
           <>
             <label>Sconto annuale (%)</label>
@@ -555,7 +725,10 @@ export function ContractEditor({ contractId }: Props) {
 
       <article className="contract-doc">
         <header>
-          <h1>Contratto di fornitura del servizio Menuary</h1>
+          <div className={`brand-badge brand-badge-${data.brand}`}>
+            {BRAND_INFO[data.brand].platformName}
+          </div>
+          <h1>Contratto di fornitura del servizio {BRAND_INFO[data.brand].platformName}</h1>
           <div className="subtitle">
             Contratto n. {data.numero} — Milano, {data.dataStipula}
           </div>
@@ -599,7 +772,15 @@ export function ContractEditor({ contractId }: Props) {
               {data.servizio.dominio ? ` · ${data.servizio.dominio}` : ""}
             </dd>
             <dt>Setup una tantum</dt>
-            <dd>{formatEUR(data.economiche.setup)} + IVA</dd>
+            <dd>
+              {formatEUR(data.economiche.setup)} + IVA
+              {data.economiche.setupRateale && data.economiche.setupRate.length > 1 ? (
+                <span style={{ display: "block", color: "#6b7280", fontWeight: 400, fontSize: 11 }}>
+                  Rateizzato in {data.economiche.setupRate.length} mensilità:{" "}
+                  {data.economiche.setupRate.map((r) => formatEUR(r)).join(" + ")}
+                </span>
+              ) : null}
+            </dd>
             <dt>Canone</dt>
             <dd>
               {annuale
@@ -717,11 +898,15 @@ function buildEmailBody(data: ContractData): string {
 
   return `Gentile ${saluto},
 
-come da accordi intercorsi, le inviamo in allegato la proposta contrattuale n. ${data.numero} per l'attivazione del servizio "${data.servizio.pianoNome}" sulla piattaforma Menuary, comprensiva degli allegati tecnici e regolamentari (DPA art. 28 GDPR, informativa privacy, SLA e condizioni d'uso).
+come da accordi intercorsi, le inviamo in allegato la proposta contrattuale n. ${data.numero} per l'attivazione del servizio "${data.servizio.pianoNome}" sulla piattaforma ${BRAND_INFO[data.brand].platformName}, comprensiva degli allegati tecnici e regolamentari (DPA art. 28 GDPR, informativa privacy, SLA e condizioni d'uso).
 
 Riepilogo delle condizioni economiche:
 • Piano: ${data.servizio.pianoNome}
-• Setup una tantum: ${formatEUR(data.economiche.setup)} + IVA
+• Setup una tantum: ${formatEUR(data.economiche.setup)} + IVA${
+    data.economiche.setupRateale && data.economiche.setupRate.length > 1
+      ? ` — rateizzato in ${data.economiche.setupRate.length} mensilità (${data.economiche.setupRate.map((r) => formatEUR(r)).join(" + ")})`
+      : ""
+  }
 • Canone: ${canone}
 • Durata: 12 mesi con rinnovo tacito · preavviso di recesso 30 giorni
 • Foro competente: Milano
@@ -753,6 +938,20 @@ const CONTRACT_STYLES = `
   width: 100%; padding: 6px 8px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 8px; box-sizing: border-box;
 }
 .contract-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.brand-picker { display: inline-flex; padding: 3px; gap: 3px; border-radius: 999px; background: #f3f4f6; margin-bottom: 4px; }
+.brand-picker .brand-pill { border: none; padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; background: transparent; color: #6b7280; }
+.brand-picker .brand-pill.active { background: #fff; color: #111827; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.rate-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #374151; margin-bottom: 8px !important; cursor: pointer; }
+.rate-toggle input { width: auto !important; margin: 0 !important; }
+.rate-box { border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+.rate-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+.rate-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6b7280; }
+.rate-row span { width: 48px; flex-shrink: 0; }
+.rate-row input { margin: 0 !important; }
+.rate-check { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 6px; font-size: 11px; }
+.rate-check.ok { background: #ecfdf5; color: #065f46; }
+.rate-check.err { background: #fef2f2; color: #991b1b; }
+.rate-check button { align-self: flex-start; margin-top: 2px; padding: 3px 8px; border-radius: 4px; border: 1px solid currentColor; background: transparent; color: inherit; font-size: 11px; cursor: pointer; }
 .contract-back { display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin-bottom: 8px; }
 .contract-back a { display: inline-flex; align-items: center; gap: 4px; color: #2563eb; text-decoration: none; }
 .status-pill { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
@@ -768,6 +967,9 @@ const CONTRACT_STYLES = `
 .expiry-warning { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; padding: 6px 8px; background: #fef3c7; color: #92400e; border-radius: 6px; font-size: 11px; }
 .contract-doc { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 48px; max-width: 820px; }
 .contract-doc h1 { font-size: 22px; margin: 0 0 4px; }
+.brand-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }
+.brand-badge-menuary { background: #fef3c7; color: #92400e; }
+.brand-badge-bizery { background: #dbeafe; color: #1e40af; }
 .contract-doc .subtitle { color: #6b7280; font-size: 13px; margin-bottom: 24px; }
 .contract-doc .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; font-size: 13px; line-height: 1.5; }
 .contract-doc .parties h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; margin: 0 0 6px; }
@@ -790,6 +992,18 @@ const CONTRACT_STYLES = `
 .contract-doc .attachment .att-section h3 { font-size: 13px; margin: 0 0 6px; }
 .contract-doc .attachment .att-section p { white-space: pre-wrap; margin: 0; }
 .page-break { page-break-before: always; }
+
+@media (max-width: 768px) {
+  .contract-page { grid-template-columns: 1fr; gap: 16px; padding: 12px; }
+  .contract-form { position: static; max-height: none; }
+  .contract-doc { padding: 20px; }
+  .contract-doc .parties { grid-template-columns: 1fr; gap: 16px; }
+  .contract-doc .summary-box dl { grid-template-columns: 1fr; gap: 2px 0; }
+  .contract-doc .summary-box dt { color: #6b7280; font-size: 11px; margin-top: 8px; }
+  .contract-doc .signatures { grid-template-columns: 1fr; gap: 24px; margin-top: 32px; }
+  .contract-doc .signatures .sig-line { margin-top: 32px; }
+  .contract-actions button { font-size: 11px; padding: 7px 6px; }
+}
 
 @media print {
   body * { visibility: hidden; }

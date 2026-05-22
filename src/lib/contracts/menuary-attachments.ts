@@ -1,4 +1,4 @@
-import { FORNITORE, type ContractData } from "./menuary-contract";
+import { BRAND_INFO, FORNITORE, type ContractData } from "./menuary-contract";
 
 export type AttachmentBlock = {
   id: string;
@@ -11,6 +11,7 @@ export type AttachmentBlock = {
 export function buildAttachments(data: ContractData): AttachmentBlock[] {
   const cliente = data.cliente;
   const ragioneSocialeCliente = cliente.ragioneSociale || "_______________";
+  const brandName = BRAND_INFO[data.brand].platformName;
 
   return [
     {
@@ -21,7 +22,7 @@ export function buildAttachments(data: ContractData): AttachmentBlock[] {
       sections: [
         {
           heading: "1. Oggetto e finalità del trattamento",
-          body: `Il Titolare nomina il Responsabile per il trattamento dei dati personali necessari all'erogazione del servizio Menuary descritto nel Contratto principale. Il Responsabile tratterà esclusivamente i dati personali per conto del Titolare, nei limiti delle istruzioni qui contenute e di quelle ulteriori impartite per iscritto.`,
+          body: `Il Titolare nomina il Responsabile per il trattamento dei dati personali necessari all'erogazione del servizio ${brandName} descritto nel Contratto principale. Il Responsabile tratterà esclusivamente i dati personali per conto del Titolare, nei limiti delle istruzioni qui contenute e di quelle ulteriori impartite per iscritto.`,
         },
         {
           heading: "2. Categorie di interessati e dati trattati",
@@ -163,7 +164,7 @@ Orario di lavoro standard: lun-ven 09:00-18:00. Interventi su Severity 1 sono ga
       id: "tos",
       code: "D",
       title: "Allegato D — Condizioni d'uso della piattaforma",
-      subtitle: "Regole di utilizzo dei servizi Menuary / Bizery",
+      subtitle: `Regole di utilizzo del servizio ${brandName}`,
       sections: [
         {
           heading: "1. Uso conforme",

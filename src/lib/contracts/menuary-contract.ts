@@ -11,10 +11,34 @@ export const FORNITORE = {
 
 export type BillingCycle = "monthly" | "yearly";
 export type PaymentMethod = "sdd" | "bonifico" | "carta";
+export type ContractBrand = "menuary" | "bizery";
+
+export const BRAND_INFO: Record<ContractBrand, {
+  label: string;
+  platformName: string;
+  verticalDescription: string;
+  vertical: "food" | "services";
+}> = {
+  menuary: {
+    label: "Menuary",
+    platformName: "Menuary",
+    verticalDescription:
+      "piattaforma SaaS multi-tenant per la pubblicazione e gestione di siti e moduli operativi per attività HORECA (ristoranti, bar, pizzerie, trattorie)",
+    vertical: "food",
+  },
+  bizery: {
+    label: "Bizery",
+    platformName: "Bizery",
+    verticalDescription:
+      "piattaforma SaaS multi-tenant per la pubblicazione e gestione di siti e moduli operativi per attività non-HORECA (officine, studi professionali, saloni, centri benessere, servizi)",
+    vertical: "services",
+  },
+};
 
 export type ContractData = {
   numero: string;
   dataStipula: string;
+  brand: ContractBrand;
   cliente: {
     ragioneSociale: string;
     legaleRappresentante: string;
@@ -38,6 +62,10 @@ export type ContractData = {
     cicloFatturazione: BillingCycle;
     metodoPagamento: PaymentMethod;
     scontoAnnuale: number;
+    /** Quando true, il setup viene rateizzato (max 6 rate mensili). */
+    setupRateale: boolean;
+    /** Rate del setup. Lunghezza ∈ [2, 6] quando rateale, [1] altrimenti. */
+    setupRate: number[];
   };
   noteAggiuntive: string;
 };
@@ -49,6 +77,7 @@ export function defaultContractData(): ContractData {
   return {
     numero,
     dataStipula: today.toISOString().slice(0, 10),
+    brand: "menuary",
     cliente: {
       ragioneSociale: "",
       legaleRappresentante: "",
@@ -65,7 +94,7 @@ export function defaultContractData(): ContractData {
       dominio: "",
       pianoNome: "Operatività",
       moduliInclusi: [
-        "Sito pubblico tenant (Menuary/Bizery)",
+        "Sito pubblico tenant sulla piattaforma",
         "Pannello gestionale admin",
         "Hosting, CDN e certificato SSL",
         "Dominio personalizzato (fornito dal Cliente)",
@@ -78,6 +107,8 @@ export function defaultContractData(): ContractData {
       cicloFatturazione: "monthly",
       metodoPagamento: "sdd",
       scontoAnnuale: 10,
+      setupRateale: false,
+      setupRate: [290],
     },
     noteAggiuntive: "",
   };
@@ -94,6 +125,30 @@ export function formatEUR(value: number): string {
 export function computeYearlyTotal(canoneMensile: number, scontoPct: number): number {
   const lordo = canoneMensile * 12;
   return Math.round((lordo * (1 - scontoPct / 100)) * 100) / 100;
+}
+
+export const MAX_SETUP_RATE = 6;
+
+/**
+ * Divide `total` in `count` rate da 2 decimali, attribuendo l'eventuale resto
+ * (centesimi non distribuibili equamente) alla prima rata.
+ */
+export function splitSetupEvenly(total: number, count: number): number[] {
+  const safeCount = Math.max(1, Math.min(MAX_SETUP_RATE, Math.floor(count)));
+  if (safeCount === 1) return [round2(total)];
+  const base = Math.floor((total / safeCount) * 100) / 100;
+  const remainder = round2(total - base * safeCount);
+  const rate = Array.from({ length: safeCount }, () => base);
+  rate[0] = round2(base + remainder);
+  return rate;
+}
+
+export function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+export function setupRateTotal(rate: number[]): number {
+  return round2(rate.reduce((s, n) => s + (Number.isFinite(n) ? n : 0), 0));
 }
 
 export function paymentMethodLabel(m: PaymentMethod): string {
