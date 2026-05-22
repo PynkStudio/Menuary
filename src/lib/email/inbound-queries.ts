@@ -11,6 +11,8 @@ export type InboxFilter = {
   onlyStarred?: boolean;
   archived?: boolean;
   page?: number;
+  /** Se presente, mostra solo le email assegnate a questo siteadmin.id */
+  assignedToUserId?: string;
 };
 
 export type InboxPage = {
@@ -41,6 +43,7 @@ export async function getInboundEmails(filter: InboxFilter = {}): Promise<InboxP
   }
   if (filter.onlyUnread) query = query.eq("read", false);
   if (filter.onlyStarred) query = query.eq("starred", true);
+  if (filter.assignedToUserId) query = query.eq("assigned_to_user_id", filter.assignedToUserId);
 
   // Di default esclude archiviate, salvo quando si richiede esplicitamente
   query = query.eq("archived", filter.archived ?? false);
@@ -260,4 +263,27 @@ export async function deleteEmail(id: string): Promise<void> {
     .delete()
     .eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+/** Assegna (o rimuove l'assegnazione di) un'email a un utente siteadmin. */
+export async function assignEmail(id: string, siteadminId: string | null): Promise<void> {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
+    .from("inbound_emails")
+    .update({ assigned_to_user_id: siteadminId })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+/** Conta le email non lette assegnate a un utente specifico. */
+export async function getInboxUnreadCountForUser(siteadminId: string): Promise<number> {
+  const admin = createSupabaseAdminClient();
+  const { count, error } = await admin
+    .from("inbound_emails")
+    .select("*", { count: "exact", head: true })
+    .eq("assigned_to_user_id", siteadminId)
+    .eq("read", false)
+    .eq("archived", false);
+  if (error) throw new Error(error.message);
+  return count ?? 0;
 }

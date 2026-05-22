@@ -340,6 +340,7 @@ export type Database = {
           starred: boolean
           archived: boolean
           lead_id: string | null
+          assigned_to_user_id: string | null
         }
         Insert: {
           id?: string
@@ -358,6 +359,7 @@ export type Database = {
           starred?: boolean
           archived?: boolean
           lead_id?: string | null
+          assigned_to_user_id?: string | null
         }
         Update: {
           id?: string
@@ -376,6 +378,7 @@ export type Database = {
           starred?: boolean
           archived?: boolean
           lead_id?: string | null
+          assigned_to_user_id?: string | null
         }
         Relationships: [
           {
@@ -383,6 +386,45 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbound_emails_assigned_to_user_id_fkey"
+            columns: ["assigned_to_user_id"]
+            isOneToOne: false
+            referencedRelation: "siteadmin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      siteadmin_email_aliases: {
+        Row: {
+          id: string
+          siteadmin_id: string
+          alias: string
+          alias_type: "email_prefix" | "name_variant" | "legacy_name"
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          siteadmin_id: string
+          alias: string
+          alias_type: "email_prefix" | "name_variant" | "legacy_name"
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          siteadmin_id?: string
+          alias?: string
+          alias_type?: "email_prefix" | "name_variant" | "legacy_name"
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "siteadmin_email_aliases_siteadmin_id_fkey"
+            columns: ["siteadmin_id"]
+            isOneToOne: false
+            referencedRelation: "siteadmin"
             referencedColumns: ["id"]
           },
         ]

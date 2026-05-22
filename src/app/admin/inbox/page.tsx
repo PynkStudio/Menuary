@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { MailApp } from "@/components/admin/inbox/mail-app";
-import { getInboundEmails, getInboxUnreadCounts } from "@/lib/email/inbound-queries";
+import { getInboundEmails, getInboxUnreadCounts, getInboxUnreadCountForUser } from "@/lib/email/inbound-queries";
 import { getSentEmails } from "@/lib/email/sent-queries";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -15,15 +15,10 @@ export const dynamic = "force-dynamic";
 const COMPOSE_ROLES = new Set(["superadmin", "admin", "amministrazione", "venditore"]);
 
 export default async function AdminInboxPage() {
-  // Carica dati in parallelo
-  const [inbox, sent, counts] = await Promise.all([
-    getInboundEmails({ archived: false }),
-    getSentEmails(),
-    getInboxUnreadCounts(),
-  ]);
-
-  // Determina se l'utente corrente può comporre email
+  // Risolve utente corrente e poi carica tutto in parallelo
+  let currentSiteadminId: string | null = null;
   let canCompose = false;
+
   try {
     const headersList = await headers();
     const cookieHeader = headersList.get("cookie") ?? "";
@@ -34,17 +29,27 @@ export default async function AdminInboxPage() {
       const admin = createSupabaseAdminClient();
       const { data: sa } = await admin
         .from("siteadmin")
-        .select("role")
+        .select("id, role")
         .eq("user_id", user.id)
         .eq("enabled", true)
         .maybeSingle();
 
-      canCompose = Boolean(sa && COMPOSE_ROLES.has(sa.role as string));
-      void cookieHeader;
+      if (sa) {
+        currentSiteadminId = sa.id as string;
+        canCompose = COMPOSE_ROLES.has(sa.role as string);
+      }
     }
+    void cookieHeader;
   } catch {
-    canCompose = false;
+    // accesso degradato: nessuna personalizzazione
   }
+
+  const [inbox, sent, counts, unreadMine] = await Promise.all([
+    getInboundEmails({ archived: false }),
+    getSentEmails(),
+    getInboxUnreadCounts(),
+    currentSiteadminId ? getInboxUnreadCountForUser(currentSiteadminId) : Promise.resolve(0),
+  ]);
 
   return (
     <div>
@@ -58,6 +63,8 @@ export default async function AdminInboxPage() {
         initialInbox={inbox}
         initialSent={sent}
         unreadTotal={counts.unread_total}
+        unreadMine={unreadMine}
+        currentSiteadminId={currentSiteadminId}
         canCompose={canCompose}
       />
     </div>

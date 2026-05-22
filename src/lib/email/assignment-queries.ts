@@ -1,0 +1,30 @@
+"use server";
+
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+export type SiteadminAssignee = {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  role: string;
+};
+
+/** Ritorna tutti gli utenti siteadmin attivi per il pannello di assegnazione email. */
+export async function getSiteadminForAssignment(): Promise<SiteadminAssignee[]> {
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("siteadmin")
+    .select("id, email, first_name, last_name, role")
+    .eq("enabled", true)
+    .order("first_name", { nullsFirst: false });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as SiteadminAssignee[];
+}
+
+/** Formatta il nome visualizzato di un assegnatario. */
+export function formatAssigneeName(a: Pick<SiteadminAssignee, "first_name" | "last_name" | "email">): string {
+  const full = [a.first_name, a.last_name].filter(Boolean).join(" ");
+  return full || a.email;
+}

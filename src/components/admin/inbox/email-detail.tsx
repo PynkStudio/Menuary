@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
-import { Archive, ArrowLeft, Download, ExternalLink, Link2, Paperclip, Reply, Search, Star, Trash2, X } from "lucide-react";
+import { Archive, ArrowLeft, Download, ExternalLink, Link2, Paperclip, Reply, Search, Star, Trash2, UserCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { markEmailRead, starEmail, archiveEmail, deleteEmail } from "@/lib/email/inbound-queries";
+import { markEmailRead, starEmail, archiveEmail, deleteEmail, assignEmail } from "@/lib/email/inbound-queries";
 import { findLeadsByEmails, searchLeads, linkInboundEmailToLead } from "@/lib/email/lead-link-queries";
+import { getSiteadminForAssignment, formatAssigneeName, type SiteadminAssignee } from "@/lib/email/assignment-queries";
 import { buildEmailSrcDoc } from "@/lib/email/render-html";
 import type { InboundEmail } from "@/lib/email/inbound-types";
 import type { ResendInboundAttachment } from "@/lib/email/inbound-types";
@@ -15,6 +16,7 @@ type Props = {
   onClose: () => void;
   onMutated: () => void;
   onReply?: (email: InboundEmail) => void;
+  onAssigned?: (emailId: string, siteadminId: string | null) => void;
 };
 
 function fmtDate(iso: string) {
@@ -232,11 +234,116 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
   );
 }
 
+// ─── AssignPanel ──────────────────────────────────────────────────────────────
+
+type AssignPanelProps = {
+  emailId: string;
+  assignedToUserId: string | null;
+  onAssigned: (emailId: string, siteadminId: string | null) => void;
+};
+
+function AssignPanel({ emailId, assignedToUserId, onAssigned }: AssignPanelProps) {
+  const [isPending, startTransition] = useTransition();
+  const [open, setOpen]               = useState(false);
+  const [users, setUsers]             = useState<SiteadminAssignee[]>([]);
+  const [loading, setLoading]         = useState(false);
+
+  function handleOpen() {
+    setOpen((v) => !v);
+    if (users.length === 0 && !loading) {
+      setLoading(true);
+      getSiteadminForAssignment()
+        .then(setUsers)
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }
+  }
+
+  function handleAssign(siteadminId: string | null) {
+    startTransition(async () => {
+      await assignEmail(emailId, siteadminId);
+      onAssigned(emailId, siteadminId);
+      setOpen(false);
+    });
+  }
+
+  const currentUser = users.find((u) => u.id === assignedToUserId);
+
+  return (
+    <div className="border-b border-[var(--ma-line)] px-5 py-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
+          Assegnata a
+        </p>
+        <button
+          onClick={handleOpen}
+          className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs gap-1"
+          title="Assegna mail"
+        >
+          <UserCheck size={12} />
+          {assignedToUserId ? "Cambia" : "Assegna"}
+        </button>
+      </div>
+
+      {assignedToUserId ? (
+        <div className="mt-2 flex items-center gap-2">
+          <span className="flex-1 rounded-lg bg-[var(--ma-surface)] px-3 py-1.5 text-sm font-medium text-[var(--ma-ink)]">
+            {currentUser ? formatAssigneeName(currentUser) : assignedToUserId.slice(0, 8) + "…"}
+          </span>
+          <button
+            onClick={() => handleAssign(null)}
+            disabled={isPending}
+            className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs text-red-500"
+            title="Rimuovi assegnazione"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      ) : (
+        <p className="mt-1 text-xs text-[var(--ma-muted)]">Non assegnata</p>
+      )}
+
+      {open && (
+        <div className="mt-2 space-y-1.5">
+          {loading && <p className="text-xs text-[var(--ma-muted)]">Caricamento…</p>}
+
+          {!loading && users.length > 0 && (
+            <ul className="rounded-lg border border-[var(--ma-line)] bg-[var(--ma-paper)] divide-y divide-[var(--ma-line)] overflow-hidden">
+              {users.map((user) => (
+                <li key={user.id}>
+                  <button
+                    onClick={() => handleAssign(user.id)}
+                    disabled={isPending}
+                    className={cn(
+                      "w-full px-3 py-2 text-left transition-colors",
+                      user.id === assignedToUserId
+                        ? "bg-[var(--ma-accent)]/10"
+                        : "hover:bg-[var(--ma-surface)]",
+                    )}
+                  >
+                    <span className="block text-sm font-medium text-[var(--ma-ink)]">
+                      {formatAssigneeName(user)}
+                    </span>
+                    <span className="block text-xs text-[var(--ma-muted)]">
+                      {user.email} · {user.role}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── EmailDetail ──────────────────────────────────────────────────────────────
 
-export function EmailDetail({ email, onClose, onMutated, onReply }: Props) {
+export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned }: Props) {
   const [isPending, startTransition] = useTransition();
-  const [starred, setStarred]       = useState(email.starred);
+  const [starred, setStarred]           = useState(email.starred);
+  const [assignedUserId, setAssignedUserId] = useState(email.assigned_to_user_id);
   const [linkedLeadId, setLinkedLeadId] = useState(email.lead_id);
   const [autoMatches, setAutoMatches]   = useState<LeadMatch[]>([]);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -441,6 +548,16 @@ export function EmailDetail({ email, onClose, onMutated, onReply }: Props) {
           </div>
         )}
       </div>
+
+      {/* Pannello assegnazione */}
+      <AssignPanel
+        emailId={email.id}
+        assignedToUserId={assignedUserId}
+        onAssigned={(id, sid) => {
+          setAssignedUserId(sid);
+          onAssigned?.(id, sid);
+        }}
+      />
 
       {/* Lead panel */}
       <LeadPanel

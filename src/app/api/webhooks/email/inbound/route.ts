@@ -88,6 +88,50 @@ function isSupportRecipient(toAddresses: string[]): boolean {
   return toAddresses.some((address) => /^support@(menuary|bizery)\.it$/i.test(parseEmailAddress(address).address));
 }
 
+// ─── Auto-assign all'utente corrispondente ────────────────────────────────────
+
+async function resolveEmailAssignment(
+  toAddresses: string[],
+  svc: NonNullable<ReturnType<typeof createSupabaseServiceClient>>,
+): Promise<string | null> {
+  const parsed = toAddresses
+    .map((a) => parseEmailAddress(a).address.toLowerCase())
+    .filter(Boolean);
+  if (parsed.length === 0) return null;
+
+  // 1. Match esatto sull'email dell'utente (massimo@menuary.it → siteadmin.email)
+  const { data: exactUser } = await svc
+    .from("siteadmin")
+    .select("id")
+    .in("email", parsed)
+    .eq("enabled", true)
+    .limit(1)
+    .maybeSingle();
+  if (exactUser) return exactUser.id;
+
+  // 2. Match sugli alias (parte locale dell'indirizzo: "massimo", "mpernozzoli", ecc.)
+  const localParts = parsed.map((a) => a.split("@")[0]).filter(Boolean);
+  if (localParts.length === 0) return null;
+
+  const { data: aliasRow } = await svc
+    .from("siteadmin_email_aliases")
+    .select("siteadmin_id")
+    .in("alias", localParts)
+    .limit(1)
+    .maybeSingle();
+  if (!aliasRow) return null;
+
+  // Verifica che l'utente sia ancora attivo
+  const { data: activeUser } = await svc
+    .from("siteadmin")
+    .select("id")
+    .eq("id", aliasRow.siteadmin_id)
+    .eq("enabled", true)
+    .maybeSingle();
+
+  return activeUser?.id ?? null;
+}
+
 // ─── Handler inbound email ────────────────────────────────────────────────────
 
 type ResendReceivedEmail = {
@@ -185,6 +229,7 @@ async function handleInbound(
   }
 
   const brand      = detectBrandFromRecipients(toAddresses);
+  const assignedToUserId = await resolveEmailAssignment(toAddresses, svc);
   const { name: fromName, address: fromAddress } = parseEmailAddress(from);
   const headers    = normalizeHeaders(source.headers);
   const messageId  = (typeof source.message_id === "string" && source.message_id) || extractMessageId(headers);
@@ -195,16 +240,17 @@ async function handleInbound(
     : ((payload.attachments ?? []) as ResendInboundAttachment[]);
 
   const { error } = await svc.from("inbound_emails").insert({
-    message_id:   messageId,
-    from_address: fromAddress,
-    from_name:    fromName,
-    to_addresses: toAddresses,
-    subject:      (typeof source.subject === "string" ? source.subject : payload.subject) ?? "(nessun oggetto)",
-    text_body:    textBody,
-    html_body:    htmlBody,
-    headers:      headers as unknown as never,
-    attachments:  attachments as unknown as never,
+    message_id:           messageId,
+    from_address:         fromAddress,
+    from_name:            fromName,
+    to_addresses:         toAddresses,
+    subject:              (typeof source.subject === "string" ? source.subject : payload.subject) ?? "(nessun oggetto)",
+    text_body:            textBody,
+    html_body:            htmlBody,
+    headers:              headers as unknown as never,
+    attachments:          attachments as unknown as never,
     brand,
+    assigned_to_user_id:  assignedToUserId,
   });
 
   if (error) {

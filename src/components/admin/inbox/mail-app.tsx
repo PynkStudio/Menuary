@@ -22,6 +22,8 @@ type Props = {
   initialInbox: InboxPage;
   initialSent: SentPage;
   unreadTotal: number;
+  unreadMine: number;
+  currentSiteadminId: string | null;
   canCompose: boolean;
 };
 
@@ -47,11 +49,12 @@ function sentToListItem(e: SentEmail): InboundEmail {
     html_body:    e.html_body,
     headers:      [],
     attachments:  [],
-    brand:        e.brand,
-    read:         true,
-    starred:      false,
-    archived:     false,
-    lead_id:      e.lead_id,
+    brand:                e.brand,
+    read:                 true,
+    starred:              false,
+    archived:             false,
+    lead_id:              e.lead_id,
+    assigned_to_user_id:  null,
   };
 }
 
@@ -95,12 +98,13 @@ function composeBrandFromFilter(filter: BrandFilter): InboundEmail["brand"] {
   return filter === "bizery" ? "bizery" : "menuary";
 }
 
-export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: Props) {
+export function MailApp({ initialInbox, initialSent, unreadTotal, unreadMine, currentSiteadminId, canCompose }: Props) {
   const [view, setView]         = useState<MailView>("inbox");
   const [brand, setBrand]       = useState<BrandFilter>("all");
   const [inbox, setInbox]       = useState(initialInbox);
   const [sent, setSent]         = useState(initialSent);
   const [unread, setUnread]     = useState(unreadTotal);
+  const [unreadMyCount, setUnreadMyCount] = useState(unreadMine);
   const [selectedInbound, setSelectedInbound] = useState<InboundEmail | null>(null);
   const [selectedSent, setSelectedSent]       = useState<SentEmail | null>(null);
   const [composeOpen, setComposeOpen]         = useState(false);
@@ -115,20 +119,31 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
           setSent(fresh);
         } else {
           const fresh = await getInboundEmails({
-            brand:       b,
-            onlyStarred: v === "starred",
-            archived:    v === "archived",
+            brand:             b,
+            onlyStarred:       v === "starred",
+            archived:          v === "archived",
+            assignedToUserId:  v === "mine" && currentSiteadminId ? currentSiteadminId : undefined,
           });
           setInbox(fresh);
-          // Aggiorna contatore non lette approssimativo
-          if (v === "inbox") {
-            setUnread(fresh.emails.filter((e) => !e.read).length);
-          }
+          if (v === "inbox") setUnread(fresh.emails.filter((e) => !e.read).length);
+          if (v === "mine")   setUnreadMyCount(fresh.emails.filter((e) => !e.read).length);
         }
       });
     },
-    [view, brand],
+    [view, brand, currentSiteadminId],
   );
+
+  function handleAssigned(emailId: string, siteadminId: string | null) {
+    setInbox((prev) => ({
+      ...prev,
+      emails: prev.emails.map((e) =>
+        e.id === emailId ? { ...e, assigned_to_user_id: siteadminId } : e,
+      ),
+    }));
+    if (selectedInbound?.id === emailId) {
+      setSelectedInbound((prev) => prev ? { ...prev, assigned_to_user_id: siteadminId } : prev);
+    }
+  }
 
   function handleViewChange(v: MailView) {
     setView(v);
@@ -196,6 +211,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
               view={view}
               brand={brand}
               unreadCount={unread}
+              unreadMine={unreadMyCount}
               canCompose={canCompose}
               onViewChange={handleViewChange}
               onBrandChange={handleBrandChange}
@@ -212,7 +228,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
             <div className="flex items-center justify-between border-b border-[var(--ma-line)] px-4 py-2.5">
               {/* Mobile: filtri brand + vista */}
               <div className="flex flex-wrap gap-1 lg:hidden">
-                {(["inbox","sent","starred","archived"] as MailView[]).map((v) => (
+                {(["inbox","mine","sent","starred","archived"] as MailView[]).map((v) => (
                   <button
                     key={v}
                     onClick={() => handleViewChange(v)}
@@ -223,7 +239,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
                         : "bg-[var(--ma-surface)] text-[var(--ma-muted)]",
                     )}
                   >
-                    {v === "inbox" ? "Arrivo" : v === "sent" ? "Inviata" : v === "starred" ? "Stellate" : "Archivio"}
+                    {v === "inbox" ? "Arrivo" : v === "mine" ? "Le mie" : v === "sent" ? "Inviata" : v === "starred" ? "Stellate" : "Archivio"}
                   </button>
                 ))}
                 {(["all","menuary","bizery","support"] as BrandFilter[]).map((b) => (
@@ -277,6 +293,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, canCompose }: 
                   onClose={() => setSelectedInbound(null)}
                   onMutated={() => reload()}
                   onReply={handleReply}
+                  onAssigned={handleAssigned}
                 />
               ) : null}
             </div>
