@@ -5,7 +5,12 @@ import { Archive, ArrowLeft, Download, ExternalLink, Link2, Paperclip, Reply, Se
 import { cn } from "@/lib/utils";
 import { markEmailRead, starEmail, archiveEmail, deleteEmail, assignEmail } from "@/lib/email/inbound-queries";
 import { findLeadsByEmails, searchLeads, linkInboundEmailToLead } from "@/lib/email/lead-link-queries";
-import { getSiteadminForAssignment, formatAssigneeName, type SiteadminAssignee } from "@/lib/email/assignment-queries";
+import { getSiteadminForAssignment, type SiteadminAssignee } from "@/lib/email/assignment-queries";
+
+function formatAssigneeName(a: Pick<SiteadminAssignee, "first_name" | "last_name" | "email">): string {
+  const full = [a.first_name, a.last_name].filter(Boolean).join(" ");
+  return full || a.email;
+}
 import { buildEmailSrcDoc } from "@/lib/email/render-html";
 import type { InboundEmail } from "@/lib/email/inbound-types";
 import type { ResendInboundAttachment } from "@/lib/email/inbound-types";
