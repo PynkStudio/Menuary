@@ -78,8 +78,10 @@ export default async function PreviewTenantHome({
 }) {
   const host = (await headers()).get("host");
   const mode = getPlatformModeFromHost(host);
+  const isLocalPreviewDev =
+    host?.includes("localhost") || host?.includes("127.0.0.1");
 
-  if (mode !== "preview" && mode !== "preview-bizery") notFound();
+  if (mode !== "preview" && mode !== "preview-bizery" && !isLocalPreviewDev) notFound();
 
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
@@ -125,7 +127,7 @@ export default async function PreviewTenantHome({
         <Hero />
         <ThreeSouls />
         <SignatureDishes />
-        <FixedMenus />
+        {tenant.id === "bepork" && <FixedMenus />}
         <ReviewsSection />
         <FindUs />
         <DeliveryStrip />

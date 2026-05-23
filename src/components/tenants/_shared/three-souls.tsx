@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
@@ -11,9 +12,11 @@ import { usePlatformMode } from "@/components/core/platform-mode-provider";
 export function ThreeSouls() {
   const tenant = useTenant();
   const mode = usePlatformMode();
+  const pathname = usePathname();
   const content = getTenantContent(tenant.id);
+  const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
   const previewPrefix =
-    mode === "preview" && tenant.previewSlug ? `/${tenant.previewSlug}` : "";
+    (mode === "preview" || isPathPreview) && tenant.previewSlug ? `/${tenant.previewSlug}` : "";
 
   return (
     <section id="tre-anime" className="relative scroll-mt-24 bg-pork-cream py-20 md:py-28">

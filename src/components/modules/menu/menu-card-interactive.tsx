@@ -24,6 +24,7 @@ import {
   menuServiceNoteText,
 } from "@/lib/menu-service-notes";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { useTenant } from "@/components/core/tenant-provider";
 import { canAddToCart } from "@/lib/ordering-rules";
 import {
   formatIngredientsLine,
@@ -64,8 +65,9 @@ const tagMeta: Record<
 const priceVariantColors: Array<"mustard" | "red"> = ["mustard", "red"];
 
 export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
+  const tenant = useTenant();
   const pathname = usePathname();
-  const { allowTakeaway, allowTableOrders } = useEffectiveFeatures();
+  const { allowTakeaway, allowTableOrders, favoritesEnabled } = useEffectiveFeatures();
   const orderingAllowed = canAddToCart(pathname, {
     allowTakeaway,
     allowTableOrders,
@@ -156,20 +158,22 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
         </div>
       )}
 
-      <button
-        type="button"
-        aria-label={isFav ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"}
-        aria-pressed={isFav}
-        onClick={() => toggleFav(item.id)}
-        className={cn(
-          "absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all active:scale-90",
-          isFav
-            ? "bg-pork-red text-white"
-            : "bg-white/90 text-pork-ink hover:bg-pork-red hover:text-white",
-        )}
-      >
-        <Heart size={18} fill={isFav ? "currentColor" : "none"} />
-      </button>
+      {favoritesEnabled && tenant.features.favorites && (
+        <button
+          type="button"
+          aria-label={isFav ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"}
+          aria-pressed={isFav}
+          onClick={() => toggleFav(item.id)}
+          className={cn(
+            "absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all active:scale-90",
+            isFav
+              ? "bg-pork-red text-white"
+              : "bg-white/90 text-pork-ink hover:bg-pork-red hover:text-white",
+          )}
+        >
+          <Heart size={18} fill={isFav ? "currentColor" : "none"} />
+        </button>
+      )}
 
       {item.image ? (
         <div className="relative aspect-[4/3] overflow-hidden bg-pork-ink/5">

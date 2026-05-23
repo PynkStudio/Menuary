@@ -803,11 +803,10 @@ const docaContent: TenantContent = {
     facebookLabel: "Instagram @doca.milano",
   },
   contact: {
-    // Telefono non pubblicato: contatto via DM Instagram. Placeholder da verificare.
-    phone: "+39 02 0000 0000",
-    whatsappDigits: "390200000000",
+    phone: "Instagram @doca.milano",
+    whatsappDigits: "",
     whatsappMessage:
-      "Olá Doca! Vorrei prenotare il pane per ___ (giorno) e passare a ritirarlo. Obrigada!",
+      "Olá Doca! Vorrei sapere cosa c'è oggi al banco.",
   },
   address: {
     street: "Via Breno, 2",
@@ -818,9 +817,9 @@ const docaContent: TenantContent = {
   },
   maps: {
     searchUrl:
-      "https://www.google.com/maps/search/?api=1&query=Doca+Pane+Caff%C3%A8+Saudade+Via+Breno+2+Milano",
+      "https://www.google.com/maps/search/?api=1&query=Doca+-+Pane%2C+Caff%C3%A8%2C+Saudade+Via+Breno+2+Milano",
     embedUrl:
-      "https://www.google.com/maps?q=Via+Breno+2+Milano&output=embed",
+      "https://www.google.com/maps?q=Doca+-+Pane%2C+Caff%C3%A8%2C+Saudade+Via+Breno+2+Milano&output=embed",
   },
   hero: {
     eyebrow: "Bakery brasiliana · Milano Corvetto",
@@ -924,7 +923,7 @@ const docaContent: TenantContent = {
     titleLead: "Via Breno 2,",
     titleAccent: "Milano Corvetto.",
     body:
-      "Un ex centro scommesse trasformato in bakery, in zona San Luigi-Corvetto. Aperti da mercoledì a sabato, 8:30–13:00. Pane direttamente dalla finestra del laboratorio, dolci e caffè al banco.",
+      "Un ex centro scommesse trasformato in bakery, in zona San Luigi-Corvetto. Aperti da mercoledì a sabato, 08:30–13:00; chiusi lunedì, martedì e domenica. Pane direttamente dalla finestra del laboratorio, dolci e caffè al banco.",
     mapTitle: "Mappa Doca — Via Breno 2, Milano",
   },
   footer: {

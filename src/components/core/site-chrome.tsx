@@ -12,6 +12,7 @@ import { FavoritesDrawer } from "@/components/modules/favorites/favorites-drawer
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useTenantOrNull } from "@/components/core/tenant-provider";
 import { resolveTenantFeatures } from "@/lib/tenant-modules";
+import { findTenantByPreviewSlug } from "@/lib/tenant-registry";
 
 const EXCLUDED_MODES = new Set([
   "marketing",
@@ -36,6 +37,12 @@ function isInternal(pathname: string | null): boolean {
   );
 }
 
+function isPathPreview(pathname: string | null): boolean {
+  const slug = pathname?.split("/").filter(Boolean)[0];
+  if (!slug) return false;
+  return !!findTenantByPreviewSlug(slug);
+}
+
 /**
  * Shell globale per i siti tenant: monta navbar, footer, drawer e overlay
  * in base ai moduli effettivamente attivi nel profilo del tenant.
@@ -55,7 +62,12 @@ export function SiteChrome() {
     [tenant],
   );
 
-  if (isInternal(pathname) || EXCLUDED_MODES.has(mode as never) || !features) {
+  if (
+    isInternal(pathname) ||
+    EXCLUDED_MODES.has(mode as never) ||
+    isPathPreview(pathname) ||
+    !features
+  ) {
     return null;
   }
 
@@ -82,7 +94,11 @@ export function SiteFooterGate() {
   const pathname = usePathname();
   const mode = usePlatformMode();
 
-  if (isInternal(pathname) || EXCLUDED_MODES.has(mode as never)) {
+  if (
+    isInternal(pathname) ||
+    EXCLUDED_MODES.has(mode as never) ||
+    isPathPreview(pathname)
+  ) {
     return null;
   }
 

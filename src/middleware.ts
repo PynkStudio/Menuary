@@ -8,7 +8,7 @@ import {
   type SiteadminRole,
 } from "@/lib/admin-permissions";
 import { PLATFORM_MODE_HEADER, getPlatformModeFromHost, type PlatformMode } from "@/lib/platform";
-import { findTenantById } from "@/lib/tenant-registry";
+import { findTenantById, findTenantByPreviewSlug } from "@/lib/tenant-registry";
 import {
   resolveLocationSlugFromHost,
   resolveTenantFromHost,
@@ -212,6 +212,8 @@ export async function middleware(request: NextRequest) {
   const mode = getPlatformModeFromHost(host);
   const { pathname } = request.nextUrl;
   const cookieDomain = resolveSessionCookieDomain(host);
+  const pathPreviewSlug = pathname.split("/").filter(Boolean)[0];
+  const pathPreviewTenant = pathPreviewSlug ? findTenantByPreviewSlug(pathPreviewSlug) : undefined;
 
   if (allowStaticAssets(pathname)) return NextResponse.next();
 
@@ -448,13 +450,18 @@ export async function middleware(request: NextRequest) {
   // custom con location subdomain.
   const tenant = resolveTenantFromHost(host);
   const locationSlug = resolveLocationSlugFromHost(host, tenant.domains);
+  const requestHeaders = new Headers(request.headers);
+  if (pathPreviewTenant) {
+    requestHeaders.set("x-preview-tenant-id", pathPreviewTenant.id);
+  }
   if (locationSlug) {
-    const response = NextResponse.next({ request });
+    requestHeaders.set("x-location-slug", locationSlug);
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.headers.set("x-location-slug", locationSlug);
     return response;
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {

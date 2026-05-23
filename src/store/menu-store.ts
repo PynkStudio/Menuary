@@ -141,6 +141,16 @@ function seedMenuLists(
     ];
   }
 
+  if (tenantId === "doca") {
+    return [
+      {
+        ...fullMenu,
+        name: "Banco Doca",
+        description: "Pane, dolci e caffè disponibili in bottega.",
+      },
+    ];
+  }
+
   return [
     fullMenu,
     {

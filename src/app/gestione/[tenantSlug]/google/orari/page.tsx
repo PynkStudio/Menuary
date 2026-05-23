@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ChevronLeft, RefreshCw } from "lucide-react";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { DaySchedule } from "@/lib/venue-hours";
-import { defaultHoursWeek } from "@/lib/venue-hours";
+import { defaultHoursWeekForTenant } from "@/lib/venue-hours";
 import { headers } from "next/headers";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 
@@ -66,7 +66,7 @@ export default async function OrariPage({ params, searchParams }: Props) {
       .eq("id", tenantSlug)
       .single();
     const tHours = tenantRow?.hours as DaySchedule[] | null;
-    hours = tHours?.length ? tHours : defaultHoursWeek();
+    hours = tHours?.length ? tHours : defaultHoursWeekForTenant(tenantSlug);
   }
 
   const [googleLoc, specialHours] = await Promise.all([
