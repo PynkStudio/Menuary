@@ -62,7 +62,9 @@ import {
   PLATFORM_COMMISSION_RULES,
   calculateCommissionAmount,
   calculateFirstPaymentBase,
+  calculateMultiLocationTotal,
   calculateSubscriptionTotal,
+  getLocationPlanFactor,
 } from "@/lib/platform-admin-data";
 import { getModuleLabel } from "@/lib/vertical";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
@@ -198,11 +200,11 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
       updated_at: now,
       lead: { ...lead, status: "active", stage: "tenant", tenant_id: tenantId, converted_at: now },
       package: selectedPackage,
-      location_plans: lead.locations.map((location) => ({
+      location_plans: lead.locations.map((location, index) => ({
         ...location,
         package_slug: selectedPackage.slug,
         package_name: selectedPackage.name,
-        price_factor: 1,
+        price_factor: getLocationPlanFactor(location, index),
       })),
     };
 
@@ -491,28 +493,41 @@ function ConfirmSaleModal({
   onConfirm: (payload: SalePayload) => void;
 }) {
   const defaultPackage = subscription?.package ?? PLATFORM_PACKAGES.find((item) => item.vertical === "both" || item.vertical === lead.business_vertical) ?? PLATFORM_PACKAGES[0];
+  const defaultBaseAmount = subscription?.billing_cycle === "yearly"
+    ? defaultPackage.price_yearly ?? defaultPackage.price_monthly * 12
+    : defaultPackage.price_monthly;
   const [packageId, setPackageId] = useState(defaultPackage.id);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(subscription?.billing_cycle ?? "monthly");
   const [recurringAmount, setRecurringAmount] = useState(
-    subscription?.price_override ?? (billingCycle === "yearly" ? defaultPackage.price_yearly ?? defaultPackage.price_monthly * 12 : defaultPackage.price_monthly),
+    subscription?.price_override ?? calculateMultiLocationTotal(defaultBaseAmount, lead.locations),
   );
   const [setupAmount, setSetupAmount] = useState(subscription?.setup_amount ?? 490);
   const [notes, setNotes] = useState(subscription?.notes ?? "");
 
   const selectedPackage = PLATFORM_PACKAGES.find((item) => item.id === packageId) ?? defaultPackage;
   const sellerRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "venditore")?.commission_rate ?? 30;
+  const locationsCount = Math.max(lead.locations.length, 1);
+  const extraLocationsCount = Math.max(locationsCount - 1, 0);
   const firstPaymentAmount = billingCycle === "monthly" ? setupAmount + recurringAmount : recurringAmount;
   const commissionAmount = calculateCommissionAmount(firstPaymentAmount, sellerRate);
+
+  function packageBaseAmount(pkg = selectedPackage, cycle = billingCycle) {
+    return cycle === "yearly" ? pkg.price_yearly ?? pkg.price_monthly * 12 : pkg.price_monthly;
+  }
+
+  function packageMultiLocationAmount(pkg = selectedPackage, cycle = billingCycle) {
+    return calculateMultiLocationTotal(packageBaseAmount(pkg, cycle), lead.locations);
+  }
 
   function selectPackage(nextPackageId: string) {
     const nextPackage = PLATFORM_PACKAGES.find((item) => item.id === nextPackageId) ?? selectedPackage;
     setPackageId(nextPackage.id);
-    setRecurringAmount(billingCycle === "yearly" ? nextPackage.price_yearly ?? nextPackage.price_monthly * 12 : nextPackage.price_monthly);
+    setRecurringAmount(packageMultiLocationAmount(nextPackage, billingCycle));
   }
 
   function selectBillingCycle(nextCycle: BillingCycle) {
     setBillingCycle(nextCycle);
-    setRecurringAmount(nextCycle === "yearly" ? selectedPackage.price_yearly ?? selectedPackage.price_monthly * 12 : selectedPackage.price_monthly);
+    setRecurringAmount(packageMultiLocationAmount(selectedPackage, nextCycle));
   }
 
   return (
@@ -593,6 +608,11 @@ function ConfirmSaleModal({
           <SummaryMetric label="Provvigione venditore" value={`${sellerRate}%`} />
           <SummaryMetric label="Importo provvigione" value={eur(commissionAmount)} strong />
         </div>
+        {extraLocationsCount > 0 && (
+          <p className="mt-3 text-sm font-semibold text-pork-ink/60">
+            Multi-sede: sede principale al 100%, {extraLocationsCount} {extraLocationsCount === 1 ? "sede aggiuntiva" : "sedi aggiuntive"} al 50% del piano selezionato.
+          </p>
+        )}
 
         <div className="mt-6 flex flex-wrap justify-end gap-2">
           <button

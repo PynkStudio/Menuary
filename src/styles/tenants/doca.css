@@ -1,0 +1,22 @@
+/* doca.css — override e stili specifici per il tenant Doca
+   (caffetteria portoghese a Milano). Tutti i token visivi del tenant
+   sono comunque iniettati come CSS variables tramite tenantThemeCssVars,
+   quindi questo file resta volutamente leggero: solo regole scoped al
+   surface [data-tenant-surface="doca"] per eventuali ritocchi di brand. */
+@layer components {
+  [data-tenant-surface="doca"] {
+    --doca-font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+    --doca-font-body: "Inter", system-ui, -apple-system, sans-serif;
+    --doca-tile-radius: 1.25rem;
+    --doca-paper: #F6EDDD;
+    --doca-paper-deep: #EAD4B4;
+    --doca-wood: #3D2A1E;
+  }
+
+  /* Carta calda di fondo per il preview, niente neri puri */
+  [data-tenant-surface="doca"] .tenant-preview-surface,
+  .tenant-preview-surface[data-tenant-surface="doca"] {
+    background: var(--doca-paper);
+    color: var(--doca-wood);
+  }
+}

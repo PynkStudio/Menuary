@@ -97,7 +97,7 @@ export function defaultContractData(): ContractData {
         "Sito pubblico tenant sulla piattaforma",
         "Pannello gestionale admin",
         "Hosting, CDN e certificato SSL",
-        "Dominio personalizzato (fornito dal Cliente)",
+        "Dominio personalizzato (primo anno incluso per nuove attivazioni)",
         "Integrazione Google Business Profile",
       ],
     },

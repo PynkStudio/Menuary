@@ -70,6 +70,34 @@ export const STUDIOARANZULLA_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: false,
 };
 
+/** Doca: caffetteria portoghese a Milano — pane, caffè, saudade. */
+export const DOCA_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: true,
+  takeaway: true,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: true,
+  tablePlanner: false,
+  productAvailability: true,
+  upselling: false,
+  crm: false,
+  analytics: true,
+  takeawaySlots: false,
+  deliveryHub: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: false,
+  multiLocation: false,
+  favorites: true,
+  reviews: true,
+  gallery: true,
+  shop: false,
+  slabbby: false,
+};
+
 /** Officina KAM: primo tenant reale Bizery — officina auto e moto. */
 export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
@@ -173,6 +201,32 @@ export const TENANTS: TenantProfile[] = [
       pink: "#CD562F",
     },
     features: { ...allTenantFeatures(true), shop: false, slabbby: false },
+  },
+
+  {
+    id: "doca",
+    name: "Doca",
+    label: "Lead · Doca",
+    vertical: "food",
+    domains: [],
+    previewSlug: "doca",
+    enabled: true,
+    status: "trattativa",
+    theme: {
+      // Palette ispirata al locale reale: legno, tonalità della terra,
+      // illustrazioni brasiliane sobrie (no tropicale da cartolina).
+      red: "#A85F3A",        // terracotta / mattone caldo
+      redDark: "#7E4226",
+      peach: "#EAD4B4",      // crema-sabbia
+      cream: "#F6EDDD",      // sfondo carta calda
+      ink: "#241B14",        // marrone scurissimo, non nero
+      brick: "#3D2A1E",      // legno scuro
+      mustard: "#D8A14A",    // ocra dorato (mais, guava cotta)
+      mustardSoft: "#EBC785",
+      green: "#5A6B3A",      // verde foglia ulivo, smorzato
+      pink: "#C2554F",       // rosa-bruciato / accenti brasiliani
+    },
+    features: DOCA_MODULE_FLAGS,
   },
 
   // ── Verticale services (Bizery — bizery.it) ──────────────────────────────

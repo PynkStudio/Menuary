@@ -74,7 +74,13 @@ export type AdminMenuList = {
 
 export type OrderType = "tavolo" | "asporto";
 
+/** Solo per ordini takeaway/dine-in quando il locale NON usa tavoli numerati.
+ *  Distingue se il ristoratore deve preparare il vassoio (dine_in) o il sacchetto (takeaway). */
+export type OrderDineOption = "dine_in" | "takeaway";
+
 export type OrderStatus =
+  | "pending_confirmation"
+  | "expired"
   | "nuovo"
   | "in_preparazione"
   | "pronto"
@@ -113,6 +119,31 @@ export type Order = {
   lines: OrderLine[];
   total: number;
   status: OrderStatus;
+  /** Solo per ordini senza tavolo numerato. */
+  dineOption?: OrderDineOption;
+  /** Timestamp ISO. Se status === "pending_confirmation", scadenza attesa cliente. */
+  confirmationExpiresAt?: string;
+  confirmedAt?: string;
+  /** true se passato auto-accept senza intervento staff. */
+  autoAccepted?: boolean;
+};
+
+export type TenantOrderSettings = {
+  id: string;
+  tenantId: string;
+  locationId: string | null;
+  takeawayEnabled: boolean;
+  dineInEnabled: boolean;
+  takeawayWindowBeforeOpenMin: number | null;
+  takeawayWindowBeforeCloseMin: number | null;
+  dineInWindowBeforeOpenMin: number | null;
+  dineInWindowBeforeCloseMin: number | null;
+  autoAcceptEnabled: boolean;
+  autoAcceptMaxTotal: number | null;
+  autoAcceptMaxItems: number | null;
+  autoAcceptOnlyReturning: boolean;
+  autoAcceptNoNotes: boolean;
+  pendingTimeoutSeconds: number;
 };
 
 export type Table = {

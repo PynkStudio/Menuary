@@ -43,7 +43,7 @@ Premesso che il Fornitore eroga "${brandInfo.platformName}", ${brandInfo.vertica
 Il servizio include in particolare:
 ${servizio.moduliInclusi.map((m) => `  • ${m}`).join("\n")}
 
-Il sito del Cliente sarà raggiungibile sull'istanza tenant "${servizio.tenantSlug || "_______________"}"${servizio.dominio ? ` e sul dominio personalizzato "${servizio.dominio}"` : ""}. La registrazione e la titolarità del dominio restano a carico ed in capo al Cliente, fatto salvo quanto diversamente concordato per iscritto.`,
+Il sito del Cliente sarà raggiungibile sull'istanza tenant "${servizio.tenantSlug || "_______________"}"${servizio.dominio ? ` e sul dominio personalizzato "${servizio.dominio}"` : ""}. Per le nuove attivazioni, qualora il Cliente richieda la registrazione di un nuovo dominio, il primo anno di registrazione del dominio è incluso nel piano sottoscritto. Dal secondo anno, e per ogni successivo rinnovo, il costo del dominio sarà addebitato separatamente al Cliente al prezzo effettivamente applicato dal provider/registrar, senza alcun rincaro o margine da parte del Fornitore. La titolarità del dominio resta in capo al Cliente, salvo diversa indicazione tecnica richiesta dal registrar o diverso accordo scritto tra le Parti.`,
     },
     {
       id: "durata",
@@ -69,6 +69,8 @@ Il recesso non dà diritto ad alcun rimborso, totale o parziale, dei canoni e de
       : ", dovuta alla sottoscrizione del Contratto"
   };
   b) Un canone${annuale ? " annuale anticipato" : " mensile"} pari a ${annuale ? `${formatEUR(totaleAnnuale)} oltre IVA (sconto del ${economiche.scontoAnnuale}% sul totale annuo)` : `${formatEUR(economiche.canoneMensile)} oltre IVA`}, dovuto a fronte dell'erogazione continuativa del servizio.
+
+In caso di configurazione multi-sede, la sede principale è inclusa nel canone del piano sottoscritto. Per ciascuna sede aggiuntiva collegata allo stesso Cliente e allo stesso piano, il Cliente corrisponderà un canone pari al 50% (cinquanta per cento) del canone del piano selezionato, con la medesima periodicità di fatturazione. Eventuali sedi aggiuntive attivate in corso di annualità saranno fatturate pro-rata per il periodo residuo, salvo diverso accordo scritto.
 
 Modalità di pagamento: ${paymentMethodLabel(economiche.metodoPagamento)}.
 

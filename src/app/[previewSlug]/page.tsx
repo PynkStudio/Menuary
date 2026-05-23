@@ -44,7 +44,9 @@ export async function generateMetadata({
         ? `${tenant.name} - servizi, appuntamenti e listino prezzi`
         : tenant.id === "faak"
           ? `${tenant.name} - cibo e vino a ribellione naturale`
-          : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
+          : tenant.id === "doca"
+            ? "Doca - Pane, Caffè, Saudade · Milano"
+            : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
     metadataBase: new URL(mode === "preview-bizery" ? "https://demo.bizery.it" : "https://demo.menuary.it"),

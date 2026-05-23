@@ -33,5 +33,6 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     canManageStaff: modules.staffRoles,
     canViewAnalytics: modules.analytics,
     canManageLocations: modules.multiLocation,
+    canManageFidelity: modules.crm,
   };
 }

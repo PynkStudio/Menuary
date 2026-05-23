@@ -788,6 +788,159 @@ const studioaranzullaContent: TenantContent = {
   },
 };
 
+const docaContent: TenantContent = {
+  logoSrc: "/doca/vetrina.jpg",
+  logoAlt: "Doca Milano",
+  showcaseLogoSrc: "/doca/hero-interno.jpg",
+  showcaseLogoAlt: "Doca — Pane, Caffè, Saudade · Milano",
+  description:
+    "Doca — bakery brasiliana a Milano, zona Corvetto. Pane a lievitazione naturale con farine Mulino Viva, pão de queijo, torta di mais con guava, caffè filtro Cafezal. International breakfast with brazilian soul.",
+  url: "https://www.instagram.com/doca.milano/",
+  social: {
+    instagram: "https://www.instagram.com/doca.milano/",
+    facebook: "https://www.instagram.com/doca.milano/",
+    instagramLabel: "Instagram @doca.milano",
+    facebookLabel: "Instagram @doca.milano",
+  },
+  contact: {
+    // Telefono non pubblicato: contatto via DM Instagram. Placeholder da verificare.
+    phone: "+39 02 0000 0000",
+    whatsappDigits: "390200000000",
+    whatsappMessage:
+      "Olá Doca! Vorrei prenotare il pane per ___ (giorno) e passare a ritirarlo. Obrigada!",
+  },
+  address: {
+    street: "Via Breno, 2",
+    zip: "20139",
+    city: "Milano",
+    province: "MI",
+    full: "Via Breno, 2 - 20139 Milano (MI) · zona Corvetto / San Luigi",
+  },
+  maps: {
+    searchUrl:
+      "https://www.google.com/maps/search/?api=1&query=Doca+Pane+Caff%C3%A8+Saudade+Via+Breno+2+Milano",
+    embedUrl:
+      "https://www.google.com/maps?q=Via+Breno+2+Milano&output=embed",
+  },
+  hero: {
+    eyebrow: "Bakery brasiliana · Milano Corvetto",
+    titleLead: "Pane, caffè,",
+    titleAccent: "saudade.",
+    body:
+      "Una piccola bakery di quartiere a sud di Milano. Lievitazione naturale con farine del Mulino Viva, caffè filtro da singola piantagione, ricette brasiliane di Queren — non il Brasile da cartolina, quello dell'infanzia.",
+    backdrop: "/doca/hero-interno.jpg",
+    ctaLabel: "Scrivici su Instagram",
+  },
+  soulsIntro: {
+    eyebrow: "Padoca — la panetteria di quartiere",
+    titleLead: "Tecnica e memoria,",
+    titleAccent: "professionalità e radici.",
+    body:
+      "Doca viene da \"padoca\": quella panetteria sotto casa dove vai ogni mattina, conosci chi ti serve e ti senti a casa. Forno, caffè e dolci brasiliani sotto lo stesso tetto, dietro la finestra del laboratorio.",
+  },
+  souls: [
+    {
+      id: "pane",
+      kicker: "Dal laboratorio",
+      title: "Pane a lievitazione naturale",
+      desc: "Semi-integrale, con segale, ai semi e il pão da colônia — il pane in cassetta italo-brasiliano. Farine del Mulino Viva, in Piemonte. Si compra direttamente dalla finestra del laboratorio.",
+      href: "/menu#pane",
+      image: "/doca/pane-scaffale.jpg",
+    },
+    {
+      id: "caffe",
+      kicker: "Cafezal roastery",
+      title: "Espresso & filtro",
+      desc: "Espresso e caffè filtro da singola piantagione brasiliana. Una miscela dolce e morbida, scelta insieme alla torrefazione Cafezal. Si beve seduti o al banco, niente fretta.",
+      href: "/menu#caffe",
+      image: "/doca/caffe-filtro.jpg",
+    },
+    {
+      id: "dolci",
+      kicker: "Colazione internazionale, anima brasiliana",
+      title: "Dolci e lievitati",
+      desc: "Pão de queijo con manioca e Branzi, torta di carote con ganache al cioccolato, torta di mais con confettura di guava siciliana bio, cookies con noci dell'Amazzonia.",
+      href: "/menu#dolci",
+      image: "/doca/dolci.jpg",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "Quello che sforniamo",
+    title: "Quello che cerchi quando entri da Doca.",
+    subtitle: "Niente croissant, niente cinnamon rolls. Una colazione fatta in un altro modo — e qualche sorpresa al banco.",
+  },
+  dishes: [
+    {
+      name: "Pão de queijo",
+      desc: "Manioca e formaggio Branzi: la versione Doca del classico brasiliano. Caldo, elastico, da mangiare subito.",
+      price: "€ 2,50",
+      image: "/doca/pao-de-queijo.jpg",
+      variant: "mustard",
+      href: "/menu#dolci",
+    },
+    {
+      name: "Torta di mais con guava",
+      desc: "Confettura di guava fresca da guave biologiche siciliane. Una fetta umida, dolce e profumata.",
+      price: "€ 4,50",
+      image: "/doca/torta-mais.jpg",
+      variant: "red",
+      href: "/menu#dolci",
+    },
+    {
+      name: "Torta di carote & ganache",
+      desc: "Carote dell'orto e ganache al cioccolato fondente sopra. Il classico bolo de cenoura brasiliano, fatto qui.",
+      price: "€ 4,50",
+      image: "/doca/dolci.jpg",
+      variant: "pink",
+      href: "/menu#dolci",
+    },
+    {
+      name: "Caffè filtro · Cafezal",
+      desc: "Singola piantagione brasiliana, miscela dolce e morbida. Versato lento, bevuto seduti.",
+      price: "€ 3,50",
+      image: "/doca/caffe-filtro.jpg",
+      variant: "red",
+      href: "/menu#caffe",
+    },
+    {
+      name: "Pão da colônia",
+      desc: "Pane bianco in cassetta di origine italo-brasiliana. Mollica fitta, perfetto per tostare la mattina dopo.",
+      price: "€ 7,00 / pagnotta",
+      image: "/doca/pane-bancone.jpg",
+      variant: "green",
+      href: "/menu#pane",
+    },
+    {
+      name: "Cookies noci dell'Amazzonia",
+      desc: "Friabili fuori, morbidi dentro. La nota tostata viene dalle noci, non da decorazioni esotiche.",
+      price: "€ 3,00",
+      image: "/doca/dolci.jpg",
+      variant: "mustard",
+      href: "/menu#dolci",
+    },
+  ],
+  findUs: {
+    eyebrow: "Come trovarci",
+    titleLead: "Via Breno 2,",
+    titleAccent: "Milano Corvetto.",
+    body:
+      "Un ex centro scommesse trasformato in bakery, in zona San Luigi-Corvetto. Aperti da mercoledì a sabato, 8:30–13:00. Pane direttamente dalla finestra del laboratorio, dolci e caffè al banco.",
+    mapTitle: "Mappa Doca — Via Breno 2, Milano",
+  },
+  footer: {
+    tagline: "International breakfast with brazilian soul.",
+    body:
+      "Doca — pane, caffè, saudade. Bakery brasiliana di quartiere fondata da Queren Girardi in Via Breno 2, Milano. Lievitazione naturale, caffè filtro Cafezal, ricette di casa.",
+  },
+  delivery: {
+    title: "Niente delivery, vieni in bottega.",
+    body: "Doca lavora pane fresco ogni mattina, in laboratorio aperto. Niente spedizioni: si passa, si guarda e si porta a casa. Su Too Good To Go è attiva la Surprise Bag a fine giornata.",
+    partners: [
+      { name: "Too Good To Go", url: "https://www.toogoodtogo.com/it/find/milano/doca-panecaffesaudade/bakedgoods/surprisebagmedia-153281183328024192", active: true },
+    ],
+  },
+};
+
 import { findTenantById } from "./tenant-registry";
 
 export function getTenantContent(tenantId: string): TenantContent {
@@ -795,6 +948,7 @@ export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "libritech") return libritechContent;
   if (tenantId === "officinakam") return officinakamContent;
   if (tenantId === "studioaranzulla") return studioaranzullaContent;
+  if (tenantId === "doca") return docaContent;
   // Ogni tenant deve avere il proprio blocco content sopra.
   // Fallback per verticale: non restituire mai contenuto BePork per tenant services.
   const profile = findTenantById(tenantId);

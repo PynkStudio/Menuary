@@ -200,6 +200,14 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
             dd={paymentMethodLabel(data.economiche.metodoPagamento)}
           />
           <SummaryItem
+            dt="Dominio"
+            dd="Nuove attivazioni: primo anno incluso; dal secondo anno a costo provider, senza rincaro"
+          />
+          <SummaryItem
+            dt="Multi-sede"
+            dd="Sede principale inclusa; ogni sede aggiuntiva al 50% del piano selezionato"
+          />
+          <SummaryItem
             dt="Durata"
             dd="12 mesi con rinnovo tacito · preavviso di recesso 30 giorni"
           />

@@ -94,6 +94,7 @@ export function GestioneShell({
     { label: "Kiosk", href: sectionHref("kiosk"), visible: () => isAdmin && tenant.features.orderKiosk },
     { label: "Google", href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },
     { label: "Analytics", href: sectionHref("analytics"), visible: (c) => access.canViewAnalytics && c.can_view_analytics },
+    { label: "Fedeltà", href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
     { label: "Fatturazione", href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: "Sedi", href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
   ];
