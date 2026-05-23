@@ -16,6 +16,7 @@ export function Hero() {
   const mode = usePlatformMode();
   const pathname = usePathname();
   const content = getTenantContent(tenant.id);
+  const isDoca = tenant.id === "doca";
   const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
   const menuHref =
     (mode === "preview" || isPathPreview) && tenant.previewSlug
@@ -28,6 +29,97 @@ export function Hero() {
       block: "start",
     });
   };
+
+  if (isDoca) {
+    return (
+      <section className="doca-hero relative isolate overflow-hidden">
+        <div className="doca-checker doca-checker-top" aria-hidden="true" />
+        <div className="doca-checker doca-checker-bottom" aria-hidden="true" />
+
+        <div className="container-wide relative z-10">
+          <div className="doca-hero-grid">
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.7, ease: "easeOut" }}
+              className="doca-hero-copy"
+            >
+              <div className="doca-logo-word" aria-label="Doca">
+                DOCA<span>*</span>
+              </div>
+              <h1 className="doca-hero-title">
+                <span>Pane,</span>
+                <span>caffè,</span>
+                <em>saudade.</em>
+              </h1>
+              <p className="doca-hero-text">
+                Bakery brasiliana di quartiere a Milano Corvetto. Pane a lievitazione
+                naturale, caffè filtro Cafezal, dolci di casa e brigadeiros vestiti
+                come piccoli personaggi da banco.
+              </p>
+              <div className="doca-hero-actions">
+                <VenueWhatsappLink className="doca-button doca-button-primary">
+                  <MessageCircle size={20} />
+                  {content.hero.ctaLabel}
+                </VenueWhatsappLink>
+                <Link href={menuHref} className="doca-button doca-button-secondary">
+                  <UtensilsCrossed size={20} />
+                  Guarda il menu
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 20, rotate: 1.5 }}
+              animate={{ opacity: 1, y: 0, rotate: 0 }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.8, delay: 0.08, ease: "easeOut" }}
+              className="doca-hero-board"
+            >
+              <div className="doca-photo doca-photo-main">
+                <Image
+                  src="/doca/brigadeiros.jpg"
+                  alt="Brigadeiros Doca in pirottini su vassoio rosso"
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 92vw, 520px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="doca-photo doca-photo-box">
+                <Image
+                  src="/doca/caixa-brigadeiros.jpg"
+                  alt="Scatola Doca per brigadeiros sortidos con illustrazioni"
+                  fill
+                  sizes="(max-width: 1024px) 48vw, 250px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="doca-photo doca-photo-sign">
+                <Image
+                  src="/doca/insegna.jpg"
+                  alt="Insegna Doca color crema con logotipo bordeaux"
+                  fill
+                  sizes="(max-width: 1024px) 46vw, 230px"
+                  className="object-cover"
+                />
+              </div>
+              <DocaBrigadeiroCharacters reduceMotion={reduceMotion} />
+            </motion.div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={scrollToNext}
+          className="doca-scroll"
+          aria-label="Scorri alla sezione successiva"
+        >
+          <span>Scorri</span>
+          <ChevronDown className="size-6" strokeWidth={2} />
+        </button>
+      </section>
+    );
+  }
 
   return (
     <section className="relative isolate overflow-hidden bg-pork-ink pb-20 pt-[calc(7rem+env(safe-area-inset-top))] text-pork-cream md:pb-28 md:pt-[calc(9rem+env(safe-area-inset-top))]">
@@ -131,5 +223,34 @@ export function Hero() {
 
       <div className="pointer-events-none absolute inset-x-0 -bottom-1 h-16 bg-gradient-to-b from-transparent to-pork-cream" />
     </section>
+  );
+}
+
+function DocaBrigadeiroCharacters({ reduceMotion }: { reduceMotion: boolean | null }) {
+  const animation = reduceMotion ? undefined : { y: [0, -8, 0], rotate: [-1, 2, -1] };
+  const transition = reduceMotion
+    ? undefined
+    : { repeat: Infinity, duration: 3.4, ease: "easeInOut" as const };
+
+  return (
+    <div className="doca-characters" aria-hidden="true">
+      <motion.span className="doca-brigadeiro doca-brigadeiro-choco" animate={animation} transition={transition}>
+        <i />
+      </motion.span>
+      <motion.span
+        className="doca-brigadeiro doca-brigadeiro-pistachio"
+        animate={reduceMotion ? undefined : { y: [0, 7, 0], rotate: [2, -2, 2] }}
+        transition={reduceMotion ? undefined : { repeat: Infinity, duration: 3.9, ease: "easeInOut", delay: 0.3 }}
+      >
+        <i />
+      </motion.span>
+      <motion.span
+        className="doca-brigadeiro doca-brigadeiro-cacao"
+        animate={reduceMotion ? undefined : { y: [0, -6, 0], rotate: [0, -3, 0] }}
+        transition={reduceMotion ? undefined : { repeat: Infinity, duration: 3.1, ease: "easeInOut", delay: 0.5 }}
+      >
+        <i />
+      </motion.span>
+    </div>
   );
 }

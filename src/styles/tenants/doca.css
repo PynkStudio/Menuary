@@ -1,71 +1,352 @@
-/* doca.css — identità Doca: forno contemporaneo, carta, legno e banco. */
+/* doca.css — Doca: insegna crema, logotipo bordeaux, brigadeiros illustrati. */
 @layer components {
   [data-tenant-surface="doca"] {
     --doca-font-display: var(--font-menuary-display), "Fraunces", Georgia, serif;
     --doca-font-body: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
-    --doca-paper: #f6eddd;
-    --doca-paper-deep: #e9d2ad;
-    --doca-paper-soft: #fbf7ef;
-    --doca-wood: #2a1b13;
-    --doca-cacao: #5a3524;
-    --doca-guava: #b85e4f;
-    --doca-leaf: #5c6d42;
-    --doca-gold: #d6a34d;
+    --doca-cream: #f4dfab;
+    --doca-cream-soft: #fff3d1;
+    --doca-paper: #f8ead0;
+    --doca-porcelain: #eef0ea;
+    --doca-red: #b73525;
+    --doca-red-deep: #842316;
+    --doca-plum: #8c5173;
+    --doca-cacao: #402111;
+    --doca-caramel: #b96a28;
+    --doca-pistachio: #b6c82e;
+    --doca-ink: #27150d;
+    --doca-muted: #6f4d37;
     font-family: var(--doca-font-body);
+    color: var(--doca-ink);
   }
 
   [data-tenant-surface="doca"] .tenant-preview-surface,
   .tenant-preview-surface[data-tenant-surface="doca"] {
     background:
-      linear-gradient(90deg, rgba(42, 27, 19, 0.035) 1px, transparent 1px),
-      linear-gradient(180deg, rgba(42, 27, 19, 0.025) 1px, transparent 1px),
-      radial-gradient(circle at 8% 12%, rgba(214, 163, 77, 0.18), transparent 28rem),
-      radial-gradient(circle at 92% 22%, rgba(92, 109, 66, 0.14), transparent 24rem),
+      linear-gradient(90deg, rgba(132, 35, 22, 0.05) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(132, 35, 22, 0.04) 1px, transparent 1px),
+      radial-gradient(circle at 12% 10%, rgba(183, 53, 37, 0.16), transparent 28rem),
+      radial-gradient(circle at 86% 28%, rgba(182, 200, 46, 0.16), transparent 24rem),
       var(--doca-paper);
-    background-size: 42px 42px, 42px 42px, auto, auto, auto;
-    color: var(--doca-wood);
+    background-size: 56px 56px, 56px 56px, auto, auto, auto;
   }
 
   [data-tenant-surface="doca"] .headline {
     font-family: var(--doca-font-display);
-    font-weight: 720;
+    font-weight: 760;
+    line-height: 0.96;
     letter-spacing: 0;
-    line-height: 0.98;
   }
 
   [data-tenant-surface="doca"] .impact-title {
     font-family: var(--doca-font-body);
     font-weight: 800;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
+  [data-tenant-surface="doca"] .doca-hero {
+    min-height: 100dvh;
+    padding: calc(4.5rem + env(safe-area-inset-top)) 0 6.5rem;
+    background:
+      radial-gradient(circle at 8% 18%, rgba(183, 53, 37, 0.18), transparent 24rem),
+      radial-gradient(circle at 85% 20%, rgba(140, 81, 115, 0.18), transparent 23rem),
+      linear-gradient(135deg, #fff0c5 0%, #f5dda9 46%, #e9c88c 100%);
+    color: var(--doca-ink);
+    overflow-x: hidden;
+  }
+
+  [data-tenant-surface="doca"] .doca-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle at 18% 22%, rgba(39, 21, 13, 0.12) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 76% 70%, rgba(39, 21, 13, 0.10) 0 1px, transparent 1.5px);
+    background-size: 18px 18px, 22px 22px;
+    mix-blend-mode: multiply;
+    opacity: 0.28;
+  }
+
+  [data-tenant-surface="doca"] .doca-checker {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 18px;
+    background:
+      linear-gradient(45deg, var(--doca-red) 25%, transparent 25% 75%, var(--doca-red) 75%),
+      linear-gradient(45deg, var(--doca-red) 25%, transparent 25% 75%, var(--doca-red) 75%);
+    background-position: 0 0, 9px 9px;
+    background-size: 18px 18px;
+    opacity: 0.9;
+  }
+
+  [data-tenant-surface="doca"] .doca-checker-top {
+    top: 1.25rem;
+  }
+
+  [data-tenant-surface="doca"] .doca-checker-bottom {
+    bottom: 1.25rem;
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-grid {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 5.5rem);
+    align-items: center;
+    grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-copy {
+    max-width: 42rem;
+    min-width: 0;
+  }
+
+  [data-tenant-surface="doca"] .doca-logo-word {
+    width: max-content;
+    max-width: 100%;
+    font-family: var(--doca-font-display);
+    font-size: clamp(4.4rem, 9vw, 9.6rem);
+    font-weight: 900;
+    line-height: 0.82;
+    letter-spacing: 0;
+    color: var(--doca-plum);
+    text-shadow: 0 16px 0 rgba(183, 53, 37, 0.08);
+  }
+
+  [data-tenant-surface="doca"] .doca-logo-word span {
+    display: inline-block;
+    margin-left: 0.06em;
+    color: var(--doca-red);
+    transform: translateY(-0.32em) rotate(10deg);
+    transform-origin: center;
+    font-size: 0.32em;
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-title {
+    margin-top: 1.5rem;
+    font-family: var(--doca-font-display);
+    font-size: clamp(3.15rem, 7vw, 7.6rem);
+    font-weight: 720;
+    line-height: 0.96;
+    letter-spacing: 0;
+    text-wrap: balance;
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-title span,
+  [data-tenant-surface="doca"] .doca-hero-title em {
+    display: block;
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-title em {
+    color: var(--doca-red);
+    font-style: italic;
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-text {
+    max-width: 34rem;
+    margin-top: 1.4rem;
+    color: var(--doca-muted);
+    font-size: clamp(1.05rem, 1.5vw, 1.28rem);
+    line-height: 1.62;
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 2rem;
+  }
+
+  [data-tenant-surface="doca"] .doca-button,
   [data-tenant-surface="doca"] .btn-primary,
-  [data-tenant-surface="doca"] .btn-mustard {
-    border-radius: 0.75rem;
-    box-shadow: 0 16px 36px rgba(42, 27, 19, 0.16);
-    font-weight: 800;
-  }
-
-  [data-tenant-surface="doca"] .btn-primary {
-    background: var(--doca-cacao);
-    color: var(--doca-paper-soft);
-  }
-
-  [data-tenant-surface="doca"] .btn-primary:hover {
-    background: var(--doca-wood);
-  }
-
-  [data-tenant-surface="doca"] .btn-mustard {
-    background: var(--doca-gold);
-    color: var(--doca-wood);
-  }
-
+  [data-tenant-surface="doca"] .btn-mustard,
   [data-tenant-surface="doca"] .btn-ghost,
   [data-tenant-surface="doca"] .btn-ghost-light {
-    border-radius: 0.75rem;
-    border-width: 1px;
-    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.72rem 1rem;
+    border-radius: 0;
+    border: 2px solid var(--doca-red-deep);
+    box-shadow: 6px 6px 0 rgba(132, 35, 22, 0.18);
+    font-family: var(--doca-font-body);
+    font-weight: 900;
+    letter-spacing: 0;
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  [data-tenant-surface="doca"] .doca-button:hover,
+  [data-tenant-surface="doca"] .btn-primary:hover,
+  [data-tenant-surface="doca"] .btn-mustard:hover,
+  [data-tenant-surface="doca"] .btn-ghost:hover,
+  [data-tenant-surface="doca"] .btn-ghost-light:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0 rgba(132, 35, 22, 0.22);
+  }
+
+  [data-tenant-surface="doca"] .doca-button-primary,
+  [data-tenant-surface="doca"] .btn-primary,
+  [data-tenant-surface="doca"] .btn-mustard {
+    background: var(--doca-red);
+    color: var(--doca-cream-soft);
+  }
+
+  [data-tenant-surface="doca"] .doca-button-secondary,
+  [data-tenant-surface="doca"] .btn-ghost,
+  [data-tenant-surface="doca"] .btn-ghost-light {
+    background: rgba(255, 243, 209, 0.65);
+    color: var(--doca-red-deep);
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-board {
+    position: relative;
+    min-height: min(58vw, 42rem);
+  }
+
+  [data-tenant-surface="doca"] .doca-photo {
+    position: absolute;
+    overflow: hidden;
+    background: var(--doca-cream-soft);
+    border: 8px solid var(--doca-cream-soft);
+    box-shadow: 0 26px 60px rgba(64, 33, 17, 0.18);
+  }
+
+  [data-tenant-surface="doca"] .doca-photo-main {
+    inset: 4% 8% 16% 4%;
+    border-radius: 999px 999px 9rem 9rem;
+  }
+
+  [data-tenant-surface="doca"] .doca-photo-box {
+    right: 0;
+    bottom: 3%;
+    width: 46%;
+    aspect-ratio: 4 / 3;
+    border-radius: 0.35rem;
+    transform: rotate(4deg);
+  }
+
+  [data-tenant-surface="doca"] .doca-photo-sign {
+    left: 0;
+    top: 0;
+    width: 38%;
+    aspect-ratio: 4 / 3;
+    border-radius: 0.35rem;
+    transform: rotate(-5deg);
+  }
+
+  [data-tenant-surface="doca"] .doca-characters {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro {
+    position: absolute;
+    display: block;
+    width: clamp(4.2rem, 8vw, 6.4rem);
+    aspect-ratio: 1;
+    filter: drop-shadow(0 14px 18px rgba(64, 33, 17, 0.22));
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro::before {
+    content: "";
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 0;
+    height: 40%;
+    background:
+      repeating-linear-gradient(82deg, rgba(64, 33, 17, 0.18) 0 2px, transparent 2px 8px),
+      #fff4dd;
+    clip-path: polygon(0 0, 100% 0, 84% 100%, 16% 100%);
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro::after {
+    content: "";
+    position: absolute;
+    left: 7%;
+    right: 7%;
+    top: 5%;
+    height: 66%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.35), transparent 15%),
+      repeating-linear-gradient(26deg, transparent 0 7px, rgba(39, 21, 13, 0.24) 7px 10px);
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro i {
+    position: absolute;
+    z-index: 2;
+    left: 31%;
+    top: 29%;
+    display: block;
+    width: 38%;
+    height: 18%;
+    border-radius: 50%;
+    background: rgba(39, 21, 13, 0.8);
+    transform: rotate(-18deg);
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro-choco {
+    right: 5%;
+    top: 0;
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro-choco::after {
+    background:
+      radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.22), transparent 15%),
+      repeating-linear-gradient(26deg, transparent 0 7px, rgba(255, 223, 195, 0.35) 7px 10px),
+      #7b3f24;
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro-pistachio {
+    left: 2%;
+    bottom: 16%;
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro-pistachio::after {
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.45), transparent 14%),
+      repeating-linear-gradient(26deg, transparent 0 7px, rgba(64, 33, 17, 0.12) 7px 10px),
+      var(--doca-pistachio);
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro-pistachio i {
+    background: #6c7a13;
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro-cacao {
+    right: 22%;
+    bottom: -2%;
+  }
+
+  [data-tenant-surface="doca"] .doca-brigadeiro-cacao::after {
+    background:
+      radial-gradient(circle at 35% 26%, rgba(255, 255, 255, 0.20), transparent 15%),
+      repeating-linear-gradient(26deg, transparent 0 7px, rgba(255, 255, 255, 0.15) 7px 10px),
+      #2c160d;
+  }
+
+  [data-tenant-surface="doca"] .doca-scroll {
+    position: absolute;
+    left: 50%;
+    bottom: 2.35rem;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--doca-red-deep);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transform: translateX(-50%);
   }
 
   [data-tenant-surface="doca"] .chip,
@@ -73,30 +354,30 @@
   [data-tenant-surface="doca"] .chip-red,
   [data-tenant-surface="doca"] .chip-green,
   [data-tenant-surface="doca"] .chip-pink {
-    border-radius: 0.45rem;
-    letter-spacing: 0.16em;
+    border-radius: 0;
+    background: transparent;
+    color: var(--doca-red-deep);
     box-shadow: none;
-  }
-
-  [data-tenant-surface="doca"] .chip-mustard {
-    background: var(--doca-gold);
-    color: var(--doca-wood);
-  }
-
-  [data-tenant-surface="doca"] .chip-red {
-    background: var(--doca-guava);
+    border-bottom: 2px solid currentColor;
+    padding: 0 0 0.25rem;
+    letter-spacing: 0.08em;
   }
 
   [data-tenant-surface="doca"] .price-sticker {
-    border-radius: 0.45rem;
-    box-shadow: 0 10px 24px rgba(42, 27, 19, 0.12);
+    border-radius: 999px;
+    background: var(--doca-cream-soft);
+    color: var(--doca-red-deep);
+    border: 2px solid var(--doca-red-deep);
+    box-shadow: 5px 5px 0 rgba(132, 35, 22, 0.18);
     transform: rotate(0deg);
   }
 
   [data-tenant-surface="doca"] section.bg-pork-ink {
     background:
-      radial-gradient(circle at 12% 18%, rgba(214, 163, 77, 0.20), transparent 22rem),
-      linear-gradient(135deg, #22150f 0%, #3b2518 55%, #58351f 100%);
+      linear-gradient(90deg, rgba(255, 243, 209, 0.08) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(255, 243, 209, 0.08) 1px, transparent 1px),
+      var(--doca-red-deep);
+    background-size: 30px 30px;
   }
 
   [data-tenant-surface="doca"] section.bg-pork-cream,
@@ -106,23 +387,91 @@
 
   [data-tenant-surface="doca"] .bg-pork-peach\/40 {
     background:
-      linear-gradient(180deg, rgba(233, 210, 173, 0.62), rgba(246, 237, 221, 0.96));
+      linear-gradient(180deg, rgba(255, 243, 209, 0.7), rgba(248, 234, 208, 0.96)),
+      var(--doca-paper);
   }
 
   [data-tenant-surface="doca"] article.rounded-3xl,
   [data-tenant-surface="doca"] a.rounded-3xl,
   [data-tenant-surface="doca"] div.rounded-3xl {
-    border-radius: 1rem;
+    border-radius: 0.45rem;
   }
 
   [data-tenant-surface="doca"] article.bg-white,
   [data-tenant-surface="doca"] div.bg-white {
-    background: var(--doca-paper-soft);
-    border: 1px solid rgba(42, 27, 19, 0.09);
-    box-shadow: 0 18px 42px rgba(42, 27, 19, 0.08);
+    background: rgba(255, 243, 209, 0.72);
+    border: 2px solid rgba(132, 35, 22, 0.16);
+    box-shadow: 8px 8px 0 rgba(132, 35, 22, 0.08);
   }
 
   [data-tenant-surface="doca"] iframe {
-    filter: saturate(0.85) sepia(0.08);
+    filter: saturate(0.86) sepia(0.09);
+  }
+
+  @media (max-width: 1023px) {
+    [data-tenant-surface="doca"] .doca-hero {
+      padding-top: calc(4rem + env(safe-area-inset-top));
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-grid {
+      grid-template-columns: 1fr;
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-board {
+      min-height: 34rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    [data-tenant-surface="doca"] .doca-hero {
+      padding-bottom: 5rem;
+    }
+
+    [data-tenant-surface="doca"] .doca-logo-word {
+      font-size: clamp(4rem, 19vw, 6.5rem);
+      width: 100%;
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-title {
+      font-size: clamp(3rem, 14vw, 4.15rem);
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-copy {
+      max-width: min(100%, 22rem);
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-text {
+      max-width: 20rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      text-wrap: wrap;
+      overflow-wrap: normal;
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-board {
+      min-height: 28rem;
+    }
+
+    [data-tenant-surface="doca"] .doca-photo-main {
+      inset: 5% 0 20% 0;
+    }
+
+    [data-tenant-surface="doca"] .doca-photo-box {
+      width: 58%;
+      right: -2%;
+    }
+
+    [data-tenant-surface="doca"] .doca-photo-sign {
+      width: 50%;
+      left: -2%;
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-actions {
+      flex-direction: column;
+    }
+
+    [data-tenant-surface="doca"] .doca-button {
+      width: min(100%, 22rem);
+    }
   }
 }

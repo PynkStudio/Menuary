@@ -176,6 +176,15 @@ export const docaMenu: MenuCategory[] = [
         image: "/doca/torta-mais.jpg",
       },
       {
+        id: "doca-brigadeiros-sortidos",
+        name: "Brigadeiros sortidos",
+        description:
+          "Piccoli dolci brasiliani in pirottino: cacao, pistacchio e varianti da banco secondo produzione.",
+        price: s(2.5),
+        tags: ["novita"],
+        image: "/doca/brigadeiros.jpg",
+      },
+      {
         id: "doca-bolo-cenoura",
         name: "Torta di carote & ganache",
         description:

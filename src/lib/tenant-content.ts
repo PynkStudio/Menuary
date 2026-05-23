@@ -791,8 +791,8 @@ const studioaranzullaContent: TenantContent = {
 const docaContent: TenantContent = {
   logoSrc: "/doca/vetrina.jpg",
   logoAlt: "Doca Milano",
-  showcaseLogoSrc: "/doca/hero-interno.jpg",
-  showcaseLogoAlt: "Doca — Pane, Caffè, Saudade · Milano",
+  showcaseLogoSrc: "/doca/brigadeiros.jpg",
+  showcaseLogoAlt: "Brigadeiros Doca su vassoio rosso",
   description:
     "Doca — bakery brasiliana a Milano, zona Corvetto. Pane a lievitazione naturale con farine Mulino Viva, pão de queijo, torta di mais con guava, caffè filtro Cafezal. International breakfast with brazilian soul.",
   url: "https://www.instagram.com/doca.milano/",
@@ -827,7 +827,7 @@ const docaContent: TenantContent = {
     titleAccent: "saudade.",
     body:
       "Una piccola bakery di quartiere a sud di Milano. Lievitazione naturale con farine del Mulino Viva, caffè filtro da singola piantagione, ricette brasiliane di Queren — non il Brasile da cartolina, quello dell'infanzia.",
-    backdrop: "/doca/hero-interno.jpg",
+    backdrop: "/doca/brigadeiros.jpg",
     ctaLabel: "Scrivici su Instagram",
   },
   soulsIntro: {
