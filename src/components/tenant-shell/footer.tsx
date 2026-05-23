@@ -25,6 +25,7 @@ export function Footer() {
   const content = getTenantContent(tenant.id);
   const features = useEffectiveFeatures();
   const isDemo = mode === "preview" || mode === "preview-bizery";
+  const isDoca = tenant.id === "doca";
   const staffHref = isDemo
     ? `/${tenant.id}/gestione`
     : buildTenantManagementUrl(tenant.id) ?? buildTenantDemoManagementUrl(tenant.id);
@@ -85,7 +86,7 @@ export function Footer() {
             <VenuePhoneDisplay className="text-pork-cream/80 transition-colors hover:text-pork-mustard" />
           </div>
           <VenueWhatsappLink className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard hover:underline">
-            Scrivici su WhatsApp →
+            {isDoca ? "Scrivici su Instagram ->" : "Scrivici su WhatsApp ->"}
           </VenueWhatsappLink>
         </div>
 

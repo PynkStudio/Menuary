@@ -12,7 +12,10 @@ export default async function PreviewTenantMenu({
   params: Promise<{ previewSlug: string }>;
 }) {
   const host = (await headers()).get("host");
-  if (getPlatformModeFromHost(host) !== "preview") notFound();
+  const mode = getPlatformModeFromHost(host);
+  const isLocalPreviewDev =
+    host?.includes("localhost") || host?.includes("127.0.0.1");
+  if (mode !== "preview" && !isLocalPreviewDev) notFound();
 
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);

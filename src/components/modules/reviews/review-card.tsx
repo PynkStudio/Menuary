@@ -60,9 +60,9 @@ export function ReviewCard({ review, variant = "light" }: { review: Review; vari
             isDark ? "bg-pork-cream text-pork-ink" : "bg-pork-ink text-pork-cream"
           )}
           aria-label="Google"
-          title="Recensione da Google"
+          title={review.sourceLabel ? `Fonte: ${review.author}` : "Recensione da Google"}
         >
-          G
+          {review.sourceLabel ?? "G"}
         </div>
       </div>
     </article>

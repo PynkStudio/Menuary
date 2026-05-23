@@ -83,7 +83,7 @@ export default function AdminTenantPage() {
       </header>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        {TENANTS.filter((tenant) => tenant.id !== "bizery-demo").map((tenant) => {
+        {TENANTS.map((tenant) => {
           const effective = mergeTenantOverrides(tenant, overrides[tenant.id]);
           const current = tenant.id === activeTenant.id;
           const lead = PLATFORM_LEADS.find((item) => item.tenant_id === tenant.id);

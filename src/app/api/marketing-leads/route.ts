@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { sendEmail, resolveSender } from "@/lib/email/sender";
+import { sendEmail, resolveSenderForVertical } from "@/lib/email/sender";
 import { buildContactConfirmationEmail } from "@/lib/email/templates/contact-confirmation";
 import { DEFAULT_MARKET, normalizeMarketCode } from "@/lib/markets";
 
@@ -36,7 +36,7 @@ async function sendConfirmationEmail(
   businessName: string,
   vertical: "food" | "services",
 ): Promise<void> {
-  const { brand } = resolveSender(vertical === "services" ? "bizery-demo" : "bepork");
+  const { from, brand } = resolveSenderForVertical(vertical);
   const firstName = contactName.split(/\s+/)[0] ?? "";
   const html = buildContactConfirmationEmail({ brand, firstName, businessName });
 
@@ -44,9 +44,8 @@ async function sendConfirmationEmail(
     to,
     subject: `Abbiamo ricevuto la tua richiesta · ${brand.name}`,
     html,
+    fromOverride: from,
     replyTo: `hello@${brand.domain}`,
-    // tenantId non passato: il from viene risolto dal vertical via tenantId demo
-    tenantId: vertical === "services" ? "bizery-demo" : "bepork",
   });
   // best-effort: la lead è già stata salvata, l'email è un nice-to-have
 }

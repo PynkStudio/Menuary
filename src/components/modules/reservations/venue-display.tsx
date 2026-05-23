@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { useSettingsStore } from "@/store/settings-store";
 import type { DaySchedule } from "@/lib/venue-hours";
-import { defaultHoursWeek } from "@/lib/venue-hours";
+import { defaultHoursWeek, defaultHoursWeekForTenant } from "@/lib/venue-hours";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { useLocationOrNull } from "@/components/core/location-provider";
@@ -29,6 +29,9 @@ function googleMapsEmbedUrl(query: string, placeId?: string | null) {
 function usePublicHours(): DaySchedule[] {
   const tenant = useTenant();
   const hw = useSettingsStore((s) => s.hoursWeek);
+  if (tenant.id === "doca") {
+    return defaultHoursWeekForTenant(tenant.id);
+  }
   if (tenant.id === "officinakam") {
     return [
       { label: "Lunedì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },
@@ -50,12 +53,16 @@ export function useVenueContactPhone() {
   const content = getTenantContent(tenant.id);
   const override = useSettingsStore((s) => s.phoneOverride?.trim() ?? "");
   const display = override || content.contact.phone;
-  const telHref = `tel:${display.replace(/\s/g, "")}`;
+  const telHref = content.contact.whatsappDigits
+    ? `tel:${display.replace(/\s/g, "")}`
+    : content.social.instagram;
   const waDigits = override ? display.replace(/\D/g, "") : content.contact.whatsappDigits;
   const waHref = (message?: string) =>
-    `https://wa.me/${waDigits}?text=${encodeURIComponent(
-      message ?? content.contact.whatsappMessage,
-    )}`;
+    waDigits
+      ? `https://wa.me/${waDigits}?text=${encodeURIComponent(
+          message ?? content.contact.whatsappMessage,
+        )}`
+      : content.social.instagram;
   return { display, telHref, waHref };
 }
 

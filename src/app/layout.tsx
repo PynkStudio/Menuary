@@ -21,6 +21,7 @@ import { siteConfig } from "@/lib/site-config";
 import { googleRating, reviews } from "@/lib/reviews-data";
 import { menu, priceFromNumber } from "@/lib/menu-data";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
+import { findTenantById } from "@/lib/tenant-registry";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
 import { getTenantContent } from "@/lib/tenant-content";
@@ -82,7 +83,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const host = h.get("host");
   const modeHeader = h.get(PLATFORM_MODE_HEADER);
-  const tenant = resolveTenantFromHost(host);
+  const tenant = findTenantById(h.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(host);
   const mode = getPlatformModeFromHeaderValue(modeHeader, host);
 
   if (mode === "platform-admin") {
@@ -212,6 +213,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const tenantTitle =
     tenant.id === "faak"
       ? `${tenant.name} - cibo e vino a ribellione naturale`
+      : tenant.id === "doca"
+        ? "Doca - Pane, Caffè, Saudade · Milano"
       : tenant.vertical === "services"
         ? tenant.id === "officinakam"
           ? "Officina KAM - Meccanica di precisione"
@@ -245,6 +248,16 @@ export async function generateMetadata(): Promise<Metadata> {
               "aperitivo Milano Isola",
               "ristorante Via Arnaldo da Brescia",
             ]
+          : tenant.id === "doca"
+            ? [
+                "Doca Milano",
+                "Doca Pane Caffè Saudade",
+                "bakery brasiliana Milano",
+                "padoca Milano",
+                "pão de queijo Milano",
+                "caffè filtro Cafezal",
+                "Via Breno 2 Milano",
+              ]
           : [
               tenant.name,
               "hamburger Bari",
@@ -304,7 +317,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export async function generateViewport(): Promise<Viewport> {
   const h = await headers();
   const host = h.get("host");
-  const tenant = resolveTenantFromHost(host);
+  const tenant = findTenantById(h.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(host);
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), host);
   return {
     themeColor: themeColor(mode, tenant),
@@ -381,7 +394,7 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const reqHeaders = await headers();
   const host = reqHeaders.get("host");
-  const tenant = resolveTenantFromHost(host);
+  const tenant = findTenantById(reqHeaders.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(host);
   const mode = getPlatformModeFromHeaderValue(reqHeaders.get(PLATFORM_MODE_HEADER), host);
   const themeVars = tenantThemeCssVars(tenant.theme);
   const tenantSiteDisabled =
@@ -403,7 +416,7 @@ export default async function RootLayout({
   const isBizeryMode =
     mode === "marketing-bizery" || mode === "gestione-bizery" || mode === "preview-bizery";
   const content = isBizeryMode ? null : getTenantContent(tenant.id);
-  const showRestaurantJsonLd = (mode === "tenant" || mode === "preview") && content !== null;
+  const showRestaurantJsonLd = mode === "tenant" && tenant.id === "bepork" && content !== null;
   const marketingBrand =
     mode === "marketing" ? "menuary" : mode === "marketing-bizery" ? "bizery" : null;
   const marketingSchemas = marketingBrand

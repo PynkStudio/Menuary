@@ -15,6 +15,7 @@ import {
 export function FindUs() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
+  const isDoca = tenant.id === "doca";
 
   return (
     <section className="bg-pork-cream py-20 md:py-28">
@@ -54,7 +55,7 @@ export function FindUs() {
                 </div>
                 <div>
                   <dt className="text-xs font-black uppercase tracking-widest text-pork-ink/60">
-                    Chiama
+                    {isDoca ? "Contatto" : "Chiama"}
                   </dt>
                   <dd className="mt-0.5 text-pork-ink">
                     <VenuePhoneDisplay className="font-semibold hover:underline" />
@@ -78,7 +79,7 @@ export function FindUs() {
             <div className="mt-8 flex flex-wrap gap-3">
               <VenueWhatsappLink className="btn-primary text-base">
                 <MessageCircle size={20} />
-                Prenota un tavolo
+                {isDoca ? content.hero.ctaLabel : "Prenota un tavolo"}
               </VenueWhatsappLink>
               <VenueGoogleMapsLink className="btn-ghost text-base">
                 Apri in Google Maps

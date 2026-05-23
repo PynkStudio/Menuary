@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown, MessageCircle, UtensilsCrossed } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
@@ -13,9 +14,11 @@ export function Hero() {
   const reduceMotion = useReducedMotion();
   const tenant = useTenant();
   const mode = usePlatformMode();
+  const pathname = usePathname();
   const content = getTenantContent(tenant.id);
+  const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
   const menuHref =
-    mode === "preview" && tenant.previewSlug
+    (mode === "preview" || isPathPreview) && tenant.previewSlug
       ? `/${tenant.previewSlug}/menu`
       : "/menu";
 

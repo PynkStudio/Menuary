@@ -5,8 +5,8 @@ import { allTenantFeatures } from "./tenant-modules";
 /** Tenant demo del verticale food (Menuary). Usato come fallback per host non riconosciuti sul verticale food. */
 export const DEFAULT_FOOD_TENANT_ID = "bepork";
 
-/** Tenant demo del verticale services (Bizery). Usato come fallback per host Bizery non riconosciuti. */
-export const DEFAULT_SERVICES_TENANT_ID = "bizery-demo";
+/** Tenant services usato come fallback tecnico per host Bizery non riconosciuti. */
+export const DEFAULT_SERVICES_TENANT_ID = "officinakam";
 
 /** @deprecated Usa getDefaultTenantForVertical(). Mantenuto per compatibilità con import esistenti. */
 export const DEFAULT_TENANT_ID = DEFAULT_FOOD_TENANT_ID;
@@ -70,30 +70,30 @@ export const STUDIOARANZULLA_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: false,
 };
 
-/** Doca: caffetteria portoghese a Milano — pane, caffè, saudade. */
+/** Doca: bakery brasiliana a Milano — pane, caffè, saudade. */
 export const DOCA_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
   onlineMenu: true,
-  takeaway: true,
+  takeaway: false,
   tableOrders: false,
   orderKiosk: false,
   kitchenDisplay: false,
   dinerSeparation: false,
   reservations: true,
   tablePlanner: false,
-  productAvailability: true,
+  productAvailability: false,
   upselling: false,
   crm: false,
-  analytics: true,
+  analytics: false,
   takeawaySlots: false,
   deliveryHub: false,
   inventoryFoodCost: false,
   printStations: false,
   staffRoles: false,
   multiLocation: false,
-  favorites: true,
-  reviews: true,
-  gallery: true,
+  favorites: false,
+  reviews: false,
+  gallery: false,
   shop: false,
   slabbby: false,
 };
@@ -120,34 +120,6 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   staffRoles: false,
   multiLocation: false,
   favorites: false,
-  reviews: true,
-  gallery: true,
-  shop: false,
-  slabbby: true,
-};
-
-/** Bizery demo: moduli appropriati per il verticale services (no food-specific). */
-export const BIZERY_DEMO_MODULE_FLAGS: TenantFeatureFlags = {
-  website: true,
-  onlineMenu: true,       // "Listino servizi" nel verticale services
-  takeaway: false,
-  tableOrders: false,
-  orderKiosk: false,
-  kitchenDisplay: false,
-  dinerSeparation: false,
-  reservations: true,     // "Appuntamenti"
-  tablePlanner: true,     // "Agenda e postazioni"
-  productAvailability: true,
-  upselling: true,        // "Servizi aggiuntivi"
-  crm: true,
-  analytics: true,
-  takeawaySlots: true,    // "Slot disponibilità"
-  deliveryHub: false,
-  inventoryFoodCost: true, // "Costi e margini"
-  printStations: false,
-  staffRoles: true,
-  multiLocation: true,
-  favorites: true,
   reviews: true,
   gallery: true,
   shop: false,
@@ -230,30 +202,6 @@ export const TENANTS: TenantProfile[] = [
   },
 
   // ── Verticale services (Bizery — bizery.it) ──────────────────────────────
-  {
-    id: "bizery-demo",
-    name: "Bizery",
-    label: "Demo · Bizery",
-    vertical: "services",
-    domains: ["bizery.it", "www.bizery.it", "bizery.localhost"],  // marketing site + demo preview
-    previewSlug: "bizery-demo",
-    enabled: true,
-    status: "trial",
-    theme: {
-      red: "#2563EB",       // blu primario Bizery
-      redDark: "#1D4ED8",
-      peach: "#DBEAFE",
-      cream: "#F0F5FF",
-      ink: "#0F172A",
-      brick: "#1E3A5F",
-      mustard: "#F59E0B",
-      mustardSoft: "#FCD34D",
-      green: "#10B981",
-      pink: "#8B5CF6",
-    },
-    features: BIZERY_DEMO_MODULE_FLAGS,
-  },
-  // ── Tenant Bizery demo aggiuntivi ───────────────────────────────────────────
   {
     id: "libritech",
     name: "LibriTech",

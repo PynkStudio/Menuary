@@ -115,6 +115,119 @@ export const faakMenu: MenuCategory[] = [
   },
 ];
 
+export const docaMenu: MenuCategory[] = [
+  {
+    id: "pane",
+    title: "Pane",
+    subtitle: "Lievitazione naturale, farine vive",
+    description:
+      "Una carta corta da forno di quartiere: pane quotidiano, pani speciali e pezzi legati alla memoria brasiliana.",
+    items: [
+      {
+        id: "doca-pao-colonia",
+        name: "Pão da colônia",
+        description:
+          "Pane bianco in cassetta di origine italo-brasiliana, mollica fitta e profumo da colazione.",
+        price: s(7),
+        tags: ["firma"],
+        image: "/doca/pane-bancone.jpg",
+      },
+      {
+        id: "doca-pane-semi-integrale",
+        name: "Pane semi-integrale",
+        description:
+          "Lievitazione naturale, crosta sottile e farine piemontesi del Mulino Viva.",
+        price: s(6.5),
+        image: "/doca/pane-scaffale.jpg",
+      },
+      {
+        id: "doca-pane-semi",
+        name: "Pane ai semi",
+        description:
+          "Pagnotta con semi tostati, pensata per casa e per accompagnare una colazione salata.",
+        price: s(7.5),
+        image: "/doca/pane-scaffale.jpg",
+      },
+    ],
+  },
+  {
+    id: "dolci",
+    title: "Dolci brasiliani",
+    subtitle: "Guava, mais, carote, manioca",
+    description:
+      "Niente croissant di repertorio: dolci da banco con ingredienti brasiliani e mano da pasticceria contemporanea.",
+    items: [
+      {
+        id: "doca-pao-queijo",
+        name: "Pão de queijo",
+        description:
+          "Amido di manioca e formaggio Branzi. Caldo, elastico, da mangiare appena uscito.",
+        price: s(2.5),
+        tags: ["firma"],
+        image: "/doca/pao-de-queijo.jpg",
+      },
+      {
+        id: "doca-torta-mais-guava",
+        name: "Torta di mais con guava",
+        description:
+          "Farina di mais italiana, ricotta fresca e confettura di guava fatta in casa.",
+        price: s(4.5),
+        tags: ["firma"],
+        image: "/doca/torta-mais.jpg",
+      },
+      {
+        id: "doca-bolo-cenoura",
+        name: "Torta di carote & ganache",
+        description:
+          "Il bolo de cenoura brasiliano, con ganache al cioccolato fondente.",
+        price: s(4.5),
+        image: "/doca/dolci.jpg",
+      },
+      {
+        id: "doca-cookie-amazzonia",
+        name: "Cookie noci dell'Amazzonia",
+        description:
+          "Cookie morbido con noci dell'Amazzonia: tostato, essenziale, non decorativo.",
+        price: s(3),
+        image: "/doca/dolci.jpg",
+      },
+    ],
+  },
+  {
+    id: "caffe",
+    title: "Caffè",
+    subtitle: "Cafezal e tempi piu lenti",
+    description:
+      "Espresso italiano e filtro brasiliano, per tenere insieme il gesto veloce e quello conviviale.",
+    items: [
+      {
+        id: "doca-caffe-filtro",
+        name: "Caffè filtro Cafezal",
+        description:
+          "Singola piantagione brasiliana, tazza morbida e dolce, servita senza fretta.",
+        price: s(3.5),
+        tags: ["firma"],
+        image: "/doca/caffe-filtro.jpg",
+      },
+      {
+        id: "doca-espresso",
+        name: "Espresso",
+        description:
+          "Il gesto italiano del banco, con una miscela brasiliana scelta per Doca.",
+        price: s(1.5),
+        image: "/doca/caffe-filtro.jpg",
+      },
+      {
+        id: "doca-cappuccino",
+        name: "Cappuccino",
+        description:
+          "Latte montato fine e caffè morbido. Da abbinare a pão de queijo o torta di mais.",
+        price: s(2.5),
+      },
+    ],
+  },
+];
+
 export const officinaKamMenu: MenuCategory[] = [
   {
     id: "moto",
@@ -231,6 +344,7 @@ export const officinaKamMenu: MenuCategory[] = [
 
 export function getSeedMenuForTenant(tenantId: string): MenuCategory[] {
   if (tenantId === "faak") return faakMenu;
+  if (tenantId === "doca") return docaMenu;
   if (tenantId === "officinakam") return officinaKamMenu;
   return beporkMenu;
 }

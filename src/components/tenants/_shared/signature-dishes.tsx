@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { SectionHeader } from "@/components/modules/menu/section-header";
 import { PriceSticker } from "@/components/modules/menu/price-sticker";
@@ -13,9 +14,11 @@ import { usePlatformMode } from "@/components/core/platform-mode-provider";
 export function SignatureDishes() {
   const tenant = useTenant();
   const mode = usePlatformMode();
+  const pathname = usePathname();
   const content = getTenantContent(tenant.id);
+  const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
   const previewPrefix =
-    mode === "preview" && tenant.previewSlug ? `/${tenant.previewSlug}` : "";
+    (mode === "preview" || isPathPreview) && tenant.previewSlug ? `/${tenant.previewSlug}` : "";
   const menuHref = `${previewPrefix}/menu`;
 
   return (

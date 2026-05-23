@@ -16,6 +16,23 @@ export function defaultHoursWeek(): DaySchedule[] {
   }));
 }
 
+export function docaHoursWeek(): DaySchedule[] {
+  return [
+    { label: "Lunedì", closed: true, slots: [] },
+    { label: "Martedì", closed: true, slots: [] },
+    { label: "Mercoledì", closed: false, slots: ["08:30 – 13:00"] },
+    { label: "Giovedì", closed: false, slots: ["08:30 – 13:00"] },
+    { label: "Venerdì", closed: false, slots: ["08:30 – 13:00"] },
+    { label: "Sabato", closed: false, slots: ["08:30 – 13:00"] },
+    { label: "Domenica", closed: true, slots: [] },
+  ];
+}
+
+export function defaultHoursWeekForTenant(tenantId: string): DaySchedule[] {
+  if (tenantId === "doca") return docaHoursWeek();
+  return defaultHoursWeek();
+}
+
 export function cloneHoursWeek(w: DaySchedule[]): DaySchedule[] {
   return w.map((d) => ({
     label: d.label,

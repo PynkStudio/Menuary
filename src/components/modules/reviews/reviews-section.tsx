@@ -1,14 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Star, ArrowRight } from "lucide-react";
-import { reviews, googleRating } from "@/lib/reviews-data";
+import { getGoogleRatingForTenant, getReviewsForTenant } from "@/lib/reviews-data";
 import { formatNumberIT } from "@/lib/format";
 import { ReviewCard } from "@/components/modules/reviews/review-card";
+import { useTenant } from "@/components/core/tenant-provider";
+import { usePlatformMode } from "@/components/core/platform-mode-provider";
 
 export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; limit?: number }) {
-  const shown = reviews.slice(0, limit);
+  const tenant = useTenant();
+  const mode = usePlatformMode();
+  const pathname = usePathname();
+  const tenantReviews = getReviewsForTenant(tenant.id);
+  const tenantGoogleRating = getGoogleRatingForTenant(tenant.id);
+  const shown = tenantReviews.slice(0, limit);
+  const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
+  const reviewHref =
+    (mode === "preview" || isPathPreview) && tenant.previewSlug
+      ? `/${tenant.previewSlug}/recensioni`
+      : "/recensioni";
+  const isDoca = tenant.id === "doca";
 
   return (
     <section
@@ -28,12 +42,22 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
                   : "inline-flex items-center gap-2 rounded-full bg-pork-ink px-3 py-1 text-xs font-black uppercase tracking-widest text-pork-mustard"
               }
             >
-              Lo dicono loro
+              {isDoca ? "Dicono di Doca" : "Lo dicono loro"}
             </span>
             <h2 className={`headline mt-4 text-5xl sm:text-6xl lg:text-7xl text-balance ${dark ? "text-pork-cream" : "text-pork-ink"}`}>
-              Chi ci prova,
-              <br />
-              <span className={dark ? "text-pork-mustard" : "text-pork-red"}>torna.</span>
+              {isDoca ? (
+                <>
+                  Una bakery
+                  <br />
+                  <span className={dark ? "text-pork-mustard" : "text-pork-red"}>gia cercata.</span>
+                </>
+              ) : (
+                <>
+                  Chi ci prova,
+                  <br />
+                  <span className={dark ? "text-pork-mustard" : "text-pork-red"}>torna.</span>
+                </>
+              )}
             </h2>
           </div>
 
@@ -50,7 +74,7 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="impact-title text-4xl">
-                  {googleRating.average.toFixed(1).replace(".", ",")}
+                  {tenantGoogleRating.average.toFixed(1).replace(".", ",")}
                 </span>
                 <span className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((n) => (
@@ -58,7 +82,7 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
                       key={n}
                       size={18}
                       className={
-                        n <= Math.round(googleRating.average)
+                        n <= Math.round(tenantGoogleRating.average)
                           ? "fill-pork-mustard text-pork-mustard"
                           : dark
                           ? "text-pork-cream/25"
@@ -69,7 +93,9 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
                 </span>
               </div>
               <p className={`text-sm ${dark ? "text-pork-cream/70" : "text-pork-ink/70"}`}>
-                {formatNumberIT(googleRating.count)} recensioni su Google
+                {isDoca
+                  ? "Fonti pubbliche e scheda Google"
+                  : `${formatNumberIT(tenantGoogleRating.count)} recensioni su Google`}
               </p>
             </div>
           </div>
@@ -90,11 +116,11 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/recensioni" className={dark ? "btn-mustard" : "btn-primary"}>
+          <Link href={reviewHref} className={dark ? "btn-mustard" : "btn-primary"}>
             Tutte le recensioni <ArrowRight size={18} />
           </Link>
           <a
-            href={googleRating.profileUrl}
+            href={tenantGoogleRating.profileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={dark ? "btn-ghost-light" : "btn-ghost"}

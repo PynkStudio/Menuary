@@ -1,22 +1,128 @@
-/* doca.css — override e stili specifici per il tenant Doca
-   (caffetteria portoghese a Milano). Tutti i token visivi del tenant
-   sono comunque iniettati come CSS variables tramite tenantThemeCssVars,
-   quindi questo file resta volutamente leggero: solo regole scoped al
-   surface [data-tenant-surface="doca"] per eventuali ritocchi di brand. */
+/* doca.css — identità Doca: forno contemporaneo, carta, legno e banco. */
 @layer components {
   [data-tenant-surface="doca"] {
-    --doca-font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
-    --doca-font-body: "Inter", system-ui, -apple-system, sans-serif;
-    --doca-tile-radius: 1.25rem;
-    --doca-paper: #F6EDDD;
-    --doca-paper-deep: #EAD4B4;
-    --doca-wood: #3D2A1E;
+    --doca-font-display: var(--font-menuary-display), "Fraunces", Georgia, serif;
+    --doca-font-body: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+    --doca-paper: #f6eddd;
+    --doca-paper-deep: #e9d2ad;
+    --doca-paper-soft: #fbf7ef;
+    --doca-wood: #2a1b13;
+    --doca-cacao: #5a3524;
+    --doca-guava: #b85e4f;
+    --doca-leaf: #5c6d42;
+    --doca-gold: #d6a34d;
+    font-family: var(--doca-font-body);
   }
 
-  /* Carta calda di fondo per il preview, niente neri puri */
   [data-tenant-surface="doca"] .tenant-preview-surface,
   .tenant-preview-surface[data-tenant-surface="doca"] {
-    background: var(--doca-paper);
+    background:
+      linear-gradient(90deg, rgba(42, 27, 19, 0.035) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(42, 27, 19, 0.025) 1px, transparent 1px),
+      radial-gradient(circle at 8% 12%, rgba(214, 163, 77, 0.18), transparent 28rem),
+      radial-gradient(circle at 92% 22%, rgba(92, 109, 66, 0.14), transparent 24rem),
+      var(--doca-paper);
+    background-size: 42px 42px, 42px 42px, auto, auto, auto;
     color: var(--doca-wood);
+  }
+
+  [data-tenant-surface="doca"] .headline {
+    font-family: var(--doca-font-display);
+    font-weight: 720;
+    letter-spacing: 0;
+    line-height: 0.98;
+  }
+
+  [data-tenant-surface="doca"] .impact-title {
+    font-family: var(--doca-font-body);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="doca"] .btn-primary,
+  [data-tenant-surface="doca"] .btn-mustard {
+    border-radius: 0.75rem;
+    box-shadow: 0 16px 36px rgba(42, 27, 19, 0.16);
+    font-weight: 800;
+  }
+
+  [data-tenant-surface="doca"] .btn-primary {
+    background: var(--doca-cacao);
+    color: var(--doca-paper-soft);
+  }
+
+  [data-tenant-surface="doca"] .btn-primary:hover {
+    background: var(--doca-wood);
+  }
+
+  [data-tenant-surface="doca"] .btn-mustard {
+    background: var(--doca-gold);
+    color: var(--doca-wood);
+  }
+
+  [data-tenant-surface="doca"] .btn-ghost,
+  [data-tenant-surface="doca"] .btn-ghost-light {
+    border-radius: 0.75rem;
+    border-width: 1px;
+    font-weight: 800;
+  }
+
+  [data-tenant-surface="doca"] .chip,
+  [data-tenant-surface="doca"] .chip-mustard,
+  [data-tenant-surface="doca"] .chip-red,
+  [data-tenant-surface="doca"] .chip-green,
+  [data-tenant-surface="doca"] .chip-pink {
+    border-radius: 0.45rem;
+    letter-spacing: 0.16em;
+    box-shadow: none;
+  }
+
+  [data-tenant-surface="doca"] .chip-mustard {
+    background: var(--doca-gold);
+    color: var(--doca-wood);
+  }
+
+  [data-tenant-surface="doca"] .chip-red {
+    background: var(--doca-guava);
+  }
+
+  [data-tenant-surface="doca"] .price-sticker {
+    border-radius: 0.45rem;
+    box-shadow: 0 10px 24px rgba(42, 27, 19, 0.12);
+    transform: rotate(0deg);
+  }
+
+  [data-tenant-surface="doca"] section.bg-pork-ink {
+    background:
+      radial-gradient(circle at 12% 18%, rgba(214, 163, 77, 0.20), transparent 22rem),
+      linear-gradient(135deg, #22150f 0%, #3b2518 55%, #58351f 100%);
+  }
+
+  [data-tenant-surface="doca"] section.bg-pork-cream,
+  [data-tenant-surface="doca"] .bg-pork-cream {
+    background-color: var(--doca-paper);
+  }
+
+  [data-tenant-surface="doca"] .bg-pork-peach\/40 {
+    background:
+      linear-gradient(180deg, rgba(233, 210, 173, 0.62), rgba(246, 237, 221, 0.96));
+  }
+
+  [data-tenant-surface="doca"] article.rounded-3xl,
+  [data-tenant-surface="doca"] a.rounded-3xl,
+  [data-tenant-surface="doca"] div.rounded-3xl {
+    border-radius: 1rem;
+  }
+
+  [data-tenant-surface="doca"] article.bg-white,
+  [data-tenant-surface="doca"] div.bg-white {
+    background: var(--doca-paper-soft);
+    border: 1px solid rgba(42, 27, 19, 0.09);
+    box-shadow: 0 18px 42px rgba(42, 27, 19, 0.08);
+  }
+
+  [data-tenant-surface="doca"] iframe {
+    filter: saturate(0.85) sepia(0.08);
   }
 }

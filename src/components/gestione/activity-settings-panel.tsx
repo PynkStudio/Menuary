@@ -9,6 +9,7 @@ import { getTenantContent } from "@/lib/tenant-content";
 import {
   cloneHoursWeek,
   defaultHoursWeek,
+  defaultHoursWeekForTenant,
   hoursWeekEquals,
   sanitizeHoursWeek,
   type DaySchedule,
@@ -21,16 +22,21 @@ export function ActivitySettingsPanel() {
   const content = getTenantContent(tenant.id);
   const settings = useSettingsStore();
   const setSettings = useSettingsStore((state) => state.set);
+  const tenantDefaultHours = useMemo(() => defaultHoursWeekForTenant(tenant.id), [tenant.id]);
   const [addressDraft, setAddressDraft] = useState(settings.addressOverride);
   const [phoneDraft, setPhoneDraft] = useState(settings.phoneOverride);
-  const [hoursDraft, setHoursDraft] = useState<DaySchedule[]>(defaultHoursWeek);
+  const [hoursDraft, setHoursDraft] = useState<DaySchedule[]>(() => defaultHoursWeekForTenant(tenant.id));
 
   useEffect(() => {
     if (!hydrated) return;
+    const hours =
+      tenant.id === "doca" && hoursWeekEquals(settings.hoursWeek, defaultHoursWeek())
+        ? tenantDefaultHours
+        : settings.hoursWeek;
     setAddressDraft(settings.addressOverride);
     setPhoneDraft(settings.phoneOverride);
-    setHoursDraft(cloneHoursWeek(settings.hoursWeek));
-  }, [hydrated, settings.addressOverride, settings.hoursWeek, settings.phoneOverride]);
+    setHoursDraft(cloneHoursWeek(hours));
+  }, [hydrated, settings.addressOverride, settings.hoursWeek, settings.phoneOverride, tenant.id, tenantDefaultHours]);
 
   const dirty = useMemo(
     () =>

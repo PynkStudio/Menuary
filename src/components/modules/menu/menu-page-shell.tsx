@@ -12,16 +12,23 @@ import { useTenant } from "@/components/core/tenant-provider";
 export function MenuPageShell() {
   const tenant = useTenant();
   const isFaak = tenant.id === "faak";
+  const isDoca = tenant.id === "doca";
 
   return (
     <>
-      <MenuaryAuthHintGate />
-      <PersonalizedMenuHint />
+      {!isDoca && <MenuaryAuthHintGate />}
+      {!isDoca && <PersonalizedMenuHint />}
       <section className="relative bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
         <div className="container-wide">
           <span className="chip-mustard">Menu</span>
           <h1 className="headline mt-4 text-6xl sm:text-7xl lg:text-8xl text-balance">
-            {isFaak ? (
+            {isDoca ? (
+              <>
+                Pane, caffè,
+                <br />
+                <span className="text-pork-mustard">saudade.</span>
+              </>
+            ) : isFaak ? (
               <>
                 Mattina, giorno,
                 <br />
@@ -37,7 +44,12 @@ export function MenuPageShell() {
               </>
             )}
           </h1>
-          {isFaak ? (
+          {isDoca ? (
+            <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">
+              Un banco corto e reale: pane a lievitazione naturale, dolci brasiliani
+              e caffè Cafezal. Le disponibilità cambiano con il forno e con la mattina.
+            </p>
+          ) : isFaak ? (
             <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">
               Il menu demo cambia lessico, categorie e contenuti: non e il listino
               Be Pork con un altro logo, ma una struttura costruita sul ritmo FAAK.

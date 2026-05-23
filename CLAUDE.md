@@ -75,7 +75,7 @@ I **moduli** in `src/components/modules/` e `src/lib/` sono l'unica cosa che va 
 In `src/lib/tenant-registry.ts`:
 - Aggiungi una costante `NUOVOTENANT_MODULE_FLAGS` con i feature-flag appropriati.
 - Aggiungi il profilo `TenantProfile` all'export principale con `vertical: "food"` o `vertical: "services"`.
-- I fallback di default sono `DEFAULT_FOOD_TENANT_ID = "bepork"` per il verticale food e `DEFAULT_SERVICES_TENANT_ID = "bizery-demo"` per il verticale services. Non toccarli; aggiorna `getDefaultTenantForVertical()` solo se aggiungi un nuovo verticale.
+- I fallback di default sono `DEFAULT_FOOD_TENANT_ID = "bepork"` per il verticale food e `DEFAULT_SERVICES_TENANT_ID = "officinakam"` per il verticale services. Non toccarli; aggiorna `getDefaultTenantForVertical()` solo se aggiungi un nuovo verticale.
 
 In `src/lib/tenant-content.ts`:
 - Aggiungi il blocco `TenantContent` con tutti i testi, immagini e dati del tenant.

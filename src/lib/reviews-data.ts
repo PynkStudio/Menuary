@@ -7,6 +7,7 @@ export type Review = {
   isLocalGuide?: boolean;
   reviewsCount?: number;
   photosCount?: number;
+  sourceLabel?: string;
 };
 
 export const reviews: Review[] = [
@@ -108,10 +109,49 @@ export const officinaKamGoogleRating = {
     "https://www.google.com/maps/search/?api=1&query=Officina+KAM+Via+Bonfadini+71+Milano",
 };
 
+export const docaReviews: Review[] = [
+  {
+    id: "doca-lacucinaitaliana",
+    author: "La Cucina Italiana",
+    rating: 5,
+    text:
+      "Doca rifugge i cliché delle classiche bakery: niente croissant o cinnamon roll, ma pane, caffè Cafezal, guava fatta in casa e noci dell'Amazzonia.",
+    date: "Marzo 2026",
+    sourceLabel: "LCI",
+  },
+  {
+    id: "doca-puntarella",
+    author: "Puntarella Rossa",
+    rating: 5,
+    text:
+      "Un piccolo forno internazionale, contemporaneo e familiare. Da provare torta di carote con ganache, torta di mais con guava e pão de queijo.",
+    date: "Febbraio 2026",
+    sourceLabel: "PR",
+  },
+  {
+    id: "doca-virtu",
+    author: "Virtù Quotidiane",
+    rating: 5,
+    text:
+      "Nel quartiere Argonne, Doca è diventata una meta per chi considera il pane il protagonista della tavola: laboratorio di ricerca e bakery di quartiere.",
+    date: "Aprile 2026",
+    sourceLabel: "VQ",
+  },
+];
+
+export const docaGoogleRating = {
+  average: 5,
+  count: 3,
+  profileUrl:
+    "https://www.google.com/maps/place/Doca+-+Pane,+Caff%C3%A8,+Saudade/@45.44248,9.2149812,17z/data=!3m1!4b1!4m6!3m5!1s0x4786c500463a3c21:0xab855fc6d4b925c3!8m2!3d45.44248!4d9.2149812!16s%2Fg%2F11ydc8s49q!18m1!1e1?entry=ttu",
+};
+
 export function getReviewsForTenant(tenantId: string): Review[] {
+  if (tenantId === "doca") return docaReviews;
   return tenantId === "officinakam" ? officinaKamReviews : reviews;
 }
 
 export function getGoogleRatingForTenant(tenantId: string) {
+  if (tenantId === "doca") return docaGoogleRating;
   return tenantId === "officinakam" ? officinaKamGoogleRating : googleRating;
 }

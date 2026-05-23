@@ -159,7 +159,7 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     stage: "demo",
     temperature: "warm",
     source: "diretto",
-    notes: "Bakery brasiliana di Queren Girardi, aperta giugno 2025 in zona San Luigi-Corvetto (ex centro scommesse riqualificato). Caffè filtro Cafezal, farine Mulino Viva. Orari: Mer-Sab 8:30-13:00. Contatto via DM Instagram @doca.milano (5,3k follower). Surprise Bag su Too Good To Go. Demo: previewSlug 'doca'. Verificare telefono e P.IVA prima dell'onboarding.",
+    notes: "Bakery brasiliana di Queren Girardi, aperta giugno 2025 in zona San Luigi-Corvetto (ex centro scommesse riqualificato). Caffè filtro Cafezal, farine Mulino Viva. Orari di lavoro/apertura: mercoledì-sabato 08:30-13:00; chiuso lunedì, martedì e domenica. Contatto via DM Instagram @doca.milano (5,3k follower). Surprise Bag su Too Good To Go. Demo: previewSlug 'doca'. Verificare telefono e P.IVA prima dell'onboarding.",
     locations: [primaryLocation("loc-doca-a", "Doca Milano · Corvetto", "Via Breno, 2", "Milano", "MI", "20139")],
     demo_url: "https://demo.menuary.it/doca",
     demo_pr_url: null,
