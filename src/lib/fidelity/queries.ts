@@ -16,8 +16,21 @@ const TABLE_LEDGER = "tenant_fidelity_ledger";
 // Le tabelle fidelity non sono ancora nei tipi generati di Supabase: rigenera
 // con `supabase gen types` dopo aver applicato la migration per perdere questo `as any`.
 type AnyClient = ReturnType<typeof createSupabaseAdminClient>;
+type SupabaseResponse = { data?: unknown; error?: unknown };
+type SupabaseTable = PromiseLike<SupabaseResponse> & {
+  select: (columns: string) => SupabaseTable;
+  eq: (column: string, value: unknown) => SupabaseTable;
+  maybeSingle: () => PromiseLike<SupabaseResponse>;
+  single: () => PromiseLike<SupabaseResponse>;
+  order: (column: string, options?: { ascending?: boolean }) => SupabaseTable;
+  limit: (count: number) => SupabaseTable;
+  upsert: (values: unknown, options?: unknown) => SupabaseTable;
+  delete: () => SupabaseTable;
+  insert: (values: unknown) => SupabaseTable;
+};
+
 function tbl(c: AnyClient, name: string) {
-  return (c as unknown as { from: (t: string) => any }).from(name);
+  return (c as unknown as { from: (t: string) => SupabaseTable }).from(name);
 }
 
 export async function getProgram(tenantId: string): Promise<FidelityProgram | null> {

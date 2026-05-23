@@ -3,14 +3,19 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { OrderStatus } from "@/lib/types";
 
 type Params = { params: Promise<{ id: string }> };
+type PersistedOrderStatus = Exclude<OrderStatus, "pending_confirmation" | "expired">;
 
-const VALID_STATUSES: OrderStatus[] = [
+const VALID_STATUSES: PersistedOrderStatus[] = [
   "nuovo",
   "in_preparazione",
   "pronto",
   "consegnato",
   "annullato",
 ];
+
+function isPersistedOrderStatus(status: unknown): status is PersistedOrderStatus {
+  return typeof status === "string" && VALID_STATUSES.includes(status as PersistedOrderStatus);
+}
 
 // ─── PATCH /api/orders/[id]/status — aggiorna stato ordine ───────────────────
 
@@ -19,9 +24,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
 
   const { id } = await params;
-  const { status }: { status: OrderStatus } = await req.json();
+  const { status }: { status: unknown } = await req.json();
 
-  if (!VALID_STATUSES.includes(status)) {
+  if (!isPersistedOrderStatus(status)) {
     return NextResponse.json({ error: "invalid status" }, { status: 400 });
   }
 

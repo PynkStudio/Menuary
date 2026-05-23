@@ -1,6 +1,6 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { computeExpiresAt } from "./expiry";
-import type { FidelityProgram, FidelityRedemption, FidelityReward } from "./types";
+import type { FidelityMember, FidelityProgram, FidelityRedemption, FidelityReward } from "./types";
 
 function randomCode(prefix: string, length: number): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -10,8 +10,17 @@ function randomCode(prefix: string, length: number): string {
 }
 
 type AnyClient = ReturnType<typeof createSupabaseAdminClient>;
+type SupabaseResponse = { data?: unknown; error?: unknown };
+type SupabaseTable = PromiseLike<SupabaseResponse> & {
+  select: (columns: string) => SupabaseTable;
+  eq: (column: string, value: unknown) => SupabaseTable;
+  single: () => PromiseLike<SupabaseResponse>;
+  insert: (values: unknown) => SupabaseTable;
+  update: (values: unknown) => SupabaseTable;
+};
+
 function tbl(c: AnyClient, name: string) {
-  return (c as unknown as { from: (t: string) => any }).from(name);
+  return (c as unknown as { from: (t: string) => SupabaseTable }).from(name);
 }
 
 export async function redeemReward(args: {
@@ -27,6 +36,7 @@ export async function redeemReward(args: {
     .eq("tenant_id", args.tenantId)
     .single();
   if (mErr || !member) throw new Error("Iscrizione fedeltà non trovata");
+  const fidelityMember = member as FidelityMember;
 
   const { data: reward, error: rErr } = await tbl(c, "tenant_fidelity_rewards")
     .select("*")
@@ -38,7 +48,7 @@ export async function redeemReward(args: {
 
   if (!r.is_active) throw new Error("Premio non disponibile");
   if (r.stock !== null && r.stock <= 0) throw new Error("Premio esaurito");
-  if (member.points_balance < r.points_cost) throw new Error("Punti insufficienti");
+  if (fidelityMember.points_balance < r.points_cost) throw new Error("Punti insufficienti");
 
   const { data: program } = await tbl(c, "tenant_fidelity_programs")
     .select("*")
@@ -71,13 +81,14 @@ export async function redeemReward(args: {
     .select("*")
     .single();
   if (insErr || !redemption) throw insErr ?? new Error("Errore creazione redemption");
+  const createdRedemption = redemption as FidelityRedemption;
 
   const { error: ledgerErr } = await tbl(c, "tenant_fidelity_ledger").insert({
     tenant_id: args.tenantId,
     member_id: args.memberId,
     points: -r.points_cost,
     source: "redemption",
-    redemption_id: redemption.id,
+    redemption_id: createdRedemption.id,
     note: `Riscatto: ${r.name}`,
   });
   if (ledgerErr) throw ledgerErr;
@@ -90,5 +101,5 @@ export async function redeemReward(args: {
 
   void p; // riservato a futura logica
   void computeExpiresAt;
-  return redemption as FidelityRedemption;
+  return createdRedemption;
 }

@@ -24,7 +24,7 @@ function ParamsFields({ rule }: { rule?: FidelityEarnRule }) {
   switch (kind) {
     case "signup_bonus":
       return (
-        <label>Punti accreditati all'iscrizione
+        <label>Punti accreditati all&apos;iscrizione
           <input type="number" name="points" min={1} defaultValue={(p.points as number) ?? 50} style={{ display: "block", padding: ".4rem" }} />
         </label>
       );

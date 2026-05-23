@@ -1,6 +1,8 @@
 import type { OrderStatus } from "./types";
 
 export const STATUS_LABEL: Record<OrderStatus, string> = {
+  pending_confirmation: "In attesa conferma",
+  expired: "Scaduto",
   nuovo: "Nuovo",
   in_preparazione: "In preparazione",
   pronto: "Pronto",
@@ -9,6 +11,8 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
 };
 
 export const STATUS_COLOR: Record<OrderStatus, string> = {
+  pending_confirmation: "bg-pork-mustard/70 text-pork-ink",
+  expired: "bg-pork-ink/40 text-pork-cream",
   nuovo: "bg-pork-red text-white",
   in_preparazione: "bg-pork-mustard text-pork-ink",
   pronto: "bg-pork-green text-white",
@@ -17,6 +21,8 @@ export const STATUS_COLOR: Record<OrderStatus, string> = {
 };
 
 export const STATUS_FLOW: Record<OrderStatus, OrderStatus | null> = {
+  pending_confirmation: "nuovo",
+  expired: null,
   nuovo: "in_preparazione",
   in_preparazione: "pronto",
   pronto: "consegnato",

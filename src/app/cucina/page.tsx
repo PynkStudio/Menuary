@@ -51,6 +51,8 @@ export default function KitchenDisplay() {
 
   const grouped = useMemo(() => {
     const g: Record<OrderStatus, Order[]> = {
+      pending_confirmation: [],
+      expired: [],
       nuovo: [],
       in_preparazione: [],
       pronto: [],
@@ -63,6 +65,8 @@ export default function KitchenDisplay() {
 
   const columnGroups = useMemo(() => {
     const out: Record<OrderStatus, Array<{ ids: string[]; display: Order }>> = {
+      pending_confirmation: [],
+      expired: [],
       nuovo: [],
       in_preparazione: [],
       pronto: [],

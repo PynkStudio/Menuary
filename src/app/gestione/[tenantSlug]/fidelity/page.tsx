@@ -36,7 +36,7 @@ export default async function FidelityProgramPage({
 
       <h1 style={{ marginBottom: "0.5rem" }}>Programma fedeltà</h1>
       <p style={{ color: "#666", marginBottom: "1.5rem" }}>
-        Configura il nome del programma, l'opt-in al checkout e la scadenza dei punti.
+        Configura il nome del programma, l&apos;opt-in al checkout e la scadenza dei punti.
       </p>
 
       <form action={saveProgram} style={{ display: "grid", gap: "1rem" }}>
@@ -58,7 +58,7 @@ export default async function FidelityProgramPage({
         </label>
 
         <label>
-          Etichetta punti (es. "punti", "stelle", "crediti")
+          Etichetta punti (es. &quot;punti&quot;, &quot;stelle&quot;, &quot;crediti&quot;)
           <input
             name="points_label"
             defaultValue={program?.points_label ?? "punti"}
