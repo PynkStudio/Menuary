@@ -42,6 +42,14 @@ export type ResolvedSender = {
   brand: EmailBrand;
 };
 
+export function resolveSenderForVertical(vertical: TenantVertical): ResolvedSender {
+  const brand = PLATFORM_BRANDS[vertical];
+  return {
+    from: `${brand.name} <${brand.fromEmail}>`,
+    brand,
+  };
+}
+
 /**
  * Risolve mittente e brand per un'email.
  *
@@ -60,11 +68,7 @@ export function resolveSender(tenantId?: string): ResolvedSender {
     if (tenant) vertical = tenant.vertical;
   }
 
-  const brand = PLATFORM_BRANDS[vertical];
-  return {
-    from: `${brand.name} <${brand.fromEmail}>`,
-    brand,
-  };
+  return resolveSenderForVertical(vertical);
 }
 
 // ─── Send ─────────────────────────────────────────────────────────────────────

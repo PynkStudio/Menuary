@@ -22,26 +22,4 @@
     @apply inline-flex items-center gap-1.5 rounded-full bg-pork-red/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-pork-red;
   }
 
-  /* Pannello gestione — identità Bizery demo (blu + paper, light) */
-  .gestione-admin[data-gestione-tenant="bizery-demo"] {
-    --ga-bg:          #F0F5FF;
-    --ga-surface:     #FFFFFF;
-    --ga-surface-2:   #FFFFFF;
-    --ga-surface-3:   #E8EFFE;
-    --ga-border:      rgba(15, 23, 42, 0.10);
-    --ga-border-soft: rgba(15, 23, 42, 0.06);
-    --ga-ink:         #0F172A;
-    --ga-ink-muted:   rgba(15, 23, 42, 0.66);
-    --ga-ink-faint:   rgba(15, 23, 42, 0.45);
-    --ga-ink-dim:     rgba(15, 23, 42, 0.28);
-    --ga-accent-ink:  #FFFFFF;
-    --ga-font-display: var(--font-menuary-display), Georgia, serif;
-    --ga-font-body:    var(--font-menuary-body), system-ui, sans-serif;
-  }
-  .gestione-admin[data-gestione-tenant="bizery-demo"] .ga-header {
-    background: rgba(240, 245, 255, 0.85);
-  }
-  .gestione-admin[data-gestione-tenant="bizery-demo"] .ga-input,
-  .gestione-admin[data-gestione-tenant="bizery-demo"] .ga-select,
-  .gestione-admin[data-gestione-tenant="bizery-demo"] .ga-textarea { color-scheme: light; }
 }

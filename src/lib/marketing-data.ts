@@ -42,7 +42,7 @@ type Vertical = TenantProfile["vertical"];
 // e non vanno esibiti come prova sociale sulla marketing home corrispondente.
 const MARKETING_EXCLUDE_IDS: Record<Vertical, Set<string>> = {
   food: new Set(["bepork", "faak"]),
-  services: new Set(["bizery-demo"]),
+  services: new Set(),
 };
 
 const PREVIEW_HOST: Record<Vertical, string> = {
