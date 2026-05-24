@@ -19,6 +19,7 @@ export type SiteSettingsState = {
   allowTakeaway: boolean;
   allowTableOrders: boolean;
   kitchenDisplayEnabled: boolean;
+  showMenuPrices: boolean;
   moduleOverrides: Partial<Record<TenantFeatureKey, boolean>>;
   moduleSuspensions: Partial<Record<TenantFeatureKey, ModuleSuspension>>;
   /** Orari mostrati al pubblico (7 giorni, ordine fisso come in sede). */
@@ -43,6 +44,7 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettingsState = {
   allowTakeaway: true,
   allowTableOrders: true,
   kitchenDisplayEnabled: true,
+  showMenuPrices: true,
   moduleOverrides: {},
   moduleSuspensions: {},
   hoursWeek: defaultHoursWeek(),
@@ -126,6 +128,7 @@ export const useSettingsStore = create<SettingsStore>()(
         allowTakeaway: s.allowTakeaway,
         allowTableOrders: s.allowTableOrders,
         kitchenDisplayEnabled: s.kitchenDisplayEnabled,
+        showMenuPrices: s.showMenuPrices,
         moduleOverrides: s.moduleOverrides,
         moduleSuspensions: s.moduleSuspensions,
         hoursWeek: s.hoursWeek,
@@ -135,6 +138,7 @@ export const useSettingsStore = create<SettingsStore>()(
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<SiteSettingsState>;
         const merged = { ...current, ...p };
+        merged.showMenuPrices = p.showMenuPrices ?? current.showMenuPrices;
         merged.moduleOverrides = merged.moduleOverrides ?? {};
         merged.moduleSuspensions = merged.moduleSuspensions ?? {};
         if (!merged.hoursWeek || merged.hoursWeek.length !== 7) {

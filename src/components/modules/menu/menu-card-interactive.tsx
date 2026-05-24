@@ -26,6 +26,7 @@ import {
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useTenant } from "@/components/core/tenant-provider";
 import { canAddToCart } from "@/lib/ordering-rules";
+import { useSettingsStore } from "@/store/settings-store";
 import {
   formatIngredientsLine,
   normalizeMenuIngredients,
@@ -67,7 +68,10 @@ const priceVariantColors: Array<"mustard" | "red"> = ["mustard", "red"];
 export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
   const tenant = useTenant();
   const pathname = usePathname();
-  const { allowTakeaway, allowTableOrders, favoritesEnabled } = useEffectiveFeatures();
+  const { allowTakeaway, allowTableOrders, orderKioskEnabled, favoritesEnabled } = useEffectiveFeatures();
+  const showMenuPricesSetting = useSettingsStore((state) => state.showMenuPrices);
+  const onlineOrderingActive = allowTakeaway || allowTableOrders || orderKioskEnabled;
+  const showPrices = onlineOrderingActive || showMenuPricesSetting;
   const orderingAllowed = canAddToCart(pathname, {
     allowTakeaway,
     allowTableOrders,
@@ -240,35 +244,39 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
 
         <div className="mt-auto flex flex-col gap-2 pt-2">
           <div className="flex items-end justify-between gap-3">
-            <div className="flex min-w-0 shrink-0 flex-col items-start gap-1.5">
-              {!multiPrice ? (
-                <PriceSticker variant="mustard" rotate={-3}>
-                  {formatEuro(variants[0]?.price ?? 0)}
-                  {variants[0]?.label && (
-                    <span className="ml-1 text-xs font-normal opacity-80">
-                      {variants[0].label}
-                    </span>
-                  )}
-                </PriceSticker>
-              ) : (
-                <div className="flex flex-wrap items-end gap-1.5">
-                  {variants.map((v, i) => (
-                    <PriceSticker
-                      key={v.key}
-                      variant={priceVariantColors[i % 2]}
-                      rotate={i % 2 === 0 ? -3 : 3}
-                    >
-                      {formatEuro(v.price)}
-                      {v.label && (
-                        <span className="ml-1 text-xs font-normal opacity-80">
-                          {v.label}
-                        </span>
-                      )}
-                    </PriceSticker>
-                  ))}
-                </div>
-              )}
-            </div>
+            {showPrices ? (
+              <div className="flex min-w-0 shrink-0 flex-col items-start gap-1.5">
+                {!multiPrice ? (
+                  <PriceSticker variant="mustard" rotate={-3}>
+                    {formatEuro(variants[0]?.price ?? 0)}
+                    {variants[0]?.label && (
+                      <span className="ml-1 text-xs font-normal opacity-80">
+                        {variants[0].label}
+                      </span>
+                    )}
+                  </PriceSticker>
+                ) : (
+                  <div className="flex flex-wrap items-end gap-1.5">
+                    {variants.map((v, i) => (
+                      <PriceSticker
+                        key={v.key}
+                        variant={priceVariantColors[i % 2]}
+                        rotate={i % 2 === 0 ? -3 : 3}
+                      >
+                        {formatEuro(v.price)}
+                        {v.label && (
+                          <span className="ml-1 text-xs font-normal opacity-80">
+                            {v.label}
+                          </span>
+                        )}
+                      </PriceSticker>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="min-w-0 flex-1" />
+            )}
 
             <div className="flex shrink-0 flex-col items-end gap-1">
               {hasMenuBundle(item) && showAdd && (

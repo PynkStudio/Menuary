@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   CheckCircle2,
   Clock,
+  Eye,
   ListChecks,
   ListPlus,
   Plus,
@@ -25,6 +26,8 @@ import { ExtraListsManager } from "@/components/admin/extra-lists-manager";
 import { useHydrated } from "@/components/core/providers";
 import { useTenantOrNull } from "@/components/core/tenant-provider";
 import { getModuleLabel } from "@/lib/vertical";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { useSettingsStore } from "@/store/settings-store";
 
 const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 1, label: "Lun" },
@@ -61,6 +64,10 @@ export default function AdminMenuPage() {
   const vertical = tenant?.vertical ?? "food";
   const isServices = vertical === "services";
   const listinoLabel = getModuleLabel("onlineMenu", vertical);
+  const { allowTakeaway, allowTableOrders, orderKioskEnabled } = useEffectiveFeatures();
+  const onlineOrderingActive = allowTakeaway || allowTableOrders || orderKioskEnabled;
+  const showMenuPrices = useSettingsStore((s) => s.showMenuPrices);
+  const setSettings = useSettingsStore((s) => s.set);
   const categoriesRaw = useMenuStore((s) => s.categories);
   const items = useMenuStore((s) => s.items);
   const menuListsRaw = useMenuStore((s) => s.menuLists);
@@ -167,6 +174,46 @@ export default function AdminMenuPage() {
           </button>
         ))}
       </div>
+
+      {hydrated && (
+        <section className="rounded-2xl bg-white p-4 ring-1 ring-pork-ink/10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="flex items-center gap-2 font-bold text-pork-ink">
+                <Eye size={16} className="text-pork-red" />
+                Mostra prezzi
+              </p>
+              <p className="mt-1 text-sm text-pork-ink/60">
+                Se disattivata, il menu pubblico nasconde l&apos;elemento prezzo dalle schede dei piatti.
+              </p>
+              {onlineOrderingActive && (
+                <p className="mt-2 rounded-xl bg-pork-mustard/25 px-3 py-2 text-xs font-bold text-pork-ink/70">
+                  Opzione non disponibile con la modalita ordina online attiva: i prezzi restano visibili.
+                </p>
+              )}
+            </div>
+            <label
+              className={
+                "inline-flex shrink-0 items-center gap-3 rounded-full px-3 py-2 ring-1 " +
+                (onlineOrderingActive
+                  ? "cursor-not-allowed bg-pork-ink/5 text-pork-ink/35 ring-pork-ink/10"
+                  : "cursor-pointer bg-pork-cream text-pork-ink ring-pork-ink/10")
+              }
+            >
+              <input
+                type="checkbox"
+                checked={onlineOrderingActive || showMenuPrices}
+                disabled={onlineOrderingActive}
+                onChange={(event) => setSettings({ showMenuPrices: event.target.checked })}
+                className="h-4 w-4 accent-pork-red disabled:cursor-not-allowed"
+              />
+              <span className="text-sm font-black">
+                {onlineOrderingActive || showMenuPrices ? "Prezzi visibili" : "Prezzi nascosti"}
+              </span>
+            </label>
+          </div>
+        </section>
+      )}
 
       {view === "items" && <ExtraListsManager />}
 

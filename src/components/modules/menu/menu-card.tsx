@@ -77,7 +77,15 @@ function formatPriceChunks(price: MenuItem["price"]): {
   }
 }
 
-export function MenuCard({ item, compact }: { item: MenuItem; compact?: boolean }) {
+export function MenuCard({
+  item,
+  compact,
+  showPrices = true,
+}: {
+  item: MenuItem;
+  compact?: boolean;
+  showPrices?: boolean;
+}) {
   const prices = formatPriceChunks(item.price);
   const spicyLevel = getResolvedPiccanteLevel(item);
 
@@ -97,14 +105,16 @@ export function MenuCard({ item, compact }: { item: MenuItem; compact?: boolean 
             sizes="(max-width: 768px) 100vw, 400px"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
-            {prices.map((p, i) => (
-              <PriceSticker key={i} variant={p.variant} rotate={i % 2 === 0 ? -3 : 3}>
-                {p.main}
-                {p.sub && <span className="ml-1 text-xs font-normal opacity-80">{p.sub}</span>}
-              </PriceSticker>
-            ))}
-          </div>
+          {showPrices && (
+            <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
+              {prices.map((p, i) => (
+                <PriceSticker key={i} variant={p.variant} rotate={i % 2 === 0 ? -3 : 3}>
+                  {p.main}
+                  {p.sub && <span className="ml-1 text-xs font-normal opacity-80">{p.sub}</span>}
+                </PriceSticker>
+              ))}
+            </div>
+          )}
         </div>
       ) : null}
 
@@ -113,7 +123,7 @@ export function MenuCard({ item, compact }: { item: MenuItem; compact?: boolean 
           <h3 className="impact-title text-2xl leading-tight text-pork-ink">
             {item.name}
           </h3>
-          {!item.image && (
+          {!item.image && showPrices && (
             <div className="flex shrink-0 flex-col items-end gap-1.5">
               {prices.map((p, i) => (
                 <PriceSticker
