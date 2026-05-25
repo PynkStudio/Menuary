@@ -1,80 +1,92 @@
-# Be Pork — Sito ufficiale
+# Menuary
 
-Sito web per Be Pork, ristorante/pizzeria/burger house nel centro di Bari.
-Costruito con Next.js 15 (App Router), TypeScript, Tailwind CSS, Framer Motion.
+Piattaforma multi-tenant e multi-verticale per attività locali.
+Costruita con Next.js 15 (App Router), TypeScript, Tailwind CSS, Framer Motion, Supabase, Zustand.
+
+## Verticali
+
+- **Menuary** (`food`) — HORECA: ristoranti, bar, pizzerie, trattorie.
+- **Bizery** (`services`) — non-HORECA: officine, studi, saloni, centri benessere.
+
+Ogni **tenant** è un'attività reale ospitata su uno dei verticali, con identità visiva e moduli propri. **BePork** è uno dei tenant (demo/produzione principale del verticale food), non la piattaforma.
 
 ## Avvio
 
 ```bash
 npm install
-npm run dev
+npm run dev          # http://localhost:3000
+npm run build && npm run start
+npm run seed:menu    # seed Supabase del menu (richiede .env.local)
 ```
 
-Apri http://localhost:3000
+## Variabili d'ambiente
 
-## Build
-
-```bash
-npm run build
-npm run start
-```
-
-## Deploy su Vercel
-
-Il progetto è pensato per Vercel (zero config).
-
-1. `git init && git add . && git commit -m "init"`
-2. Push su GitHub
-3. Importa su [vercel.com/new](https://vercel.com/new)
-4. Framework: Next.js → Deploy
-
-Nessuna env var necessaria.
+Configura `.env.local` con le chiavi Supabase del progetto (URL, anon key, service role per gli script di seed). Il deploy è su Vercel — replica le stesse env nel dashboard.
 
 ## Struttura
 
 ```
 src/
-  app/               # App Router pages
-    layout.tsx       # Layout globale, metadata, JSON-LD Restaurant
-    page.tsx         # Home
-    menu/            # Menu completo
-    chi-siamo/       # About
-    galleria/        # Gallery con lightbox
-    recensioni/      # Recensioni Google
-    contatti/        # Contatti + mappa
-    sitemap.ts       # Sitemap dinamica
-    robots.ts
-  components/        # Componenti React
+  app/
+    [previewSlug]/        # preview universale tenant
+    bizery/               # pagine marketing verticale services
+    (route food)          # home, menu, prenotazioni del verticale food
+    api/                  # route handlers (menu, prenotazioni, sedi, ecc.)
+  components/
+    tenants/
+      _shared/            # solo elementi UI esplicitamente condivisi
+      bepork/             # UI esclusiva tenant BePork
+      (slug)/             # UI esclusiva di altri tenant
+    modules/              # moduli logici riusabili (menu, prenotazioni, gallery…)
+    bizery/               # UI del verticale Bizery
   lib/
-    site-config.ts   # Contatti, orari, social, disclaimer
-    menu-data.ts     # Tutto il menu (13 categorie)
-    reviews-data.ts  # Recensioni selezionate + rating Google
-    utils.ts
+    tenant-registry.ts    # profili + feature-flag per tenant
+    tenant-content.ts     # testi, immagini, social per tenant
+    tenant-modules.ts     # definizione moduli disponibili
+    vertical.ts           # registry verticali
+    tenant.ts             # tipi core
+    site-config.ts        # contatti/orari/social (tenant default)
+  styles/
+    tenants/
+      bepork.css          # token CSS BePork
+      bizery.css          # token CSS Bizery
+      (slug).css          # token CSS altri tenant
 public/
-  logo.png
-  photos/            # Foto piatti reali
+  (slug)/                 # asset per tenant (logo, photos, og)
 ```
 
-## Aggiornare contenuti
+Dettagli architetturali estesi: vedi [ARCHITECTURE.md](ARCHITECTURE.md).
+Regole per le IA che lavorano sulla repo: vedi [CLAUDE.md](CLAUDE.md).
 
-### Orari, telefono, social, indirizzo
-→ `src/lib/site-config.ts`
+## Regole d'oro
 
-### Menu
-→ `src/lib/menu-data.ts`
-Ogni piatto ha `id`, `name`, `description`, `price` (4 formati supportati: `single`, `sized` Big/Small, `persone` 2pers/4pers, `volume` per birre) e `tags` opzionali (`firma`, `piccante`, `veg`, `novita`).
+1. **Isolamento visivo**: niente CSS, token, classi o componenti UI condivisi tra tenant. Ogni tenant nasce da zero in `components/tenants/(slug)/` + `styles/tenants/(slug).css`.
+2. **Moduli logici condivisi**: l'unico riuso ammesso è in `components/modules/` e `lib/`. Modifiche ai moduli richiedono autorizzazione esplicita e devono restare retrocompatibili per tutti i tenant.
+3. **Isolamento dati**: i dati di un tenant (listino, prodotti, prenotazioni) non compaiono mai in un altro. Nessun fallback cross-tenant.
 
-### Recensioni & rating Google
-→ `src/lib/reviews-data.ts`
+## Aggiungere un nuovo tenant
 
-### Foto
-→ `public/photos/` — poi referenzia il path nel menu (campo `image` del `MenuItem`) o in `src/app/galleria/page.tsx`.
+1. Registra profilo + feature-flag in `src/lib/tenant-registry.ts`.
+2. Aggiungi i contenuti in `src/lib/tenant-content.ts`.
+3. Verifica/aggiorna il verticale in `src/lib/vertical.ts` (e `platform.ts` se serve).
+4. Crea i componenti UI in `src/components/tenants/(slug)/` con prefisso univoco (`<BizeryHero />`, non `<Hero />`).
+5. Crea i token CSS in `src/styles/tenants/(slug).css`.
+6. Asset in `public/(slug)/`.
+7. Eventuali route dedicate in `src/app/(slug)/`.
 
-### Link delivery (Glovo, Deliveroo, Just Eat, Uber Eats)
-→ `src/lib/site-config.ts` — campo `delivery`. Cambia `url` e `active: true` quando vanno online.
+Checklist completa in [CLAUDE.md](CLAUDE.md).
 
-## TODO (non bloccanti)
+## Stack
 
-- [ ] Inserire URL completo profilo Google Maps in `site-config.ts` (`maps.searchUrl`) quando disponibile
-- [ ] Attivare link delivery quando confermati
-- [ ] Eventualmente aggiungere cover OG in `public/og/cover.jpg` (1200×630)
+- Next.js 15 (App Router) + React 19
+- TypeScript
+- Tailwind CSS + token CSS per tenant
+- Framer Motion
+- Supabase (`@supabase/ssr`, `@supabase/supabase-js`)
+- Zustand (state client)
+- @react-pdf/renderer, qrcode.react
+- Vercel Analytics
+
+## Deploy
+
+Hosting su Vercel (zero config Next.js). Ogni verticale e ogni tenant può avere il proprio dominio mappato alla stessa app: il routing avviene per host e/o per `previewSlug`.
