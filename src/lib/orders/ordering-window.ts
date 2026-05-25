@@ -3,15 +3,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { TenantOrderSettings } from "@/lib/types";
 import type { DaySchedule } from "@/lib/venue-hours";
 
-// ── Parsing slot "HH:mm – HH:mm" ─────────────────────────────────────────────
-type Minute = number; // minuti dall'inizio della settimana (0..7*24*60-1)
-
-function parseHHmm(s: string): { h: number; m: number } | null {
-  const m = s.match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return null;
-  return { h: parseInt(m[1], 10), m: parseInt(m[2], 10) };
-}
-
 function parseSlot(slot: string): { open: { h: number; m: number }; close: { h: number; m: number } } | null {
   const m = slot.match(/(\d{1,2}):(\d{2})\s*[–\-]\s*(\d{1,2}):(\d{2})/);
   if (!m) return null;

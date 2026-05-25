@@ -41,7 +41,8 @@ export function OrderSettingsPanel() {
       }
       const { settings } = (await res.json()) as { settings: TenantOrderSettings };
       if (cancelled) return;
-      const { id: _id, tenantId: _t, locationId: _l, ...rest } = settings;
+      const { id, tenantId, locationId, ...rest } = settings;
+      void id; void tenantId; void locationId;
       setForm(rest);
       setLoaded(true);
     })();
