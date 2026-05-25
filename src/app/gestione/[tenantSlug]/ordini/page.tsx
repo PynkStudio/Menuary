@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote } from "lucide-react";
+import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, UtensilsCrossed, AlarmClock } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/supabase/types";
-import { startOrder, markReady, markDelivered, cancelOrder } from "./actions";
+import { startOrder, markReady, markDelivered, cancelOrder, confirmPendingOrder, rejectPendingOrder } from "./actions";
+import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 
-type Filter = "live" | "nuovi" | "preparazione" | "pronti" | "asporto" | "tavolo" | "storico" | "tutti";
+type Filter = "live" | "pending" | "nuovi" | "preparazione" | "pronti" | "asporto" | "tavolo" | "storico" | "tutti";
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "live", label: "Coda live" },
+  { id: "pending", label: "Da confermare" },
   { id: "nuovi", label: "Nuovi" },
   { id: "preparazione", label: "In preparazione" },
   { id: "pronti", label: "Pronti" },
@@ -30,6 +32,9 @@ type OrderRow = {
   pickup_time: string | null;
   notes: string | null;
   created_at: string;
+  dine_option: string | null;
+  confirmation_expires_at: string | null;
+  auto_accepted: boolean | null;
 };
 
 type OrderLine = { order_id: string; name: string; qty: number; variant_label: string | null };
@@ -40,13 +45,16 @@ async function fetchOrders(tenantSlug: string, filter: Filter): Promise<{ orders
 
   let q = svc
     .from("orders")
-    .select("id, code, status, type, total, customer_name, table_label, pickup_time, notes, created_at")
+    .select("id, code, status, type, total, customer_name, table_label, pickup_time, notes, created_at, dine_option, confirmation_expires_at, auto_accepted")
     .eq("tenant_id", tenantSlug);
 
   const liveStatuses: Database["public"]["Enums"]["order_status"][] = ["nuovo", "in_preparazione", "pronto"];
   switch (filter) {
     case "live":
       q = q.in("status", liveStatuses);
+      break;
+    case "pending":
+      q = q.eq("status", "pending_confirmation");
       break;
     case "nuovi":
       q = q.eq("status", "nuovo");
@@ -94,11 +102,13 @@ async function fetchOrders(tenantSlug: string, filter: Filter): Promise<{ orders
 
 function statusBadge(status: OrderRow["status"]): { label: string; tone: "ok" | "warn" | "error" | "muted" | "pending" } {
   switch (status) {
+    case "pending_confirmation": return { label: "Da confermare", tone: "warn" };
     case "nuovo": return { label: "Nuovo", tone: "warn" };
     case "in_preparazione": return { label: "In preparazione", tone: "pending" };
     case "pronto": return { label: "Pronto", tone: "ok" };
     case "consegnato": return { label: "Consegnato", tone: "muted" };
     case "annullato": return { label: "Annullato", tone: "error" };
+    case "expired": return { label: "Scaduto", tone: "error" };
   }
 }
 
@@ -130,6 +140,7 @@ export default async function OrdiniPage({
 
   return (
     <div className="ga-dashboard">
+      <OrdersLiveRefresh tenantId={tenantSlug} />
       <header>
         <span className="ga-eyebrow">Operatività</span>
         <h1 className="ga-heading">Ordini</h1>
@@ -155,9 +166,14 @@ export default async function OrdiniPage({
           {orders.map((o) => {
             const badge = statusBadge(o.status);
             const items = lines.get(o.id) ?? [];
+            const isPending = o.status === "pending_confirmation";
             const isNuovo = o.status === "nuovo";
             const isPreparazione = o.status === "in_preparazione";
             const isPronto = o.status === "pronto";
+            const pendingSecondsLeft =
+              isPending && o.confirmation_expires_at
+                ? Math.max(0, Math.floor((new Date(o.confirmation_expires_at).getTime() - Date.now()) / 1000))
+                : null;
 
             return (
               <article key={o.id} className="ga-reservation">
@@ -170,17 +186,33 @@ export default async function OrdiniPage({
                   <div className="ga-reservation-head">
                     <span className="ga-reservation-name">{o.customer_name ?? "Cliente"}</span>
                     <span className="ga-module-status" data-status={badge.tone}>{badge.label}</span>
+                    {o.auto_accepted && (
+                      <span className="ga-reservation-tag" style={{ background: "var(--ga-ink-faint, #eef)", color: "var(--ga-ink)" }}>
+                        Auto
+                      </span>
+                    )}
                     <span className="ga-reservation-tag" style={{ background: "transparent", color: "var(--ga-ink-faint)" }}>
                       {formatTotal(o.total)}
                     </span>
                   </div>
                   <div className="ga-reservation-meta">
                     <span><Clock size={12} strokeWidth={2.2} /> {formatTime(o.created_at)}</span>
+                    {o.dine_option === "dine_in" && (
+                      <span><UtensilsCrossed size={12} strokeWidth={2.2} /> Mangia qui</span>
+                    )}
+                    {o.dine_option === "takeaway" && (
+                      <span><ShoppingBag size={12} strokeWidth={2.2} /> Asporto</span>
+                    )}
                     {o.table_label && (
                       <span><MapPin size={12} strokeWidth={2.2} /> {o.table_label}</span>
                     )}
                     {o.pickup_time && (
                       <span><Bell size={12} strokeWidth={2.2} /> Ritiro {o.pickup_time}</span>
+                    )}
+                    {isPending && pendingSecondsLeft !== null && (
+                      <span style={{ color: "var(--ga-warn, #B8332E)", fontWeight: 600 }}>
+                        <AlarmClock size={12} strokeWidth={2.2} /> {pendingSecondsLeft}s al timeout
+                      </span>
                     )}
                   </div>
                   {items.length > 0 && (
@@ -202,6 +234,24 @@ export default async function OrdiniPage({
                 </div>
 
                 <div className="ga-reservation-actions">
+                  {isPending && (
+                    <>
+                      <form action={confirmPendingOrder}>
+                        <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                        <input type="hidden" name="id" value={o.id} />
+                        <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
+                          <Check size={14} strokeWidth={2.4} /> Conferma
+                        </button>
+                      </form>
+                      <form action={rejectPendingOrder}>
+                        <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                        <input type="hidden" name="id" value={o.id} />
+                        <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
+                          <X size={14} strokeWidth={2.4} /> Rifiuta
+                        </button>
+                      </form>
+                    </>
+                  )}
                   {isNuovo && (
                     <>
                       <form action={startOrder}>

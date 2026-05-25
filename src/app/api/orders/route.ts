@@ -7,7 +7,11 @@ import {
   type DbOrder,
   type DbOrderLine,
 } from "@/lib/api/orders";
-import type { CartLine } from "@/lib/types";
+import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
+import { evaluateAutoAccept, loadOrderSettings } from "@/lib/orders/order-settings";
+import { checkOrderingWindow, type OrderChannel } from "@/lib/orders/ordering-window";
+import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
+import type { CartLine, OrderDineOption } from "@/lib/types";
 import type { Database } from "@/lib/supabase/types";
 
 // ─── POST /api/orders — crea ordine ──────────────────────────────────────────
@@ -18,6 +22,9 @@ export type CreateOrderBody = {
   lines: CartLine[];
   total: number;
   customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  menuaryUserId?: string | null;
   pickupTime?: string;
   notes?: string;
   tableId?: string;
@@ -26,6 +33,8 @@ export type CreateOrderBody = {
   sessionCode?: string;
   dinerClientId?: string;
   dinerNickname?: string;
+  /** Per locali senza tavoli numerati: 'dine_in' (vassoio) vs 'takeaway' (sacchetto). */
+  dineOption?: OrderDineOption;
   /** ID sede da cui proviene l'ordine — null per tenant single-location */
   locationId?: string;
 };
@@ -48,6 +57,59 @@ export async function POST(req: NextRequest) {
   });
   if (codeErr) return NextResponse.json({ error: codeErr.message }, { status: 500 });
 
+  const identity = await resolveCustomerIdentity({
+    tenantId,
+    phone: rest.customerPhone,
+    displayName: rest.customerName,
+    source: "web",
+  });
+
+  // ── Settings ordine + valutazione auto-accept ──────────────────────────────
+  const settings = await loadOrderSettings(supabase, tenantId, locationId ?? null);
+
+  // ── Validazione finestra orari (skip per ordini tavolo da QR: il cliente è già fisicamente nel locale) ──
+  if (type === "asporto") {
+    const channel: OrderChannel =
+      rest.dineOption === "dine_in" ? "dine_in" : "takeaway";
+    const windowCheck = await checkOrderingWindow(supabase, {
+      tenantId,
+      locationId: locationId ?? null,
+      settings,
+      channel,
+    });
+    if (!windowCheck.ok) {
+      const messages: Record<string, string> = {
+        channel_disabled: "Questo canale di ordine non è attivo.",
+        closed_today: "Oggi il locale è chiuso.",
+        outside_window: "Gli ordini non sono attivi in questa fascia oraria.",
+        no_hours_configured: "Orari non configurati.",
+      };
+      return NextResponse.json(
+        { error: messages[windowCheck.reason] ?? "ordering_not_available", code: windowCheck.reason },
+        { status: 422 },
+      );
+    }
+  }
+
+  const itemsCount = lines.reduce((acc, l) => acc + l.qty, 0);
+  const hasNotes =
+    Boolean(rest.notes && rest.notes.trim().length > 0) ||
+    lines.some((l) => Boolean(l.note && l.note.trim().length > 0));
+  const isReturningCustomer = Boolean(identity?.registered) || Boolean(identity?.customerId);
+
+  const autoAccepted = evaluateAutoAccept(settings, {
+    total,
+    itemsCount,
+    hasNotes,
+    isReturningCustomer,
+  });
+
+  const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
+  const confirmationExpiresAt = autoAccepted
+    ? null
+    : new Date(Date.now() + settings.pendingTimeoutSeconds * 1000).toISOString();
+  const confirmedAt = autoAccepted ? new Date().toISOString() : null;
+
   // Inserisci ordine
   const { data: order, error: orderErr } = await supabase
     .from("orders")
@@ -56,6 +118,7 @@ export async function POST(req: NextRequest) {
       code: codeRow as string,
       type,
       total,
+      status: initialStatus,
       table_id: rest.tableId ?? null,
       table_label: rest.tableLabel ?? null,
       session_id: rest.sessionId ?? null,
@@ -63,14 +126,39 @@ export async function POST(req: NextRequest) {
       diner_client_id: rest.dinerClientId ?? null,
       diner_nickname: rest.dinerNickname ?? null,
       customer_name: rest.customerName ?? null,
+      customer_email: rest.customerEmail ?? null,
+      customer_phone: identity?.phone ?? rest.customerPhone ?? null,
+      customer_id: identity?.customerId ?? null,
+      menuary_user_id: rest.menuaryUserId ?? identity?.menuaryUserId ?? null,
       pickup_time: rest.pickupTime ?? null,
       notes: rest.notes ?? null,
       location_id: locationId ?? null,
-    })
+      dine_option: rest.dineOption ?? null,
+      confirmation_expires_at: confirmationExpiresAt,
+      confirmed_at: confirmedAt,
+      auto_accepted: autoAccepted,
+    } as never)
     .select("id, code")
     .single();
 
   if (orderErr || !order) return NextResponse.json({ error: orderErr?.message }, { status: 500 });
+
+  if (identity) {
+    await recordCustomerEvent({
+      tenantId,
+      customerId: identity.customerId,
+      eventKind: type === "asporto" ? "takeaway_order_created" : "table_order_created",
+      refId: order.id,
+      meta: {
+        source: "web",
+        registered: identity.registered,
+        total,
+        orderType: type,
+        autoAccepted,
+        initialStatus,
+      },
+    });
+  }
 
   // Inserisci righe ordine
   const lineRows = cartLinesToDbRows(order.id, lines);
@@ -79,7 +167,22 @@ export async function POST(req: NextRequest) {
     if (linesErr) return NextResponse.json({ error: linesErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ id: order.id, code: order.code }, { status: 201 });
+  // Auto-accept: notifichiamo subito il cliente per email (best-effort).
+  if (autoAccepted) {
+    void sendOrderConfirmationEmail(supabase, order.id).catch(() => {});
+  }
+
+  return NextResponse.json(
+    {
+      id: order.id,
+      code: order.code,
+      status: initialStatus,
+      autoAccepted,
+      confirmationExpiresAt,
+      pendingTimeoutSeconds: settings.pendingTimeoutSeconds,
+    },
+    { status: 201 },
+  );
 }
 
 // ─── GET /api/orders?tenantId=…&status=…&sessionId=… ─────────────────────────

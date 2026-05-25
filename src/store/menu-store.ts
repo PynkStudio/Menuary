@@ -28,6 +28,7 @@ import type {
   TableSession,
 } from "@/lib/types";
 import type { MenuIngredient } from "@/lib/ingredients";
+import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 
 const STORAGE_KEY = "bepork-menu-v3";
 const DEFAULT_MENU_TENANT_ID = "bepork";
@@ -240,11 +241,13 @@ export interface MenuState {
   removeExtraList: (id: string) => void;
   applyExtraListToItemIds: (listId: string, itemIds: string[]) => void;
   addItem: (categoryId: string, draft: Partial<AdminMenuItem>) => string;
+  addItems: (drafts: Array<Partial<AdminMenuItem> & { categoryId: string }>) => string[];
   removeItem: (id: string) => void;
   addMenuList: (draft?: Partial<AdminMenuList>) => string;
   updateMenuList: (id: string, patch: Partial<AdminMenuList>) => void;
   removeMenuList: (id: string) => void;
   toggleMenuListItem: (menuListId: string, itemId: string) => void;
+  replaceMenuData: (bundle: MenuSyncBundle) => void;
 
   addOrder: (o: Omit<Order, "id" | "createdAt" | "status" | "code">) => Order;
   updateOrderStatus: (id: string, status: OrderStatus) => void;
@@ -422,6 +425,42 @@ export const useMenuStore = create<MenuState>()(
         return id;
       },
 
+      addItems: (drafts) => {
+        const newItems = drafts.map((draft, index) => {
+          const id =
+            draft.id ??
+            `new-${Date.now().toString(36)}-${index}-${Math.random().toString(36).slice(2, 7)}`;
+          return {
+            id,
+            categoryId: draft.categoryId,
+            order: draft.order ?? 9999,
+            available: draft.available ?? true,
+            name: draft.name ?? "Nuovo piatto",
+            description: draft.description,
+            price: draft.price ?? { kind: "single", value: 0 },
+            tags: draft.tags,
+            piccanteLevel: draft.piccanteLevel,
+            allergens: draft.allergens,
+            abv: draft.abv,
+            image: draft.image,
+            ingredients: draft.ingredients,
+            extraListId: draft.extraListId,
+            extras: draft.extras,
+            bundleSlots: draft.bundleSlots,
+          } satisfies AdminMenuItem;
+        });
+        const ids = newItems.map((item) => item.id);
+        set((s) => ({
+          items: [...s.items, ...newItems],
+          menuLists: s.menuLists.map((list) =>
+            list.id === "menu-completo"
+              ? { ...list, itemIds: [...list.itemIds, ...ids] }
+              : list,
+          ),
+        }));
+        return ids;
+      },
+
       removeItem: (id) =>
         set((s) => ({
           items: s.items.filter((it) => it.id !== id),
@@ -482,6 +521,23 @@ export const useMenuStore = create<MenuState>()(
                 : [...list.itemIds, itemId],
             };
           }),
+        })),
+
+      replaceMenuData: (bundle) =>
+        set((s) => ({
+          ...s,
+          categories: bundle.categories,
+          items: bundle.items.map(migrateItemIngredients),
+          menuLists:
+            bundle.menuLists.length > 0
+              ? bundle.menuLists.map((list) => ({
+                  ...list,
+                  enabled: list.enabled ?? true,
+                  itemIds: list.itemIds ?? [],
+                  visibility: list.visibility ?? {},
+                }))
+              : seedMenuLists(s.currentTenantId, bundle.categories, bundle.items),
+          extraLists: mergeExtraListsWithDefaults(bundle.extraLists, DEFAULT_EXTRA_LISTS),
         })),
 
       addOrder: (o) => {
@@ -614,11 +670,7 @@ export const useMenuStore = create<MenuState>()(
       skipHydration: true,
       storage: createBrowserLocalJSONStorage(),
       partialize: (s) => ({
-        categories: s.categories,
         currentTenantId: s.currentTenantId,
-        items: s.items,
-        menuLists: s.menuLists,
-        extraLists: s.extraLists,
         orders: s.orders,
         lastOrderSeq: s.lastOrderSeq,
         tables: s.tables,
@@ -628,22 +680,14 @@ export const useMenuStore = create<MenuState>()(
         if (!persisted || typeof persisted !== "object") return current;
         const p = persisted as Partial<MenuState>;
         const currentTenantId = p.currentTenantId ?? current.currentTenantId;
-        const items = p.items?.map(migrateItemIngredients) ?? current.items;
-        const categories = p.categories ?? current.categories;
-        const menuLists =
-          p.menuLists && p.menuLists.length > 0
-            ? p.menuLists.map((list) => ({
-                ...list,
-                enabled: list.enabled ?? true,
-                itemIds: list.itemIds ?? [],
-                visibility: list.visibility ?? {},
-              }))
-            : seedMenuLists(currentTenantId, categories, items);
-        const extraLists = mergeExtraListsWithDefaults(
-          p.extraLists as ExtraList[] | undefined,
-          DEFAULT_EXTRA_LISTS,
-        );
-        return { ...current, ...p, currentTenantId, items, menuLists, extraLists };
+        return {
+          ...current,
+          currentTenantId,
+          orders: p.orders ?? current.orders,
+          lastOrderSeq: p.lastOrderSeq ?? current.lastOrderSeq,
+          tables: p.tables ?? current.tables,
+          sessions: p.sessions ?? current.sessions,
+        };
       },
     },
   ),

@@ -29,6 +29,7 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
   const [primary, setPrimary] = useState("#0f172a");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
+  const [ownerPhone, setOwnerPhone] = useState(lead.contact_phone ?? "");
   const [animaFile, setAnimaFile] = useState<File | null>(null);
   const [animaDragging, setAnimaDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,7 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
       fd.append("primaryColor", primary);
       fd.append("address", address);
       fd.append("city", city);
+      fd.append("ownerPhone", ownerPhone);
       if (animaFile) fd.append("animaFile", animaFile);
 
       const res = await fetch("/api/admin/generate-tenant", {
@@ -206,6 +208,15 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
                   onChange={(e) => setCity(e.target.value)}
                   className="w-full rounded-xl border border-pork-ink/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pork-ink/20"
                   placeholder="es. Milano"
+                />
+              </FormField>
+
+              <FormField label="WhatsApp admin tenant" hint="Numero abilitato di default per Chatta con Menuary IA">
+                <input
+                  value={ownerPhone}
+                  onChange={(e) => setOwnerPhone(e.target.value)}
+                  className="w-full rounded-xl border border-pork-ink/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pork-ink/20"
+                  placeholder="+39 ..."
                 />
               </FormField>
 

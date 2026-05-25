@@ -15,6 +15,7 @@ import {
 import { useCartStore } from "@/store/cart-store";
 import { useHydrated } from "@/components/core/providers";
 import { useTenant } from "@/components/core/tenant-provider";
+import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 
 export function InteractiveMenu({
   showOnlyAvailable = true,
@@ -23,6 +24,7 @@ export function InteractiveMenu({
 }) {
   const hydrated = useHydrated();
   const tenant = useTenant();
+  const syncStatus = useSupabaseMenuSync(tenant.id);
   const searchParams = useSearchParams();
   const tableParam = searchParams.get("t");
   const setContext = useCartStore((s) => s.setContext);
@@ -122,7 +124,7 @@ export function InteractiveMenu({
     [populatedCategories],
   );
 
-  if (!hydrated || currentTenantId !== tenant.id) return null;
+  if (!hydrated || currentTenantId !== tenant.id || syncStatus === "loading") return null;
 
   return (
     <>

@@ -1348,9 +1348,16 @@ export type Database = {
       }
       orders: {
         Row: {
+          auto_accepted: boolean | null
           code: string
+          confirmation_expires_at: string | null
+          confirmed_at: string | null
           created_at: string
+          customer_email: string | null
+          customer_id: string | null
           customer_name: string | null
+          customer_phone: string | null
+          dine_option: string | null
           diner_client_id: string | null
           diner_nickname: string | null
           id: string
@@ -1369,9 +1376,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_accepted?: boolean | null
           code: string
+          confirmation_expires_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
           customer_name?: string | null
+          customer_phone?: string | null
+          dine_option?: string | null
           diner_client_id?: string | null
           diner_nickname?: string | null
           id?: string
@@ -1390,9 +1404,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_accepted?: boolean | null
           code?: string
+          confirmation_expires_at?: string | null
+          confirmed_at?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_id?: string | null
           customer_name?: string | null
+          customer_phone?: string | null
+          dine_option?: string | null
           diner_client_id?: string | null
           diner_nickname?: string | null
           id?: string
@@ -2434,6 +2455,74 @@ export type Database = {
           },
         ]
       }
+      tenant_order_settings: {
+        Row: {
+          auto_accept_enabled: boolean
+          auto_accept_max_items: number | null
+          auto_accept_max_total: number | null
+          auto_accept_no_notes: boolean
+          auto_accept_only_returning: boolean
+          created_at: string
+          dine_in_enabled: boolean
+          dine_in_window_before_close_min: number | null
+          dine_in_window_before_open_min: number | null
+          id: string
+          location_id: string | null
+          pending_timeout_seconds: number
+          takeaway_enabled: boolean
+          takeaway_window_before_close_min: number | null
+          takeaway_window_before_open_min: number | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_accept_enabled?: boolean
+          auto_accept_max_items?: number | null
+          auto_accept_max_total?: number | null
+          auto_accept_no_notes?: boolean
+          auto_accept_only_returning?: boolean
+          created_at?: string
+          dine_in_enabled?: boolean
+          dine_in_window_before_close_min?: number | null
+          dine_in_window_before_open_min?: number | null
+          id?: string
+          location_id?: string | null
+          pending_timeout_seconds?: number
+          takeaway_enabled?: boolean
+          takeaway_window_before_close_min?: number | null
+          takeaway_window_before_open_min?: number | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_accept_enabled?: boolean
+          auto_accept_max_items?: number | null
+          auto_accept_max_total?: number | null
+          auto_accept_no_notes?: boolean
+          auto_accept_only_returning?: boolean
+          created_at?: string
+          dine_in_enabled?: boolean
+          dine_in_window_before_close_min?: number | null
+          dine_in_window_before_open_min?: number | null
+          id?: string
+          location_id?: string | null
+          pending_timeout_seconds?: number
+          takeaway_enabled?: boolean
+          takeaway_window_before_close_min?: number | null
+          takeaway_window_before_open_min?: number | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_order_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_special_hours: {
         Row: {
           closed: boolean
@@ -2771,11 +2860,13 @@ export type Database = {
         | "kitdisplay"
         | "kiosk"
       order_status:
+        | "pending_confirmation"
         | "nuovo"
         | "in_preparazione"
         | "pronto"
         | "consegnato"
         | "annullato"
+        | "expired"
       order_type: "tavolo" | "asporto"
       price_kind: "single" | "sized" | "persone" | "volume"
       session_status: "aperta" | "chiusa"
@@ -2940,11 +3031,13 @@ export const Constants = {
         "kiosk",
       ],
       order_status: [
+        "pending_confirmation",
         "nuovo",
         "in_preparazione",
         "pronto",
         "consegnato",
         "annullato",
+        "expired",
       ],
       order_type: ["tavolo", "asporto"],
       price_kind: ["single", "sized", "persone", "volume"],

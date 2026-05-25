@@ -20,7 +20,8 @@ import {
 } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
-import { officinaKamMenu } from "@/lib/tenant-menu-data";
+import { useMenuStore, selectCategoriesOrdered, selectItemsByCategory } from "@/store/menu-store";
+import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 import { getGoogleRatingForTenant, getReviewsForTenant } from "@/lib/reviews-data";
 import { formatNumberIT } from "@/lib/format";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
@@ -183,6 +184,7 @@ function FooterColumn({
 
 export function OfficinaKamHomePage() {
   const tenant = useTenant();
+  const syncStatus = useSupabaseMenuSync(tenant.id);
   const content = getTenantContent(tenant.id);
   const staffHref = getTenantGestioneExternalHref(tenant.id);
   const { display: phoneDisplay, waHref } = useVenueContactPhone();
@@ -195,7 +197,23 @@ export function OfficinaKamHomePage() {
   const scrollCueRef = useRef<HTMLDivElement | null>(null);
   const [stageIndex, setStageIndex] = useState(0);
 
-  const menuGroups = useMemo(() => officinaKamMenu, []);
+  const categoriesRaw = useMenuStore((s) => s.categories);
+  const items = useMenuStore((s) => s.items);
+  const currentTenantId = useMenuStore((s) => s.currentTenantId);
+  const menuGroups = useMemo(
+    () =>
+      currentTenantId !== tenant.id || syncStatus === "loading"
+        ? []
+        :
+      selectCategoriesOrdered({ categories: categoriesRaw } as never).map((category) => ({
+        id: category.id,
+        title: category.title,
+        subtitle: category.subtitle,
+        description: category.description,
+        items: selectItemsByCategory(items, category.id, true),
+      })),
+    [categoriesRaw, currentTenantId, items, syncStatus, tenant.id],
+  );
   const currentGroup = menuGroups[activeGroup] ?? menuGroups[0];
   const tenantGoogleRating = getGoogleRatingForTenant(tenant.id);
   const reviewSample = getReviewsForTenant(tenant.id).slice(0, 3);
@@ -265,6 +283,10 @@ export function OfficinaKamHomePage() {
       behavior: "smooth",
     });
   };
+
+  if (!currentGroup) {
+    return <main className="kam-site" />;
+  }
 
   return (
     <main className="kam-site">

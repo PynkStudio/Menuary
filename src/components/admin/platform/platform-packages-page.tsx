@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import type { PlatformPackage } from "@/lib/platform-crm-types";
 import { TENANT_MODULES, TENANT_MODULE_CATEGORIES } from "@/lib/tenant-modules";
 import type { TenantFeatureKey } from "@/lib/tenant";
-import { PRICING_PLANS } from "@/lib/platform-pricing";
+import { AI_ADDON, PRICING_PLANS } from "@/lib/platform-pricing";
 import { MARKETS, type MarketCode } from "@/lib/markets";
 import { sanitizeAmountInput } from "@/lib/pricing-format";
 
@@ -52,7 +52,7 @@ type PackageMarketPrice = {
 
 // ─── Mock dati (da platform-pricing.ts come fonte) ───────────────────────────
 
-const MOCK_PACKAGES: PlatformPackageExtended[] = PRICING_PLANS.map((p, i) => ({
+const MOCK_BASE_PACKAGES: PlatformPackageExtended[] = PRICING_PLANS.map((p, i) => ({
   id: `pkg-${p.slug}`,
   name: p.slug,
   slug: p.slug,
@@ -84,6 +84,70 @@ const MOCK_PACKAGES: PlatformPackageExtended[] = PRICING_PLANS.map((p, i) => ({
   is_featured: p.is_featured ?? false,
   cta_label: p.cta_label ?? null,
 }));
+
+const MOCK_PACKAGES: PlatformPackageExtended[] = [
+  ...MOCK_BASE_PACKAGES,
+  {
+    id: `pkg-${AI_ADDON.slug}`,
+    name: AI_ADDON.slug,
+    slug: AI_ADDON.slug,
+    description: AI_ADDON.description,
+    vertical: "both",
+    adapted_name: null,
+    price_monthly: AI_ADDON.monthly,
+    price_yearly: AI_ADDON.monthly * 12,
+    currency: AI_ADDON.currency ?? "EUR",
+    modules: ["aiPhone"],
+    is_active: true,
+    sort_order: 100,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    package_kind: "addon",
+    min_package_slug: AI_ADDON.minPlan,
+    settings: AI_ADDON.settings,
+    marketing_name: AI_ADDON.marketing_name,
+    tagline: AI_ADDON.tagline,
+    marketing_description: AI_ADDON.description,
+    price_monthly_billing: AI_ADDON.monthly,
+    setup_from: AI_ADDON.setup_from ?? null,
+    marketing_items: AI_ADDON.items,
+    is_featured: false,
+    cta_label: "Scopri l'integrazione IA",
+  },
+  {
+    id: "pkg-ai-whatsapp",
+    name: "ai-whatsapp",
+    slug: "ai-whatsapp",
+    description: "Assistente IA per conversazioni inbound WhatsApp.",
+    vertical: "both",
+    adapted_name: null,
+    price_monthly: 40,
+    price_yearly: 480,
+    currency: "EUR",
+    modules: ["aiWhatsapp"],
+    is_active: true,
+    sort_order: 101,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+    package_kind: "addon",
+    min_package_slug: AI_ADDON.minPlan,
+    settings: { channels: ["whatsapp"], languages: ["it", "en", "fr", "es", "de"] },
+    marketing_name: "Assistente WhatsApp AI",
+    tagline: "IA su WhatsApp",
+    marketing_description: "Risponde ai messaggi WhatsApp, prende ordini, raccoglie dati delivery, propone slot e invia link pagamento.",
+    price_monthly_billing: 40,
+    setup_from: null,
+    marketing_items: [
+      "Ordini e prenotazioni via WhatsApp",
+      "Delivery con indirizzo e note consegna",
+      "Link pagamento Stripe via SMS o WhatsApp",
+      "Disponibilità calendario integrata",
+      "Test via WhatsApp Web bridge",
+    ],
+    is_featured: false,
+    cta_label: "Scopri WhatsApp AI",
+  },
+];
 
 // ─── Tipo form ────────────────────────────────────────────────────────────────
 

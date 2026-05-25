@@ -3,6 +3,7 @@ import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { gh, extractAnimaFiles, commitAnimaToGitHub } from "@/lib/github-anima";
+import { upsertTenantSupportAdminContact } from "@/lib/tenant-support/admin-contacts";
 
 function buildTheme(primary: string) {
   return {
@@ -244,7 +245,7 @@ export async function POST(req: NextRequest) {
   const ct = req.headers.get("content-type") ?? "";
   let tenantSlug: string, domain: string, vertical: "food" | "services",
     businessName: string, primaryColor: string, leadId: string,
-    address: string, city: string;
+    address: string, city: string, ownerPhone: string;
   let animaFile: File | null = null;
 
   if (ct.includes("multipart/form-data")) {
@@ -257,6 +258,7 @@ export async function POST(req: NextRequest) {
     leadId        = fd.get("leadId") as string;
     address       = (fd.get("address") as string | null) ?? "";
     city          = (fd.get("city") as string | null) ?? "";
+    ownerPhone    = (fd.get("ownerPhone") as string | null) ?? "";
     animaFile     = (fd.get("animaFile") as File | null) ?? null;
     // Scarta il file se è vuoto (input non compilato)
     if (animaFile && animaFile.size === 0) animaFile = null;
@@ -264,11 +266,12 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as {
       tenantSlug: string; domain: string; vertical: "food" | "services";
       businessName: string; primaryColor: string; leadId: string;
-      address?: string; city?: string;
+      address?: string; city?: string; ownerPhone?: string;
     };
     ({ tenantSlug, domain, vertical, businessName, primaryColor, leadId } = body);
     address = body.address ?? "";
     city = body.city ?? "";
+    ownerPhone = body.ownerPhone ?? "";
   }
 
   if (!tenantSlug || !domain || !vertical || !businessName) {
@@ -439,6 +442,16 @@ export async function POST(req: NextRequest) {
         dbTenantCreated = true;
         const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
         dbLocationId = row?.location_id ?? null;
+        try {
+          await upsertTenantSupportAdminContact({
+            tenantId: tenantSlug,
+            phone: ownerPhone,
+            displayName: businessName,
+            permissions: { source: "admin_generate_tenant", leadId },
+          });
+        } catch (contactErr) {
+          dbError = contactErr instanceof Error ? contactErr.message : "tenant_support_contact_failed";
+        }
       }
     } else {
       dbError = "Supabase service client non disponibile";

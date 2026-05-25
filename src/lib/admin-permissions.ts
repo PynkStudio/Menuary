@@ -100,6 +100,7 @@ export function requiredPermissionForAdminPath(pathname: string): AdminPermissio
   if (normalized.startsWith("/admin/crm/nuovo/")) return "crm:create";
   if (normalized === "/admin/crm" || normalized.startsWith("/admin/crm/")) return "crm:view";
   if (normalized === "/admin/pacchetti" || normalized.startsWith("/admin/pacchetti/")) return "packages:manage";
+  if (normalized === "/admin/assistente-ai" || normalized.startsWith("/admin/assistente-ai/")) return "tenant:manage";
   if (normalized === "/admin/abbonamenti" || normalized.startsWith("/admin/abbonamenti/")) return "subscriptions:view";
   if (normalized === "/admin/provvigioni" || normalized.startsWith("/admin/provvigioni/")) return "commissions:view";
   if (normalized === "/admin/tenant" || normalized.startsWith("/admin/tenant/")) return "tenant:manage";

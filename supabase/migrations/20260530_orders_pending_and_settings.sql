@@ -1,6 +1,13 @@
 -- Order flow: pending confirmation, dine-in vs takeaway option,
 -- per-location order settings (with tenant fallback).
 
+-- ── enum order_status: nuovi valori ─────────────────────────────────────────
+-- ALTER TYPE ... ADD VALUE non può girare dentro una transazione, ma il runner
+-- delle migration Supabase commit-a ogni file singolarmente: ogni statement è
+-- in transazione separata, quindi va bene così.
+ALTER TYPE public.order_status ADD VALUE IF NOT EXISTS 'pending_confirmation' BEFORE 'nuovo';
+ALTER TYPE public.order_status ADD VALUE IF NOT EXISTS 'expired' AFTER 'annullato';
+
 -- ── orders: nuovi campi ─────────────────────────────────────────────────────
 -- dine_option distingue "mangia qui" (vassoio) da "asporto" (sacchetto)
 -- per locali senza tavoli numerati. Per ordini al tavolo via QR resta NULL.
@@ -9,7 +16,8 @@ ALTER TABLE public.orders
     CHECK (dine_option IN ('dine_in', 'takeaway')),
   ADD COLUMN IF NOT EXISTS confirmed_at            timestamptz,
   ADD COLUMN IF NOT EXISTS confirmation_expires_at timestamptz,
-  ADD COLUMN IF NOT EXISTS auto_accepted           boolean NOT NULL DEFAULT false;
+  ADD COLUMN IF NOT EXISTS auto_accepted           boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS customer_email          text;
 
 -- Lo status precedente era validato lato app; non c'è un CHECK su orders.status
 -- nelle migrations note. Aggiungiamo i nuovi stati come valori app-side soltanto
@@ -22,6 +30,18 @@ CREATE INDEX IF NOT EXISTS orders_status_idx
 CREATE INDEX IF NOT EXISTS orders_pending_expires_idx
   ON public.orders (confirmation_expires_at)
   WHERE status = 'pending_confirmation';
+
+-- Realtime: il cliente in attesa di conferma sottoscrive la propria riga
+-- per essere notificato del cambio di stato (pending_confirmation → nuovo / expired).
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'orders'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
+  END IF;
+END$$;
 
 -- ── tenant_order_settings ───────────────────────────────────────────────────
 -- Una riga per (tenant_id, location_id). location_id NULL = default tenant

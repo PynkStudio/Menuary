@@ -332,6 +332,34 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     category: "Integrazioni",
     requires: ["shop"],
   },
+  {
+    key: "aiPhone",
+    label: "Assistente vocale AI",
+    description: "Orchestra chiamate inbound con Retell AI usando menu, modifiche, prezzi, ordini, prenotazioni, orari e dati del locale.",
+    category: "Integrazioni",
+    requires: ["website"],
+    requiresAny: ["onlineMenu", "reservations", "takeaway"],
+    verticalCopy: {
+      services: {
+        label: "Assistente vocale AI",
+        description: "Orchestra chiamate inbound con Retell AI usando listino, prezzi, appuntamenti, orari e dati dell'attività.",
+      },
+    },
+  },
+  {
+    key: "aiWhatsapp",
+    label: "Assistente WhatsApp AI",
+    description: "Orchestra conversazioni inbound WhatsApp per ordini, delivery, pagamenti, prenotazioni e appuntamenti.",
+    category: "Integrazioni",
+    requires: ["website"],
+    requiresAny: ["onlineMenu", "reservations", "takeaway"],
+    verticalCopy: {
+      services: {
+        label: "Assistente WhatsApp AI",
+        description: "Orchestra conversazioni WhatsApp per listino, appuntamenti, pagamenti e richieste clienti.",
+      },
+    },
+  },
 ];
 
 export const TENANT_MODULE_CATEGORIES: TenantModuleCategory[] = [

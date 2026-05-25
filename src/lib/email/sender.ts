@@ -13,7 +13,7 @@ export type EmailBrand = {
   muted: string;
 };
 
-const PLATFORM_BRANDS: Record<TenantVertical, EmailBrand> = {
+export const PLATFORM_BRANDS: Record<TenantVertical, EmailBrand> = {
   food: {
     name: "Menuary",
     domain: "menuary.it",

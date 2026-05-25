@@ -1,4 +1,4 @@
-import type { CartLine, Order, OrderLine, OrderStatus } from "@/lib/types";
+import type { CartLine, Order, OrderDineOption, OrderLine, OrderStatus } from "@/lib/types";
 import type { Database, Json } from "@/lib/supabase/types";
 
 type OrderLineInsert = Database["public"]["Tables"]["order_lines"]["Insert"];
@@ -33,11 +33,16 @@ export function dbRowToOrder(row: DbOrder, lines: OrderLine[]): Order {
     dinerClientId: row.diner_client_id ?? undefined,
     dinerNickname: row.diner_nickname ?? undefined,
     customerName: row.customer_name ?? undefined,
+    customerEmail: row.customer_email ?? undefined,
     pickupTime: row.pickup_time ?? undefined,
     notes: row.notes ?? undefined,
     lines,
     total: Number(row.total),
     status: row.status as OrderStatus,
+    dineOption: (row.dine_option as OrderDineOption | null) ?? undefined,
+    confirmationExpiresAt: row.confirmation_expires_at ?? undefined,
+    confirmedAt: row.confirmed_at ?? undefined,
+    autoAccepted: row.auto_accepted ?? false,
   };
 }
 
@@ -79,6 +84,7 @@ export type DbOrder = {
   diner_client_id: string | null;
   diner_nickname: string | null;
   customer_name: string | null;
+  customer_email: string | null;
   pickup_time: string | null;
   notes: string | null;
   total: number | string;
@@ -86,6 +92,10 @@ export type DbOrder = {
   created_at: string;
   updated_at: string;
   menuary_user_id: string | null;
+  dine_option: string | null;
+  confirmation_expires_at: string | null;
+  confirmed_at: string | null;
+  auto_accepted: boolean | null;
 };
 
 export type DbOrderLine = {

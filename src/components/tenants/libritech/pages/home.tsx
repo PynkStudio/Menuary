@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { libritechCatalog, type LibritechBook } from "@/lib/libritech-catalog";
+import type { LibritechBook } from "@/lib/libritech-catalog";
 import { useShopCartStore, shopCartCount } from "@/store/shop-cart-store";
 import { LtCartDrawer } from "@/components/tenants/libritech/lt-cart-drawer";
 import { LtBookModal } from "@/components/tenants/libritech/lt-book-modal";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
+import { useMenuStore } from "@/store/menu-store";
+import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 
 const CATEGORIES = [
   { id: "all",      label: "Tutti" },
@@ -33,6 +35,7 @@ function matchesCategory(book: LibritechBook, cat: Category): boolean {
 
 export function LibritechHomePage() {
   const tenant = useTenant();
+  const syncStatus = useSupabaseMenuSync(tenant.id);
   const staffHref = getTenantGestioneExternalHref(tenant.id);
   const lines     = useShopCartStore((s) => s.lines);
   const setOpen   = useShopCartStore((s) => s.setOpen);
@@ -46,8 +49,20 @@ export function LibritechHomePage() {
   useEffect(() => { setHydrated(true); }, []);
 
   const count = hydrated ? shopCartCount(lines) : 0;
+  const menuItems = useMenuStore((s) => s.items);
+  const currentTenantId = useMenuStore((s) => s.currentTenantId);
+  const books = menuItems
+    .filter(() => currentTenantId === tenant.id && syncStatus !== "loading")
+    .filter((item) => item.available)
+    .map<LibritechBook>((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.description ?? "",
+      price: item.price.kind === "single" ? item.price.value : 0,
+      imageUrl: item.image ?? "",
+    }));
 
-  const filtered = libritechCatalog.filter((b) => {
+  const filtered = books.filter((b) => {
     const matchesCat  = matchesCategory(b, category);
     const matchesText = !search.trim() || (
       b.name.toLowerCase().includes(search.toLowerCase()) ||

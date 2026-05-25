@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, User, StickyNote, Package } from "lucide-react";
+import { Clock, User, StickyNote, Package, Mail, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { useCartStore, cartTotal } from "@/store/cart-store";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
 import { formatRemovedForLine } from "@/lib/ingredients";
@@ -13,6 +13,7 @@ import { LineMods } from "@/components/modules/shop/line-mods";
 import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import type { OrderDineOption } from "@/lib/types";
 
 function nextSlots(count = 8, stepMin = 15): string[] {
   const out: string[] = [];
@@ -36,7 +37,7 @@ export default function OrdinaPage() {
   const hydrated = useHydrated();
   const router = useRouter();
   const tenant = useTenant();
-  const { allowTakeaway: takeawayOk } = useEffectiveFeatures();
+  const { allowTakeaway: takeawayOk, allowTableOrders } = useEffectiveFeatures();
 
   const lines = useCartStore((s) => s.lines);
   const clear = useCartStore((s) => s.clear);
@@ -44,7 +45,12 @@ export default function OrdinaPage() {
   const addOrder = useMenuStore((s) => s.addOrder);
   const items = useMenuStore((s) => s.items);
 
+  // Se il locale NON usa tavoli numerati, esponiamo la scelta dine_in/takeaway
+  // qui (vassoio vs sacchetto). Default takeaway.
+  const showDineOption = !allowTableOrders;
+  const [dineOption, setDineOption] = useState<OrderDineOption>("takeaway");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -73,11 +79,15 @@ export default function OrdinaPage() {
     e.preventDefault();
     if (!takeawayOk || !name.trim() || !pickupTime || lines.length === 0) return;
     setSubmitting(true);
-    const created = addOrder({
+
+    // Mirror locale (UX/demo) — utile a /ordina/conferma quando l'API è offline.
+    const local = addOrder({
       type: "asporto",
       customerName: name.trim(),
+      customerEmail: email.trim() || undefined,
       pickupTime,
       notes: notes.trim() || undefined,
+      dineOption: showDineOption ? dineOption : undefined,
       lines: lines.map((l) => ({
         itemId: l.itemId,
         categoryId: l.categoryId,
@@ -93,6 +103,35 @@ export default function OrdinaPage() {
       })),
       total,
     });
+
+    // Persistenza server-side: decide auto-accept / pending in base alle settings.
+    let serverId: string | null = null;
+    let autoAccepted = false;
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId: tenant.id,
+          type: "asporto",
+          customerName: name.trim(),
+          customerEmail: email.trim() || undefined,
+          pickupTime,
+          notes: notes.trim() || undefined,
+          dineOption: showDineOption ? dineOption : undefined,
+          lines,
+          total,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        serverId = data.id ?? null;
+        autoAccepted = Boolean(data.autoAccepted);
+      }
+    } catch {
+      // fallback al local id
+    }
+
     void fetch("/api/personalization/establish", {
       method: "POST",
       credentials: "include",
@@ -100,11 +139,13 @@ export default function OrdinaPage() {
       body: JSON.stringify({
         tenantId: tenant.id,
         source: "order",
-        orderId: null,
+        orderId: serverId,
       }),
     }).catch(() => {});
+
     clear();
-    router.replace(`/ordina/conferma?id=${created.id}`);
+    const id = serverId ?? local.id;
+    router.replace(autoAccepted ? `/ordina/conferma?id=${id}` : `/ordina/attesa/${id}`);
   }
 
   if (hydrated && !takeawayOk) {
@@ -153,6 +194,10 @@ export default function OrdinaPage() {
                 <h2 className="headline text-3xl">I tuoi dati</h2>
 
                 <div className="mt-6 space-y-5">
+                  {showDineOption && (
+                    <DineOptionToggle value={dineOption} onChange={setDineOption} />
+                  )}
+
                   <Field label="Nome" icon={<User size={16} />}>
                     <input
                       type="text"
@@ -160,6 +205,16 @@ export default function OrdinaPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Come ti chiamiamo al bancone"
+                      className="w-full bg-transparent outline-none"
+                    />
+                  </Field>
+
+                  <Field label="Email (per conferma)" icon={<Mail size={16} />}>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="opzionale — ti scriviamo a conferma"
                       className="w-full bg-transparent outline-none"
                     />
                   </Field>
@@ -279,6 +334,70 @@ function Field({
         {children}
       </div>
     </label>
+  );
+}
+
+function DineOptionToggle({
+  value,
+  onChange,
+}: {
+  value: OrderDineOption;
+  onChange: (v: OrderDineOption) => void;
+}) {
+  return (
+    <div>
+      <span className="mb-1.5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-pork-ink/60">
+        Dove lo consumi?
+      </span>
+      <div className="grid grid-cols-2 gap-2">
+        <DineOptionButton
+          active={value === "dine_in"}
+          onClick={() => onChange("dine_in")}
+          icon={<UtensilsCrossed size={18} />}
+          label="Mangia qui"
+          hint="su vassoio"
+        />
+        <DineOptionButton
+          active={value === "takeaway"}
+          onClick={() => onChange("takeaway")}
+          icon={<ShoppingBag size={18} />}
+          label="Asporto"
+          hint="nel sacchetto"
+        />
+      </div>
+    </div>
+  );
+}
+
+function DineOptionButton({
+  active,
+  onClick,
+  icon,
+  label,
+  hint,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "flex flex-col items-center gap-1 rounded-xl border-2 px-4 py-3 transition-colors " +
+        (active
+          ? "border-pork-red bg-pork-red text-pork-cream"
+          : "border-pork-ink/10 bg-pork-cream text-pork-ink hover:border-pork-red/40")
+      }
+      aria-pressed={active}
+    >
+      {icon}
+      <span className="text-sm font-bold leading-none">{label}</span>
+      <span className="text-[10px] uppercase tracking-wide opacity-70">{hint}</span>
+    </button>
   );
 }
 

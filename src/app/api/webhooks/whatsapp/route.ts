@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Json } from "@/lib/supabase/types";
+import { isAuthorizedWhatsappWebBridgeRequest } from "@/lib/whatsapp/web-bridge-auth";
 
 /** Riceve callback WhatsApp Business / Meta (payload generico). */
 export async function POST(req: NextRequest) {
+  if (!isAuthorizedWhatsappWebBridgeRequest(req)) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   const svc = createSupabaseServiceClient();
   if (!svc) {
     return NextResponse.json({ ok: true, stored: false });

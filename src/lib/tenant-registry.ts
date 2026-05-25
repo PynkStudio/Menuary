@@ -12,7 +12,13 @@ export const DEFAULT_SERVICES_TENANT_ID = "officinakam";
 export const DEFAULT_TENANT_ID = DEFAULT_FOOD_TENANT_ID;
 
 /** Be Pork: stack demo/produzione con tutti i moduli piattaforma attivi (nei limiti dell’implementazione). */
-export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = { ...allTenantFeatures(true), shop: false, slabbby: false };
+export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = {
+  ...allTenantFeatures(true),
+  shop: false,
+  slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
+};
 
 /** LibriTech: libreria tech/startup demo su verticale services. */
 export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
@@ -40,6 +46,8 @@ export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
   gallery: false,
   shop: true,
   slabbby: true,
+  aiPhone: false,
+  aiWhatsapp: false,
 };
 
 /** Studio Legale Aranzulla: studio legale su verticale services. */
@@ -68,6 +76,8 @@ export const STUDIOARANZULLA_MODULE_FLAGS: TenantFeatureFlags = {
   gallery: false,
   shop: false,
   slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
 };
 
 /** Doca: bakery brasiliana a Milano — pane, caffè, saudade. */
@@ -96,6 +106,8 @@ export const DOCA_MODULE_FLAGS: TenantFeatureFlags = {
   gallery: false,
   shop: false,
   slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
 };
 
 /** Officina KAM: primo tenant reale Bizery — officina auto e moto. */
@@ -124,6 +136,8 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   gallery: true,
   shop: false,
   slabbby: true,
+  aiPhone: false,
+  aiWhatsapp: false,
 };
 
 export const TENANTS: TenantProfile[] = [
@@ -172,7 +186,7 @@ export const TENANTS: TenantProfile[] = [
       green: "#2E4560",
       pink: "#CD562F",
     },
-    features: { ...allTenantFeatures(true), shop: false, slabbby: false },
+    features: { ...allTenantFeatures(true), shop: false, slabbby: false, aiPhone: false, aiWhatsapp: false },
   },
 
   {

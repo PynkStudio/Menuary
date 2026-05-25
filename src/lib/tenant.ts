@@ -57,6 +57,10 @@ export type TenantFeatureFlags = {
   gallery: boolean;
   shop: boolean;
   slabbby: boolean;
+  /** Assistente vocale Retell AI per chiamate inbound: ordini, prenotazioni/appuntamenti e richieste informative. */
+  aiPhone: boolean;
+  /** Assistente WhatsApp AI per inbound via WhatsApp Web/Business: ordini, delivery, prenotazioni e pagamenti. */
+  aiWhatsapp: boolean;
   // TODO(google-reserve): aggiungere flag `googleReserve: boolean` una volta approvati come partner Actions Center.
   // Abilita il pulsante "Prenota" direttamente su Google Maps/Search per il tenant.
   // Prerequisito: tenant deve avere `reservations: true` e una location Google collegata.

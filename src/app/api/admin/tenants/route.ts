@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { upsertTenantSupportAdminContact } from "@/lib/tenant-support/admin-contacts";
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
 
@@ -24,7 +25,8 @@ async function requireSiteAdmin(
  * Crea un nuovo tenant + la prima sede in transazione (via RPC).
  * Body:
  *   { tenantId, name, label, vertical, status?, domains?, previewSlug?,
- *     theme, features, address, locationName?, city?, phone?, email? }
+ *     theme, features, address, locationName?, city?, phone?, email?,
+ *     ownerPhone?, ownerName? }
  *
  * Invariante: un tenant nasce sempre con almeno una sede.
  */
@@ -50,6 +52,8 @@ export async function POST(request: NextRequest) {
         city?: string | null;
         phone?: string | null;
         email?: string | null;
+        ownerPhone?: string | null;
+        ownerName?: string | null;
       }
     | null;
 
@@ -57,7 +61,7 @@ export async function POST(request: NextRequest) {
 
   const {
     tenantId, name, label, vertical, status, domains, previewSlug,
-    theme, features, address, locationName, city, phone, email,
+    theme, features, address, locationName, city, phone, email, ownerPhone, ownerName,
   } = body;
 
   // Validazione minima
@@ -119,9 +123,22 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const row = Array.isArray(data) ? data[0] : data;
+  let supportContactError: string | null = null;
+  try {
+    await upsertTenantSupportAdminContact({
+      tenantId,
+      phone: ownerPhone,
+      displayName: ownerName ?? label,
+      permissions: { source: "admin_tenant_create" },
+    });
+  } catch (contactErr) {
+    supportContactError = contactErr instanceof Error ? contactErr.message : "tenant_support_contact_failed";
+  }
+
   return NextResponse.json({
     ok: true,
     tenantId: row?.tenant_id ?? tenantId,
     locationId: row?.location_id ?? null,
+    supportContactError,
   });
 }

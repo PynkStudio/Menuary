@@ -1,9 +1,12 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Power, Plus, ArrowDown, ArrowUp, Banknote, CreditCard } from "lucide-react";
+import { Power, Plus, ArrowDown, ArrowUp, Banknote, CreditCard, AlarmClock } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { openCashSession, closeCashSession, addCashMovement } from "./actions";
+import { confirmPendingOrder, rejectPendingOrder } from "../ordini/actions";
+import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 
 type Session = {
   id: string;
@@ -40,6 +43,28 @@ const METHOD_LABEL: Record<string, string> = {
   voucher: "Voucher",
   other: "Altro",
 };
+
+type PendingOrder = {
+  id: string;
+  code: string;
+  customer_name: string | null;
+  total: number;
+  confirmation_expires_at: string | null;
+  created_at: string;
+};
+
+async function fetchPendingOrders(tenantSlug: string): Promise<PendingOrder[]> {
+  const svc = createSupabaseServiceClient();
+  if (!svc) return [];
+  const { data } = await svc
+    .from("orders")
+    .select("id, code, customer_name, total, confirmation_expires_at, created_at")
+    .eq("tenant_id", tenantSlug)
+    .eq("status", "pending_confirmation")
+    .order("created_at", { ascending: true })
+    .limit(20);
+  return (data ?? []) as PendingOrder[];
+}
 
 async function fetchCassa(tenantSlug: string): Promise<{ session: Session | null; movements: Movement[]; recent: Session[] }> {
   const svc = createSupabaseServiceClient();
@@ -104,19 +129,67 @@ export default async function CassaPage({
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 
-  const data = auth.isDemo
-    ? { session: null as Session | null, movements: [] as Movement[], recent: [] as Session[] }
-    : await fetchCassa(tenantSlug);
+  const [data, pendingOrders] = auth.isDemo
+    ? [{ session: null as Session | null, movements: [] as Movement[], recent: [] as Session[] }, [] as PendingOrder[]]
+    : await Promise.all([fetchCassa(tenantSlug), fetchPendingOrders(tenantSlug)]);
 
   const totals = sumByMethod(data.movements);
 
   return (
     <div className="ga-dashboard">
+      <OrdersLiveRefresh tenantId={tenantSlug} />
       <header>
         <span className="ga-eyebrow">Operatività</span>
         <h1 className="ga-heading">Cassa</h1>
         <p className="ga-lead">Apertura, chiusura e movimenti del registro di cassa per la giornata.</p>
       </header>
+
+      {pendingOrders.length > 0 && (
+        <section className="ga-card" style={{ borderColor: "var(--ga-warn, #B8332E)", borderWidth: 2 }}>
+          <div className="ga-section-head">
+            <h2 className="ga-section-title">
+              <AlarmClock size={16} strokeWidth={2.4} style={{ display: "inline", verticalAlign: "-2px", marginRight: 6 }} />
+              Ordini da confermare ({pendingOrders.length})
+            </h2>
+            <Link href={`/gestione/${tenantSlug}/ordini?f=pending`} className="ga-section-hint">
+              Vedi tutti
+            </Link>
+          </div>
+          <ul className="ga-order-lines" style={{ marginTop: 12 }}>
+            {pendingOrders.map((p) => {
+              const secondsLeft = p.confirmation_expires_at
+                ? Math.max(0, Math.floor((new Date(p.confirmation_expires_at).getTime() - Date.now()) / 1000))
+                : null;
+              return (
+                <li key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 700 }}>{p.code}</span>
+                  <span>{p.customer_name ?? "Cliente"}</span>
+                  <span style={{ color: "var(--ga-ink-faint)" }}>{formatCurrency(p.total)}</span>
+                  {secondsLeft != null && (
+                    <span style={{ color: "var(--ga-warn, #B8332E)", fontWeight: 600 }}>
+                      {secondsLeft}s al timeout
+                    </span>
+                  )}
+                  <form action={confirmPendingOrder} style={{ marginLeft: "auto" }}>
+                    <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                    <input type="hidden" name="id" value={p.id} />
+                    <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
+                      Conferma
+                    </button>
+                  </form>
+                  <form action={rejectPendingOrder}>
+                    <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                    <input type="hidden" name="id" value={p.id} />
+                    <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
+                      Rifiuta
+                    </button>
+                  </form>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {data.session ? (
         <>

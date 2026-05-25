@@ -23,11 +23,13 @@ import type { AdminMenuItem, AdminMenuList, MenuDay } from "@/lib/types";
 import { formatEuro, minPrice } from "@/lib/price-utils";
 import { ItemEditor } from "@/components/admin/item-editor";
 import { ExtraListsManager } from "@/components/admin/extra-lists-manager";
+import { MenuPhotoImporter } from "@/components/admin/menu-photo-importer";
 import { useHydrated } from "@/components/core/providers";
 import { useTenantOrNull } from "@/components/core/tenant-provider";
 import { getModuleLabel } from "@/lib/vertical";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useSettingsStore } from "@/store/settings-store";
+import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 
 const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 1, label: "Lun" },
@@ -61,6 +63,8 @@ function formatMenuRules(menu: AdminMenuList): string {
 export default function AdminMenuPage() {
   const hydrated = useHydrated();
   const tenant = useTenantOrNull();
+  const tenantId = tenant?.id ?? "bepork";
+  const syncStatus = useSupabaseMenuSync(tenantId, true, true);
   const vertical = tenant?.vertical ?? "food";
   const isServices = vertical === "services";
   const listinoLabel = getModuleLabel("onlineMenu", vertical);
@@ -152,6 +156,13 @@ export default function AdminMenuPage() {
             ? "Gestisci servizi, prezzi, disponibilità, foto e listini pubblici con regole di visibilità."
             : "Lista completa dei piatti e menu pubblici composti con regole di visibilità."}
         </p>
+        <p className="mt-2 text-xs font-bold uppercase tracking-wide text-pork-ink/45">
+          {syncStatus === "saving"
+            ? "Sincronizzazione Supabase..."
+            : syncStatus === "error"
+              ? "Errore sincronizzazione Supabase"
+              : "Dati sincronizzati su Supabase"}
+        </p>
       </header>
 
       <div className="inline-flex rounded-2xl bg-white p-1 ring-1 ring-pork-ink/10">
@@ -214,6 +225,8 @@ export default function AdminMenuPage() {
           </div>
         </section>
       )}
+
+      {view === "items" && <MenuPhotoImporter categories={categories} isServices={isServices} />}
 
       {view === "items" && <ExtraListsManager />}
 

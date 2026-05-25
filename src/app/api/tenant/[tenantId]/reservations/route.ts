@@ -8,6 +8,7 @@ import {
   type ReservationSlot,
   type TableForPlanner,
 } from "@/lib/reservations/engine";
+import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
 
 type CreateBody = {
   customerName: string;
@@ -126,13 +127,20 @@ export async function POST(
     : suggestTableForReservation(tables, existing, covers);
 
   const status = manual ? "pending_manual" : tableId ? "auto_proposed" : "pending_manual";
+  const identity = await resolveCustomerIdentity({
+    tenantId,
+    phone: body.customerPhone,
+    displayName: body.customerName,
+    source: "web",
+  });
 
   const { data: row, error: ins } = await svc
     .from("reservation_requests")
     .insert({
       tenant_id: tenantId,
+      customer_id: identity?.customerId ?? null,
       customer_name: body.customerName.trim(),
-      customer_phone: body.customerPhone.trim(),
+      customer_phone: identity?.phone ?? body.customerPhone.trim(),
       covers,
       reservation_date: reservationDate,
       reservation_time: body.reservationTime.trim(),
@@ -141,19 +149,34 @@ export async function POST(
       status,
       table_id: tableId,
       assigned_area: assignedArea,
-      menuary_user_id: body.menuaryUserId ?? null,
+      menuary_user_id: body.menuaryUserId ?? identity?.menuaryUserId ?? null,
       service_id: serviceId,
       duration_minutes: durationMinutes,
       // TODO(google-reserve): quando la prenotazione arriva da Google Actions Center,
       // impostare channel: "google_reserve" e popolare `location_id` dalla location collegata.
       // Il campo `location_id` è già nella tabella `reservation_requests` (FK → tenant_google_locations).
       channel: "web",
-    })
+    } as never)
     .select("id")
     .single();
 
   if (ins) {
     return NextResponse.json({ error: ins.message }, { status: 500 });
+  }
+  if (identity) {
+    await recordCustomerEvent({
+      tenantId,
+      customerId: identity.customerId,
+      eventKind: "reservation_created",
+      refId: row.id,
+      meta: {
+        source: "web",
+        registered: identity.registered,
+        date: reservationDate,
+        time: body.reservationTime.trim(),
+        covers,
+      },
+    });
   }
 
   return NextResponse.json({ id: row.id, status, tableId, assignedArea });

@@ -15,8 +15,10 @@ import { allTenantFeatures } from "@/lib/tenant-modules";
 const presenceModules: TenantFeatureKey[] = ["website", "onlineMenu", "reviews", "gallery"];
 const bookingModules: TenantFeatureKey[] = [...presenceModules, "reservations", "tablePlanner", "favorites"];
 const operationsModules = Object.entries(allTenantFeatures(true))
-  .filter(([, enabled]) => enabled)
+  .filter(([key, enabled]) => enabled && key !== "aiPhone" && key !== "aiWhatsapp")
   .map(([key]) => key as TenantFeatureKey);
+const aiAddonModules: TenantFeatureKey[] = ["aiPhone"];
+const aiWhatsappAddonModules: TenantFeatureKey[] = ["aiWhatsapp"];
 
 export const PLATFORM_PACKAGES: PlatformPackage[] = PRICING_PLANS.map((plan, index) => {
   const bizery = BIZERY_PRICING_PLANS.find((p) => p.slug === plan.slug);
@@ -42,6 +44,41 @@ export const PLATFORM_PACKAGES: PlatformPackage[] = PRICING_PLANS.map((plan, ind
     updated_at: "2026-01-01T00:00:00Z",
   };
 });
+
+export const PLATFORM_ADDON_PACKAGES: PlatformPackage[] = [
+  {
+    id: "pkg-ai-phone",
+    name: "Assistente vocale AI",
+    slug: "ai-phone",
+    vertical: "both",
+    adapted_name: null,
+    description: "Add-on IA per chiamate inbound con Retell AI.",
+    price_monthly: 60,
+    price_yearly: 720,
+    currency: "EUR",
+    modules: aiAddonModules,
+    is_active: true,
+    sort_order: 100,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  },
+  {
+    id: "pkg-ai-whatsapp",
+    name: "Assistente WhatsApp AI",
+    slug: "ai-whatsapp",
+    vertical: "both",
+    adapted_name: null,
+    description: "Add-on IA per conversazioni inbound WhatsApp.",
+    price_monthly: 40,
+    price_yearly: 480,
+    currency: "EUR",
+    modules: aiWhatsappAddonModules,
+    is_active: true,
+    sort_order: 101,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  },
+];
 
 function primaryLocation(
   id: string,

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
 import type { Database } from "@/lib/supabase/types";
 
 type Status = Database["public"]["Enums"]["order_status"];
@@ -39,3 +40,90 @@ export const startOrder = makeAction("in_preparazione");
 export const markReady = makeAction("pronto");
 export const markDelivered = makeAction("consegnato");
 export const cancelOrder = makeAction("annullato");
+
+/**
+ * Conferma manuale di un ordine pending_confirmation: passa a "nuovo",
+ * registra confirmed_at e invia email di conferma se disponibile.
+ * Idempotente sugli ordini già "nuovo".
+ */
+export async function confirmPendingOrder(formData: FormData) {
+  const tenantSlug = String(formData.get("tenantSlug") ?? "");
+  const id = String(formData.get("id") ?? "");
+  if (!tenantSlug || !id) return;
+
+  const auth = await authorizeGestione(tenantSlug);
+  if (!auth.ok) throw new Error("unauthorized");
+  if (auth.isDemo) return;
+
+  const svc = createSupabaseServiceClient();
+  if (!svc) throw new Error("supabase_service_unconfigured");
+
+  const { data: existing } = await svc
+    .from("orders")
+    .select("status, confirmation_expires_at")
+    .eq("id", id)
+    .eq("tenant_id", tenantSlug)
+    .maybeSingle();
+
+  if (!existing) return;
+  if (existing.status !== "pending_confirmation") {
+    revalidatePath(`/gestione/${tenantSlug}/ordini`);
+    return;
+  }
+
+  const expired =
+    existing.confirmation_expires_at &&
+    new Date(existing.confirmation_expires_at).getTime() < Date.now();
+
+  if (expired) {
+    await svc
+      .from("orders")
+      .update({ status: "expired", updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("tenant_id", tenantSlug);
+    revalidatePath(`/gestione/${tenantSlug}/ordini`);
+    return;
+  }
+
+  const { error } = await svc
+    .from("orders")
+    .update({
+      status: "nuovo",
+      confirmed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("tenant_id", tenantSlug)
+    .eq("status", "pending_confirmation");
+
+  if (error) throw new Error(error.message);
+
+  // Email best-effort, non blocca l'action.
+  await sendOrderConfirmationEmail(svc, id).catch(() => null);
+
+  revalidatePath(`/gestione/${tenantSlug}/ordini`);
+}
+
+/** Rifiuta un ordine pending_confirmation portandolo a "annullato". */
+export async function rejectPendingOrder(formData: FormData) {
+  const tenantSlug = String(formData.get("tenantSlug") ?? "");
+  const id = String(formData.get("id") ?? "");
+  if (!tenantSlug || !id) return;
+
+  const auth = await authorizeGestione(tenantSlug);
+  if (!auth.ok) throw new Error("unauthorized");
+  if (auth.isDemo) return;
+
+  const svc = createSupabaseServiceClient();
+  if (!svc) throw new Error("supabase_service_unconfigured");
+
+  const { error } = await svc
+    .from("orders")
+    .update({ status: "annullato", updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("tenant_id", tenantSlug)
+    .eq("status", "pending_confirmation");
+
+  if (error) throw new Error(error.message);
+  revalidatePath(`/gestione/${tenantSlug}/ordini`);
+}

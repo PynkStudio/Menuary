@@ -24,7 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
     const onStorage = (e: StorageEvent) => {
       if (!e.key) return;
-      if (e.key === "bepork-menu-v1") useMenuStore.persist.rehydrate();
+      if (e.key === "bepork-menu-v3") useMenuStore.persist.rehydrate();
       if (e.key === "bepork-cart-v1") useCartStore.persist.rehydrate();
       if (e.key === "bepork-favorites-v1") useFavoritesStore.persist.rehydrate();
       if (e.key === "bepork-settings-v1") useSettingsStore.persist.rehydrate();

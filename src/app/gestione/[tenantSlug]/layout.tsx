@@ -15,6 +15,7 @@ import { resolveSessionCookieDomain, usesSharedMenuarySession } from "@/lib/sess
 import type { LoginFrom } from "@/lib/login-url";
 import { getGestioneBaseHref } from "@/lib/gestione-routing";
 import { buildTenantIconSet } from "@/lib/favicon";
+import { TenantProvider } from "@/components/core/tenant-provider";
 
 interface Props {
   children: React.ReactNode;
@@ -183,7 +184,7 @@ export default async function GestioneLayout({ children, params }: Props) {
         navBaseHref={navBaseHref}
         loginFrom={loginFrom}
       >
-        {children}
+        <TenantProvider tenant={tenant}>{children}</TenantProvider>
       </GestioneShell>
       {!isDemo && <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />}
       {isDemo && <DemoModeInstaller />}
