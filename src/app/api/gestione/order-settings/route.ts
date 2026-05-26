@@ -9,10 +9,13 @@ type SettingsPatch = {
   locationId?: string | null;
   takeawayEnabled?: boolean;
   dineInEnabled?: boolean;
+  deliveryEnabled?: boolean;
   takeawayWindowBeforeOpenMin?: number | null;
   takeawayWindowBeforeCloseMin?: number | null;
   dineInWindowBeforeOpenMin?: number | null;
   dineInWindowBeforeCloseMin?: number | null;
+  deliveryWindowBeforeOpenMin?: number | null;
+  deliveryWindowBeforeCloseMin?: number | null;
   autoAcceptEnabled?: boolean;
   autoAcceptMaxTotal?: number | null;
   autoAcceptMaxItems?: number | null;
@@ -76,6 +79,7 @@ export async function PUT(req: NextRequest) {
     locationId,
     takeawayEnabled: body.takeawayEnabled ?? existing.takeawayEnabled ?? DEFAULT_ORDER_SETTINGS.takeawayEnabled,
     dineInEnabled: body.dineInEnabled ?? existing.dineInEnabled ?? DEFAULT_ORDER_SETTINGS.dineInEnabled,
+    deliveryEnabled: body.deliveryEnabled ?? existing.deliveryEnabled ?? DEFAULT_ORDER_SETTINGS.deliveryEnabled,
     takeawayWindowBeforeOpenMin:
       body.takeawayWindowBeforeOpenMin !== undefined
         ? body.takeawayWindowBeforeOpenMin
@@ -92,6 +96,14 @@ export async function PUT(req: NextRequest) {
       body.dineInWindowBeforeCloseMin !== undefined
         ? body.dineInWindowBeforeCloseMin
         : existing.dineInWindowBeforeCloseMin,
+    deliveryWindowBeforeOpenMin:
+      body.deliveryWindowBeforeOpenMin !== undefined
+        ? body.deliveryWindowBeforeOpenMin
+        : existing.deliveryWindowBeforeOpenMin,
+    deliveryWindowBeforeCloseMin:
+      body.deliveryWindowBeforeCloseMin !== undefined
+        ? body.deliveryWindowBeforeCloseMin
+        : existing.deliveryWindowBeforeCloseMin,
     autoAcceptEnabled: body.autoAcceptEnabled ?? existing.autoAcceptEnabled,
     autoAcceptMaxTotal:
       body.autoAcceptMaxTotal !== undefined ? body.autoAcceptMaxTotal : existing.autoAcceptMaxTotal,
@@ -112,10 +124,13 @@ export async function PUT(req: NextRequest) {
       .update({
         takeaway_enabled: merged.takeawayEnabled,
         dine_in_enabled: merged.dineInEnabled,
+        delivery_enabled: merged.deliveryEnabled,
         takeaway_window_before_open_min: merged.takeawayWindowBeforeOpenMin,
         takeaway_window_before_close_min: merged.takeawayWindowBeforeCloseMin,
         dine_in_window_before_open_min: merged.dineInWindowBeforeOpenMin,
         dine_in_window_before_close_min: merged.dineInWindowBeforeCloseMin,
+        delivery_window_before_open_min: merged.deliveryWindowBeforeOpenMin,
+        delivery_window_before_close_min: merged.deliveryWindowBeforeCloseMin,
         auto_accept_enabled: merged.autoAcceptEnabled,
         auto_accept_max_total: merged.autoAcceptMaxTotal,
         auto_accept_max_items: merged.autoAcceptMaxItems,
@@ -131,10 +146,13 @@ export async function PUT(req: NextRequest) {
       location_id: locationId,
       takeaway_enabled: merged.takeawayEnabled,
       dine_in_enabled: merged.dineInEnabled,
+      delivery_enabled: merged.deliveryEnabled,
       takeaway_window_before_open_min: merged.takeawayWindowBeforeOpenMin,
       takeaway_window_before_close_min: merged.takeawayWindowBeforeCloseMin,
       dine_in_window_before_open_min: merged.dineInWindowBeforeOpenMin,
       dine_in_window_before_close_min: merged.dineInWindowBeforeCloseMin,
+      delivery_window_before_open_min: merged.deliveryWindowBeforeOpenMin,
+      delivery_window_before_close_min: merged.deliveryWindowBeforeCloseMin,
       auto_accept_enabled: merged.autoAcceptEnabled,
       auto_accept_max_total: merged.autoAcceptMaxTotal,
       auto_accept_max_items: merged.autoAcceptMaxItems,
