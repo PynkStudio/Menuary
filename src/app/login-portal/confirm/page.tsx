@@ -8,6 +8,19 @@ import { parseFrom, parseNext, resolveDestination } from "@/lib/login-url";
 import { resolveUserAccess } from "@/lib/user-access";
 import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
 
+const INVALID_INVITE_MESSAGE =
+  "Questo invito non è più valido o è già stato usato. Contatta l'amministratore per fartelo reinviare.";
+const INVALID_RECOVERY_MESSAGE =
+  "Questo link per reimpostare la password non è più valido o è già stato usato. Richiedi un nuovo link dalla pagina di recupero password.";
+const INVALID_AUTH_LINK_MESSAGE =
+  "Questo link di accesso non è valido o è scaduto. Torna al login e riprova.";
+
+function invalidLinkMessage(type?: string | null, mode?: string | null) {
+  if (type === "invite") return INVALID_INVITE_MESSAGE;
+  if (type === "recovery" || mode === "recovery") return INVALID_RECOVERY_MESSAGE;
+  return INVALID_AUTH_LINK_MESSAGE;
+}
+
 /**
  * Pagina universale di conferma auth — sostituisce /api/auth/callback per tutti i
  * flussi che consegnano il token via hash fragment o redirect.
@@ -40,7 +53,7 @@ export default function ConfirmPage() {
       if (accessToken && refreshToken) {
         window.history.replaceState(null, "", window.location.pathname + window.location.search);
         const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-        if (error || !data.user) { setError("Link non valido o scaduto."); return; }
+        if (error || !data.user) { setError(invalidLinkMessage(hashType, mode)); return; }
 
         if (hashType === "invite") {
           window.location.href = `/set-password?from=${from ?? ""}`;
@@ -61,7 +74,7 @@ export default function ConfirmPage() {
       if (tokenHash && queryType) {
         window.history.replaceState(null, "", window.location.pathname + (from ? `?from=${from}` : ""));
         const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: queryType });
-        if (error || !data.user) { setError("Link non valido o scaduto."); return; }
+        if (error || !data.user) { setError(invalidLinkMessage(queryType, mode)); return; }
 
         if (queryType === "invite") {
           window.location.href = `/set-password?from=${from ?? ""}`;
@@ -79,7 +92,7 @@ export default function ConfirmPage() {
       const code = searchParams.get("code");
       if (code) {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error || !data.user) { setError("Link non valido o scaduto."); return; }
+        if (error || !data.user) { setError(invalidLinkMessage(null, mode)); return; }
 
         if (mode === "recovery") {
           window.location.href = `/set-password?mode=recovery${from ? `&from=${from}` : ""}`;
@@ -89,7 +102,7 @@ export default function ConfirmPage() {
         return;
       }
 
-      setError("Link non riconosciuto. Richiedi un nuovo accesso.");
+      setError(INVALID_AUTH_LINK_MESSAGE);
     }
 
     processAuth();

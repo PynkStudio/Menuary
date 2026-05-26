@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
+function recoveryRequestErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("rate limit") || normalized.includes("too many")) {
+    return "Hai richiesto troppi link in poco tempo. Attendi qualche minuto prima di riprovare.";
+  }
+  return "Non siamo riusciti a inviare l'email di recupero. Controlla che l'indirizzo sia scritto correttamente e riprova.";
+}
+
 interface Props {
   /** true quando l'utente arriva dal link email (type=recovery) */
   showNewPassword: boolean;
@@ -38,7 +46,7 @@ export function ClientsPasswordRecoveryForm({ showNewPassword }: Props) {
 
     setLoading(false);
     if (error) {
-      setError("Impossibile inviare l'email. Controlla l'indirizzo e riprova.");
+      setError(recoveryRequestErrorMessage(error.message));
     } else {
       setRequestDone(true);
     }
@@ -62,7 +70,7 @@ export function ClientsPasswordRecoveryForm({ showNewPassword }: Props) {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setError("Impossibile aggiornare la password. Richiedi un nuovo link.");
+      setError("Impossibile aggiornare la password. Il link potrebbe essere scaduto: richiedi un nuovo link di recupero.");
       setLoading(false);
     } else {
       setUpdateDone(true);

@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { KeyRound } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
+const INVALID_INVITE_MESSAGE =
+  "Questo invito non è più valido o è già stato usato. Contatta l'amministratore per fartelo reinviare.";
+const INVALID_RECOVERY_MESSAGE =
+  "Questo link per reimpostare la password non è più valido o è già stato usato. Richiedi un nuovo link dalla pagina di recupero password.";
+
 export default function SetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -28,7 +33,7 @@ export default function SetPasswordPage() {
     const supabase = createSupabaseBrowserClient();
     supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
       if (error) {
-        setError("Il link non è più valido o è già stato usato. Richiedi un nuovo invito.");
+        setError(type === "recovery" ? INVALID_RECOVERY_MESSAGE : INVALID_INVITE_MESSAGE);
         setTokenVerified(false);
       } else {
         setTokenVerified(true);
@@ -54,7 +59,7 @@ export default function SetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setError("Impossibile impostare la password. Richiedi un nuovo invito.");
+      setError("Impossibile impostare la password. Contatta l'amministratore per farti reinviare l'invito.");
       setLoading(false);
     } else {
       router.refresh();

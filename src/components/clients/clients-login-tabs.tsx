@@ -7,6 +7,17 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Tab = "cliente" | "titolare";
 
+function loginErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("email not confirmed")) {
+    return "Il tuo indirizzo email non è ancora confermato. Apri l'email di conferma ricevuta o richiedi un nuovo link.";
+  }
+  if (normalized.includes("too many") || normalized.includes("rate limit")) {
+    return "Troppi tentativi ravvicinati. Attendi qualche minuto e riprova.";
+  }
+  return "Email o password non corretti. Controlla i dati inseriti e riprova.";
+}
+
 export function ClientsLoginTabs() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("cliente");
@@ -28,7 +39,7 @@ export function ClientsLoginTabs() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError("Email o password non corretti. Riprova.");
+      setError(loginErrorMessage(error.message));
       setLoading(false);
     } else {
       router.refresh();

@@ -6,6 +6,14 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { LoginFrom } from "@/lib/login-url";
 import { buildRecoveryCallbackUrl } from "@/lib/login-url";
 
+function recoveryRequestErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("rate limit") || normalized.includes("too many")) {
+    return "Hai richiesto troppi link in poco tempo. Attendi qualche minuto prima di riprovare.";
+  }
+  return "Non siamo riusciti a inviare l'email di recupero. Controlla che l'indirizzo sia scritto correttamente e riprova.";
+}
+
 interface Props {
   from: LoginFrom | null;
   accentColor: string;
@@ -31,7 +39,7 @@ export function LoginPortalRecoveryForm({ from, accentColor }: Props) {
 
     setLoading(false);
     if (error) {
-      setError("Impossibile inviare l'email. Controlla l'indirizzo e riprova.");
+      setError(recoveryRequestErrorMessage(error.message));
     } else {
       setSent(true);
     }

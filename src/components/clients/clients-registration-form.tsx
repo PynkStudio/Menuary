@@ -4,6 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
+function registrationErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("already registered") || normalized.includes("already been registered")) {
+    return "Questo indirizzo email è già registrato. Accedi o usa il recupero password se non ricordi le credenziali.";
+  }
+  if (normalized.includes("rate limit") || normalized.includes("too many")) {
+    return "Sono state fatte troppe richieste in poco tempo. Attendi qualche minuto e riprova.";
+  }
+  if (normalized.includes("password")) {
+    return "La password non rispetta i requisiti di sicurezza. Usa almeno 8 caratteri e riprova.";
+  }
+  return "Non siamo riusciti a creare l'account. Controlla i dati inseriti e riprova tra qualche istante.";
+}
+
 export function ClientsRegistrationForm() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -38,11 +52,7 @@ export function ClientsRegistrationForm() {
     });
 
     if (error) {
-      setError(
-        error.message.includes("already registered")
-          ? "Questo indirizzo email è già registrato. Accedi o recupera la password."
-          : "Si è verificato un errore. Riprova tra qualche istante.",
-      );
+      setError(registrationErrorMessage(error.message));
       setLoading(false);
     } else {
       setDone(true);

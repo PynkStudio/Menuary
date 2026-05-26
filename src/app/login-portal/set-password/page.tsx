@@ -9,6 +9,11 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { tenantSlugFromFrom } from "@/lib/login-url";
 import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
 
+const INVALID_INVITE_MESSAGE =
+  "Questo invito non è più valido o è già stato usato. Contatta l'amministratore per fartelo reinviare.";
+const INVALID_RECOVERY_MESSAGE =
+  "Questo link per reimpostare la password non è più valido o è già stato usato. Richiedi un nuovo link dalla pagina di recupero password.";
+
 /**
  * Pagina set-password usata in due casi:
  * 1. type=invite  → enrollment nuovo utente (staff o admin invitato)
@@ -52,7 +57,7 @@ export default function SetPasswordPage() {
     const supabase = createSupabaseBrowserClient();
     supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
       if (error) {
-        setError("Il link non è più valido o è già stato usato. Richiedi un nuovo link.");
+        setError(type === "recovery" ? INVALID_RECOVERY_MESSAGE : INVALID_INVITE_MESSAGE);
         setTokenVerified(false);
       } else {
         setTokenVerified(true);
@@ -81,7 +86,11 @@ export default function SetPasswordPage() {
     });
 
     if (updateError || !updateData.user) {
-      setError("Impossibile impostare la password. Richiedi un nuovo invito.");
+      setError(
+        isRecovery
+          ? "Impossibile salvare la nuova password. Il link potrebbe essere scaduto: richiedi un nuovo link di recupero."
+          : "Impossibile impostare la password. Contatta l'amministratore per farti reinviare l'invito.",
+      );
       setLoading(false);
       return;
     }

@@ -10,6 +10,30 @@ import { useSearchParams } from "next/navigation";
 import { TENANTS } from "@/lib/tenant-registry";
 import { tenantSlugFromFrom } from "@/lib/login-url";
 
+function loginErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("email not confirmed")) {
+    return "Il tuo indirizzo email non è ancora confermato. Apri l'email di conferma ricevuta o richiedi un nuovo link.";
+  }
+  if (normalized.includes("too many") || normalized.includes("rate limit")) {
+    return "Troppi tentativi ravvicinati. Attendi qualche minuto e riprova.";
+  }
+  return "Email o password non corretti. Controlla i dati inseriti e riprova.";
+}
+
+function portalAccessError(from: LoginFrom | null) {
+  if (from === "admin") {
+    return "Accesso riuscito, ma questo account non è abilitato al pannello admin. Entra con un account admin o chiedi a un amministratore di invitarti.";
+  }
+  if (from === "studio") {
+    return "Accesso riuscito, ma questo account non è abilitato all'area Studio. Verifica l'account o chiedi supporto all'amministratore.";
+  }
+  if (from?.startsWith("gestione")) {
+    return "Accesso riuscito, ma questo account non è abilitato a questo gestionale. Verifica di usare l'email invitata per il locale corretto.";
+  }
+  return null;
+}
+
 interface Props {
   from: LoginFrom | null;
   next: string | null;
@@ -51,13 +75,25 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
     });
 
     if (error || !data.user || !data.session) {
-      setError("Email o password non corretti.");
+      setError(loginErrorMessage(error?.message ?? ""));
       setLoading(false);
       return;
     }
 
     // Recupera ruolo dal DB
     const access = await resolveUserAccess(supabase, data.user.id);
+    const accessError = portalAccessError(from);
+    const isWrongPortal =
+      (from === "admin" && !access.isSiteadmin) ||
+      (from === "studio" && !access.isSiteadmin && !access.tenantId) ||
+      (from?.startsWith("gestione") && !access.isSiteadmin && access.tenantId !== slug);
+
+    if (accessError && isWrongPortal) {
+      setError(accessError);
+      setLoading(false);
+      return;
+    }
+
     const destination = resolveDestination({
       from,
       next,
