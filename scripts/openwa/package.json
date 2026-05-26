@@ -1,0 +1,12 @@
+{
+  "name": "bepork-openwa-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "worker": "node worker.mjs"
+  },
+  "dependencies": {
+    "@open-wa/wa-automate": "^4.76.0"
+  }
+}

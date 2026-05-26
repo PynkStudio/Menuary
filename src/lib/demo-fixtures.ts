@@ -73,13 +73,6 @@ function isoDay(daysFromToday: number): string {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0, 10);
 }
 
-function isoAt(daysFromToday: number, hour: number, minute = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + daysFromToday);
-  d.setHours(hour, minute, 0, 0);
-  return d.toISOString();
-}
-
 function pick<T>(arr: T[], i: number): T {
   return arr[((i % arr.length) + arr.length) % arr.length];
 }

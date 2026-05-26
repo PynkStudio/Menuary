@@ -28,9 +28,9 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --omit=dev
+COPY scripts/openwa/package*.json ./
+RUN npm ci --omit=dev --loglevel=error
 
-COPY scripts ./scripts
+COPY scripts/openwa ./scripts/openwa
 
-CMD ["npm", "run", "whatsapp:worker"]
+CMD ["npm", "--prefix", "scripts/openwa", "run", "worker"]

@@ -116,7 +116,7 @@ export function PlatformCommissionsPage() {
             <p className="text-sm font-black text-pork-ink">Regola di calcolo</p>
             <p className="mt-1 text-sm leading-relaxed text-pork-ink/60">
               La base provvigionale è sempre il primo pagamento commerciale: setup più canone mensile oppure setup più canone annuale.
-              In caso di rateizzazione si usa comunque l'importo intero concordato. Chi inserisce il lead prende il 10%; chi chiude prende il 30%.
+              In caso di rateizzazione si usa comunque l&apos;importo intero concordato. Chi inserisce il lead prende il 10%; chi chiude prende il 30%.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">

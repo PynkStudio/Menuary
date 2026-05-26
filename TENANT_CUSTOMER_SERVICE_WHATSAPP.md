@@ -31,7 +31,7 @@ La response contiene `replies`, array di messaggi che il bridge WhatsApp deve in
 
 ## Bridge open-wa su Render
 
-Il processo WhatsApp Web e' in `scripts/whatsapp-openwa-worker.mjs` e gira separato dalla app Next.
+Il processo WhatsApp Web e' in `scripts/openwa/worker.mjs` e gira separato dalla app Next.
 
 Comando locale:
 
