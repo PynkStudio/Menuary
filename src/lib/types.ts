@@ -74,9 +74,11 @@ export type AdminMenuList = {
 
 export type OrderType = "tavolo" | "asporto";
 
-/** Solo per ordini takeaway/dine-in quando il locale NON usa tavoli numerati.
- *  Distingue se il ristoratore deve preparare il vassoio (dine_in) o il sacchetto (takeaway). */
-export type OrderDineOption = "dine_in" | "takeaway";
+/** Modalità di servizio per ordini senza tavolo numerato.
+ *  - `dine_in`: il cliente consuma in loco (vassoio).
+ *  - `takeaway`: il cliente ritira al bancone (sacchetto).
+ *  - `delivery`: consegna a domicilio. */
+export type OrderDineOption = "dine_in" | "takeaway" | "delivery";
 
 export type OrderStatus =
   | "pending_confirmation"
@@ -135,10 +137,13 @@ export type TenantOrderSettings = {
   locationId: string | null;
   takeawayEnabled: boolean;
   dineInEnabled: boolean;
+  deliveryEnabled: boolean;
   takeawayWindowBeforeOpenMin: number | null;
   takeawayWindowBeforeCloseMin: number | null;
   dineInWindowBeforeOpenMin: number | null;
   dineInWindowBeforeCloseMin: number | null;
+  deliveryWindowBeforeOpenMin: number | null;
+  deliveryWindowBeforeCloseMin: number | null;
   autoAcceptEnabled: boolean;
   autoAcceptMaxTotal: number | null;
   autoAcceptMaxItems: number | null;

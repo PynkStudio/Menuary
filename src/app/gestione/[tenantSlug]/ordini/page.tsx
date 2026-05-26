@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, UtensilsCrossed, AlarmClock } from "lucide-react";
+import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, UtensilsCrossed, AlarmClock, Bike, Settings } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
@@ -141,10 +141,19 @@ export default async function OrdiniPage({
   return (
     <div className="ga-dashboard">
       <OrdersLiveRefresh tenantId={tenantSlug} />
-      <header>
-        <span className="ga-eyebrow">Operatività</span>
-        <h1 className="ga-heading">Ordini</h1>
-        <p className="ga-lead">Coda live di sala, asporto e kiosk. Cambia stato con un click — il cliente vede la conferma.</p>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <span className="ga-eyebrow">Operatività</span>
+          <h1 className="ga-heading">Ordini</h1>
+          <p className="ga-lead">Coda live di sala, asporto e kiosk. Cambia stato con un click — il cliente vede la conferma.</p>
+        </div>
+        <Link
+          href={`/gestione/${tenantSlug}/ordini/impostazioni`}
+          className="ga-btn ga-btn-ghost"
+          style={{ alignSelf: "center" }}
+        >
+          <Settings size={14} strokeWidth={2.4} /> Impostazioni
+        </Link>
       </header>
 
       <nav className="ga-pills" aria-label="Filtra ordini">
@@ -202,6 +211,9 @@ export default async function OrdiniPage({
                     )}
                     {o.dine_option === "takeaway" && (
                       <span><ShoppingBag size={12} strokeWidth={2.2} /> Asporto</span>
+                    )}
+                    {o.dine_option === "delivery" && (
+                      <span><Bike size={12} strokeWidth={2.2} /> Delivery</span>
                     )}
                     {o.table_label && (
                       <span><MapPin size={12} strokeWidth={2.2} /> {o.table_label}</span>

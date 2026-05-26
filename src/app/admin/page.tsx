@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   ChefHat,
   ClipboardList,
+  Palette,
   QrCode,
   Settings,
   UtensilsCrossed,
@@ -111,6 +112,12 @@ export default function AdminHome() {
             title="Gestisci tenant"
             desc="Attivazioni, moduli, demo e profili configurabili"
             icon={<Settings size={22} />}
+          />
+          <Quick
+            href="/admin/template-design"
+            title="Template designer"
+            desc="SVG Figma e manifest connettori per siti Menuary"
+            icon={<Palette size={22} />}
           />
           <Quick
             href="https://demo.menuary.it/bepork-demo"

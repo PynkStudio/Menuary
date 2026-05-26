@@ -25,6 +25,7 @@ import {
   UserCog,
   UserPlus,
   FileSignature,
+  Palette,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -63,6 +64,7 @@ const PLATFORM_ADMIN_NAV: NavItem[] = [
   { href: "/admin/assistente-ai", label: "Assistente AI", icon: Bot, permission: "tenant:manage" },
   { href: "/admin/abbonamenti", label: "Abbonamenti", icon: CreditCard, permission: "subscriptions:view" },
   { href: "/admin/contratti", label: "Contratti", icon: FileSignature, permission: "subscriptions:view" },
+  { href: "/admin/template-design", label: "Template designer", icon: Palette, permission: "tenant:manage" },
   { href: "/admin/provvigioni", label: "Provvigioni", icon: BadgeEuro, permission: "commissions:view" },
   { href: "/admin/tenant", label: "Tenant & Moduli", icon: Building2, permission: "tenant:manage" },
   { href: "/admin/utenti", label: "Utenti interni", icon: UserCog, permission: "users:manage" },

@@ -1,0 +1,167 @@
+{
+  "version": "1.0",
+  "platform": "Menuary",
+  "purpose": "Connector manifest for designer handoff and Figma layer naming.",
+  "import": {
+    "figma": "Import menuary-site-template.svg into Figma, then keep connector layer names unchanged while restyling.",
+    "rule": "Designers can change layout, colors, typography and imagery, but connector ids must remain readable in the exported design."
+  },
+  "connectors": [
+    {
+      "id": "brand.logo",
+      "label": "Logo attivita",
+      "source": "tenant.brand.logoUrl",
+      "required": true
+    },
+    {
+      "id": "brand.name",
+      "label": "Nome attivita",
+      "source": "tenant.name",
+      "required": true
+    },
+    {
+      "id": "hero.title",
+      "label": "Titolo hero",
+      "source": "tenant.content.hero.title",
+      "required": true
+    },
+    {
+      "id": "hero.subtitle",
+      "label": "Sottotitolo hero",
+      "source": "tenant.content.hero.subtitle",
+      "required": true
+    },
+    {
+      "id": "hero.image",
+      "label": "Immagine hero",
+      "source": "tenant.media.hero",
+      "required": true
+    },
+    {
+      "id": "cta.primary",
+      "label": "CTA primaria",
+      "source": "tenant.actions.primary",
+      "required": true
+    },
+    {
+      "id": "menu.categories",
+      "label": "Categorie menu/listino",
+      "source": "menu.categories[]",
+      "required": true
+    },
+    {
+      "id": "menu.items",
+      "label": "Voci menu/listino",
+      "source": "menu.items[]",
+      "required": true
+    },
+    {
+      "id": "menu.item.photo",
+      "label": "Foto voce menu",
+      "source": "menu.items[].photoUrl",
+      "required": false
+    },
+    {
+      "id": "menu.item.price",
+      "label": "Prezzo voce menu",
+      "source": "menu.items[].price",
+      "required": false
+    },
+    {
+      "id": "reviews.summary",
+      "label": "Riepilogo recensioni",
+      "source": "google.reviews.summary",
+      "required": false
+    },
+    {
+      "id": "reviews.list",
+      "label": "Lista recensioni",
+      "source": "google.reviews[]",
+      "required": false
+    },
+    {
+      "id": "staff.grid",
+      "label": "Griglia staff",
+      "source": "tenant.staff[]",
+      "required": false
+    },
+    {
+      "id": "staff.member.photo",
+      "label": "Foto membro staff",
+      "source": "tenant.staff[].photoUrl",
+      "required": false
+    },
+    {
+      "id": "staff.member.role",
+      "label": "Ruolo membro staff",
+      "source": "tenant.staff[].role",
+      "required": false
+    },
+    {
+      "id": "hours.week",
+      "label": "Orari settimanali",
+      "source": "tenant.hours.week",
+      "required": true
+    },
+    {
+      "id": "hours.special",
+      "label": "Orari speciali",
+      "source": "tenant.hours.special[]",
+      "required": false
+    },
+    {
+      "id": "locations.list",
+      "label": "Lista sedi",
+      "source": "tenant.locations[]",
+      "required": false
+    },
+    {
+      "id": "location.map",
+      "label": "Mappa sede",
+      "source": "tenant.locations[].mapUrl",
+      "required": false
+    },
+    {
+      "id": "contact.phone",
+      "label": "Telefono",
+      "source": "tenant.contact.phone",
+      "required": true
+    },
+    {
+      "id": "contact.whatsapp",
+      "label": "WhatsApp",
+      "source": "tenant.contact.whatsapp",
+      "required": false
+    },
+    {
+      "id": "contact.email",
+      "label": "Email",
+      "source": "tenant.contact.email",
+      "required": false
+    },
+    {
+      "id": "booking.form",
+      "label": "Form prenotazione",
+      "source": "reservations.request",
+      "required": false
+    },
+    {
+      "id": "orders.entrypoint",
+      "label": "Ingresso ordini online",
+      "source": "orders.enabled",
+      "required": false
+    },
+    {
+      "id": "social.links",
+      "label": "Link social",
+      "source": "tenant.social[]",
+      "required": false
+    },
+    {
+      "id": "footer.legal",
+      "label": "Dati legali footer",
+      "source": "tenant.legal",
+      "required": true
+    }
+  ]
+}

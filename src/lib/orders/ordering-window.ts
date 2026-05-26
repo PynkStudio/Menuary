@@ -85,7 +85,7 @@ function isoDateLocal(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-export type OrderChannel = "takeaway" | "dine_in";
+export type OrderChannel = "takeaway" | "dine_in" | "delivery";
 
 export type WindowCheckResult =
   | { ok: true }
@@ -117,12 +117,21 @@ export async function checkOrderingWindow(
   // 1. Canale abilitato?
   if (channel === "takeaway" && !settings.takeawayEnabled) return { ok: false, reason: "channel_disabled" };
   if (channel === "dine_in" && !settings.dineInEnabled) return { ok: false, reason: "channel_disabled" };
+  if (channel === "delivery" && !settings.deliveryEnabled) return { ok: false, reason: "channel_disabled" };
 
   // 2. Settings finestra
   const beforeOpen =
-    (channel === "takeaway" ? settings.takeawayWindowBeforeOpenMin : settings.dineInWindowBeforeOpenMin) ?? 0;
+    (channel === "takeaway"
+      ? settings.takeawayWindowBeforeOpenMin
+      : channel === "dine_in"
+        ? settings.dineInWindowBeforeOpenMin
+        : settings.deliveryWindowBeforeOpenMin) ?? 0;
   const beforeClose =
-    (channel === "takeaway" ? settings.takeawayWindowBeforeCloseMin : settings.dineInWindowBeforeCloseMin) ?? 0;
+    (channel === "takeaway"
+      ? settings.takeawayWindowBeforeCloseMin
+      : channel === "dine_in"
+        ? settings.dineInWindowBeforeCloseMin
+        : settings.deliveryWindowBeforeCloseMin) ?? 0;
 
   // 3. Carica orari
   const week = await loadWeekHours(supabase, tenantId, locationId);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Save, ShoppingBag, UtensilsCrossed, Bot, Clock } from "lucide-react";
+import { Save, ShoppingBag, UtensilsCrossed, Bot, Clock, Bike } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import type { TenantOrderSettings } from "@/lib/types";
 
@@ -10,10 +10,13 @@ type FormState = Omit<TenantOrderSettings, "id" | "tenantId" | "locationId">;
 const EMPTY: FormState = {
   takeawayEnabled: true,
   dineInEnabled: true,
+  deliveryEnabled: false,
   takeawayWindowBeforeOpenMin: null,
   takeawayWindowBeforeCloseMin: null,
   dineInWindowBeforeOpenMin: null,
   dineInWindowBeforeCloseMin: null,
+  deliveryWindowBeforeOpenMin: null,
+  deliveryWindowBeforeCloseMin: null,
   autoAcceptEnabled: false,
   autoAcceptMaxTotal: null,
   autoAcceptMaxItems: null,
@@ -112,6 +115,12 @@ export function OrderSettingsPanel() {
             checked={form.dineInEnabled}
             onChange={(v) => patch("dineInEnabled", v)}
           />
+          <Toggle
+            label="Delivery"
+            description="Consegna a domicilio."
+            checked={form.deliveryEnabled}
+            onChange={(v) => patch("deliveryEnabled", v)}
+          />
         </div>
       </section>
 
@@ -125,7 +134,7 @@ export function OrderSettingsPanel() {
           nessun limite su quel lato.
         </p>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <WindowFields
             title={<><ShoppingBag size={14} /> Asporto</>}
             beforeOpen={form.takeawayWindowBeforeOpenMin}
@@ -139,6 +148,13 @@ export function OrderSettingsPanel() {
             beforeClose={form.dineInWindowBeforeCloseMin}
             onBeforeOpen={(v) => patch("dineInWindowBeforeOpenMin", v)}
             onBeforeClose={(v) => patch("dineInWindowBeforeCloseMin", v)}
+          />
+          <WindowFields
+            title={<><Bike size={14} /> Delivery</>}
+            beforeOpen={form.deliveryWindowBeforeOpenMin}
+            beforeClose={form.deliveryWindowBeforeCloseMin}
+            onBeforeOpen={(v) => patch("deliveryWindowBeforeOpenMin", v)}
+            onBeforeClose={(v) => patch("deliveryWindowBeforeCloseMin", v)}
           />
         </div>
       </section>

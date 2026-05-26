@@ -8,10 +8,13 @@ type DbOrderSettings = {
   location_id: string | null;
   takeaway_enabled: boolean;
   dine_in_enabled: boolean;
+  delivery_enabled: boolean;
   takeaway_window_before_open_min: number | null;
   takeaway_window_before_close_min: number | null;
   dine_in_window_before_open_min: number | null;
   dine_in_window_before_close_min: number | null;
+  delivery_window_before_open_min: number | null;
+  delivery_window_before_close_min: number | null;
   auto_accept_enabled: boolean;
   auto_accept_max_total: number | string | null;
   auto_accept_max_items: number | null;
@@ -24,10 +27,13 @@ type DbOrderSettings = {
 export const DEFAULT_ORDER_SETTINGS: Omit<TenantOrderSettings, "id" | "tenantId" | "locationId"> = {
   takeawayEnabled: true,
   dineInEnabled: true,
+  deliveryEnabled: false,
   takeawayWindowBeforeOpenMin: null,
   takeawayWindowBeforeCloseMin: null,
   dineInWindowBeforeOpenMin: null,
   dineInWindowBeforeCloseMin: null,
+  deliveryWindowBeforeOpenMin: null,
+  deliveryWindowBeforeCloseMin: null,
   autoAcceptEnabled: false,
   autoAcceptMaxTotal: null,
   autoAcceptMaxItems: null,
@@ -43,10 +49,13 @@ function dbRowToSettings(row: DbOrderSettings): TenantOrderSettings {
     locationId: row.location_id,
     takeawayEnabled: row.takeaway_enabled,
     dineInEnabled: row.dine_in_enabled,
+    deliveryEnabled: row.delivery_enabled,
     takeawayWindowBeforeOpenMin: row.takeaway_window_before_open_min,
     takeawayWindowBeforeCloseMin: row.takeaway_window_before_close_min,
     dineInWindowBeforeOpenMin: row.dine_in_window_before_open_min,
     dineInWindowBeforeCloseMin: row.dine_in_window_before_close_min,
+    deliveryWindowBeforeOpenMin: row.delivery_window_before_open_min,
+    deliveryWindowBeforeCloseMin: row.delivery_window_before_close_min,
     autoAcceptEnabled: row.auto_accept_enabled,
     autoAcceptMaxTotal: row.auto_accept_max_total != null ? Number(row.auto_accept_max_total) : null,
     autoAcceptMaxItems: row.auto_accept_max_items,

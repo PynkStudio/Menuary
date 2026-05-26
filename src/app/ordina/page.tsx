@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, User, StickyNote, Package, Mail, ShoppingBag, UtensilsCrossed } from "lucide-react";
+import { Clock, User, StickyNote, Package, Mail, ShoppingBag, UtensilsCrossed, Bike } from "lucide-react";
 import { useCartStore, cartTotal } from "@/store/cart-store";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
 import { formatRemovedForLine } from "@/lib/ingredients";
@@ -46,15 +46,37 @@ export default function OrdinaPage() {
   const items = useMenuStore((s) => s.items);
 
   // Se il locale NON usa tavoli numerati, esponiamo la scelta dine_in/takeaway
-  // qui (vassoio vs sacchetto). Default takeaway.
+  // qui (vassoio vs sacchetto / delivery). Default takeaway.
   const showDineOption = !allowTableOrders;
   const [dineOption, setDineOption] = useState<OrderDineOption>("takeaway");
+  const [deliveryEnabled, setDeliveryEnabled] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [slots] = useState(() => nextSlots());
+
+  // Settings pubblici: serve solo per sapere se mostrare il bottone "Delivery"
+  // nella scelta dine_option.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/orders/public-settings?tenantId=${tenant.id}`, {
+          cache: "no-store",
+        });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (!cancelled) setDeliveryEnabled(Boolean(data.deliveryEnabled));
+      } catch {
+        // ignoriamo: niente delivery in UI è il default sicuro
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [tenant.id]);
 
   useEffect(() => {
     const c = useCartStore.getState().context;
@@ -195,7 +217,11 @@ export default function OrdinaPage() {
 
                 <div className="mt-6 space-y-5">
                   {showDineOption && (
-                    <DineOptionToggle value={dineOption} onChange={setDineOption} />
+                    <DineOptionToggle
+                      value={dineOption}
+                      onChange={setDineOption}
+                      showDelivery={deliveryEnabled}
+                    />
                   )}
 
                   <Field label="Nome" icon={<User size={16} />}>
@@ -340,16 +366,18 @@ function Field({
 function DineOptionToggle({
   value,
   onChange,
+  showDelivery,
 }: {
   value: OrderDineOption;
   onChange: (v: OrderDineOption) => void;
+  showDelivery: boolean;
 }) {
   return (
     <div>
       <span className="mb-1.5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-pork-ink/60">
-        Dove lo consumi?
+        Come lo vuoi?
       </span>
-      <div className="grid grid-cols-2 gap-2">
+      <div className={`grid gap-2 ${showDelivery ? "grid-cols-3" : "grid-cols-2"}`}>
         <DineOptionButton
           active={value === "dine_in"}
           onClick={() => onChange("dine_in")}
@@ -364,6 +392,15 @@ function DineOptionToggle({
           label="Asporto"
           hint="nel sacchetto"
         />
+        {showDelivery && (
+          <DineOptionButton
+            active={value === "delivery"}
+            onClick={() => onChange("delivery")}
+            icon={<Bike size={18} />}
+            label="Delivery"
+            hint="a casa"
+          />
+        )}
       </div>
     </div>
   );

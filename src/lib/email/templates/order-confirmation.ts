@@ -14,7 +14,7 @@ export type OrderConfirmationParams = {
   orderCode: string;
   customerName?: string;
   type: "tavolo" | "asporto";
-  dineOption?: "dine_in" | "takeaway";
+  dineOption?: "dine_in" | "takeaway" | "delivery";
   tableLabel?: string;
   pickupTime?: string;
   notes?: string;
@@ -32,6 +32,7 @@ function euro(n: number): string {
 function serviceLabel(p: OrderConfirmationParams): string {
   if (p.type === "tavolo") return p.tableLabel ? `In sala — ${p.tableLabel}` : "In sala";
   if (p.dineOption === "dine_in") return "Mangia qui";
+  if (p.dineOption === "delivery") return "Delivery — consegna a domicilio";
   return "Asporto";
 }
 

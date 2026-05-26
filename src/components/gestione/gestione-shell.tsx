@@ -85,7 +85,6 @@ export function GestioneShell({
     { label: "Dashboard", href: dashboardHref, visible: () => true },
     { label: "Dati attività", href: sectionHref("attivita"), visible: () => access.canManageActivity },
     { label: "Ordini", href: sectionHref("ordini"), visible: () => access.hasOrders },
-    { label: "Impostazioni ordini", href: sectionHref("impostazioni-ordini"), visible: (c) => access.hasOrders && (c.can_edit_menu || isAdmin) },
     { label: getModuleLabel("onlineMenu", tenant.vertical), href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
     { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
     { label: getModuleLabel("reservations", tenant.vertical), href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations },

@@ -70,7 +70,11 @@ export async function POST(req: NextRequest) {
   // ── Validazione finestra orari (skip per ordini tavolo da QR: il cliente è già fisicamente nel locale) ──
   if (type === "asporto") {
     const channel: OrderChannel =
-      rest.dineOption === "dine_in" ? "dine_in" : "takeaway";
+      rest.dineOption === "dine_in"
+        ? "dine_in"
+        : rest.dineOption === "delivery"
+          ? "delivery"
+          : "takeaway";
     const windowCheck = await checkOrderingWindow(supabase, {
       tenantId,
       locationId: locationId ?? null,

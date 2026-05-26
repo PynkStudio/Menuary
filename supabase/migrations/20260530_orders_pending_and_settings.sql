@@ -13,11 +13,34 @@ ALTER TYPE public.order_status ADD VALUE IF NOT EXISTS 'expired' AFTER 'annullat
 -- per locali senza tavoli numerati. Per ordini al tavolo via QR resta NULL.
 ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS dine_option text
-    CHECK (dine_option IN ('dine_in', 'takeaway')),
+    CHECK (dine_option IN ('dine_in', 'takeaway', 'delivery')),
   ADD COLUMN IF NOT EXISTS confirmed_at            timestamptz,
   ADD COLUMN IF NOT EXISTS confirmation_expires_at timestamptz,
   ADD COLUMN IF NOT EXISTS auto_accepted           boolean NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS customer_email          text;
+
+-- Se la colonna esisteva già con CHECK ('dine_in','takeaway') la rifacciamo
+-- includendo 'delivery'. Drop e re-add del check è idempotente.
+DO $$
+DECLARE
+  cname text;
+BEGIN
+  SELECT conname INTO cname
+  FROM pg_constraint c
+  JOIN pg_class r ON r.oid = c.conrelid
+  JOIN pg_namespace n ON n.oid = r.relnamespace
+  WHERE n.nspname = 'public' AND r.relname = 'orders'
+    AND c.contype = 'c'
+    AND pg_get_constraintdef(c.oid) ILIKE '%dine_option%'
+    AND pg_get_constraintdef(c.oid) NOT ILIKE '%delivery%'
+  LIMIT 1;
+  IF cname IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE public.orders DROP CONSTRAINT %I', cname);
+    ALTER TABLE public.orders
+      ADD CONSTRAINT orders_dine_option_check
+      CHECK (dine_option IN ('dine_in', 'takeaway', 'delivery'));
+  END IF;
+END$$;
 
 -- Lo status precedente era validato lato app; non c'è un CHECK su orders.status
 -- nelle migrations note. Aggiungiamo i nuovi stati come valori app-side soltanto
@@ -54,6 +77,7 @@ CREATE TABLE IF NOT EXISTS public.tenant_order_settings (
   -- Abilitazione canali
   takeaway_enabled boolean NOT NULL DEFAULT true,
   dine_in_enabled  boolean NOT NULL DEFAULT true,
+  delivery_enabled boolean NOT NULL DEFAULT false,
 
   -- Finestre orarie rispetto agli orari di apertura del locale (in minuti).
   -- Esempio: takeaway_window_before_open_min = 15  → ordini aperti 15' prima dell'apertura
@@ -63,6 +87,8 @@ CREATE TABLE IF NOT EXISTS public.tenant_order_settings (
   takeaway_window_before_close_min integer,
   dine_in_window_before_open_min   integer,
   dine_in_window_before_close_min  integer,
+  delivery_window_before_open_min  integer,
+  delivery_window_before_close_min integer,
 
   -- Auto-accept (AND tra le condizioni non-null/non-false)
   auto_accept_enabled        boolean NOT NULL DEFAULT false,
@@ -77,6 +103,12 @@ CREATE TABLE IF NOT EXISTS public.tenant_order_settings (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Idempotenza per re-run su DB con tabella già creata pre-delivery.
+ALTER TABLE public.tenant_order_settings
+  ADD COLUMN IF NOT EXISTS delivery_enabled boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS delivery_window_before_open_min  integer,
+  ADD COLUMN IF NOT EXISTS delivery_window_before_close_min integer;
 
 -- Univocità: una sola riga per (tenant, location). NULL location_id = default tenant.
 CREATE UNIQUE INDEX IF NOT EXISTS tenant_order_settings_tenant_default_idx

@@ -2463,6 +2463,9 @@ export type Database = {
           auto_accept_no_notes: boolean
           auto_accept_only_returning: boolean
           created_at: string
+          delivery_enabled: boolean
+          delivery_window_before_close_min: number | null
+          delivery_window_before_open_min: number | null
           dine_in_enabled: boolean
           dine_in_window_before_close_min: number | null
           dine_in_window_before_open_min: number | null
@@ -2482,6 +2485,9 @@ export type Database = {
           auto_accept_no_notes?: boolean
           auto_accept_only_returning?: boolean
           created_at?: string
+          delivery_enabled?: boolean
+          delivery_window_before_close_min?: number | null
+          delivery_window_before_open_min?: number | null
           dine_in_enabled?: boolean
           dine_in_window_before_close_min?: number | null
           dine_in_window_before_open_min?: number | null
@@ -2501,6 +2507,9 @@ export type Database = {
           auto_accept_no_notes?: boolean
           auto_accept_only_returning?: boolean
           created_at?: string
+          delivery_enabled?: boolean
+          delivery_window_before_close_min?: number | null
+          delivery_window_before_open_min?: number | null
           dine_in_enabled?: boolean
           dine_in_window_before_close_min?: number | null
           dine_in_window_before_open_min?: number | null
