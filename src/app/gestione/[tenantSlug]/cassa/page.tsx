@@ -7,6 +7,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { openCashSession, closeCashSession, addCashMovement } from "./actions";
 import { confirmPendingOrder, rejectPendingOrder } from "../ordini/actions";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
+import { demoCassa, demoPendingOrders } from "@/lib/demo-fixtures";
 
 type Session = {
   id: string;
@@ -130,7 +131,7 @@ export default async function CassaPage({
   if (!auth.ok) notFound();
 
   const [data, pendingOrders] = auth.isDemo
-    ? [{ session: null as Session | null, movements: [] as Movement[], recent: [] as Session[] }, [] as PendingOrder[]]
+    ? [demoCassa(), demoPendingOrders()]
     : await Promise.all([fetchCassa(tenantSlug), fetchPendingOrders(tenantSlug)]);
 
   const totals = sumByMethod(data.movements);

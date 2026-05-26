@@ -128,6 +128,8 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     converted_at: "2026-02-01T00:00:00Z",
     sales_owner_id: "sales-matteo",
     sales_owner_name: "Matteo Serra",
+    created_by_id: "lead-giulia",
+    created_by_name: "Giulia Ferri",
     created_at: "2026-01-15T09:00:00Z",
     updated_at: "2026-05-01T12:00:00Z",
   },
@@ -167,6 +169,8 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     converted_at: null,
     sales_owner_id: null,
     sales_owner_name: null,
+    created_by_id: null,
+    created_by_name: null,
     created_at: "2026-05-18T10:00:00Z",
     updated_at: "2026-05-18T10:00:00Z",
   },
@@ -206,6 +210,8 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     converted_at: null,
     sales_owner_id: null,
     sales_owner_name: null,
+    created_by_id: null,
+    created_by_name: null,
     created_at: "2026-05-23T10:00:00Z",
     updated_at: "2026-05-23T10:00:00Z",
   },
@@ -245,6 +251,8 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     converted_at: null,
     sales_owner_id: null,
     sales_owner_name: null,
+    created_by_id: null,
+    created_by_name: null,
     created_at: "2026-05-19T10:00:00Z",
     updated_at: "2026-05-19T10:00:00Z",
   },
@@ -273,7 +281,7 @@ export const PLATFORM_SUBSCRIPTIONS: PlatformSubscription[] = [
     billing_cycle: "yearly",
     price_override: null,
     setup_amount: 690,
-    first_payment_amount: 2028,
+    first_payment_amount: 2718,
     currency: "EUR",
     status: "active",
     started_at: "2026-02-01",
@@ -296,7 +304,7 @@ export const PLATFORM_PAYMENTS: PlatformPayment[] = [
     id: "pay-2",
     subscription_id: "sub-2",
     lead_id: "2",
-    amount: 2028,
+    amount: 2718,
     currency: "EUR",
     status: "paid",
     payment_method: "bonifico",
@@ -310,6 +318,7 @@ export const PLATFORM_PAYMENTS: PlatformPayment[] = [
       billing_cycle: "yearly",
       setup_amount: 690,
       recurring_amount: 2028,
+      first_payment_amount: 2718,
     },
     created_at: "2026-02-01T10:00:00Z",
     updated_at: "2026-02-05T10:00:00Z",
@@ -325,18 +334,18 @@ export function calculateSubscriptionTotal(sub: PlatformSubscription): number {
 }
 
 export const PLATFORM_COMMISSION_RULES: PlatformCommissionRule[] = [
-  { role: "superadmin", label: "Super Admin", commission_rate: 0, applies_to_sales: false },
-  { role: "admin", label: "Admin", commission_rate: 0, applies_to_sales: false },
+  { role: "superadmin", label: "Super Admin", commission_rate: 30, applies_to_sales: true },
+  { role: "admin", label: "Admin", commission_rate: 30, applies_to_sales: true },
   { role: "venditore", label: "Venditore", commission_rate: 30, applies_to_sales: true },
-  { role: "amministrazione", label: "Amministrazione", commission_rate: 0, applies_to_sales: false },
-  { role: "gestore", label: "Gestore", commission_rate: 0, applies_to_sales: false },
-  { role: "lead_inserter", label: "Inserimento lead", commission_rate: 0, applies_to_sales: false },
+  { role: "amministrazione", label: "Amministrazione", commission_rate: 30, applies_to_sales: true },
+  { role: "gestore", label: "Gestore", commission_rate: 30, applies_to_sales: true },
+  { role: "lead_inserter", label: "Inserimento lead", commission_rate: 10, applies_to_sales: false },
 ];
 
 export function calculateFirstPaymentBase(sub: PlatformSubscription): number {
   const recurring = calculateSubscriptionTotal(sub);
   const setup = sub.setup_amount ?? 0;
-  return sub.billing_cycle === "monthly" ? setup + recurring : recurring;
+  return setup + recurring;
 }
 
 export function calculateCommissionAmount(firstPaymentBase: number, commissionRate: number): number {
@@ -345,14 +354,15 @@ export function calculateCommissionAmount(firstPaymentBase: number, commissionRa
 
 export const PLATFORM_COMMISSIONS: PlatformCommission[] = PLATFORM_SUBSCRIPTIONS
   .filter((sub) => sub.lead?.tenant_id)
-  .map((sub, index) => {
+  .flatMap((sub, index) => {
     const lead = sub.lead!;
-    const rule = PLATFORM_COMMISSION_RULES.find((item) => item.role === "venditore")!;
+    const closingRule = PLATFORM_COMMISSION_RULES.find((item) => item.role === "venditore")!;
+    const leadInsertRule = PLATFORM_COMMISSION_RULES.find((item) => item.role === "lead_inserter")!;
     const payment = PLATFORM_PAYMENTS.find((item) => item.subscription_id === sub.id)!;
     const recurring = calculateSubscriptionTotal(sub);
     const firstPaymentBase = calculateFirstPaymentBase(sub);
 
-    return {
+    const closingCommission: PlatformCommission = {
       id: `comm-${index + 1}`,
       lead_id: lead.id,
       tenant_id: lead.tenant_id,
@@ -361,16 +371,32 @@ export const PLATFORM_COMMISSIONS: PlatformCommission[] = PLATFORM_SUBSCRIPTIONS
       seller_id: lead.sales_owner_id ?? "sales-unassigned",
       seller_name: lead.sales_owner_name ?? "Venditore non assegnato",
       seller_role: "venditore",
+      commission_kind: "closing",
       business_name: lead.business_name,
       package_name: sub.package?.name ?? "Piano personalizzato",
       billing_cycle: sub.billing_cycle,
       recurring_amount: recurring,
       setup_amount: sub.setup_amount ?? 0,
       first_payment_amount: firstPaymentBase,
-      commission_rate: rule.commission_rate,
-      commission_amount: calculateCommissionAmount(firstPaymentBase, rule.commission_rate),
+      commission_rate: closingRule.commission_rate,
+      commission_amount: calculateCommissionAmount(firstPaymentBase, closingRule.commission_rate),
       status: payment.status === "paid" ? "approved" : "pending",
       closed_at: lead.converted_at ?? sub.started_at,
       paid_at: null,
     };
+
+    if (!lead.created_by_id) return [closingCommission];
+
+    const leadInsertCommission: PlatformCommission = {
+      ...closingCommission,
+      id: `comm-lead-insert-${index + 1}`,
+      seller_id: lead.created_by_id,
+      seller_name: lead.created_by_name ?? "Inseritore lead",
+      seller_role: "lead_inserter",
+      commission_kind: "lead_insert",
+      commission_rate: leadInsertRule.commission_rate,
+      commission_amount: calculateCommissionAmount(firstPaymentBase, leadInsertRule.commission_rate),
+    };
+
+    return [closingCommission, leadInsertCommission];
   });

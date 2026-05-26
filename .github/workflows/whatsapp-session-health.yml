@@ -1,0 +1,33 @@
+name: WhatsApp Session Health
+
+# Sostituisce il cron Vercel `*/5 * * * *` (non eseguibile sul piano Hobby,
+# limitato a 1 esecuzione al giorno). GitHub Actions cron è best-effort:
+# può subire ritardi di alcuni minuti in fasce di picco, accettabile per
+# un alert su heartbeat stale > 3 minuti.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: whatsapp-session-health
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Call session-health endpoint
+        env:
+          CRON_TARGET_URL: ${{ secrets.CRON_TARGET_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_TARGET_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Missing CRON_TARGET_URL or CRON_SECRET secret" >&2
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error --max-time 60 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$CRON_TARGET_URL/api/cron/whatsapp-session-health"

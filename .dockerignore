@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.env
+.env.*
+public/uploads/*
+*.log
+*.data.json
+*.node-persist*
+*_IGNORE_*

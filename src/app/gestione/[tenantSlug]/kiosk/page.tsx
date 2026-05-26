@@ -17,6 +17,7 @@ import {
   updateKioskConfig,
   type KioskConfig,
 } from "./actions";
+import { demoKiosks } from "@/lib/demo-fixtures";
 
 type DeviceRow = {
   id: string;
@@ -83,9 +84,7 @@ export default async function KioskGestionePage({
   if (!auth.isDemo && !auth.isAdmin) notFound();
   if (!tenant.features.orderKiosk) notFound();
 
-  const { devices, locations } = auth.isDemo
-    ? { devices: [] as DeviceRow[], locations: [] as { id: string; name: string; slug: string }[] }
-    : await fetchKiosks(tenantSlug);
+  const { devices, locations } = auth.isDemo ? demoKiosks() : await fetchKiosks(tenantSlug);
 
   return (
     <div className="ga-dashboard">

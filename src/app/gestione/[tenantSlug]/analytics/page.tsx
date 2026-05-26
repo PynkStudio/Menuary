@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { demoAnalytics } from "@/lib/demo-fixtures";
 
 type OrderRow = { total: number; created_at: string; status: string };
 type LineRow = { name: string; qty: number };
@@ -96,7 +97,7 @@ export default async function AnalyticsPage({
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 
-  const data = auth.isDemo ? null : await fetchAnalytics(tenantSlug);
+  const data = auth.isDemo ? demoAnalytics(tenant.vertical) : await fetchAnalytics(tenantSlug);
   const isServices = tenant.vertical === "services";
 
   return (

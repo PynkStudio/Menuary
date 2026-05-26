@@ -3,6 +3,7 @@ import { Plus, Trash2, Clock } from "lucide-react";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { createShift, deleteShift } from "./actions";
+import { demoTurni } from "@/lib/demo-fixtures";
 
 type Shift = {
   id: string;
@@ -74,9 +75,7 @@ export default async function TurniPage({
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 
-  const data = auth.isDemo
-    ? { shifts: [] as Shift[], employees: [] as Employee[] }
-    : await fetchTurni(tenantSlug);
+  const data = auth.isDemo ? demoTurni() : await fetchTurni(tenantSlug);
   const { from } = weekRange();
   const employeesById = new Map(data.employees.map((e) => [e.user_id, e]));
 

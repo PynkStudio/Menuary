@@ -642,10 +642,12 @@ function ConfirmSaleModal({
 
   const selectedPackage = PLATFORM_PACKAGES.find((item) => item.id === packageId) ?? defaultPackage;
   const sellerRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "venditore")?.commission_rate ?? 30;
+  const leadInsertRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "lead_inserter")?.commission_rate ?? 10;
   const locationsCount = Math.max(lead.locations.length, 1);
   const extraLocationsCount = Math.max(locationsCount - 1, 0);
-  const firstPaymentAmount = billingCycle === "monthly" ? setupAmount + recurringAmount : recurringAmount;
+  const firstPaymentAmount = setupAmount + recurringAmount;
   const commissionAmount = calculateCommissionAmount(firstPaymentAmount, sellerRate);
+  const leadInsertCommissionAmount = calculateCommissionAmount(firstPaymentAmount, leadInsertRate);
 
   function packageBaseAmount(pkg = selectedPackage, cycle = billingCycle) {
     return cycle === "yearly" ? pkg.price_yearly ?? pkg.price_monthly * 12 : pkg.price_monthly;
@@ -720,11 +722,7 @@ function ConfirmSaleModal({
             </div>
           </div>
 
-          <MoneyInput
-            label={billingCycle === "monthly" ? "Canone primo mese" : "Canone annuale"}
-            value={recurringAmount}
-            onChange={setRecurringAmount}
-          />
+          <MoneyInput label={billingCycle === "monthly" ? "Canone primo mese" : "Canone annuale"} value={recurringAmount} onChange={setRecurringAmount} />
           <MoneyInput label="Setup" value={setupAmount} onChange={setSetupAmount} />
 
           <label className="block md:col-span-2">
@@ -739,10 +737,11 @@ function ConfirmSaleModal({
           </label>
         </div>
 
-        <div className="mt-6 grid gap-3 rounded-2xl bg-pork-cream p-4 sm:grid-cols-3">
+        <div className="mt-6 grid gap-3 rounded-2xl bg-pork-cream p-4 sm:grid-cols-4">
           <SummaryMetric label="Primo pagamento" value={eur(firstPaymentAmount)} />
-          <SummaryMetric label="Provvigione venditore" value={`${sellerRate}%`} />
-          <SummaryMetric label="Importo provvigione" value={eur(commissionAmount)} strong />
+          <SummaryMetric label="Chiusura" value={`${sellerRate}% · ${eur(commissionAmount)}`} strong />
+          <SummaryMetric label="Inserimento lead" value={`${leadInsertRate}% · ${eur(leadInsertCommissionAmount)}`} />
+          <SummaryMetric label="Base calcolo" value="setup + canone" />
         </div>
         {extraLocationsCount > 0 && (
           <p className="mt-3 text-sm font-semibold text-pork-ink/60">

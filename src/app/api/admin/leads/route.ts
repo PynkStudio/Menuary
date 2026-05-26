@@ -122,6 +122,8 @@ type PlatformLeadRow = {
   converted_at: string | null;
   sales_owner_id: string | null;
   sales_owner_name: string | null;
+  created_by_id: string | null;
+  created_by_name: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -215,6 +217,8 @@ function mapLead(row: PlatformLeadRow, locations: PlatformLeadLocationRow[]): Pl
     converted_at: row.converted_at,
     sales_owner_id: row.sales_owner_id,
     sales_owner_name: row.sales_owner_name,
+    created_by_id: row.created_by_id,
+    created_by_name: row.created_by_name,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -230,7 +234,7 @@ async function requirePermission(permission: Parameters<typeof hasAdminPermissio
 
   const { data: siteadmin } = await supabase
     .from("siteadmin")
-    .select("role")
+    .select("role,display_name")
     .eq("user_id", user.id)
     .eq("enabled", true)
     .maybeSingle();
@@ -239,7 +243,15 @@ async function requirePermission(permission: Parameters<typeof hasAdminPermissio
   if (!hasAdminPermission(role, permission)) {
     return { error: "Non autorizzato.", status: 403 as const };
   }
-  return { error: null, status: 200 as const };
+  return {
+    error: null,
+    status: 200 as const,
+    user: { id: user.id, email: user.email ?? null },
+    siteadmin: {
+      role,
+      name: (siteadmin as { display_name?: string | null } | null)?.display_name ?? user.email ?? null,
+    },
+  };
 }
 
 export async function GET() {
@@ -366,6 +378,8 @@ export async function POST(request: Request) {
       province: normalizeText(body.province),
       postal_code: normalizeText(body.postal_code),
       country: legacyCountry,
+      created_by_id: auth.user?.id ?? null,
+      created_by_name: auth.siteadmin?.name ?? null,
     } as never)
     .select("id")
     .single();

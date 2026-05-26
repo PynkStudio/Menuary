@@ -1,11 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Save, ShoppingBag, UtensilsCrossed, Bot, Clock, Bike } from "lucide-react";
+import { AlertTriangle, Bike, Bot, CheckCircle2, Clock, QrCode, Save, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import type { TenantOrderSettings } from "@/lib/types";
 
 type FormState = Omit<TenantOrderSettings, "id" | "tenantId" | "locationId">;
+
+type WhatsappSession = {
+  status: "not_configured" | "pending_qr" | "connected" | "offline" | "error";
+  session_id: string;
+  phone_e164: string | null;
+  qr_data_url: string | null;
+  last_heartbeat_at: string | null;
+  last_error: string | null;
+};
 
 const EMPTY: FormState = {
   takeawayEnabled: true,
@@ -31,6 +40,7 @@ export function OrderSettingsPanel() {
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [waSession, setWaSession] = useState<WhatsappSession | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +61,21 @@ export function OrderSettingsPanel() {
     })();
     return () => {
       cancelled = true;
+    };
+  }, [tenant.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const res = await fetch(`/api/gestione/whatsapp-session?tenantId=${tenant.id}`, { cache: "no-store" });
+      const json = (await res.json().catch(() => ({}))) as { session?: WhatsappSession | null };
+      if (!cancelled) setWaSession(json.session ?? null);
+    };
+    void load();
+    const timer = window.setInterval(load, 15_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
     };
   }, [tenant.id]);
 
@@ -92,6 +117,55 @@ export function OrderSettingsPanel() {
           automaticamente.
         </p>
       </header>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-6">
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <QrCode size={18} /> WhatsApp ordini
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500">
+          Sessione del numero WhatsApp pubblico usato dai clienti per ordini e richieste.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-[160px_1fr]">
+          <div className="flex min-h-[160px] items-center justify-center rounded-xl bg-zinc-50 p-3">
+            {waSession?.qr_data_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={waSession.qr_data_url} alt="QR WhatsApp Web" className="max-h-[136px] max-w-[136px] object-contain" />
+            ) : waSession?.status === "connected" ? (
+              <CheckCircle2 size={44} className="text-emerald-600" />
+            ) : (
+              <QrCode size={44} className="text-zinc-300" />
+            )}
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold uppercase text-zinc-600">
+                {waSession?.status === "connected"
+                  ? "Attiva"
+                  : waSession?.status === "pending_qr"
+                    ? "QR da inquadrare"
+                    : waSession?.status === "offline"
+                      ? "Offline"
+                      : waSession?.status === "error"
+                        ? "Errore"
+                        : "Non configurata"}
+              </span>
+              {waSession?.phone_e164 && <span className="font-medium text-zinc-700">{waSession.phone_e164}</span>}
+            </div>
+            <p className="text-zinc-500">
+              Sessione: <span className="font-mono text-zinc-700">{waSession?.session_id ?? `tenant-${tenant.id}`}</span>
+            </p>
+            <p className="text-zinc-500">
+              Ultimo heartbeat: {waSession?.last_heartbeat_at ? new Date(waSession.last_heartbeat_at).toLocaleString("it-IT") : "mai"}
+            </p>
+            {(waSession?.status === "offline" || waSession?.status === "error") && (
+              <p className="flex gap-2 rounded-xl bg-red-50 p-3 font-medium text-red-700">
+                <AlertTriangle size={16} className="shrink-0" />
+                {waSession.last_error || "Sessione non operativa: alert email inviato a supporto e tenant admin."}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Canali */}
       <section className="rounded-2xl border border-zinc-200 bg-white p-6">

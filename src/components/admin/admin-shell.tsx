@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  LifeBuoy,
   Menu as MenuIcon,
   Package,
   QrCode,
@@ -58,6 +59,7 @@ type NavItem = {
 
 const PLATFORM_ADMIN_NAV: NavItem[] = [
   { href: "/admin/inbox", label: "Posta in arrivo", icon: Mail, permission: "inbox:view" },
+  { href: "/admin/supporto", label: "Supporto", icon: LifeBuoy, permission: "support:manage" },
   { href: "/admin/crm", label: "CRM Lead", icon: Users, permission: "crm:view" },
   { href: "/admin/crm/nuovo", label: "Nuovo lead", icon: UserPlus, permission: "crm:create" },
   { href: "/admin/pacchetti", label: "Pacchetti", icon: Package, permission: "packages:manage" },

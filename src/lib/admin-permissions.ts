@@ -21,7 +21,8 @@ export type AdminPermission =
   | "tenant:manage"
   | "users:manage"
   | "inbox:view"
-  | "inbox:compose";
+  | "inbox:compose"
+  | "support:manage";
 
 export const SITEADMIN_ROLE_LABELS: Record<SiteadminRole, string> = {
   superadmin: "Super admin",
@@ -42,12 +43,12 @@ export const SITEADMIN_ROLE_DESCRIPTIONS: Record<SiteadminRole, string> = {
 };
 
 export const DEFAULT_COMMISSION_BY_SITEADMIN_ROLE: Record<SiteadminRole, number> = {
-  superadmin: 0,
-  admin: 0,
+  superadmin: 30,
+  admin: 30,
   venditore: 30,
-  amministrazione: 0,
-  gestore: 0,
-  lead_inserter: 0,
+  amministrazione: 30,
+  gestore: 30,
+  lead_inserter: 10,
 };
 
 const ALL_PERMISSIONS: AdminPermission[] = [
@@ -61,14 +62,15 @@ const ALL_PERMISSIONS: AdminPermission[] = [
   "users:manage",
   "inbox:view",
   "inbox:compose",
+  "support:manage",
 ];
 
 export const ROLE_PERMISSIONS: Record<SiteadminRole, AdminPermission[]> = {
   superadmin: ALL_PERMISSIONS,
   admin: ALL_PERMISSIONS,
-  venditore: ["crm:view", "crm:create", "crm:demo", "commissions:view", "inbox:view", "inbox:compose"],
-  amministrazione: ["subscriptions:view", "commissions:view", "inbox:view", "inbox:compose"],
-  gestore: ["tenant:manage", "inbox:view"],
+  venditore: ["crm:view", "crm:create", "crm:demo", "commissions:view", "inbox:view", "inbox:compose", "support:manage"],
+  amministrazione: ["subscriptions:view", "commissions:view", "inbox:view", "inbox:compose", "support:manage"],
+  gestore: ["tenant:manage", "inbox:view", "support:manage"],
   lead_inserter: ["crm:create"],
 };
 
@@ -106,6 +108,7 @@ export function requiredPermissionForAdminPath(pathname: string): AdminPermissio
   if (normalized === "/admin/tenant" || normalized.startsWith("/admin/tenant/")) return "tenant:manage";
   if (normalized === "/admin/utenti" || normalized.startsWith("/admin/utenti/")) return "users:manage";
   if (normalized === "/admin/inbox" || normalized.startsWith("/admin/inbox/")) return "inbox:view";
+  if (normalized === "/admin/supporto" || normalized.startsWith("/admin/supporto/")) return "support:manage";
   return "users:manage";
 }
 

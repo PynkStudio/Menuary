@@ -473,6 +473,18 @@ async function createSupportTicket(
     .select("id")
     .single();
   if (error || !data) throw new Error(error?.message ?? "ticket_create_failed");
+  await (svc as unknown as {
+    from: (table: "support_ticket_messages") => {
+      insert: (row: Record<string, unknown>) => Promise<unknown>;
+    };
+  }).from("support_ticket_messages").insert({
+    ticket_id: data.id,
+    direction: "inbound",
+    channel: "whatsapp",
+    from_address: params.phone,
+    body: params.body,
+    metadata: asJson({ conversationId: params.conversationId }),
+  });
   return data.id;
 }
 
@@ -766,24 +778,26 @@ async function handleIntent(
   }
 
   const draft = ticketDraftFromText(text);
-  await patchConversation(svc, conversation.id, {
-    state: "pending_ticket_confirmation",
-    pending_ticket_subject: draft.subject,
-    pending_ticket_body: draft.body,
+  const ticketId = await createSupportTicket(svc, {
+    tenantId,
+    phone,
+    subject: draft.subject,
+    body: draft.body,
+    conversationId: conversation.id,
   });
+  await patchConversation(svc, conversation.id, { state: "ticket_opened" });
   await insertAction(svc, {
     conversationId: conversation.id,
     tenantId,
     phone,
     inputText: text,
-    actionType: "unsupported_or_unclear_request",
-    status: "unsupported",
+    actionType: "open_support_ticket",
+    status: "applied",
+    result: { ticketId, reason: "unsupported_or_unclear_request" },
   });
   return {
-    replies: [
-      "Questa modifica non e ancora gestibile automaticamente da WhatsApp. Vuoi che apra un ticket con l'assistenza?",
-    ],
-    action: { type: "unsupported_or_unclear_request", status: "unsupported" },
+    replies: [`Questa richiesta richiede assistenza manuale: ho aperto un ticket. Riferimento: ${ticketId}.`],
+    action: { type: "open_support_ticket", status: "applied" },
   };
 }
 

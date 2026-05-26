@@ -239,7 +239,7 @@ async function handleInbound(
     ? await fetchReceivedAttachments(resendEmailId)
     : ((payload.attachments ?? []) as ResendInboundAttachment[]);
 
-  const { error } = await svc.from("inbound_emails").insert({
+  const { data: inboundRow, error } = await svc.from("inbound_emails").insert({
     message_id:           messageId,
     from_address:         fromAddress,
     from_name:            fromName,
@@ -251,7 +251,7 @@ async function handleInbound(
     attachments:          attachments as unknown as never,
     brand,
     assigned_to_user_id:  assignedToUserId,
-  });
+  }).select("id").single();
 
   if (error) {
     console.error("[webhook:inbound] Errore inserimento:", error.message);
@@ -259,7 +259,52 @@ async function handleInbound(
   }
 
   if (isSupportRecipient(toAddresses)) {
-    // TODO: generare automaticamente un ticket di supporto collegato a questa email inbound.
+    const { data: ticket, error: ticketError } = await (svc as unknown as {
+      from: (table: "support_tickets") => {
+        insert: (row: Record<string, unknown>) => {
+          select: (columns: string) => {
+            single: () => Promise<{ data: { id: string } | null; error: { message: string } | null }>;
+          };
+        };
+      };
+    }).from("support_tickets").insert({
+      source: "email",
+      requester_email: fromAddress,
+      requester_name: fromName,
+      subject: (typeof source.subject === "string" ? source.subject : payload.subject) ?? "(nessun oggetto)",
+      body: textBody || htmlBody?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || "",
+      status: "open",
+      priority: "normal",
+      metadata: {
+        inboundEmailId: inboundRow?.id ?? null,
+        messageId,
+        toAddresses,
+        brand,
+      },
+    }).select("id").single();
+
+    if (ticketError || !ticket) {
+      console.error("[webhook:inbound] Errore creazione ticket support:", ticketError?.message);
+    } else {
+      await (svc as unknown as {
+        from: (table: "support_ticket_messages") => {
+          insert: (row: Record<string, unknown>) => Promise<unknown>;
+        };
+      }).from("support_ticket_messages").insert({
+        ticket_id: ticket.id,
+        direction: "inbound",
+        channel: "email",
+        from_address: fromAddress,
+        to_addresses: toAddresses,
+        body: textBody || "",
+        html_body: htmlBody,
+        metadata: {
+          inboundEmailId: inboundRow?.id ?? null,
+          messageId,
+          attachments,
+        },
+      });
+    }
   }
 
   return NextResponse.json({ ok: true, type: "inbound", brand });

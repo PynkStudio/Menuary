@@ -1,0 +1,26 @@
+services:
+  - type: worker
+    name: menuary-whatsapp-openwa
+    runtime: docker
+    dockerfilePath: ./Dockerfile.openwa
+    plan: starter
+    autoDeploy: false
+    disk:
+      name: openwa-session
+      mountPath: /var/data/openwa
+      sizeGB: 1
+    envVars:
+      - key: WHATSAPP_API_BASE_URL
+        sync: false
+      - key: WHATSAPP_WEB_BRIDGE_SECRET
+        sync: false
+      - key: TENANT_SUPPORT_WHATSAPP_SECRET
+        sync: false
+      - key: TENANT_SUPPORT_WEBHOOK_PATH
+        value: /api/webhooks/whatsapp/tenant-support
+      - key: WA_SESSION_ID
+        value: menuary-tenant-support
+      - key: WA_SESSION_DATA_PATH
+        value: /var/data/openwa
+      - key: OPENWA_CHROME_PATH
+        value: /usr/bin/chromium

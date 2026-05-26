@@ -76,6 +76,8 @@ export type PlatformLead = {
   converted_at: string | null;
   sales_owner_id: string | null;
   sales_owner_name: string | null;
+  created_by_id: string | null;
+  created_by_name: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -156,6 +158,7 @@ export type PlatformCommission = {
   seller_id: string;
   seller_name: string;
   seller_role: PlatformCommissionRule["role"];
+  commission_kind: "closing" | "lead_insert";
   business_name: string;
   package_name: string;
   billing_cycle: BillingCycle;

@@ -18,6 +18,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isDemoHost } from "@/lib/platform";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { TENANT_MODULES } from "@/lib/tenant-modules";
+import { demoDashboardKpis } from "@/lib/demo-fixtures";
 
 type Kpi = {
   label: string;
@@ -25,12 +26,13 @@ type Kpi = {
   hint?: string;
 };
 
-async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>): Promise<Kpi[]> {
+async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services"): Promise<Kpi[]> {
   if (isDemo) {
+    const k = demoDashboardKpis(vertical);
     return [
-      { label: "Prenotazioni oggi", value: null, hint: "Dati live in produzione" },
-      { label: "Recensioni recenti", value: null, hint: "Dati live in produzione" },
-      { label: "Staff attivo", value: null, hint: "Dati live in produzione" },
+      { label: vertical === "services" ? "Appuntamenti oggi" : "Prenotazioni oggi", value: String(k.reservationsToday) },
+      { label: "Recensioni 7gg", value: String(k.reviews7d), hint: "★ 4.7 di media" },
+      { label: "Staff attivo", value: String(k.staffActive) },
       { label: "Moduli attivi", value: String(Object.values(features.modules).filter(Boolean).length) },
     ];
   }

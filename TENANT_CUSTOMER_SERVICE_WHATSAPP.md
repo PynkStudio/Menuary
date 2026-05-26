@@ -29,6 +29,45 @@ Payload minimo:
 
 La response contiene `replies`, array di messaggi che il bridge WhatsApp deve inviare al numero scrivente.
 
+## Bridge open-wa su Render
+
+Il processo WhatsApp Web e' in `scripts/whatsapp-openwa-worker.mjs` e gira separato dalla app Next.
+
+Comando locale:
+
+```bash
+WHATSAPP_API_BASE_URL=http://localhost:3000 \
+WHATSAPP_WEB_BRIDGE_SECRET=dev-secret \
+npm run whatsapp:worker
+```
+
+Su Render usa il Blueprint `render.yaml`, che crea un Background Worker Docker con disco persistente montato in `/var/data/openwa`. Il disco conserva la sessione open-wa, quindi dopo il primo QR scan non serve riautenticare ad ogni deploy.
+
+Env Render richieste:
+
+- `WHATSAPP_API_BASE_URL`: URL pubblico della app Next, es. `https://admin.menuary.it`.
+- `WHATSAPP_WEB_BRIDGE_SECRET`: stesso valore configurato nella app Next.
+- `TENANT_SUPPORT_WHATSAPP_SECRET`: opzionale, se il canale supporto usa un secret dedicato.
+- `TENANT_SUPPORT_WEBHOOK_PATH`: default `/api/webhooks/whatsapp/tenant-support`.
+- `WA_SESSION_ID`: default `menuary-tenant-support`.
+
+Al primo avvio il worker stampa il QR nei log Render, salvo `OPENWA_QR_LOG_SKIP=true`.
+
+Per un numero WhatsApp pubblico di un tenant, crea un worker open-wa dedicato con:
+
+- `WHATSAPP_TENANT_ID`: id tenant, es. `bepork`.
+- `WA_SESSION_ID`: id sessione stabile, es. `tenant-bepork`.
+- `WHATSAPP_API_BASE_URL`: URL pubblico della app.
+- `WHATSAPP_WEB_BRIDGE_SECRET`: stesso secret della app.
+
+Quando `WHATSAPP_TENANT_ID` e' presente, il worker pubblica QR, heartbeat e stato su `/api/webhooks/whatsapp/session-status`. Il pannello `gestione/[tenant]/assistente-ai` mostra il QR da inquadrare e lo stato operativo della sessione. Il cron `/api/cron/whatsapp-session-health` invia alert automatici se la sessione non manda heartbeat.
+
+Destinatari alert:
+
+- `support@menuary.it` per vertical `food`.
+- `support@bizery.it` per vertical `services`.
+- email dei `tenantadmin` abilitati del tenant.
+
 ## Numeri autorizzati
 
 I numeri autorizzati sono:

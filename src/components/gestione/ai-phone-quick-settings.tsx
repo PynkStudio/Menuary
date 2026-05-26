@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bot, Clock, PhoneForwarded, Save, ShieldCheck, Utensils } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Clock, PhoneForwarded, QrCode, RefreshCcw, Save, ShieldCheck, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Control = {
@@ -35,6 +35,17 @@ type Settings = {
   greetingMessage: string;
   quickSettings: QuickSettings;
   paymentControls: PaymentControls;
+};
+
+type WhatsappSession = {
+  status: "not_configured" | "pending_qr" | "connected" | "offline" | "error";
+  session_id: string;
+  phone_e164: string | null;
+  qr_data_url: string | null;
+  qr_updated_at: string | null;
+  last_heartbeat_at: string | null;
+  last_connected_at: string | null;
+  last_error: string | null;
 };
 
 type PauseMode = "accept" | "30m" | "day-end" | "custom" | "manual";
@@ -173,8 +184,124 @@ function QuickToggle({
   );
 }
 
+function formatDateTime(value: string | null) {
+  if (!value) return "Mai";
+  return new Intl.DateTimeFormat("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function sessionStatusLabel(session: WhatsappSession | null) {
+  if (!session) return "Non configurata";
+  if (session.status === "connected") return "Sessione attiva";
+  if (session.status === "pending_qr") return "QR da inquadrare";
+  if (session.status === "offline") return "Offline";
+  if (session.status === "error") return "Errore";
+  return "Non configurata";
+}
+
+function sessionStatusClass(session: WhatsappSession | null) {
+  if (session?.status === "connected") return "bg-pork-green text-white";
+  if (session?.status === "pending_qr") return "bg-amber-100 text-amber-800";
+  if (session?.status === "offline" || session?.status === "error") return "bg-pork-red/10 text-pork-red";
+  return "bg-pork-ink/10 text-pork-ink/55";
+}
+
+function WhatsappSessionCard({
+  session,
+  loading,
+  onRefresh,
+}: {
+  session: WhatsappSession | null;
+  loading: boolean;
+  onRefresh: () => void;
+}) {
+  const connected = session?.status === "connected";
+  const problem = session?.status === "offline" || session?.status === "error";
+
+  return (
+    <section className="rounded-3xl bg-white p-5 ring-1 ring-pork-ink/10">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="impact-title flex items-center gap-2 text-xl text-pork-ink">
+            <QrCode size={20} /> WhatsApp clienti
+          </h2>
+          <p className="mt-1 text-sm text-pork-ink/60">
+            Numero pubblico usato dai clienti per ordini, informazioni e prenotazioni.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={cn("rounded-full px-3 py-1 text-xs font-black uppercase", sessionStatusClass(session))}>
+            {sessionStatusLabel(session)}
+          </span>
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="rounded-full bg-pork-cream p-2 text-pork-ink ring-1 ring-pork-ink/10 transition hover:ring-pork-red/30"
+            aria-label="Aggiorna stato WhatsApp"
+          >
+            <RefreshCcw size={16} className={loading ? "animate-spin" : ""} />
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr]">
+        <div className="flex min-h-[220px] items-center justify-center rounded-2xl bg-pork-cream p-3 ring-1 ring-pork-ink/10">
+          {session?.qr_data_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={session.qr_data_url} alt="QR WhatsApp Web" className="h-full max-h-[196px] w-full max-w-[196px] object-contain" />
+          ) : connected ? (
+            <div className="text-center text-pork-green">
+              <CheckCircle2 className="mx-auto" size={48} />
+              <p className="mt-3 text-sm font-black uppercase">Collegato</p>
+            </div>
+          ) : (
+            <div className="text-center text-pork-ink/45">
+              <QrCode className="mx-auto" size={48} />
+              <p className="mt-3 text-sm font-black uppercase">QR non disponibile</p>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3 text-sm">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="rounded-2xl bg-pork-cream p-4">
+              <p className="text-xs font-black uppercase text-pork-ink/45">Sessione</p>
+              <p className="mt-1 break-all font-bold text-pork-ink">{session?.session_id ?? "Non configurata"}</p>
+            </div>
+            <div className="rounded-2xl bg-pork-cream p-4">
+              <p className="text-xs font-black uppercase text-pork-ink/45">Numero</p>
+              <p className="mt-1 font-bold text-pork-ink">{session?.phone_e164 ?? "Da collegare"}</p>
+            </div>
+            <div className="rounded-2xl bg-pork-cream p-4">
+              <p className="text-xs font-black uppercase text-pork-ink/45">Ultimo heartbeat</p>
+              <p className="mt-1 font-bold text-pork-ink">{formatDateTime(session?.last_heartbeat_at ?? null)}</p>
+            </div>
+            <div className="rounded-2xl bg-pork-cream p-4">
+              <p className="text-xs font-black uppercase text-pork-ink/45">Ultimo collegamento</p>
+              <p className="mt-1 font-bold text-pork-ink">{formatDateTime(session?.last_connected_at ?? null)}</p>
+            </div>
+          </div>
+
+          {problem && (
+            <div className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 font-bold text-red-700">
+              <AlertTriangle className="shrink-0" size={18} />
+              <span>{session?.last_error || "Sessione non operativa. Il sistema invia un alert email al supporto e al tenant admin."}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function AiPhoneQuickSettings({ tenantId }: { tenantId: string }) {
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [whatsappSession, setWhatsappSession] = useState<WhatsappSession | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(false);
   const [ordersMode, setOrdersMode] = useState<PauseMode>("accept");
   const [ordersCustomUntil, setOrdersCustomUntil] = useState("");
   const [reservationsMode, setReservationsMode] = useState<PauseMode>("accept");
@@ -200,6 +327,36 @@ export function AiPhoneQuickSettings({ tenantId }: { tenantId: string }) {
       });
     return () => {
       alive = false;
+    };
+  }, [tenantId]);
+
+  async function loadWhatsappSession() {
+    setSessionLoading(true);
+    try {
+      const res = await fetch(`/api/gestione/whatsapp-session?tenantId=${encodeURIComponent(tenantId)}`, { cache: "no-store" });
+      const json = (await res.json().catch(() => ({}))) as { session?: WhatsappSession | null };
+      setWhatsappSession(json.session ?? null);
+    } finally {
+      setSessionLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const res = await fetch(`/api/gestione/whatsapp-session?tenantId=${encodeURIComponent(tenantId)}`, { cache: "no-store" });
+        const json = (await res.json().catch(() => ({}))) as { session?: WhatsappSession | null };
+        if (alive) setWhatsappSession(json.session ?? null);
+      } catch {
+        if (alive) setWhatsappSession(null);
+      }
+    };
+    void load();
+    const timer = window.setInterval(load, 15_000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
     };
   }, [tenantId]);
 
@@ -282,6 +439,12 @@ export function AiPhoneQuickSettings({ tenantId }: { tenantId: string }) {
           {error}
         </div>
       )}
+
+      <WhatsappSessionCard
+        session={whatsappSession}
+        loading={sessionLoading}
+        onRefresh={loadWhatsappSession}
+      />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ControlPicker

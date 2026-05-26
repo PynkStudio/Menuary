@@ -4,6 +4,7 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { openTableSession, closeTableSession } from "./actions";
+import { demoTavoli } from "@/lib/demo-fixtures";
 
 type Table = { id: string; label: string; area: string; seats: number | null };
 type Session = { id: string; table_id: string; opened_at: string; declared_covers: number | null; code: string };
@@ -48,9 +49,7 @@ export default async function TavoliPage({
   if (!auth.ok) notFound();
 
   const isServices = tenant.vertical === "services";
-  const planner = auth.isDemo
-    ? { tables: [] as Table[], openByTable: new Map<string, Session>() }
-    : await fetchPlanner(tenantSlug);
+  const planner = auth.isDemo ? demoTavoli(tenant.vertical) : await fetchPlanner(tenantSlug);
 
   const byArea = new Map<string, Table[]>();
   for (const t of planner.tables) {

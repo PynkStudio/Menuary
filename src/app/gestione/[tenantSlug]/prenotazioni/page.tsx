@@ -11,6 +11,7 @@ import {
   markSeatedReservation,
   markNoShowReservation,
 } from "./actions";
+import { demoReservations } from "@/lib/demo-fixtures";
 
 type Filter = "today" | "upcoming" | "pending" | "confirmed" | "history" | "all";
 const FILTERS: { id: Filter; label: string }[] = [
@@ -92,6 +93,20 @@ async function fetchReservations(tenantSlug: string, filter: Filter): Promise<Re
   return (data ?? []) as ReservationRow[];
 }
 
+function filterDemoReservations(rows: ReservationRow[], filter: Filter): ReservationRow[] {
+  const today = todayIso();
+  const max = inDays(30);
+  switch (filter) {
+    case "today": return rows.filter((r) => r.reservation_date === today);
+    case "upcoming": return rows.filter((r) => r.reservation_date >= today && r.reservation_date <= max);
+    case "pending": return rows.filter((r) => r.status === "pending_manual" || r.status === "auto_proposed");
+    case "confirmed": return rows.filter((r) => r.status === "confirmed" && r.reservation_date >= today);
+    case "history": return rows.filter((r) => r.reservation_date < today);
+    case "all":
+    default: return rows;
+  }
+}
+
 function statusBadge(status: string): { label: string; tone: "pending" | "ok" | "warn" | "error" | "muted" } {
   switch (status) {
     case "confirmed":
@@ -136,7 +151,7 @@ export default async function PrenotazioniPage({
   if (!auth.ok) notFound();
 
   const filter: Filter = FILTERS.some((x) => x.id === f) ? (f as Filter) : "today";
-  const reservations = auth.isDemo ? [] : await fetchReservations(tenantSlug, filter);
+  const reservations = auth.isDemo ? filterDemoReservations(demoReservations(tenant.vertical), filter) : await fetchReservations(tenantSlug, filter);
   const isServicesVertical = tenant.vertical === "services";
 
   const vertical = getVerticalMeta(tenant.vertical);
@@ -169,9 +184,7 @@ export default async function PrenotazioniPage({
 
       {reservations.length === 0 ? (
         <div className="ga-empty">
-          {auth.isDemo
-            ? "In modalità demo le prenotazioni reali non vengono mostrate."
-            : "Nessuna prenotazione in questo intervallo."}
+          Nessuna prenotazione in questo intervallo.
         </div>
       ) : (
         <div className="ga-reservation-list">

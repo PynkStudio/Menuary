@@ -238,7 +238,7 @@ export function PlatformAdminUsersPage() {
           <div>
             <p className="font-black">Regole provvigioni per ruolo</p>
             <p className="mt-1 text-sm text-pork-ink/60">
-              Il venditore ha il 30% di default sul primo pagamento. Gli altri ruoli restano a 0 finché non viene assegnata una percentuale.
+              La chiusura commerciale matura il 30% sul primo pagamento. L'inserimento lead matura il 10%, anche se il lead viene chiuso da un'altra persona.
             </p>
           </div>
         </div>

@@ -47,12 +47,19 @@ export function PlatformCommissionsPage() {
   const [query, setQuery] = useState("");
 
   const sellerRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "venditore")?.commission_rate ?? 30;
+  const leadInsertRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "lead_inserter")?.commission_rate ?? 10;
 
   const totals = useMemo(() => {
     const payable = commissions.filter((item) => item.status !== "paid");
+    const firstPaymentsBySubscription = new Map<string, number>();
+    commissions.forEach((item) => {
+      if (!firstPaymentsBySubscription.has(item.subscription_id)) {
+        firstPaymentsBySubscription.set(item.subscription_id, item.first_payment_amount);
+      }
+    });
     return {
       soldTenants: new Set(commissions.map((item) => item.tenant_id).filter(Boolean)).size,
-      firstPayments: commissions.reduce((sum, item) => sum + item.first_payment_amount, 0),
+      firstPayments: [...firstPaymentsBySubscription.values()].reduce((sum, amount) => sum + amount, 0),
       pending: payable.reduce((sum, item) => sum + item.commission_amount, 0),
       paid: commissions.filter((item) => item.status === "paid").reduce((sum, item) => sum + item.commission_amount, 0),
     };
@@ -100,7 +107,7 @@ export function PlatformCommissionsPage() {
         <Kpi icon={CheckCircle2} label="Tenant venduti" value={String(totals.soldTenants)} sub="lead convertiti in tenant" />
         <Kpi icon={CreditCard} label="Primi pagamenti" value={eur(totals.firstPayments)} sub="base commerciale tracciata" />
         <Kpi icon={BadgeEuro} label="Da liquidare" value={eur(totals.pending)} sub="pending + approvate" tone="text-pork-red" />
-        <Kpi icon={UserRound} label="Default venditori" value={`${sellerRate}%`} sub="ruolo venditore" />
+        <Kpi icon={UserRound} label="Default chiusura" value={`${sellerRate}%`} sub={`inserimento lead ${leadInsertRate}%`} />
       </div>
 
       <section className="rounded-3xl bg-white p-5 ring-1 ring-pork-ink/10">
@@ -108,13 +115,13 @@ export function PlatformCommissionsPage() {
           <div>
             <p className="text-sm font-black text-pork-ink">Regola di calcolo</p>
             <p className="mt-1 text-sm leading-relaxed text-pork-ink/60">
-              Per i pagamenti mensili la base provvigionale è setup più primo mese. Per gli annuali è il canone annuale concordato.
-              La percentuale arriva dal ruolo assegnato nella pagina utenti interni.
+              La base provvigionale è sempre il primo pagamento commerciale: setup più canone mensile oppure setup più canone annuale.
+              In caso di rateizzazione si usa comunque l'importo intero concordato. Chi inserisce il lead prende il 10%; chi chiude prende il 30%.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <RuleBox label="Mensile" value="setup + 1 mese" />
-            <RuleBox label="Annuale" value="canone annuo" />
+            <RuleBox label="Mensile" value="setup + canone mese" />
+            <RuleBox label="Annuale / rate" value="setup + canone annuo" />
           </div>
         </div>
       </section>
@@ -220,7 +227,7 @@ function CommissionRow({
           <div className="mt-1 flex flex-wrap gap-3 text-xs text-pork-ink/50">
             <span className="inline-flex items-center gap-1">
               <UserRound size={12} />
-              {item.seller_name}
+              {item.seller_name} · {item.commission_kind === "lead_insert" ? "Inserimento lead" : "Chiusura"}
             </span>
             <span>{item.package_name}</span>
             <span>{item.billing_cycle === "monthly" ? "Mensile" : "Annuale"}</span>

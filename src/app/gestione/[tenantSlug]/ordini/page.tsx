@@ -7,6 +7,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/supabase/types";
 import { startOrder, markReady, markDelivered, cancelOrder, confirmPendingOrder, rejectPendingOrder } from "./actions";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
+import { demoOrders, type DemoOrder } from "@/lib/demo-fixtures";
 
 type Filter = "live" | "pending" | "nuovi" | "preparazione" | "pronti" | "asporto" | "tavolo" | "storico" | "tutti";
 const FILTERS: { id: Filter; label: string }[] = [
@@ -100,6 +101,25 @@ async function fetchOrders(tenantSlug: string, filter: Filter): Promise<{ orders
   return { orders: orders as OrderRow[], lines };
 }
 
+function filterDemoOrders(
+  source: { orders: DemoOrder[]; lines: Map<string, { order_id: string; name: string; qty: number; variant_label: string | null }[]> },
+  filter: Filter,
+): { orders: OrderRow[]; lines: Map<string, OrderLine[]> } {
+  const liveSet = new Set<OrderRow["status"]>(["nuovo", "in_preparazione", "pronto"]);
+  let kept = source.orders;
+  switch (filter) {
+    case "live": kept = kept.filter((o) => liveSet.has(o.status)); break;
+    case "pending": kept = kept.filter((o) => o.status === "pending_confirmation"); break;
+    case "nuovi": kept = kept.filter((o) => o.status === "nuovo"); break;
+    case "preparazione": kept = kept.filter((o) => o.status === "in_preparazione"); break;
+    case "pronti": kept = kept.filter((o) => o.status === "pronto"); break;
+    case "asporto": kept = kept.filter((o) => o.type === "asporto" && liveSet.has(o.status)); break;
+    case "tavolo": kept = kept.filter((o) => o.type === "tavolo" && liveSet.has(o.status)); break;
+    case "storico": kept = kept.filter((o) => o.status === "consegnato" || o.status === "annullato"); break;
+  }
+  return { orders: kept as OrderRow[], lines: source.lines as Map<string, OrderLine[]> };
+}
+
 function statusBadge(status: OrderRow["status"]): { label: string; tone: "ok" | "warn" | "error" | "muted" | "pending" } {
   switch (status) {
     case "pending_confirmation": return { label: "Da confermare", tone: "warn" };
@@ -136,7 +156,9 @@ export default async function OrdiniPage({
   if (!auth.ok) notFound();
 
   const filter: Filter = FILTERS.some((x) => x.id === f) ? (f as Filter) : "live";
-  const { orders, lines } = auth.isDemo ? { orders: [], lines: new Map<string, OrderLine[]>() } : await fetchOrders(tenantSlug, filter);
+  const { orders, lines } = auth.isDemo
+    ? filterDemoOrders(demoOrders(tenant.vertical), filter)
+    : await fetchOrders(tenantSlug, filter);
 
   return (
     <div className="ga-dashboard">
@@ -166,9 +188,7 @@ export default async function OrdiniPage({
 
       {orders.length === 0 ? (
         <div className="ga-empty">
-          {auth.isDemo
-            ? "In modalità demo gli ordini reali non vengono mostrati."
-            : "Nessun ordine in questo intervallo."}
+          Nessun ordine in questo intervallo.
         </div>
       ) : (
         <div className="ga-reservation-list">
