@@ -111,7 +111,7 @@ export function ContractEditor({ contractId }: Props) {
       brand: inferredBrand,
       cliente: {
         ragioneSociale: lead.billing_name ?? lead.business_name,
-        legaleRappresentante: lead.contact_name,
+        legaleRappresentante: lead.contact_name ?? "",
         piva: lead.billing_vat ?? "",
         cf: lead.billing_cf ?? "",
         sedeLegale: [
@@ -123,7 +123,7 @@ export function ContractEditor({ contractId }: Props) {
           .filter(Boolean)
           .join(", "),
         pec: lead.billing_pec ?? "",
-        email: lead.contact_email,
+        email: lead.contact_email ?? "",
         telefono: lead.contact_phone ?? "",
         sdi: lead.billing_sdi ?? "",
       },

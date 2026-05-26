@@ -75,6 +75,18 @@ type Tab = "anagrafica" | "fatturazione" | "abbonamento" | "pagamenti" | "note";
 
 type Venditore = { id: string; user_id: string; name: string; email: string; role: string };
 
+type LeadProfileDraft = {
+  business_name: string;
+  contact_name: string;
+  contact_email: string;
+  contact_phone: string;
+  address: string;
+  city: string;
+  province: string;
+  postal_code: string;
+  country: string;
+};
+
 const TABS: { value: Tab; label: string; icon: React.ElementType }[] = [
   { value: "anagrafica", label: "Anagrafica", icon: Building2 },
   { value: "fatturazione", label: "Fatturazione", icon: Receipt },
@@ -125,6 +137,8 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   const [showUpdateAnimaModal, setShowUpdateAnimaModal] = useState(false);
   const [venditori, setVenditori] = useState<Venditore[]>([]);
   const [assignSaving, setAssignSaving] = useState(false);
+  const [leadSaving, setLeadSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const market = getMarket(normalizeMarketCode(lead.country) ?? "IT");
 
   useEffect(() => {
@@ -134,21 +148,132 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
       .catch(() => null);
   }, []);
 
-  function changeStatus(status: LeadStatus) {
-    setLead((prev) => ({ ...prev, status }));
+  useEffect(() => {
+    fetch("/api/admin/leads")
+      .then(async (r) => {
+        const data = (await r.json().catch(() => ({}))) as {
+          leads?: PlatformLead[];
+          error?: string;
+        };
+        if (!r.ok) throw new Error(data.error ?? "Impossibile caricare il lead.");
+        const dbLead = data.leads?.find((item) => item.id === leadId);
+        if (!dbLead) throw new Error("Lead non trovato.");
+        setLead(dbLead);
+        setSubscription(PLATFORM_SUBSCRIPTIONS.find((item) => item.lead_id === dbLead.id) ?? null);
+        setPayments(PLATFORM_PAYMENTS.filter((item) => item.lead_id === dbLead.id));
+        setNoteText(dbLead.notes ?? "");
+      })
+      .catch((err) => setLoadError(err instanceof Error ? err.message : "Impossibile caricare il lead."));
+  }, [leadId]);
+
+  async function patchLead(payload: Record<string, unknown>) {
+    setLeadSaving(true);
+    setLoadError(null);
+    try {
+      const res = await fetch(`/api/admin/leads/${lead.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Errore durante il salvataggio.");
+      return true;
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : "Errore durante il salvataggio.");
+      return false;
+    } finally {
+      setLeadSaving(false);
+    }
   }
 
-  function changeStage(stage: LeadStage) {
+  async function changeStatus(status: LeadStatus) {
+    const ok = await patchLead({ status });
+    if (ok) setLead((prev) => ({ ...prev, status, updated_at: new Date().toISOString() }));
+  }
+
+  async function changeStage(stage: LeadStage) {
+    const nextStatus = stage === "tenant" ? "active" : stage === "lost" ? "churned" : lead.status;
+    const ok = await patchLead({ stage, status: nextStatus });
+    if (ok) {
+      setLead((prev) => ({
+        ...prev,
+        stage,
+        status: nextStatus,
+        updated_at: new Date().toISOString(),
+      }));
+    }
+  }
+
+  async function saveNote() {
+    const ok = await patchLead({ notes: noteText });
+    if (!ok) return;
+    setLead((prev) => ({ ...prev, notes: noteText, updated_at: new Date().toISOString() }));
+    setEditingNote(false);
+  }
+
+  async function saveProfile(draft: LeadProfileDraft) {
+    const primaryLocation = lead.locations.find((location) => location.is_primary) ?? lead.locations[0];
+    const payload = {
+      business_name: draft.business_name,
+      contact_name: draft.contact_name || null,
+      contact_email: draft.contact_email || null,
+      contact_phone: draft.contact_phone || null,
+      address: draft.address || null,
+      city: draft.city || null,
+      province: draft.province || null,
+      postal_code: draft.postal_code || null,
+      country: draft.country,
+      primary_location: {
+        address: draft.address || null,
+        city: draft.city || null,
+        province: draft.province || null,
+        postal_code: draft.postal_code || null,
+        country: draft.country,
+      },
+    };
+    const ok = await patchLead(payload);
+    if (!ok) return false;
+
+    const now = new Date().toISOString();
     setLead((prev) => ({
       ...prev,
-      stage,
-      status: stage === "tenant" ? "active" : stage === "lost" ? "churned" : prev.status,
+      business_name: draft.business_name,
+      contact_name: draft.contact_name || null,
+      contact_email: draft.contact_email || null,
+      contact_phone: draft.contact_phone || null,
+      address: draft.address || null,
+      city: draft.city || null,
+      province: draft.province || null,
+      postal_code: draft.postal_code || null,
+      country: draft.country,
+      updated_at: now,
+      locations: primaryLocation
+        ? prev.locations.map((location) =>
+            location.id === primaryLocation.id
+              ? {
+                  ...location,
+                  address: draft.address || null,
+                  city: draft.city || null,
+                  province: draft.province || null,
+                  postal_code: draft.postal_code || null,
+                  country: draft.country,
+                }
+              : location,
+          )
+        : [
+            {
+              id: `primary-${prev.id}`,
+              name: "Sede principale",
+              address: draft.address || null,
+              city: draft.city || null,
+              province: draft.province || null,
+              postal_code: draft.postal_code || null,
+              country: draft.country,
+              is_primary: true,
+            },
+          ],
     }));
-  }
-
-  function saveNote() {
-    setLead((prev) => ({ ...prev, notes: noteText }));
-    setEditingNote(false);
+    return true;
   }
 
   async function assignVenditore(venditore: Venditore | null) {
@@ -248,6 +373,12 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
 
   return (
     <div className="space-y-6">
+      {loadError && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+          {loadError}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-wrap items-start gap-4">
         <Link
@@ -300,7 +431,8 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
             </span>
           </div>
           <p className="mt-1 text-sm text-pork-ink/55">
-            {lead.contact_name} · {lead.contact_email}
+            {lead.contact_name || "Referente non inserito"}
+            {lead.contact_email && ` · ${lead.contact_email}`}
             {lead.city && ` · ${lead.city} (${lead.province})`}
           </p>
         </div>
@@ -382,8 +514,9 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
             <button
               key={s}
               onClick={() => changeStage(s)}
+              disabled={leadSaving}
               className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-bold transition",
+                "rounded-full px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50",
                 lead.stage === s
                   ? "bg-pork-ink text-pork-cream"
                   : "bg-pork-ink/5 text-pork-ink/60 hover:bg-pork-ink/10",
@@ -426,6 +559,8 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
             venditori={venditori}
             onAssign={assignVenditore}
             assignSaving={assignSaving}
+            onSaveProfile={saveProfile}
+            saving={leadSaving}
           />
         )}
         {activeTab === "fatturazione" && <TabFatturazione lead={lead} />}
@@ -443,6 +578,7 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
             onCancel={() => { setEditingNote(false); setNoteText(lead.notes ?? ""); }}
             onSave={saveNote}
             onChange={setNoteText}
+            saving={leadSaving}
           />
         )}
       </div>
@@ -642,17 +778,58 @@ function TabAnagrafica({
   venditori,
   onAssign,
   assignSaving,
+  onSaveProfile,
+  saving,
 }: {
   lead: PlatformLead;
-  onStatusChange: (status: LeadStatus) => void;
+  onStatusChange: (status: LeadStatus) => void | Promise<void>;
   venditori: Venditore[];
   onAssign: (v: Venditore | null) => void;
   assignSaving: boolean;
+  onSaveProfile: (draft: LeadProfileDraft) => Promise<boolean>;
+  saving: boolean;
 }) {
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [draft, setDraft] = useState<LeadProfileDraft>(() => ({
+    business_name: lead.business_name,
+    contact_name: lead.contact_name ?? "",
+    contact_email: lead.contact_email ?? "",
+    contact_phone: lead.contact_phone ?? "",
+    address: lead.address ?? lead.locations.find((location) => location.is_primary)?.address ?? "",
+    city: lead.city ?? lead.locations.find((location) => location.is_primary)?.city ?? "",
+    province: lead.province ?? lead.locations.find((location) => location.is_primary)?.province ?? "",
+    postal_code: lead.postal_code ?? lead.locations.find((location) => location.is_primary)?.postal_code ?? "",
+    country: normalizeMarketCode(lead.country) ?? "IT",
+  }));
   const phoneHref = lead.contact_phone ? `tel:${lead.contact_phone.replace(/\s/g, "")}` : null;
   const whatsappHref = lead.contact_phone ? `https://wa.me/${lead.contact_phone.replace(/[^\d]/g, "")}` : null;
   const mailLauncher = useMailLauncher();
   const market = getMarket(normalizeMarketCode(lead.country) ?? "IT");
+
+  useEffect(() => {
+    if (editingProfile) return;
+    const primary = lead.locations.find((location) => location.is_primary) ?? lead.locations[0];
+    setDraft({
+      business_name: lead.business_name,
+      contact_name: lead.contact_name ?? "",
+      contact_email: lead.contact_email ?? "",
+      contact_phone: lead.contact_phone ?? "",
+      address: lead.address ?? primary?.address ?? "",
+      city: lead.city ?? primary?.city ?? "",
+      province: lead.province ?? primary?.province ?? "",
+      postal_code: lead.postal_code ?? primary?.postal_code ?? "",
+      country: normalizeMarketCode(lead.country) ?? "IT",
+    });
+  }, [editingProfile, lead]);
+
+  function setDraftField<K extends keyof LeadProfileDraft>(key: K, value: LeadProfileDraft[K]) {
+    setDraft((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function submitProfile() {
+    const ok = await onSaveProfile(draft);
+    if (ok) setEditingProfile(false);
+  }
 
   return (
     <div className="space-y-6">
@@ -670,26 +847,91 @@ function TabAnagrafica({
         </div>
       </div>
 
-      <SectionTitle icon={Building2}>Attività</SectionTitle>
+      <div className="flex items-center justify-between gap-3">
+        <SectionTitle icon={Building2}>Attività</SectionTitle>
+        {editingProfile ? (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setEditingProfile(false)}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-full border border-pork-ink/10 px-3 py-2 text-xs font-black text-pork-ink/55 hover:text-pork-ink disabled:opacity-50"
+            >
+              <X size={13} /> Annulla
+            </button>
+            <button
+              type="button"
+              onClick={submitProfile}
+              disabled={saving || !draft.business_name.trim()}
+              className="inline-flex items-center gap-2 rounded-full bg-pork-red px-3 py-2 text-xs font-black text-white hover:bg-pork-red/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Save size={13} /> {saving ? "Salvataggio..." : "Salva dati"}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setEditingProfile(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-pork-ink/10 px-3 py-2 text-xs font-black text-pork-ink/55 hover:border-pork-red/30 hover:text-pork-red"
+          >
+            <Pencil size={13} /> Modifica dati
+          </button>
+        )}
+      </div>
+
+      {editingProfile ? (
+        <div className="grid gap-4 rounded-2xl border border-pork-ink/10 bg-pork-ink/2 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <EditField label="Nome attività" value={draft.business_name} onChange={(value) => setDraftField("business_name", value)} required />
+          <EditField label="Referente" value={draft.contact_name} onChange={(value) => setDraftField("contact_name", value)} />
+          <EditField label="Email" value={draft.contact_email} onChange={(value) => setDraftField("contact_email", value)} type="email" />
+          <EditField label="Telefono" value={draft.contact_phone} onChange={(value) => setDraftField("contact_phone", value)} type="tel" />
+          <EditField label="Indirizzo sede principale" value={draft.address} onChange={(value) => setDraftField("address", value)} />
+          <EditField label="Città" value={draft.city} onChange={(value) => setDraftField("city", value)} />
+          <EditField label="Provincia" value={draft.province} onChange={(value) => setDraftField("province", value)} />
+          <EditField label="CAP" value={draft.postal_code} onChange={(value) => setDraftField("postal_code", value)} />
+          <label>
+            <span className="text-[10px] font-bold uppercase tracking-wide text-pork-ink/40">Nazione</span>
+            <select
+              value={draft.country}
+              onChange={(event) => setDraftField("country", event.target.value)}
+              className="mt-1 w-full rounded-xl border border-pork-ink/10 bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-pork-red/25"
+            >
+              <option value="IT">Italia</option>
+              <option value="SI">Slovenia</option>
+              <option value="HR">Croazia</option>
+              <option value="DE">Germania</option>
+              <option value="AT">Austria</option>
+              <option value="FR">Francia</option>
+              <option value="ES">Spagna</option>
+            </select>
+          </label>
+        </div>
+      ) : (
       <FieldGrid>
         <Field label="Nome attività" value={lead.business_name} />
         <Field label="Slug / futuro ID tenant" value={lead.business_slug} />
         <Field label="Nazione / mercato" value={`${market.flag} ${market.name} (${market.code})`} />
       </FieldGrid>
+      )}
 
       <SectionTitle icon={User}>Responsabile</SectionTitle>
       <FieldGrid>
         <Field label="Nome" value={lead.contact_name} />
+        {(() => {
+          const contactEmail = lead.contact_email;
+          return (
         <ActionField
           label="Email"
-          value={lead.contact_email}
-          onClick={lead.contact_email ? () => mailLauncher.open({
-            to:      lead.contact_email,
+          value={contactEmail}
+          onClick={contactEmail ? () => mailLauncher.open({
+            to:      contactEmail,
             brand:   lead.business_vertical === "services" ? "bizery" : "menuary",
             subject: lead.business_name ? `${lead.business_name} · contatto da Menuary` : undefined,
           }) : undefined}
           icon={Mail}
         />
+          );
+        })()}
         <ActionField
           label="Telefono"
           value={lead.contact_phone}
@@ -786,8 +1028,9 @@ function TabAnagrafica({
           <button
             key={status}
             onClick={() => onStatusChange(status)}
+            disabled={saving}
             className={cn(
-              "rounded-full px-3 py-1.5 text-xs font-bold transition",
+              "rounded-full px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-50",
               lead.status === status ? "bg-pork-ink text-pork-cream" : "bg-pork-ink/5 text-pork-ink/60 hover:bg-pork-ink/10",
             )}
           >
@@ -1013,13 +1256,15 @@ function TabNote({
   onCancel,
   onSave,
   onChange,
+  saving,
 }: {
   note: string;
   editing: boolean;
   onEdit: () => void;
   onCancel: () => void;
-  onSave: () => void;
+  onSave: () => void | Promise<void>;
   onChange: (v: string) => void;
+  saving: boolean;
 }) {
   return (
     <div className="space-y-4">
@@ -1047,13 +1292,15 @@ function TabNote({
           <div className="flex gap-2">
             <button
               onClick={onSave}
-              className="inline-flex items-center gap-2 rounded-full bg-pork-red px-4 py-2 text-sm font-bold text-white"
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-full bg-pork-red px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Save size={14} /> Salva
+              <Save size={14} /> {saving ? "Salvataggio..." : "Salva"}
             </button>
             <button
               onClick={onCancel}
-              className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/60"
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/60 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <X size={14} /> Annulla
             </button>
@@ -1102,6 +1349,35 @@ function Field({ label, value }: { label: string; value: string | null | undefin
       <p className="text-[10px] font-bold uppercase tracking-wide text-pork-ink/40">{label}</p>
       <p className="mt-0.5 text-sm font-semibold text-pork-ink">{value || <span className="text-pork-ink/30">—</span>}</p>
     </div>
+  );
+}
+
+function EditField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  required = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: "text" | "email" | "tel";
+  required?: boolean;
+}) {
+  return (
+    <label>
+      <span className="text-[10px] font-bold uppercase tracking-wide text-pork-ink/40">
+        {label}
+      </span>
+      <input
+        type={type}
+        required={required}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1 w-full rounded-xl border border-pork-ink/10 bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-pork-red/25"
+      />
+    </label>
   );
 }
 

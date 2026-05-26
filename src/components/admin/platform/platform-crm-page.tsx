@@ -33,7 +33,6 @@ import {
   VERTICAL_SHORT_LABELS,
 } from "@/lib/platform-crm-types";
 import { cn } from "@/lib/utils";
-import { PLATFORM_LEADS } from "@/lib/platform-admin-data";
 import { MailLink } from "@/components/admin/inbox/mail-launcher";
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -63,7 +62,9 @@ function fmt(iso: string) {
 type CurrentUser = { user_id: string; name: string; role: string };
 
 export function PlatformCrmPage() {
-  const [leads] = useState<PlatformLead[]>(PLATFORM_LEADS);
+  const [leads, setLeads] = useState<PlatformLead[]>([]);
+  const [loadingLeads, setLoadingLeads] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<LeadStatus | "all">("all");
   const [verticalFilter, setVerticalFilter] = useState<LeadVertical | "all">("all");
   const [query, setQuery] = useState("");
@@ -75,6 +76,20 @@ export function PlatformCrmPage() {
       .then((r) => r.json())
       .then((data: CurrentUser) => setCurrentUser(data))
       .catch(() => null);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/admin/leads")
+      .then(async (r) => {
+        const data = (await r.json().catch(() => ({}))) as {
+          leads?: PlatformLead[];
+          error?: string;
+        };
+        if (!r.ok) throw new Error(data.error ?? "Impossibile caricare i lead.");
+        setLeads(data.leads ?? []);
+      })
+      .catch((err) => setLoadError(err instanceof Error ? err.message : "Impossibile caricare i lead."))
+      .finally(() => setLoadingLeads(false));
   }, []);
 
   const foodLeads = leads.filter((l) => l.business_vertical === "food");
@@ -97,8 +112,8 @@ export function PlatformCrmPage() {
     const matchSearch =
       !q ||
       l.business_name.toLowerCase().includes(q) ||
-      l.contact_name.toLowerCase().includes(q) ||
-      l.contact_email.toLowerCase().includes(q) ||
+      (l.contact_name ?? "").toLowerCase().includes(q) ||
+      (l.contact_email ?? "").toLowerCase().includes(q) ||
       (l.city ?? "").toLowerCase().includes(q) ||
       l.locations.some((loc) => `${loc.name} ${loc.address ?? ""} ${loc.city ?? ""}`.toLowerCase().includes(q));
     return matchTab && matchVertical && matchOwner && matchSearch;
@@ -238,7 +253,17 @@ export function PlatformCrmPage() {
 
       {/* Lista */}
       <div className="space-y-3">
-        {filtered.length === 0 && (
+        {loadingLeads && (
+          <div className="rounded-3xl bg-white p-10 text-center ring-1 ring-pork-ink/10">
+            <p className="text-pork-ink/50">Caricamento lead...</p>
+          </div>
+        )}
+        {loadError && (
+          <div className="rounded-3xl border border-red-200 bg-red-50 p-5 text-sm font-bold text-red-700">
+            {loadError}
+          </div>
+        )}
+        {!loadingLeads && !loadError && filtered.length === 0 && (
           <div className="rounded-3xl bg-white p-10 text-center ring-1 ring-pork-ink/10">
             <p className="text-pork-ink/50">Nessun lead trovato.</p>
           </div>
@@ -387,7 +412,7 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-pork-ink/60">
-          <span>{lead.contact_name}</span>
+          <span>{lead.contact_name || "Referente non inserito"}</span>
           {lead.contact_email && (
             <MailLink
               to={lead.contact_email}

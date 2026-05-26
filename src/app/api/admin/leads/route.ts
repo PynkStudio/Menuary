@@ -7,6 +7,13 @@ import {
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { DEFAULT_MARKET, normalizeMarketCode } from "@/lib/markets";
+import type {
+  LeadSource,
+  LeadStage,
+  LeadStatus,
+  LeadTemperature,
+  PlatformLead,
+} from "@/lib/platform-crm-types";
 
 type LocationInput = {
   name?: string | null;
@@ -80,6 +87,139 @@ function slugify(value: string): string {
     .slice(0, 48);
 }
 
+type PlatformLeadRow = {
+  id: string;
+  business_name: string;
+  business_slug: string | null;
+  business_vertical: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  address: string | null;
+  city: string | null;
+  province: string | null;
+  postal_code: string | null;
+  country: string | null;
+  billing_name: string | null;
+  billing_vat: string | null;
+  billing_cf: string | null;
+  billing_address: string | null;
+  billing_city: string | null;
+  billing_province: string | null;
+  billing_postal_code: string | null;
+  billing_sdi: string | null;
+  billing_pec: string | null;
+  status: string | null;
+  stage: string | null;
+  temperature: string | null;
+  source: string | null;
+  notes: string | null;
+  demo_url: string | null;
+  demo_pr_url: string | null;
+  official_domain: string | null;
+  official_domain_active: boolean | null;
+  tenant_id: string | null;
+  converted_at: string | null;
+  sales_owner_id: string | null;
+  sales_owner_name: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type PlatformLeadLocationRow = {
+  id: string;
+  lead_id: string;
+  name: string | null;
+  address: string | null;
+  city: string | null;
+  province: string | null;
+  postal_code: string | null;
+  country: string | null;
+  is_primary: boolean | null;
+};
+
+function normalizeLeadStatus(value: string | null): LeadStatus {
+  return value === "prospect" || value === "active" || value === "churned" ? value : "lead";
+}
+
+function normalizeLeadStage(value: string | null): LeadStage {
+  return value === "contacted" ||
+    value === "qualified" ||
+    value === "demo" ||
+    value === "proposal" ||
+    value === "contract" ||
+    value === "tenant" ||
+    value === "lost"
+    ? value
+    : "new";
+}
+
+function normalizeLeadTemperature(value: string | null): LeadTemperature {
+  return value === "warm" || value === "hot" ? value : "cold";
+}
+
+function normalizeLeadSource(value: string | null): LeadSource | null {
+  return value === "form_web" ||
+    value === "referral" ||
+    value === "diretto" ||
+    value === "evento" ||
+    value === "manuale" ||
+    value === "altro"
+    ? value
+    : null;
+}
+
+function mapLead(row: PlatformLeadRow, locations: PlatformLeadLocationRow[]): PlatformLead {
+  return {
+    id: row.id,
+    business_name: row.business_name,
+    business_slug: row.business_slug,
+    business_vertical: row.business_vertical === "services" ? "services" : "food",
+    contact_name: row.contact_name,
+    contact_email: row.contact_email,
+    contact_phone: row.contact_phone,
+    address: row.address,
+    city: row.city,
+    province: row.province,
+    postal_code: row.postal_code,
+    country: row.country ?? DEFAULT_MARKET,
+    billing_name: row.billing_name,
+    billing_vat: row.billing_vat,
+    billing_cf: row.billing_cf,
+    billing_address: row.billing_address,
+    billing_city: row.billing_city,
+    billing_province: row.billing_province,
+    billing_postal_code: row.billing_postal_code,
+    billing_sdi: row.billing_sdi,
+    billing_pec: row.billing_pec,
+    status: normalizeLeadStatus(row.status),
+    stage: normalizeLeadStage(row.stage),
+    temperature: normalizeLeadTemperature(row.temperature),
+    source: normalizeLeadSource(row.source),
+    notes: row.notes,
+    locations: locations.map((loc) => ({
+      id: loc.id,
+      name: loc.name ?? "Sede",
+      address: loc.address,
+      city: loc.city,
+      province: loc.province,
+      postal_code: loc.postal_code,
+      country: loc.country ?? row.country ?? DEFAULT_MARKET,
+      is_primary: loc.is_primary ?? false,
+    })),
+    demo_url: row.demo_url,
+    demo_pr_url: row.demo_pr_url,
+    official_domain: row.official_domain,
+    official_domain_active: row.official_domain_active ?? false,
+    tenant_id: row.tenant_id,
+    converted_at: row.converted_at,
+    sales_owner_id: row.sales_owner_id,
+    sales_owner_name: row.sales_owner_name,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
 async function requirePermission(permission: Parameters<typeof hasAdminPermission>[1]) {
   const supabase = await createSupabaseServerClient();
   const {
@@ -100,6 +240,46 @@ async function requirePermission(permission: Parameters<typeof hasAdminPermissio
     return { error: "Non autorizzato.", status: 403 as const };
   }
   return { error: null, status: 200 as const };
+}
+
+export async function GET() {
+  const auth = await requirePermission("crm:view");
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const admin = createSupabaseAdminClient();
+  const { data: leadRows, error: leadsError } = await admin
+    .from("platform_leads")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (leadsError) return NextResponse.json({ error: leadsError.message }, { status: 500 });
+
+  const leadIds = ((leadRows ?? []) as unknown as PlatformLeadRow[]).map((lead) => lead.id);
+  const { data: locationRows, error: locationsError } = leadIds.length
+    ? await admin
+        .from("platform_lead_locations" as never)
+        .select("*")
+        .in("lead_id", leadIds)
+        .order("is_primary", { ascending: false })
+    : { data: [], error: null };
+
+  if (locationsError) {
+    return NextResponse.json({ error: locationsError.message }, { status: 500 });
+  }
+
+  const locationsByLead = ((locationRows ?? []) as unknown as PlatformLeadLocationRow[]).reduce(
+    (acc, location) => {
+      acc.set(location.lead_id, [...(acc.get(location.lead_id) ?? []), location]);
+      return acc;
+    },
+    new Map<string, PlatformLeadLocationRow[]>(),
+  );
+
+  const leads = ((leadRows ?? []) as unknown as PlatformLeadRow[]).map((lead) =>
+    mapLead(lead, locationsByLead.get(lead.id) ?? []),
+  );
+
+  return NextResponse.json({ leads });
 }
 
 export async function POST(request: Request) {

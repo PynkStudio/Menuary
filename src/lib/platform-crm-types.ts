@@ -11,7 +11,7 @@ export type LeadStage =
   | "lost";
 export type LeadTemperature = "cold" | "warm" | "hot";
 export type LeadStatus = "lead" | "prospect" | "active" | "churned";
-export type LeadSource = "form_web" | "referral" | "diretto" | "evento" | "altro";
+export type LeadSource = "form_web" | "referral" | "diretto" | "evento" | "manuale" | "altro";
 export type BillingCycle = "monthly" | "yearly";
 export type SubscriptionStatus = "trial" | "active" | "suspended" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
@@ -42,8 +42,8 @@ export type PlatformLead = {
   business_slug: string | null;
   business_vertical: "food" | "services";
   // Responsabile
-  contact_name: string;
-  contact_email: string;
+  contact_name: string | null;
+  contact_email: string | null;
   contact_phone: string | null;
   // Sede
   address: string | null;
@@ -289,5 +289,6 @@ export const SOURCE_LABELS: Record<LeadSource, string> = {
   referral: "Referral",
   diretto: "Contatto diretto",
   evento: "Evento",
+  manuale: "Manuale",
   altro: "Altro",
 };
