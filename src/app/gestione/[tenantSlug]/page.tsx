@@ -111,7 +111,7 @@ export default async function GestioneDashboardPage({
       ? `Da qui gestisci sito, ${menuLabel.toLowerCase()}, ${reservationsLabel.toLowerCase()}, clienti, dati attività e fatturazione della tua ${vertical.businessNoun}.`
       : "Da qui gestisci ordini, menu, prenotazioni, staff e fatturazione del tuo locale.";
 
-  const kpis = await loadKpis(tenantSlug, isDemo, access);
+  const kpis = await loadKpis(tenantSlug, isDemo, access, tenant.vertical);
 
   const quickActions: { href: string; label: string; hint: string; icon: React.ReactNode; show: boolean }[] = [
     {
@@ -195,7 +195,7 @@ export default async function GestioneDashboardPage({
       <section className="ga-section" aria-labelledby="ga-kpi-title">
         <div className="ga-section-head">
           <h2 id="ga-kpi-title" className="ga-section-title">Oggi a colpo d&apos;occhio</h2>
-          {isDemo && <span className="ga-section-hint">Demo: i numeri sono nascosti</span>}
+          {isDemo && <span className="ga-section-hint">Demo: dati di esempio</span>}
         </div>
         <div className="ga-kpi-grid">
           {kpis.map((k) => (

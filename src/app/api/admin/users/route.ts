@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildAuthCallbackUrl } from "@/lib/login-url";
+import { sendEmail } from "@/lib/email/sender";
 import { DEFAULT_COMMISSION_BY_SITEADMIN_ROLE, SITEADMIN_ROLES } from "@/lib/admin-permissions";
 import type { Database } from "@/lib/supabase/types";
 
@@ -14,6 +15,7 @@ type AuthUserSummary = {
   id: string;
   email?: string;
   invited_at?: string | null;
+  email_confirmed_at?: string | null;
   last_sign_in_at?: string | null;
 };
 
@@ -43,6 +45,74 @@ function normalizeEmail(email: string): string {
 function statusFor(enabled: boolean, authUser?: AuthUserSummary): AdminUserStatus {
   if (!enabled) return "revoked";
   return authUser?.last_sign_in_at ? "active" : "invited";
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function buildSetPasswordUrl(tokenHash: string): string {
+  const token = encodeURIComponent(tokenHash);
+  return `https://login.menuary.it/set-password?from=admin#token_hash=${token}&type=invite`;
+}
+
+async function sendAdminInviteEmail(email: string, actionUrl: string, displayName?: string | null) {
+  const safeName = escapeHtml(displayName?.trim() || email);
+  const safeUrl = escapeHtml(actionUrl);
+
+  return sendEmail({
+    to: email,
+    subject: "Invito admin Menuary",
+    html: `
+      <div style="margin:0;padding:32px;background:#f5f0ea;font-family:Arial,sans-serif;color:#141010">
+        <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:24px;padding:32px">
+          <p style="margin:0 0 12px;font-size:14px;color:#7a6060">Menuary</p>
+          <h1 style="margin:0 0 12px;font-size:24px;line-height:1.2">Completa il tuo accesso admin</h1>
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.5;color:#4f4545">
+            Ciao ${safeName}, sei stato invitato a entrare nel pannello admin di Menuary.
+          </p>
+          <p style="margin:0 0 28px">
+            <a href="${safeUrl}" style="display:inline-block;border-radius:14px;background:#B8332E;color:#fff;text-decoration:none;font-weight:700;padding:13px 20px">
+              Imposta password
+            </a>
+          </p>
+          <p style="margin:0;font-size:12px;line-height:1.5;color:#7a6060">
+            Se il pulsante non funziona, apri questo link:<br>
+            <a href="${safeUrl}" style="color:#B8332E;word-break:break-all">${safeUrl}</a>
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}
+
+async function generateAndSendAdminInvite(
+  email: string,
+  displayName?: string | null,
+): Promise<{ userId: string; error?: string }> {
+  const admin = createSupabaseAdminClient();
+  const redirectTo = buildAuthCallbackUrl("admin");
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: "invite",
+    email,
+    options: { redirectTo },
+  });
+
+  if (error || !data.user || !data.properties?.hashed_token) {
+    return { userId: "", error: `Errore generazione invito: ${error?.message ?? "token mancante"}` };
+  }
+
+  const result = await sendAdminInviteEmail(email, buildSetPasswordUrl(data.properties.hashed_token), displayName);
+  if (!result.ok) {
+    return { userId: data.user.id, error: `Invito generato ma email non inviata: ${result.error}` };
+  }
+
+  return { userId: data.user.id };
 }
 
 async function listAuthUsersById(): Promise<Map<string, AuthUserSummary>> {
@@ -144,25 +214,20 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (existing?.enabled) {
-    return NextResponse.json({ error: "Esiste già un utente interno attivo con questa email." }, { status: 409 });
-  }
-
-  const admin = createSupabaseAdminClient();
-  let authUserId: string | null = null;
-  const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-    normalizedEmail,
-    { redirectTo: buildAuthCallbackUrl("admin") },
-  );
-
-  if (inviteError) {
-    const existingAuthUser = await findAuthUserByEmail(normalizedEmail);
-    if (!existingAuthUser) {
-      return NextResponse.json({ error: `Errore invio email: ${inviteError.message}` }, { status: 500 });
+    const authUser = await findAuthUserByEmail(normalizedEmail);
+    if (authUser?.last_sign_in_at || authUser?.email_confirmed_at) {
+      return NextResponse.json({ error: "Esiste già un utente interno attivo con questa email." }, { status: 409 });
     }
-    authUserId = existingAuthUser.id;
-  } else {
-    authUserId = inviteData.user.id;
   }
+
+  const invite = await generateAndSendAdminInvite(
+    normalizedEmail,
+    display_name,
+  );
+  if (invite.error) {
+    return NextResponse.json({ error: invite.error }, { status: 500 });
+  }
+  const authUserId = invite.userId;
 
   if (existing) {
     const { error } = await supabase

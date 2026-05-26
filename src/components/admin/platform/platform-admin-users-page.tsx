@@ -142,6 +142,30 @@ export function PlatformAdminUsersPage() {
     }
   }
 
+  async function resendInvite(user: AdminUser) {
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await parseResponse(await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          display_name: user.name,
+          role: user.role,
+          commission_rate: user.commission_rate,
+        }),
+      }));
+      setSuccess("Invito reinviato.");
+      await loadUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Errore reinvio invito.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-8">
       <header>
@@ -238,7 +262,7 @@ export function PlatformAdminUsersPage() {
           <div>
             <p className="font-black">Regole provvigioni per ruolo</p>
             <p className="mt-1 text-sm text-pork-ink/60">
-              La chiusura commerciale matura il 30% sul primo pagamento. L'inserimento lead matura il 10%, anche se il lead viene chiuso da un'altra persona.
+              La chiusura commerciale matura il 30% sul primo pagamento. L&apos;inserimento lead matura il 10%, anche se il lead viene chiuso da un&apos;altra persona.
             </p>
           </div>
         </div>
@@ -340,6 +364,15 @@ export function PlatformAdminUsersPage() {
                     <Ban size={13} /> Revoca
                   </button>
                 ))}
+                {user.status === "invited" && (
+                  <button
+                    disabled={!canManage || saving}
+                    onClick={() => void resendInvite(user)}
+                    className="inline-flex items-center gap-1 rounded-full bg-pork-red px-3 py-2 text-xs font-black text-white disabled:opacity-40"
+                  >
+                    <MailPlus size={13} /> Reinvia invito
+                  </button>
+                )}
               </div>
             </div>
             <div className="mt-4 rounded-2xl bg-pork-cream p-3 text-xs text-pork-ink/60">
