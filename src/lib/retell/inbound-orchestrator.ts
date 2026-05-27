@@ -572,7 +572,7 @@ export async function createRetellReservation(input: CreateRetellReservationInpu
       reservation_date: input.date,
       reservation_time: input.time,
       notes: input.notes ?? null,
-      channel: "retell",
+      channel: input.source === "whatsapp" ? "whatsapp" : "retell",
       status: "pending_manual",
       service_id: service.data?.id ?? null,
       duration_minutes: service.data?.duration_minutes ?? null,

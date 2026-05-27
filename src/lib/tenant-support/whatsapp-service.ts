@@ -37,6 +37,23 @@ type ConversationRow = {
   pending_ticket_body: string | null;
 };
 
+type AiWhatsappIntent =
+  | "pause_new_orders_today"
+  | "resume_new_orders"
+  | "open_support_ticket"
+  | "import_menu_photo"
+  | "answer"
+  | "unsupported";
+
+type AiWhatsappAnalysis = {
+  intent: AiWhatsappIntent;
+  confidence: number;
+  reply: string;
+  ticketSubject: string;
+  ticketBody: string;
+  reason: string;
+};
+
 export type TenantSupportWhatsappInput = {
   from: string;
   text: string;
@@ -69,6 +86,34 @@ const IMPORT_MENU_PHOTO_RE =
   /\b(carica|importa|aggiungi|inserisci|aggiorna)\b.*\b(menu|men[uù]|piatti|prodotti|articoli|voci|listino|appunti)\b/i;
 const PHOTO_MIME = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const MAX_PHOTO_SIZE = 10 * 1024 * 1024;
+const AI_INTENT_CONFIDENCE_THRESHOLD = 0.72;
+const AI_WHATSAPP_ANALYSIS_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["intent", "confidence", "reply", "ticketSubject", "ticketBody", "reason"],
+  properties: {
+    intent: {
+      type: "string",
+      enum: [
+        "pause_new_orders_today",
+        "resume_new_orders",
+        "open_support_ticket",
+        "import_menu_photo",
+        "answer",
+        "unsupported",
+      ],
+    },
+    confidence: {
+      type: "number",
+      minimum: 0,
+      maximum: 1,
+    },
+    reply: { type: "string" },
+    ticketSubject: { type: "string" },
+    ticketBody: { type: "string" },
+    reason: { type: "string" },
+  },
+};
 
 type TenantSupportPermission =
   | "manageMenu"
@@ -242,6 +287,132 @@ function contactForTenant(
 ): (ContactRow & { tenant: TenantRow | null }) | null {
   if (!tenantId) return null;
   return contacts.find((contact) => contact.tenant_id === tenantId) ?? null;
+}
+
+function parseOpenAIResponseText(payload: unknown): string {
+  const response = payload as {
+    output_text?: string;
+    output?: Array<{
+      content?: Array<{ type?: string; text?: string }>;
+    }>;
+  };
+  if (typeof response.output_text === "string") return response.output_text;
+  for (const output of response.output ?? []) {
+    for (const content of output.content ?? []) {
+      if (content.type === "output_text" && typeof content.text === "string") {
+        return content.text;
+      }
+    }
+  }
+  return "";
+}
+
+function normalizeAiWhatsappAnalysis(value: unknown): AiWhatsappAnalysis | null {
+  const parsed = value as Partial<AiWhatsappAnalysis>;
+  const allowedIntents: AiWhatsappIntent[] = [
+    "pause_new_orders_today",
+    "resume_new_orders",
+    "open_support_ticket",
+    "import_menu_photo",
+    "answer",
+    "unsupported",
+  ];
+  if (!parsed.intent || !allowedIntents.includes(parsed.intent)) return null;
+  const confidence = typeof parsed.confidence === "number" && Number.isFinite(parsed.confidence)
+    ? Math.max(0, Math.min(1, parsed.confidence))
+    : 0;
+  return {
+    intent: parsed.intent,
+    confidence,
+    reply: typeof parsed.reply === "string" ? parsed.reply.trim().slice(0, 1200) : "",
+    ticketSubject: typeof parsed.ticketSubject === "string" ? parsed.ticketSubject.trim().slice(0, 90) : "",
+    ticketBody: typeof parsed.ticketBody === "string" ? parsed.ticketBody.trim().slice(0, 3000) : "",
+    reason: typeof parsed.reason === "string" ? parsed.reason.trim().slice(0, 600) : "",
+  };
+}
+
+async function analyzeWhatsappIntentWithAi(params: {
+  tenantName: string;
+  contactKind: ContactRow["contact_kind"];
+  permissions: ContactRow["permissions"];
+  text: string;
+  hasImage: boolean;
+}): Promise<AiWhatsappAnalysis | null> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+
+  const body = {
+    model: process.env.OPENAI_WHATSAPP_MODEL || "gpt-5-mini",
+    input: [
+      {
+        role: "system",
+        content: [
+          {
+            type: "input_text",
+            text: [
+              "Sei l'assistente operativo WhatsApp per i gestori di locali su Menuary.",
+              "Classifica il messaggio in uno degli intent consentiti e genera una risposta breve in italiano.",
+              "Non promettere azioni non elencate. Non modificare dati distruttivi. Non inventare stato, prenotazioni, ordini o informazioni non presenti nel messaggio.",
+              "Usa open_support_ticket quando serve intervento umano, quando la richiesta e vaga ma operativa, o quando l'utente chiede qualcosa fuori dalle azioni disponibili.",
+              "Usa answer solo per chiarimenti semplici sul funzionamento del canale WhatsApp o per chiedere una precisazione.",
+              "Usa import_menu_photo solo se l'utente vuole caricare/importare/aggiornare voci menu da una foto o appunti allegati.",
+              "Le azioni disponibili sono: sospendere nuovi ordini fino a fine giornata, riattivare nuovi ordini, aprire ticket supporto, importare menu da foto, rispondere/chiedere chiarimenti.",
+            ].join("\n"),
+          },
+        ],
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: JSON.stringify({
+              tenantName: params.tenantName,
+              contactKind: params.contactKind,
+              permissions: params.permissions,
+              hasImage: params.hasImage,
+              message: params.text,
+            }),
+          },
+        ],
+      },
+    ],
+    text: {
+      format: {
+        type: "json_schema",
+        name: "whatsapp_tenant_support_intent",
+        strict: true,
+        schema: AI_WHATSAPP_ANALYSIS_SCHEMA,
+      },
+    },
+  };
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${apiKey}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => "");
+    console.error("[tenant-support-whatsapp] openai intent analysis failed", {
+      status: response.status,
+      error: errorBody.slice(0, 240),
+    });
+    return null;
+  }
+
+  const text = parseOpenAIResponseText(await response.json());
+  if (!text) return null;
+  try {
+    return normalizeAiWhatsappAnalysis(JSON.parse(text));
+  } catch (error) {
+    console.error("[tenant-support-whatsapp] openai intent parse failed", error instanceof Error ? error.message : String(error));
+    return null;
+  }
 }
 
 async function insertAction(
@@ -497,10 +668,187 @@ function ticketDraftFromText(text: string) {
   };
 }
 
+async function proposeMenuPhotoImport(
+  svc: Db,
+  params: {
+    conversation: ConversationRow;
+    tenantId: string;
+    phone: string;
+    text: string;
+    imageUrl: string;
+  },
+): Promise<Pick<TenantSupportWhatsappResult, "replies" | "action">> {
+  const imageDataUrl = await remoteImageToDataUrl(params.imageUrl);
+  const result = await extractMenuItemsFromImage({
+    imageDataUrl,
+    locale: "it",
+    context: "Import menu da WhatsApp support tenant",
+  });
+  await insertAction(svc, {
+    conversationId: params.conversation.id,
+    tenantId: params.tenantId,
+    phone: params.phone,
+    inputText: params.text,
+    actionType: "import_menu_photo",
+    status: "proposed",
+    parameters: { imageProvided: true },
+    result,
+  });
+  return {
+    replies: [formatImportPreview(result)],
+    action: { type: "import_menu_photo", status: "proposed" },
+  };
+}
+
+async function handleAiRoutedIntent(
+  svc: Db,
+  conversation: ConversationRow,
+  contact: ContactRow & { tenant: TenantRow | null },
+  phone: string,
+  text: string,
+  imageUrl: string | null | undefined,
+): Promise<Pick<TenantSupportWhatsappResult, "replies" | "action"> | null> {
+  const tenantId = conversation.tenant_id;
+  if (!tenantId) return null;
+
+  const analysis = await analyzeWhatsappIntentWithAi({
+    tenantName: contact.tenant?.name ?? tenantId,
+    contactKind: contact.contact_kind,
+    permissions: contact.permissions,
+    text,
+    hasImage: Boolean(imageUrl),
+  });
+  if (!analysis || analysis.confidence < AI_INTENT_CONFIDENCE_THRESHOLD) return null;
+
+  await insertAction(svc, {
+    conversationId: conversation.id,
+    tenantId,
+    phone,
+    inputText: text,
+    actionType: `ai_intent_${analysis.intent}`,
+    status: "proposed",
+    parameters: analysis,
+  });
+
+  if (analysis.intent === "pause_new_orders_today") {
+    if (!hasPermission(contact, "manageSettings")) {
+      return {
+        replies: ["Questo numero non ha l'autorizzazione per gestire le impostazioni del locale via WhatsApp. Chiedi al superadmin di abilitarla."],
+        action: { type: "pause_new_orders_today", status: "rejected" },
+      };
+    }
+    const settings = await upsertAiPhoneSettings(tenantId, {
+      quickSettings: { acceptNewOrders: buildPauseUntil("day-end") },
+    });
+    await insertAction(svc, {
+      conversationId: conversation.id,
+      tenantId,
+      phone,
+      inputText: text,
+      actionType: "pause_new_orders_today",
+      status: "applied",
+      parameters: { routedBy: "openai", confidence: analysis.confidence },
+      result: { disabledUntil: settings.quickSettings.acceptNewOrders.disabledUntil },
+    });
+    return {
+      replies: [analysis.reply || "Fatto: ho sospeso i nuovi ordini WhatsApp e chiamate IA fino a fine giornata."],
+      action: { type: "pause_new_orders_today", status: "applied" },
+    };
+  }
+
+  if (analysis.intent === "resume_new_orders") {
+    if (!hasPermission(contact, "manageSettings")) {
+      return {
+        replies: ["Questo numero non ha l'autorizzazione per gestire le impostazioni del locale via WhatsApp. Chiedi al superadmin di abilitarla."],
+        action: { type: "resume_new_orders", status: "rejected" },
+      };
+    }
+    await upsertAiPhoneSettings(tenantId, {
+      quickSettings: { acceptNewOrders: buildPauseUntil("accept") },
+    });
+    await insertAction(svc, {
+      conversationId: conversation.id,
+      tenantId,
+      phone,
+      inputText: text,
+      actionType: "resume_new_orders",
+      status: "applied",
+      parameters: { routedBy: "openai", confidence: analysis.confidence },
+    });
+    return {
+      replies: [analysis.reply || "Fatto: i nuovi ordini WhatsApp e chiamate IA sono di nuovo attivi."],
+      action: { type: "resume_new_orders", status: "applied" },
+    };
+  }
+
+  if (analysis.intent === "import_menu_photo") {
+    if (!imageUrl) {
+      return {
+        replies: [analysis.reply || "Mandami una foto del menu o degli appunti insieme alla richiesta di caricare le voci."],
+        action: { type: "import_menu_photo", status: "proposed" },
+      };
+    }
+    if (!hasPermission(contact, "manageMenu")) {
+      return {
+        replies: ["Questo numero non ha l'autorizzazione per modificare il menu via WhatsApp. Chiedi al superadmin di abilitarla."],
+        action: { type: "import_menu_photo", status: "rejected" },
+      };
+    }
+    return proposeMenuPhotoImport(svc, {
+      conversation,
+      tenantId,
+      phone,
+      text,
+      imageUrl,
+    });
+  }
+
+  if (analysis.intent === "open_support_ticket") {
+    if (!hasPermission(contact, "createSupportTickets")) {
+      return {
+        replies: ["Questo numero non ha l'autorizzazione per aprire ticket via WhatsApp. Chiedi al superadmin di abilitarla."],
+        action: { type: "open_support_ticket", status: "rejected" },
+      };
+    }
+    const fallbackDraft = ticketDraftFromText(text);
+    const ticketId = await createSupportTicket(svc, {
+      tenantId,
+      phone,
+      subject: analysis.ticketSubject || fallbackDraft.subject,
+      body: analysis.ticketBody || fallbackDraft.body,
+      conversationId: conversation.id,
+    });
+    await patchConversation(svc, conversation.id, { state: "ticket_opened" });
+    await insertAction(svc, {
+      conversationId: conversation.id,
+      tenantId,
+      phone,
+      inputText: text,
+      actionType: "open_support_ticket",
+      status: "applied",
+      parameters: { routedBy: "openai", confidence: analysis.confidence },
+      result: { ticketId },
+    });
+    return {
+      replies: [analysis.reply || `Ho aperto un ticket per l'assistenza. Riferimento: ${ticketId}.`],
+      action: { type: "open_support_ticket", status: "applied" },
+    };
+  }
+
+  if (analysis.intent === "answer" && analysis.reply) {
+    return {
+      replies: [analysis.reply],
+      action: { type: "ai_answer", status: "applied" },
+    };
+  }
+
+  return null;
+}
+
 async function handleIntent(
   svc: Db,
   conversation: ConversationRow,
-  contact: ContactRow,
+  contact: ContactRow & { tenant: TenantRow | null },
   phone: string,
   text: string,
   imageUrl?: string | null,
@@ -563,26 +911,13 @@ async function handleIntent(
         action: { type: "import_menu_photo", status: "rejected" },
       };
     }
-    const imageDataUrl = await remoteImageToDataUrl(imageUrl);
-    const result = await extractMenuItemsFromImage({
-      imageDataUrl,
-      locale: "it",
-      context: "Import menu da WhatsApp support tenant",
-    });
-    await insertAction(svc, {
-      conversationId: conversation.id,
+    return proposeMenuPhotoImport(svc, {
+      conversation,
       tenantId,
       phone,
-      inputText: text,
-      actionType: "import_menu_photo",
-      status: "proposed",
-      parameters: { imageProvided: true },
-      result,
+      text,
+      imageUrl,
     });
-    return {
-      replies: [formatImportPreview(result)],
-      action: { type: "import_menu_photo", status: "proposed" },
-    };
   }
 
   if (IMPORT_MENU_PHOTO_RE.test(text) && !imageUrl) {
@@ -760,6 +1095,9 @@ async function handleIntent(
       action: { type: "unsupported_destructive_request", status: "unsupported" },
     };
   }
+
+  const aiHandled = await handleAiRoutedIntent(svc, conversation, contact, phone, text, imageUrl);
+  if (aiHandled) return aiHandled;
 
   if (!hasPermission(contact, "createSupportTickets")) {
     await insertAction(svc, {
