@@ -40,9 +40,22 @@ export function juniorFoodHoursWeek(): DaySchedule[] {
   ];
 }
 
+export function nomSushiHoursWeek(): DaySchedule[] {
+  return [
+    { label: "Lunedì", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:30"] },
+    { label: "Martedì", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:30"] },
+    { label: "Mercoledì", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:30"] },
+    { label: "Giovedì", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:30"] },
+    { label: "Venerdì", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:30"] },
+    { label: "Sabato", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:30"] },
+    { label: "Domenica", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:30"] },
+  ];
+}
+
 export function defaultHoursWeekForTenant(tenantId: string): DaySchedule[] {
   if (tenantId === "doca") return docaHoursWeek();
   if (tenantId === "junior-food") return juniorFoodHoursWeek();
+  if (tenantId === "nom-sushi") return nomSushiHoursWeek();
   return defaultHoursWeek();
 }
 

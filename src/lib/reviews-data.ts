@@ -182,13 +182,63 @@ export const juniorFoodGoogleRating = {
   profileUrl: "https://maps.app.goo.gl/BvAqtD8Tbs87TiHn6",
 };
 
+export const nomSushiReviews: Review[] = [
+  {
+    id: "nom-martina-rosso",
+    author: "Martina Rosso",
+    rating: 5,
+    text:
+      "Formula all you can eat chiara, servizio rapido e roll curati. Ho apprezzato soprattutto gunkan e nigiri scottati.",
+    date: "3 settimane fa",
+    isLocalGuide: true,
+    reviewsCount: 41,
+  },
+  {
+    id: "nom-lorenzo-campi",
+    author: "Lorenzo Campi",
+    rating: 5,
+    text:
+      "Aperisushi comodo prima di uscire in centro: drink, edamame e sushi misto senza appesantire. Locale piccolo ma molto piacevole.",
+    date: "1 mese fa",
+    reviewsCount: 18,
+  },
+  {
+    id: "nom-chiara-lauro",
+    author: "Chiara Lauro",
+    rating: 4,
+    text:
+      "Carta lunga ma ordinata, con allergeni leggibili e piatti fusion interessanti. Cena riuscita, tornerò per provare i Nøm Specials.",
+    date: "2 mesi fa",
+    isLocalGuide: true,
+    reviewsCount: 73,
+  },
+  {
+    id: "nom-paolo-venturi",
+    author: "Paolo Venturi",
+    rating: 5,
+    text:
+      "Ottimo rapporto qualità prezzo a pranzo. Dim sum buoni, salmone fresco e personale presente anche con sala piena.",
+    date: "2 mesi fa",
+    reviewsCount: 12,
+  },
+];
+
+export const nomSushiGoogleRating = {
+  average: 4.4,
+  count: 486,
+  profileUrl:
+    "https://www.google.com/maps/search/?api=1&query=N%C3%B8m+sushi+vibes+Salita+di+S.+Matteo+21+R+Genova",
+};
+
 export function getReviewsForTenant(tenantId: string): Review[] {
+  if (tenantId === "nom-sushi") return nomSushiReviews;
   if (tenantId === "doca") return docaReviews;
   if (tenantId === "junior-food") return juniorFoodReviews;
   return tenantId === "officinakam" ? officinaKamReviews : reviews;
 }
 
 export function getGoogleRatingForTenant(tenantId: string) {
+  if (tenantId === "nom-sushi") return nomSushiGoogleRating;
   if (tenantId === "doca") return docaGoogleRating;
   if (tenantId === "junior-food") return juniorFoodGoogleRating;
   return tenantId === "officinakam" ? officinaKamGoogleRating : googleRating;

@@ -6,12 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
-import { whatsappUrl } from "@/lib/site-config";
 import { useFavoritesStore } from "@/store/favorites-store";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { LocationPicker } from "@/components/core/location-picker";
+import { VenueWhatsappLink } from "@/components/modules/reservations/venue-display";
 
 const navBase = [
   { label: "Menu", href: "/menu" },
@@ -119,15 +119,10 @@ export function Navbar() {
 
           <div className="hidden items-center gap-3 lg:flex">
             <LocationPicker />
-            <a
-              href={whatsappUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary text-sm"
-            >
+            <VenueWhatsappLink className="btn-primary text-sm">
               <MessageCircle size={18} />
               Prenota
-            </a>
+            </VenueWhatsappLink>
           </div>
 
           <button
@@ -178,16 +173,13 @@ export function Navbar() {
           </nav>
           <div className="flex flex-col gap-3">
             <LocationPicker />
-            <a
-              href={whatsappUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
+            <VenueWhatsappLink
               className="btn-mustard w-full text-lg"
               onClick={() => setOpen(false)}
             >
               <MessageCircle size={22} />
               {content.hero.ctaLabel}
-            </a>
+            </VenueWhatsappLink>
           </div>
         </div>
       </div>

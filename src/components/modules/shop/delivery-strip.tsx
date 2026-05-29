@@ -9,7 +9,7 @@ export function DeliveryStrip() {
   const content = getTenantContent(tenant.id);
 
   return (
-    <section className="bg-pork-ink text-pork-cream">
+    <section className="tenant-delivery-strip bg-pork-ink text-pork-cream">
       <div className="container-wide flex flex-col items-center justify-between gap-6 py-8 md:flex-row">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-pork-mustard text-pork-ink">

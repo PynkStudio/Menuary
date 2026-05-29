@@ -35,6 +35,9 @@ function usePublicHours(): DaySchedule[] {
   if (tenant.id === "junior-food") {
     return defaultHoursWeekForTenant(tenant.id);
   }
+  if (tenant.id === "nom-sushi") {
+    return defaultHoursWeekForTenant(tenant.id);
+  }
   if (tenant.id === "officinakam") {
     return [
       { label: "Lunedì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },
@@ -249,10 +252,12 @@ export function VenuePhoneDisplay({ className }: { className?: string }) {
 export function VenueWhatsappLink({
   message,
   className,
+  onClick,
   children,
 }: {
   message?: string;
   className?: string;
+  onClick?: () => void;
   children: ReactNode;
 }) {
   const { waHref } = useVenueContactPhone();
@@ -262,6 +267,7 @@ export function VenueWhatsappLink({
       target="_blank"
       rel="noopener noreferrer"
       className={className}
+      onClick={onClick}
     >
       {children}
     </a>

@@ -24,7 +24,7 @@ export function PriceSticker({
     <span
       style={{ transform: `rotate(${rotate}deg)` }}
       className={cn(
-        "inline-flex items-center justify-center rounded-md px-3 py-1.5 font-impact text-lg leading-none shadow-md shadow-black/10",
+        "price-sticker inline-flex items-center justify-center rounded-md px-3 py-1.5 font-impact text-lg leading-none shadow-md shadow-black/10",
         styles[variant],
         className
       )}

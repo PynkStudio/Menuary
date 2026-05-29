@@ -18,7 +18,7 @@ export function FindUs() {
   const isDoca = tenant.id === "doca";
 
   return (
-    <section className="bg-pork-cream py-20 md:py-28">
+    <section className="tenant-find-us bg-pork-cream py-20 md:py-28">
       <div className="container-wide">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
           <div>

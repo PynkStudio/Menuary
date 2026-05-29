@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Nøm sushi vibes</title>
+  <desc id="desc">Logo Nøm sushi con ensō verde salvia, riso e accento salmone.</desc>
+  <defs>
+    <linearGradient id="enso" x1="94" y1="80" x2="418" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D7D0B8"/>
+      <stop offset=".44" stop-color="#7A8F62"/>
+      <stop offset="1" stop-color="#233A30"/>
+    </linearGradient>
+    <linearGradient id="salmon" x1="176" y1="204" x2="338" y2="290" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F3A083"/>
+      <stop offset="1" stop-color="#C15E4D"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#F8F4E9"/>
+  <path d="M409 166c-29-55-92-83-153-70-72 15-122 79-116 151 5 72 65 128 137 130 51 1 96-24 123-64" fill="none" stroke="url(#enso)" stroke-width="32" stroke-linecap="round"/>
+  <path d="M379 326c20-31 24-68 11-101" fill="none" stroke="#233A30" stroke-width="14" stroke-linecap="round" opacity=".7"/>
+  <ellipse cx="256" cy="249" rx="100" ry="59" fill="#232720" transform="rotate(-8 256 249)"/>
+  <ellipse cx="256" cy="249" rx="74" ry="40" fill="#FBF8F0" transform="rotate(-8 256 249)"/>
+  <path d="M183 238c22-27 54-44 89-48 28-3 56 3 80 16-8 35-40 65-82 72-34 5-67-4-87-40Z" fill="url(#salmon)"/>
+  <path d="M191 236c43 11 91 4 141-20" fill="none" stroke="#F8E0CC" stroke-width="7" stroke-linecap="round" opacity=".72"/>
+  <path d="M219 286c24 21 58 28 91 18" fill="none" stroke="#7A8F62" stroke-width="10" stroke-linecap="round"/>
+  <text x="256" y="420" text-anchor="middle" fill="#233A30" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="700">Nøm</text>
+  <text x="256" y="455" text-anchor="middle" fill="#7B4B3F" font-family="Arial, sans-serif" font-size="18" font-weight="700">SUSHI VIBES</text>
+</svg>

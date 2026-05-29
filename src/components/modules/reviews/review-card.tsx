@@ -7,7 +7,7 @@ export function ReviewCard({ review, variant = "light" }: { review: Review; vari
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col gap-4 rounded-3xl p-6 shadow-lg",
+        "tenant-review-card relative flex h-full flex-col gap-4 rounded-3xl p-6 shadow-lg",
         isDark
           ? "bg-pork-brick text-pork-cream ring-1 ring-white/5"
           : "bg-white text-pork-ink ring-1 ring-pork-ink/5"

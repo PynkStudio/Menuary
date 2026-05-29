@@ -1,77 +1,292 @@
+@layer base {
+  html[data-tenant="nom-sushi"] {
+    --font-display: var(--font-menuary-display), Fraunces, Georgia, serif;
+    --font-impact: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+    --font-body: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+  }
+
+  html[data-tenant="nom-sushi"] body {
+    background-color: #f8f4e9;
+    background-image:
+      radial-gradient(circle at 16% 8%, rgba(126, 151, 104, 0.18), transparent 30%),
+      radial-gradient(circle at 92% 18%, rgba(203, 107, 88, 0.14), transparent 26%),
+      linear-gradient(180deg, #fbf8ef 0%, #f0eadc 100%);
+    color: #172820;
+  }
+}
+
 @layer components {
   [data-tenant-surface="nom-sushi"] {
-    /* Palette ispirata al logo acquerello: verde foglia + bruno scuro su crema/avorio */
-    --nom-green: #5b7a3a;
-    --nom-green-dark: #3f5527;
-    --nom-green-soft: #7ba05b;
-    --nom-ink: #2a1f18;
-    --nom-ink-soft: #5a4a3e;
-    --nom-cream: #fbf8f1;
-    --nom-paper: #f4ede0;
-    --nom-line: rgba(42, 31, 24, 0.14);
-    --nom-gold: #c9a961;
-    --nom-accent: #c56b5c;
+    --nom-ink: #172820;
+    --nom-ink-deep: #101a16;
+    --nom-ink-soft: #5e6a60;
+    --nom-rice: #f8f4e9;
+    --nom-paper: #fffdf7;
+    --nom-matcha: #6d8460;
+    --nom-matcha-dark: #263f34;
+    --nom-salmon: #c86d58;
+    --nom-salmon-dark: #8f473b;
+    --nom-ginger: #d8bc80;
+    --nom-nori: #101a16;
+    --nom-line: rgba(23, 40, 32, 0.13);
+    --nom-shadow: rgba(12, 31, 23, 0.18);
 
-    background: var(--nom-cream);
+    position: relative;
+    isolation: isolate;
+    background-color: var(--nom-rice);
+    background-image:
+      linear-gradient(90deg, rgba(23, 40, 32, 0.035) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(23, 40, 32, 0.025) 1px, transparent 1px),
+      radial-gradient(circle at 10% 14%, rgba(109, 132, 96, 0.16), transparent 30%),
+      radial-gradient(circle at 90% 2%, rgba(200, 109, 88, 0.12), transparent 26%);
+    background-size: 38px 38px, 38px 38px, auto, auto;
     color: var(--nom-ink);
-    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", sans-serif;
+    font-family: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+    font-feature-settings: "ss01" 1, "tnum" 1;
   }
 
   [data-tenant-surface="nom-sushi"] h1,
   [data-tenant-surface="nom-sushi"] h2,
   [data-tenant-surface="nom-sushi"] h3,
+  [data-tenant-surface="nom-sushi"] .headline,
   [data-tenant-surface="nom-sushi"] .nom-display {
-    font-family: "Cormorant Garamond", "Playfair Display", Georgia, ui-serif, serif;
-    font-style: italic;
-    font-weight: 500;
-    letter-spacing: -0.005em;
     color: var(--nom-ink);
-  }
-
-  [data-tenant-surface="nom-sushi"] .nom-eyebrow {
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: var(--font-menuary-display), Fraunces, Georgia, serif;
     font-style: normal;
+    font-weight: 680;
+    letter-spacing: 0;
+    line-height: 0.96;
+    text-transform: none;
+    text-wrap: balance;
+  }
+
+  [data-tenant-surface="nom-sushi"] .impact-title {
+    font-family: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+    font-style: normal;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1;
+    text-transform: none;
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-hero,
+  [data-tenant-surface="nom-sushi"] .tenant-menu-hero,
+  [data-tenant-surface="nom-sushi"] .tenant-reviews-page-hero,
+  [data-tenant-surface="nom-sushi"] footer,
+  [data-tenant-surface="nom-sushi"] .tenant-delivery-strip {
+    background-color: var(--nom-nori);
+    background-image:
+      radial-gradient(circle at 18% 8%, rgba(216, 188, 128, 0.2), transparent 30%),
+      radial-gradient(circle at 82% 24%, rgba(200, 109, 88, 0.18), transparent 30%),
+      linear-gradient(145deg, #101a16 0%, #182820 48%, #0f1714 100%);
+    color: var(--nom-rice);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-hero::before,
+  [data-tenant-surface="nom-sushi"] .tenant-menu-hero::before,
+  [data-tenant-surface="nom-sushi"] footer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(90deg, rgba(248, 244, 233, 0.035) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(248, 244, 233, 0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.6;
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-hero .headline,
+  [data-tenant-surface="nom-sushi"] .tenant-menu-hero .headline,
+  [data-tenant-surface="nom-sushi"] .tenant-reviews-page-hero .headline,
+  [data-tenant-surface="nom-sushi"] footer .impact-title {
+    color: var(--nom-rice);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-hero .text-pork-mustard,
+  [data-tenant-surface="nom-sushi"] .tenant-menu-hero .text-pork-mustard,
+  [data-tenant-surface="nom-sushi"] .tenant-reviews-page-hero .text-pork-mustard,
+  [data-tenant-surface="nom-sushi"] footer .text-pork-mustard {
+    color: var(--nom-ginger);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-hero-eyebrow,
+  [data-tenant-surface="nom-sushi"] .chip,
+  [data-tenant-surface="nom-sushi"] .chip-red,
+  [data-tenant-surface="nom-sushi"] .chip-mustard,
+  [data-tenant-surface="nom-sushi"] .chip-green,
+  [data-tenant-surface="nom-sushi"] .chip-pink,
+  [data-tenant-surface="nom-sushi"] .tenant-section-header > span {
+    border: 1px solid rgba(109, 132, 96, 0.25);
+    border-left: 4px solid var(--nom-salmon);
+    border-radius: 6px;
+    background: rgba(255, 253, 247, 0.82);
+    box-shadow: none;
+    color: var(--nom-matcha-dark);
+    font-family: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
     font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--nom-green-dark);
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
-  [data-tenant-surface="nom-sushi"] .nom-surface-paper {
-    background: var(--nom-paper);
-    border: 1px solid var(--nom-line);
-    border-radius: 18px;
+  [data-tenant-surface="nom-sushi"] .tenant-hero-eyebrow,
+  [data-tenant-surface="nom-sushi"] .tenant-menu-hero .chip-mustard,
+  [data-tenant-surface="nom-sushi"] .tenant-reviews-page-hero .chip-mustard {
+    background: rgba(248, 244, 233, 0.1);
+    color: var(--nom-ginger);
+    border-color: rgba(216, 188, 128, 0.35);
+    border-left-color: var(--nom-salmon);
   }
 
+  [data-tenant-surface="nom-sushi"] .btn-primary,
+  [data-tenant-surface="nom-sushi"] .btn-mustard,
   [data-tenant-surface="nom-sushi"] .nom-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    padding: 0.7rem 1.5rem;
-    border-radius: 999px;
-    background: var(--nom-green);
-    color: var(--nom-cream);
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    transition: background 200ms ease, transform 200ms ease;
+    border: 1px solid rgba(200, 109, 88, 0.34);
+    border-radius: 8px;
+    background: var(--nom-salmon);
+    box-shadow: 0 14px 32px rgba(115, 49, 39, 0.22);
+    color: #fffdf7;
+    font-family: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+    transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
   }
 
+  [data-tenant-surface="nom-sushi"] .btn-primary:hover,
+  [data-tenant-surface="nom-sushi"] .btn-mustard:hover,
   [data-tenant-surface="nom-sushi"] .nom-button:hover {
-    background: var(--nom-green-dark);
+    background: var(--nom-salmon-dark);
+    border-color: rgba(255, 253, 247, 0.2);
+    box-shadow: 0 18px 38px rgba(115, 49, 39, 0.28);
     transform: translateY(-1px);
   }
 
-  [data-tenant-surface="nom-sushi"] .nom-button-ghost {
-    background: transparent;
-    color: var(--nom-ink);
-    border: 1px solid var(--nom-ink);
+  [data-tenant-surface="nom-sushi"] .btn-primary:active,
+  [data-tenant-surface="nom-sushi"] .btn-mustard:active,
+  [data-tenant-surface="nom-sushi"] .btn-ghost:active,
+  [data-tenant-surface="nom-sushi"] .btn-ghost-light:active {
+    transform: translateY(1px);
   }
 
+  [data-tenant-surface="nom-sushi"] .btn-primary:focus-visible,
+  [data-tenant-surface="nom-sushi"] .btn-mustard:focus-visible,
+  [data-tenant-surface="nom-sushi"] .btn-ghost:focus-visible,
+  [data-tenant-surface="nom-sushi"] .btn-ghost-light:focus-visible {
+    outline: 2px solid var(--nom-ginger);
+    outline-offset: 4px;
+  }
+
+  [data-tenant-surface="nom-sushi"] .btn-ghost,
+  [data-tenant-surface="nom-sushi"] .btn-ghost-light,
+  [data-tenant-surface="nom-sushi"] .nom-button-ghost {
+    border: 1px solid rgba(23, 40, 32, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.76);
+    color: var(--nom-ink);
+    font-family: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+    transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-hero .btn-ghost-light,
+  [data-tenant-surface="nom-sushi"] .tenant-menu-hero .btn-ghost-light,
+  [data-tenant-surface="nom-sushi"] footer .btn-ghost-light {
+    border-color: rgba(248, 244, 233, 0.26);
+    background: rgba(248, 244, 233, 0.08);
+    color: var(--nom-rice);
+  }
+
+  [data-tenant-surface="nom-sushi"] .btn-ghost:hover,
+  [data-tenant-surface="nom-sushi"] .btn-ghost-light:hover,
   [data-tenant-surface="nom-sushi"] .nom-button-ghost:hover {
-    background: var(--nom-ink);
-    color: var(--nom-cream);
+    border-color: var(--nom-matcha-dark);
+    background: var(--nom-matcha-dark);
+    color: var(--nom-rice);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-souls,
+  [data-tenant-surface="nom-sushi"] .tenant-signature,
+  [data-tenant-surface="nom-sushi"] .tenant-find-us,
+  [data-tenant-surface="nom-sushi"] .tenant-reviews-page-list {
+    background-color: transparent;
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-reviews {
+    background:
+      linear-gradient(180deg, rgba(109, 132, 96, 0.12), rgba(248, 244, 233, 0.4)),
+      var(--nom-rice);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-souls a.group,
+  [data-tenant-surface="nom-sushi"] .tenant-signature a.group {
+    border-radius: 8px;
+    box-shadow: 0 18px 42px var(--nom-shadow);
+    outline: 1px solid rgba(255, 253, 247, 0.28);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-souls a.group:hover,
+  [data-tenant-surface="nom-sushi"] .tenant-signature a.group:hover {
+    box-shadow: 0 24px 58px rgba(12, 31, 23, 0.24);
+  }
+
+  [data-tenant-surface="nom-sushi"] .price-sticker {
+    border: 1px solid rgba(216, 188, 128, 0.55);
+    border-radius: 6px;
+    background: rgba(255, 253, 247, 0.92);
+    box-shadow: 0 10px 24px rgba(12, 31, 23, 0.16);
+    color: var(--nom-salmon-dark);
+    font-family: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: none;
+    transform: none !important;
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-review-card {
+    border: 1px solid var(--nom-line);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.9);
+    box-shadow: 0 14px 32px rgba(12, 31, 23, 0.08);
+    color: var(--nom-ink);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-review-card .fill-pork-mustard,
+  [data-tenant-surface="nom-sushi"] .tenant-review-card .text-pork-mustard {
+    color: var(--nom-ginger);
+    fill: var(--nom-ginger);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-find-us .rounded-full,
+  [data-tenant-surface="nom-sushi"] .tenant-delivery-strip .rounded-full,
+  [data-tenant-surface="nom-sushi"] footer .rounded-full {
+    border-radius: 8px;
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-find-us .bg-pork-red {
+    background: var(--nom-salmon);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-find-us .bg-pork-mustard {
+    background: var(--nom-ginger);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-find-us .bg-pork-ink {
+    background: var(--nom-matcha-dark);
+  }
+
+  [data-tenant-surface="nom-sushi"] .tenant-find-us iframe {
+    filter: saturate(0.72) sepia(0.08) contrast(0.95);
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-surface-paper {
+    border: 1px solid var(--nom-line);
+    border-radius: 8px;
+    background: var(--nom-paper);
   }
 
   [data-tenant-surface="nom-sushi"] .nom-divider {
@@ -84,13 +299,14 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.3rem 0.7rem;
-    border-radius: 999px;
-    background: rgba(91, 122, 58, 0.12);
-    color: var(--nom-green-dark);
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgba(109, 132, 96, 0.28);
+    border-radius: 6px;
+    background: rgba(109, 132, 96, 0.12);
+    color: var(--nom-matcha-dark);
     font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
   }
 }

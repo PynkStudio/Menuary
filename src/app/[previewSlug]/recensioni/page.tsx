@@ -29,6 +29,7 @@ export default async function PreviewTenantReviews({
   const reviews = getReviewsForTenant(tenant.id);
   const rating = getGoogleRatingForTenant(tenant.id);
   const isDoca = tenant.id === "doca";
+  const isNomSushi = tenant.id === "nom-sushi";
 
   return (
     <TenantProvider tenant={tenant}>
@@ -37,11 +38,11 @@ export default async function PreviewTenantReviews({
         data-tenant-surface={tenant.id}
         style={themeVars as CSSProperties}
       >
-        <section className="bg-pork-ink pt-28 pb-14 text-pork-cream md:pt-36 md:pb-20">
+        <section className="tenant-reviews-page-hero bg-pork-ink pt-28 pb-14 text-pork-cream md:pt-36 md:pb-20">
           <div className="container-wide grid gap-10 lg:grid-cols-[1.3fr_0.8fr] lg:items-end">
             <div>
               <span className="chip-mustard">
-                {isDoca ? "Rassegna e Google" : "Recensioni"}
+                {isDoca ? "Rassegna e Google" : isNomSushi ? "Recensioni Nøm" : "Recensioni"}
               </span>
               <h1 className="headline mt-4 text-5xl text-balance sm:text-7xl lg:text-8xl">
                 {isDoca ? (
@@ -49,6 +50,12 @@ export default async function PreviewTenantReviews({
                     Doca,
                     <br />
                     <span className="text-pork-mustard">detta da fuori.</span>
+                  </>
+                ) : isNomSushi ? (
+                  <>
+                    Genova assaggia,
+                    <br />
+                    <span className="text-pork-mustard">Nøm risponde.</span>
                   </>
                 ) : (
                   <>
@@ -61,6 +68,8 @@ export default async function PreviewTenantReviews({
               <p className="mt-6 max-w-2xl text-lg text-pork-cream/75">
                 {isDoca
                   ? "Citazioni da fonti pubbliche e link diretto alla scheda Google Maps del locale."
+                  : isNomSushi
+                    ? "Voci su formula AYCE, aperisushi, servizio e carta fusion nel centro storico di Genova."
                   : "Niente filtri, nessuna recensione scelta a tavolino. Il voto pubblico è quello visibile su Google."}
               </p>
             </div>
@@ -102,7 +111,7 @@ export default async function PreviewTenantReviews({
           </div>
         </section>
 
-        <section className="bg-pork-cream py-16 md:py-24">
+        <section className="tenant-reviews-page-list bg-pork-cream py-16 md:py-24">
           <div className="container-wide grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {reviews.map((review) => (
               <ReviewCard key={review.id} review={review} variant="light" />

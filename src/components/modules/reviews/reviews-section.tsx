@@ -23,13 +23,14 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
       ? `/${tenant.previewSlug}/recensioni`
       : "/recensioni";
   const isDoca = tenant.id === "doca";
+  const isNomSushi = tenant.id === "nom-sushi";
 
   return (
     <section
       className={
         dark
-          ? "bg-pork-ink py-20 text-pork-cream md:py-28"
-          : "bg-pork-peach/40 py-20 md:py-28"
+          ? "tenant-reviews bg-pork-ink py-20 text-pork-cream md:py-28"
+          : "tenant-reviews bg-pork-peach/40 py-20 md:py-28"
       }
     >
       <div className="container-wide">
@@ -42,7 +43,7 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
                   : "inline-flex items-center gap-2 rounded-full bg-pork-ink px-3 py-1 text-xs font-black uppercase tracking-widest text-pork-mustard"
               }
             >
-              {isDoca ? "Dicono di Doca" : "Lo dicono loro"}
+              {isDoca ? "Dicono di Doca" : isNomSushi ? "Dicono di Nøm" : "Lo dicono loro"}
             </span>
             <h2 className={`headline mt-4 text-5xl sm:text-6xl lg:text-7xl text-balance ${dark ? "text-pork-cream" : "text-pork-ink"}`}>
               {isDoca ? (
@@ -50,6 +51,12 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
                   Una bakery
                   <br />
                   <span className={dark ? "text-pork-mustard" : "text-pork-red"}>gia cercata.</span>
+                </>
+              ) : isNomSushi ? (
+                <>
+                  Roll ordinati,
+                  <br />
+                  <span className={dark ? "text-pork-mustard" : "text-pork-red"}>tavoli pieni.</span>
                 </>
               ) : (
                 <>

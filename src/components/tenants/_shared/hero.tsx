@@ -122,7 +122,7 @@ export function Hero() {
   }
 
   return (
-    <section className="relative isolate overflow-hidden bg-pork-ink pb-20 pt-[calc(7rem+env(safe-area-inset-top))] text-pork-cream md:pb-28 md:pt-[calc(9rem+env(safe-area-inset-top))]">
+    <section className="tenant-hero relative isolate overflow-hidden bg-pork-ink pb-20 pt-[calc(7rem+env(safe-area-inset-top))] text-pork-cream md:pb-28 md:pt-[calc(9rem+env(safe-area-inset-top))]">
       <div className="absolute inset-0 -z-10">
         <Image
           src={content.hero.backdrop}
@@ -146,12 +146,13 @@ export function Hero() {
             }
             className="max-w-3xl"
           >
-            <span className="inline-flex items-center gap-2 rounded-full bg-pork-mustard/15 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-pork-mustard ring-1 ring-pork-mustard/30">
+            <span className="tenant-hero-eyebrow inline-flex items-center gap-2 rounded-full bg-pork-mustard/15 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-pork-mustard ring-1 ring-pork-mustard/30">
               {content.hero.eyebrow}
             </span>
             <h1 className="headline mt-6 text-6xl text-pork-cream sm:text-7xl md:text-8xl lg:text-[9rem]">
               {content.hero.titleLead}
               <br />
+              {" "}
               <span className="text-pork-mustard">{content.hero.titleAccent}</span>
             </h1>
             <p className="mt-6 max-w-xl text-xl text-pork-cream/85 text-pretty">

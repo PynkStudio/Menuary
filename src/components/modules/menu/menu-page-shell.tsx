@@ -13,12 +13,13 @@ export function MenuPageShell() {
   const tenant = useTenant();
   const isFaak = tenant.id === "faak";
   const isDoca = tenant.id === "doca";
+  const isNomSushi = tenant.id === "nom-sushi";
 
   return (
     <>
       {!isDoca && <MenuaryAuthHintGate />}
       {!isDoca && <PersonalizedMenuHint />}
-      <section className="relative bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
+      <section className="tenant-menu-hero relative bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
         <div className="container-wide">
           <span className="chip-mustard">Menu</span>
           <h1 className="headline mt-4 text-6xl sm:text-7xl lg:text-8xl text-balance">
@@ -33,6 +34,13 @@ export function MenuPageShell() {
                 Mattina, giorno,
                 <br />
                 <span className="text-pork-mustard">sera e ribellione naturale.</span>
+              </>
+            ) : isNomSushi ? (
+              <>
+                Roll, nigiri,
+                <br />
+                {" "}
+                <span className="text-pork-mustard">aperisushi e cena.</span>
               </>
             ) : (
               <>
@@ -53,6 +61,11 @@ export function MenuPageShell() {
             <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">
               Il menu demo cambia lessico, categorie e contenuti: non e il listino
               Be Pork con un altro logo, ma una struttura costruita sul ritmo FAAK.
+            </p>
+          ) : isNomSushi ? (
+            <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">
+              Pranzo AYCE, aperisushi e cena hanno sezioni e disponibilità diverse.
+              Qui il cliente trova subito crudi, dim sum, gunkan, roll e formule Nøm.
             </p>
           ) : (
             <MenuIntroParagraph />

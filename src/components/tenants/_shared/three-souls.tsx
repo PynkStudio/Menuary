@@ -19,7 +19,7 @@ export function ThreeSouls() {
     (mode === "preview" || isPathPreview) && tenant.previewSlug ? `/${tenant.previewSlug}` : "";
 
   return (
-    <section id="tre-anime" className="relative scroll-mt-24 bg-pork-cream py-20 md:py-28">
+    <section id="tre-anime" className="tenant-souls relative scroll-mt-24 bg-pork-cream py-20 md:py-28">
       <div className="container-wide">
         <div className="mb-12 flex flex-col items-center text-center">
           <span className="chip-red">{content.soulsIntro.eyebrow}</span>

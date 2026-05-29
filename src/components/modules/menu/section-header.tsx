@@ -18,7 +18,7 @@ export function SectionHeader({
   return (
     <header
       className={cn(
-        "flex flex-col gap-3",
+        "tenant-section-header flex flex-col gap-3",
         align === "center" ? "items-center text-center" : "items-start",
         className
       )}

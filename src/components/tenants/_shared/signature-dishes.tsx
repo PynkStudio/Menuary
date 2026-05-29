@@ -22,7 +22,7 @@ export function SignatureDishes() {
   const menuHref = `${previewPrefix}/menu`;
 
   return (
-    <section className="bg-pork-cream py-20 md:py-28">
+    <section className="tenant-signature bg-pork-cream py-20 md:py-28">
       <div className="container-wide">
         <SectionHeader
           eyebrow={content.dishesIntro.eyebrow}

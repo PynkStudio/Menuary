@@ -940,10 +940,25 @@ const docaContent: TenantContent = {
   },
 };
 
+const nomSushiImages = {
+  hero:
+    "https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=1800&q=85",
+  rolls:
+    "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1200&q=85",
+  platter:
+    "https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&w=1200&q=85",
+  nigiri:
+    "https://images.unsplash.com/photo-1563612116625-3012372fccce?auto=format&fit=crop&w=1200&q=85",
+  darkNigiri:
+    "https://images.unsplash.com/photo-1615361200141-f45040f367be?auto=format&fit=crop&w=1200&q=85",
+  board:
+    "https://images.unsplash.com/photo-1607301405390-d831c242f59b?auto=format&fit=crop&w=1200&q=85",
+};
+
 const nomSushiContent: TenantContent = {
-  logoSrc: "/nom-sushi/logo.png",
+  logoSrc: "/nom-sushi/logo.svg",
   logoAlt: "Nøm sushi vibes",
-  showcaseLogoSrc: "/nom-sushi/logo.png",
+  showcaseLogoSrc: "/nom-sushi/logo.svg",
   showcaseLogoAlt: "Nøm sushi vibes — All you can eat & sushi fusion · Genova",
   description:
     "Nøm sushi vibes — sushi fusion all you can eat nel centro storico di Genova. Pranzo 18,90 €, cena 32,90 €, aperisushi e una carta che mescola dimsum, tacos, gunkan e uramaki di firma.",
@@ -974,20 +989,20 @@ const nomSushiContent: TenantContent = {
       "https://www.google.com/maps?q=N%C3%B8m+sushi+vibes+Salita+di+S.+Matteo+21+R+Genova&output=embed",
   },
   hero: {
-    eyebrow: "Sushi fusion · All you can eat · Genova centro storico",
-    titleLead: "Sushi che",
-    titleAccent: "vibra.",
+    eyebrow: "Sushi fusion · Aperisushi · Genova centro storico",
+    titleLead: "Nigiri, roll",
+    titleAccent: "e vibrazioni.",
     body:
-      "All you can eat dal pranzo alla cena, tra dimsum a vapore, tacos di riso, gunkan di firma e uramaki che giocano con frutta, brace e tartare. A due passi da Piazza De Ferrari.",
-    backdrop: "/nom-sushi/hero.jpg",
+      "Una carta fusion in tre ritmi: pranzo all you can eat, aperisushi serale e cena estesa con dim sum, tacos di riso, gunkan e uramaki di firma. A due passi da Piazza De Ferrari.",
+    backdrop: nomSushiImages.hero,
     ctaLabel: "Prenota un tavolo",
   },
   soulsIntro: {
-    eyebrow: "Tre fasce, una cucina sola",
-    titleLead: "Pranzo veloce, cena lunga,",
-    titleAccent: "aperisushi nel mezzo.",
+    eyebrow: "Tre rituali",
+    titleLead: "Pranzo, aperitivo,",
+    titleAccent: "cena lunga.",
     body:
-      "La carta vive in tre tempi: pranzo all you can eat 12–15, aperisushi 19–21 e cena estesa 19–23:30. Stessa cucina, fasce d'orario diverse — il menu si apre e si chiude da sé.",
+      "Nøm cambia passo durante la giornata: AYCE 12–15, aperisushi 19–21 e cena 19–23:30. Il menu segue questi tempi e mette in primo piano le sezioni giuste.",
   },
   souls: [
     {
@@ -996,7 +1011,7 @@ const nomSushiContent: TenantContent = {
       title: "All you can eat 18,90",
       desc: "Antipasti, dim sum, nigiri, gunkan, futomaki e uramaki. Ridotto bambini 12,90.",
       href: "/menu#pranzo",
-      image: "/nom-sushi/dishes/uramaki.jpg",
+      image: nomSushiImages.rolls,
     },
     {
       id: "aperisushi",
@@ -1004,7 +1019,7 @@ const nomSushiContent: TenantContent = {
       title: "Aperisushi 13,90",
       desc: "Un drink più combo cucina o combo sushi. Edamame, gunkan, nigiri, hosomaki, uramaki.",
       href: "/menu#aperisushi",
-      image: "/nom-sushi/dishes/nigiri.jpg",
+      image: nomSushiImages.platter,
     },
     {
       id: "cena",
@@ -1012,20 +1027,20 @@ const nomSushiContent: TenantContent = {
       title: "Cena AYCE 32,90",
       desc: "Carta estesa con tartare, carpacci, sashimi, Nøm Crudité e Nøm Specials. Festivi/weekend 20,90 a pranzo.",
       href: "/menu#cena",
-      image: "/nom-sushi/dishes/sashimi.jpg",
+      image: nomSushiImages.darkNigiri,
     },
   ],
   dishesIntro: {
-    eyebrow: "Highlights della carta",
-    title: "Quello per cui torni da Nøm.",
-    subtitle: "Sei piatti che attraversano dim sum, gunkan, tacos e uramaki di firma.",
+    eyebrow: "Nøm signatures",
+    title: "Roll, crudi e piccoli colpi di fuoco.",
+    subtitle: "Una selezione costruita su riso, alghe, salmone, ponzu e contrasti fusion.",
   },
   dishes: [
     {
       name: "Nigiri Nøm",
       desc: "Misto scottato con salmone, branzino e tonno, parmigiano, cipolla croccante e spicy mayo.",
       price: "AYCE",
-      image: "/nom-sushi/dishes/nigiri-nom.jpg",
+      image: nomSushiImages.nigiri,
       variant: "red",
       href: "/menu#nigiri",
     },
@@ -1033,23 +1048,23 @@ const nomSushiContent: TenantContent = {
       name: "Black Salmon",
       desc: "Rotolo di riso venere con salmone, philadelphia, avocado, granella di pistacchio e teriyaki.",
       price: "AYCE",
-      image: "/nom-sushi/dishes/black-salmon.jpg",
+      image: nomSushiImages.rolls,
       variant: "mustard",
       href: "/menu#uramaki",
     },
     {
-      name: "Mo' Manzo",
-      desc: "Hamburger con manzo fritto, iceberg, salsa teriyaki e maionese. Firma Nøm Specials.",
+      name: "Tacos salmone",
+      desc: "Tacos fritto con riso, salmone crudo, avocado, philadelphia e teriyaki. Solo a cena.",
       price: "AYCE",
-      image: "/nom-sushi/dishes/mo-manzo.jpg",
+      image: nomSushiImages.board,
       variant: "pink",
-      href: "/menu#nom-specials",
+      href: "/menu#tacos",
     },
     {
       name: "Tartare Branzino",
       desc: "Tartare di branzino e avocado in salsa ponzu. Solo a cena.",
       price: "AYCE cena",
-      image: "/nom-sushi/dishes/tartare.jpg",
+      image: nomSushiImages.darkNigiri,
       variant: "green",
       href: "/menu#tartare",
     },
@@ -1057,7 +1072,7 @@ const nomSushiContent: TenantContent = {
       name: "Polpo Flambé",
       desc: "Polpo cotto con purea di patate, parmigiano e barbecue della casa. Nøm Crudité.",
       price: "AYCE cena",
-      image: "/nom-sushi/dishes/polpo.jpg",
+      image: nomSushiImages.platter,
       variant: "red",
       href: "/menu#nom-crudite",
     },
@@ -1065,7 +1080,7 @@ const nomSushiContent: TenantContent = {
       name: "Gunkan Fruit",
       desc: "Riso avvolto da salmone scottato, philadelphia, frutta e teriyaki.",
       price: "AYCE cena",
-      image: "/nom-sushi/dishes/gunkan-fruit.jpg",
+      image: nomSushiImages.board,
       variant: "mustard",
       href: "/menu#gunkan",
     },
@@ -1084,8 +1099,8 @@ const nomSushiContent: TenantContent = {
       "Nøm sushi vibes — Salita di S. Matteo 21 R, Genova. Pranzo 12:00–15:00, cena 19:00–23:30, aperisushi 19:00–21:00. hello@nomsushi.it",
   },
   delivery: {
-    title: "Asporto in arrivo",
-    body: "Stiamo attivando l'ordine d'asporto da menu Nøm. Per ora prenota un tavolo o scrivici su Instagram.",
+    title: "Prenota, poi passa da noi",
+    body: "Per ora si prenota il tavolo o si scrive su Instagram. L'asporto digitale arriverà più avanti.",
     partners: [],
   },
 };

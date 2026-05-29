@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 import { useTenant } from "@/components/core/tenant-provider";
 import { mergeTenantOverrides, useTenantAdminStore } from "@/store/tenant-admin-store";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
@@ -18,12 +19,16 @@ export function SlabbbyScriptGate({ skipInPreview = false }: { skipInPreview?: b
   const overrides = useTenantAdminStore((state) => state.overrides[tenant.id]);
   const hydrated = useHydrated();
   const mode = usePlatformMode();
+  const pathname = usePathname();
 
   if (mode === "gestione-bizery") return null;
 
   // In preview mode il layout ha risolto il tenant dall'host (default del verticale),
   // non dallo slug. Lasciamo che la pagina di preview gestisca il proprio gate.
-  if (skipInPreview && (mode === "preview" || mode === "preview-bizery")) return null;
+  const isPathPreview =
+    !!tenant.previewSlug &&
+    (pathname === `/${tenant.previewSlug}` || pathname?.startsWith(`/${tenant.previewSlug}/`));
+  if (skipInPreview && (mode === "preview" || mode === "preview-bizery" || isPathPreview)) return null;
 
   // Prima della reidratazione usiamo il valore statico del registry per coerenza con l'SSR.
   // Dopo la reidratazione applichiamo le override dell'admin.
