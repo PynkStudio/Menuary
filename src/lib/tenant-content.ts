@@ -940,6 +940,156 @@ const docaContent: TenantContent = {
   },
 };
 
+const nomSushiContent: TenantContent = {
+  logoSrc: "/nom-sushi/logo.png",
+  logoAlt: "Nøm sushi vibes",
+  showcaseLogoSrc: "/nom-sushi/logo.png",
+  showcaseLogoAlt: "Nøm sushi vibes — All you can eat & sushi fusion · Genova",
+  description:
+    "Nøm sushi vibes — sushi fusion all you can eat nel centro storico di Genova. Pranzo 18,90 €, cena 32,90 €, aperisushi e una carta che mescola dimsum, tacos, gunkan e uramaki di firma.",
+  url: "https://nomsushivibes.wordpress.com/",
+  social: {
+    instagram: "https://instagram.com/nom_sushi/",
+    facebook: "https://www.facebook.com/nomsushi",
+    instagramLabel: "Instagram Nøm sushi",
+    facebookLabel: "Facebook Nøm sushi",
+  },
+  contact: {
+    phone: "010 8992422",
+    whatsappDigits: "390108992422",
+    whatsappMessage:
+      "Ciao Nøm! Vorrei prenotare un tavolo. Siamo in ___ persone, per il giorno ___ alle ___. Grazie!",
+  },
+  address: {
+    street: "Salita di S. Matteo, 21 R",
+    zip: "16123",
+    city: "Genova",
+    province: "GE",
+    full: "Salita di S. Matteo, 21 R - 16123 Genova (GE)",
+  },
+  maps: {
+    searchUrl:
+      "https://www.google.com/maps/search/?api=1&query=N%C3%B8m+sushi+vibes+Salita+di+S.+Matteo+21+Genova",
+    embedUrl:
+      "https://www.google.com/maps?q=N%C3%B8m+sushi+vibes+Salita+di+S.+Matteo+21+R+Genova&output=embed",
+  },
+  hero: {
+    eyebrow: "Sushi fusion · All you can eat · Genova centro storico",
+    titleLead: "Sushi che",
+    titleAccent: "vibra.",
+    body:
+      "All you can eat dal pranzo alla cena, tra dimsum a vapore, tacos di riso, gunkan di firma e uramaki che giocano con frutta, brace e tartare. A due passi da Piazza De Ferrari.",
+    backdrop: "/nom-sushi/hero.jpg",
+    ctaLabel: "Prenota un tavolo",
+  },
+  soulsIntro: {
+    eyebrow: "Tre fasce, una cucina sola",
+    titleLead: "Pranzo veloce, cena lunga,",
+    titleAccent: "aperisushi nel mezzo.",
+    body:
+      "La carta vive in tre tempi: pranzo all you can eat 12–15, aperisushi 19–21 e cena estesa 19–23:30. Stessa cucina, fasce d'orario diverse — il menu si apre e si chiude da sé.",
+  },
+  souls: [
+    {
+      id: "pranzo",
+      kicker: "Pranzo · 12:00–15:00",
+      title: "All you can eat 18,90",
+      desc: "Antipasti, dim sum, nigiri, gunkan, futomaki e uramaki. Ridotto bambini 12,90.",
+      href: "/menu#pranzo",
+      image: "/nom-sushi/dishes/uramaki.jpg",
+    },
+    {
+      id: "aperisushi",
+      kicker: "Aperisushi · 19:00–21:00",
+      title: "Aperisushi 13,90",
+      desc: "Un drink più combo cucina o combo sushi. Edamame, gunkan, nigiri, hosomaki, uramaki.",
+      href: "/menu#aperisushi",
+      image: "/nom-sushi/dishes/nigiri.jpg",
+    },
+    {
+      id: "cena",
+      kicker: "Cena · 19:00–23:30",
+      title: "Cena AYCE 32,90",
+      desc: "Carta estesa con tartare, carpacci, sashimi, Nøm Crudité e Nøm Specials. Festivi/weekend 20,90 a pranzo.",
+      href: "/menu#cena",
+      image: "/nom-sushi/dishes/sashimi.jpg",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "Highlights della carta",
+    title: "Quello per cui torni da Nøm.",
+    subtitle: "Sei piatti che attraversano dim sum, gunkan, tacos e uramaki di firma.",
+  },
+  dishes: [
+    {
+      name: "Nigiri Nøm",
+      desc: "Misto scottato con salmone, branzino e tonno, parmigiano, cipolla croccante e spicy mayo.",
+      price: "AYCE",
+      image: "/nom-sushi/dishes/nigiri-nom.jpg",
+      variant: "red",
+      href: "/menu#nigiri",
+    },
+    {
+      name: "Black Salmon",
+      desc: "Rotolo di riso venere con salmone, philadelphia, avocado, granella di pistacchio e teriyaki.",
+      price: "AYCE",
+      image: "/nom-sushi/dishes/black-salmon.jpg",
+      variant: "mustard",
+      href: "/menu#uramaki",
+    },
+    {
+      name: "Mo' Manzo",
+      desc: "Hamburger con manzo fritto, iceberg, salsa teriyaki e maionese. Firma Nøm Specials.",
+      price: "AYCE",
+      image: "/nom-sushi/dishes/mo-manzo.jpg",
+      variant: "pink",
+      href: "/menu#nom-specials",
+    },
+    {
+      name: "Tartare Branzino",
+      desc: "Tartare di branzino e avocado in salsa ponzu. Solo a cena.",
+      price: "AYCE cena",
+      image: "/nom-sushi/dishes/tartare.jpg",
+      variant: "green",
+      href: "/menu#tartare",
+    },
+    {
+      name: "Polpo Flambé",
+      desc: "Polpo cotto con purea di patate, parmigiano e barbecue della casa. Nøm Crudité.",
+      price: "AYCE cena",
+      image: "/nom-sushi/dishes/polpo.jpg",
+      variant: "red",
+      href: "/menu#nom-crudite",
+    },
+    {
+      name: "Gunkan Fruit",
+      desc: "Riso avvolto da salmone scottato, philadelphia, frutta e teriyaki.",
+      price: "AYCE cena",
+      image: "/nom-sushi/dishes/gunkan-fruit.jpg",
+      variant: "mustard",
+      href: "/menu#gunkan",
+    },
+  ],
+  findUs: {
+    eyebrow: "Come trovarci",
+    titleLead: "Salita di S. Matteo,",
+    titleAccent: "Genova centro storico.",
+    body:
+      "Pranzo 12:00–15:00, cena 19:00–23:30. A due passi da Piazza De Ferrari e dal Palazzo Ducale, nei caruggi tra San Matteo e San Lorenzo.",
+    mapTitle: "Mappa Nøm sushi — Salita di S. Matteo 21, Genova",
+  },
+  footer: {
+    tagline: "Sushi che vibra. All you can eat a Genova.",
+    body:
+      "Nøm sushi vibes — Salita di S. Matteo 21 R, Genova. Pranzo 12:00–15:00, cena 19:00–23:30, aperisushi 19:00–21:00. hello@nomsushi.it",
+  },
+  delivery: {
+    title: "Asporto in arrivo",
+    body: "Stiamo attivando l'ordine d'asporto da menu Nøm. Per ora prenota un tavolo o scrivici su Instagram.",
+    partners: [],
+  },
+};
+
 const juniorFoodContent: TenantContent = {
   logoSrc: "/favicons/junior-food/icon.svg",
   logoAlt: "Junior Food",
@@ -969,8 +1119,7 @@ const juniorFoodContent: TenantContent = {
     full: "Via Gianbattista Moroni, 24127 Bergamo BG",
   },
   maps: {
-    searchUrl:
-      "https://www.google.com/maps/search/?api=1&query=Junior+Food+Via+Gianbattista+Moroni+Bergamo",
+    searchUrl: "https://maps.app.goo.gl/BvAqtD8Tbs87TiHn6",
     embedUrl:
       "https://www.google.com/maps?q=Via+Gianbattista+Moroni+Bergamo&output=embed",
   },
@@ -1092,6 +1241,7 @@ export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "studioaranzulla") return studioaranzullaContent;
   if (tenantId === "doca") return docaContent;
   if (tenantId === "junior-food") return juniorFoodContent;
+  if (tenantId === "nom-sushi") return nomSushiContent;
   // Ogni tenant deve avere il proprio blocco content sopra.
   // Fallback per verticale: non restituire mai contenuto BePork per tenant services.
   const profile = findTenantById(tenantId);

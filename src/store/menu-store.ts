@@ -152,6 +152,34 @@ function seedMenuLists(
     ];
   }
 
+  if (tenantId === "junior-food") {
+    return [
+      {
+        ...fullMenu,
+        name: "Menu Junior Food",
+        description: "Tutti i piatti della carta boliviana e sudamericana.",
+      },
+      {
+        id: "jf-pranzo",
+        name: "Pranzo",
+        description: "Piatti completi disponibili nel servizio diurno.",
+        order: 1,
+        enabled: true,
+        itemIds: allItemIds(items),
+        visibility: { startTime: "12:00", endTime: "15:00" },
+      },
+      {
+        id: "jf-cena",
+        name: "Cena",
+        description: "Carta completa per la cena e il dopo cena.",
+        order: 2,
+        enabled: true,
+        itemIds: allItemIds(items),
+        visibility: { startTime: "18:30", endTime: "02:00" },
+      },
+    ];
+  }
+
   return [
     fullMenu,
     {
@@ -229,6 +257,7 @@ export interface MenuState {
   tables: Table[];
   sessions: TableSession[];
 
+  updateCategory: (id: string, patch: Partial<AdminMenuCategory>) => void;
   updateItem: (id: string, patch: Partial<AdminMenuItem>) => void;
   setAvailable: (id: string, available: boolean) => void;
   updatePrice: (id: string, price: PriceFormat) => void;
@@ -309,6 +338,13 @@ export const useMenuStore = create<MenuState>()(
   persist(
     (set) => ({
       ...buildInitial(),
+
+      updateCategory: (id, patch) =>
+        set((s) => ({
+          categories: s.categories.map((cat) =>
+            cat.id === id ? { ...cat, ...patch } : cat,
+          ),
+        })),
 
       updateItem: (id, patch) =>
         set((s) => ({
@@ -680,8 +716,10 @@ export const useMenuStore = create<MenuState>()(
         if (!persisted || typeof persisted !== "object") return current;
         const p = persisted as Partial<MenuState>;
         const currentTenantId = p.currentTenantId ?? current.currentTenantId;
+        const seeded = buildInitial(currentTenantId);
         return {
           ...current,
+          ...seeded,
           currentTenantId,
           orders: p.orders ?? current.orders,
           lastOrderSeq: p.lastOrderSeq ?? current.lastOrderSeq,

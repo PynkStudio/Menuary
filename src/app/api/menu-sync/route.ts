@@ -54,7 +54,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<Me
   ] = await Promise.all([
     supabase
       .from("menu_categories")
-      .select("id,code,title,subtitle,description,position")
+      .select("id,code,title,subtitle,description,position,availability")
       .eq("tenant_id", tenantId)
       .order("position"),
     supabase
@@ -111,6 +111,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<Me
       title: cat.title,
       subtitle: cat.subtitle ?? undefined,
       description: cat.description ?? undefined,
+      availability: (cat.availability ?? undefined) as AdminMenuCategory["availability"],
       order: cat.position,
     })),
     items: (items ?? []).map<AdminMenuItem>((item) => ({
@@ -175,6 +176,7 @@ async function writeBundle(supabase: SupabaseAdmin, tenantId: string, bundle: Me
     title: cat.title,
     subtitle: cat.subtitle ?? null,
     description: cat.description ?? null,
+    availability: (cat.availability ?? null) as never,
     position: cat.order,
     updated_at: new Date().toISOString(),
   }));
@@ -357,8 +359,20 @@ async function ensureSeeded(supabase: SupabaseAdmin, tenantId: string) {
     .from("menu_categories")
     .select("id", { count: "exact", head: true })
     .eq("tenant_id", tenantId);
-  if ((count ?? 0) > 0) return;
-  await writeBundle(supabase, tenantId, seedBundle(tenantId));
+  if ((count ?? 0) === 0) {
+    await writeBundle(supabase, tenantId, seedBundle(tenantId));
+    return;
+  }
+
+  if (tenantId === "junior-food") {
+    const { data } = await supabase
+      .from("menu_items")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("code", "jf-chicharron-de-cerdo")
+      .maybeSingle();
+    if (!data) await writeBundle(supabase, tenantId, seedBundle(tenantId));
+  }
 }
 
 async function ensureTenantExists(supabase: SupabaseAdmin, tenantId: string) {
@@ -368,27 +382,29 @@ async function ensureTenantExists(supabase: SupabaseAdmin, tenantId: string) {
 }
 
 function seedBundle(tenantId: string): MenuSyncBundle {
+  const libritechSeed = [{
+    id: "libri",
+    title: "Catalogo libri",
+    subtitle: "Tech, startup e impresa",
+    description: "Libri e guide selezionati per founder, team tech e crescita.",
+    items: libritechCatalog.map((book) => ({
+      id: book.id,
+      name: book.name,
+      description: book.description,
+      price: { kind: "single", value: book.price } as PriceFormat,
+      image: book.imageUrl,
+    })),
+  }] as const;
   const seedCategories =
     tenantId === "libritech"
-      ? [{
-          id: "libri",
-          title: "Catalogo libri",
-          subtitle: "Tech, startup e impresa",
-          description: "Libri e guide selezionati per founder, team tech e crescita.",
-          items: libritechCatalog.map((book) => ({
-            id: book.id,
-            name: book.name,
-            description: book.description,
-            price: { kind: "single", value: book.price } as PriceFormat,
-            image: book.imageUrl,
-          })),
-        }]
+      ? (libritechSeed as unknown as ReturnType<typeof getSeedMenuForTenant>)
       : getSeedMenuForTenant(tenantId);
   const categories = seedCategories.map<AdminMenuCategory>((cat, order) => ({
     id: cat.id,
     title: cat.title,
     subtitle: cat.subtitle,
     description: cat.description,
+    availability: cat.availability,
     order,
   }));
   const items = seedCategories.flatMap<AdminMenuItem>((cat) =>

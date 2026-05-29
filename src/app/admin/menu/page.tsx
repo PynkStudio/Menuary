@@ -19,7 +19,7 @@ import {
   selectItemsByCategory,
   selectMenuListsOrdered,
 } from "@/store/menu-store";
-import type { AdminMenuItem, AdminMenuList, MenuDay } from "@/lib/types";
+import type { AdminMenuItem, AdminMenuList, MenuAvailability, MenuDay } from "@/lib/types";
 import { formatEuro, minPrice } from "@/lib/price-utils";
 import { ItemEditor } from "@/components/admin/item-editor";
 import { ExtraListsManager } from "@/components/admin/extra-lists-manager";
@@ -77,6 +77,7 @@ export default function AdminMenuPage() {
   const menuListsRaw = useMenuStore((s) => s.menuLists);
   const tables = useMenuStore((s) => s.tables);
   const setAvailable = useMenuStore((s) => s.setAvailable);
+  const updateCategory = useMenuStore((s) => s.updateCategory);
   const addItem = useMenuStore((s) => s.addItem);
   const addMenuList = useMenuStore((s) => s.addMenuList);
   const updateMenuList = useMenuStore((s) => s.updateMenuList);
@@ -648,6 +649,10 @@ export default function AdminMenuPage() {
                   </button>
                 </div>
               </div>
+              <CategoryAvailabilityEditor
+                value={cat.availability}
+                onChange={(next) => updateCategory(cat.id, { availability: next })}
+              />
 
               <ul className="grid gap-2 md:grid-cols-2">
                 {catItems.length === 0 ? (
@@ -743,6 +748,67 @@ export default function AdminMenuPage() {
 
       {editing && (
         <ItemEditor item={editing} onClose={() => setEditingId(null)} />
+      )}
+    </div>
+  );
+}
+
+function CategoryAvailabilityEditor({
+  value,
+  onChange,
+}: {
+  value: MenuAvailability | undefined;
+  onChange: (next: MenuAvailability | undefined) => void;
+}) {
+  const enabled = !!value;
+  const av = value ?? { label: "", from: "12:00", to: "15:00" };
+
+  return (
+    <div className="rounded-xl border border-pork-ink/10 bg-pork-cream/40 px-3 py-2 text-xs text-pork-ink/80">
+      <label className="flex items-center gap-2 font-bold uppercase tracking-wider">
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) =>
+            onChange(
+              e.target.checked
+                ? { label: av.label || "Servita", from: av.from, to: av.to }
+                : undefined,
+            )
+          }
+          className="h-3.5 w-3.5 accent-pork-red"
+        />
+        Fascia oraria
+        {enabled && (
+          <span className="ml-2 font-normal normal-case text-pork-ink/55">
+            ({av.label || "—"} {av.from}–{av.to})
+          </span>
+        )}
+      </label>
+      {enabled && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={av.label}
+            onChange={(e) => onChange({ ...av, label: e.target.value })}
+            placeholder="Es. Pranzo, Cena, Aperisushi"
+            className="w-40 rounded-md border border-pork-ink/15 bg-white px-2 py-1 text-xs"
+          />
+          <span className="text-pork-ink/40">dalle</span>
+          <input
+            type="time"
+            value={av.from}
+            onChange={(e) => onChange({ ...av, from: e.target.value })}
+            className="rounded-md border border-pork-ink/15 bg-white px-2 py-1 text-xs"
+          />
+          <span className="text-pork-ink/40">alle</span>
+          <input
+            type="time"
+            value={av.to}
+            onChange={(e) => onChange({ ...av, to: e.target.value })}
+            className="rounded-md border border-pork-ink/15 bg-white px-2 py-1 text-xs"
+          />
+        </div>
       )}
     </div>
   );

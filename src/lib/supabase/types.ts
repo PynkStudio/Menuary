@@ -1016,6 +1016,7 @@ export type Database = {
       }
       menu_categories: {
         Row: {
+          availability: Json | null
           code: string
           created_at: string
           description: string | null
@@ -1028,6 +1029,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          availability?: Json | null
           code: string
           created_at?: string
           description?: string | null
@@ -1040,6 +1042,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          availability?: Json | null
           code?: string
           created_at?: string
           description?: string | null

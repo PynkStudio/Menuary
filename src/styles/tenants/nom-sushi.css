@@ -1,0 +1,96 @@
+@layer components {
+  [data-tenant-surface="nom-sushi"] {
+    /* Palette ispirata al logo acquerello: verde foglia + bruno scuro su crema/avorio */
+    --nom-green: #5b7a3a;
+    --nom-green-dark: #3f5527;
+    --nom-green-soft: #7ba05b;
+    --nom-ink: #2a1f18;
+    --nom-ink-soft: #5a4a3e;
+    --nom-cream: #fbf8f1;
+    --nom-paper: #f4ede0;
+    --nom-line: rgba(42, 31, 24, 0.14);
+    --nom-gold: #c9a961;
+    --nom-accent: #c56b5c;
+
+    background: var(--nom-cream);
+    color: var(--nom-ink);
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+  }
+
+  [data-tenant-surface="nom-sushi"] h1,
+  [data-tenant-surface="nom-sushi"] h2,
+  [data-tenant-surface="nom-sushi"] h3,
+  [data-tenant-surface="nom-sushi"] .nom-display {
+    font-family: "Cormorant Garamond", "Playfair Display", Georgia, ui-serif, serif;
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--nom-ink);
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-eyebrow {
+    font-family: "Inter", system-ui, sans-serif;
+    font-style: normal;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--nom-green-dark);
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-surface-paper {
+    background: var(--nom-paper);
+    border: 1px solid var(--nom-line);
+    border-radius: 18px;
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1.5rem;
+    border-radius: 999px;
+    background: var(--nom-green);
+    color: var(--nom-cream);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: background 200ms ease, transform 200ms ease;
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-button:hover {
+    background: var(--nom-green-dark);
+    transform: translateY(-1px);
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-button-ghost {
+    background: transparent;
+    color: var(--nom-ink);
+    border: 1px solid var(--nom-ink);
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-button-ghost:hover {
+    background: var(--nom-ink);
+    color: var(--nom-cream);
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--nom-line);
+  }
+
+  [data-tenant-surface="nom-sushi"] .nom-availability-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(91, 122, 58, 0.12);
+    color: var(--nom-green-dark);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+}

@@ -49,6 +49,8 @@ export async function generateMetadata({
             ? "Doca - Pane, Caffè, Saudade · Milano"
             : tenant.id === "junior-food"
               ? "Junior Food - Cucina sudamericana a Bergamo"
+            : tenant.id === "nom-sushi"
+              ? "Nøm sushi vibes - All you can eat sushi fusion a Genova"
             : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {

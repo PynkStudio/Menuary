@@ -1,4 +1,5 @@
 import { menu as beporkMenu, type MenuCategory, type PriceFormat } from "./menu-data";
+import type { MenuAllergen } from "./allergens";
 
 const s = (value: number): PriceFormat => ({ kind: "single", value });
 
@@ -237,13 +238,24 @@ export const docaMenu: MenuCategory[] = [
   },
 ];
 
+const jfPiqueImage =
+  "https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=900&q=85";
+const jfGrillImage =
+  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=85";
+const jfSoupImage =
+  "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85";
+const jfRiceImage =
+  "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=85";
+const jfTableImage =
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=85";
+
 export const juniorFoodMenu: MenuCategory[] = [
   {
-    id: "specialita",
-    title: "Specialita sudamericane",
-    subtitle: "I piatti piu amati della casa",
+    id: "piatti-boliviani",
+    title: "Piatti boliviani",
+    subtitle: "Dalla carta Junior Food",
     description:
-      "Ricette latine sostanziose, cotture lente e ingredienti freschi per pranzo e cena.",
+      "Piatti completi, sapori decisi e porzioni generose ispirate alle ricette boliviane.",
     items: [
       {
         id: "jf-pique-macho",
@@ -251,61 +263,229 @@ export const juniorFoodMenu: MenuCategory[] = [
         description: "Manzo, salsicce, cipolla, pomodori, paprika, uova e patate.",
         price: s(15),
         tags: ["firma"],
-        image:
-          "https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=900&q=85",
+        image: jfPiqueImage,
       },
       {
-        id: "jf-planchita",
-        name: "Planchita",
-        description: "Costata di manzo, cipolla, pomodoro, salsiccia, pollo, uova e manioca.",
-        price: s(25),
-        tags: ["firma"],
-        image:
-          "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=85",
+        id: "jf-sopa-de-mani",
+        name: "Sopa de Mani",
+        description: "Arachidi, manzo e patate.",
+        price: s(6),
+        tags: ["novita"],
+        image: jfSoupImage,
+      },
+      {
+        id: "jf-tripitas",
+        name: "Tripitas",
+        description: "Trippa di manzo, granello, manioca e patate.",
+        price: s(10),
+        image: jfTableImage,
+      },
+      {
+        id: "jf-lomo-salteado",
+        name: "Lomo Salteado",
+        description: "Manzo, riso, patate e piselli.",
+        price: s(13),
+        image: jfGrillImage,
       },
       {
         id: "jf-fideos-uchu",
         name: "Fideos Uchu",
-        description: "Manzo, pasta, cipolla, pomodori, piselli, uova, fagioli, carota e patate.",
+        description:
+          "Pasta, manzo, piselli, patate, fagioli, pomodoro, cipolla e carota.",
         price: s(10),
-        image:
-          "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85",
+        image: jfSoupImage,
+      },
+      {
+        id: "jf-planchita",
+        name: "Planchita",
+        description:
+          "Costata di manzo, cipolla, pomodoro, salsiccia, pollo, uovo e manioca.",
+        price: s(25),
+        tags: ["firma"],
+        image: jfGrillImage,
       },
       {
         id: "jf-silpancho",
         name: "Silpancho",
-        description: "Manzo impanato, riso, cipolla, pomodori, paprika, uova e patatine fritte.",
+        description:
+          "Manzo impanato, riso, cipolla, pomodoro, patatine fritte e paprika.",
         price: s(12),
-        image:
-          "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=85",
+        image: jfRiceImage,
+      },
+      {
+        id: "jf-fricase",
+        name: "Fricase",
+        description: "Carne di maiale, chuño, mais e pangrattato.",
+        price: s(12),
+        tags: ["piccante"],
+        image: jfTableImage,
+      },
+      {
+        id: "jf-majadito",
+        name: "Majadito",
+        description: "Riso, uovo, banana e pollo.",
+        price: s(8),
+        image: jfRiceImage,
+      },
+      {
+        id: "jf-picante-mixto",
+        name: "Picante Mixto",
+        description:
+          "Pollo, riso, lingua di manzo, pomodoro, cipolla, patate, piselli e salsa piccante.",
+        price: s(13),
+        tags: ["piccante"],
+        image: jfTableImage,
       },
     ],
   },
   {
-    id: "bevande",
-    title: "Cocktail e freschezza",
-    subtitle: "Agrumi, spezie e frutta tropicale",
+    id: "carni-e-pollo",
+    title: "Carni e pollo",
+    subtitle: "Griglia, broaster e spiedo",
     description:
-      "Drink pensati per accompagnare i piatti piu intensi della carta.",
+      "Tagli alla griglia, pollo croccante e ricette sostanziose per pranzo e cena.",
     items: [
       {
-        id: "jf-caipirinha",
-        name: "Caipirinha",
-        description: "Lime pestato, cachaca e zucchero. Fresca, secca, diretta.",
-        price: s(8),
-        tags: ["novita"],
+        id: "jf-caldo-mixto",
+        name: "Caldo Mixto",
+        description:
+          "Criadillas di toro, coscia di manzo, pollo, agnello, uova, riso, patate, carote, rape ed erba cipollina.",
+        price: s(12),
+        image: jfSoupImage,
       },
       {
-        id: "jf-margarita-tropical",
-        name: "Margarita tropical",
-        description: "Tequila, lime, frutta esotica e bordo salato.",
-        price: s(9),
+        id: "jf-rinon-al-jugo",
+        name: "Riñón al Jugo",
+        description: "Rene, patate e cipolla.",
+        price: s(10),
+        image: jfTableImage,
       },
       {
-        id: "jf-agua-fresca",
-        name: "Agua fresca",
-        description: "Frutta stagionale, acqua, ghiaccio e una nota agrumata.",
-        price: s(5),
+        id: "jf-pollo-canasta",
+        name: "Pollo a la Canasta",
+        description: "Pollo, banana e patate fritte.",
+        price: s(13),
+        image: jfGrillImage,
+      },
+      {
+        id: "jf-pollo-broaster",
+        name: "Pollo a la Broaster",
+        description: "Pollo, riso, banana e patate fritte.",
+        price: s(13),
+        image: jfPiqueImage,
+      },
+      {
+        id: "jf-chuleta-de-res",
+        name: "Chuleta de Res",
+        description: "Chuleta di manzo, riso e patate fritte.",
+        price: s(13),
+        image: jfGrillImage,
+      },
+      {
+        id: "jf-lapping",
+        name: "Lapping",
+        description: "Carne, cipolla, fagioli, patate, formaggio e pomodoro.",
+        price: s(15),
+        tags: ["firma"],
+        image: jfTableImage,
+      },
+      {
+        id: "jf-pollo-al-spiedo",
+        name: "Pollo al Spiedo",
+        description: "Pollo spiedato, riso, tagliatelle, banana e patatine.",
+        price: s(15),
+        image: jfRiceImage,
+      },
+    ],
+  },
+  {
+    id: "tradizionali-della-casa",
+    title: "Tradizionali della casa",
+    subtitle: "Piatti andini e specialita complete",
+    description:
+      "Ricette di carne, pollo e mais con ingredienti tipici della cucina sudamericana.",
+    items: [
+      {
+        id: "jf-charque",
+        name: "Charque",
+        description:
+          "Carne di manzo essiccata, patate, mais bollito, uova, cipolle e pomodoro.",
+        price: s(13),
+        image: jfRiceImage,
+      },
+      {
+        id: "jf-sajta-de-pollo",
+        name: "Sajta de Pollo",
+        description:
+          "Pollo, patate grandi, peperone giallo, piselli, cipolle, arachidi, pomodoro e locoto.",
+        price: s(10),
+        tags: ["piccante"],
+        image: jfPiqueImage,
+      },
+      {
+        id: "jf-pampaku-mixto",
+        name: "Pampaku Mixto",
+        description: "Maiale, agnello, pollo, anatra e cipolle.",
+        price: s(18),
+        tags: ["firma"],
+        image: jfGrillImage,
+      },
+      {
+        id: "jf-chuleta-de-cerdo",
+        name: "Chuleta de Cerdo",
+        description: "Braciola di maiale, riso, lattuga e carota.",
+        price: s(10),
+        image: jfGrillImage,
+      },
+      {
+        id: "jf-anticucho",
+        name: "Anticucho",
+        description:
+          "Cuore di manzo, patate bollite, mais e salsa chili con cipolla cinese.",
+        price: s(10),
+        tags: ["piccante"],
+        image: jfTableImage,
+      },
+      {
+        id: "jf-aji-de-lengua",
+        name: "Ají de Lengua",
+        description:
+          "Lingua di manzo, riso, pomodoro, cipolla, sedano, salsa piccante e patate.",
+        price: s(10),
+        tags: ["piccante"],
+        image: jfSoupImage,
+      },
+      {
+        id: "jf-chajchu",
+        name: "Chajchu",
+        description:
+          "Lombo di pollo, cipolla, carota, patate, chuños, uova, formaggio e locoto.",
+        price: s(10),
+        tags: ["piccante"],
+        image: jfPiqueImage,
+      },
+      {
+        id: "jf-picana",
+        name: "Picaña",
+        description: "Carne di manzo premium, patate fritte e riso.",
+        price: s(15),
+        tags: ["firma"],
+        image: jfGrillImage,
+      },
+      {
+        id: "jf-escabeche",
+        name: "Escabeche",
+        description: "Suino marinato, pomodoro, cipolla, carote e mais.",
+        price: s(15),
+        image: jfRiceImage,
+      },
+      {
+        id: "jf-chicharron-de-cerdo",
+        name: "Chicharrón de Cerdo",
+        description: "Maiale, patate, choclo, mote morado e chorizo.",
+        price: s(15),
+        tags: ["firma"],
+        image: jfTableImage,
       },
     ],
   },
@@ -425,10 +605,360 @@ export const officinaKamMenu: MenuCategory[] = [
   },
 ];
 
+// ── Nøm sushi vibes (Genova) ────────────────────────────────────────────────
+// Fasce orarie: pranzo 12:00–15:00 (AYCE 18,90 €), aperisushi 19:00–21:00,
+// cena 19:00–23:30 (AYCE 32,90 €). Le categorie qui sotto usano `availability`
+// con label e finestra oraria; le categorie con set di items diverso fra pranzo
+// e cena vengono separate (es. NØM CRUDITÉ è solo cena).
+const NOM_DINNER = { label: "Cena", from: "19:00", to: "23:30" } as const;
+const NOM_ALL = { label: "Pranzo & cena", from: "12:00", to: "23:30" } as const;
+
+const a = (...keys: MenuAllergen[]) => keys; // shortcut leggibilità
+
+export const nomSushiMenu: MenuCategory[] = [
+  // ── FORMULE AYCE ───────────────────────────────────────────────────────────
+  {
+    id: "formule-ayce",
+    title: "All You Can Eat",
+    subtitle: "Le formule Nøm",
+    description:
+      "Tutti i piatti delle categorie sotto sono inclusi nella formula AYCE attiva nella tua fascia oraria. Limiti di scelta indicati per categoria.",
+    items: [
+      {
+        id: "ayce-pranzo",
+        name: "Pranzo AYCE",
+        description: "Lunedì–Venerdì 12:00–15:00. Antipasti, dim sum, finger food, tacos, nigiri, gunkan, futomaki e uramaki.",
+        price: s(18.9),
+        tags: ["firma"],
+      },
+      {
+        id: "ayce-pranzo-ridotto",
+        name: "Pranzo ridotto",
+        description: "Bambini fino a 1,20 m. Stessa carta del pranzo AYCE.",
+        price: s(12.9),
+      },
+      {
+        id: "ayce-festivi",
+        name: "Festivi & weekend",
+        description: "Sabato, domenica e festivi a pranzo. Stessa formula AYCE pranzo.",
+        price: s(20.9),
+      },
+      {
+        id: "ayce-cena",
+        name: "Cena AYCE",
+        description: "Tutti i giorni 19:00–23:30. Carta estesa con tartare, carpacci, sashimi, Nøm Crudité e Nøm Specials.",
+        price: s(32.9),
+        tags: ["firma"],
+      },
+      {
+        id: "ayce-cena-ridotto",
+        name: "Cena ridotta",
+        description: "Bambini fino a 1,20 m. Stessa carta della cena AYCE.",
+        price: s(17.9),
+      },
+      {
+        id: "aperisushi",
+        name: "Aperisushi",
+        description:
+          "Dalle 19:00 alle 21:00. 1 drink + combo cucina (nuvole di drago, edamame, riso cantonese, involtini di primavera, ravioli fritti, alghe wakame, spiedini di pollo) oppure combo sushi (nuvole di drago, edamame, gunkan, taco pesto, nigiri misti, hosomaki, uramaki).",
+        price: s(13.9),
+        tags: ["firma"],
+      },
+    ],
+  },
+
+  // ── ANTIPASTI (pranzo + cena) ──────────────────────────────────────────────
+  {
+    id: "antipasti",
+    title: "Antipasti",
+    subtitle: "Vapore, fritti, dim sum classici",
+    availability: NOM_ALL,
+    items: [
+      { id: "ant-involtini-primavera", name: "Involtini di primavera (2 pz)", description: "Involtino fritto ripieno di cavolo cappuccino, carote e cipolla.", price: s(0), allergens: a("glutine") },
+      { id: "ant-involtini-gamberi", name: "Involtini di gamberi (3 pz)", description: "Involtini fritti di gamberi serviti con salsa cocktail.", price: s(0), allergens: a("glutine", "crostacei", "uova") },
+      { id: "ant-edamame", name: "Edamame", description: "Fagioli di soia.", price: s(0), tags: ["veg"], allergens: a("soia") },
+      { id: "ant-alghe-wakame", name: "Alghe wakame", description: "Alghe giapponesi.", price: s(0), tags: ["veg"], allergens: a("sesamo") },
+      { id: "ant-ravioli-carne", name: "Ravioli di carne (3 pz)", description: "Ravioli ripieni di carne suina e cavolo cinese.", price: s(0), allergens: a("glutine", "soia") },
+      { id: "ant-ravioli-shaomai", name: "Ravioli shaomai (3 pz)", description: "Ravioli ripieni di gamberi, lardello e carote.", price: s(0), allergens: a("glutine", "crostacei", "soia") },
+      { id: "ant-gyoza-griglia", name: "Gyoza alla griglia (3 pz)", description: "Ravioli grigliati ripieni di carne suina e cavolo cinese.", price: s(0), allergens: a("glutine", "soia") },
+      { id: "ant-gyoza-hot", name: "Gyoza hot (3 pz)", description: "Ravioli fritti ripieni di carne di pollo e cipolle, serviti con jalapeño.", price: s(0), tags: ["piccante"], allergens: a("glutine", "soia") },
+      { id: "ant-gyoza-fritti", name: "Gyoza fritti (3 pz)", description: "Ravioli fritti ripieni di carne di pollo e cipolle.", price: s(0), allergens: a("glutine", "soia") },
+      { id: "ant-bao-sarpi", name: "Bao Sarpi (3 pz)", description: "Bao ripieno di carne di maiale e cavolo cinese.", price: s(0), allergens: a("glutine", "soia") },
+      { id: "ant-pane-vapore", name: "Pane vapore (2 pz)", description: "Pane cinese al vapore senza ripieno.", price: s(0), tags: ["veg"], allergens: a("glutine", "latte") },
+      { id: "ant-pane-dolce", name: "Pane dolce (2 pz)", description: "Panino cinese al vapore al latte con ripieno di crema di uova.", price: s(0), allergens: a("glutine", "uova", "latte") },
+      { id: "ant-nuvole-drago", name: "Nuvole di drago", description: "Sfoglie fritte a base di farina di tapioca e crostacei.", price: s(0), allergens: a("glutine", "crostacei") },
+    ],
+  },
+
+  // ── INSALATE ───────────────────────────────────────────────────────────────
+  {
+    id: "insalate",
+    title: "Insalate",
+    subtitle: "Verde misto e topping a crudo",
+    availability: NOM_ALL,
+    items: [
+      { id: "ins-polpo", name: "Insalata polpo", description: "Insalata verde mista con polpo, grana e condita.", price: s(0), allergens: a("glutine", "uova", "soia", "sesamo", "molluschi") },
+      { id: "ins-gamberi", name: "Insalata gamberi", description: "Insalata verde mista con gamberi, uova e condita.", price: s(0), allergens: a("glutine", "crostacei", "uova", "soia", "sesamo") },
+      { id: "ins-sashimi", name: "Insalata sashimi", description: "Insalata verde mista con pesce crudo, condita. Solo cena.", price: s(0), allergens: a("glutine", "uova", "pesce", "soia", "sesamo") },
+    ],
+  },
+
+  // ── NØM SPECIALS ──────────────────────────────────────────────────────────
+  {
+    id: "nom-specials",
+    title: "Nøm Specials",
+    subtitle: "Limite scelta 2 a pranzo · 3 a cena",
+    availability: NOM_ALL,
+    items: [
+      { id: "ns-toast-gamberi", name: "Toast di gamberi", description: "Tramezzini fritti ripieno di gambero e salsa cocktail. Solo cena.", price: s(0), allergens: a("glutine", "crostacei", "uova") },
+      { id: "ns-chupa-gamberi", name: "Chupa chups gamberi (2 pz)", description: "Polpette fritte di gambero con salsa cocktail.", price: s(0), allergens: a("glutine", "crostacei", "uova") },
+      { id: "ns-chupa-salmone", name: "Chupa chups salmone (2 pz)", description: "Polpette fritte di salmone con philadelphia e salsa teriyaki.", price: s(0), allergens: a("glutine", "uova", "pesce", "soia", "latte") },
+      { id: "ns-purea-capesante", name: "Purea capesante", description: "Capesanta cotta servita con purea di patate e salsa teriyaki. Solo cena.", price: s(0), allergens: a("glutine", "soia", "latte", "molluschi") },
+      { id: "ns-mo-calamari", name: "Mo' calamari (1 pz)", description: "Hamburger con calamari fritti, iceberg, salsa teriyaki e maionese.", price: s(0), allergens: a("glutine", "uova", "soia", "sesamo", "molluschi") },
+      { id: "ns-mo-manzo", name: "Mo' manzo (1 pz)", description: "Hamburger con manzo fritto, iceberg, salsa teriyaki e maionese.", price: s(0), tags: ["firma"], allergens: a("glutine", "uova", "soia", "sesamo") },
+      { id: "ns-tempura-picanha", name: "Tempura picanha", description: "Spiedini di picanha fritti in tempura. Solo cena.", price: s(0), allergens: a("glutine", "soia") },
+      { id: "ns-picanha-piastra", name: "Picanha piastra", description: "Picanha alla griglia. Solo cena.", price: s(0), allergens: a("glutine", "soia") },
+    ],
+  },
+
+  // ── DIM SUM ────────────────────────────────────────────────────────────────
+  {
+    id: "dimsum",
+    title: "Dim sum",
+    subtitle: "Limite scelta 1 a pranzo · 2 a cena · 3 pezzi a porzione",
+    availability: NOM_ALL,
+    items: [
+      { id: "dim-gamberi", name: "Dim sum gamberi", description: "Ravioli ripieno di gamberi.", price: s(0), allergens: a("glutine", "crostacei", "soia") },
+      { id: "dim-chashao", name: "Dim sum chashao", description: "Ravioli ripieni di chashao (maiale arrosto).", price: s(0), allergens: a("glutine", "soia") },
+      { id: "dim-manzo", name: "Dim sum manzo", description: "Ravioli ripieno di manzo.", price: s(0), allergens: a("glutine", "soia") },
+      { id: "dim-verdure", name: "Dim sum verdure", description: "Ravioli ripieni di spinaci e verdure.", price: s(0), tags: ["veg"], allergens: a("glutine", "soia") },
+      { id: "dim-calamari", name: "Dim sum calamari", description: "Ravioli ripieno di calamaro.", price: s(0), allergens: a("glutine", "soia", "molluschi") },
+    ],
+  },
+
+  // ── NØM CRUDITÉ (solo cena) ────────────────────────────────────────────────
+  {
+    id: "nom-crudite",
+    title: "Nøm Crudité",
+    subtitle: "Solo cena · limite scelta 3",
+    availability: NOM_DINNER,
+    items: [
+      { id: "cr-carp-capesante", name: "Carpaccio capesante", description: "Carpaccio capesante in salsa ponzu e lime, con erba cipollina e fragole fresche.", price: s(0), allergens: a("glutine", "soia", "molluschi") },
+      { id: "cr-carp-hawaii", name: "Carpaccio Hawaii", description: "Carpaccio pesce misto in salsa ponzu con crema di basilico, servito con arancia e uova di tobiko.", price: s(0), allergens: a("glutine", "pesce", "soia") },
+      { id: "cr-gambero-rosso", name: "Gambero rosso", description: "Gambero rosso su un letto di stracciatella in salsa ponzu, servito con kizami wasabi.", price: s(0), tags: ["firma"], allergens: a("glutine", "crostacei", "soia", "latte") },
+      { id: "cr-golden-tataki", name: "Golden tataki", description: "Salmone scottato in salsa mango, guarnito con oro alimentare.", price: s(0), allergens: a("glutine", "pesce") },
+      { id: "cr-lo-scampo", name: "Lo scampo (limite 1)", description: "Scampo in salsa ponzu, passion fruit e lime.", price: s(0), allergens: a("glutine", "crostacei") },
+      { id: "cr-polpo-flambe", name: "Polpo flambé (limite 1)", description: "Polpo cotto con purea di patate, parmigiano e salsa barbecue della casa.", price: s(0), tags: ["firma"], allergens: a("glutine", "soia", "latte", "molluschi") },
+    ],
+  },
+
+  // ── FINGER FOOD ────────────────────────────────────────────────────────────
+  {
+    id: "finger-food",
+    title: "Finger food",
+    subtitle: "Limite scelta 2 a pranzo · 3 a cena · 2 pezzi a porzione",
+    availability: NOM_ALL,
+    items: [
+      { id: "ff-nori-salmone", name: "Nori salmone", description: "Sfoglie di alga nori fritte, ripiene di salmone crudo, erba cipollina, philadelphia, salsa tartufo e spicy.", price: s(0), tags: ["piccante"], allergens: a("glutine", "pesce", "soia") },
+      { id: "ff-nori-tonno", name: "Nori tonno", description: "Sfoglie di alga nori fritte, ripiene di tonno crudo, erba cipollina, philadelphia e salsa teriyaki. Solo cena.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "ff-sfoglia-peppa", name: "Sfoglia peppa", description: "Sfoglie fritte, ripiene di pork floss, erba cipollina, philadelphia e salsa teriyaki.", price: s(0), allergens: a("glutine", "soia", "latte") },
+      { id: "ff-sfoglia-salmone", name: "Sfoglia salmone", description: "Sfoglie fritte, ripiene di salmone crudo, erba cipollina, philadelphia, salsa teriyaki.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "ff-pani-puri-salmone", name: "Pani puri salmone", description: "Palline di pane fritto farciti con purea di patate, tartara di salmone, erba cipollina, philadelphia e salsa teriyaki.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "ff-pani-puri-ebiten", name: "Pani puri ebiten", description: "Palline di pane fritto farciti con purea di patate, tempura di gamberi, erba cipollina e salsa teriyaki.", price: s(0), allergens: a("glutine", "crostacei", "soia", "latte") },
+      { id: "ff-pani-puri-gamberone", name: "Pani puri gamberone", description: "Palline di pane fritto farciti con purea di patate, tartara di gamberone, erba cipollina e salsa passion fruit. Solo cena.", price: s(0), allergens: a("glutine", "crostacei", "soia", "latte") },
+    ],
+  },
+
+  // ── TACOS ──────────────────────────────────────────────────────────────────
+  {
+    id: "tacos",
+    title: "Tacos",
+    subtitle: "Limite scelta 2 · 1 pezzo a porzione",
+    availability: NOM_ALL,
+    items: [
+      { id: "tc-tapas-pesto", name: "Tapas pesto", description: "Tacos fritto con ripieno di riso, pesto, rucola, pomodorini e grana.", price: s(0), tags: ["veg"], allergens: a("glutine") },
+      { id: "tc-salmone", name: "Tacos salmone", description: "Tacos fritto con ripieno di riso, salmone crudo, avocado, philadelphia e salsa teriyaki. Solo cena.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "tc-surimi", name: "Tacos surimi", description: "Tacos fritto con ripieno di riso, surimi, avocado, philadelphia e salsa teriyaki.", price: s(0), allergens: a("glutine", "crostacei", "pesce", "soia", "latte") },
+      { id: "tc-peppa", name: "Tacos peppa", description: "Tacos fritto con ripieno di riso, pork floss e salsa cocktail.", price: s(0), allergens: a("glutine", "uova") },
+      { id: "tc-nori-choo-salmone", name: "Nori choo salmone", description: "Alga nori servito con riso bianco, salmone cotto, alghe wakame, mozzarella e semi di sesamo.", price: s(0), allergens: a("glutine", "pesce", "latte", "sesamo") },
+      { id: "tc-nori-choo-pollo", name: "Nori choo pollo", description: "Alga nori servito con riso bianco, pollo fritto, alghe wakame, mozzarella e semi di sesamo.", price: s(0), allergens: a("glutine", "uova", "latte", "sesamo") },
+    ],
+  },
+
+  // ── TAPAS ──────────────────────────────────────────────────────────────────
+  {
+    id: "tapas",
+    title: "Tapas",
+    subtitle: "2 pezzi a porzione",
+    availability: NOM_ALL,
+    items: [
+      { id: "tp-salmone", name: "Tapas salmone", description: "Pane tostato farcito con tartara di salmone, erba cipollina, philadelphia e salsa teriyaki.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "tp-branzino", name: "Tapas branzino", description: "Pane tostato farcito con tartara di branzino, erba cipollina, philadelphia e salsa teriyaki. Solo cena.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "tp-gamberone", name: "Tapas gamberone", description: "Pane tostato farcito con tartara di gamberone, erba cipollina, philadelphia e salsa tartufo. Solo cena.", price: s(0), allergens: a("glutine", "crostacei", "soia", "latte") },
+      { id: "tp-pure", name: "Tapas puré", description: "Pane tostato farcito con puré di patate, erba cipollina, philadelphia e salsa teriyaki.", price: s(0), tags: ["veg"], allergens: a("glutine", "soia", "latte") },
+    ],
+  },
+
+  // ── BOWLS ──────────────────────────────────────────────────────────────────
+  {
+    id: "bowls",
+    title: "Bowls",
+    subtitle: "Riso bianco o venere",
+    availability: NOM_ALL,
+    items: [
+      { id: "bw-chirashi-salmone", name: "Chirashi salmone", description: "Ciotola di riso con salmone crudo.", price: s(0), allergens: a("pesce", "sesamo") },
+      { id: "bw-cirashi-nom", name: "Cirashi Nøm", description: "Ciotola di riso con pesce misto scottato, salsa teriyaki e salsa spicy.", price: s(0), tags: ["piccante"], allergens: a("glutine", "pesce", "soia", "sesamo") },
+      { id: "bw-poke-mango-venere", name: "Poke mango venere", description: "Ciotola di riso venere con salmone crudo, pistacchio, mango, salsa teriyaki e salsa mango.", price: s(0), allergens: a("glutine", "pesce", "soia", "frutta_guscio") },
+      { id: "bw-poke-misto-spicy", name: "Poke misto spicy", description: "Ciotola di riso venere con pesce crudo misto e salsa spicy.", price: s(0), tags: ["piccante"], allergens: a("pesce", "sesamo") },
+    ],
+  },
+
+  // ── ONIGIRI ────────────────────────────────────────────────────────────────
+  {
+    id: "onigiri",
+    title: "Onigiri",
+    subtitle: "1 pezzo a porzione",
+    availability: NOM_ALL,
+    items: [
+      { id: "on-ebiten", name: "Onigiri ebiten", description: "Triangolo di riso avvolto da alga nori, con tempura di gamberi, kataifi, salsa teriyaki e maionese.", price: s(0), allergens: a("glutine", "crostacei", "uova", "soia", "sesamo") },
+      { id: "on-salmone", name: "Onigiri salmone", description: "Triangolo di riso avvolto da alga nori, con salmone cotto, philadelphia, scaglie di mandorla e salsa teriyaki.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte", "frutta_guscio", "sesamo") },
+      { id: "on-pollo", name: "Onigiri pollo", description: "Triangolo di riso avvolto da alga nori, con pollo fritto, philadelphia, cipolla croccante e salsa teriyaki.", price: s(0), allergens: a("glutine", "soia", "latte", "sesamo") },
+      { id: "on-hot", name: "Onigiri hot", description: "Triangolo di riso avvolto da alga nori, con salmone cotto, philadelphia, salsa teriyaki e spicy mayo.", price: s(0), tags: ["piccante"], allergens: a("glutine", "uova", "pesce", "soia", "latte", "sesamo") },
+    ],
+  },
+
+  // ── NIGIRI ─────────────────────────────────────────────────────────────────
+  {
+    id: "nigiri",
+    title: "Nigiri",
+    subtitle: "2 pezzi a porzione · 3 pz per il Nøm",
+    availability: NOM_ALL,
+    items: [
+      { id: "ng-salmone", name: "Nigiri salmone", description: "Polpetta di riso con salmone.", price: s(0), allergens: a("pesce") },
+      { id: "ng-tonno", name: "Nigiri tonno", description: "Polpetta di riso con tonno. Solo cena.", price: s(0), allergens: a("pesce") },
+      { id: "ng-ebi", name: "Nigiri ebi", description: "Polpetta di riso con gambero cotto.", price: s(0), allergens: a("crostacei") },
+      { id: "ng-avocado", name: "Nigiri avocado", description: "Polpetta di riso con avocado.", price: s(0), tags: ["veg"] },
+      { id: "ng-branzino", name: "Nigiri branzino", description: "Polpetta di riso con branzino crudo.", price: s(0), allergens: a("pesce") },
+      { id: "ng-polpo", name: "Nigiri polpo", description: "Polpetta di riso con polpo.", price: s(0), allergens: a("molluschi") },
+      { id: "ng-ventresca-spicy", name: "Nigiri ventresca spicy", description: "Polpetta di riso con ventresca di salmone scottato, erba cipollina e spicy mayo. Solo cena.", price: s(0), tags: ["piccante"], allergens: a("uova", "pesce") },
+      { id: "ng-salmone-wasabi", name: "Nigiri salmone wasabi", description: "Polpetta di riso con salmone e kizami wasabi. Solo cena.", price: s(0), allergens: a("pesce") },
+      { id: "ng-tonno-pistacchio", name: "Nigiri tonno pistacchio", description: "Polpetta di riso con tonno scottato, pistacchio e salsa teriyaki. Solo cena.", price: s(0), allergens: a("glutine", "pesce", "soia", "frutta_guscio") },
+      { id: "ng-scottato-branzino", name: "Nigiri scottato branzino", description: "Polpetta di riso con branzino scottato, erba cipollina.", price: s(0), allergens: a("glutine", "pesce", "soia") },
+      { id: "ng-scottato-philadelphia", name: "Nigiri scottato philadelphia", description: "Polpetta di riso con salmone scottato, philadelphia, kataifi e salsa teriyaki.", price: s(0), tags: ["firma"], allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "ng-nom", name: "Nigiri Nøm (3 pz)", description: "Nigiri misto scottato con salmone, branzino e tonno, serviti con parmigiano, cipolla croccante e salsa spicy mayo.", price: s(0), tags: ["firma", "piccante"], allergens: a("glutine", "uova", "pesce", "soia") },
+    ],
+  },
+
+  // ── GUNKAN ─────────────────────────────────────────────────────────────────
+  {
+    id: "gunkan",
+    title: "Gunkan",
+    subtitle: "Limite scelta 2 a pranzo · 3 a cena · 2 pezzi a porzione",
+    availability: NOM_ALL,
+    items: [
+      { id: "gk-philadelphia", name: "Gunkan philadelphia", description: "Pallina di riso avvolta da salmone e coperto con philadelphia.", price: s(0), allergens: a("glutine", "pesce", "latte") },
+      { id: "gk-spicy", name: "Gunkan spicy", description: "Pallina di riso avvolta da alga nori, farcita con tartara di salmone spicy.", price: s(0), tags: ["piccante"], allergens: a("pesce") },
+      { id: "gk-tonno", name: "Gunkan tonno", description: "Pallina di riso avvolta da alga nori, farcita con tartara di tonno. Solo cena.", price: s(0), allergens: a("pesce") },
+      { id: "gk-branzino", name: "Gunkan branzino", description: "Pallina di riso avvolta da alga nori, farcita con tartara di branzino.", price: s(0), allergens: a("pesce") },
+      { id: "gk-wakame", name: "Gunkan wakame", description: "Pallina di riso avvolta da alga nori, farcita con alghe wakame.", price: s(0), tags: ["veg"], allergens: a("sesamo") },
+      { id: "gk-tobiko", name: "Gunkan tobiko", description: "Pallina di riso avvolta da alga nori, farcita con tobiko.", price: s(0), allergens: a("pesce") },
+      { id: "gk-fruit", name: "Gunkan fruit", description: "Pallina di riso avvolta da salmone scottato e guarnita con philadelphia, frutta e salsa teriyaki. Solo cena.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "gk-chicken", name: "Gunkan chicken", description: "Pallina di riso avvolta da salmone scottato e guarnita con philadelphia, bocconcino di pollo fritto e salsa teriyaki. Solo cena.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+    ],
+  },
+
+  // ── TARTARE ────────────────────────────────────────────────────────────────
+  {
+    id: "tartare",
+    title: "Tartare",
+    subtitle: "Limite scelta 1",
+    availability: NOM_ALL,
+    items: [
+      { id: "ta-salmone", name: "Tartara salmone", description: "Tartara di salmone e avocado, condita con salsa ponzu.", price: s(0), allergens: a("glutine", "pesce", "soia", "sesamo") },
+      { id: "ta-branzino", name: "Tartara branzino", description: "Tartara di branzino e avocado, condita con salsa ponzu.", price: s(0), allergens: a("glutine", "pesce", "soia", "sesamo") },
+    ],
+  },
+
+  // ── CARPACCI ───────────────────────────────────────────────────────────────
+  {
+    id: "carpacci",
+    title: "Carpacci",
+    subtitle: "Limite scelta 1",
+    availability: NOM_ALL,
+    items: [
+      { id: "cp-salmone", name: "Carpaccio salmone", description: "Carpaccio di salmone in salsa ponzu.", price: s(0), allergens: a("glutine", "pesce", "soia", "sesamo") },
+      { id: "cp-branzino", name: "Carpaccio branzino", description: "Carpaccio di branzino.", price: s(0), allergens: a("glutine", "pesce", "soia", "sesamo") },
+    ],
+  },
+
+  // ── SASHIMI ────────────────────────────────────────────────────────────────
+  {
+    id: "sashimi",
+    title: "Sashimi",
+    subtitle: "Limite scelta 1",
+    availability: NOM_ALL,
+    items: [
+      { id: "sa-salmone", name: "Sashimi salmone", description: "Salmone crudo.", price: s(0), allergens: a("pesce") },
+      { id: "sa-branzino", name: "Sashimi branzino", description: "Branzino crudo.", price: s(0), allergens: a("pesce") },
+    ],
+  },
+
+  // ── SUSHI MISTO ────────────────────────────────────────────────────────────
+  {
+    id: "sushi-misto",
+    title: "Sushi misto",
+    availability: NOM_ALL,
+    items: [
+      { id: "sm-nigiri", name: "Misto nigiri", description: "Misto di nigiri.", price: s(0), allergens: a("glutine", "crostacei", "pesce", "molluschi") },
+      { id: "sm-maki", name: "Misto maki", description: "Misto di uramaki, futomaki e hosomaki.", price: s(0), allergens: a("glutine", "crostacei", "pesce", "soia", "latte", "sesamo", "molluschi") },
+      { id: "sm-sushi-sashimi", name: "Misto sushi sashimi", description: "Piatto di sushi misto con uramaki, nigiri e sashimi. Solo cena.", price: s(0), allergens: a("glutine", "crostacei", "pesce", "soia", "latte", "sesamo", "molluschi") },
+    ],
+  },
+
+  // ── FUTOMAKI ───────────────────────────────────────────────────────────────
+  {
+    id: "futomaki",
+    title: "Futomaki",
+    subtitle: "4 pezzi a porzione",
+    availability: NOM_ALL,
+    items: [
+      { id: "fu-salmone", name: "Futomaki salmone", description: "Rotolo di riso avvolto da alga nori, con salmone, avocado e philadelphia.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte") },
+      { id: "fu-ebiten", name: "Futomaki ebiten", description: "Rotolo di riso avvolto da alga nori, con tempura di gamberi, avocado, kataifi, philadelphia, maionese e salsa teriyaki.", price: s(0), allergens: a("glutine", "crostacei", "uova", "soia", "latte") },
+    ],
+  },
+
+  // ── URAMAKI ────────────────────────────────────────────────────────────────
+  {
+    id: "uramaki",
+    title: "Uramaki",
+    subtitle: "4 pezzi a porzione",
+    availability: NOM_ALL,
+    items: [
+      { id: "ur-salmone-philadelphia", name: "Salmone philadelphia", description: "Rotolo di riso con salmone, avocado e philadelphia.", price: s(0), allergens: a("pesce", "latte", "sesamo") },
+      { id: "ur-black-salmon", name: "Black salmon", description: "Rotolo di riso venere con salmone, philadelphia, avocado, granella di pistacchio e salsa teriyaki.", price: s(0), tags: ["firma"], allergens: a("glutine", "pesce", "soia", "latte", "frutta_guscio", "sesamo") },
+      { id: "ur-king-salmone", name: "King salmone", description: "Rotolo di riso con salmone cotto, granella di pistacchio, salsa mango e teriyaki.", price: s(0), allergens: a("glutine", "pesce", "soia", "latte", "sesamo") },
+      { id: "ur-new-phila", name: "New phila", description: "Rotolo di riso con salmone, philadelphia, tartara di salmone, erba cipollina, salsa teriyaki e spicy.", price: s(0), tags: ["piccante"], allergens: a("glutine", "pesce", "soia", "latte", "sesamo") },
+      { id: "ur-spicy-salmone", name: "Spicy salmone", description: "Rotolo di riso con salmone, tartara di salmone, scaglie di mandorle, salsa mango e spicy.", price: s(0), tags: ["piccante"], allergens: a("pesce", "frutta_guscio", "sesamo") },
+      { id: "ur-tasty-salmone", name: "Tasty salmone", description: "Rotolo di riso con salmone crudo e salmone scottato, erba cipollina, olio aromatizzato cipolla.", price: s(0), allergens: a("glutine", "pesce", "soia", "sesamo") },
+      { id: "ur-cotto-spicy", name: "Cotto spicy", description: "Rotolo di riso venere con pesce misto cotto, salsa spicy.", price: s(0), tags: ["piccante"], allergens: a("glutine", "pesce", "soia", "sesamo") },
+      { id: "ur-sydney", name: "Sydney", description: "Rotolo di riso con tonno e avocado.", price: s(0), allergens: a("pesce", "sesamo") },
+      { id: "ur-tokyo", name: "Tokyo", description: "Rotolo di riso con surimi, avocado, philadelphia, cipolla croccante e salsa spicy.", price: s(0), tags: ["piccante"], allergens: a("glutine", "crostacei", "pesce", "latte", "sesamo") },
+      { id: "ur-tonno-cotto", name: "Tonno cotto", description: "Rotolo di riso con tonno cotto, philadelphia e salsa spicy mayo.", price: s(0), tags: ["piccante"], allergens: a("glutine", "uova", "pesce", "latte", "sesamo") },
+      { id: "ur-new-cali", name: "New cali", description: "Rotolo di riso con surimi fritto, pasta kataifi, salsa teriyaki e maionese.", price: s(0), allergens: a("glutine", "crostacei", "uova", "pesce", "soia", "latte") },
+      { id: "ur-california", name: "California", description: "Rotolo di riso con surimi, cetriolo, uova tobiko e maionese.", price: s(0), allergens: a("glutine", "crostacei", "uova", "pesce", "latte") },
+      { id: "ur-ebiten", name: "Ebiten", description: "Rotolo di riso con tempura di gamberi, pasta kataifi, salsa teriyaki e maionese.", price: s(0), allergens: a("glutine", "crostacei", "uova", "soia", "latte") },
+      { id: "ur-black-ebiten", name: "Black ebiten", description: "Rotolo di riso venere con tempura di gamberi, avocado, pasta kataifi, philadelphia e salsa teriyaki.", price: s(0), allergens: a("glutine", "crostacei", "uova", "soia", "latte") },
+      { id: "ur-banana-ebiten", name: "Banana ebiten", description: "Rotolo di riso con tempura di gamberi, banana caramellata, salsa teriyaki e maionese.", price: s(0), allergens: a("glutine", "crostacei", "uova", "soia", "latte") },
+      { id: "ur-green-ebiten", name: "Green ebiten", description: "Rotolo di riso con tempura di gamberi, pasta kataifi, philadelphia, salsa avocado e maionese.", price: s(0), allergens: a("glutine", "crostacei", "uova", "latte") },
+    ],
+  },
+];
+
 export function getSeedMenuForTenant(tenantId: string): MenuCategory[] {
   if (tenantId === "faak") return faakMenu;
   if (tenantId === "doca") return docaMenu;
   if (tenantId === "junior-food") return juniorFoodMenu;
+  if (tenantId === "nom-sushi") return nomSushiMenu;
   if (tenantId === "officinakam") return officinaKamMenu;
   return beporkMenu;
 }

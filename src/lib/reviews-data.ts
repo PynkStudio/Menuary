@@ -146,12 +146,50 @@ export const docaGoogleRating = {
     "https://www.google.com/maps/place/Doca+-+Pane,+Caff%C3%A8,+Saudade/@45.44248,9.2149812,17z/data=!3m1!4b1!4m6!3m5!1s0x4786c500463a3c21:0xab855fc6d4b925c3!8m2!3d45.44248!4d9.2149812!16s%2Fg%2F11ydc8s49q!18m1!1e1?entry=ttu",
 };
 
+export const juniorFoodReviews: Review[] = [
+  {
+    id: "jf-cecilia-romero",
+    author: "Cecilia Romero",
+    rating: 5,
+    text:
+      "Proprietario molto gentile e cordiale, cucina latinoamericana ottima e prezzi convenienti.",
+    date: "3 settimane fa",
+    isLocalGuide: false,
+  },
+  {
+    id: "jf-sandry-lopez",
+    author: "Sandry Lopez",
+    rating: 4,
+    text:
+      "Tutto molto buono, porzioni abbondanti e camerieri gentili. Ambiente vivace.",
+    date: "1 mese fa",
+    isLocalGuide: false,
+  },
+  {
+    id: "jf-vincenzo-semilia",
+    author: "Vincenzo Semilia",
+    rating: 5,
+    text:
+      "Ottimo cibo, locale pulito e prezzi molto bassi. Una tappa concreta per mangiare bene.",
+    date: "2 mesi fa",
+    isLocalGuide: false,
+  },
+];
+
+export const juniorFoodGoogleRating = {
+  average: 4.1,
+  count: 29,
+  profileUrl: "https://maps.app.goo.gl/BvAqtD8Tbs87TiHn6",
+};
+
 export function getReviewsForTenant(tenantId: string): Review[] {
   if (tenantId === "doca") return docaReviews;
+  if (tenantId === "junior-food") return juniorFoodReviews;
   return tenantId === "officinakam" ? officinaKamReviews : reviews;
 }
 
 export function getGoogleRatingForTenant(tenantId: string) {
   if (tenantId === "doca") return docaGoogleRating;
+  if (tenantId === "junior-food") return juniorFoodGoogleRating;
   return tenantId === "officinakam" ? officinaKamGoogleRating : googleRating;
 }

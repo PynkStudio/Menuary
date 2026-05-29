@@ -32,6 +32,9 @@ function usePublicHours(): DaySchedule[] {
   if (tenant.id === "doca") {
     return defaultHoursWeekForTenant(tenant.id);
   }
+  if (tenant.id === "junior-food") {
+    return defaultHoursWeekForTenant(tenant.id);
+  }
   if (tenant.id === "officinakam") {
     return [
       { label: "Lunedì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },

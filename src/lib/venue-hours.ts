@@ -28,8 +28,21 @@ export function docaHoursWeek(): DaySchedule[] {
   ];
 }
 
+export function juniorFoodHoursWeek(): DaySchedule[] {
+  return [
+    { label: "Lunedì", closed: true, slots: [] },
+    { label: "Martedì", closed: false, slots: ["12:00 – 00:00"] },
+    { label: "Mercoledì", closed: false, slots: ["12:00 – 00:00"] },
+    { label: "Giovedì", closed: false, slots: ["12:00 – 00:00"] },
+    { label: "Venerdì", closed: false, slots: ["12:00 – 02:00"] },
+    { label: "Sabato", closed: false, slots: ["12:00 – 02:00"] },
+    { label: "Domenica", closed: false, slots: ["12:00 – 02:00"] },
+  ];
+}
+
 export function defaultHoursWeekForTenant(tenantId: string): DaySchedule[] {
   if (tenantId === "doca") return docaHoursWeek();
+  if (tenantId === "junior-food") return juniorFoodHoursWeek();
   return defaultHoursWeek();
 }
 

@@ -75,11 +75,25 @@ export type MenuExtra = { id: string; name: string; price: number };
 /** Allergeni in ordine Allegato II. */
 const ix = (...a: MenuAllergen[]): MenuAllergen[] => sortAllergens(a);
 
+/** Fascia oraria opzionale per categorie servite solo a certi orari (pranzo, cena, aperitivo, …). */
+export type MenuAvailability = {
+  /** Etichetta breve mostrata in UI (es. "Pranzo", "Cena", "Aperisushi"). */
+  label: string;
+  /** Giorni della settimana 0-6 (0 = domenica). Se omesso, vale tutti i giorni. */
+  days?: number[];
+  /** Orario inizio HH:mm (24h). */
+  from: string;
+  /** Orario fine HH:mm (24h). */
+  to: string;
+};
+
 export type MenuCategory = {
   id: string;
   title: string;
   subtitle?: string;
   description?: string;
+  /** Fascia oraria in cui la categoria è effettivamente servita. */
+  availability?: MenuAvailability;
   items: MenuItem[];
 };
 

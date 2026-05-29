@@ -1,6 +1,7 @@
 import type {
   MenuItem,
   MenuCategory,
+  MenuAvailability,
   PriceFormat,
   MenuTag,
   MenuBundleSlot,
@@ -13,6 +14,7 @@ import type {
 export type {
   MenuItem,
   MenuCategory,
+  MenuAvailability,
   PriceFormat,
   MenuTag,
   MenuBundleSlot,

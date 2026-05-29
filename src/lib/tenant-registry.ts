@@ -110,6 +110,36 @@ export const DOCA_MODULE_FLAGS: TenantFeatureFlags = {
   aiWhatsapp: false,
 };
 
+/** Nøm sushi: lead sushi/fusion AYCE a Genova con demo sito/menu pranzo+cena/prenotazioni. */
+export const NOM_SUSHI_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: true,
+  takeaway: true,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: true,
+  tablePlanner: false,
+  productAvailability: true,
+  upselling: false,
+  crm: false,
+  analytics: true,
+  takeawaySlots: true,
+  deliveryHub: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: false,
+  multiLocation: false,
+  favorites: true,
+  reviews: true,
+  gallery: true,
+  shop: false,
+  slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
+};
+
 /** Junior Food: lead ristorante sudamericano a Bergamo con demo sito/menu/prenotazioni. */
 export const JUNIOR_FOOD_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
@@ -131,8 +161,8 @@ export const JUNIOR_FOOD_MODULE_FLAGS: TenantFeatureFlags = {
   printStations: false,
   staffRoles: false,
   multiLocation: false,
-  favorites: false,
-  reviews: false,
+  favorites: true,
+  reviews: true,
   gallery: true,
   shop: false,
   slabbby: false,
@@ -243,6 +273,30 @@ export const TENANTS: TenantProfile[] = [
       pink: "#C2554F",       // rosa-bruciato / accenti brasiliani
     },
     features: DOCA_MODULE_FLAGS,
+  },
+  {
+    id: "nom-sushi",
+    name: "Nøm sushi",
+    label: "Lead · Nøm sushi",
+    vertical: "food",
+    domains: [],
+    previewSlug: "nom-sushi",
+    enabled: true,
+    status: "trattativa",
+    theme: {
+      // Palette ispirata al logo acquerello: verde foglia + bruno scuro su crema/avorio
+      red: "#5B7A3A",          // verde foglia profondo (accent primario)
+      redDark: "#3F5527",      // verde scurissimo per hover
+      peach: "#E8E2D0",        // crema-avorio
+      cream: "#FBF8F1",        // sfondo carta naturale
+      ink: "#2A1F18",          // bruno scuro inchiostro (testo)
+      brick: "#1F1814",        // bruno-nero per superfici scure
+      mustard: "#C9A961",      // ocra dorato (accenti caldi, dim sum)
+      mustardSoft: "#E5D5A8",
+      green: "#7BA05B",        // verde fresco (matcha, alghe wakame)
+      pink: "#C56B5C",         // terracotta-rosso (accenti tartare/sashimi)
+    },
+    features: NOM_SUSHI_MODULE_FLAGS,
   },
   {
     id: "junior-food",
