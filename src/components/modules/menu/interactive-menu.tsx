@@ -174,7 +174,7 @@ export function InteractiveMenu({
                   {category.title}
                 </h2>
                 {category.availability && (
-                  <span className="nom-availability-pill mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-pork-ink/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-pork-ink/70">
+                  <span className="menu-availability-pill nom-availability-pill mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-pork-ink/10 px-3 py-1 text-xs font-medium text-pork-ink/70">
                     <span aria-hidden>\u25CF</span>
                     {category.availability.label}
                     {" \u00B7 "}

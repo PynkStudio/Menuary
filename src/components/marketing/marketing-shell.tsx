@@ -5,7 +5,16 @@ import { STUDIO_PUBLIC_ORIGIN } from "@/lib/studio-config";
 import { getTranslations } from "@/i18n";
 import { headers } from "next/headers";
 import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
+import { LOCALE_HEADER, DEFAULT_LOCALE, isAppLocale } from "@/i18n/locales";
 import { MarketSelector } from "@/components/marketing/market-selector";
+
+const PRICING_PATH = "/pricing";
+
+async function getLocaleHref(path: string): Promise<string> {
+  const value = (await headers()).get(LOCALE_HEADER);
+  const locale = isAppLocale(value) ? value : DEFAULT_LOCALE;
+  return `/${locale}${path}`;
+}
 
 export async function MarketingShell({ children }: { children: ReactNode }) {
   return (
@@ -20,6 +29,7 @@ export async function MarketingShell({ children }: { children: ReactNode }) {
 async function MarketingHeader() {
   const t = (await getTranslations("marketing")).shell;
   const currentMarket = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
     <header className="border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70 sticky top-0 z-40">
       <div className="menuary-container flex items-center justify-between py-5">
@@ -28,7 +38,7 @@ async function MarketingHeader() {
           <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
-          <Link href="/pricing" className="menuary-nav-link">{t.nav.offer}</Link>
+          <Link href={pricingHref} className="menuary-nav-link">{t.nav.offer}</Link>
           <Link href="/chi-siamo" className="menuary-nav-link">{t.nav.about}</Link>
           <a href={`${CLIENTS_PUBLIC_ORIGIN}/login`} className="menuary-nav-link">
             {t.nav.myAccount}
@@ -59,6 +69,7 @@ async function MarketingHeader() {
 async function MarketingFooter() {
   const t = (await getTranslations("marketing")).shell;
   const year = new Date().getFullYear();
+  const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-16">
@@ -91,7 +102,7 @@ async function MarketingFooter() {
             links={[
               { href: "/", label: "Home" },
               { href: "/chi-siamo", label: t.nav.about },
-              { href: "/pricing", label: t.nav.offer },
+              { href: pricingHref, label: t.nav.offer },
               { href: "/contatti", label: "Contatti" },
             ]}
           />

@@ -284,17 +284,18 @@ export const TENANTS: TenantProfile[] = [
     enabled: true,
     status: "trattativa",
     theme: {
-      // Palette ispirata al logo acquerello: verde foglia + bruno scuro su crema/avorio
-      red: "#5B7A3A",          // verde foglia profondo (accent primario)
-      redDark: "#3F5527",      // verde scurissimo per hover
-      peach: "#E8E2D0",        // crema-avorio
-      cream: "#FBF8F1",        // sfondo carta naturale
-      ink: "#2A1F18",          // bruno scuro inchiostro (testo)
-      brick: "#1F1814",        // bruno-nero per superfici scure
-      mustard: "#C9A961",      // ocra dorato (accenti caldi, dim sum)
-      mustardSoft: "#E5D5A8",
-      green: "#7BA05B",        // verde fresco (matcha, alghe wakame)
-      pink: "#C56B5C",         // terracotta-rosso (accenti tartare/sashimi)
+      // Palette Nøm — riso, matcha, salmone, ginger, nori.
+      // Allineata con src/styles/tenants/nom-sushi.css (--nom-*).
+      red: "#C86D58",          // salmone (accent primario, CTA)
+      redDark: "#8F473B",      // salmone scurissimo (hover)
+      peach: "#FFFDF7",        // paper avorio
+      cream: "#F8F4E9",        // sfondo riso
+      ink: "#172820",          // verde-inchiostro profondo (testo)
+      brick: "#101A16",        // nori scuro (hero, footer)
+      mustard: "#D8BC80",      // ginger (badge caldi, prezzi sticker)
+      mustardSoft: "#ECD9A8",
+      green: "#6D8460",        // matcha (highlight verde foglia)
+      pink: "#C86D58",         // salmone (riuso accent)
     },
     features: NOM_SUSHI_MODULE_FLAGS,
   },
