@@ -110,6 +110,36 @@ export const DOCA_MODULE_FLAGS: TenantFeatureFlags = {
   aiWhatsapp: false,
 };
 
+/** Junior Food: lead ristorante sudamericano a Bergamo con demo sito/menu/prenotazioni. */
+export const JUNIOR_FOOD_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: true,
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: true,
+  tablePlanner: false,
+  productAvailability: false,
+  upselling: false,
+  crm: false,
+  analytics: false,
+  takeawaySlots: false,
+  deliveryHub: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: false,
+  multiLocation: false,
+  favorites: false,
+  reviews: false,
+  gallery: true,
+  shop: false,
+  slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
+};
+
 /** Officina KAM: primo tenant reale Bizery — officina auto e moto. */
 export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
@@ -213,6 +243,29 @@ export const TENANTS: TenantProfile[] = [
       pink: "#C2554F",       // rosa-bruciato / accenti brasiliani
     },
     features: DOCA_MODULE_FLAGS,
+  },
+  {
+    id: "junior-food",
+    name: "Junior Food",
+    label: "Lead · Junior Food",
+    vertical: "food",
+    domains: [],
+    previewSlug: "junior-food",
+    enabled: true,
+    status: "trattativa",
+    theme: {
+      red: "#FF1111",
+      redDark: "#C90000",
+      peach: "#F8EBCC",
+      cream: "#FFFFFF",
+      ink: "#111111",
+      brick: "#3A2520",
+      mustard: "#F8EBCC",
+      mustardSoft: "#FFF5DD",
+      green: "#336500",
+      pink: "#E0C9C9",
+    },
+    features: JUNIOR_FOOD_MODULE_FLAGS,
   },
 
   // ── Verticale services (Bizery — bizery.it) ──────────────────────────────

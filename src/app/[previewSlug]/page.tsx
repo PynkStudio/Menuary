@@ -15,6 +15,7 @@ import { ServicesContact } from "@/components/tenants/_shared/services-contact";
 import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home";
 import { LibritechHomePage } from "@/components/tenants/libritech/pages/home";
 import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pages/home";
+import { JuniorFoodHomePage } from "@/components/tenants/junior-food/pages/home";
 import { Footer } from "@/components/tenant-shell/footer";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
@@ -46,6 +47,8 @@ export async function generateMetadata({
           ? `${tenant.name} - cibo e vino a ribellione naturale`
           : tenant.id === "doca"
             ? "Doca - Pane, Caffè, Saudade · Milano"
+            : tenant.id === "junior-food"
+              ? "Junior Food - Cucina sudamericana a Bergamo"
             : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
@@ -124,14 +127,20 @@ export default async function PreviewTenantHome({
         data-tenant-surface={tenant.id}
         style={themeVars as React.CSSProperties}
       >
-        <Hero />
-        <ThreeSouls />
-        <SignatureDishes />
-        {tenant.id === "bepork" && <FixedMenus />}
-        <ReviewsSection />
-        <FindUs />
-        <DeliveryStrip />
-        <Footer />
+        {tenant.id === "junior-food" ? (
+          <JuniorFoodHomePage />
+        ) : (
+          <>
+            <Hero />
+            <ThreeSouls />
+            <SignatureDishes />
+            {tenant.id === "bepork" && <FixedMenus />}
+            <ReviewsSection />
+            <FindUs />
+            <DeliveryStrip />
+            <Footer />
+          </>
+        )}
       </div>
     </TenantProvider>
   );

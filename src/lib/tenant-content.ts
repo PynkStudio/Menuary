@@ -940,6 +940,149 @@ const docaContent: TenantContent = {
   },
 };
 
+const juniorFoodContent: TenantContent = {
+  logoSrc: "/favicons/junior-food/icon.svg",
+  logoAlt: "Junior Food",
+  showcaseLogoSrc:
+    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=85",
+  showcaseLogoAlt: "Junior Food - cucina sudamericana a Bergamo",
+  description:
+    "Junior Food - cucina sudamericana a Bergamo. Specialita latine, feijoada, pique macho, silpancho e prenotazioni tavolo per pranzo e cena.",
+  url: "https://demo.menuary.it/junior-food",
+  social: {
+    instagram: "https://www.instagram.com/",
+    facebook: "https://www.facebook.com/",
+    instagramLabel: "Instagram Junior Food",
+    facebookLabel: "Facebook Junior Food",
+  },
+  contact: {
+    phone: "+39 389 479 6163",
+    whatsappDigits: "393894796163",
+    whatsappMessage:
+      "Ciao Junior Food! Vorrei prenotare un tavolo. Siamo in ___ persone, per il giorno ___ alle ___. Grazie!",
+  },
+  address: {
+    street: "Via Gianbattista Moroni",
+    zip: "24127",
+    city: "Bergamo",
+    province: "BG",
+    full: "Via Gianbattista Moroni, 24127 Bergamo BG",
+  },
+  maps: {
+    searchUrl:
+      "https://www.google.com/maps/search/?api=1&query=Junior+Food+Via+Gianbattista+Moroni+Bergamo",
+    embedUrl:
+      "https://www.google.com/maps?q=Via+Gianbattista+Moroni+Bergamo&output=embed",
+  },
+  hero: {
+    eyebrow: "Autentica cucina Sud Americana",
+    titleLead: "Assapora il ritmo",
+    titleAccent: "del Sud America.",
+    body:
+      "La tradizione culinaria latina incontra il gusto contemporaneo: specialita iconiche, street food gourmet e cocktail esotici.",
+    backdrop:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=85",
+    ctaLabel: "Prenota",
+  },
+  soulsIntro: {
+    eyebrow: "La nostra Storia",
+    titleLead: "I veri profumi",
+    titleAccent: "dell'America Latina.",
+    body:
+      "Junior nasce per essere un ponte tra culture, dove la cottura lenta della carne alla griglia e la freschezza degli ingredienti tropicali si incontrano.",
+  },
+  souls: [
+    {
+      id: "griglia",
+      kicker: "Cottura lenta",
+      title: "Carne alla griglia",
+      desc: "Tagli generosi, sapori decisi e piatti pensati per essere condivisi.",
+      href: "#menu",
+      image:
+        "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=85",
+    },
+    {
+      id: "tradizione",
+      kicker: "Ricette latine",
+      title: "Specialita iconiche",
+      desc: "Feijoada, pique macho, fideos uchu e silpancho in una carta essenziale.",
+      href: "#menu",
+      image:
+        "https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=900&q=85",
+    },
+    {
+      id: "cocktail",
+      kicker: "Serata tropicale",
+      title: "Cocktail esotici",
+      desc: "Agrumi, spezie e freschezza per accompagnare pranzo e cena.",
+      href: "#prenota",
+      image:
+        "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=900&q=85",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "Il menu",
+    title: "I piu amati",
+    subtitle: "I piatti sudamericani piu richiesti dalla casa.",
+  },
+  dishes: [
+    {
+      name: "Pique Macho",
+      desc: "Manzo, salsicce, cipolla, pomodori, paprika, uova e patate.",
+      price: "15€",
+      image:
+        "https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=900&q=85",
+      variant: "red",
+      href: "#menu",
+    },
+    {
+      name: "Planchita",
+      desc: "Costata di manzo, cipolla, pomodoro, salsiccia, pollo, uova e manioca.",
+      price: "25€",
+      image:
+        "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=85",
+      variant: "mustard",
+      href: "#menu",
+    },
+    {
+      name: "Fideos Uchu",
+      desc: "Manzo, pasta, cipolla, pomodori, piselli, uova, fagioli, carota e patate.",
+      price: "10€",
+      image:
+        "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85",
+      variant: "green",
+      href: "#menu",
+    },
+    {
+      name: "Silpancho",
+      desc: "Manzo impanato, riso, cipolla, pomodori, paprika, uova e patatine fritte.",
+      price: "12€",
+      image:
+        "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=85",
+      variant: "pink",
+      href: "#menu",
+    },
+  ],
+  findUs: {
+    eyebrow: "Vieni a trovarci",
+    titleLead: "Bergamo,",
+    titleAccent: "Via Gianbattista Moroni.",
+    body:
+      "Clienti senza prenotazione benvenuti; per cena consigliamo di riservare il tavolo.",
+    mapTitle: "Mappa Junior Food - Bergamo",
+  },
+  footer: {
+    tagline: "Autentica cucina Sud Americana.",
+    body:
+      "Junior Food porta a Bergamo piatti latini, cotture lente, ingredienti tropicali e una sala pensata per stare insieme.",
+  },
+  delivery: {
+    title: "",
+    body: "",
+    partners: [],
+  },
+};
+
 import { findTenantById } from "./tenant-registry";
 
 export function getTenantContent(tenantId: string): TenantContent {
@@ -948,6 +1091,7 @@ export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "officinakam") return officinakamContent;
   if (tenantId === "studioaranzulla") return studioaranzullaContent;
   if (tenantId === "doca") return docaContent;
+  if (tenantId === "junior-food") return juniorFoodContent;
   // Ogni tenant deve avere il proprio blocco content sopra.
   // Fallback per verticale: non restituire mai contenuto BePork per tenant services.
   const profile = findTenantById(tenantId);

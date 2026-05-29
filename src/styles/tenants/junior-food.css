@@ -1,0 +1,754 @@
+@layer components {
+  [data-tenant-surface="junior-food"] {
+    --jf-red: #ff1111;
+    --jf-red-dark: #c90000;
+    --jf-green: #336500;
+    --jf-cream: #f8ebcc;
+    --jf-ink: #111111;
+    --jf-muted: #686767;
+    --jf-line: rgba(17, 17, 17, 0.14);
+    --jf-soft: #f7f4ed;
+    background: #ffffff;
+    color: var(--jf-ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-site {
+    min-height: 100vh;
+    background: #ffffff;
+    color: var(--jf-ink);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: minmax(8rem, 1fr) auto minmax(8rem, 1fr);
+    align-items: center;
+    gap: 1.25rem;
+    width: min(100%, 1440px);
+    margin: 0 auto;
+    padding: 3rem clamp(1.25rem, 3.4vw, 3rem) 1.25rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(16px);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-brand {
+    width: max-content;
+    color: var(--jf-red);
+    font-family: "Iosevka Charon", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: clamp(1.35rem, 1.8vw, 1.65rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0;
+    text-decoration: none;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.75rem, 4vw, 4.4rem);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-nav a {
+    color: var(--jf-muted);
+    font-size: clamp(1rem, 1.75vw, 1.62rem);
+    line-height: 1.15;
+    text-decoration: none;
+    transition: color 180ms ease;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-nav a:hover,
+  [data-tenant-surface="junior-food"] .jf-brand:hover {
+    color: var(--jf-red-dark);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-header-cta {
+    justify-self: end;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 2.85rem;
+    border-radius: 999px;
+    padding: 0.64rem 1.7rem;
+    border: 1px solid transparent;
+    font-size: clamp(1rem, 1.7vw, 1.62rem);
+    font-weight: 400;
+    line-height: 1.1;
+    text-decoration: none;
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease,
+      color 180ms ease;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-button:hover,
+  [data-tenant-surface="junior-food"] .jf-submit:hover {
+    transform: translateY(-2px);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-button-primary {
+    background: var(--jf-red);
+    color: #ffffff;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-button-outline {
+    background: #ffffff;
+    border-color: var(--jf-red);
+    color: var(--jf-ink);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-button-light {
+    background: #ffffff;
+    border-color: var(--jf-red);
+    color: var(--jf-ink);
+    font-size: 1.05rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.86fr);
+    align-items: center;
+    gap: clamp(3rem, 7vw, 7.5rem);
+    width: min(100%, 1440px);
+    min-height: calc(100svh - 6.5rem);
+    margin: 0 auto;
+    padding: clamp(4rem, 7vw, 6.7rem) clamp(1.25rem, 3.4vw, 3rem) clamp(5rem, 9vw, 9.7rem);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-hero-copy {
+    max-width: 39rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-overline {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--jf-green);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1rem, 1.6vw, 1.45rem);
+    line-height: 1.2;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-overline span {
+    display: inline-block;
+    width: 3rem;
+    border-top: 6px solid var(--jf-green);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-hero h1,
+  [data-tenant-surface="junior-food"] .jf-section-head h2,
+  [data-tenant-surface="junior-food"] .jf-story-copy h2,
+  [data-tenant-surface="junior-food"] .jf-visit h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-hero h1 {
+    margin: 1.35rem 0 0;
+    max-width: 38rem;
+    font-size: clamp(3.35rem, 6.3vw, 4.35rem);
+    line-height: 1.28;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-hero-text {
+    margin: 1.25rem 0 0;
+    max-width: 37rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.45rem, 2.4vw, 1.95rem);
+    line-height: 1.2;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    margin-top: 2.25rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-rating {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    justify-content: start;
+    gap: 0.28rem 0.65rem;
+    width: max-content;
+    margin-top: 2.55rem;
+    color: var(--jf-red);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-rating strong {
+    color: var(--jf-red);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2rem, 3vw, 2.45rem);
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-rating span {
+    grid-column: 1 / -1;
+    color: var(--jf-ink);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.42rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-hero-media {
+    position: relative;
+    min-height: clamp(28rem, 47vw, 39rem);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-hero-media > img {
+    border-radius: 1.9rem;
+    object-fit: cover;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-special-card {
+    position: absolute;
+    left: -10.5%;
+    bottom: -1.2rem;
+    width: min(16.25rem, 58%);
+    min-height: 5.9rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid #d9d9d9;
+    border-radius: 1.9rem;
+    background: #ffffff;
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 2px 6px 2px rgba(0, 0, 0, 0.15);
+    padding: 0.8rem 1.8rem;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-special-card span {
+    font-size: 1.2rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-special-card strong {
+    margin-top: 0.2rem;
+    font-size: clamp(1.8rem, 2.7vw, 2rem);
+    font-weight: 400;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-story {
+    display: grid;
+    grid-template-columns: 20.25rem minmax(0, 1fr);
+    gap: clamp(3rem, 6.5vw, 5.75rem);
+    align-items: center;
+    min-height: 26rem;
+    padding: 4.25rem clamp(1.25rem, 3.4vw, 3rem);
+    background: var(--jf-cream);
+    border-block: 1px solid rgba(172, 165, 165, 0.79);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-story-image {
+    position: relative;
+    width: min(100%, 20.25rem);
+    aspect-ratio: 324 / 277;
+    overflow: hidden;
+    border-radius: 1.9rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-story-image img,
+  [data-tenant-surface="junior-food"] .jf-dish-image img {
+    object-fit: cover;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-section-label {
+    margin: 0;
+    color: var(--jf-green);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.2rem, 2vw, 1.7rem);
+    line-height: 1.2;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-story-copy h2 {
+    margin: 0.8rem 0 0;
+    font-size: clamp(2rem, 3vw, 2.38rem);
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-story-copy p:last-child {
+    max-width: 56rem;
+    margin: 1.35rem 0 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.35rem, 2.4vw, 1.95rem);
+    line-height: 1.2;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-menu,
+  [data-tenant-surface="junior-food"] .jf-booking {
+    width: min(100%, 1440px);
+    margin: 0 auto;
+    padding: clamp(4.4rem, 8vw, 6.4rem) clamp(1.25rem, 3.4vw, 3rem);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-section-head h2 {
+    margin: 1.25rem 0 0;
+    font-size: clamp(3rem, 6vw, 3.75rem);
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-dishes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(1.4rem, 3vw, 2.6rem);
+    margin-top: clamp(3.8rem, 8vw, 7.5rem);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-dish {
+    min-width: 0;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-dish-image {
+    position: relative;
+    aspect-ratio: 295 / 247;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background: var(--jf-soft);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-dish-title {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+    margin-top: 0.85rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-dish-title h3 {
+    margin: 0;
+    font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+    font-weight: 500;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-dish-title strong {
+    color: var(--jf-red);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.15rem, 1.7vw, 1.45rem);
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-dish p {
+    margin: 0.55rem 0 0;
+    max-width: 18.5rem;
+    font-size: 1.05rem;
+    line-height: 1.24;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 43.75rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: clamp(2.25rem, 5vw, 4.5rem) clamp(1.4rem, 5vw, 4rem);
+    background: var(--jf-red);
+    color: #ffffff;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit h2 {
+    margin: 0;
+    font-size: clamp(3rem, 5.7vw, 3.75rem);
+    line-height: 1.1;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit-panel > p {
+    max-width: 41rem;
+    margin: 1.45rem 0 0;
+    font-size: clamp(1.1rem, 1.7vw, 1.25rem);
+    line-height: 1.2;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem clamp(2rem, 7vw, 5.5rem);
+    width: min(100%, 40rem);
+    margin: 2.2rem 0;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit-info div {
+    min-width: 0;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit-info dt {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.5rem;
+    color: #e9cfcf;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit-info dd {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-visit-info a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-map {
+    position: relative;
+    overflow: hidden;
+    min-height: 32rem;
+    background:
+      linear-gradient(135deg, rgba(51, 101, 0, 0.2), transparent 36%),
+      linear-gradient(28deg, transparent 0 46%, rgba(255, 255, 255, 0.5) 46% 50%, transparent 50%),
+      #e7ddc9;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-map::before,
+  [data-tenant-surface="junior-food"] .jf-map::after {
+    content: "";
+    position: absolute;
+    inset: -12%;
+    background:
+      linear-gradient(74deg, transparent 0 47%, rgba(255, 255, 255, 0.7) 47% 50%, transparent 50%),
+      linear-gradient(128deg, transparent 0 48%, rgba(255, 255, 255, 0.62) 48% 51%, transparent 51%),
+      linear-gradient(0deg, transparent 0 57%, rgba(255, 255, 255, 0.48) 57% 59%, transparent 59%),
+      linear-gradient(90deg, transparent 0 32%, rgba(255, 255, 255, 0.5) 32% 34%, transparent 34%);
+    opacity: 0.9;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-map::after {
+    inset: 0;
+    background:
+      radial-gradient(circle at 36% 54%, rgba(255, 17, 17, 0.2), transparent 0.75rem),
+      radial-gradient(circle at 72% 30%, rgba(51, 101, 0, 0.15), transparent 6rem),
+      radial-gradient(circle at 18% 78%, rgba(51, 101, 0, 0.14), transparent 7rem);
+    opacity: 1;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-map-roads {
+    position: absolute;
+    inset: 0;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-road {
+    position: absolute;
+    display: block;
+    height: 1.8rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.74);
+    box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.04);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-road-one {
+    left: -12%;
+    top: 28%;
+    width: 80%;
+    transform: rotate(13deg);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-road-two {
+    right: -18%;
+    top: 54%;
+    width: 92%;
+    transform: rotate(-22deg);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-road-three {
+    left: 20%;
+    top: -7%;
+    width: 78%;
+    transform: rotate(74deg);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-road-four {
+    left: 6%;
+    bottom: 10%;
+    width: 58%;
+    transform: rotate(-6deg);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-map-pin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    display: grid;
+    gap: 0.25rem;
+    width: min(16rem, calc(100% - 2rem));
+    transform: translate(-50%, -50%);
+    border-radius: 1.5rem;
+    background: #ffffff;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 18px 45px rgba(40, 33, 24, 0.18);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-map-pin svg {
+    color: var(--jf-red);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-map-pin strong {
+    color: var(--jf-ink);
+    font-size: 1.1rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-map-pin small {
+    color: var(--jf-muted);
+    font-size: 0.88rem;
+    line-height: 1.25;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-section-head-center {
+    text-align: center;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-section-head-center p:last-child {
+    margin: 1.1rem auto 0;
+    max-width: 42rem;
+    font-size: clamp(1.05rem, 1.7vw, 1.5rem);
+    line-height: 1.25;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.6rem 3.4rem;
+    width: min(100%, 54.1rem);
+    margin: clamp(2.5rem, 6vw, 4.8rem) auto 0;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-form label {
+    position: relative;
+    display: flex;
+    min-width: 0;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-form span {
+    position: absolute;
+    left: 1.7rem;
+    top: 0.95rem;
+    z-index: 1;
+    color: #d7baba;
+    font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-form input,
+  [data-tenant-surface="junior-food"] .jf-form textarea {
+    width: 100%;
+    min-height: 4.55rem;
+    border: 1px solid #d9d9d9;
+    border-radius: 1.9rem;
+    background: #ffffff;
+    padding: 2rem 1.7rem 0.75rem;
+    color: var(--jf-ink);
+    font: inherit;
+    font-size: 1.12rem;
+    outline: none;
+    transition: border 160ms ease, box-shadow 160ms ease;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-form input:focus,
+  [data-tenant-surface="junior-food"] .jf-form textarea:focus {
+    border-color: var(--jf-red);
+    box-shadow: 0 0 0 4px rgba(255, 17, 17, 0.1);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-form-wide {
+    grid-column: 1 / -1;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-form-wide span {
+    top: 1.55rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-form textarea {
+    min-height: 15.15rem;
+    resize: vertical;
+    padding-top: 3.2rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-submit {
+    grid-column: 1 / -1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    min-height: 4.55rem;
+    border: 1px solid #d9d9d9;
+    border-radius: 1.9rem;
+    background: var(--jf-red);
+    color: #ffffff;
+    font-size: clamp(1.05rem, 1.7vw, 1.5rem);
+    line-height: 1.1;
+    cursor: pointer;
+    transition: transform 180ms ease, background 180ms ease;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-submit:active {
+    transform: translateY(0);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+    min-height: 13rem;
+    width: min(100%, 1440px);
+    margin: 0 auto;
+    padding: 3rem clamp(1.25rem, 3.4vw, 3rem);
+    border-top: 1px solid var(--jf-line);
+  }
+
+  [data-tenant-surface="junior-food"] .jf-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 1rem;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-footer-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--jf-muted);
+    font-size: 0.95rem;
+    text-decoration: none;
+  }
+
+  [data-tenant-surface="junior-food"] .jf-footer p {
+    margin: 0;
+    font-family: "Iosevka Charon", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: clamp(1rem, 1.8vw, 1.62rem);
+  }
+
+  @media (max-width: 1100px) {
+    [data-tenant-surface="junior-food"] .jf-header {
+      grid-template-columns: 1fr auto;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-nav {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-content: flex-start;
+      gap: 1.3rem;
+      overflow-x: auto;
+      padding-bottom: 0.2rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-hero {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-hero-copy {
+      max-width: 45rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-special-card {
+      left: 1rem;
+      bottom: 1rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-story {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    [data-tenant-surface="junior-food"] .jf-dishes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    [data-tenant-surface="junior-food"] .jf-visit {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 680px) {
+    [data-tenant-surface="junior-food"] .jf-header {
+      padding-top: 1rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-header-cta {
+      padding-inline: 1rem;
+      font-size: 1rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-nav a {
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-hero {
+      padding-top: 2.2rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-hero h1 {
+      font-size: clamp(2.65rem, 13vw, 3.4rem);
+      line-height: 1.08;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-hero-text,
+    [data-tenant-surface="junior-food"] .jf-story-copy p:last-child {
+      font-size: 1.25rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-button {
+      width: 100%;
+      font-size: 1.1rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-hero-media {
+      min-height: 24rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-story {
+      padding-block: 3rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-dishes,
+    [data-tenant-surface="junior-food"] .jf-form,
+    [data-tenant-surface="junior-food"] .jf-visit-info {
+      grid-template-columns: 1fr;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-visit-panel {
+      min-height: 0;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-map {
+      min-height: 24rem;
+    }
+
+    [data-tenant-surface="junior-food"] .jf-footer {
+      flex-direction: column;
+      align-items: flex-start;
+      min-height: 0;
+    }
+  }
+}

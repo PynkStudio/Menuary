@@ -237,6 +237,80 @@ export const docaMenu: MenuCategory[] = [
   },
 ];
 
+export const juniorFoodMenu: MenuCategory[] = [
+  {
+    id: "specialita",
+    title: "Specialita sudamericane",
+    subtitle: "I piatti piu amati della casa",
+    description:
+      "Ricette latine sostanziose, cotture lente e ingredienti freschi per pranzo e cena.",
+    items: [
+      {
+        id: "jf-pique-macho",
+        name: "Pique Macho",
+        description: "Manzo, salsicce, cipolla, pomodori, paprika, uova e patate.",
+        price: s(15),
+        tags: ["firma"],
+        image:
+          "https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=900&q=85",
+      },
+      {
+        id: "jf-planchita",
+        name: "Planchita",
+        description: "Costata di manzo, cipolla, pomodoro, salsiccia, pollo, uova e manioca.",
+        price: s(25),
+        tags: ["firma"],
+        image:
+          "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=85",
+      },
+      {
+        id: "jf-fideos-uchu",
+        name: "Fideos Uchu",
+        description: "Manzo, pasta, cipolla, pomodori, piselli, uova, fagioli, carota e patate.",
+        price: s(10),
+        image:
+          "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=85",
+      },
+      {
+        id: "jf-silpancho",
+        name: "Silpancho",
+        description: "Manzo impanato, riso, cipolla, pomodori, paprika, uova e patatine fritte.",
+        price: s(12),
+        image:
+          "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=85",
+      },
+    ],
+  },
+  {
+    id: "bevande",
+    title: "Cocktail e freschezza",
+    subtitle: "Agrumi, spezie e frutta tropicale",
+    description:
+      "Drink pensati per accompagnare i piatti piu intensi della carta.",
+    items: [
+      {
+        id: "jf-caipirinha",
+        name: "Caipirinha",
+        description: "Lime pestato, cachaca e zucchero. Fresca, secca, diretta.",
+        price: s(8),
+        tags: ["novita"],
+      },
+      {
+        id: "jf-margarita-tropical",
+        name: "Margarita tropical",
+        description: "Tequila, lime, frutta esotica e bordo salato.",
+        price: s(9),
+      },
+      {
+        id: "jf-agua-fresca",
+        name: "Agua fresca",
+        description: "Frutta stagionale, acqua, ghiaccio e una nota agrumata.",
+        price: s(5),
+      },
+    ],
+  },
+];
+
 export const officinaKamMenu: MenuCategory[] = [
   {
     id: "moto",
@@ -354,6 +428,7 @@ export const officinaKamMenu: MenuCategory[] = [
 export function getSeedMenuForTenant(tenantId: string): MenuCategory[] {
   if (tenantId === "faak") return faakMenu;
   if (tenantId === "doca") return docaMenu;
+  if (tenantId === "junior-food") return juniorFoodMenu;
   if (tenantId === "officinakam") return officinaKamMenu;
   return beporkMenu;
 }

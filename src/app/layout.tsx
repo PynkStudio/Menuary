@@ -215,6 +215,8 @@ export async function generateMetadata(): Promise<Metadata> {
       ? `${tenant.name} - cibo e vino a ribellione naturale`
       : tenant.id === "doca"
         ? "Doca - Pane, Caffè, Saudade · Milano"
+      : tenant.id === "junior-food"
+        ? "Junior Food - Cucina sudamericana a Bergamo"
       : tenant.vertical === "services"
         ? tenant.id === "officinakam"
           ? "Officina KAM - Meccanica di precisione"
@@ -257,6 +259,15 @@ export async function generateMetadata(): Promise<Metadata> {
                 "pão de queijo Milano",
                 "caffè filtro Cafezal",
                 "Via Breno 2 Milano",
+              ]
+          : tenant.id === "junior-food"
+            ? [
+                "Junior Food Bergamo",
+                "cucina sudamericana Bergamo",
+                "ristorante latino Bergamo",
+                "feijoada Bergamo",
+                "pique macho Bergamo",
+                "Via Gianbattista Moroni Bergamo",
               ]
           : [
               tenant.name,
