@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSeedMenuForTenant } from "@/lib/tenant-menu-data";
 import { libritechCatalog } from "@/lib/libritech-catalog";
 import { DEFAULT_EXTRA_LISTS } from "@/lib/extra-lists";
+import { pushMenuToHubrise } from "@/lib/hubrise/push-menu";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, PriceFormat } from "@/lib/types";
 import type { Database } from "@/lib/supabase/types";
@@ -38,6 +39,16 @@ export async function PUT(req: Request) {
   const bundle = (await req.json()) as MenuSyncBundle;
   const supabase = createSupabaseAdminClient();
   await writeBundle(supabase, tenantId, bundle);
+
+  // Push asincrono verso HubRise (no-op se feature off o nessuna location collegata).
+  after(async () => {
+    try {
+      await pushMenuToHubrise({ tenantId, bundle });
+    } catch {
+      // gli errori per-location sono già loggati in hubrise_menu_sync_log
+    }
+  });
+
   return NextResponse.json({ ok: true });
 }
 

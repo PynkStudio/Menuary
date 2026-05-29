@@ -360,6 +360,13 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
       },
     },
   },
+  {
+    key: "hubriseSync",
+    label: "Integrazione HubRise",
+    description: "Sincronizza il menu verso le piattaforme di order-taking (Deliveroo, JustEat, Glovo, Uber Eats) e riceve i loro ordini sul kitchen display e nelle analytics.",
+    category: "Integrazioni",
+    requires: ["onlineMenu"],
+  },
 ];
 
 export const TENANT_MODULE_CATEGORIES: TenantModuleCategory[] = [

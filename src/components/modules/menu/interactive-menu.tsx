@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { MenuCardInteractive } from "@/components/modules/menu/menu-card-interactive";
 import { MenuCategoryNav } from "@/components/modules/menu/menu-category-nav";
 import { MenuDisclaimer } from "@/components/modules/menu/menu-disclaimer";
+import { DiningFormulasShowcase } from "@/components/modules/menu/dining-formulas-showcase";
+import { getDiningFormulasForTenant } from "@/lib/tenant-dining-formulas";
 import {
   useMenuStore,
   selectCategoriesOrdered,
@@ -132,6 +134,7 @@ export function InteractiveMenu({
 
       <div className="bg-pork-cream pb-[max(8rem,calc(6rem+env(safe-area-inset-bottom)))] pt-10">
         <div className="container-wide space-y-20">
+          <DiningFormulasShowcase formulas={getDiningFormulasForTenant(tenant.id)} />
           {visibleMenuLists.length > 1 && (
             <section className="space-y-3">
               <p className="impact-title text-xs text-pork-red">Menu disponibili</p>

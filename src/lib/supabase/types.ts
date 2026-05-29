@@ -322,6 +322,96 @@ export type Database = {
         }
         Relationships: []
       }
+      hubrise_links: {
+        Row: {
+          catalog_id: string | null
+          created_at: string
+          customer_list_id: string | null
+          hubrise_account_id: string | null
+          hubrise_location_id: string
+          id: string
+          last_menu_push_at: string | null
+          last_menu_push_hash: string | null
+          location_id: string | null
+          location_name: string | null
+          location_token: string
+          menu_push_enabled: boolean
+          orders_inbound_enabled: boolean
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          catalog_id?: string | null
+          created_at?: string
+          customer_list_id?: string | null
+          hubrise_account_id?: string | null
+          hubrise_location_id: string
+          id?: string
+          last_menu_push_at?: string | null
+          last_menu_push_hash?: string | null
+          location_id?: string | null
+          location_name?: string | null
+          location_token: string
+          menu_push_enabled?: boolean
+          orders_inbound_enabled?: boolean
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          catalog_id?: string | null
+          created_at?: string
+          customer_list_id?: string | null
+          hubrise_account_id?: string | null
+          hubrise_location_id?: string
+          id?: string
+          last_menu_push_at?: string | null
+          last_menu_push_hash?: string | null
+          location_id?: string | null
+          location_name?: string | null
+          location_token?: string
+          menu_push_enabled?: boolean
+          orders_inbound_enabled?: boolean
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hubrise_menu_sync_log: {
+        Row: {
+          completed_at: string | null
+          error: string | null
+          id: string
+          link_id: string
+          payload_hash: string | null
+          started_at: string
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error?: string | null
+          id?: string
+          link_id: string
+          payload_hash?: string | null
+          started_at?: string
+          status: string
+          tenant_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          error?: string | null
+          id?: string
+          link_id?: string
+          payload_hash?: string | null
+          started_at?: string
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
       inbound_emails: {
         Row: {
           id: string
@@ -588,9 +678,11 @@ export type Database = {
           created_at: string
           display_name: string | null
           email: string | null
+          hubrise_customer_id: string | null
           id: string
           menuary_user_id: string | null
           phone: string | null
+          source: string
           tags: string[]
           tenant_id: string
           updated_at: string
@@ -600,9 +692,11 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          hubrise_customer_id?: string | null
           id?: string
           menuary_user_id?: string | null
           phone?: string | null
+          source?: string
           tags?: string[]
           tenant_id: string
           updated_at?: string
@@ -612,9 +706,11 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          hubrise_customer_id?: string | null
           id?: string
           menuary_user_id?: string | null
           phone?: string | null
+          source?: string
           tags?: string[]
           tenant_id?: string
           updated_at?: string
@@ -1363,6 +1459,9 @@ export type Database = {
           dine_option: string | null
           diner_client_id: string | null
           diner_nickname: string | null
+          external_order_id: string | null
+          external_payload: Json | null
+          external_platform: string | null
           id: string
           location_id: string | null
           menuary_user_id: string | null
@@ -1370,6 +1469,7 @@ export type Database = {
           pickup_time: string | null
           session_code: string | null
           session_id: string | null
+          source: string
           status: Database["public"]["Enums"]["order_status"]
           table_id: string | null
           table_label: string | null
@@ -1391,6 +1491,9 @@ export type Database = {
           dine_option?: string | null
           diner_client_id?: string | null
           diner_nickname?: string | null
+          external_order_id?: string | null
+          external_payload?: Json | null
+          external_platform?: string | null
           id?: string
           location_id?: string | null
           menuary_user_id?: string | null
@@ -1398,6 +1501,7 @@ export type Database = {
           pickup_time?: string | null
           session_code?: string | null
           session_id?: string | null
+          source?: string
           status?: Database["public"]["Enums"]["order_status"]
           table_id?: string | null
           table_label?: string | null
@@ -1419,6 +1523,9 @@ export type Database = {
           dine_option?: string | null
           diner_client_id?: string | null
           diner_nickname?: string | null
+          external_order_id?: string | null
+          external_payload?: Json | null
+          external_platform?: string | null
           id?: string
           location_id?: string | null
           menuary_user_id?: string | null
@@ -1426,6 +1533,7 @@ export type Database = {
           pickup_time?: string | null
           session_code?: string | null
           session_id?: string | null
+          source?: string
           status?: Database["public"]["Enums"]["order_status"]
           table_id?: string | null
           table_label?: string | null

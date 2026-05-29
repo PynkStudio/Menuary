@@ -854,6 +854,39 @@
   .ga-top-name { font-weight: 600; color: var(--ga-ink); }
   .ga-top-qty { color: var(--ga-ink-muted); font-weight: 700; }
 
+  .ga-channel-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+  .ga-channel-row {
+    display: grid;
+    gap: 6px;
+  }
+  .ga-channel-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .ga-channel-name { font-weight: 700; color: var(--ga-ink); }
+  .ga-channel-hint { color: var(--ga-ink-muted); font-size: 11px; font-weight: 600; }
+  .ga-channel-bar {
+    height: 8px;
+    background: var(--ga-border-soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .ga-channel-bar-fill {
+    height: 100%;
+    background: var(--ga-accent);
+    border-radius: 999px;
+    transition: width 200ms ease-out;
+  }
+
   /* Kiosk gestione */
   .ga-kiosk { display: grid; gap: 16px; }
   .ga-kiosk-head {

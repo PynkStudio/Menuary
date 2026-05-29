@@ -1,8 +1,10 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { pushOrderStatusToHubrise } from "@/lib/hubrise/push-status";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
 import type { Database } from "@/lib/supabase/types";
 
@@ -23,6 +25,10 @@ async function update(tenantSlug: string, orderId: string, status: Status) {
     .eq("tenant_id", tenantSlug);
 
   if (error) throw new Error(error.message);
+
+  after(async () => {
+    await pushOrderStatusToHubrise({ orderId, newStatus: status });
+  });
 
   revalidatePath(`/gestione/${tenantSlug}/ordini`);
 }
@@ -125,5 +131,10 @@ export async function rejectPendingOrder(formData: FormData) {
     .eq("status", "pending_confirmation");
 
   if (error) throw new Error(error.message);
+
+  after(async () => {
+    await pushOrderStatusToHubrise({ orderId: id, newStatus: "annullato" });
+  });
+
   revalidatePath(`/gestione/${tenantSlug}/ordini`);
 }

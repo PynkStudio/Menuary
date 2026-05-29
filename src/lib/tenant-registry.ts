@@ -18,6 +18,7 @@ export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: false,
   aiPhone: false,
   aiWhatsapp: false,
+  hubriseSync: false,
 };
 
 /** LibriTech: libreria tech/startup demo su verticale services. */
@@ -48,6 +49,7 @@ export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: true,
   aiPhone: false,
   aiWhatsapp: false,
+  hubriseSync: false,
 };
 
 /** Studio Legale Aranzulla: studio legale su verticale services. */
@@ -78,6 +80,7 @@ export const STUDIOARANZULLA_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: false,
   aiPhone: false,
   aiWhatsapp: false,
+  hubriseSync: false,
 };
 
 /** Doca: bakery brasiliana a Milano — pane, caffè, saudade. */
@@ -108,6 +111,7 @@ export const DOCA_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: false,
   aiPhone: false,
   aiWhatsapp: false,
+  hubriseSync: false,
 };
 
 /** Nøm sushi: lead sushi/fusion AYCE a Genova con demo sito/menu pranzo+cena/prenotazioni. */
@@ -138,6 +142,7 @@ export const NOM_SUSHI_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: false,
   aiPhone: false,
   aiWhatsapp: false,
+  hubriseSync: false,
 };
 
 /** Junior Food: lead ristorante sudamericano a Bergamo con demo sito/menu/prenotazioni. */
@@ -168,6 +173,7 @@ export const JUNIOR_FOOD_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: false,
   aiPhone: false,
   aiWhatsapp: false,
+  hubriseSync: false,
 };
 
 /** Officina KAM: primo tenant reale Bizery — officina auto e moto. */
@@ -198,6 +204,7 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   slabbby: true,
   aiPhone: false,
   aiWhatsapp: false,
+  hubriseSync: false,
 };
 
 export const TENANTS: TenantProfile[] = [
@@ -246,7 +253,7 @@ export const TENANTS: TenantProfile[] = [
       green: "#2E4560",
       pink: "#CD562F",
     },
-    features: { ...allTenantFeatures(true), shop: false, slabbby: false, aiPhone: false, aiWhatsapp: false },
+    features: { ...allTenantFeatures(true), shop: false, slabbby: false, aiPhone: false, aiWhatsapp: false, hubriseSync: false },
   },
 
   {

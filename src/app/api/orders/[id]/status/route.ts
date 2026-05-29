@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { pushOrderStatusToHubrise } from "@/lib/hubrise/push-status";
 import type { OrderStatus } from "@/lib/types";
 
 type Params = { params: Promise<{ id: string }> };
@@ -36,6 +37,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Propaga lo status alla piattaforma HubRise di origine (no-op per ordini diretti).
+  after(async () => {
+    await pushOrderStatusToHubrise({ orderId: id, newStatus: status });
+  });
 
   return NextResponse.json({ ok: true });
 }

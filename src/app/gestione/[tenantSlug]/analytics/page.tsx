@@ -4,8 +4,29 @@ import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { demoAnalytics } from "@/lib/demo-fixtures";
 
-type OrderRow = { total: number; created_at: string; status: string };
+type OrderRow = {
+  total: number;
+  created_at: string;
+  status: string;
+  source: string | null;
+  external_platform: string | null;
+};
 type LineRow = { name: string; qty: number };
+
+const PLATFORM_LABELS: Record<string, string> = {
+  deliveroo: "Deliveroo",
+  ubereats: "Uber Eats",
+  uber_eats: "Uber Eats",
+  justeat: "Just Eat",
+  just_eat: "Just Eat",
+  glovo: "Glovo",
+};
+
+function channelLabel(source: string | null, platform: string | null): string {
+  if (source !== "hubrise") return "Diretto";
+  if (!platform) return "Piattaforma";
+  return PLATFORM_LABELS[platform] ?? platform.charAt(0).toUpperCase() + platform.slice(1);
+}
 
 async function fetchAnalytics(tenantSlug: string) {
   const svc = createSupabaseServiceClient();
@@ -18,7 +39,7 @@ async function fetchAnalytics(tenantSlug: string) {
   const [ordersRes, reservationsCount, reviewsAgg, topItems] = await Promise.all([
     svc
       .from("orders")
-      .select("total, created_at, status")
+      .select("total, created_at, status, source, external_platform")
       .eq("tenant_id", tenantSlug)
       .gte("created_at", from30)
       .not("status", "eq", "annullato"),
@@ -70,6 +91,19 @@ async function fetchAnalytics(tenantSlug: string) {
   const ratings = (reviewsAgg.data ?? []) as { rating: number }[];
   const avgRating = ratings.length > 0 ? ratings.reduce((s, r) => s + Number(r.rating), 0) / ratings.length : null;
 
+  // Breakdown per canale (ultimi 30gg)
+  const channelMap = new Map<string, { count: number; total: number }>();
+  for (const o of orders) {
+    const key = channelLabel(o.source, o.external_platform);
+    const entry = channelMap.get(key) ?? { count: 0, total: 0 };
+    entry.count += 1;
+    entry.total += Number(o.total);
+    channelMap.set(key, entry);
+  }
+  const channels = [...channelMap.entries()]
+    .map(([label, v]) => ({ label, count: v.count, total: v.total }))
+    .sort((a, b) => b.total - a.total);
+
   return {
     total30, total7, avg30,
     ordersCount30: orders.length,
@@ -79,6 +113,7 @@ async function fetchAnalytics(tenantSlug: string) {
     avgRating,
     byDay: [...byDay.entries()],
     top,
+    channels,
   };
 }
 
@@ -168,6 +203,34 @@ export default async function AnalyticsPage({
               })()}
             </div>
           </section>
+
+          {"channels" in data && Array.isArray(data.channels) && data.channels.length >= 2 && (
+            <section className="ga-card">
+              <div className="ga-section-head">
+                <h2 className="ga-section-title">Canali di vendita 30gg</h2>
+                <span className="ga-section-hint">Incasso per canale</span>
+              </div>
+              <ul className="ga-channel-list">
+                {(() => {
+                  const max = Math.max(1, ...data.channels.map((c) => c.total));
+                  return data.channels.map((c) => {
+                    const pct = Math.round((c.total / max) * 100);
+                    return (
+                      <li key={c.label} className="ga-channel-row">
+                        <div className="ga-channel-meta">
+                          <span className="ga-channel-name">{c.label}</span>
+                          <span className="ga-channel-hint">{c.count} ordini · {formatCurrency(c.total)}</span>
+                        </div>
+                        <div className="ga-channel-bar">
+                          <div className="ga-channel-bar-fill" style={{ width: `${pct}%` }} />
+                        </div>
+                      </li>
+                    );
+                  });
+                })()}
+              </ul>
+            </section>
+          )}
 
           {data.top.length > 0 && (
             <section className="ga-card">

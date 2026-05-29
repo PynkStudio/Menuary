@@ -616,56 +616,9 @@ const NOM_ALL = { label: "Pranzo & cena", from: "12:00", to: "23:30" } as const;
 const a = (...keys: MenuAllergen[]) => keys; // shortcut leggibilità
 
 export const nomSushiMenu: MenuCategory[] = [
-  // ── FORMULE AYCE ───────────────────────────────────────────────────────────
-  {
-    id: "formule-ayce",
-    title: "All You Can Eat",
-    subtitle: "Le formule Nøm",
-    description:
-      "Tutti i piatti delle categorie sotto sono inclusi nella formula AYCE attiva nella tua fascia oraria. Limiti di scelta indicati per categoria.",
-    items: [
-      {
-        id: "ayce-pranzo",
-        name: "Pranzo AYCE",
-        description: "Lunedì–Venerdì 12:00–15:00. Antipasti, dim sum, finger food, tacos, nigiri, gunkan, futomaki e uramaki.",
-        price: s(18.9),
-        tags: ["firma"],
-      },
-      {
-        id: "ayce-pranzo-ridotto",
-        name: "Pranzo ridotto",
-        description: "Bambini fino a 1,20 m. Stessa carta del pranzo AYCE.",
-        price: s(12.9),
-      },
-      {
-        id: "ayce-festivi",
-        name: "Festivi & weekend",
-        description: "Sabato, domenica e festivi a pranzo. Stessa formula AYCE pranzo.",
-        price: s(20.9),
-      },
-      {
-        id: "ayce-cena",
-        name: "Cena AYCE",
-        description: "Tutti i giorni 19:00–23:30. Carta estesa con tartare, carpacci, sashimi, Nøm Crudité e Nøm Specials.",
-        price: s(32.9),
-        tags: ["firma"],
-      },
-      {
-        id: "ayce-cena-ridotto",
-        name: "Cena ridotta",
-        description: "Bambini fino a 1,20 m. Stessa carta della cena AYCE.",
-        price: s(17.9),
-      },
-      {
-        id: "aperisushi",
-        name: "Aperisushi",
-        description:
-          "Dalle 19:00 alle 21:00. 1 drink + combo cucina (nuvole di drago, edamame, riso cantonese, involtini di primavera, ravioli fritti, alghe wakame, spiedini di pollo) oppure combo sushi (nuvole di drago, edamame, gunkan, taco pesto, nigiri misti, hosomaki, uramaki).",
-        price: s(13.9),
-        tags: ["firma"],
-      },
-    ],
-  },
+  // Le formule AYCE NON sono qui — vivono in `tenant-dining-formulas.ts` come
+  // modalità di pasto separata, non come prodotti menu. I piatti hanno prezzo 0
+  // perché inclusi nella formula attiva (Nøm non vende à la carte).
 
   // ── ANTIPASTI (pranzo + cena) ──────────────────────────────────────────────
   {

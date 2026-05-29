@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { RotateCcw, ShieldCheck, Power, ExternalLink, ChevronDown, MapPin, CreditCard } from "lucide-react";
+import { RotateCcw, ShieldCheck, Power, ExternalLink, ChevronDown, MapPin, CreditCard, Plug } from "lucide-react";
 import { useState } from "react";
+import { HubriseIntegrationModal } from "@/components/admin/tenant/hubrise-integration-modal";
 import type { TenantStatus } from "@/lib/tenant";
 import { TENANTS } from "@/lib/tenant-registry";
 import { useTenant } from "@/components/core/tenant-provider";
@@ -46,6 +47,7 @@ export default function AdminTenantPage() {
   );
   const resetTenant = useTenantAdminStore((state) => state.resetTenant);
   const [demoDisabled, setDemoDisabled] = useState<Record<string, boolean>>({});
+  const [hubriseOpenFor, setHubriseOpenFor] = useState<string | null>(null);
 
   function persistTenantEnabled(tenantId: string, enabled: boolean) {
     setTenantEnabled(tenantId, enabled);
@@ -314,10 +316,54 @@ export default function AdminTenantPage() {
                   multiLocationEnabled={effective.features.multiLocation}
                 />
               </div>
+
+              <div className="mt-4 rounded-2xl bg-pork-cream p-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-pork-ink">
+                  <Plug size={16} className="text-pork-red" />
+                  Integrazioni esterne
+                </div>
+                <p className="mt-1 text-xs text-pork-ink/55">
+                  Connettori verso piattaforme di terze parti. La configurazione resta sotto Menuary, il tenant non vede né modifica nulla.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      if (!effective.features.hubriseSync) return;
+                      setHubriseOpenFor(tenant.id);
+                    }}
+                    disabled={!effective.features.hubriseSync}
+                    className={
+                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition " +
+                      (effective.features.hubriseSync
+                        ? "bg-white ring-1 ring-pork-ink/15 hover:ring-pork-red/40 hover:text-pork-red"
+                        : "bg-pork-ink/5 text-pork-ink/35 cursor-not-allowed")
+                    }
+                    title={
+                      effective.features.hubriseSync
+                        ? "Gestisci collegamento HubRise per sede"
+                        : "Attiva prima il modulo 'Integrazione HubRise' nei moduli"
+                    }
+                  >
+                    <Plug size={14} />
+                    HubRise
+                  </button>
+                </div>
+              </div>
             </details>
           );
         })}
       </div>
+
+      {hubriseOpenFor && (
+        <HubriseIntegrationModal
+          tenantId={hubriseOpenFor}
+          tenantName={TENANTS.find((t) => t.id === hubriseOpenFor)?.label ?? hubriseOpenFor}
+          open
+          onClose={() => setHubriseOpenFor(null)}
+        />
+      )}
     </div>
   );
 }
