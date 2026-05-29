@@ -115,10 +115,6 @@ export function LibritechHomePage() {
           <div className="lt-hero-blob-1" />
           <div className="lt-hero-blob-2" />
           <div className="lt-hero-inner">
-            <p style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.15)", padding: "0.3rem 0.875rem", fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#a5b4fc", marginBottom: "1.25rem" }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6" /></svg>
-              Bizery · Shop online attivo
-            </p>
             <h1>
               I libri che cambiano
               <br />
@@ -136,20 +132,6 @@ export function LibritechHomePage() {
               </a>
               <a href="#contatti" className="lt-btn-ghost">Chi siamo</a>
             </div>
-          </div>
-
-          {/* Pillole statistiche */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.75rem", marginTop: "2.5rem", position: "relative", zIndex: 1 }}>
-            {[
-              { val: "30", label: "titoli" },
-              { val: "€16–33", label: "fascia prezzi" },
-              { val: "♡", label: "Slabbby wishlist" },
-            ].map(({ val, label }) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: "0.5rem", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", padding: "0.5rem 1.125rem", backdropFilter: "blur(8px)" }}>
-                <span style={{ fontWeight: 800, fontSize: "0.9375rem", color: "white" }}>{val}</span>
-                <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{label}</span>
-              </div>
-            ))}
           </div>
         </section>
 
