@@ -36,7 +36,15 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
 
 export async function POST(req: NextRequest) {
   const raw = await req.text();
-  if (!verifySignature(raw, req.headers.get("x-hub-signature") ?? req.headers.get("x-hubrise-signature"))) {
+  const signature = req.headers.get("x-hub-signature") ?? req.headers.get("x-hubrise-signature");
+
+  if (!verifySignature(raw, signature)) {
+    await logInbound({
+      status: "signature_invalid",
+      reason: "HMAC mismatch o header mancante",
+      signature,
+      rawBody: raw,
+    });
     return NextResponse.json({ error: "invalid_signature" }, { status: 401 });
   }
 
@@ -44,31 +52,85 @@ export async function POST(req: NextRequest) {
   try {
     event = JSON.parse(raw) as HubriseWebhookEvent;
   } catch {
+    await logInbound({ status: "processing_error", reason: "invalid_json", rawBody: raw });
     return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
   }
 
   const link = await findLinkByHubriseLocation(event.location_id);
-  if (!link || link.status !== "active" || !link.ordersInboundEnabled) {
-    // 200 per non far ritentare HubRise se la location è disconnessa intenzionalmente.
+  if (!link) {
+    await logInbound({
+      status: "unmatched_location",
+      reason: `Nessun hubrise_links per ${event.location_id}`,
+      event,
+    });
+    return NextResponse.json({ ok: true, skipped: "no_active_link" });
+  }
+  if (link.status !== "active" || !link.ordersInboundEnabled) {
+    await logInbound({
+      status: "inactive_link",
+      reason: `Link ${link.id} status=${link.status} inbound=${link.ordersInboundEnabled}`,
+      event,
+    });
     return NextResponse.json({ ok: true, skipped: "no_active_link" });
   }
 
-  if (event.event === "order/create" || event.event === "order/update") {
-    const payload =
-      (event.data as HubriseOrderPayload | undefined) ??
-      (await getOrder({ locationToken: link.locationToken, orderId: event.resource_id }));
-    if (!payload) return NextResponse.json({ error: "no_payload" }, { status: 422 });
+  try {
+    if (event.event === "order/create" || event.event === "order/update") {
+      const payload =
+        (event.data as HubriseOrderPayload | undefined) ??
+        (await getOrder({ locationToken: link.locationToken, orderId: event.resource_id }));
+      if (!payload) {
+        await logInbound({ status: "processing_error", reason: "no_payload", event });
+        return NextResponse.json({ error: "no_payload" }, { status: 422 });
+      }
 
-    if (event.event === "order/create") {
-      await ingestNewOrder(link, payload);
-    } else {
-      await updateOrderStatusFromWebhook(link, payload);
+      if (event.event === "order/create") {
+        await ingestNewOrder(link, payload);
+      } else {
+        await updateOrderStatusFromWebhook(link, payload);
+      }
+    } else if (event.event === "customer/update") {
+      await syncCustomerUpdate(link, event);
     }
-  } else if (event.event === "customer/update") {
-    await syncCustomerUpdate(link, event);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await logInbound({ status: "processing_error", reason: message.slice(0, 500), event });
+    throw err;
   }
 
   return NextResponse.json({ ok: true });
+}
+
+async function logInbound(input: {
+  status: "signature_invalid" | "unmatched_location" | "inactive_link" | "processing_error";
+  reason: string;
+  event?: HubriseWebhookEvent;
+  rawBody?: string;
+  signature?: string | null;
+}) {
+  try {
+    const supabase = createSupabaseServiceClient();
+    if (!supabase) return;
+    let payload: unknown = input.event ?? null;
+    if (!payload && input.rawBody) {
+      try {
+        payload = JSON.parse(input.rawBody);
+      } catch {
+        payload = { raw: input.rawBody.slice(0, 4000) };
+      }
+    }
+    await supabase.from("hubrise_inbound_log").insert({
+      status: input.status,
+      reason: input.reason,
+      event: input.event?.event ?? null,
+      hubrise_location_id: input.event?.location_id ?? null,
+      resource_id: input.event?.resource_id ?? null,
+      payload: (payload ?? null) as never,
+      signature: input.signature ?? null,
+    });
+  } catch {
+    // mai bloccare la response per un fallimento di logging
+  }
 }
 
 async function syncCustomerUpdate(link: HubriseLink, event: HubriseWebhookEvent) {

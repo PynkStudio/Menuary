@@ -412,6 +412,48 @@ export type Database = {
         }
         Relationships: []
       }
+      hubrise_inbound_log: {
+        Row: {
+          id: string
+          received_at: string
+          event: string | null
+          hubrise_location_id: string | null
+          resource_id: string | null
+          status: string
+          reason: string | null
+          payload: Json | null
+          signature: string | null
+          resolved: boolean
+          resolved_at: string | null
+        }
+        Insert: {
+          id?: string
+          received_at?: string
+          event?: string | null
+          hubrise_location_id?: string | null
+          resource_id?: string | null
+          status: string
+          reason?: string | null
+          payload?: Json | null
+          signature?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+        }
+        Update: {
+          id?: string
+          received_at?: string
+          event?: string | null
+          hubrise_location_id?: string | null
+          resource_id?: string | null
+          status?: string
+          reason?: string | null
+          payload?: Json | null
+          signature?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+        }
+        Relationships: []
+      }
       inbound_emails: {
         Row: {
           id: string

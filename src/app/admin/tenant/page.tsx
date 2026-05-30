@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RotateCcw, ShieldCheck, Power, ExternalLink, ChevronDown, MapPin, CreditCard, Plug } from "lucide-react";
 import { useState } from "react";
 import { HubriseIntegrationModal } from "@/components/admin/tenant/hubrise-integration-modal";
+import { HubriseInboxBanner } from "@/components/admin/tenant/hubrise-inbox-banner";
 import type { TenantStatus } from "@/lib/tenant";
 import { TENANTS } from "@/lib/tenant-registry";
 import { useTenant } from "@/components/core/tenant-provider";
@@ -83,6 +84,8 @@ export default function AdminTenantPage() {
           <strong>{activeTenant.label}</strong>.
         </p>
       </header>
+
+      <HubriseInboxBanner />
 
       <div className="grid gap-5 xl:grid-cols-2">
         {TENANTS.map((tenant) => {
