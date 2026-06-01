@@ -18,6 +18,8 @@ import {
   VenueWhatsappLink,
 } from "@/components/modules/reservations/venue-display";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { useDocaCopy } from "@/lib/doca-i18n";
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 export function Footer() {
   const tenant = useTenant();
@@ -26,6 +28,8 @@ export function Footer() {
   const features = useEffectiveFeatures();
   const isDemo = mode === "preview" || mode === "preview-bizery";
   const isDoca = tenant.id === "doca";
+  const docaCopy = useDocaCopy();
+  const tenantHref = useTenantLocalizedHref();
   const staffHref = isDemo
     ? `/${tenant.id}/gestione`
     : buildTenantManagementUrl(tenant.id) ?? buildTenantDemoManagementUrl(tenant.id);
@@ -46,12 +50,12 @@ export function Footer() {
             <div>
               <p className="impact-title text-3xl text-pork-mustard">{tenant.name}</p>
               <p className="text-sm text-pork-cream/70">
-                {content.footer.tagline}
+                {isDoca ? docaCopy.footerTagline : content.footer.tagline}
               </p>
             </div>
           </div>
           <p className="mt-6 max-w-md text-pork-cream/70">
-            {content.footer.body}
+            {isDoca ? docaCopy.footerBody : content.footer.body}
           </p>
           <div className="mt-6 flex gap-3">
             <a
@@ -63,20 +67,22 @@ export function Footer() {
             >
               <Instagram size={18} />
             </a>
-            <a
-              href={content.social.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-pork-cream/20 text-pork-cream transition-colors hover:border-pork-mustard hover:text-pork-mustard"
-              aria-label={content.social.facebookLabel}
-            >
-              <Facebook size={18} />
-            </a>
+            {!isDoca && (
+              <a
+                href={content.social.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-pork-cream/20 text-pork-cream transition-colors hover:border-pork-mustard hover:text-pork-mustard"
+                aria-label={content.social.facebookLabel}
+              >
+                <Facebook size={18} />
+              </a>
+            )}
           </div>
         </div>
 
         <div>
-          <p className="impact-title text-xl text-pork-mustard">Dove siamo</p>
+          <p className="impact-title text-xl text-pork-mustard">{isDoca ? docaCopy.footerLocation : "Dove siamo"}</p>
           <address className="mt-4 flex items-start gap-3 not-italic text-pork-cream/80">
             <MapPin size={18} className="mt-1 shrink-0" />
             <VenueAddressBlock />
@@ -86,12 +92,12 @@ export function Footer() {
             <VenuePhoneDisplay className="text-pork-cream/80 transition-colors hover:text-pork-mustard" />
           </div>
           <VenueWhatsappLink className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard hover:underline">
-            {isDoca ? "Scrivici su Instagram ->" : "Scrivici su WhatsApp ->"}
+            {isDoca ? docaCopy.whatsappFooter : "Scrivici su WhatsApp ->"}
           </VenueWhatsappLink>
         </div>
 
         <div>
-          <p className="impact-title text-xl text-pork-mustard">Orari</p>
+          <p className="impact-title text-xl text-pork-mustard">{isDoca ? docaCopy.footerHours : "Orari"}</p>
           <VenueHoursList variant="footer" />
         </div>
       </div>
@@ -149,13 +155,13 @@ export function Footer() {
             )}
             <span className="flex flex-wrap gap-x-4 gap-y-1">
               <Link
-                href="/privacy"
+                href={tenantHref("/privacy")}
                 className="text-pork-cream/55 transition-colors hover:text-pork-mustard hover:underline"
               >
                 Privacy
               </Link>
               <Link
-                href="/cookie"
+                href={tenantHref("/cookie")}
                 className="text-pork-cream/55 transition-colors hover:text-pork-mustard hover:underline"
               >
                 Cookie

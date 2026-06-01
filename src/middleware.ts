@@ -32,6 +32,13 @@ import {
   marketForLocale,
   normalizeMarketCode,
 } from "@/lib/markets";
+import {
+  detectTenantLocaleFromAcceptLanguage,
+  getTenantLocaleConfig,
+  matchTenantLocale,
+  tenantLocaleCookieName,
+  type TenantLocaleConfig,
+} from "@/lib/tenant-locales";
 
 const LOCALE_SET = new Set<string>(SUPPORTED_LOCALES);
 
@@ -127,6 +134,133 @@ function allowStaticAssets(pathname: string) {
   return false;
 }
 
+function detectTenantLocaleFromRequest(
+  request: NextRequest,
+  tenantId: string,
+  config: TenantLocaleConfig,
+) {
+  return (
+    matchTenantLocale(request.cookies.get(tenantLocaleCookieName(tenantId))?.value, config.locales) ??
+    detectTenantLocaleFromAcceptLanguage(request.headers.get("accept-language"), config)
+  );
+}
+
+function tenantLocaleRedirect(
+  request: NextRequest,
+  tenantId: string,
+  locale: string,
+  pathname: string,
+) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  const response = NextResponse.redirect(url, 302);
+  response.cookies.set(tenantLocaleCookieName(tenantId), locale, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+  return response;
+}
+
+function tenantLocaleRewrite(
+  request: NextRequest,
+  tenantId: string,
+  locale: string,
+  pathname: string,
+  mode: PlatformMode,
+  previewTenantId?: string,
+) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(LOCALE_HEADER, locale);
+  requestHeaders.set(PLATFORM_MODE_HEADER, mode);
+  requestHeaders.set("x-tenant-public-path", request.nextUrl.pathname);
+  if (previewTenantId) {
+    requestHeaders.set("x-preview-tenant-id", previewTenantId);
+  }
+  const response = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
+  response.cookies.set(tenantLocaleCookieName(tenantId), locale, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+  return response;
+}
+
+const PREVIEW_GLOBAL_TENANT_ROUTES = new Set([
+  "assistant-menu",
+  "chi-siamo",
+  "contatti",
+  "cookie",
+  "cucina",
+  "galleria",
+  "ordina",
+  "preferiti",
+  "privacy",
+  "staff",
+  "tavolo",
+]);
+
+function handlePreviewTenantLocale(
+  request: NextRequest,
+  mode: PlatformMode,
+  previewSlug: string,
+  tenantId: string,
+  config: TenantLocaleConfig,
+) {
+  const { pathname } = request.nextUrl;
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts[0] !== previewSlug || parts[1] === "gestione" || parts[1] === "k") return null;
+  const routeLocale = matchTenantLocale(parts[1], config.locales);
+  if (!routeLocale) {
+    const locale = detectTenantLocaleFromRequest(request, tenantId, config);
+    const rest = parts.slice(1).join("/");
+    return tenantLocaleRedirect(
+      request,
+      tenantId,
+      locale,
+      `/${previewSlug}/${locale}${rest ? `/${rest}` : ""}`,
+    );
+  }
+  const rest = parts.slice(2).join("/");
+  const rewrittenPathname =
+    rest && PREVIEW_GLOBAL_TENANT_ROUTES.has(rest.split("/")[0])
+      ? `/${rest}`
+      : `/${previewSlug}${rest ? `/${rest}` : ""}`;
+  return tenantLocaleRewrite(
+    request,
+    tenantId,
+    routeLocale,
+    rewrittenPathname,
+    mode,
+    tenantId,
+  );
+}
+
+function handleCustomTenantLocale(
+  request: NextRequest,
+  mode: PlatformMode,
+  tenantId: string,
+  config: TenantLocaleConfig,
+) {
+  const { pathname } = request.nextUrl;
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts[0] === "gestione" || parts[0] === "k") return null;
+  const routeLocale = matchTenantLocale(parts[0], config.locales);
+  if (!routeLocale) {
+    const locale = detectTenantLocaleFromRequest(request, tenantId, config);
+    return tenantLocaleRedirect(
+      request,
+      tenantId,
+      locale,
+      `/${locale}${pathname === "/" ? "" : pathname}`,
+    );
+  }
+  const rest = parts.slice(1).join("/");
+  return tenantLocaleRewrite(request, tenantId, routeLocale, rest ? `/${rest}` : "/", mode);
+}
+
 async function getSessionUser(
   request: NextRequest,
   response: NextResponse,
@@ -216,6 +350,20 @@ export async function middleware(request: NextRequest) {
   const pathPreviewTenant = pathPreviewSlug ? findTenantByPreviewSlug(pathPreviewSlug) : undefined;
 
   if (allowStaticAssets(pathname)) return NextResponse.next();
+
+  if (pathPreviewTenant) {
+    const localeConfig = getTenantLocaleConfig(pathPreviewTenant.id);
+    if (localeConfig) {
+      const localizedPreview = handlePreviewTenantLocale(
+        request,
+        mode,
+        pathPreviewTenant.previewSlug!,
+        pathPreviewTenant.id,
+        localeConfig,
+      );
+      if (localizedPreview) return localizedPreview;
+    }
+  }
 
   // ── Login portal (login.menuary.it) ──────────────────────────────────────
   if (mode === "login") {
@@ -449,6 +597,11 @@ export async function middleware(request: NextRequest) {
   // Funziona sia in mode "tenant" che in qualsiasi altra mode per i domini
   // custom con location subdomain.
   const tenant = resolveTenantFromHost(host);
+  const tenantLocaleConfig = getTenantLocaleConfig(tenant.id);
+  if (mode === "tenant" && tenantLocaleConfig) {
+    const localizedTenant = handleCustomTenantLocale(request, mode, tenant.id, tenantLocaleConfig);
+    if (localizedTenant) return localizedTenant;
+  }
   const locationSlug = resolveLocationSlugFromHost(host, tenant.domains);
   const requestHeaders = new Headers(request.headers);
   if (pathPreviewTenant) {

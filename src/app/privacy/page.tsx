@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { DynamicPolicyDocument } from "@/components/legal/dynamic-policy-document";
-import { siteConfig } from "@/lib/site-config";
+import { tenantPolicyMetadata } from "@/lib/legal/tenant-policy-metadata";
 
-export const metadata: Metadata = {
-  title: "Privacy policy",
-  description: `Informativa sul trattamento dei dati personali — ${siteConfig.name}.`,
-  alternates: {
-    canonical: `${siteConfig.url}/privacy`,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return tenantPolicyMetadata("privacy");
+}
 
 export default function PrivacyPage() {
   return (

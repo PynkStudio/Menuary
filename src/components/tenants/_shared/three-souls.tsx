@@ -8,12 +8,17 @@ import { ArrowRight } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
+import { useDocaCopy } from "@/lib/doca-i18n";
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 export function ThreeSouls() {
   const tenant = useTenant();
   const mode = usePlatformMode();
   const pathname = usePathname();
   const content = getTenantContent(tenant.id);
+  const docaCopy = useDocaCopy();
+  const isDoca = tenant.id === "doca";
+  const tenantHref = useTenantLocalizedHref();
   const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
   const previewPrefix =
     (mode === "preview" || isPathPreview) && tenant.previewSlug ? `/${tenant.previewSlug}` : "";
@@ -22,19 +27,21 @@ export function ThreeSouls() {
     <section id="tre-anime" className="tenant-souls relative scroll-mt-24 bg-pork-cream py-20 md:py-28">
       <div className="container-wide">
         <div className="mb-12 flex flex-col items-center text-center">
-          <span className="chip-red">{content.soulsIntro.eyebrow}</span>
+          <span className="chip-red">{isDoca ? docaCopy.introEyebrow : content.soulsIntro.eyebrow}</span>
           <h2 className="headline mt-4 text-5xl sm:text-6xl lg:text-7xl text-balance">
-            {content.soulsIntro.titleLead}
+            {isDoca ? docaCopy.introTitleLead : content.soulsIntro.titleLead}
             <br />
-            <span className="text-pork-red">{content.soulsIntro.titleAccent}</span>
+            <span className="text-pork-red">{isDoca ? docaCopy.introTitleAccent : content.soulsIntro.titleAccent}</span>
           </h2>
           <p className="mt-4 max-w-2xl text-lg text-pork-ink/70">
-            {content.soulsIntro.body}
+            {isDoca ? docaCopy.introBody : content.soulsIntro.body}
           </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-3">
-          {content.souls.map((soul, i) => (
+          {content.souls.map((soul, i) => {
+            const localizedSoul = isDoca ? docaCopy.categories[i] : undefined;
+            return (
             <motion.div
               key={soul.id}
               initial={{ opacity: 0, y: 24 }}
@@ -43,7 +50,7 @@ export function ThreeSouls() {
               transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
             >
               <Link
-                href={`${previewPrefix}${soul.href}`}
+                href={tenantHref(`${previewPrefix}${soul.href}`)}
                 className="group relative block h-[28rem] overflow-hidden rounded-3xl bg-pork-ink shadow-xl"
               >
                 <Image
@@ -56,17 +63,18 @@ export function ThreeSouls() {
                 <div className="absolute inset-0 bg-gradient-to-t from-pork-ink via-pork-ink/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-6 text-pork-cream">
                   <span className="impact-title text-sm text-pork-mustard">
-                    {soul.kicker}
+                    {localizedSoul?.kicker ?? soul.kicker}
                   </span>
-                  <h3 className="headline mt-1 text-4xl">{soul.title}</h3>
-                  <p className="mt-2 text-pork-cream/80">{soul.desc}</p>
+                  <h3 className="headline mt-1 text-4xl">{localizedSoul?.title ?? soul.title}</h3>
+                  <p className="mt-2 text-pork-cream/80">{localizedSoul?.desc ?? soul.desc}</p>
                   <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard transition-all group-hover:gap-3">
-                    Scopri i piatti <ArrowRight size={16} />
+                    {isDoca ? docaCopy.menu : "Scopri i piatti"} <ArrowRight size={16} />
                   </span>
                 </div>
               </Link>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

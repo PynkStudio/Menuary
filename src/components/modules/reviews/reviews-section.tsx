@@ -9,6 +9,8 @@ import { formatNumberIT } from "@/lib/format";
 import { ReviewCard } from "@/components/modules/reviews/review-card";
 import { useTenant } from "@/components/core/tenant-provider";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
+import { useDocaCopy } from "@/lib/doca-i18n";
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; limit?: number }) {
   const tenant = useTenant();
@@ -18,11 +20,14 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
   const tenantGoogleRating = getGoogleRatingForTenant(tenant.id);
   const shown = tenantReviews.slice(0, limit);
   const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
-  const reviewHref =
+  const baseReviewHref =
     (mode === "preview" || isPathPreview) && tenant.previewSlug
       ? `/${tenant.previewSlug}/recensioni`
       : "/recensioni";
   const isDoca = tenant.id === "doca";
+  const docaCopy = useDocaCopy();
+  const tenantHref = useTenantLocalizedHref();
+  const reviewHref = tenantHref(baseReviewHref);
   const isNomSushi = tenant.id === "nom-sushi";
 
   return (
@@ -43,14 +48,14 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
                   : "inline-flex items-center gap-2 rounded-full bg-pork-ink px-3 py-1 text-xs font-black uppercase tracking-widest text-pork-mustard"
               }
             >
-              {isDoca ? "Dicono di Doca" : isNomSushi ? "Dicono di Nøm" : "Lo dicono loro"}
+              {isDoca ? docaCopy.reviewsEyebrow : isNomSushi ? "Dicono di Nøm" : "Lo dicono loro"}
             </span>
             <h2 className={`headline mt-4 text-5xl sm:text-6xl lg:text-7xl text-balance ${dark ? "text-pork-cream" : "text-pork-ink"}`}>
               {isDoca ? (
                 <>
-                  Una bakery
+                  {docaCopy.reviewsTitleLead}
                   <br />
-                  <span className={dark ? "text-pork-mustard" : "text-pork-red"}>gia cercata.</span>
+                  <span className={dark ? "text-pork-mustard" : "text-pork-red"}>{docaCopy.reviewsTitleAccent}</span>
                 </>
               ) : isNomSushi ? (
                 <>
@@ -101,7 +106,7 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
               </div>
               <p className={`text-sm ${dark ? "text-pork-cream/70" : "text-pork-ink/70"}`}>
                 {isDoca
-                  ? "Fonti pubbliche e scheda Google"
+                  ? docaCopy.reviewsSource
                   : `${formatNumberIT(tenantGoogleRating.count)} recensioni su Google`}
               </p>
             </div>
@@ -123,16 +128,18 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Link href={reviewHref} className={dark ? "btn-mustard" : "btn-primary"}>
-            Tutte le recensioni <ArrowRight size={18} />
-          </Link>
+          {!isDoca && (
+            <Link href={reviewHref} className={dark ? "btn-mustard" : "btn-primary"}>
+              Tutte le recensioni <ArrowRight size={18} />
+            </Link>
+          )}
           <a
             href={tenantGoogleRating.profileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={dark ? "btn-ghost-light" : "btn-ghost"}
           >
-            Apri su Google
+            {isDoca ? docaCopy.google : "Apri su Google"}
           </a>
         </div>
       </div>

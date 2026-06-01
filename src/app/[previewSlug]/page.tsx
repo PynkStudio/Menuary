@@ -17,22 +17,31 @@ import { LibritechHomePage } from "@/components/tenants/libritech/pages/home";
 import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pages/home";
 import { JuniorFoodHomePage } from "@/components/tenants/junior-food/pages/home";
 import { Footer } from "@/components/tenant-shell/footer";
+import { DocaAbout } from "@/components/tenants/doca/doca-about";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { getTenantContent } from "@/lib/tenant-content";
 import { buildTenantIconSet } from "@/lib/favicon";
+import { LOCALE_HEADER } from "@/i18n/locales";
+import { getTenantLocaleConfig } from "@/lib/tenant-locales";
+import { tenantLanguageAlternates } from "@/lib/tenant-localized-path";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ previewSlug: string }>;
 }): Promise<Metadata> {
-  const host = (await headers()).get("host");
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("host");
   const mode = getPlatformModeFromHost(host);
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
   const content = getTenantContent(tenant.id);
+  const localeConfig = getTenantLocaleConfig(tenant.id);
+  const locale = requestHeaders.get(LOCALE_HEADER) ?? localeConfig?.defaultLocale;
+  const metadataOrigin = mode === "preview-bizery" ? "https://demo.bizery.it" : "https://demo.menuary.it";
+  const localizedPath = localeConfig && locale ? `/${previewSlug}/${locale}` : `/${previewSlug}`;
   const isServices = tenant.vertical === "services";
   const title =
     tenant.id === "officinakam"
@@ -54,13 +63,18 @@ export async function generateMetadata({
             : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
-    metadataBase: new URL(mode === "preview-bizery" ? "https://demo.bizery.it" : "https://demo.menuary.it"),
+    metadataBase: new URL(metadataOrigin),
     title: { absolute: title },
     description: content.description,
+    robots: {
+      index: false,
+      follow: false,
+      nocache: true,
+    },
     openGraph: {
       title,
       description: content.description,
-      url: content.url,
+      url: `${metadataOrigin}${localizedPath}`,
       siteName: tenant.name,
       locale: "it_IT",
       type: "website",
@@ -73,6 +87,20 @@ export async function generateMetadata({
       images: [content.showcaseLogoSrc],
     },
     icons: buildTenantIconSet(tenant),
+    ...(localeConfig && locale
+      ? {
+          alternates: {
+            canonical: `${metadataOrigin}${localizedPath}`,
+            languages: tenantLanguageAlternates({
+              origin: metadataOrigin,
+              pathname: `/${previewSlug}`,
+              previewSlug,
+              locales: localeConfig.locales,
+              defaultLocale: localeConfig.defaultLocale,
+            }),
+          },
+        }
+      : {}),
   };
 }
 
@@ -135,7 +163,8 @@ export default async function PreviewTenantHome({
           <>
             <Hero />
             <ThreeSouls />
-            <SignatureDishes />
+            {tenant.id === "doca" && <DocaAbout />}
+            {tenant.id !== "doca" && <SignatureDishes />}
             {tenant.id === "bepork" && <FixedMenus />}
             <ReviewsSection />
             <FindUs />

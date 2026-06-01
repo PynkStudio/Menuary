@@ -7,6 +7,7 @@ import { defaultHoursWeek, defaultHoursWeekForTenant } from "@/lib/venue-hours";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { useLocationOrNull } from "@/components/core/location-provider";
+import { useDocaCopy, useDocaLanguage } from "@/lib/doca-i18n";
 
 type PublicGoogleMapLocation = {
   placeId: string | null;
@@ -110,6 +111,13 @@ export function useVenueMap() {
   }, [tenant.id]);
 
   return useMemo(() => {
+    if (tenant.id === "doca") {
+      return {
+        label: address,
+        searchUrl: content.maps.searchUrl,
+        embedUrl: content.maps.embedUrl,
+      };
+    }
     const googleQuery =
       googleLocation?.locationName ||
       [location?.name, address].filter(Boolean).join(" ") ||
@@ -123,7 +131,7 @@ export function useVenueMap() {
       searchUrl: googleMapsSearchUrl(query, placeId),
       embedUrl: googleMapsEmbedUrl(query, placeId),
     };
-  }, [address, content.address.full, googleLocation, location?.name]);
+  }, [address, content.address.full, content.maps.embedUrl, content.maps.searchUrl, googleLocation, location?.name, tenant.id]);
 }
 
 export function VenueGoogleMapsLink({
@@ -180,17 +188,27 @@ export function VenueHoursList({
 }: {
   variant?: "footer" | "contatti" | "find-us";
 }) {
+  const tenant = useTenant();
+  const docaCopy = useDocaCopy();
+  const docaLanguage = useDocaLanguage();
   const hours = usePublicHours();
+  const dayLabels: Record<string, Record<string, string>> = {
+    pt: { Lunedì: "Segunda", Martedì: "Terca", Mercoledì: "Quarta", Giovedì: "Quinta", Venerdì: "Sexta", Sabato: "Sabado", Domenica: "Domingo" },
+    en: { Lunedì: "Monday", Martedì: "Tuesday", Mercoledì: "Wednesday", Giovedì: "Thursday", Venerdì: "Friday", Sabato: "Saturday", Domenica: "Sunday" },
+  };
+  const labelFor = (label: string) =>
+    tenant.id === "doca" ? dayLabels[docaLanguage]?.[label] ?? label : label;
+  const closedLabel = tenant.id === "doca" ? docaCopy.closed : "Chiuso";
 
   if (variant === "find-us") {
     return (
       <dd className="mt-0.5 grid gap-x-6 gap-y-1 sm:grid-cols-2">
         {hours.map((h) => (
           <div key={h.label} className="flex justify-between gap-3 text-sm">
-            <span className="font-semibold">{h.label}</span>
+            <span className="font-semibold">{labelFor(h.label)}</span>
             <span className="text-pork-ink/70">
               {h.closed ? (
-                <span className="text-pork-red">Chiuso</span>
+                <span className="text-pork-red">{closedLabel}</span>
               ) : (
                 h.slots.filter(Boolean).join(" / ") || "—"
               )}
@@ -206,10 +224,10 @@ export function VenueHoursList({
       <ul className="mt-3 divide-y divide-pork-ink/10">
         {hours.map((h) => (
           <li key={h.label} className="flex justify-between py-2">
-            <span className="font-semibold">{h.label}</span>
+            <span className="font-semibold">{labelFor(h.label)}</span>
             <span className="text-pork-ink/70">
               {h.closed ? (
-                <span className="font-semibold text-pork-red">Chiuso</span>
+                <span className="font-semibold text-pork-red">{closedLabel}</span>
               ) : (
                 h.slots.filter(Boolean).join(" / ") || "—"
               )}
@@ -224,14 +242,14 @@ export function VenueHoursList({
     <ul className="mt-4 space-y-1.5 text-sm">
       {hours.map((h) => (
         <li key={h.label} className="flex justify-between gap-4">
-          <span className="font-semibold text-pork-cream/90">{h.label}</span>
+          <span className="font-semibold text-pork-cream/90">{labelFor(h.label)}</span>
           <span className="text-right text-pork-cream/70">
             {h.closed ? (
-              <span className="text-pork-red">Chiuso</span>
+              <span className="text-pork-red">{closedLabel}</span>
             ) : h.slots.filter(Boolean).length ? (
               h.slots.filter(Boolean).map((s) => <div key={s}>{s}</div>)
             ) : (
-              <span className="text-pork-red">Chiuso</span>
+              <span className="text-pork-red">{closedLabel}</span>
             )}
           </span>
         </li>

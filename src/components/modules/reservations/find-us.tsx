@@ -11,25 +11,27 @@ import {
   VenuePhoneDisplay,
   VenueWhatsappLink,
 } from "@/components/modules/reservations/venue-display";
+import { useDocaCopy } from "@/lib/doca-i18n";
 
 export function FindUs() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
   const isDoca = tenant.id === "doca";
+  const docaCopy = useDocaCopy();
 
   return (
     <section className="tenant-find-us bg-pork-cream py-20 md:py-28">
       <div className="container-wide">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
           <div>
-            <span className="chip-red">{content.findUs.eyebrow}</span>
+            <span className="chip-red">{isDoca ? docaCopy.findEyebrow : content.findUs.eyebrow}</span>
             <h2 className="headline mt-4 text-5xl sm:text-6xl lg:text-7xl text-balance">
-              {content.findUs.titleLead}
+              {isDoca ? docaCopy.findTitleLead : content.findUs.titleLead}
               <br />
-              <span className="text-pork-red">{content.findUs.titleAccent}</span>
+              <span className="text-pork-red">{isDoca ? docaCopy.findTitleAccent : content.findUs.titleAccent}</span>
             </h2>
             <p className="mt-4 max-w-xl text-lg text-pork-ink/70">
-              {content.findUs.body}
+              {isDoca ? docaCopy.findBody : content.findUs.body}
             </p>
 
             <dl className="mt-8 space-y-5">
@@ -39,7 +41,7 @@ export function FindUs() {
                 </div>
                 <div>
                   <dt className="text-xs font-black uppercase tracking-widest text-pork-ink/60">
-                    Indirizzo
+                    {isDoca ? docaCopy.address : "Indirizzo"}
                   </dt>
                   <dd className="mt-0.5 text-pork-ink">
                     <VenueGoogleMapsLink className="font-semibold hover:underline">
@@ -55,7 +57,7 @@ export function FindUs() {
                 </div>
                 <div>
                   <dt className="text-xs font-black uppercase tracking-widest text-pork-ink/60">
-                    {isDoca ? "Contatto" : "Chiama"}
+                    {isDoca ? docaCopy.contact : "Chiama"}
                   </dt>
                   <dd className="mt-0.5 text-pork-ink">
                     <VenuePhoneDisplay className="font-semibold hover:underline" />
@@ -69,7 +71,7 @@ export function FindUs() {
                 </div>
                 <div>
                   <dt className="text-xs font-black uppercase tracking-widest text-pork-ink/60">
-                    Orari
+                    {isDoca ? docaCopy.hours : "Orari"}
                   </dt>
                   <VenueHoursList variant="find-us" />
                 </div>
@@ -79,10 +81,10 @@ export function FindUs() {
             <div className="mt-8 flex flex-wrap gap-3">
               <VenueWhatsappLink className="btn-primary text-base">
                 <MessageCircle size={20} />
-                {isDoca ? content.hero.ctaLabel : "Prenota un tavolo"}
+                {isDoca ? docaCopy.reserve : "Prenota un tavolo"}
               </VenueWhatsappLink>
               <VenueGoogleMapsLink className="btn-ghost text-base">
-                Apri in Google Maps
+                {isDoca ? docaCopy.maps : "Apri in Google Maps"}
               </VenueGoogleMapsLink>
             </div>
           </div>

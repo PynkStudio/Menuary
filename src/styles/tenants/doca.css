@@ -1,4 +1,4 @@
-/* doca.css — Doca: insegna crema, logotipo bordeaux, brigadeiros illustrati. */
+/* doca.css — Doca: insegna crema, logotipo terracotta, bakery brasiliana di quartiere. */
 @layer components {
   [data-tenant-surface="doca"] {
     --doca-font-display: var(--font-menuary-display), "Fraunces", Georgia, serif;
@@ -7,7 +7,7 @@
     --doca-cream-soft: #fff3d1;
     --doca-paper: #f8ead0;
     --doca-porcelain: #eef0ea;
-    --doca-red: #b73525;
+    --doca-red: #a7522a;
     --doca-red-deep: #842316;
     --doca-plum: #8c5173;
     --doca-cacao: #402111;
@@ -109,7 +109,7 @@
     font-weight: 900;
     line-height: 0.82;
     letter-spacing: 0;
-    color: var(--doca-plum);
+    color: #a7522a;
     text-shadow: 0 16px 0 rgba(183, 53, 37, 0.08);
   }
 
@@ -244,91 +244,57 @@
     inset: 0;
   }
 
-  [data-tenant-surface="doca"] .doca-brigadeiro {
+  [data-tenant-surface="doca"] .doca-language-selector {
+    display: inline-flex;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+    padding: 0.25rem;
+    border: 2px solid rgba(132, 35, 22, 0.32);
+    background: rgba(255, 243, 209, 0.52);
+  }
+
+  [data-tenant-surface="doca"] .doca-language-selector button {
+    min-width: 2.3rem;
+    padding: 0.28rem 0.38rem;
+    color: var(--doca-red-deep);
+    font-size: 0.69rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    transition: background 180ms ease, color 180ms ease;
+  }
+
+  [data-tenant-surface="doca"] .doca-language-selector button.is-active {
+    background: var(--doca-red);
+    color: var(--doca-cream-soft);
+  }
+
+  [data-tenant-surface="doca"] .doca-floating-food {
     position: absolute;
-    display: block;
+    display: grid;
     width: clamp(4.2rem, 8vw, 6.4rem);
     aspect-ratio: 1;
-    filter: drop-shadow(0 14px 18px rgba(64, 33, 17, 0.22));
-  }
-
-  [data-tenant-surface="doca"] .doca-brigadeiro::before {
-    content: "";
-    position: absolute;
-    left: 12%;
-    right: 12%;
-    bottom: 0;
-    height: 40%;
-    background:
-      repeating-linear-gradient(82deg, rgba(64, 33, 17, 0.18) 0 2px, transparent 2px 8px),
-      #fff4dd;
-    clip-path: polygon(0 0, 100% 0, 84% 100%, 16% 100%);
-  }
-
-  [data-tenant-surface="doca"] .doca-brigadeiro::after {
-    content: "";
-    position: absolute;
-    left: 7%;
-    right: 7%;
-    top: 5%;
-    height: 66%;
+    place-items: center;
+    border: 4px solid var(--doca-cream-soft);
     border-radius: 50%;
-    background:
-      radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.35), transparent 15%),
-      repeating-linear-gradient(26deg, transparent 0 7px, rgba(39, 21, 13, 0.24) 7px 10px);
+    background: rgba(255, 243, 209, 0.9);
+    box-shadow: 0 14px 22px rgba(64, 33, 17, 0.22);
+    font-size: clamp(2.3rem, 5vw, 4rem);
+    line-height: 1;
   }
 
-  [data-tenant-surface="doca"] .doca-brigadeiro i {
-    position: absolute;
-    z-index: 2;
-    left: 31%;
-    top: 29%;
-    display: block;
-    width: 38%;
-    height: 18%;
-    border-radius: 50%;
-    background: rgba(39, 21, 13, 0.8);
-    transform: rotate(-18deg);
-  }
-
-  [data-tenant-surface="doca"] .doca-brigadeiro-choco {
+  [data-tenant-surface="doca"] .doca-floating-coffee {
     right: 5%;
     top: 0;
   }
 
-  [data-tenant-surface="doca"] .doca-brigadeiro-choco::after {
-    background:
-      radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.22), transparent 15%),
-      repeating-linear-gradient(26deg, transparent 0 7px, rgba(255, 223, 195, 0.35) 7px 10px),
-      #7b3f24;
-  }
-
-  [data-tenant-surface="doca"] .doca-brigadeiro-pistachio {
+  [data-tenant-surface="doca"] .doca-floating-bread {
     left: 2%;
     bottom: 16%;
   }
 
-  [data-tenant-surface="doca"] .doca-brigadeiro-pistachio::after {
-    background:
-      radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.45), transparent 14%),
-      repeating-linear-gradient(26deg, transparent 0 7px, rgba(64, 33, 17, 0.12) 7px 10px),
-      var(--doca-pistachio);
-  }
-
-  [data-tenant-surface="doca"] .doca-brigadeiro-pistachio i {
-    background: #6c7a13;
-  }
-
-  [data-tenant-surface="doca"] .doca-brigadeiro-cacao {
+  [data-tenant-surface="doca"] .doca-floating-cake {
     right: 22%;
     bottom: -2%;
-  }
-
-  [data-tenant-surface="doca"] .doca-brigadeiro-cacao::after {
-    background:
-      radial-gradient(circle at 35% 26%, rgba(255, 255, 255, 0.20), transparent 15%),
-      repeating-linear-gradient(26deg, transparent 0 7px, rgba(255, 255, 255, 0.15) 7px 10px),
-      #2c160d;
   }
 
   [data-tenant-surface="doca"] .doca-scroll {

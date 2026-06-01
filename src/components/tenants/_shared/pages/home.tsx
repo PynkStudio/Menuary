@@ -8,6 +8,7 @@ import { ReviewsSection } from "@/components/modules/reviews/reviews-section";
 import { FindUs } from "@/components/modules/reservations/find-us";
 import { DeliveryStrip } from "@/components/modules/shop/delivery-strip";
 import { useTenant } from "@/components/core/tenant-provider";
+import { DocaAbout } from "@/components/tenants/doca/doca-about";
 
 export function TenantHomePage() {
   const tenant = useTenant();
@@ -16,7 +17,8 @@ export function TenantHomePage() {
     <>
       <Hero />
       <ThreeSouls />
-      <SignatureDishes />
+      {tenant.id === "doca" && <DocaAbout />}
+      {tenant.id !== "doca" && <SignatureDishes />}
       {tenant.id === "bepork" && <FixedMenus />}
       <ReviewsSection />
       <FindUs />

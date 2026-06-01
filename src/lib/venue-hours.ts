@@ -19,12 +19,12 @@ export function defaultHoursWeek(): DaySchedule[] {
 export function docaHoursWeek(): DaySchedule[] {
   return [
     { label: "Lunedì", closed: true, slots: [] },
-    { label: "Martedì", closed: true, slots: [] },
-    { label: "Mercoledì", closed: false, slots: ["08:30 – 13:00"] },
-    { label: "Giovedì", closed: false, slots: ["08:30 – 13:00"] },
-    { label: "Venerdì", closed: false, slots: ["08:30 – 13:00"] },
+    { label: "Martedì", closed: false, slots: ["08:00 – 18:30"] },
+    { label: "Mercoledì", closed: false, slots: ["08:00 – 18:30"] },
+    { label: "Giovedì", closed: false, slots: ["08:00 – 18:30"] },
+    { label: "Venerdì", closed: false, slots: ["08:00 – 18:30"] },
     { label: "Sabato", closed: false, slots: ["08:30 – 13:00"] },
-    { label: "Domenica", closed: true, slots: [] },
+    { label: "Domenica", closed: false, slots: ["08:30 – 13:00"] },
   ];
 }
 

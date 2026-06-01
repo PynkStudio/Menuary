@@ -268,7 +268,7 @@ export const TENANTS: TenantProfile[] = [
     theme: {
       // Palette ispirata al locale reale: legno, tonalità della terra,
       // illustrazioni brasiliane sobrie (no tropicale da cartolina).
-      red: "#A85F3A",        // terracotta / mattone caldo
+      red: "#A7522A",        // terracotta del logo DOCA
       redDark: "#7E4226",
       peach: "#EAD4B4",      // crema-sabbia
       cream: "#F6EDDD",      // sfondo carta calda

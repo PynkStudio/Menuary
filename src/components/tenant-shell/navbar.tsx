@@ -12,6 +12,7 @@ import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { LocationPicker } from "@/components/core/location-picker";
 import { VenueWhatsappLink } from "@/components/modules/reservations/venue-display";
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 const navBase = [
   { label: "Menu", href: "/menu" },
@@ -30,6 +31,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const setFavOpen = useFavoritesStore((s) => s.setOpen);
   const { allowTakeaway, favoritesEnabled, modules } = useEffectiveFeatures();
+  const tenantHref = useTenantLocalizedHref();
 
   const beporkModuleNav = useMemo(() => {
     if (tenant.id !== "bepork") return [] as { label: string; href: string }[];
@@ -81,7 +83,7 @@ export function Navbar() {
         )}
       >
         <div className="container-wide flex items-center justify-between py-3 md:py-4">
-          <Link href="/" className="group flex items-center gap-3" aria-label={`${tenant.name} home`}>
+          <Link href={tenantHref("/")} className="group flex items-center gap-3" aria-label={`${tenant.name} home`}>
             <Image
               src={content.logoSrc}
               alt={content.logoAlt}
@@ -108,7 +110,7 @@ export function Navbar() {
               ) : (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={tenantHref(item.href)}
                   className="rounded-full px-4 py-2 text-sm font-semibold text-pork-ink/80 transition-colors hover:bg-pork-ink/5 hover:text-pork-ink"
                 >
                   {item.label}
@@ -162,7 +164,7 @@ export function Navbar() {
               ) : (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={tenantHref(item.href)}
                   onClick={() => setOpen(false)}
                   className="headline block py-1 text-4xl text-pork-cream active:text-pork-mustard sm:text-5xl"
                 >

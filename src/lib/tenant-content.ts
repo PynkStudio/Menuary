@@ -789,24 +789,24 @@ const studioaranzullaContent: TenantContent = {
 };
 
 const docaContent: TenantContent = {
-  logoSrc: "/doca/vetrina.jpg",
+  logoSrc: "/doca/logo-doca.webp",
   logoAlt: "Doca Milano",
-  showcaseLogoSrc: "/doca/brigadeiros.jpg",
-  showcaseLogoAlt: "Brigadeiros Doca su vassoio rosso",
+  showcaseLogoSrc: "/doca/logo-doca.webp",
+  showcaseLogoAlt: "Logo Doca",
   description:
     "Doca — bakery brasiliana a Milano, zona Corvetto. Pane a lievitazione naturale con farine Mulino Viva, pão de queijo, torta di mais con guava, caffè filtro Cafezal. International breakfast with brazilian soul.",
   url: "https://www.instagram.com/doca.milano/",
   social: {
     instagram: "https://www.instagram.com/doca.milano/",
-    facebook: "https://www.instagram.com/doca.milano/",
+    facebook: "",
     instagramLabel: "Instagram @doca.milano",
-    facebookLabel: "Instagram @doca.milano",
+    facebookLabel: "",
   },
   contact: {
-    phone: "Instagram @doca.milano",
-    whatsappDigits: "",
+    phone: "352 067 2840",
+    whatsappDigits: "393520672840",
     whatsappMessage:
-      "Olá Doca! Vorrei sapere cosa c'è oggi al banco.",
+      "Olá Doca! Vorrei prenotare.",
   },
   address: {
     street: "Via Breno, 2",
@@ -817,7 +817,7 @@ const docaContent: TenantContent = {
   },
   maps: {
     searchUrl:
-      "https://www.google.com/maps/search/?api=1&query=Doca+-+Pane%2C+Caff%C3%A8%2C+Saudade+Via+Breno+2+Milano",
+      "https://www.google.com/maps/place/Doca+-+Pane,+Caff%C3%A8,+Saudade/@45.44248,9.2149812,17z/data=!3m1!4b1!4m6!3m5!1s0x4786c500463a3c21:0xab855fc6d4b925c3!8m2!3d45.44248!4d9.2149812!16s%2Fg%2F11ydc8s49q?entry=ttu",
     embedUrl:
       "https://www.google.com/maps?q=Doca+-+Pane%2C+Caff%C3%A8%2C+Saudade+Via+Breno+2+Milano&output=embed",
   },
@@ -828,39 +828,39 @@ const docaContent: TenantContent = {
     body:
       "Una piccola bakery di quartiere a sud di Milano. Lievitazione naturale con farine del Mulino Viva, caffè filtro da singola piantagione, ricette brasiliane di Queren — non il Brasile da cartolina, quello dell'infanzia.",
     backdrop: "/doca/brigadeiros.jpg",
-    ctaLabel: "Scrivici su Instagram",
+    ctaLabel: "Prenota su WhatsApp",
   },
   soulsIntro: {
     eyebrow: "Padoca — la panetteria di quartiere",
     titleLead: "Tecnica e memoria,",
     titleAccent: "professionalità e radici.",
     body:
-      "Doca viene da \"padoca\": quella panetteria sotto casa dove vai ogni mattina, conosci chi ti serve e ti senti a casa. Forno, caffè e dolci brasiliani sotto lo stesso tetto, dietro la finestra del laboratorio.",
+      "Doca viene da \"padoca\": quella panetteria sotto casa dove vai ogni mattina, conosci chi ti serve e ti senti a casa. Forno, caffè e dolci brasiliani sotto lo stesso tetto, in uno spazio che unisce bottega e laboratorio.",
   },
   souls: [
     {
       id: "pane",
-      kicker: "Dal laboratorio",
-      title: "Pane a lievitazione naturale",
-      desc: "Semi-integrale, con segale, ai semi e il pão da colônia — il pane in cassetta italo-brasiliano. Farine del Mulino Viva, in Piemonte. Si compra direttamente dalla finestra del laboratorio.",
+      kicker: "Dal forno",
+      title: "Il salato",
+      desc: "Pane a lievitazione naturale, pão de queijo e proposte salate preparate ogni giorno.",
       href: "/menu#pane",
-      image: "/doca/pane-scaffale.jpg",
+      image: "/doca/pane-campagna.webp",
     },
     {
       id: "caffe",
-      kicker: "Cafezal roastery",
-      title: "Espresso & filtro",
-      desc: "Espresso e caffè filtro da singola piantagione brasiliana. Una miscela dolce e morbida, scelta insieme alla torrefazione Cafezal. Si beve seduti o al banco, niente fretta.",
-      href: "/menu#caffe",
-      image: "/doca/caffe-filtro.jpg",
+      kicker: "Ricette brasiliane",
+      title: "Il dolce",
+      desc: "Torta di carote e brigadeiro, dolci di casa e sapori che attraversano l'oceano.",
+      href: "/menu#dolci",
+      image: "/doca/torta-carota-brigadeiro.webp",
     },
     {
       id: "dolci",
-      kicker: "Colazione internazionale, anima brasiliana",
-      title: "Dolci e lievitati",
-      desc: "Pão de queijo con manioca e Branzi, torta di carote con ganache al cioccolato, torta di mais con confettura di guava siciliana bio, cookies con noci dell'Amazzonia.",
-      href: "/menu#dolci",
-      image: "/doca/dolci.jpg",
+      kicker: "Caffè e filtro",
+      title: "Le bevande",
+      desc: "Espresso, caffè filtro e bevande da gustare con calma, al banco o seduti.",
+      href: "/menu#caffe",
+      image: "/doca/caffe-filtro.jpg",
     },
   ],
   dishesIntro: {
@@ -923,7 +923,7 @@ const docaContent: TenantContent = {
     titleLead: "Via Breno 2,",
     titleAccent: "Milano Corvetto.",
     body:
-      "Un ex centro scommesse trasformato in bakery, in zona San Luigi-Corvetto. Aperti da mercoledì a sabato, 08:30–13:00; chiusi lunedì, martedì e domenica. Pane direttamente dalla finestra del laboratorio, dolci e caffè al banco.",
+      "Ci trovi in zona Corvetto, in Via Breno 2. Passa per il pane, fermati per un caffè o prenota su WhatsApp.",
     mapTitle: "Mappa Doca — Via Breno 2, Milano",
   },
   footer: {

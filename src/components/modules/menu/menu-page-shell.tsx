@@ -8,6 +8,7 @@ import { MenuActiveTableBar } from "@/components/modules/table-orders/menu-activ
 import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
 import { PersonalizedMenuHint } from "@/components/modules/menu/personalized-menu-hint";
 import { useTenant } from "@/components/core/tenant-provider";
+import { DocaLanguageSelector } from "@/components/tenants/doca/doca-language-selector";
 
 export function MenuPageShell() {
   const tenant = useTenant();
@@ -21,6 +22,7 @@ export function MenuPageShell() {
       {!isDoca && <PersonalizedMenuHint />}
       <section className="tenant-menu-hero relative bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
         <div className="container-wide">
+          {isDoca && <DocaLanguageSelector />}
           <span className="chip-mustard">Menu</span>
           <h1 className="headline mt-4 text-6xl sm:text-7xl lg:text-8xl text-balance">
             {isDoca ? (

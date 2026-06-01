@@ -9,6 +9,8 @@ import {
 import { PolicySectionsView } from "@/components/legal/policy-sections-view";
 import { useSettingsStore } from "@/store/settings-store";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { useTenantOrNull } from "@/components/core/tenant-provider";
+import { getTenantContent } from "@/lib/tenant-content";
 
 function ModuleChip({ active, label }: { active: boolean; label: string }) {
   return (
@@ -35,6 +37,19 @@ export function DynamicPolicyDocument({
     dinerSeparationAtTables,
     kitchenDisplayEnabled,
   } = useEffectiveFeatures();
+  const tenant = useTenantOrNull();
+  const content = tenant ? getTenantContent(tenant.id) : null;
+  const controller = useMemo(
+    () =>
+      content
+        ? {
+            name: tenant?.name ?? "",
+            address: content.address.full,
+            phone: content.contact.phone,
+          }
+        : undefined,
+    [content, tenant?.name],
+  );
 
   const [settingsReady, setSettingsReady] = useState(() =>
     useSettingsStore.persist.hasHydrated(),
@@ -68,9 +83,9 @@ export function DynamicPolicyDocument({
   const sections = useMemo(
     () =>
       variant === "privacy"
-        ? buildPrivacySections(flags)
+        ? buildPrivacySections(flags, controller)
         : buildCookieSections(flags),
-    [variant, flags],
+    [variant, flags, controller],
   );
 
   /** Moduli ordinazione non tutti attivi → il comportamento del sito cambia in modo rilevante. */

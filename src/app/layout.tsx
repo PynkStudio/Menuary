@@ -46,6 +46,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchLocations } from "@/lib/location";
 import { LocationProvider } from "@/components/core/location-provider";
 import { Suspense } from "react";
+import { TenantLanguageProvider } from "@/lib/tenant-i18n";
+import { getTenantLocaleConfig } from "@/lib/tenant-locales";
+import { tenantLanguageAlternates } from "@/lib/tenant-localized-path";
 
 const display = Bagel_Fat_One({
   subsets: ["latin"],
@@ -83,8 +86,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const host = h.get("host");
   const modeHeader = h.get(PLATFORM_MODE_HEADER);
-  const tenant = findTenantById(h.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(host);
+  const localeHeader = h.get(LOCALE_HEADER);
+  const previewTenantId = h.get("x-preview-tenant-id");
+  const tenant = findTenantById(previewTenantId ?? "") ?? resolveTenantFromHost(host);
   const mode = getPlatformModeFromHeaderValue(modeHeader, host);
+  const isTenantPreview =
+    mode === "preview" ||
+    mode === "preview-bizery" ||
+    Boolean(previewTenantId);
 
   if (mode === "platform-admin") {
     return {
@@ -210,6 +219,16 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   const content = getTenantContent(tenant.id);
+  const tenantLocaleConfig = getTenantLocaleConfig(tenant.id);
+  const tenantPublicPath = h.get("x-tenant-public-path") ?? "/";
+  const tenantOrigin = host ? `${host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https"}://${host}` : content.url;
+  const tenantMetadataPreviewSlug =
+    tenant.previewSlug && tenantPublicPath.startsWith(`/${tenant.previewSlug}/`)
+      ? tenant.previewSlug
+      : undefined;
+  const tenantLocale = tenantLocaleConfig && localeHeader && tenantLocaleConfig.locales.includes(localeHeader)
+    ? localeHeader
+    : tenantLocaleConfig?.defaultLocale;
   const tenantTitle =
     tenant.id === "faak"
       ? `${tenant.name} - cibo e vino a ribellione naturale`
@@ -224,7 +243,13 @@ export async function generateMetadata(): Promise<Metadata> {
         : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
-    metadataBase: new URL(mode === "marketing" ? MENUARY_ORIGIN : content.url),
+    metadataBase: new URL(
+      mode === "marketing"
+        ? MENUARY_ORIGIN
+        : tenantLocaleConfig
+          ? tenantOrigin
+          : content.url,
+    ),
     title:
       mode === "marketing"
         ? {
@@ -289,7 +314,12 @@ export async function generateMetadata(): Promise<Metadata> {
         mode === "marketing"
           ? MENUARY_MARKETING_DESCRIPTION
           : content.description,
-      url: mode === "marketing" ? MENUARY_ORIGIN : content.url,
+      url:
+        mode === "marketing"
+          ? MENUARY_ORIGIN
+          : tenantLocaleConfig
+            ? `${tenantOrigin}${tenantPublicPath}`
+            : content.url,
       siteName: mode === "marketing" ? "Menuary" : tenant.name,
       locale: "it_IT",
       type: "website",
@@ -310,8 +340,21 @@ export async function generateMetadata(): Promise<Metadata> {
           : content.description,
       ...(mode === "marketing" ? {} : { images: [content.showcaseLogoSrc] }),
     },
+    ...(isTenantPreview
+      ? {
+          robots: {
+            index: false,
+            follow: false,
+            nocache: true,
+          },
+        }
+      : {}),
     alternates: {
-      canonical: mode === "marketing" ? MENUARY_ORIGIN : content.url,
+      canonical: mode === "marketing"
+        ? MENUARY_ORIGIN
+        : tenantLocaleConfig && tenantLocale
+          ? `${tenantOrigin}${tenantPublicPath}`
+          : content.url,
       ...(mode === "marketing"
         ? {
             languages: {
@@ -319,7 +362,17 @@ export async function generateMetadata(): Promise<Metadata> {
               "x-default": MENUARY_ORIGIN,
             },
           }
-        : {}),
+        : tenantLocaleConfig && tenantLocale
+          ? {
+              languages: tenantLanguageAlternates({
+                origin: tenantOrigin,
+                pathname: tenantPublicPath,
+                previewSlug: tenantMetadataPreviewSlug,
+                locales: tenantLocaleConfig.locales,
+                defaultLocale: tenantLocaleConfig.defaultLocale,
+              }),
+            }
+          : {}),
     },
     icons: buildIconSet(mode, tenant),
   };
@@ -482,7 +535,8 @@ export default async function RootLayout({
         ))}
         <Analytics />
         <PlatformModeProvider mode={mode}>
-          <TenantProvider tenant={tenant}>
+          <TenantLanguageProvider initialLanguage={localeHeader}>
+            <TenantProvider tenant={tenant}>
             {/* skipInPreview: in preview mode il tenant dell'host è il default del
                 verticale, non quello dello slug. La pagina preview gestisce il proprio gate. */}
             <SlabbbyScriptGate skipInPreview />
@@ -501,7 +555,8 @@ export default async function RootLayout({
                 </Providers>
               </LocationProvider>
             </Suspense>
-          </TenantProvider>
+            </TenantProvider>
+          </TenantLanguageProvider>
         </PlatformModeProvider>
       </body>
     </html>

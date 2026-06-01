@@ -9,6 +9,9 @@ import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { VenueWhatsappLink } from "@/components/modules/reservations/venue-display";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
+import { useDocaCopy } from "@/lib/doca-i18n";
+import { DocaLanguageSelector } from "@/components/tenants/doca/doca-language-selector";
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
@@ -17,11 +20,14 @@ export function Hero() {
   const pathname = usePathname();
   const content = getTenantContent(tenant.id);
   const isDoca = tenant.id === "doca";
+  const docaCopy = useDocaCopy();
+  const tenantHref = useTenantLocalizedHref();
   const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
-  const menuHref =
+  const baseMenuHref =
     (mode === "preview" || isPathPreview) && tenant.previewSlug
       ? `/${tenant.previewSlug}/menu`
       : "/menu";
+  const menuHref = tenantHref(baseMenuHref);
 
   const scrollToNext = () => {
     document.getElementById("tre-anime")?.scrollIntoView({
@@ -44,8 +50,9 @@ export function Hero() {
               transition={reduceMotion ? { duration: 0 } : { duration: 0.7, ease: "easeOut" }}
               className="doca-hero-copy"
             >
+              <DocaLanguageSelector />
               <div className="doca-logo-word" aria-label="Doca">
-                DOCA<span>*</span>
+                DOCA
               </div>
               <h1 className="doca-hero-title">
                 <span>Pane,</span>
@@ -53,18 +60,16 @@ export function Hero() {
                 <em>saudade.</em>
               </h1>
               <p className="doca-hero-text">
-                Bakery brasiliana di quartiere a Milano Corvetto. Pane a lievitazione
-                naturale, caffè filtro Cafezal, dolci di casa e brigadeiros vestiti
-                come piccoli personaggi da banco.
+                {docaCopy.heroBody}
               </p>
               <div className="doca-hero-actions">
                 <VenueWhatsappLink className="doca-button doca-button-primary">
                   <MessageCircle size={20} />
-                  {content.hero.ctaLabel}
+                  {docaCopy.reserve}
                 </VenueWhatsappLink>
                 <Link href={menuHref} className="doca-button doca-button-secondary">
                   <UtensilsCrossed size={20} />
-                  Guarda il menu
+                  {docaCopy.menu}
                 </Link>
               </div>
             </motion.div>
@@ -77,8 +82,8 @@ export function Hero() {
             >
               <div className="doca-photo doca-photo-main">
                 <Image
-                  src="/doca/brigadeiros.jpg"
-                  alt="Brigadeiros Doca in pirottini su vassoio rosso"
+                  src="/doca/proprietaria-sorridente.webp"
+                  alt="Queren Girardi sorridente da Doca"
                   fill
                   priority
                   sizes="(max-width: 1024px) 92vw, 520px"
@@ -87,8 +92,8 @@ export function Hero() {
               </div>
               <div className="doca-photo doca-photo-box">
                 <Image
-                  src="/doca/caixa-brigadeiros.jpg"
-                  alt="Scatola Doca per brigadeiros sortidos con illustrazioni"
+                  src="/doca/pao-de-queijo.webp"
+                  alt="Pao de queijo appena sfornati"
                   fill
                   sizes="(max-width: 1024px) 48vw, 250px"
                   className="object-cover"
@@ -96,14 +101,14 @@ export function Hero() {
               </div>
               <div className="doca-photo doca-photo-sign">
                 <Image
-                  src="/doca/insegna.jpg"
-                  alt="Insegna Doca color crema con logotipo bordeaux"
+                  src="/doca/torta-carota-brigadeiro.webp"
+                  alt="Torta di carote con brigadeiro"
                   fill
                   sizes="(max-width: 1024px) 46vw, 230px"
                   className="object-cover"
                 />
               </div>
-              <DocaBrigadeiroCharacters reduceMotion={reduceMotion} />
+              <DocaFloatingFood reduceMotion={reduceMotion} />
             </motion.div>
           </div>
         </div>
@@ -114,7 +119,7 @@ export function Hero() {
           className="doca-scroll"
           aria-label="Scorri alla sezione successiva"
         >
-          <span>Scorri</span>
+          <span>{docaCopy.scroll}</span>
           <ChevronDown className="size-6" strokeWidth={2} />
         </button>
       </section>
@@ -227,7 +232,7 @@ export function Hero() {
   );
 }
 
-function DocaBrigadeiroCharacters({ reduceMotion }: { reduceMotion: boolean | null }) {
+function DocaFloatingFood({ reduceMotion }: { reduceMotion: boolean | null }) {
   const animation = reduceMotion ? undefined : { y: [0, -8, 0], rotate: [-1, 2, -1] };
   const transition = reduceMotion
     ? undefined
@@ -235,23 +240,17 @@ function DocaBrigadeiroCharacters({ reduceMotion }: { reduceMotion: boolean | nu
 
   return (
     <div className="doca-characters" aria-hidden="true">
-      <motion.span className="doca-brigadeiro doca-brigadeiro-choco" animate={animation} transition={transition}>
-        <i />
-      </motion.span>
+      <motion.span className="doca-floating-food doca-floating-coffee" animate={animation} transition={transition}>☕</motion.span>
       <motion.span
-        className="doca-brigadeiro doca-brigadeiro-pistachio"
+        className="doca-floating-food doca-floating-bread"
         animate={reduceMotion ? undefined : { y: [0, 7, 0], rotate: [2, -2, 2] }}
         transition={reduceMotion ? undefined : { repeat: Infinity, duration: 3.9, ease: "easeInOut", delay: 0.3 }}
-      >
-        <i />
-      </motion.span>
+      >🥖</motion.span>
       <motion.span
-        className="doca-brigadeiro doca-brigadeiro-cacao"
+        className="doca-floating-food doca-floating-cake"
         animate={reduceMotion ? undefined : { y: [0, -6, 0], rotate: [0, -3, 0] }}
         transition={reduceMotion ? undefined : { repeat: Infinity, duration: 3.1, ease: "easeInOut", delay: 0.5 }}
-      >
-        <i />
-      </motion.span>
+      >🍰</motion.span>
     </div>
   );
 }

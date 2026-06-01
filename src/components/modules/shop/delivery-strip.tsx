@@ -3,10 +3,13 @@
 import { Truck } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
+import { useDocaCopy } from "@/lib/doca-i18n";
 
 export function DeliveryStrip() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
+  const docaCopy = useDocaCopy();
+  const isDoca = tenant.id === "doca";
 
   return (
     <section className="tenant-delivery-strip bg-pork-ink text-pork-cream">
@@ -16,9 +19,9 @@ export function DeliveryStrip() {
             <Truck size={22} />
           </div>
           <div>
-            <p className="impact-title text-2xl">{content.delivery.title}</p>
+            <p className="impact-title text-2xl">{isDoca ? docaCopy.deliveryTitle : content.delivery.title}</p>
             <p className="text-sm text-pork-cream/70">
-              {content.delivery.body}
+              {isDoca ? docaCopy.deliveryBody : content.delivery.body}
             </p>
           </div>
         </div>

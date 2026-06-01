@@ -9,12 +9,13 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
   const origin =
     mode === "marketing" ? MENUARY_ORIGIN : mode === "marketing-bizery" ? BIZERY_ORIGIN : siteConfig.url;
+  const isPreview = mode === "preview" || mode === "preview-bizery";
 
   return {
     rules: {
       userAgent: "*",
-      allow: "/",
+      ...(isPreview ? { disallow: "/" } : { allow: "/" }),
     },
-    sitemap: `${origin}/sitemap.xml`,
+    ...(isPreview ? {} : { sitemap: `${origin}/sitemap.xml` }),
   };
 }

@@ -13,25 +13,41 @@ export type PolicySection = {
   bullets?: string[];
 };
 
+export type PolicyController = {
+  name: string;
+  address: string;
+  phone: string;
+  email?: string;
+};
+
 const hasAnyOrdering = (f: PolicyModuleFlags) =>
   f.allowTakeaway || f.allowTableOrders;
 
-function dataControllerBlock(): PolicySection {
+function dataControllerBlock(controller?: PolicyController): PolicySection {
+  const owner = controller ?? {
+    name: siteConfig.name,
+    address: siteConfig.address.full,
+    phone: siteConfig.contact.phone,
+    email: siteConfig.contact.email,
+  };
   return {
     id: "titolare",
     title: "Titolare del trattamento",
     body: [
       "Il titolare del trattamento dei dati personali raccolti attraverso il sito e le funzionalità connesse è, ai sensi dell’art. 4 n. 7 GDPR:",
-      `${siteConfig.name} — ${siteConfig.address.full}. Contatti: telefono ${siteConfig.contact.phone}${
-        siteConfig.contact.email
-          ? `, e-mail ${siteConfig.contact.email}.`
+      `${owner.name} — ${owner.address}. Contatti: telefono ${owner.phone}${
+        owner.email
+          ? `, e-mail ${owner.email}.`
           : " (per richieste inerenti la privacy preferire contatto telefonico o canale che indicheremo su richiesta)."
       }`,
     ],
   };
 }
 
-export function buildPrivacySections(f: PolicyModuleFlags): PolicySection[] {
+export function buildPrivacySections(
+  f: PolicyModuleFlags,
+  controller?: PolicyController,
+): PolicySection[] {
   const orderBullets: string[] = [];
   if (f.allowTakeaway) {
     orderBullets.push(
@@ -49,7 +65,7 @@ export function buildPrivacySections(f: PolicyModuleFlags): PolicySection[] {
   }
 
   const sections: PolicySection[] = [
-    dataControllerBlock(),
+    dataControllerBlock(controller),
     {
       id: "finalita",
       title: "Quali dati trattiamo e perché",

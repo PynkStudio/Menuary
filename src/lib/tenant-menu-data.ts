@@ -165,7 +165,7 @@ export const docaMenu: MenuCategory[] = [
           "Amido di manioca e formaggio Branzi. Caldo, elastico, da mangiare appena uscito.",
         price: s(2.5),
         tags: ["firma"],
-        image: "/doca/pao-de-queijo.jpg",
+        image: "/doca/pao-de-queijo.webp",
       },
       {
         id: "doca-torta-mais-guava",
@@ -191,7 +191,7 @@ export const docaMenu: MenuCategory[] = [
         description:
           "Il bolo de cenoura brasiliano, con ganache al cioccolato fondente.",
         price: s(4.5),
-        image: "/doca/dolci.jpg",
+        image: "/doca/torta-carota-brigadeiro.webp",
       },
       {
         id: "doca-cookie-amazzonia",

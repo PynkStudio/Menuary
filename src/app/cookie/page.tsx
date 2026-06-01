@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import { DynamicPolicyDocument } from "@/components/legal/dynamic-policy-document";
-import { siteConfig } from "@/lib/site-config";
+import { tenantPolicyMetadata } from "@/lib/legal/tenant-policy-metadata";
 
-export const metadata: Metadata = {
-  title: "Cookie policy",
-  description: `Cookie e tecnologie sul dispositivo — ${siteConfig.name}.`,
-  alternates: {
-    canonical: `${siteConfig.url}/cookie`,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return tenantPolicyMetadata("cookie");
+}
 
 export default function CookiePolicyPage() {
   return (
