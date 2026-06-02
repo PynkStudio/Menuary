@@ -11,6 +11,7 @@ import type { EmployeeRole } from "@/lib/store-roles";
 import { fetchLocations, fetchStaffAllowedLocationIds, filterAllowedLocations } from "@/lib/location";
 import { getPlatformModeFromHost, isDemoHost } from "@/lib/platform";
 import { DemoModeInstaller } from "@/components/gestione/demo-mode-installer";
+import { getTenantDemoControl } from "@/lib/demo-controls";
 import { resolveSessionCookieDomain, usesSharedMenuarySession } from "@/lib/session-cookie-domain";
 import type { LoginFrom } from "@/lib/login-url";
 import { getGestioneBaseHref } from "@/lib/gestione-routing";
@@ -41,7 +42,14 @@ export default async function GestioneLayout({ children, params }: Props) {
 
   const host = (await headers()).get("host") ?? "";
   const mode = getPlatformModeFromHost(host);
-  const isDemo = isDemoHost(host);
+  const isDemoHostname = isDemoHost(host);
+  // "Backend live": override siteadmin-only che, su host demo, fa parlare la
+  // gestione con Supabase invece dei fixture localStorage. Login resta bypassato
+  // (test-friendly), ma le query e le scritture sono reali.
+  const demoControl = isDemoHostname ? await getTenantDemoControl(tenantSlug).catch(() => null) : null;
+  const backendLive = Boolean(demoControl?.backendLive);
+  const isDemo = isDemoHostname && !backendLive;
+  const skipAuthGate = isDemoHostname; // copre sia demo classico sia demo+backendLive
   const isDemoGestione =
     host === "demo.menuary.it" || host === "demo.menuary.localhost";
   const loginFrom: LoginFrom =
@@ -58,11 +66,11 @@ export default async function GestioneLayout({ children, params }: Props) {
   // Menuary: cookie condiviso su .menuary.it (redirect-based login).
   const cookieDomain = resolveSessionCookieDomain(host);
   const supabase = await createSupabaseServerClient(cookieDomain);
-  const { data: { user } } = isDemo
+  const { data: { user } } = skipAuthGate
     ? { data: { user: null } }
     : await supabase.auth.getUser();
 
-  if (!user && !isDemo) {
+  if (!user && !skipAuthGate) {
     if (usesPopupLogin) {
       // Cross-domain: non si può fare redirect + aspettarsi il cookie .bizery.it.
       // Mostriamo il login gate client-side che apre il popup su login.menuary.it.
@@ -90,7 +98,7 @@ export default async function GestioneLayout({ children, params }: Props) {
     redirect(`https://login.menuary.it?from=${encodeURIComponent(loginFrom)}&next=${next}`);
   }
 
-  const [{ data: sa }, { data: ta }, { data: emp }, adminUserRow] = isDemo
+  const [{ data: sa }, { data: ta }, { data: emp }, adminUserRow] = skipAuthGate
     ? [
         { data: null as null },
         { data: null as null },
@@ -104,9 +112,9 @@ export default async function GestioneLayout({ children, params }: Props) {
         supabase.from("admin_users").select("id").eq("auth_user_id", user!.id).eq("tenant_id", tenantSlug).maybeSingle(),
       ]);
 
-  const isSiteadmin = isDemo || !!sa;
-  const isTenantAdmin = isDemo || !!ta;
-  const hasAccess = isDemo || isSiteadmin || isTenantAdmin || !!emp;
+  const isSiteadmin = skipAuthGate || !!sa;
+  const isTenantAdmin = skipAuthGate || !!ta;
+  const hasAccess = skipAuthGate || isSiteadmin || isTenantAdmin || !!emp;
 
   if (!hasAccess) {
     if (usesPopupLogin) {
@@ -159,6 +167,7 @@ export default async function GestioneLayout({ children, params }: Props) {
     <div
       className="gestione-admin"
       data-gestione-tenant={tenantSlug}
+      data-backend-live={backendLive ? "true" : "false"}
       style={{
         ["--ga-accent" as string]: tenant.theme.red,
         ["--ga-accent-soft" as string]: `${tenant.theme.red}24`,
@@ -174,8 +183,15 @@ export default async function GestioneLayout({ children, params }: Props) {
           features: tenant.features,
         }}
         currentUser={{
-          email: ta?.email ?? emp?.email ?? user?.email ?? (isDemo ? "demo@menuary.it" : ""),
-          displayName: ta?.display_name ?? emp?.display_name ?? (isDemo ? "Demo" : null),
+          email:
+            ta?.email
+            ?? emp?.email
+            ?? user?.email
+            ?? (isDemo ? "demo@menuary.it" : backendLive ? "backend-live@menuary.it" : ""),
+          displayName:
+            ta?.display_name
+            ?? emp?.display_name
+            ?? (isDemo ? "Demo" : backendLive ? "Backend live" : null),
           role: (emp?.role as EmployeeRole | null) ?? null,
           permissions: (emp?.permissions as Record<string, boolean>) ?? {},
           isTenantAdmin: isTenantAdmin || isSiteadmin,
@@ -186,7 +202,7 @@ export default async function GestioneLayout({ children, params }: Props) {
       >
         <TenantProvider tenant={tenant}>{children}</TenantProvider>
       </GestioneShell>
-      {!isDemo && <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />}
+      {!isDemoHostname && <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />}
       {isDemo && <DemoModeInstaller />}
     </div>
   );
