@@ -14,6 +14,33 @@ export type ModuleSuspension = {
   createdAt: number;
 };
 
+export type SocialLinkKey =
+  | "instagram"
+  | "facebook"
+  | "tiktok"
+  | "youtube"
+  | "linkedin"
+  | "x"
+  | "threads"
+  | "tripadvisor"
+  | "google"
+  | "whatsapp";
+
+export type SocialLinks = Record<SocialLinkKey, string>;
+
+export const EMPTY_SOCIAL_LINKS: SocialLinks = {
+  instagram: "",
+  facebook: "",
+  tiktok: "",
+  youtube: "",
+  linkedin: "",
+  x: "",
+  threads: "",
+  tripadvisor: "",
+  google: "",
+  whatsapp: "",
+};
+
 export type SiteSettingsState = {
   dinerSeparationAtTables: boolean;
   allowTakeaway: boolean;
@@ -31,6 +58,8 @@ export type SiteSettingsState = {
   workWithUsEmailOverride: string;
   collaborationsEnabled: boolean;
   collaborationsEmailOverride: string;
+  socialLinks: SocialLinks;
+  socialLinksConfigured: boolean;
 };
 
 export type SettingsStore = SiteSettingsState & {
@@ -60,6 +89,8 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettingsState = {
   workWithUsEmailOverride: "",
   collaborationsEnabled: false,
   collaborationsEmailOverride: "",
+  socialLinks: EMPTY_SOCIAL_LINKS,
+  socialLinksConfigured: false,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -149,6 +180,8 @@ export const useSettingsStore = create<SettingsStore>()(
         workWithUsEmailOverride: s.workWithUsEmailOverride,
         collaborationsEnabled: s.collaborationsEnabled,
         collaborationsEmailOverride: s.collaborationsEmailOverride,
+        socialLinks: s.socialLinks,
+        socialLinksConfigured: s.socialLinksConfigured,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<SiteSettingsState>;
@@ -156,6 +189,8 @@ export const useSettingsStore = create<SettingsStore>()(
         merged.showMenuPrices = p.showMenuPrices ?? current.showMenuPrices;
         merged.moduleOverrides = merged.moduleOverrides ?? {};
         merged.moduleSuspensions = merged.moduleSuspensions ?? {};
+        merged.socialLinks = { ...EMPTY_SOCIAL_LINKS, ...(p.socialLinks ?? {}) };
+        merged.socialLinksConfigured = p.socialLinksConfigured ?? current.socialLinksConfigured;
         if (!merged.hoursWeek || merged.hoursWeek.length !== 7) {
           merged.hoursWeek = defaultHoursWeek();
         }

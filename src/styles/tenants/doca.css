@@ -464,6 +464,18 @@
       padding-bottom: 5rem;
     }
 
+    [data-tenant-surface="doca"] .tenant-souls,
+    [data-tenant-surface="doca"] .doca-about,
+    [data-tenant-surface="doca"] .tenant-reviews,
+    [data-tenant-surface="doca"] .tenant-find-us {
+      padding-top: 3rem;
+      padding-bottom: 3rem;
+    }
+
+    [data-tenant-surface="doca"] footer {
+      margin-top: 0;
+    }
+
     [data-tenant-surface="doca"] .doca-logo-word {
       font-size: clamp(4rem, 19vw, 6.5rem);
       width: 100%;

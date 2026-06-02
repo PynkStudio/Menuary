@@ -3,7 +3,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Instagram, Facebook, Phone, MapPin, Lock } from "lucide-react";
+import type { ComponentType } from "react";
+import {
+  Facebook,
+  Globe2,
+  Instagram,
+  Linkedin,
+  Lock,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Music2,
+  Phone,
+  Twitter,
+  Youtube,
+} from "lucide-react";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
@@ -24,6 +38,28 @@ import { useDocaCopy } from "@/lib/doca-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import { getTenantLocaleConfig, matchTenantLocale } from "@/lib/tenant-locales";
 import { useSettingsStore } from "@/store/settings-store";
+import {
+  EMPTY_SOCIAL_LINKS,
+  type SocialLinkKey,
+  type SocialLinks,
+} from "@/store/settings-store";
+
+const SOCIAL_ITEMS: Array<{
+  key: SocialLinkKey;
+  label: string;
+  icon: ComponentType<{ size?: number }>;
+}> = [
+  { key: "instagram", label: "Instagram", icon: Instagram },
+  { key: "facebook", label: "Facebook", icon: Facebook },
+  { key: "tiktok", label: "TikTok", icon: Music2 },
+  { key: "youtube", label: "YouTube", icon: Youtube },
+  { key: "linkedin", label: "LinkedIn", icon: Linkedin },
+  { key: "x", label: "X", icon: Twitter },
+  { key: "threads", label: "Threads", icon: MessageCircle },
+  { key: "tripadvisor", label: "Tripadvisor", icon: Globe2 },
+  { key: "google", label: "Google Business", icon: MapPin },
+  { key: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+];
 
 function isTenantHomePath(pathname: string | null, tenantId: string, previewSlug?: string) {
   const parts = (pathname ?? "/").split("/").filter(Boolean);
@@ -41,6 +77,25 @@ function mailtoHref(email: string, subject: string) {
   return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
 }
 
+function defaultSocialLinks(content: ReturnType<typeof getTenantContent>): SocialLinks {
+  return {
+    ...EMPTY_SOCIAL_LINKS,
+    instagram: content.social.instagram,
+    facebook: content.social.facebook,
+  };
+}
+
+function socialHref(key: SocialLinkKey, value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (key === "whatsapp" && !trimmed.startsWith("http")) {
+    const digits = trimmed.replace(/\D/g, "");
+    return digits ? `https://wa.me/${digits}` : "";
+  }
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  return `https://${trimmed}`;
+}
+
 export function Footer() {
   const tenant = useTenant();
   const pathname = usePathname();
@@ -52,6 +107,8 @@ export function Footer() {
   const workWithUsEmail = useSettingsStore((state) => state.workWithUsEmailOverride.trim());
   const collaborationsEnabled = useSettingsStore((state) => state.collaborationsEnabled);
   const collaborationsEmail = useSettingsStore((state) => state.collaborationsEmailOverride.trim());
+  const socialLinks = useSettingsStore((state) => state.socialLinks);
+  const socialLinksConfigured = useSettingsStore((state) => state.socialLinksConfigured);
   const isDemo = mode === "preview" || mode === "preview-bizery";
   const isDoca = tenant.id === "doca";
   const hideVenueDetails = isTenantHomePath(pathname, tenant.id, tenant.previewSlug);
@@ -59,13 +116,27 @@ export function Footer() {
   const tenantHref = useTenantLocalizedHref();
   const workWithUsRecipient = workWithUsEmail || mainEmail;
   const collaborationsRecipient = collaborationsEmail || mainEmail;
+  const effectiveSocialLinks = socialLinksConfigured
+    ? { ...EMPTY_SOCIAL_LINKS, ...socialLinks }
+    : defaultSocialLinks(content);
+  const visibleSocialLinks = SOCIAL_ITEMS.map((item) => ({
+    ...item,
+    href: socialHref(item.key, effectiveSocialLinks[item.key]),
+  })).filter((item) => item.href);
+  const footerGridClass = visibleSocialLinks.length > 0
+    ? hideVenueDetails
+      ? "md:grid-cols-4"
+      : "md:grid-cols-5"
+    : hideVenueDetails
+      ? "md:grid-cols-3"
+      : "md:grid-cols-4";
   const staffHref = isDemo
     ? `/${tenant.id}/gestione`
     : buildTenantManagementUrl(tenant.id) ?? buildTenantDemoManagementUrl(tenant.id);
 
   return (
     <footer className="relative mt-16 bg-pork-ink pb-[env(safe-area-inset-bottom)] text-pork-cream">
-      <div className={`container-wide grid gap-12 pt-16 pb-8 ${hideVenueDetails ? "md:grid-cols-3" : "md:grid-cols-4"}`}>
+      <div className={`container-wide grid gap-12 pt-16 pb-8 ${footerGridClass}`}>
         <div className="md:col-span-2">
           <div className="flex items-center gap-4">
             <Image
@@ -86,34 +157,33 @@ export function Footer() {
           <p className="mt-6 max-w-md text-pork-cream/70">
             {isDoca ? docaCopy.footerBody : content.footer.body}
           </p>
-          <div className="mt-6 flex gap-3">
-            <a
-              href={content.social.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-pork-cream/20 text-pork-cream transition-colors hover:border-pork-mustard hover:text-pork-mustard"
-              aria-label={content.social.instagramLabel}
-            >
-              <Instagram size={18} />
-            </a>
-            {!isDoca && (
-              <a
-                href={content.social.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-pork-cream/20 text-pork-cream transition-colors hover:border-pork-mustard hover:text-pork-mustard"
-                aria-label={content.social.facebookLabel}
-              >
-                <Facebook size={18} />
-              </a>
-            )}
-          </div>
         </div>
 
+        {visibleSocialLinks.length > 0 && (
+          <div>
+            <p className="impact-title text-xl text-pork-mustard">SOCIAL</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {visibleSocialLinks.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.key}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-pork-cream/20 text-pork-cream transition-colors hover:border-pork-mustard hover:text-pork-mustard"
+                    aria-label={`${item.label} ${tenant.name}`}
+                  >
+                    <Icon size={18} />
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div>
-          <p className="impact-title text-xl text-pork-mustard">
-            {hideVenueDetails ? (isDoca ? docaCopy.contact : "Contatti") : (isDoca ? docaCopy.footerLocation : "Dove siamo")}
-          </p>
+          <p className="impact-title text-xl text-pork-mustard">CONTATTI</p>
           {!hideVenueDetails && (
             <address className="mt-4 flex items-start gap-3 not-italic text-pork-cream/80">
               <MapPin size={18} className="mt-1 shrink-0" />
@@ -124,6 +194,17 @@ export function Footer() {
             <Phone size={18} className="shrink-0 text-pork-cream/80" />
             <VenuePhoneDisplay className="text-pork-cream/80 transition-colors hover:text-pork-mustard" />
           </div>
+          {mainEmail && (
+            <div className="mt-3 flex items-center gap-3">
+              <Mail size={18} className="shrink-0 text-pork-cream/80" />
+              <a
+                href={mailtoHref(mainEmail, `Contatto da ${tenant.name}`)}
+                className="break-all text-pork-cream/80 transition-colors hover:text-pork-mustard"
+              >
+                {mainEmail}
+              </a>
+            </div>
+          )}
           {isDoca ? (
             <Link
               href={tenantHref("/prenota")}

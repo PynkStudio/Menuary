@@ -1,8 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { BriefcaseBusiness, CalendarClock, Handshake, Mail, MapPin, Phone, Save } from "lucide-react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
+import {
+  BriefcaseBusiness,
+  CalendarClock,
+  Facebook,
+  Globe2,
+  Handshake,
+  Instagram,
+  Linkedin,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Music2,
+  Phone,
+  Save,
+  Twitter,
+  Youtube,
+} from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useHydrated } from "@/components/core/providers";
 import { getTenantContent } from "@/lib/tenant-content";
@@ -15,6 +31,39 @@ import {
   type DaySchedule,
 } from "@/lib/venue-hours";
 import { useSettingsStore } from "@/store/settings-store";
+import {
+  EMPTY_SOCIAL_LINKS,
+  type SocialLinkKey,
+  type SocialLinks,
+} from "@/store/settings-store";
+
+const SOCIAL_FIELDS: Array<{
+  key: SocialLinkKey;
+  label: string;
+  placeholder: string;
+  icon: ComponentType<{ size?: number }>;
+}> = [
+  { key: "instagram", label: "Instagram", placeholder: "https://www.instagram.com/...", icon: Instagram },
+  { key: "facebook", label: "Facebook", placeholder: "https://www.facebook.com/...", icon: Facebook },
+  { key: "tiktok", label: "TikTok", placeholder: "https://www.tiktok.com/@...", icon: Music2 },
+  { key: "youtube", label: "YouTube", placeholder: "https://www.youtube.com/...", icon: Youtube },
+  { key: "linkedin", label: "LinkedIn", placeholder: "https://www.linkedin.com/company/...", icon: Linkedin },
+  { key: "x", label: "X", placeholder: "https://x.com/...", icon: Twitter },
+  { key: "threads", label: "Threads", placeholder: "https://www.threads.net/@...", icon: MessageCircle },
+  { key: "tripadvisor", label: "Tripadvisor", placeholder: "https://www.tripadvisor.it/...", icon: Globe2 },
+  { key: "google", label: "Google Business", placeholder: "https://g.page/r/...", icon: MapPin },
+  { key: "whatsapp", label: "WhatsApp", placeholder: "https://wa.me/39...", icon: MessageCircle },
+];
+
+function normalizeSocialLinks(links: SocialLinks): SocialLinks {
+  return SOCIAL_FIELDS.reduce<SocialLinks>(
+    (acc, field) => ({
+      ...acc,
+      [field.key]: links[field.key].trim(),
+    }),
+    { ...EMPTY_SOCIAL_LINKS },
+  );
+}
 
 export function ActivitySettingsPanel() {
   const hydrated = useHydrated();
@@ -30,6 +79,10 @@ export function ActivitySettingsPanel() {
   const [workWithUsEmailDraft, setWorkWithUsEmailDraft] = useState(settings.workWithUsEmailOverride);
   const [collaborationsEnabled, setCollaborationsEnabled] = useState(settings.collaborationsEnabled);
   const [collaborationsEmailDraft, setCollaborationsEmailDraft] = useState(settings.collaborationsEmailOverride);
+  const [socialLinksDraft, setSocialLinksDraft] = useState<SocialLinks>(() => ({
+    ...EMPTY_SOCIAL_LINKS,
+    ...settings.socialLinks,
+  }));
   const [hoursDraft, setHoursDraft] = useState<DaySchedule[]>(() => defaultHoursWeekForTenant(tenant.id));
 
   useEffect(() => {
@@ -45,6 +98,7 @@ export function ActivitySettingsPanel() {
     setWorkWithUsEmailDraft(settings.workWithUsEmailOverride);
     setCollaborationsEnabled(settings.collaborationsEnabled);
     setCollaborationsEmailDraft(settings.collaborationsEmailOverride);
+    setSocialLinksDraft({ ...EMPTY_SOCIAL_LINKS, ...settings.socialLinks });
     setHoursDraft(cloneHoursWeek(hours));
   }, [
     hydrated,
@@ -54,6 +108,7 @@ export function ActivitySettingsPanel() {
     settings.hoursWeek,
     settings.mainEmailOverride,
     settings.phoneOverride,
+    settings.socialLinks,
     settings.workWithUsEmailOverride,
     settings.workWithUsEnabled,
     tenant.id,
@@ -69,6 +124,8 @@ export function ActivitySettingsPanel() {
       workWithUsEmailDraft !== settings.workWithUsEmailOverride ||
       collaborationsEnabled !== settings.collaborationsEnabled ||
       collaborationsEmailDraft !== settings.collaborationsEmailOverride ||
+      JSON.stringify(normalizeSocialLinks(socialLinksDraft)) !==
+        JSON.stringify({ ...EMPTY_SOCIAL_LINKS, ...settings.socialLinks }) ||
       !hoursWeekEquals(hoursDraft, settings.hoursWeek),
     [
       addressDraft,
@@ -83,8 +140,10 @@ export function ActivitySettingsPanel() {
       settings.hoursWeek,
       settings.mainEmailOverride,
       settings.phoneOverride,
+      settings.socialLinks,
       settings.workWithUsEmailOverride,
       settings.workWithUsEnabled,
+      socialLinksDraft,
       workWithUsEmailDraft,
       workWithUsEnabled,
     ],
@@ -107,6 +166,8 @@ export function ActivitySettingsPanel() {
       workWithUsEmailOverride: workWithUsEmailDraft,
       collaborationsEnabled,
       collaborationsEmailOverride: collaborationsEmailDraft,
+      socialLinks: normalizeSocialLinks(socialLinksDraft),
+      socialLinksConfigured: true,
       hoursWeek: nextHours,
     });
     setHoursDraft(cloneHoursWeek(nextHours));
@@ -172,6 +233,42 @@ export function ActivitySettingsPanel() {
             Usata come destinatario predefinito per i link email del footer.
           </small>
         </label>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="ga-card-title" style={{ fontSize: 16 }}>
+            <Instagram size={17} /> Social
+          </h2>
+          <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
+            Compila solo i profili da mostrare nel footer pubblico.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {SOCIAL_FIELDS.map((field) => {
+            const Icon = field.icon;
+            return (
+              <label key={field.key} className="ga-card">
+                <span className="ga-card-title">
+                  <Icon size={16} /> {field.label}
+                </span>
+                <input
+                  type="url"
+                  value={socialLinksDraft[field.key]}
+                  onChange={(event) =>
+                    setSocialLinksDraft((current) => ({
+                      ...current,
+                      [field.key]: event.target.value,
+                    }))
+                  }
+                  placeholder={field.placeholder}
+                  className="ga-input mt-3"
+                />
+              </label>
+            );
+          })}
+        </div>
       </section>
 
       <section className="space-y-4">

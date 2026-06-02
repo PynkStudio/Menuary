@@ -57,7 +57,8 @@ export function ThreeSouls() {
                   src={soul.image}
                   alt=""
                   fill
-                  sizes="(max-width: 768px) 100vw, 400px"
+                  loading={isDoca ? "eager" : "lazy"}
+                  sizes="(max-width: 640px) 82vw, (max-width: 768px) 100vw, 400px"
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-pork-ink via-pork-ink/40 to-transparent" />
