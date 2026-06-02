@@ -6,7 +6,7 @@ import { Mail, Phone, Globe } from "lucide-react";
 const CARD_URL = "https://bizery.it/team/massimo";
 const PHONE_DISPLAY = "+39 351 376 8607";
 const PHONE_E164 = "+393513768607";
-const EMAIL = "massimo@menuary.it";
+const EMAIL = "massimo@bizery.it";
 
 const BIZERY_VARS: Record<string, string> = {
   "--menuary-ink":       "#0F172A",

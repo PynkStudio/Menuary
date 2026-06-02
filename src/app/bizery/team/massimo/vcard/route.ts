@@ -7,7 +7,7 @@ export function GET() {
     "TITLE:Direttore Tecnico",
     "ORG:Bizery",
     "TEL;TYPE=CELL:+393513768607",
-    "EMAIL:massimo@menuary.it",
+    "EMAIL:massimo@bizery.it",
     "URL:https://bizery.it",
     "END:VCARD",
   ].join("\r\n");
