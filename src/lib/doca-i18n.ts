@@ -46,6 +46,7 @@ const translations = {
     whatsappFooter: "Prenota qui ->",
     deliveryTitle: "Niente delivery, vieni in bottega.",
     deliveryBody: "Doca lavora pane fresco ogni mattina. Passa, guarda il banco e porta a casa quello che preferisci. Su Too Good To Go trovi la Surprise Bag a fine giornata.",
+    surpriseBagCta: "Salva una Surprise Bag",
   },
   pt: {
     languageLabel: "Idioma",
@@ -92,6 +93,7 @@ const translations = {
     whatsappFooter: "Reserve aqui ->",
     deliveryTitle: "Sem delivery: venha até a loja.",
     deliveryBody: "A Doca prepara pão fresco todas as manhãs. Passe, veja o balcão e leve o que preferir. No Too Good To Go você encontra a Surprise Bag no fim do dia.",
+    surpriseBagCta: "Salve uma Surprise Bag",
   },
   en: {
     languageLabel: "Language",
@@ -138,6 +140,7 @@ const translations = {
     whatsappFooter: "Book here ->",
     deliveryTitle: "No delivery: come by the bakery.",
     deliveryBody: "Doca makes fresh bread every morning. Drop in, look at the counter and take home your favorites. Find the end-of-day Surprise Bag on Too Good To Go.",
+    surpriseBagCta: "Save a Surprise Bag",
   },
 } as const;
 

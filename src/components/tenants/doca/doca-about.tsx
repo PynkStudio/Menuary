@@ -9,7 +9,7 @@ export function DocaAbout() {
   return (
     <section className="doca-about bg-pork-cream py-20 md:py-28">
       <div className="container-wide grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div className="relative min-h-[30rem] overflow-hidden rounded-3xl bg-pork-ink shadow-xl">
+        <div className="doca-about-image order-2 relative min-h-[30rem] overflow-hidden rounded-3xl bg-pork-ink shadow-xl lg:order-1">
           <Image
             src="/doca/proprietaria-al-lavoro.webp"
             alt="Queren Girardi al lavoro nel laboratorio di Doca"
@@ -18,7 +18,7 @@ export function DocaAbout() {
             className="object-cover"
           />
         </div>
-        <div>
+        <div className="order-1 lg:order-2">
           <span className="chip-red">{text.aboutEyebrow}</span>
           <h2 className="headline mt-4 text-5xl text-balance sm:text-6xl lg:text-7xl">
             {text.aboutTitle}

@@ -31,6 +31,7 @@ export type TenantContent = {
   };
   contact: {
     phone: string;
+    email?: string;
     whatsappDigits: string;
     whatsappMessage: string;
   };
@@ -504,6 +505,7 @@ const officinakamContent: TenantContent = {
   },
   contact: {
     phone: "+39 333 456 7890",
+    email: "info@officinakam.it",
     whatsappDigits: "393334567890",
     whatsappMessage:
       "Ciao Officina KAM! Vorrei prenotare un appuntamento per il mio veicolo. Grazie!",
@@ -656,6 +658,7 @@ const studioaranzullaContent: TenantContent = {
   },
   contact: {
     phone: "+39 0000 000000",
+    email: "info@studiolegalearanzulla.it",
     whatsappDigits: "390000000000",
     whatsappMessage:
       "Buongiorno, sono interessato/a a una consulenza legale. Potete ricontattarmi? Grazie.",
@@ -804,6 +807,7 @@ const docaContent: TenantContent = {
   },
   contact: {
     phone: "352 067 2840",
+    email: "info@doca.milano",
     whatsappDigits: "393520672840",
     whatsappMessage:
       "Olá Doca! Vorrei prenotare.",
@@ -971,6 +975,7 @@ const nomSushiContent: TenantContent = {
   },
   contact: {
     phone: "010 8992422",
+    email: "hello@nomsushi.it",
     whatsappDigits: "390108992422",
     whatsappMessage:
       "Ciao Nøm! Vorrei prenotare un tavolo. Siamo in ___ persone, per il giorno ___ alle ___. Grazie!",

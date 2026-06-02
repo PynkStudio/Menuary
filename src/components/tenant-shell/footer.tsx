@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Instagram, Facebook, Phone, MapPin, Lock } from "lucide-react";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useTenant } from "@/components/core/tenant-provider";
@@ -16,27 +17,55 @@ import {
   VenueHoursList,
   VenuePhoneDisplay,
   VenueWhatsappLink,
+  useVenueContactEmail,
 } from "@/components/modules/reservations/venue-display";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useDocaCopy } from "@/lib/doca-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
+import { getTenantLocaleConfig, matchTenantLocale } from "@/lib/tenant-locales";
+import { useSettingsStore } from "@/store/settings-store";
+
+function isTenantHomePath(pathname: string | null, tenantId: string, previewSlug?: string) {
+  const parts = (pathname ?? "/").split("/").filter(Boolean);
+  if (previewSlug && parts[0] === previewSlug) parts.shift();
+
+  const localeConfig = getTenantLocaleConfig(tenantId);
+  if (localeConfig && parts[0] && matchTenantLocale(parts[0], localeConfig.locales)) {
+    parts.shift();
+  }
+
+  return parts.length === 0;
+}
+
+function mailtoHref(email: string, subject: string) {
+  return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+}
 
 export function Footer() {
   const tenant = useTenant();
+  const pathname = usePathname();
   const mode = usePlatformMode();
   const content = getTenantContent(tenant.id);
   const features = useEffectiveFeatures();
+  const mainEmail = useVenueContactEmail();
+  const workWithUsEnabled = useSettingsStore((state) => state.workWithUsEnabled);
+  const workWithUsEmail = useSettingsStore((state) => state.workWithUsEmailOverride.trim());
+  const collaborationsEnabled = useSettingsStore((state) => state.collaborationsEnabled);
+  const collaborationsEmail = useSettingsStore((state) => state.collaborationsEmailOverride.trim());
   const isDemo = mode === "preview" || mode === "preview-bizery";
   const isDoca = tenant.id === "doca";
+  const hideVenueDetails = isTenantHomePath(pathname, tenant.id, tenant.previewSlug);
   const docaCopy = useDocaCopy();
   const tenantHref = useTenantLocalizedHref();
+  const workWithUsRecipient = workWithUsEmail || mainEmail;
+  const collaborationsRecipient = collaborationsEmail || mainEmail;
   const staffHref = isDemo
     ? `/${tenant.id}/gestione`
     : buildTenantManagementUrl(tenant.id) ?? buildTenantDemoManagementUrl(tenant.id);
 
   return (
     <footer className="relative mt-16 bg-pork-ink pb-[env(safe-area-inset-bottom)] text-pork-cream">
-      <div className="container-wide grid gap-12 pt-16 pb-8 md:grid-cols-4">
+      <div className={`container-wide grid gap-12 pt-16 pb-8 ${hideVenueDetails ? "md:grid-cols-3" : "md:grid-cols-4"}`}>
         <div className="md:col-span-2">
           <div className="flex items-center gap-4">
             <Image
@@ -82,11 +111,15 @@ export function Footer() {
         </div>
 
         <div>
-          <p className="impact-title text-xl text-pork-mustard">{isDoca ? docaCopy.footerLocation : "Dove siamo"}</p>
-          <address className="mt-4 flex items-start gap-3 not-italic text-pork-cream/80">
-            <MapPin size={18} className="mt-1 shrink-0" />
-            <VenueAddressBlock />
-          </address>
+          <p className="impact-title text-xl text-pork-mustard">
+            {hideVenueDetails ? (isDoca ? docaCopy.contact : "Contatti") : (isDoca ? docaCopy.footerLocation : "Dove siamo")}
+          </p>
+          {!hideVenueDetails && (
+            <address className="mt-4 flex items-start gap-3 not-italic text-pork-cream/80">
+              <MapPin size={18} className="mt-1 shrink-0" />
+              <VenueAddressBlock />
+            </address>
+          )}
           <div className="mt-4 flex items-center gap-3">
             <Phone size={18} className="shrink-0 text-pork-cream/80" />
             <VenuePhoneDisplay className="text-pork-cream/80 transition-colors hover:text-pork-mustard" />
@@ -105,17 +138,20 @@ export function Footer() {
           )}
         </div>
 
-        <div>
-          <p className="impact-title text-xl text-pork-mustard">{isDoca ? docaCopy.footerHours : "Orari"}</p>
-          <VenueHoursList variant="footer" />
-        </div>
+        {!hideVenueDetails && (
+          <div>
+            <p className="impact-title text-xl text-pork-mustard">{isDoca ? docaCopy.footerHours : "Orari"}</p>
+            <VenueHoursList variant="footer" />
+          </div>
+        )}
       </div>
 
       <div className="border-t border-pork-cream/10">
         <div className="container-wide flex flex-col gap-4 py-6 text-xs text-pork-cream/50 md:flex-row md:items-center md:justify-between">
           <p className="flex flex-wrap items-center gap-2">
             <span>
-              © {new Date().getFullYear()} {tenant.name} — <VenueCopyrightAddress />
+              © {new Date().getFullYear()} {tenant.name}
+              {!hideVenueDetails && <> — <VenueCopyrightAddress /></>}
             </span>
             <a
               href={staffHref}
@@ -175,6 +211,22 @@ export function Footer() {
               >
                 Cookie
               </Link>
+              {workWithUsEnabled && workWithUsRecipient && (
+                <a
+                  href={mailtoHref(workWithUsRecipient, `Lavora con noi - ${tenant.name}`)}
+                  className="text-pork-cream/55 transition-colors hover:text-pork-mustard hover:underline"
+                >
+                  Lavora con noi
+                </a>
+              )}
+              {collaborationsEnabled && collaborationsRecipient && (
+                <a
+                  href={mailtoHref(collaborationsRecipient, `Proposta di collaborazione - ${tenant.name}`)}
+                  className="text-pork-cream/55 transition-colors hover:text-pork-mustard hover:underline"
+                >
+                  Collaborazioni
+                </a>
+              )}
             </span>
             <span className="hidden text-pork-cream/25 sm:inline" aria-hidden>
               ·

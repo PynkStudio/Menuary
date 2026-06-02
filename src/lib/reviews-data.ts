@@ -8,6 +8,7 @@ export type Review = {
   reviewsCount?: number;
   photosCount?: number;
   sourceLabel?: string;
+  languageCode?: string | null;
 };
 
 export const reviews: Review[] = [

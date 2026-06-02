@@ -16,6 +16,14 @@ function parseDate(d: string) {
   });
 }
 
+function todayLocal() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = `${now.getMonth() + 1}`.padStart(2, "0");
+  const day = `${now.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export function SpecialHoursEditor({ tenantId, initialData, locationId }: Props) {
   const [items, setItems] = useState<SpecialHourRow[]>(initialData);
   const [showForm, setShowForm] = useState(false);
@@ -93,9 +101,14 @@ export function SpecialHoursEditor({ tenantId, initialData, locationId }: Props)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-pork-ink/50">
-          Orari straordinari
-        </p>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-pork-ink/50">
+            Orari straordinari
+          </p>
+          <p className="mt-1 text-xs text-pork-ink/45">
+            Programma in anticipo festività e aperture speciali, ad esempio 25 aprile o 2 giugno.
+          </p>
+        </div>
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
@@ -114,7 +127,7 @@ export function SpecialHoursEditor({ tenantId, initialData, locationId }: Props)
               <input
                 type="date"
                 value={form.date}
-                min={new Date().toISOString().slice(0, 10)}
+                min={todayLocal()}
                 onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
                 className="w-full rounded-xl border-2 border-pork-ink/10 px-3 py-2 text-sm outline-none focus:border-pork-red"
               />

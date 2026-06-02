@@ -2064,7 +2064,9 @@ export type Database = {
           google_review_id: string | null
           id: string
           is_local_guide: boolean
+          language_code: string | null
           location_id: string | null
+          original_language_code: string | null
           photos_count: number | null
           position: number
           published: boolean
@@ -2075,6 +2077,7 @@ export type Database = {
           source: string
           tenant_id: string
           text: string
+          translated: boolean
         }
         Insert: {
           author: string
@@ -2083,7 +2086,9 @@ export type Database = {
           google_review_id?: string | null
           id?: string
           is_local_guide?: boolean
+          language_code?: string | null
           location_id?: string | null
+          original_language_code?: string | null
           photos_count?: number | null
           position?: number
           published?: boolean
@@ -2094,6 +2099,7 @@ export type Database = {
           source?: string
           tenant_id: string
           text: string
+          translated?: boolean
         }
         Update: {
           author?: string
@@ -2102,7 +2108,9 @@ export type Database = {
           google_review_id?: string | null
           id?: string
           is_local_guide?: boolean
+          language_code?: string | null
           location_id?: string | null
+          original_language_code?: string | null
           photos_count?: number | null
           position?: number
           published?: boolean
@@ -2113,6 +2121,7 @@ export type Database = {
           source?: string
           tenant_id?: string
           text?: string
+          translated?: boolean
         }
         Relationships: [
           {

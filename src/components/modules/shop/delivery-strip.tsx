@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Truck } from "lucide-react";
+import { ShoppingBag, Truck } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { useDocaCopy } from "@/lib/doca-i18n";
@@ -13,11 +13,11 @@ export function DeliveryStrip() {
   const isDoca = tenant.id === "doca";
 
   return (
-    <section className="tenant-delivery-strip bg-pork-ink text-pork-cream">
+    <section className={`tenant-delivery-strip bg-pork-ink text-pork-cream ${isDoca ? "doca-delivery-strip" : ""}`}>
       <div className="container-wide flex flex-col items-center justify-between gap-6 py-8 md:flex-row">
         <div className="flex items-center gap-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-pork-mustard text-pork-ink">
-            <Truck size={22} />
+            {isDoca ? <ShoppingBag size={22} /> : <Truck size={22} />}
           </div>
           <div>
             <p className="impact-title text-2xl">{isDoca ? docaCopy.deliveryTitle : content.delivery.title}</p>
@@ -47,7 +47,7 @@ export function DeliveryStrip() {
                   className="h-10 w-12 object-contain"
                 />
               ) : null}
-              {d.active ? d.name : `${d.name} · presto`}
+              {isDoca ? docaCopy.surpriseBagCta : d.active ? d.name : `${d.name} · presto`}
             </a>
           ))}
         </div>

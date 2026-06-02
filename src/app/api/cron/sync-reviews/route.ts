@@ -3,6 +3,7 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { fetchPlaceReviews } from "@/lib/google/places";
 import { isSyncEligible, insertSyncLog, getPrimaryLocation } from "@/lib/data/google-sync";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 
 export const maxDuration = 60; // secondi — Vercel Fluid Compute
 
@@ -42,6 +43,10 @@ async function upsertGoogleReviews(
       rating: r.rating,
       text: r.text,
       date_label: r.relativeTime,
+      google_review_id: r.googleReviewId,
+      language_code: r.languageCode,
+      original_language_code: r.originalLanguageCode,
+      translated: r.translated,
       is_local_guide: r.isLocalGuide,
       reviews_count: r.reviewsCount,
       photos_count: r.photosCount,
@@ -90,16 +95,28 @@ export async function GET(req: Request) {
 
     // Esegui sync.
     try {
-      const data = await fetchPlaceReviews(placeId);
-      await upsertGoogleReviews(tenantId, data.reviews);
+      const languages = getTenantLocaleConfig(tenantId)?.locales ?? ["it"];
+      const localizedResults = await Promise.all(
+        languages.map((language) => fetchPlaceReviews(placeId, { language })),
+      );
+      const data = localizedResults[0];
+      if (!data) throw new Error("google_places_empty_locale_set");
+      const reviews = Array.from(
+        new Map(
+          localizedResults
+            .flatMap((result) => result.reviews)
+            .map((review) => [review.googleReviewId, review]),
+        ).values(),
+      );
+      await upsertGoogleReviews(tenantId, reviews);
       await insertSyncLog({
         tenant_id: tenantId,
-        reviews_fetched: data.reviews.length,
+        reviews_fetched: reviews.length,
         rating: data.rating,
         rating_count: data.ratingCount,
         status: "success",
       });
-      results.push({ tenantId, outcome: "synced", detail: `${data.reviews.length} recensioni` });
+      results.push({ tenantId, outcome: "synced", detail: `${reviews.length} recensioni` });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await insertSyncLog({

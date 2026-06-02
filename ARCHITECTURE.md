@@ -82,6 +82,33 @@ con `id`, `name`, `vertical`, `domains[]`, `previewSlug` e `theme`.
 
 ---
 
+## 3b. Multilingua tenant e SEO
+
+Ogni sito tenant va predisposto fin dall'inizio per essere multilingua, anche quando
+il primo rilascio pubblica una sola lingua. L'implementazione di riferimento è Doca:
+
+```
+src/lib/
+  tenant-locales.ts          → lingue abilitate e lingua predefinita per tenant
+  tenant-i18n.tsx            → store i18n condiviso, cookie per tenant, document lang
+  doca-i18n.ts               → copy tradotti tenant-specifici, creati con createTenantI18n()
+  tenant-localized-path.ts   → URL localizzati, canonical alternates, hreflang x-default
+  use-tenant-localized-href.ts → preserva la lingua nei link interni
+src/middleware.ts            → redirect/rewrite per /[locale] su dominio custom e preview
+src/app/sitemap.ts           → URL localizzati per i tenant pubblici
+```
+
+Per ogni nuovo tenant crea un file `src/lib/(slug)-i18n.ts` tenant-specifico e registra
+la configurazione in `tenant-locales.ts`. Pubblica solo lingue con contenuti completi:
+ogni variante indicizzabile deve avere URL dedicato, copy e metadata SEO localizzati,
+canonical self-referencing, alternates `hreflang` completi con `x-default` e presenza
+nella sitemap. Le preview restano `noindex`.
+
+Il pattern Doca è condiviso solo come infrastruttura i18n e SEO. UI, selettore lingua,
+contenuti e stile restano esclusivi del singolo tenant.
+
+---
+
 ## 3. Moduli e feature flags
 
 Ogni tenant ha un oggetto `features: TenantFeatureFlags` che abilita o disabilita
@@ -346,16 +373,23 @@ Quando il secondo verticale avrà un nome:
    }
    ```
 
-2. **Crea le pagine specifiche** in `src/components/tenants/nomelocale/pages/`:
+2. **Predisponi il multilingua e la SEO** sul pattern Doca:
+   - Registra lingua predefinita e lingue pubblicate in `src/lib/tenant-locales.ts`
+   - Crea `src/lib/nomelocale-i18n.ts` con `createTenantI18n()`
+   - Collega copy, selettore lingua e link interni localizzati
+   - Verifica URL per lingua, middleware, sitemap, canonical e `hreflang` con `x-default`
+   - Non pubblicare una variante lingua finché contenuti e metadata non sono completi
+
+3. **Crea le pagine specifiche** in `src/components/tenants/nomelocale/pages/`:
    - Solo le pagine che differiscono dal template condiviso
    - Le pagine che funzionano già con `_shared/pages/home.tsx` non richiedono nulla
 
-3. **Aggiungi i branch** nei dispatcher `app/` dove necessario:
+4. **Aggiungi i branch** nei dispatcher `app/` dove necessario:
    ```ts
    if (tenant.id === "nomelocale") return <NomeLocaleAboutPage />;
    ```
 
-4. **Aggiungi asset** in `public/` se necessario (logo, foto, font custom)
+5. **Aggiungi asset** in `public/` se necessario (logo, foto, font custom)
    e configura il font in `src/app/layout.tsx` se il locale usa un typeface dedicato
    (come Faak usa Avenir).
 

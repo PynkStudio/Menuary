@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, MapPin, Phone, Save } from "lucide-react";
+import { BriefcaseBusiness, CalendarClock, Handshake, Mail, MapPin, Phone, Save } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useHydrated } from "@/components/core/providers";
 import { getTenantContent } from "@/lib/tenant-content";
@@ -25,6 +25,11 @@ export function ActivitySettingsPanel() {
   const tenantDefaultHours = useMemo(() => defaultHoursWeekForTenant(tenant.id), [tenant.id]);
   const [addressDraft, setAddressDraft] = useState(settings.addressOverride);
   const [phoneDraft, setPhoneDraft] = useState(settings.phoneOverride);
+  const [mainEmailDraft, setMainEmailDraft] = useState(settings.mainEmailOverride);
+  const [workWithUsEnabled, setWorkWithUsEnabled] = useState(settings.workWithUsEnabled);
+  const [workWithUsEmailDraft, setWorkWithUsEmailDraft] = useState(settings.workWithUsEmailOverride);
+  const [collaborationsEnabled, setCollaborationsEnabled] = useState(settings.collaborationsEnabled);
+  const [collaborationsEmailDraft, setCollaborationsEmailDraft] = useState(settings.collaborationsEmailOverride);
   const [hoursDraft, setHoursDraft] = useState<DaySchedule[]>(() => defaultHoursWeekForTenant(tenant.id));
 
   useEffect(() => {
@@ -35,16 +40,56 @@ export function ActivitySettingsPanel() {
         : settings.hoursWeek;
     setAddressDraft(settings.addressOverride);
     setPhoneDraft(settings.phoneOverride);
+    setMainEmailDraft(settings.mainEmailOverride);
+    setWorkWithUsEnabled(settings.workWithUsEnabled);
+    setWorkWithUsEmailDraft(settings.workWithUsEmailOverride);
+    setCollaborationsEnabled(settings.collaborationsEnabled);
+    setCollaborationsEmailDraft(settings.collaborationsEmailOverride);
     setHoursDraft(cloneHoursWeek(hours));
-  }, [hydrated, settings.addressOverride, settings.hoursWeek, settings.phoneOverride, tenant.id, tenantDefaultHours]);
+  }, [
+    hydrated,
+    settings.addressOverride,
+    settings.collaborationsEmailOverride,
+    settings.collaborationsEnabled,
+    settings.hoursWeek,
+    settings.mainEmailOverride,
+    settings.phoneOverride,
+    settings.workWithUsEmailOverride,
+    settings.workWithUsEnabled,
+    tenant.id,
+    tenantDefaultHours,
+  ]);
 
   const dirty = useMemo(
     () =>
       addressDraft !== settings.addressOverride ||
       phoneDraft !== settings.phoneOverride ||
+      mainEmailDraft !== settings.mainEmailOverride ||
+      workWithUsEnabled !== settings.workWithUsEnabled ||
+      workWithUsEmailDraft !== settings.workWithUsEmailOverride ||
+      collaborationsEnabled !== settings.collaborationsEnabled ||
+      collaborationsEmailDraft !== settings.collaborationsEmailOverride ||
       !hoursWeekEquals(hoursDraft, settings.hoursWeek),
-    [addressDraft, hoursDraft, phoneDraft, settings.addressOverride, settings.hoursWeek, settings.phoneOverride],
+    [
+      addressDraft,
+      collaborationsEmailDraft,
+      collaborationsEnabled,
+      hoursDraft,
+      mainEmailDraft,
+      phoneDraft,
+      settings.addressOverride,
+      settings.collaborationsEmailOverride,
+      settings.collaborationsEnabled,
+      settings.hoursWeek,
+      settings.mainEmailOverride,
+      settings.phoneOverride,
+      settings.workWithUsEmailOverride,
+      settings.workWithUsEnabled,
+      workWithUsEmailDraft,
+      workWithUsEnabled,
+    ],
   );
+  const effectiveMainEmail = mainEmailDraft.trim() || content.contact.email || "";
 
   function updateDay(index: number, patch: Partial<DaySchedule>) {
     setHoursDraft((current) =>
@@ -57,6 +102,11 @@ export function ActivitySettingsPanel() {
     setSettings({
       addressOverride: addressDraft,
       phoneOverride: phoneDraft,
+      mainEmailOverride: mainEmailDraft,
+      workWithUsEnabled,
+      workWithUsEmailOverride: workWithUsEmailDraft,
+      collaborationsEnabled,
+      collaborationsEmailOverride: collaborationsEmailDraft,
       hoursWeek: nextHours,
     });
     setHoursDraft(cloneHoursWeek(nextHours));
@@ -76,7 +126,7 @@ export function ActivitySettingsPanel() {
         </p>
       </header>
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="grid gap-4 lg:grid-cols-3">
         <label className="ga-card">
           <span className="ga-card-title">
             <MapPin size={16} /> Indirizzo pubblico
@@ -106,6 +156,89 @@ export function ActivitySettingsPanel() {
             Lascia vuoto per usare il dato tenant: {content.contact.phone}
           </small>
         </label>
+
+        <label className="ga-card">
+          <span className="ga-card-title">
+            <Mail size={16} /> Email principale
+          </span>
+          <input
+            type="email"
+            value={mainEmailDraft}
+            onChange={(event) => setMainEmailDraft(event.target.value)}
+            placeholder={content.contact.email || "info@esempio.it"}
+            className="ga-input mt-3"
+          />
+          <small className="ga-card-hint">
+            Usata come destinatario predefinito per i link email del footer.
+          </small>
+        </label>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="ga-card-title" style={{ fontSize: 16 }}>
+            <Mail size={17} /> Link email nel footer
+          </h2>
+          <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
+            Se il destinatario dedicato è vuoto, il link usa l&apos;email principale.
+          </p>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="ga-card">
+            <div className="flex items-center justify-between gap-3">
+              <span className="ga-card-title">
+                <BriefcaseBusiness size={16} /> Lavora con noi
+              </span>
+              <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ga-ink-muted)" }}>
+                <input
+                  type="checkbox"
+                  className="ga-checkbox"
+                  checked={workWithUsEnabled}
+                  onChange={(event) => setWorkWithUsEnabled(event.target.checked)}
+                />
+                Attivo
+              </label>
+            </div>
+            <label className="mt-4 block text-sm">
+              Destinatario
+              <input
+                type="email"
+                value={workWithUsEmailDraft}
+                onChange={(event) => setWorkWithUsEmailDraft(event.target.value)}
+                placeholder={effectiveMainEmail || "Email principale tenant"}
+                className="ga-input mt-2"
+              />
+            </label>
+          </div>
+
+          <div className="ga-card">
+            <div className="flex items-center justify-between gap-3">
+              <span className="ga-card-title">
+                <Handshake size={16} /> Collaborazioni
+              </span>
+              <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ga-ink-muted)" }}>
+                <input
+                  type="checkbox"
+                  className="ga-checkbox"
+                  checked={collaborationsEnabled}
+                  onChange={(event) => setCollaborationsEnabled(event.target.checked)}
+                />
+                Attivo
+              </label>
+            </div>
+            <label className="mt-4 block text-sm">
+              Destinatario
+              <input
+                type="email"
+                value={collaborationsEmailDraft}
+                onChange={(event) => setCollaborationsEmailDraft(event.target.value)}
+                placeholder={effectiveMainEmail || "Email principale tenant"}
+                className="ga-input mt-2"
+              />
+            </label>
+          </div>
+        </div>
       </section>
 
       <section className="ga-card">

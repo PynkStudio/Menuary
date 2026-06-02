@@ -243,17 +243,23 @@ function DocaFloatingFood({ reduceMotion }: { reduceMotion: boolean | null }) {
 
   return (
     <div className="doca-characters" aria-hidden="true">
-      <motion.span className="doca-floating-food doca-floating-coffee" animate={animation} transition={transition}>☕</motion.span>
+      <motion.span className="doca-floating-food doca-floating-coffee" animate={animation} transition={transition}>
+        <Image src="/doca/caffe-splash.webp" alt="" fill sizes="110px" className="doca-floating-food-image object-contain" />
+      </motion.span>
       <motion.span
         className="doca-floating-food doca-floating-bread"
         animate={reduceMotion ? undefined : { y: [0, 7, 0], rotate: [2, -2, 2] }}
         transition={reduceMotion ? undefined : { repeat: Infinity, duration: 3.9, ease: "easeInOut", delay: 0.3 }}
-      >🥖</motion.span>
+      >
+        <Image src="/doca/pane-splash.webp" alt="" fill sizes="110px" className="doca-floating-food-image object-contain" />
+      </motion.span>
       <motion.span
         className="doca-floating-food doca-floating-cake"
         animate={reduceMotion ? undefined : { y: [0, -6, 0], rotate: [0, -3, 0] }}
         transition={reduceMotion ? undefined : { repeat: Infinity, duration: 3.1, ease: "easeInOut", delay: 0.5 }}
-      >🍰</motion.span>
+      >
+        <Image src="/doca/tortino-splash.webp" alt="" fill sizes="110px" className="doca-floating-food-image object-contain" />
+      </motion.span>
     </div>
   );
 }

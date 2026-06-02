@@ -85,6 +85,15 @@ export function useVenueContactPhone() {
   return { display, telHref, waHref };
 }
 
+/** Email principale effettiva: override admin, sede attiva o fallback tenant. */
+export function useVenueContactEmail() {
+  const tenant = useTenant();
+  const content = getTenantContent(tenant.id);
+  const location = useLocationOrNull()?.activeLocation;
+  const override = useSettingsStore((s) => s.mainEmailOverride?.trim() ?? "");
+  return override || location?.email?.trim() || content.contact.email?.trim() || "";
+}
+
 export function useVenueAddressText() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);

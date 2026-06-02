@@ -26,6 +26,11 @@ export type SiteSettingsState = {
   hoursWeek: DaySchedule[];
   phoneOverride: string;
   addressOverride: string;
+  mainEmailOverride: string;
+  workWithUsEnabled: boolean;
+  workWithUsEmailOverride: string;
+  collaborationsEnabled: boolean;
+  collaborationsEmailOverride: string;
 };
 
 export type SettingsStore = SiteSettingsState & {
@@ -50,6 +55,11 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettingsState = {
   hoursWeek: defaultHoursWeek(),
   phoneOverride: "",
   addressOverride: "",
+  mainEmailOverride: "",
+  workWithUsEnabled: false,
+  workWithUsEmailOverride: "",
+  collaborationsEnabled: false,
+  collaborationsEmailOverride: "",
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -134,6 +144,11 @@ export const useSettingsStore = create<SettingsStore>()(
         hoursWeek: s.hoursWeek,
         phoneOverride: s.phoneOverride,
         addressOverride: s.addressOverride,
+        mainEmailOverride: s.mainEmailOverride,
+        workWithUsEnabled: s.workWithUsEnabled,
+        workWithUsEmailOverride: s.workWithUsEmailOverride,
+        collaborationsEnabled: s.collaborationsEnabled,
+        collaborationsEmailOverride: s.collaborationsEmailOverride,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<SiteSettingsState>;

@@ -56,6 +56,26 @@ src/
 
 ---
 
+## Regola fondamentale: siti tenant predisposti per il multilingua
+
+**Ogni nuovo sito tenant va predisposto fin dall'inizio per essere multilingua**, anche quando al primo rilascio viene pubblicata una sola lingua.
+
+Usa l'impostazione tecnica di **Doca** come riferimento per massimizzare la SEO, senza copiarne UI, contenuti o stile:
+
+- registra le lingue del tenant e la lingua predefinita in `src/lib/tenant-locales.ts`;
+- crea i copy tenant-specifici in `src/lib/(slug)-i18n.ts` usando `createTenantI18n()` da `src/lib/tenant-i18n.tsx`;
+- usa URL indicizzabili con prefisso lingua (`/it`, `/en`, ecc.) anche sul dominio custom e nelle preview;
+- preserva la lingua nei link interni con `useTenantLocalizedHref()`;
+- esponi un selettore lingua tenant-specifico quando sono pubblicate almeno due lingue;
+- verifica redirect/rewrite del middleware, cookie lingua per tenant e aggiornamento dell'attributo `lang` del documento;
+- genera per ogni pagina pubblica canonical self-referencing, alternates `hreflang` completi con `x-default` e URL localizzati nella sitemap;
+- localizza anche metadata SEO e contenuti della pagina: non pubblicare URL tradotti con contenuti placeholder o rimasti nella lingua predefinita;
+- mantieni le preview `noindex`: devono servire per validare il sito, non competere con il dominio pubblico.
+
+Il pattern Doca è un riferimento per l'infrastruttura i18n e SEO condivisa. Restano valide tutte le regole di isolamento visivo: componenti, selettore, copy e stile del nuovo tenant devono essere propri.
+
+---
+
 ## Regola sui moduli logici
 
 I **moduli** in `src/components/modules/` e `src/lib/` sono l'unica cosa che va riusata tra tenant.
@@ -80,7 +100,15 @@ In `src/lib/tenant-registry.ts`:
 In `src/lib/tenant-content.ts`:
 - Aggiungi il blocco `TenantContent` con tutti i testi, immagini e dati del tenant.
 
-### 2. Verticale
+### 2. Predisponi il multilingua e la SEO
+
+- Registra il tenant in `src/lib/tenant-locales.ts` con lingua predefinita e lingue previste.
+- Crea `src/lib/(slug)-i18n.ts` sul pattern di `src/lib/doca-i18n.ts`.
+- Collega URL localizzati, link interni, selettore lingua e copy tradotti.
+- Verifica canonical self-referencing, `hreflang` con `x-default`, sitemap localizzata e preview `noindex`.
+- Se una traduzione non è ancora pronta, non pubblicare la relativa variante URL.
+
+### 3. Verticale
 
 Verifica in `src/lib/vertical.ts` se il verticale di appartenenza esiste già. Se non esiste:
 1. Aggiungi il valore a `TenantVertical` in `tenant.ts`.
@@ -89,7 +117,7 @@ Verifica in `src/lib/vertical.ts` se il verticale di appartenenza esiste già. S
 4. Crea le pagine marketing del verticale in `src/components/(vertical-slug)/pages/`.
 5. Aggiorna il dispatcher in `src/app/page.tsx` e nelle pagine interessate.
 
-### 3. Componenti UI (esclusivi del tenant)
+### 4. Componenti UI (esclusivi del tenant)
 
 Crea `src/components/tenants/(slug)/pages/` con i componenti propri del tenant.
 
@@ -97,11 +125,11 @@ Crea `src/components/tenants/(slug)/pages/` con i componenti propri del tenant.
 - Font, palette, spaziatura, motion: definiti da zero in `src/styles/tenants/(slug).css`.
 - Naming: usa il prefisso del tenant per evitare collisioni (`<BizeryHero />`, non `<Hero />`).
 
-### 4. Route Next.js
+### 5. Route Next.js
 
 Se il tenant ha un dominio separato o route proprie, crea le pagine in `src/app/(slug)/`.
 
-### 5. Asset pubblici
+### 6. Asset pubblici
 
 Metti loghi, immagini e font in `public/(slug)/`.
 

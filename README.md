@@ -63,16 +63,18 @@ Regole per le IA che lavorano sulla repo: vedi [CLAUDE.md](CLAUDE.md).
 1. **Isolamento visivo**: niente CSS, token, classi o componenti UI condivisi tra tenant. Ogni tenant nasce da zero in `components/tenants/(slug)/` + `styles/tenants/(slug).css`.
 2. **Moduli logici condivisi**: l'unico riuso ammesso è in `components/modules/` e `lib/`. Modifiche ai moduli richiedono autorizzazione esplicita e devono restare retrocompatibili per tutti i tenant.
 3. **Isolamento dati**: i dati di un tenant (listino, prodotti, prenotazioni) non compaiono mai in un altro. Nessun fallback cross-tenant.
+4. **Multilingua e SEO**: ogni tenant nasce predisposto per URL localizzati, copy traducibili, canonical, `hreflang` con `x-default` e sitemap localizzata. Usa Doca come riferimento tecnico, senza copiarne UI o contenuti.
 
 ## Aggiungere un nuovo tenant
 
 1. Registra profilo + feature-flag in `src/lib/tenant-registry.ts`.
 2. Aggiungi i contenuti in `src/lib/tenant-content.ts`.
-3. Verifica/aggiorna il verticale in `src/lib/vertical.ts` (e `platform.ts` se serve).
-4. Crea i componenti UI in `src/components/tenants/(slug)/` con prefisso univoco (`<BizeryHero />`, non `<Hero />`).
-5. Crea i token CSS in `src/styles/tenants/(slug).css`.
-6. Asset in `public/(slug)/`.
-7. Eventuali route dedicate in `src/app/(slug)/`.
+3. Predisponi il multilingua sul pattern Doca: `tenant-locales.ts`, `(slug)-i18n.ts`, URL e sitemap localizzati, canonical e `hreflang`.
+4. Verifica/aggiorna il verticale in `src/lib/vertical.ts` (e `platform.ts` se serve).
+5. Crea i componenti UI in `src/components/tenants/(slug)/` con prefisso univoco (`<BizeryHero />`, non `<Hero />`).
+6. Crea i token CSS in `src/styles/tenants/(slug).css`.
+7. Asset in `public/(slug)/`.
+8. Eventuali route dedicate in `src/app/(slug)/`.
 
 Checklist completa in [CLAUDE.md](CLAUDE.md).
 

@@ -38,7 +38,7 @@ export function ThreeSouls() {
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className={`grid gap-5 md:grid-cols-3 ${isDoca ? "doca-mobile-carousel" : ""}`}>
           {content.souls.map((soul, i) => {
             const localizedSoul = isDoca ? docaCopy.categories[i] : undefined;
             return (

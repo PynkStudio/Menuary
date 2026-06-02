@@ -4,20 +4,34 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Star, ArrowRight } from "lucide-react";
-import { getGoogleRatingForTenant, getReviewsForTenant } from "@/lib/reviews-data";
+import { useEffect, useMemo, useState } from "react";
+import { getGoogleRatingForTenant, getReviewsForTenant, type Review } from "@/lib/reviews-data";
 import { formatNumberIT } from "@/lib/format";
 import { ReviewCard } from "@/components/modules/reviews/review-card";
 import { useTenant } from "@/components/core/tenant-provider";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useDocaCopy } from "@/lib/doca-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
+import { getTenantLocaleConfig } from "@/lib/tenant-locales";
+import { tenantLocaleFromPath } from "@/lib/tenant-localized-path";
+import { prioritizeReviewsByLanguage } from "@/lib/google/review-language";
 
 export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; limit?: number }) {
   const tenant = useTenant();
   const mode = usePlatformMode();
   const pathname = usePathname();
-  const tenantReviews = getReviewsForTenant(tenant.id);
-  const tenantGoogleRating = getGoogleRatingForTenant(tenant.id);
+  const reviewLanguage =
+    tenantLocaleFromPath(pathname ?? "/", tenant.id, tenant.previewSlug) ??
+    getTenantLocaleConfig(tenant.id)?.defaultLocale ??
+    null;
+  const fallbackReviews = useMemo(
+    () => prioritizeReviewsByLanguage(getReviewsForTenant(tenant.id), reviewLanguage),
+    [reviewLanguage, tenant.id],
+  );
+  const fallbackGoogleRating = getGoogleRatingForTenant(tenant.id);
+  const [tenantReviews, setTenantReviews] = useState(fallbackReviews);
+  const [tenantGoogleRating, setTenantGoogleRating] = useState(fallbackGoogleRating);
+  const [hasGoogleReviewFeed, setHasGoogleReviewFeed] = useState(false);
   const shown = tenantReviews.slice(0, limit);
   const isPathPreview = !!tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`);
   const baseReviewHref =
@@ -29,6 +43,28 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
   const tenantHref = useTenantLocalizedHref();
   const reviewHref = tenantHref(baseReviewHref);
   const isNomSushi = tenant.id === "nom-sushi";
+
+  useEffect(() => {
+    let cancelled = false;
+    setTenantReviews(fallbackReviews);
+    setTenantGoogleRating(fallbackGoogleRating);
+    setHasGoogleReviewFeed(false);
+    const languageParam = reviewLanguage ? `?language=${encodeURIComponent(reviewLanguage)}` : "";
+    void fetch(`/api/tenant/${encodeURIComponent(tenant.id)}/reviews${languageParam}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { reviews?: Review[]; rating?: { average: number; count: number } } | null) => {
+        if (cancelled || !payload?.reviews?.length) return;
+        setTenantReviews(payload.reviews);
+        if (payload.rating) {
+          setTenantGoogleRating((current) => ({ ...current, ...payload.rating }));
+        }
+        setHasGoogleReviewFeed(true);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [fallbackGoogleRating, fallbackReviews, reviewLanguage, tenant.id]);
 
   return (
     <section
@@ -105,7 +141,7 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
                 </span>
               </div>
               <p className={`text-sm ${dark ? "text-pork-cream/70" : "text-pork-ink/70"}`}>
-                {isDoca
+                {isDoca && !hasGoogleReviewFeed
                   ? docaCopy.reviewsSource
                   : `${formatNumberIT(tenantGoogleRating.count)} recensioni su Google`}
               </p>
@@ -113,7 +149,7 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
           </div>
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        <div className={`mt-12 grid gap-5 md:grid-cols-3 ${isDoca ? "doca-mobile-carousel" : ""}`}>
           {shown.map((r, i) => (
             <motion.div
               key={r.id}
