@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { upsertTenantDemoControl } from "@/lib/demo-controls";
 import { upsertTenantSupportAdminContact } from "@/lib/tenant-support/admin-contacts";
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
@@ -123,6 +124,17 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const row = Array.isArray(data) ? data[0] : data;
+  let demoControlError: string | null = null;
+  try {
+    await upsertTenantDemoControl({
+      tenantId,
+      previewSlug: previewSlug ?? tenantId,
+      vertical,
+    });
+  } catch (controlErr) {
+    demoControlError = controlErr instanceof Error ? controlErr.message : "tenant_demo_control_failed";
+  }
+
   let supportContactError: string | null = null;
   try {
     await upsertTenantSupportAdminContact({
@@ -139,6 +151,7 @@ export async function POST(request: NextRequest) {
     ok: true,
     tenantId: row?.tenant_id ?? tenantId,
     locationId: row?.location_id ?? null,
+    demoControlError,
     supportContactError,
   });
 }

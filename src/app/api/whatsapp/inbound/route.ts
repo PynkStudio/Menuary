@@ -358,6 +358,8 @@ function compactContextForAi(context: RetellInboundContext) {
     capabilities: context.capabilities,
     assistantSettings: context.assistantSettings,
     locations: context.locations,
+    menuTimezone: context.menu.timezone,
+    activeMenuLists: context.menu.activeLists,
     menu: context.menu.categories.map((category) => ({
       code: category.code,
       title: category.title,

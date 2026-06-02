@@ -63,6 +63,8 @@ export type TenantFeatureFlags = {
   aiWhatsapp: boolean;
   /** Integrazione HubRise: push menu verso piattaforme aggregate (Deliveroo, JustEat, Glovo, Uber Eats…) e ricezione ordini via webhook. */
   hubriseSync: boolean;
+  /** Pagamenti Stripe Connect (Standard): ogni tenant collega il proprio account Stripe per incassare autonomamente. Application fee piattaforma 0% per dine-in/online, 3% per ordini AI (Retell/WhatsApp). */
+  payments: boolean;
   // TODO(google-reserve): aggiungere flag `googleReserve: boolean` una volta approvati come partner Actions Center.
   // Abilita il pulsante "Prenota" direttamente su Google Maps/Search per il tenant.
   // Prerequisito: tenant deve avere `reservations: true` e una location Google collegata.

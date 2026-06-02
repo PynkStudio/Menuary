@@ -16,6 +16,7 @@ import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home
 import { LibritechHomePage } from "@/components/tenants/libritech/pages/home";
 import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pages/home";
 import { JuniorFoodHomePage } from "@/components/tenants/junior-food/pages/home";
+import { KimosHomePage } from "@/components/tenants/kimos/pages/home";
 import { Footer } from "@/components/tenant-shell/footer";
 import { DocaAbout } from "@/components/tenants/doca/doca-about";
 import { getPlatformModeFromHost } from "@/lib/platform";
@@ -60,6 +61,8 @@ export async function generateMetadata({
               ? "Junior Food - Cucina sudamericana a Bergamo"
             : tenant.id === "nom-sushi"
               ? "Nøm sushi vibes - All you can eat sushi fusion a Genova"
+            : tenant.id === "kimos"
+              ? "Pizzeria Kimos - Pizza, kebab e ordini online a Milano"
             : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
@@ -159,6 +162,8 @@ export default async function PreviewTenantHome({
       >
         {tenant.id === "junior-food" ? (
           <JuniorFoodHomePage />
+        ) : tenant.id === "kimos" ? (
+          <KimosHomePage />
         ) : (
           <>
             <Hero />

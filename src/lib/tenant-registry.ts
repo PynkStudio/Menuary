@@ -19,6 +19,7 @@ export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = {
   aiPhone: false,
   aiWhatsapp: false,
   hubriseSync: false,
+  payments: false,
 };
 
 /** LibriTech: libreria tech/startup demo su verticale services. */
@@ -50,6 +51,7 @@ export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
   aiPhone: false,
   aiWhatsapp: false,
   hubriseSync: false,
+  payments: false,
 };
 
 /** Studio Legale Aranzulla: studio legale su verticale services. */
@@ -81,6 +83,7 @@ export const STUDIOARANZULLA_MODULE_FLAGS: TenantFeatureFlags = {
   aiPhone: false,
   aiWhatsapp: false,
   hubriseSync: false,
+  payments: false,
 };
 
 /** Doca: bakery brasiliana a Milano — pane, caffè, saudade. */
@@ -112,6 +115,7 @@ export const DOCA_MODULE_FLAGS: TenantFeatureFlags = {
   aiPhone: false,
   aiWhatsapp: false,
   hubriseSync: false,
+  payments: false,
 };
 
 /** Nøm sushi: lead sushi/fusion AYCE a Genova con demo sito/menu pranzo+cena/prenotazioni. */
@@ -143,6 +147,7 @@ export const NOM_SUSHI_MODULE_FLAGS: TenantFeatureFlags = {
   aiPhone: false,
   aiWhatsapp: false,
   hubriseSync: false,
+  payments: false,
 };
 
 /** Junior Food: lead ristorante sudamericano a Bergamo con demo sito/menu/prenotazioni. */
@@ -174,6 +179,39 @@ export const JUNIOR_FOOD_MODULE_FLAGS: TenantFeatureFlags = {
   aiPhone: false,
   aiWhatsapp: false,
   hubriseSync: false,
+  payments: false,
+};
+
+/** Pizzeria Kimos: lead Milano con menu, ordini diretti e assistenti AI su telefono e WhatsApp. */
+export const KIMOS_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: true,
+  takeaway: true,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: true,
+  dinerSeparation: false,
+  reservations: false,
+  tablePlanner: false,
+  productAvailability: true,
+  upselling: true,
+  crm: true,
+  analytics: true,
+  takeawaySlots: true,
+  deliveryHub: true,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: false,
+  multiLocation: false,
+  favorites: true,
+  reviews: true,
+  gallery: true,
+  shop: false,
+  slabbby: false,
+  aiPhone: true,
+  aiWhatsapp: true,
+  hubriseSync: false,
+  payments: false,
 };
 
 /** Officina KAM: primo tenant reale Bizery — officina auto e moto. */
@@ -205,6 +243,7 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   aiPhone: false,
   aiWhatsapp: false,
   hubriseSync: false,
+  payments: false,
 };
 
 export const TENANTS: TenantProfile[] = [
@@ -253,7 +292,7 @@ export const TENANTS: TenantProfile[] = [
       green: "#2E4560",
       pink: "#CD562F",
     },
-    features: { ...allTenantFeatures(true), shop: false, slabbby: false, aiPhone: false, aiWhatsapp: false, hubriseSync: false },
+    features: { ...allTenantFeatures(true), shop: false, slabbby: false, aiPhone: false, aiWhatsapp: false, hubriseSync: false, payments: false },
   },
 
   {
@@ -328,6 +367,30 @@ export const TENANTS: TenantProfile[] = [
       pink: "#E0C9C9",
     },
     features: JUNIOR_FOOD_MODULE_FLAGS,
+  },
+  {
+    id: "kimos",
+    name: "Pizzeria Kimos",
+    label: "Lead · Pizzeria Kimos",
+    vertical: "food",
+    domains: [],
+    previewSlug: "kimos",
+    enabled: true,
+    status: "trattativa",
+    theme: {
+      // Palette Kimos: menu stampato scuro, insegna rossa, giallo forno e verde kebab.
+      red: "#C64335",
+      redDark: "#8E2B26",
+      peach: "#E9D8B6",
+      cream: "#F4E9D3",
+      ink: "#171512",
+      brick: "#2B211C",
+      mustard: "#E5B83B",
+      mustardSoft: "#F1D98C",
+      green: "#667A45",
+      pink: "#B96756",
+    },
+    features: KIMOS_MODULE_FLAGS,
   },
 
   // ── Verticale services (Bizery — bizery.it) ──────────────────────────────

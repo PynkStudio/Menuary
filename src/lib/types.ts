@@ -52,6 +52,7 @@ export type AdminMenuCategory = Omit<MenuCategory, "items"> & {
 };
 
 export type MenuDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type MenuOrderChannel = "phone" | "whatsapp" | "online" | "table";
 
 export type AdminMenuListVisibility = {
   /** Giorni locali: 0 domenica, 1 lunedi, ... 6 sabato. Vuoto = tutti i giorni. */
@@ -62,6 +63,8 @@ export type AdminMenuListVisibility = {
   endTime?: string;
   /** Tavoli abilitati. Vuoto = tutti i tavoli. */
   tableIds?: string[];
+  /** Canali ordine abilitati. Assente = tutti i canali per compatibilita con i menu esistenti. */
+  channels?: MenuOrderChannel[];
 };
 
 export type AdminMenuList = {

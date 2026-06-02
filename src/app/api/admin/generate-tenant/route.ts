@@ -3,6 +3,7 @@ import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { gh, extractAnimaFiles, commitAnimaToGitHub } from "@/lib/github-anima";
+import { upsertTenantDemoControl } from "@/lib/demo-controls";
 import { upsertTenantSupportAdminContact } from "@/lib/tenant-support/admin-contacts";
 
 function buildTheme(primary: string) {
@@ -443,6 +444,15 @@ export async function POST(req: NextRequest) {
         const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
         dbLocationId = row?.location_id ?? null;
         try {
+          await upsertTenantDemoControl({
+            tenantId: tenantSlug,
+            previewSlug: tenantSlug,
+            vertical,
+          });
+        } catch (controlErr) {
+          dbError = controlErr instanceof Error ? controlErr.message : "tenant_demo_control_failed";
+        }
+        try {
           await upsertTenantSupportAdminContact({
             tenantId: tenantSlug,
             phone: ownerPhone,
@@ -450,7 +460,8 @@ export async function POST(req: NextRequest) {
             permissions: { source: "admin_generate_tenant", leadId },
           });
         } catch (contactErr) {
-          dbError = contactErr instanceof Error ? contactErr.message : "tenant_support_contact_failed";
+          const message = contactErr instanceof Error ? contactErr.message : "tenant_support_contact_failed";
+          dbError = dbError ? `${dbError}; ${message}` : message;
         }
       }
     } else {

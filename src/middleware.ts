@@ -134,6 +134,139 @@ function allowStaticAssets(pathname: string) {
   return false;
 }
 
+type DisabledDemoAccess = {
+  vertical: "food" | "services";
+  officialUrl: string | null;
+};
+
+type DemoControlRow = {
+  tenant_id: string;
+  vertical: string;
+  enabled: boolean;
+};
+
+type DemoTenantRow = {
+  enabled: boolean;
+  status: string;
+};
+
+type DemoLeadRow = {
+  official_domain: string | null;
+  official_domain_active: boolean;
+};
+
+async function fetchDemoRuntimeRows<T>(
+  table: string,
+  params: Record<string, string>,
+): Promise<T[] | null> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return null;
+
+  try {
+    const url = new URL(`/rest/v1/${table}`, supabaseUrl);
+    Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+    const response = await fetch(url, {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    return await response.json() as T[];
+  } catch {
+    return null;
+  }
+}
+
+function officialUrlFromDomain(domain: string | null | undefined): string | null {
+  if (!domain) return null;
+  try {
+    const url = new URL(/^https?:\/\//i.test(domain) ? domain : `https://${domain}`);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.origin : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getDisabledDemoAccess(
+  previewSlug: string,
+  mode: PlatformMode,
+): Promise<DisabledDemoAccess | null> {
+  const controls = await fetchDemoRuntimeRows<DemoControlRow>("tenant_demo_controls", {
+    select: "tenant_id,vertical,enabled",
+    preview_slug: `eq.${previewSlug}`,
+    limit: "1",
+  });
+  // In caso di errore DB le sole demo falliscono chiuse: un link disattivato
+  // non deve tornare pubblico per un problema transitorio di lettura.
+  if (!controls) {
+    return {
+      vertical: mode === "preview-bizery" ? "services" : "food",
+      officialUrl: null,
+    };
+  }
+  const control = controls?.[0];
+  if (!control || control.enabled) return null;
+
+  const [tenants, leads] = await Promise.all([
+    fetchDemoRuntimeRows<DemoTenantRow>("tenants", {
+      select: "enabled,status",
+      id: `eq.${control.tenant_id}`,
+      limit: "1",
+    }),
+    fetchDemoRuntimeRows<DemoLeadRow>("platform_leads", {
+      select: "official_domain,official_domain_active",
+      tenant_id: `eq.${control.tenant_id}`,
+      official_domain_active: "eq.true",
+      limit: "1",
+    }),
+  ]);
+  const tenant = tenants?.[0];
+  const lead = leads?.[0];
+  const officialUrl =
+    tenant?.enabled && tenant.status === "active" && lead?.official_domain_active
+      ? officialUrlFromDomain(lead.official_domain)
+      : null;
+
+  return {
+    vertical: control.vertical === "services" ? "services" : "food",
+    officialUrl,
+  };
+}
+
+function getDemoPreviewSlug(mode: PlatformMode, pathname: string): string | null {
+  if (mode !== "preview" && mode !== "preview-bizery") return null;
+  const slug = pathname.split("/").filter(Boolean)[0];
+  return slug && slug !== "demo-offline" && slug !== "k" ? slug : null;
+}
+
+function disabledDemoResponse(
+  request: NextRequest,
+  previewSlug: string,
+  access: DisabledDemoAccess,
+): NextResponse {
+  if (access.officialUrl) {
+    const redirect = new URL(access.officialUrl);
+    const publicPath = request.nextUrl.pathname.slice(`/${previewSlug}`.length) || "/";
+    redirect.pathname =
+      publicPath.startsWith("/gestione") || publicPath.startsWith("/k/")
+        ? "/"
+        : publicPath;
+    redirect.search = request.nextUrl.search;
+    return NextResponse.redirect(redirect, 307);
+  }
+
+  const rewritten = request.nextUrl.clone();
+  rewritten.pathname = "/demo-offline";
+  rewritten.search = "";
+  rewritten.searchParams.set("vertical", access.vertical);
+  const response = NextResponse.rewrite(rewritten);
+  response.headers.set("Cache-Control", "no-store, max-age=0");
+  return response;
+}
+
 function detectTenantLocaleFromRequest(
   request: NextRequest,
   tenantId: string,
@@ -350,6 +483,12 @@ export async function middleware(request: NextRequest) {
   const pathPreviewTenant = pathPreviewSlug ? findTenantByPreviewSlug(pathPreviewSlug) : undefined;
 
   if (allowStaticAssets(pathname)) return NextResponse.next();
+
+  const demoPreviewSlug = getDemoPreviewSlug(mode, pathname);
+  if (demoPreviewSlug) {
+    const disabledDemo = await getDisabledDemoAccess(demoPreviewSlug, mode);
+    if (disabledDemo) return disabledDemoResponse(request, demoPreviewSlug, disabledDemo);
+  }
 
   if (pathPreviewTenant) {
     const localeConfig = getTenantLocaleConfig(pathPreviewTenant.id);

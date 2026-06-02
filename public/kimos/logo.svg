@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 128" role="img" aria-labelledby="title desc">
+  <title id="title">Pizzeria Kimos</title>
+  <desc id="desc">Marchio Pizzeria Kimos con monogramma K e payoff Pizza Kebab Fritti</desc>
+  <rect width="420" height="128" rx="18" fill="#171512"/>
+  <rect x="9" y="9" width="110" height="110" rx="12" fill="#c64335"/>
+  <path d="M36 34v60h15V70l27 24h22L65 64l32-30H76L51 59V34z" fill="#f4e9d3"/>
+  <circle cx="96" cy="34" r="8" fill="#e5b83b"/>
+  <text x="140" y="62" fill="#f4e9d3" font-family="Arial Black, Arial, sans-serif" font-size="44" font-weight="900" letter-spacing="2">KIMOS</text>
+  <text x="142" y="90" fill="#e5b83b" font-family="Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="5">PIZZERIA</text>
+  <text x="142" y="110" fill="#9daa72" font-family="Arial, sans-serif" font-size="9" font-weight="700" letter-spacing="3">PIZZA · KEBAB · FRITTI</text>
+</svg>

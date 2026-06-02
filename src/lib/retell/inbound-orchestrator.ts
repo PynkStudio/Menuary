@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createHmac, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { findTenantById } from "@/lib/tenant-registry";
 import { defaultHoursWeekForTenant, type DaySchedule } from "@/lib/venue-hours";
@@ -10,6 +11,7 @@ import { getAiPhoneSettings, isAiPhoneControlAccepting, type AiPhoneSettings } f
 import { createChannelPaymentRequest, type ChannelPaymentRequest, type PaymentLinkChannel } from "@/lib/payments/channel-payment-links";
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
+import type { MenuOrderChannel } from "@/lib/types";
 
 type Db = SupabaseClient<Database>;
 
@@ -40,6 +42,11 @@ type RetellMenuItemContext = {
   bookable: boolean;
   durationMinutes: number | null;
   price: string;
+  priceOptions: {
+    code: string;
+    label: string;
+    price: string;
+  }[];
   tags: string[];
   allergens: string[];
   modifications: {
@@ -48,6 +55,35 @@ type RetellMenuItemContext = {
     price: string;
     source: "inline" | "list";
   }[];
+};
+
+type MenuListVisibility = {
+  days?: number[];
+  startTime?: string;
+  endTime?: string;
+  tableIds?: string[];
+  channels?: MenuOrderChannel[];
+};
+
+type MenuListRow = {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  visibility: Json;
+};
+
+type MenuListItemRow = {
+  list_id: string;
+  item_id: string;
+};
+
+type MenuCategoryAvailability = {
+  label: string;
+  days?: number[];
+  from: string;
+  to: string;
 };
 
 export type RetellInboundContext = {
@@ -85,6 +121,12 @@ export type RetellInboundContext = {
   >;
   locations: LocationContext[];
   menu: {
+    timezone: string;
+    activeLists: {
+      code: string;
+      name: string;
+      description: string | null;
+    }[];
     categories: {
       id: string;
       code: string;
@@ -130,6 +172,7 @@ export type CreateRetellOrderInput = {
   lines: {
     itemCode: string;
     quantity: number;
+    priceOption?: string | null;
     note?: string | null;
     addedExtraCodes?: string[];
     removedIngredients?: string[];
@@ -161,6 +204,8 @@ type MenuItemRow = Database["public"]["Tables"]["menu_items"]["Row"];
 type ExtraListRow = Database["public"]["Tables"]["extra_lists"]["Row"];
 type ExtraListItemRow = Database["public"]["Tables"]["extra_list_items"]["Row"];
 type ItemExtraRow = ExtraListItemRow & { item_id: string };
+
+const MENU_TIMEZONE = "Europe/Rome";
 
 function svc(): Db {
   const client = createSupabaseServiceClient();
@@ -199,12 +244,49 @@ function formatPrice(price: Json): string {
   return "Prezzo da confermare";
 }
 
-function numericPrice(price: Json): number {
-  if (typeof price === "number") return price;
-  if (!price || Array.isArray(price) || typeof price !== "object") return 0;
+function listPriceOptions(price: Json): { code: string; label: string; value: number }[] {
+  if (typeof price === "number") return [{ code: "standard", label: "Standard", value: price }];
+  if (!price || Array.isArray(price) || typeof price !== "object") return [];
   const p = price as Record<string, Json | undefined>;
-  if (p.kind === "single" && typeof p.value === "number") return p.value;
-  return 0;
+  if (p.kind === "single" && typeof p.value === "number") {
+    return [{ code: "standard", label: "Standard", value: p.value }];
+  }
+  if (p.kind === "sized" && typeof p.small === "number" && typeof p.big === "number") {
+    return [
+      { code: "small", label: "Small", value: p.small },
+      { code: "big", label: "Big", value: p.big },
+    ];
+  }
+  if (p.kind === "persone" && typeof p.per2 === "number" && typeof p.per4 === "number") {
+    return [
+      { code: "per2", label: "2 persone", value: p.per2 },
+      { code: "per4", label: "4 persone", value: p.per4 },
+    ];
+  }
+  if (p.kind === "volume" && p.small && p.large) {
+    const small = p.small as Record<string, Json | undefined>;
+    const large = p.large as Record<string, Json | undefined>;
+    if (typeof small.label === "string" && typeof small.price === "number" && typeof large.label === "string" && typeof large.price === "number") {
+      return [
+        { code: "small", label: small.label, value: small.price },
+        { code: "large", label: large.label, value: large.price },
+      ];
+    }
+  }
+  return [];
+}
+
+function resolveNumericPrice(itemCode: string, price: Json, selectedOption?: string | null): number {
+  const options = listPriceOptions(price);
+  if (options.length === 0) throw new Error(`price_to_confirm:${itemCode}`);
+  if (options.length === 1) return options[0].value;
+
+  const selected = selectedOption?.trim().toLocaleLowerCase("it-IT");
+  const option = options.find((candidate) => candidate.code.toLocaleLowerCase("it-IT") === selected);
+  if (!option) {
+    throw new Error(`price_option_required:${itemCode}:${options.map((candidate) => candidate.code).join(",")}`);
+  }
+  return option.value;
 }
 
 function money(value: number): string {
@@ -261,6 +343,146 @@ function groupBy<T, K>(items: T[], key: (item: T) => K): Map<K, T[]> {
   return map;
 }
 
+function asObject(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function localMenuTime(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: MENU_TIMEZONE,
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now);
+  const byType = new Map(parts.map((part) => [part.type, part.value]));
+  const weekday = byType.get("weekday") ?? "";
+  const dayByLabel: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+  return {
+    day: dayByLabel[weekday] ?? now.getDay(),
+    minutes: Number(byType.get("hour") ?? "0") * 60 + Number(byType.get("minute") ?? "0"),
+  };
+}
+
+function timeToMinutes(value: unknown): number | null {
+  if (typeof value !== "string") return null;
+  const match = value.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function isTimeInWindow(current: number, start: unknown, end: unknown): boolean {
+  const startMinutes = timeToMinutes(start);
+  const endMinutes = timeToMinutes(end);
+  if (startMinutes == null && endMinutes == null) return true;
+  if (startMinutes != null && endMinutes == null) return current >= startMinutes;
+  if (startMinutes == null && endMinutes != null) return current <= endMinutes;
+  if (startMinutes == null || endMinutes == null) return true;
+  return startMinutes <= endMinutes
+    ? current >= startMinutes && current <= endMinutes
+    : current >= startMinutes || current <= endMinutes;
+}
+
+function normalizeVisibility(value: unknown): MenuListVisibility {
+  const raw = asObject(value);
+  const validChannels = new Set<MenuOrderChannel>(["phone", "whatsapp", "online", "table"]);
+  return {
+    days: Array.isArray(raw.days) ? raw.days.filter((day): day is number => typeof day === "number") : undefined,
+    startTime: typeof raw.startTime === "string" ? raw.startTime : undefined,
+    endTime: typeof raw.endTime === "string" ? raw.endTime : undefined,
+    tableIds: Array.isArray(raw.tableIds) ? raw.tableIds.filter((id): id is string => typeof id === "string") : undefined,
+    channels: Array.isArray(raw.channels)
+      ? raw.channels.filter((channel): channel is MenuOrderChannel =>
+          typeof channel === "string" && validChannels.has(channel as MenuOrderChannel),
+        )
+      : undefined,
+  };
+}
+
+function isMenuListVisible(list: MenuListRow, channel: MenuOrderChannel, now = new Date()): boolean {
+  if (!list.enabled) return false;
+  const local = localMenuTime(now);
+  const visibility = normalizeVisibility(list.visibility);
+  if (visibility.channels && !visibility.channels.includes(channel)) return false;
+  if (visibility.days?.length && !visibility.days.includes(local.day)) return false;
+  if (!isTimeInWindow(local.minutes, visibility.startTime, visibility.endTime)) return false;
+  // Conversational channels handle off-premise orders: table-only lists are not relevant.
+  return channel === "table" || !visibility.tableIds?.length;
+}
+
+function hasMenuListRestriction(list: MenuListRow): boolean {
+  const visibility = normalizeVisibility(list.visibility);
+  return Boolean(visibility.days?.length || visibility.startTime || visibility.endTime || visibility.tableIds?.length || visibility.channels);
+}
+
+function normalizeCategoryAvailability(value: unknown): MenuCategoryAvailability | null {
+  const raw = asObject(value);
+  if (typeof raw.label !== "string" || typeof raw.from !== "string" || typeof raw.to !== "string") return null;
+  return {
+    label: raw.label,
+    from: raw.from,
+    to: raw.to,
+    days: Array.isArray(raw.days) ? raw.days.filter((day): day is number => typeof day === "number") : undefined,
+  };
+}
+
+function isCategoryVisible(category: Pick<CategoryRow, "availability">, now = new Date()): boolean {
+  const availability = normalizeCategoryAvailability(category.availability);
+  if (!availability) return true;
+  const local = localMenuTime(now);
+  if (availability.days?.length && !availability.days.includes(local.day)) return false;
+  return isTimeInWindow(local.minutes, availability.from, availability.to);
+}
+
+async function loadActiveMenuLists(db: Db, tenantId: string, channel: MenuOrderChannel, now = new Date()) {
+  const listsResult = await (db as unknown as {
+    from: (table: "menu_lists") => {
+      select: (columns: string) => {
+        eq: (column: string, value: string) => Promise<{ data: MenuListRow[] | null; error: { message: string } | null }>;
+      };
+    };
+  }).from("menu_lists").select("id,code,name,description,enabled,visibility").eq("tenant_id", tenantId);
+  if (listsResult.error) throw new Error(listsResult.error.message);
+
+  const lists = listsResult.data ?? [];
+  const activeLists = lists.filter((list) => isMenuListVisible(list, channel, now));
+  const activeRestrictedLists = activeLists.filter(hasMenuListRestriction);
+  const listsForItems = activeRestrictedLists.length > 0 ? activeRestrictedLists : activeLists.filter((list) => !hasMenuListRestriction(list));
+  const listIds = listsForItems.map((list) => list.id);
+  if (listIds.length === 0) {
+    return {
+      activeLists: listsForItems,
+      allowedItemIds: lists.length > 0 ? new Set<string>() : null as Set<string> | null,
+    };
+  }
+
+  const itemsResult = await (db as unknown as {
+    from: (table: "menu_list_items") => {
+      select: (columns: string) => {
+        in: (column: string, values: string[]) => Promise<{ data: MenuListItemRow[] | null; error: { message: string } | null }>;
+      };
+    };
+  }).from("menu_list_items").select("list_id,item_id").in("list_id", listIds);
+  if (itemsResult.error) throw new Error(itemsResult.error.message);
+  return {
+    activeLists: listsForItems,
+    allowedItemIds: new Set((itemsResult.data ?? []).map((item) => item.item_id)),
+  };
+}
+
 function requireRetellFeature(features: Json, registryEnabled: boolean): boolean {
   if (features && typeof features === "object" && !Array.isArray(features)) {
     const value = (features as Record<string, Json | undefined>).aiPhone;
@@ -269,14 +491,31 @@ function requireRetellFeature(features: Json, registryEnabled: boolean): boolean
   return registryEnabled;
 }
 
-function checkSecret(request: Request): boolean {
-  const configured = process.env.RETELL_WEBHOOK_SECRET;
-  if (!configured) return true;
-  return request.headers.get("x-retell-secret") === configured;
+function checkSecret(request: Request, rawBody = ""): boolean {
+  const configuredSecret = process.env.RETELL_WEBHOOK_SECRET;
+  if (configuredSecret && request.headers.get("x-retell-secret") === configuredSecret) return true;
+
+  const apiKey = process.env.RETELL_API_KEY;
+  const signature = request.headers.get("x-retell-signature");
+  const signatureMatch = signature?.match(/^v=(\d+),d=([a-fA-F0-9]+)$/);
+  if (apiKey && signatureMatch) {
+    const [, timestamp, digest] = signatureMatch;
+    if (Math.abs(Date.now() - Number(timestamp)) <= 5 * 60 * 1000) {
+      const expected = createHmac("sha256", apiKey).update(`${rawBody}${timestamp}`).digest();
+      const actual = Buffer.from(digest, "hex");
+      if (actual.length === expected.length && timingSafeEqual(actual, expected)) return true;
+    }
+  }
+
+  return process.env.NODE_ENV !== "production";
 }
 
-export function isAuthorizedRetellRequest(request: Request): boolean {
-  return checkSecret(request);
+export function isAuthorizedRetellRequest(request: Request, rawBody = ""): boolean {
+  return checkSecret(request, rawBody);
+}
+
+function conversationalMenuChannel(channel: "retell" | "whatsapp" | undefined): MenuOrderChannel {
+  return channel === "whatsapp" ? "whatsapp" : "phone";
 }
 
 export async function buildRetellInboundContext(
@@ -356,7 +595,7 @@ export async function buildRetellInboundContext(
 
   const catsQ = db
     .from("menu_categories")
-    .select("id,code,title,description,position,location_id")
+    .select("id,code,title,description,position,location_id,availability")
     .eq("tenant_id", tenantId)
     .order("position", { ascending: true });
   const itemsQ = db
@@ -370,16 +609,20 @@ export async function buildRetellInboundContext(
     itemsQ.or(`location_id.is.null,location_id.eq.${options.locationId}`);
   }
 
-  const [{ data: categories }, { data: items }, { data: itemExtras }, { data: extraLists }, { data: extraListItems }] =
+  const [{ data: categories }, { data: items }, { data: itemExtras }, { data: extraLists }, { data: extraListItems }, menuLists] =
     await Promise.all([
       catsQ,
       itemsQ,
       db.from("menu_item_extras").select("item_id,code,name,price,position").order("position", { ascending: true }),
       db.from("extra_lists").select("id,code,name,tenant_id,created_at,updated_at").eq("tenant_id", tenantId),
       db.from("extra_list_items").select("id,list_id,code,name,price,position").order("position", { ascending: true }),
+      loadActiveMenuLists(db, tenantId, conversationalMenuChannel(options.channel)),
     ]);
 
-  const itemsByCategory = groupBy((items ?? []) as MenuItemRow[], (item) => item.category_id);
+  const visibleItems = ((items ?? []) as MenuItemRow[]).filter((item) =>
+    !menuLists.allowedItemIds || menuLists.allowedItemIds.has(item.id),
+  );
+  const itemsByCategory = groupBy(visibleItems, (item) => item.category_id);
   const inlineExtrasByItem = groupBy((itemExtras ?? []) as unknown as ItemExtraRow[], (extra) => extra.item_id);
   const extraListsById = new Map(((extraLists ?? []) as ExtraListRow[]).map((list) => [list.id, list]));
   const listItemsByListId = groupBy((extraListItems ?? []) as ExtraListItemRow[], (item) => item.list_id);
@@ -418,8 +661,14 @@ export async function buildRetellInboundContext(
     },
     locations,
     menu: {
+      timezone: MENU_TIMEZONE,
+      activeLists: menuLists.activeLists.map((list) => ({
+        code: list.code,
+        name: list.name,
+        description: list.description,
+      })),
       categories: aiSettings.menuSyncEnabled
-        ? ((categories ?? []) as CategoryRow[]).map((category) => ({
+        ? ((categories ?? []) as CategoryRow[]).filter((category) => isCategoryVisible(category)).map((category) => ({
             id: category.id,
             code: category.code,
             title: category.title,
@@ -433,15 +682,21 @@ export async function buildRetellInboundContext(
               bookable: item.bookable,
               durationMinutes: item.duration_minutes,
               price: formatPrice(item.price),
+              priceOptions: listPriceOptions(item.price).map((option) => ({
+                code: option.code,
+                label: option.label,
+                price: formatEuro(option.value),
+              })),
               tags: item.tags ?? [],
               allergens: item.allergens ?? [],
               modifications: buildItemModifications(item, inlineExtrasByItem, extraListsById, listItemsByListId),
             })),
-          }))
+          })).filter((category) => category.items.length > 0)
         : [],
     },
     retellInstructions: [
       "Usa solo le informazioni presenti in questo contesto per menu/listino, prezzi, modifiche, orari e sedi.",
+      "Il menu nel contesto e gia filtrato per l'orario locale della chiamata. Non proporre voci assenti e recupera nuovamente il contesto prima di confermare un ordine.",
       "Prima di creare ordini, prenotazioni o appuntamenti conferma sempre nome, telefono, giorno, orario e sede quando ci sono piu sedi.",
       "Per ordini delivery raccogli indirizzo, citofono, piano, note consegna, orario desiderato e numero di telefono. Se il numero chiamante non va bene, chiedine uno alternativo.",
       "Prima di proporre prenotazioni o appuntamenti usa l'azione availability per leggere gli slot disponibili dal calendario interno.",
@@ -628,7 +883,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   const codes = input.lines.map((line) => line.itemCode);
   const { data: items, error: itemsError } = await db
     .from("menu_items")
-    .select("id,code,category_id,name,price,available,extra_list_id")
+    .select("id,code,category_id,name,price,available,extra_list_id,location_id")
     .eq("tenant_id", input.tenantId)
     .in("code", codes);
   if (itemsError) throw new Error(itemsError.message);
@@ -638,22 +893,39 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   if (missing.length > 0) throw new Error(`missing_items:${missing.join(",")}`);
 
   const itemIds = (items ?? []).map((item) => item.id);
+  const categoryIds = [...new Set((items ?? []).map((item) => item.category_id))];
   const listIds = (items ?? []).map((item) => item.extra_list_id).filter(Boolean) as string[];
-  const [{ data: itemExtras }, { data: extraListItems }] = await Promise.all([
+  const [{ data: itemExtras }, { data: extraListItems }, { data: categories }, menuLists] = await Promise.all([
     db.from("menu_item_extras").select("item_id,code,name,price,position").in("item_id", itemIds),
     listIds.length
       ? db.from("extra_list_items").select("id,list_id,code,name,price,position").in("list_id", listIds)
       : Promise.resolve({ data: [] as ExtraListItemRow[] }),
+    db.from("menu_categories").select("id,availability,location_id").in("id", categoryIds),
+    loadActiveMenuLists(db, input.tenantId, conversationalMenuChannel(input.source)),
   ]);
+  const categoriesById = new Map((categories ?? []).map((category) => [category.id, category]));
   const inlineExtrasByItem = groupBy((itemExtras ?? []) as unknown as ItemExtraRow[], (extra) => extra.item_id);
   const listItemsByListId = groupBy((extraListItems ?? []) as ExtraListItemRow[], (item) => item.list_id);
 
   const rows = input.lines.map((line, index) => {
     const item = byCode.get(line.itemCode)!;
     if (!item.available) throw new Error(`item_unavailable:${line.itemCode}`);
+    const category = categoriesById.get(item.category_id);
+    const isWrongLocation = input.locationId && (
+      (item.location_id && item.location_id !== input.locationId) ||
+      (category?.location_id && category.location_id !== input.locationId)
+    );
+    if (
+      !category ||
+      isWrongLocation ||
+      !isCategoryVisible(category) ||
+      (menuLists.allowedItemIds && !menuLists.allowedItemIds.has(item.id))
+    ) {
+      throw new Error(`item_not_in_active_menu:${line.itemCode}`);
+    }
     const qty = Math.max(1, Math.floor(line.quantity));
     const addedExtras = resolveAddedExtras(item, line.addedExtraCodes ?? [], inlineExtrasByItem, listItemsByListId);
-    const unit = numericPrice(item.price) + addedExtras.reduce((sum, extra) => sum + extra.price, 0);
+    const unit = resolveNumericPrice(item.code, item.price, line.priceOption) + addedExtras.reduce((sum, extra) => sum + extra.price, 0);
     return {
       item,
       row: {

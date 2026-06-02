@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { ChevronDown, MessageCircle, UtensilsCrossed } from "lucide-react";
+import { CalendarDays, ChevronDown, MessageCircle, UtensilsCrossed } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { VenueWhatsappLink } from "@/components/modules/reservations/venue-display";
@@ -64,7 +64,7 @@ export function Hero() {
               </p>
               <div className="doca-hero-actions">
                 <VenueWhatsappLink className="doca-button doca-button-primary">
-                  <MessageCircle size={20} />
+                  <CalendarDays size={20} />
                   {docaCopy.reserve}
                 </VenueWhatsappLink>
                 <Link href={menuHref} className="doca-button doca-button-secondary">
@@ -82,8 +82,8 @@ export function Hero() {
             >
               <div className="doca-photo doca-photo-main">
                 <Image
-                  src="/doca/proprietaria-sorridente.webp"
-                  alt="Queren Girardi sorridente da Doca"
+                  src="/doca/proprietaria-finestrella.webp"
+                  alt="Queren Girardi alla finestrella di Doca"
                   fill
                   priority
                   sizes="(max-width: 1024px) 92vw, 520px"

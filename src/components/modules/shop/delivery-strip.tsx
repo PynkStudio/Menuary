@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Truck } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
@@ -31,8 +32,21 @@ export function DeliveryStrip() {
               key={d.name}
               href={d.url}
               aria-disabled={!d.active}
-              className="rounded-full border border-pork-cream/20 px-4 py-2 text-sm font-semibold text-pork-cream/70 transition-colors hover:border-pork-mustard hover:text-pork-mustard"
+              className={
+                isDoca
+                  ? "inline-flex min-h-16 items-center gap-3 rounded-full border-2 border-pork-mustard bg-pork-cream px-5 py-3 text-base font-black text-pork-ink transition-transform hover:-translate-y-1"
+                  : "rounded-full border border-pork-cream/20 px-4 py-2 text-sm font-semibold text-pork-cream/70 transition-colors hover:border-pork-mustard hover:text-pork-mustard"
+              }
             >
+              {isDoca ? (
+                <Image
+                  src="/doca/too-good-to-go.png"
+                  alt=""
+                  width={48}
+                  height={42}
+                  className="h-10 w-12 object-contain"
+                />
+              ) : null}
               {d.active ? d.name : `${d.name} · presto`}
             </a>
           ))}

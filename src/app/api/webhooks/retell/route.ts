@@ -5,7 +5,8 @@ import { buildRetellInboundContext, isAuthorizedRetellRequest } from "@/lib/rete
 
 /** Riceve eventi Retell; persistenza grezza per idempotenza e debug. */
 export async function POST(req: NextRequest) {
-  if (!isAuthorizedRetellRequest(req)) {
+  const rawBody = await req.text();
+  if (!isAuthorizedRetellRequest(req, rawBody)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const svc = createSupabaseServiceClient();
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
   let payload: unknown;
   try {
-    payload = await req.json();
+    payload = JSON.parse(rawBody);
   } catch {
     payload = {};
   }

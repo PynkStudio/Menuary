@@ -1,0 +1,658 @@
+@layer components {
+  [data-tenant-surface="kimos"] {
+    --km-ink: #171512;
+    --km-charcoal: #211d19;
+    --km-red: #c64335;
+    --km-red-dark: #8e2b26;
+    --km-warm: #e5b83b;
+    --km-paper: #f4e9d3;
+    --km-card: #fff9ec;
+    --km-green: #667a45;
+    --km-line: rgba(23, 21, 18, 0.16);
+    background: var(--km-paper);
+    color: var(--km-ink);
+  }
+
+  [data-tenant-surface="kimos"] .km-site {
+    min-height: 100dvh;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 12% 9%, rgba(229, 184, 59, 0.16), transparent 28rem),
+      linear-gradient(90deg, rgba(23, 21, 18, 0.035) 1px, transparent 1px),
+      var(--km-paper);
+    background-size: auto, 2rem 2rem, auto;
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  [data-tenant-surface="kimos"] .km-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) auto minmax(12rem, 1fr);
+    align-items: center;
+    gap: 1.5rem;
+    min-height: 5.4rem;
+    padding: 0.7rem clamp(1rem, 4vw, 4rem);
+    border-bottom: 1px solid rgba(244, 233, 211, 0.12);
+    background: rgba(23, 21, 18, 0.96);
+    box-shadow: 0 12px 30px rgba(43, 33, 28, 0.18);
+    backdrop-filter: blur(16px);
+  }
+
+  [data-tenant-surface="kimos"] .km-brand,
+  [data-tenant-surface="kimos"] .km-brand img {
+    display: block;
+    width: min(13rem, 100%);
+    height: auto;
+  }
+
+  [data-tenant-surface="kimos"] .km-nav {
+    display: flex;
+    gap: clamp(1.2rem, 3vw, 2.6rem);
+  }
+
+  [data-tenant-surface="kimos"] .km-nav a,
+  [data-tenant-surface="kimos"] .km-kicker,
+  [data-tenant-surface="kimos"] .km-section-code,
+  [data-tenant-surface="kimos"] .km-board-label,
+  [data-tenant-surface="kimos"] .km-channel > p {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-nav a {
+    color: rgba(244, 233, 211, 0.7);
+    text-decoration: none;
+    transition: color 180ms ease;
+  }
+
+  [data-tenant-surface="kimos"] .km-nav a:hover {
+    color: var(--km-warm);
+  }
+
+  [data-tenant-surface="kimos"] .km-header-order {
+    justify-self: end;
+  }
+
+  [data-tenant-surface="kimos"] .km-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.8rem;
+    border: 1px solid transparent;
+    border-radius: 0.45rem;
+    padding: 0.7rem 1.15rem;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.09em;
+    line-height: 1;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+
+  [data-tenant-surface="kimos"] .km-button:hover {
+    transform: translateY(-2px);
+  }
+
+  [data-tenant-surface="kimos"] .km-button:active {
+    transform: translateY(0);
+  }
+
+  [data-tenant-surface="kimos"] .km-button:focus-visible,
+  [data-tenant-surface="kimos"] a:focus-visible {
+    outline: 3px solid var(--km-warm);
+    outline-offset: 4px;
+  }
+
+  [data-tenant-surface="kimos"] .km-button-hot {
+    background: var(--km-red);
+    color: #fff8ea;
+    box-shadow: 0 10px 24px rgba(142, 43, 38, 0.25);
+  }
+
+  [data-tenant-surface="kimos"] .km-button-hot:hover {
+    background: var(--km-red-dark);
+  }
+
+  [data-tenant-surface="kimos"] .km-button-outline {
+    border-color: rgba(244, 233, 211, 0.45);
+    color: var(--km-paper);
+  }
+
+  [data-tenant-surface="kimos"] .km-button-warm {
+    background: var(--km-warm);
+    color: var(--km-ink);
+  }
+
+  [data-tenant-surface="kimos"] .km-button-quiet {
+    border-color: rgba(244, 233, 211, 0.3);
+    color: var(--km-paper);
+  }
+
+  [data-tenant-surface="kimos"] .km-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(25rem, 1.1fr);
+    gap: clamp(2rem, 5vw, 6rem);
+    align-items: center;
+    width: min(100% - 2rem, 1480px);
+    min-height: calc(100dvh - 5.4rem);
+    margin: 0 auto;
+    padding: clamp(3.5rem, 7vw, 7rem) clamp(0.3rem, 2vw, 2rem) clamp(4.5rem, 8vw, 7.5rem);
+  }
+
+  [data-tenant-surface="kimos"] .km-kicker,
+  [data-tenant-surface="kimos"] .km-section-code {
+    margin: 0;
+    color: var(--km-red);
+  }
+
+  [data-tenant-surface="kimos"] h1,
+  [data-tenant-surface="kimos"] h2 {
+    margin: 0;
+    font-family: "Arial Black", Impact, Haettenschweiler, sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.075em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-hero h1 {
+    margin-top: 1.2rem;
+    color: var(--km-ink);
+    font-size: clamp(4.5rem, 10vw, 9.8rem);
+    line-height: 0.82;
+  }
+
+  [data-tenant-surface="kimos"] h1 span,
+  [data-tenant-surface="kimos"] h2 span {
+    color: var(--km-red);
+  }
+
+  [data-tenant-surface="kimos"] .km-hero-text {
+    max-width: 36rem;
+    margin: 2rem 0 0;
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    line-height: 1.6;
+  }
+
+  [data-tenant-surface="kimos"] .km-actions,
+  [data-tenant-surface="kimos"] .km-channel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  [data-tenant-surface="kimos"] .km-actions .km-button-outline {
+    border-color: rgba(23, 21, 18, 0.45);
+    color: var(--km-ink);
+  }
+
+  [data-tenant-surface="kimos"] .km-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: max-content;
+    margin-top: 2.4rem;
+    color: var(--km-ink);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 0.73rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-rating-score {
+    font-size: 1.8rem;
+    letter-spacing: -0.08em;
+  }
+
+  [data-tenant-surface="kimos"] .km-rating-star {
+    color: var(--km-red);
+  }
+
+  [data-tenant-surface="kimos"] .km-hero-board {
+    position: relative;
+    min-height: clamp(32rem, 49vw, 43rem);
+  }
+
+  [data-tenant-surface="kimos"] .km-board-label {
+    position: absolute;
+    left: 1rem;
+    top: -1.5rem;
+    color: var(--km-red);
+  }
+
+  [data-tenant-surface="kimos"] .km-board-photo {
+    position: absolute;
+    overflow: hidden;
+    border: 0.65rem solid var(--km-red);
+    background: var(--km-charcoal);
+    box-shadow: 0 28px 55px rgba(43, 33, 28, 0.27);
+  }
+
+  [data-tenant-surface="kimos"] .km-board-photo img {
+    object-fit: cover;
+  }
+
+  [data-tenant-surface="kimos"] .km-board-photo-main {
+    inset: 1.5rem 4rem 1rem 0;
+    transform: rotate(-2.5deg);
+  }
+
+  [data-tenant-surface="kimos"] .km-board-photo-side {
+    right: 0;
+    bottom: -1rem;
+    width: 29%;
+    height: 62%;
+    transform: rotate(4deg);
+  }
+
+  [data-tenant-surface="kimos"] .km-board-stamp {
+    position: absolute;
+    right: 3%;
+    top: 2%;
+    display: grid;
+    place-items: center;
+    width: 7.2rem;
+    aspect-ratio: 1;
+    transform: rotate(8deg);
+    border: 3px solid var(--km-ink);
+    border-radius: 50%;
+    background: var(--km-warm);
+    box-shadow: inset 0 0 0 5px var(--km-warm), inset 0 0 0 7px var(--km-ink);
+    color: var(--km-ink);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    text-align: center;
+  }
+
+  [data-tenant-surface="kimos"] .km-board-stamp span {
+    align-self: end;
+    font-size: 0.64rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+  }
+
+  [data-tenant-surface="kimos"] .km-board-stamp strong {
+    align-self: start;
+    font-size: 1.8rem;
+    letter-spacing: -0.14em;
+  }
+
+  [data-tenant-surface="kimos"] .km-marquee {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.9rem 1.25rem;
+    padding: 1rem;
+    border-block: 1px solid rgba(244, 233, 211, 0.14);
+    background: var(--km-red);
+    color: #fff8ea;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-marquee i {
+    color: var(--km-warm);
+    font-style: normal;
+  }
+
+  [data-tenant-surface="kimos"] .km-intro,
+  [data-tenant-surface="kimos"] .km-highlight,
+  [data-tenant-surface="kimos"] .km-visit {
+    width: min(100% - 2rem, 1480px);
+    margin-inline: auto;
+  }
+
+  [data-tenant-surface="kimos"] .km-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(24rem, 1.15fr);
+    gap: clamp(2rem, 7vw, 7rem);
+    padding: clamp(5rem, 9vw, 9rem) clamp(0.3rem, 2vw, 2rem);
+  }
+
+  [data-tenant-surface="kimos"] .km-intro h2,
+  [data-tenant-surface="kimos"] .km-section-heading h2,
+  [data-tenant-surface="kimos"] .km-visit h2 {
+    margin-top: 1rem;
+    font-size: clamp(3.5rem, 7vw, 7.4rem);
+    line-height: 0.88;
+  }
+
+  [data-tenant-surface="kimos"] .km-intro > div:last-child > p {
+    max-width: 44rem;
+    margin: 0;
+    font-size: clamp(1.1rem, 1.7vw, 1.5rem);
+    line-height: 1.6;
+  }
+
+  [data-tenant-surface="kimos"] .km-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 2.3rem;
+    background: var(--km-line);
+    border: 1px solid var(--km-line);
+  }
+
+  [data-tenant-surface="kimos"] .km-category {
+    display: grid;
+    gap: 0.35rem;
+    min-height: 9rem;
+    padding: 1rem;
+    background: rgba(255, 249, 236, 0.72);
+  }
+
+  [data-tenant-surface="kimos"] .km-category span,
+  [data-tenant-surface="kimos"] .km-category small {
+    color: var(--km-red);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-category strong {
+    align-self: end;
+    font-family: "Arial Black", Impact, sans-serif;
+    font-size: 1.55rem;
+    letter-spacing: -0.07em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-category small {
+    color: rgba(23, 21, 18, 0.62);
+    line-height: 1.45;
+  }
+
+  [data-tenant-surface="kimos"] .km-menu {
+    padding: clamp(4rem, 8vw, 7rem) clamp(0.3rem, 2vw, 2rem);
+    border-top: 1px solid var(--km-line);
+  }
+
+  [data-tenant-surface="kimos"] .km-section-heading {
+    max-width: 74rem;
+  }
+
+  [data-tenant-surface="kimos"] .km-section-heading > p:last-child {
+    max-width: 42rem;
+    margin: 1.5rem 0 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+
+  [data-tenant-surface="kimos"] .km-loading {
+    margin-top: 2rem;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-menu .container-wide {
+    width: 100%;
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  [data-tenant-surface="kimos"] .km-menu .sticky {
+    border: 1px solid var(--km-line);
+    border-radius: 0;
+    background: rgba(255, 249, 236, 0.94);
+    box-shadow: none;
+  }
+
+  [data-tenant-surface="kimos"] .km-menu article {
+    border-radius: 0.45rem;
+    background: var(--km-card);
+    box-shadow: 0 8px 0 rgba(43, 33, 28, 0.08);
+  }
+
+  [data-tenant-surface="kimos"] .km-menu article h3 {
+    font-family: "Arial Black", Impact, sans-serif;
+    font-size: 1.55rem;
+    letter-spacing: -0.07em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-channels {
+    padding: clamp(5rem, 9vw, 8rem) max(1rem, calc((100vw - 1416px) / 2));
+    background:
+      radial-gradient(circle at 80% 10%, rgba(229, 184, 59, 0.16), transparent 28rem),
+      var(--km-charcoal);
+    color: var(--km-paper);
+  }
+
+  [data-tenant-surface="kimos"] .km-section-heading-light h2 {
+    color: var(--km-paper);
+  }
+
+  [data-tenant-surface="kimos"] .km-section-heading-light h2 span {
+    color: var(--km-warm);
+  }
+
+  [data-tenant-surface="kimos"] .km-channel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 3rem;
+    background: rgba(244, 233, 211, 0.14);
+    border: 1px solid rgba(244, 233, 211, 0.14);
+  }
+
+  [data-tenant-surface="kimos"] .km-channel {
+    min-height: 20rem;
+    padding: clamp(1.4rem, 3vw, 2.2rem);
+    background: rgba(33, 29, 25, 0.96);
+  }
+
+  [data-tenant-surface="kimos"] .km-channel-icon {
+    display: grid;
+    width: 3.1rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid rgba(229, 184, 59, 0.5);
+    border-radius: 50%;
+    color: var(--km-warm);
+  }
+
+  [data-tenant-surface="kimos"] .km-channel > p {
+    margin: 2rem 0 0;
+    color: var(--km-warm);
+  }
+
+  [data-tenant-surface="kimos"] .km-channel h3 {
+    margin: 0.65rem 0 0;
+    font-family: "Arial Black", Impact, sans-serif;
+    font-size: clamp(2rem, 3vw, 3.2rem);
+    letter-spacing: -0.09em;
+    line-height: 0.92;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-channel span {
+    display: block;
+    margin-top: 1.2rem;
+    color: rgba(244, 233, 211, 0.7);
+    line-height: 1.6;
+  }
+
+  [data-tenant-surface="kimos"] .km-reviews .tenant-reviews {
+    background:
+      linear-gradient(90deg, rgba(23, 21, 18, 0.035) 1px, transparent 1px),
+      var(--km-paper);
+    background-size: 2rem 2rem;
+  }
+
+  [data-tenant-surface="kimos"] .km-reviews .headline,
+  [data-tenant-surface="kimos"] .km-footer .impact-title {
+    font-family: "Arial Black", Impact, sans-serif;
+    letter-spacing: -0.07em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-visit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.92fr);
+    gap: 1px;
+    margin-bottom: 0;
+    background: var(--km-line);
+    border: 1px solid var(--km-line);
+  }
+
+  [data-tenant-surface="kimos"] .km-visit-copy {
+    padding: clamp(2rem, 5vw, 5rem);
+    background: var(--km-card);
+  }
+
+  [data-tenant-surface="kimos"] .km-visit-text {
+    max-width: 38rem;
+    margin: 1.5rem 0 0;
+    font-size: 1.08rem;
+    line-height: 1.6;
+  }
+
+  [data-tenant-surface="kimos"] .km-contact-list {
+    display: grid;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  [data-tenant-surface="kimos"] .km-contact-list > div {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--km-line);
+  }
+
+  [data-tenant-surface="kimos"] .km-contact-list dt {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--km-red);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 0.67rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-contact-list dd,
+  [data-tenant-surface="kimos"] .km-contact-list a {
+    margin: 0.45rem 0 0;
+    color: var(--km-ink);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  [data-tenant-surface="kimos"] .km-contact-list dd.grid {
+    max-width: 46rem;
+  }
+
+  [data-tenant-surface="kimos"] .km-map {
+    min-height: 42rem;
+    background: #ded0b3;
+  }
+
+  [data-tenant-surface="kimos"] .km-footer footer {
+    margin-top: 0;
+    background: var(--km-ink);
+  }
+
+  [data-tenant-surface="kimos"] .km-footer a[aria-label=""] {
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    [data-tenant-surface="kimos"] .km-header {
+      grid-template-columns: 1fr auto;
+    }
+
+    [data-tenant-surface="kimos"] .km-nav {
+      display: none;
+    }
+
+    [data-tenant-surface="kimos"] .km-hero,
+    [data-tenant-surface="kimos"] .km-intro,
+    [data-tenant-surface="kimos"] .km-visit {
+      grid-template-columns: 1fr;
+    }
+
+    [data-tenant-surface="kimos"] .km-hero {
+      min-height: auto;
+      padding-top: 4rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-hero-board {
+      min-height: 30rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-intro {
+      gap: 1.8rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-channel-grid {
+      grid-template-columns: 1fr;
+    }
+
+    [data-tenant-surface="kimos"] .km-channel {
+      min-height: auto;
+    }
+
+    [data-tenant-surface="kimos"] .km-map {
+      min-height: 24rem;
+    }
+  }
+
+  @media (max-width: 560px) {
+    [data-tenant-surface="kimos"] .km-header {
+      min-height: 4.8rem;
+      padding-inline: 0.65rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-brand,
+    [data-tenant-surface="kimos"] .km-brand img {
+      width: 10.6rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-header-order {
+      min-height: 2.55rem;
+      padding-inline: 0.75rem;
+      font-size: 0.63rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-hero h1 {
+      font-size: clamp(4rem, 23vw, 6.8rem);
+    }
+
+    [data-tenant-surface="kimos"] .km-hero-board {
+      min-height: 23rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-board-photo-main {
+      right: 1.5rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-board-photo-side {
+      width: 32%;
+      height: 58%;
+    }
+
+    [data-tenant-surface="kimos"] .km-board-stamp {
+      right: 1%;
+      width: 5.8rem;
+    }
+
+    [data-tenant-surface="kimos"] .km-category-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -828,7 +828,7 @@ const docaContent: TenantContent = {
     body:
       "Una piccola bakery di quartiere a sud di Milano. Lievitazione naturale con farine del Mulino Viva, caffè filtro da singola piantagione, ricette brasiliane di Queren — non il Brasile da cartolina, quello dell'infanzia.",
     backdrop: "/doca/brigadeiros.jpg",
-    ctaLabel: "Prenota su WhatsApp",
+    ctaLabel: "Prenota ora",
   },
   soulsIntro: {
     eyebrow: "Padoca — la panetteria di quartiere",
@@ -852,7 +852,7 @@ const docaContent: TenantContent = {
       title: "Il dolce",
       desc: "Torta di carote e brigadeiro, dolci di casa e sapori che attraversano l'oceano.",
       href: "/menu#dolci",
-      image: "/doca/torta-carota-brigadeiro.webp",
+      image: "/doca/caffe-filtro.jpg",
     },
     {
       id: "dolci",
@@ -860,7 +860,7 @@ const docaContent: TenantContent = {
       title: "Le bevande",
       desc: "Espresso, caffè filtro e bevande da gustare con calma, al banco o seduti.",
       href: "/menu#caffe",
-      image: "/doca/caffe-filtro.jpg",
+      image: "/doca/le-bevande.webp",
     },
   ],
   dishesIntro: {
@@ -923,13 +923,13 @@ const docaContent: TenantContent = {
     titleLead: "Via Breno 2,",
     titleAccent: "Milano Corvetto.",
     body:
-      "Ci trovi in zona Corvetto, in Via Breno 2. Passa per il pane, fermati per un caffè o prenota su WhatsApp.",
+      "Ci trovi in zona Corvetto, in Via Breno 2. Passa per il pane, fermati per un caffè o prenota qui.",
     mapTitle: "Mappa Doca — Via Breno 2, Milano",
   },
   footer: {
     tagline: "International breakfast with brazilian soul.",
     body:
-      "Doca — pane, caffè, saudade. Bakery brasiliana di quartiere fondata da Queren Girardi in Via Breno 2, Milano. Lievitazione naturale, caffè filtro Cafezal, ricette di casa.",
+      "Doca — pane, caffè, saudade. Bakery di una brasiliana di quartiere fondata da Queren Girardi in Via Breno 2, Milano. Lievitazione naturale, caffè filtro Cafezal, ricette di casa.",
   },
   delivery: {
     title: "Niente delivery, vieni in bottega.",
@@ -1247,6 +1247,145 @@ const juniorFoodContent: TenantContent = {
   },
 };
 
+const kimosContent: TenantContent = {
+  logoSrc: "/kimos/logo.svg",
+  logoAlt: "Pizzeria Kimos",
+  showcaseLogoSrc: "/kimos/logo.svg",
+  showcaseLogoAlt: "Pizzeria Kimos - pizza, kebab e fritti a Milano",
+  description:
+    "Pizzeria Kimos a Milano Santa Giulia: pizze tradizionali, kebab, panini, focacce e fritti. Menu online e ordini diretti in Via Bruno Cassinari 3.",
+  url: "https://pizzeria-kimos.it",
+  social: {
+    instagram: "",
+    facebook: "https://www.facebook.com/profile.php?id=100054450701009",
+    instagramLabel: "",
+    facebookLabel: "Facebook Pizzeria Kimos",
+  },
+  contact: {
+    phone: "02 513404",
+    whatsappDigits: "3902513404",
+    whatsappMessage:
+      "Ciao Pizzeria Kimos! Vorrei fare un ordine. Mi potete aiutare?",
+  },
+  address: {
+    street: "Via Bruno Cassinari, 3",
+    zip: "20138",
+    city: "Milano",
+    province: "MI",
+    full: "Via Bruno Cassinari, 3 - 20138 Milano (MI)",
+  },
+  maps: {
+    searchUrl: "https://maps.app.goo.gl/55BuJJ4iMh6ZWqrs7",
+    embedUrl:
+      "https://www.google.com/maps?q=Pizzeria+Kimos+Via+Bruno+Cassinari+3+Milano&output=embed",
+  },
+  hero: {
+    eyebrow: "Pizzeria di quartiere - Santa Giulia, Milano",
+    titleLead: "Pizza, kebab",
+    titleAccent: "e fame vera.",
+    body:
+      "A Santa Giulia si ordina senza giri di parole: pizze tradizionali, panini kebab, focacce e fritti preparati per il tavolo o da portare via.",
+    backdrop: "/kimos/menu-board-spread.png",
+    ctaLabel: "Ordina ora",
+  },
+  soulsIntro: {
+    eyebrow: "Una carta che non lascia fuori nessuno",
+    titleLead: "Dal forno allo spiedo,",
+    titleAccent: "fino all'ultimo fritto.",
+    body:
+      "Kimos tiene insieme le scelte che servono davvero a pranzo, a cena e quando arriva quella fame da risolvere bene.",
+  },
+  souls: [
+    {
+      id: "pizza",
+      kicker: "Dal forno",
+      title: "Pizze tradizionali",
+      desc: "Classiche, giganti e componibili: la parte più ampia della carta Kimos.",
+      href: "/menu#pizze-tradizionali",
+      image: "/kimos/menu-board-spread.png",
+    },
+    {
+      id: "kebab",
+      kicker: "Dallo spiedo",
+      title: "Kebab e panini",
+      desc: "Panino, piadina e piatto kebab con insalata, salse e varianti complete.",
+      href: "/menu#kebab",
+      image: "/kimos/menu-board-kebab.png",
+    },
+    {
+      id: "fritti",
+      kicker: "Da condividere",
+      title: "Fritti e sfizi",
+      desc: "Alette, nuggets, crocchette, falafel e mix fritti per completare l'ordine.",
+      href: "/menu#fritti",
+      image: "/kimos/menu-board-plates.png",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "Scelte Kimos",
+    title: "Le basi di un ordine fatto bene.",
+    subtitle: "Pochi dubbi, molta scelta: pizza, kebab e fritti da comporre come vuoi.",
+  },
+  dishes: [
+    {
+      name: "Menu panino kebab",
+      desc: "Panino kebab, patatine fritte e Coca-Cola 33 cl.",
+      price: "€ 9,50",
+      image: "/kimos/menu-board-kebab.png",
+      variant: "red",
+      href: "/menu#menu-completi",
+    },
+    {
+      name: "Menu piadina kebab",
+      desc: "Piadina kebab, patatine fritte e Coca-Cola 33 cl.",
+      price: "€ 10,00",
+      image: "/kimos/menu-board-kebab.png",
+      variant: "mustard",
+      href: "/menu#menu-completi",
+    },
+    {
+      name: "Piatto kebab",
+      desc: "Kebab completo con pane, insalata e contorno.",
+      price: "€ 9,50",
+      image: "/kimos/menu-board-plates.png",
+      variant: "green",
+      href: "/menu#kebab",
+    },
+    {
+      name: "Mix fritti",
+      desc: "Dodici pezzi misti: olive, mozzarelline, alette, crocchette, onion rings e nuggets.",
+      price: "€ 12,50",
+      image: "/kimos/menu-board-plates.png",
+      variant: "pink",
+      href: "/menu#fritti",
+    },
+  ],
+  findUs: {
+    eyebrow: "Santa Giulia, Milano",
+    titleLead: "Passa da Kimos,",
+    titleAccent: "oppure ordina online.",
+    body:
+      "Siamo in Via Bruno Cassinari 3, a pochi minuti dalla stazione di Milano Rogoredo. Pranzo e cena, tutti i giorni.",
+    mapTitle: "Mappa Pizzeria Kimos - Milano",
+  },
+  footer: {
+    tagline: "Pizza, kebab e fritti a Santa Giulia.",
+    body:
+      "Pizzeria Kimos prepara pizze tradizionali, kebab, panini, focacce e fritti in Via Bruno Cassinari 3 a Milano.",
+  },
+  delivery: {
+    title: "Vuoi ordinare subito?",
+    body: "Scegli i piatti dal menu online e invia il tuo ordine a Kimos.",
+    partners: [
+      {
+        name: "Just Eat",
+        url: "https://www.justeat.it/restaurants-pizzeriakimos/menu",
+        active: true,
+      },
+    ],
+  },
+};
+
 import { findTenantById } from "./tenant-registry";
 
 export function getTenantContent(tenantId: string): TenantContent {
@@ -1257,6 +1396,7 @@ export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "doca") return docaContent;
   if (tenantId === "junior-food") return juniorFoodContent;
   if (tenantId === "nom-sushi") return nomSushiContent;
+  if (tenantId === "kimos") return kimosContent;
   // Ogni tenant deve avere il proprio blocco content sopra.
   // Fallback per verticale: non restituire mai contenuto BePork per tenant services.
   const profile = findTenantById(tenantId);

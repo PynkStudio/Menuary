@@ -19,7 +19,7 @@ import {
   selectItemsByCategory,
   selectMenuListsOrdered,
 } from "@/store/menu-store";
-import type { AdminMenuItem, AdminMenuList, MenuAvailability, MenuDay } from "@/lib/types";
+import type { AdminMenuItem, AdminMenuList, MenuAvailability, MenuDay, MenuOrderChannel } from "@/lib/types";
 import { formatEuro, minPrice } from "@/lib/price-utils";
 import { ItemEditor } from "@/components/admin/item-editor";
 import { ExtraListsManager } from "@/components/admin/extra-lists-manager";
@@ -41,6 +41,13 @@ const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 0, label: "Dom" },
 ];
 
+const CHANNEL_OPTIONS: Array<{ value: MenuOrderChannel; label: string }> = [
+  { value: "phone", label: "Ordini in chiamata" },
+  { value: "whatsapp", label: "Ordini WhatsApp" },
+  { value: "online", label: "Ordini online" },
+  { value: "table", label: "Ordini al tavolo" },
+];
+
 function formatMenuRules(menu: AdminMenuList): string {
   const rules: string[] = [];
   if (menu.visibility.startTime || menu.visibility.endTime) {
@@ -56,6 +63,16 @@ function formatMenuRules(menu: AdminMenuList): string {
   }
   if (menu.visibility.tableIds?.length) {
     rules.push(`${menu.visibility.tableIds.length} tavoli/postazioni`);
+  }
+  if (menu.visibility.channels) {
+    rules.push(
+      menu.visibility.channels.length > 0
+        ? CHANNEL_OPTIONS
+            .filter((channel) => menu.visibility.channels?.includes(channel.value))
+            .map((channel) => channel.label)
+            .join(", ")
+        : "nessun canale ordine",
+    );
   }
   return rules.length > 0 ? rules.join(" · ") : "Sempre visibile";
 }
@@ -522,6 +539,45 @@ export default function AdminMenuPage() {
                         );
                       })}
                     </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <span className="mb-2 block text-xs font-bold uppercase text-pork-ink/50">
+                      Canali ordine
+                    </span>
+                    <div className="grid gap-2 md:grid-cols-2">
+                      {CHANNEL_OPTIONS.map((channel) => {
+                        const current = editingMenu.visibility.channels ?? CHANNEL_OPTIONS.map((option) => option.value);
+                        const active = current.includes(channel.value);
+                        return (
+                          <label
+                            key={channel.value}
+                            className="flex cursor-pointer items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm ring-1 ring-pork-ink/10"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={active}
+                              onChange={() => {
+                                const next = active
+                                  ? current.filter((value) => value !== channel.value)
+                                  : [...current, channel.value];
+                                updateMenuList(editingMenu.id, {
+                                  visibility: {
+                                    ...editingMenu.visibility,
+                                    channels: next.length === CHANNEL_OPTIONS.length ? undefined : next,
+                                  },
+                                });
+                              }}
+                              className="h-4 w-4 accent-pork-red"
+                            />
+                            <span className={active ? "font-bold" : ""}>{channel.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <span className="mt-2 block text-xs text-pork-ink/45">
+                      I menu esistenti senza configurazione esplicita restano abilitati su tutti i canali.
+                    </span>
                   </div>
 
                   <label className="mt-4 block">

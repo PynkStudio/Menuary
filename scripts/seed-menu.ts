@@ -9,7 +9,7 @@
  * Idempotente: cancella e reinserisce categorie/items per il tenant.
  */
 import { createClient } from "@supabase/supabase-js";
-import { menu } from "../src/lib/menu-data";
+import { getSeedMenuForTenant } from "../src/lib/tenant-menu-data";
 import type { Database } from "../src/lib/supabase/types";
 
 const TENANT_ID = process.env.SEED_TENANT_ID ?? "bepork";
@@ -31,6 +31,7 @@ function priceKind(p: { kind: string }): "single" | "sized" | "persone" | "volum
 
 async function main() {
   console.log(`Seeding tenant=${TENANT_ID}…`);
+  const menu = getSeedMenuForTenant(TENANT_ID);
 
   // Pulizia (cascade da categorie/extra_lists)
   await supabase.from("menu_categories").delete().eq("tenant_id", TENANT_ID);

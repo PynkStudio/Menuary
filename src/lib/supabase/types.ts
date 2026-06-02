@@ -2835,6 +2835,36 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_demo_controls: {
+        Row: {
+          created_at: string
+          disabled_at: string | null
+          enabled: boolean
+          preview_slug: string
+          tenant_id: string
+          updated_at: string
+          vertical: string
+        }
+        Insert: {
+          created_at?: string
+          disabled_at?: string | null
+          enabled?: boolean
+          preview_slug: string
+          tenant_id: string
+          updated_at?: string
+          vertical?: string
+        }
+        Update: {
+          created_at?: string
+          disabled_at?: string | null
+          enabled?: boolean
+          preview_slug?: string
+          tenant_id?: string
+          updated_at?: string
+          vertical?: string
+        }
+        Relationships: []
+      }
       time_off_requests: {
         Row: {
           created_at: string

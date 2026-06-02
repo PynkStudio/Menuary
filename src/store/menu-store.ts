@@ -20,6 +20,7 @@ import type {
   AdminMenuList,
   Extra,
   MenuDay,
+  MenuOrderChannel,
   Order,
   OrderStatus,
   PriceFormat,
@@ -773,11 +774,13 @@ function isTimeInWindow(now: Date, start?: string, end?: string): boolean {
 
 export function isMenuListVisible(
   menuList: AdminMenuList,
-  options?: { now?: Date; tableId?: string | null },
+  options?: { now?: Date; tableId?: string | null; channel?: MenuOrderChannel },
 ): boolean {
   if (!menuList.enabled) return false;
   const now = options?.now ?? new Date();
   const visibility = menuList.visibility ?? {};
+  const channels = visibility.channels;
+  if (options?.channel && channels && !channels.includes(options.channel)) return false;
   const days = visibility.days ?? [];
   if (days.length > 0 && !days.includes(now.getDay() as MenuDay)) return false;
   if (!isTimeInWindow(now, visibility.startTime, visibility.endTime)) return false;
@@ -790,7 +793,7 @@ export function isMenuListVisible(
 
 export function selectVisibleMenuLists(
   menuLists: AdminMenuList[],
-  options?: { now?: Date; tableId?: string | null },
+  options?: { now?: Date; tableId?: string | null; channel?: MenuOrderChannel },
 ): AdminMenuList[] {
   return selectMenuListsOrdered({ menuLists } as Pick<MenuState, "menuLists">).filter((list) =>
     isMenuListVisible(list, options),

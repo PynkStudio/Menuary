@@ -11,6 +11,8 @@ import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer
 import { evaluateAutoAccept, loadOrderSettings } from "@/lib/orders/order-settings";
 import { checkOrderingWindow, type OrderChannel } from "@/lib/orders/ordering-window";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
+import { validateMenuItemsForOrderChannel } from "@/lib/menu-order-channels";
+import { COPERTO_ITEM_ID } from "@/lib/coperto";
 import type { CartLine, OrderDineOption } from "@/lib/types";
 import type { Database } from "@/lib/supabase/types";
 
@@ -48,6 +50,19 @@ export async function POST(req: NextRequest) {
 
   if (!tenantId || !type || !lines?.length) {
     return NextResponse.json({ error: "missing required fields" }, { status: 400 });
+  }
+
+  const invalidMenuItems = await validateMenuItemsForOrderChannel(supabase, {
+    tenantId,
+    itemCodes: lines.map((line) => line.itemId).filter((itemId) => itemId !== COPERTO_ITEM_ID),
+    channel: type === "tavolo" ? "table" : "online",
+    tableId: rest.tableId ?? null,
+  });
+  if (invalidMenuItems.length > 0) {
+    return NextResponse.json(
+      { error: "Alcuni prodotti non sono disponibili per questo canale.", code: "items_not_in_active_menu", items: invalidMenuItems },
+      { status: 422 },
+    );
   }
 
   // Genera codice ordine atomico (B001, B002…)

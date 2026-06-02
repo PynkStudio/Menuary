@@ -15,6 +15,7 @@ export function MenuPageShell() {
   const isFaak = tenant.id === "faak";
   const isDoca = tenant.id === "doca";
   const isNomSushi = tenant.id === "nom-sushi";
+  const isKimos = tenant.id === "kimos";
 
   return (
     <>
@@ -44,6 +45,12 @@ export function MenuPageShell() {
                 {" "}
                 <span className="text-pork-mustard">aperisushi e cena.</span>
               </>
+            ) : isKimos ? (
+              <>
+                Pizza, kebab,
+                <br />
+                <span className="text-pork-mustard">fritti e fame vera.</span>
+              </>
             ) : (
               <>
                 Qui si mangia
@@ -68,6 +75,11 @@ export function MenuPageShell() {
             <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">
               Pranzo AYCE, aperisushi e cena hanno sezioni e disponibilità diverse.
               Qui il cliente trova subito crudi, dim sum, gunkan, roll e formule Nøm.
+            </p>
+          ) : isKimos ? (
+            <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">
+              Una carta ampia e diretta per Santa Giulia: pizze tradizionali,
+              kebab, panini, focacce, fritti e menu completi ordinabili online.
             </p>
           ) : (
             <MenuIntroParagraph />

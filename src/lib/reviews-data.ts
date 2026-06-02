@@ -182,6 +182,46 @@ export const juniorFoodGoogleRating = {
   profileUrl: "https://maps.app.goo.gl/BvAqtD8Tbs87TiHn6",
 };
 
+export const kimosReviews: Review[] = [
+  {
+    id: "kimos-thomas-fischer",
+    author: "Thomas Fischer",
+    rating: 5,
+    text: "Excellent kebab in Santa Giulia.",
+    date: "8 mesi fa",
+    isLocalGuide: true,
+    reviewsCount: 52,
+    photosCount: 3,
+  },
+  {
+    id: "kimos-stef",
+    author: "Stef",
+    rating: 5,
+    text:
+      "Ottima esperienza! Tutti simpatici e il kebab è davvero buonissimo! Consiglio vivamente a tutti!",
+    date: "2 mesi fa",
+    isLocalGuide: true,
+    reviewsCount: 8,
+    photosCount: 3,
+  },
+  {
+    id: "kimos-andrea-teotto",
+    author: "Andrea Teotto",
+    rating: 5,
+    text: "Ottimo servizio. Personale cordiale e disponibile.",
+    date: "1 mese fa",
+    isLocalGuide: true,
+    reviewsCount: 24,
+    photosCount: 25,
+  },
+];
+
+export const kimosGoogleRating = {
+  average: 3.9,
+  count: 327,
+  profileUrl: "https://maps.app.goo.gl/55BuJJ4iMh6ZWqrs7",
+};
+
 export const nomSushiReviews: Review[] = [
   {
     id: "nom-martina-rosso",
@@ -234,6 +274,7 @@ export function getReviewsForTenant(tenantId: string): Review[] {
   if (tenantId === "nom-sushi") return nomSushiReviews;
   if (tenantId === "doca") return docaReviews;
   if (tenantId === "junior-food") return juniorFoodReviews;
+  if (tenantId === "kimos") return kimosReviews;
   return tenantId === "officinakam" ? officinaKamReviews : reviews;
 }
 
@@ -241,5 +282,6 @@ export function getGoogleRatingForTenant(tenantId: string) {
   if (tenantId === "nom-sushi") return nomSushiGoogleRating;
   if (tenantId === "doca") return docaGoogleRating;
   if (tenantId === "junior-food") return juniorFoodGoogleRating;
+  if (tenantId === "kimos") return kimosGoogleRating;
   return tenantId === "officinakam" ? officinaKamGoogleRating : googleRating;
 }

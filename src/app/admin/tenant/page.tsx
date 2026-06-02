@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { RotateCcw, ShieldCheck, Power, ExternalLink, ChevronDown, MapPin, CreditCard, Plug } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HubriseIntegrationModal } from "@/components/admin/tenant/hubrise-integration-modal";
 import { HubriseInboxBanner } from "@/components/admin/tenant/hubrise-inbox-banner";
 import type { TenantStatus } from "@/lib/tenant";
@@ -36,6 +36,11 @@ const STATUS_BADGE: Record<TenantStatus, { label: string; className: string }> =
   trattativa: { label: "Trattativa",  className: "bg-amber-100 text-amber-800" },
 };
 
+type DemoControl = {
+  tenantId: string;
+  enabled: boolean;
+};
+
 export default function AdminTenantPage() {
   const mode = usePlatformMode();
   const activeTenant = useTenant();
@@ -47,8 +52,24 @@ export default function AdminTenantPage() {
     (state) => state.setFeatureEnabled,
   );
   const resetTenant = useTenantAdminStore((state) => state.resetTenant);
-  const [demoDisabled, setDemoDisabled] = useState<Record<string, boolean>>({});
+  const [demoControls, setDemoControls] = useState<Record<string, DemoControl>>({});
+  const [demoSaving, setDemoSaving] = useState<Record<string, boolean>>({});
+  const [demoError, setDemoError] = useState<string | null>(null);
   const [hubriseOpenFor, setHubriseOpenFor] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetch("/api/admin/demo-status", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json() as { controls?: DemoControl[]; error?: string };
+        if (!response.ok) throw new Error(payload.error ?? "Impossibile caricare lo stato delle demo.");
+        setDemoControls(
+          Object.fromEntries((payload.controls ?? []).map((control) => [control.tenantId, control])),
+        );
+      })
+      .catch((error) => {
+        setDemoError(error instanceof Error ? error.message : "Impossibile caricare lo stato delle demo.");
+      });
+  }, []);
 
   function persistTenantEnabled(tenantId: string, enabled: boolean) {
     setTenantEnabled(tenantId, enabled);
@@ -57,6 +78,30 @@ export default function AdminTenantPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tenantId, enabled }),
     });
+  }
+
+  async function persistDemoEnabled(tenantId: string, enabled: boolean) {
+    setDemoSaving((previous) => ({ ...previous, [tenantId]: true }));
+    setDemoError(null);
+    try {
+      const response = await fetch("/api/admin/demo-status", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId, enabled }),
+      });
+      const payload = await response.json() as { control?: DemoControl; error?: string };
+      if (!response.ok || !payload.control) {
+        throw new Error(payload.error ?? "Impossibile aggiornare lo stato della demo.");
+      }
+      setDemoControls((previous) => ({
+        ...previous,
+        [tenantId]: payload.control!,
+      }));
+    } catch (error) {
+      setDemoError(error instanceof Error ? error.message : "Impossibile aggiornare lo stato della demo.");
+    } finally {
+      setDemoSaving((previous) => ({ ...previous, [tenantId]: false }));
+    }
   }
 
   if (mode !== "platform-admin") {
@@ -87,6 +132,12 @@ export default function AdminTenantPage() {
 
       <HubriseInboxBanner />
 
+      {demoError && (
+        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+          {demoError}
+        </p>
+      )}
+
       <div className="grid gap-5 xl:grid-cols-2">
         {TENANTS.map((tenant) => {
           const effective = mergeTenantOverrides(tenant, overrides[tenant.id]);
@@ -95,6 +146,8 @@ export default function AdminTenantPage() {
           const subscription = lead
             ? PLATFORM_SUBSCRIPTIONS.find((item) => item.lead_id === lead.id)
             : null;
+          const demoEnabled = demoControls[tenant.id]?.enabled ?? true;
+          const isDemoSaving = demoSaving[tenant.id] ?? false;
 
           return (
             <details
@@ -126,7 +179,7 @@ export default function AdminTenantPage() {
                       ? tenant.domains.join(" · ")
                       : <span className="italic text-pork-ink/35">nessun dominio — solo preview</span>}
                   </p>
-                  {tenant.previewSlug && !demoDisabled[tenant.id] && (
+                  {tenant.previewSlug && (
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <a
                         href={`${PREVIEW_HOST[tenant.vertical] ?? "https://demo.menuary.it"}/${tenant.previewSlug}`}
@@ -137,31 +190,37 @@ export default function AdminTenantPage() {
                         <ExternalLink size={12} />
                         Link demo
                       </a>
-                      {tenant.domains.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            setDemoDisabled((prev) => ({ ...prev, [tenant.id]: true }));
-                          }}
-                          className="rounded-full bg-pork-ink/5 px-2 py-1 text-[10px] font-black uppercase text-pork-ink/45 hover:bg-pork-ink/10"
-                        >
-                          Disattiva demo
-                        </button>
-                      )}
+                      <span
+                        className={
+                          "rounded-full px-2 py-1 text-[10px] font-black uppercase " +
+                          (demoEnabled
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-pork-ink/10 text-pork-ink/55")
+                        }
+                      >
+                        {demoEnabled ? "Demo online" : "Demo offline"}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isDemoSaving}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          void persistDemoEnabled(tenant.id, !demoEnabled);
+                        }}
+                        className={
+                          "rounded-full px-2 py-1 text-[10px] font-black uppercase transition disabled:cursor-wait disabled:opacity-50 " +
+                          (demoEnabled
+                            ? "bg-pork-ink/5 text-pork-ink/45 hover:bg-pork-ink/10"
+                            : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100")
+                        }
+                      >
+                        {isDemoSaving
+                          ? "Salvataggio..."
+                          : demoEnabled
+                            ? "Disattiva demo"
+                            : "Riattiva demo"}
+                      </button>
                     </div>
-                  )}
-                  {tenant.previewSlug && demoDisabled[tenant.id] && (
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        setDemoDisabled((prev) => ({ ...prev, [tenant.id]: false }));
-                      }}
-                      className="mt-1.5 rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-black uppercase text-indigo-700 hover:bg-indigo-100"
-                    >
-                      Riattiva demo temporanea
-                    </button>
                   )}
                 </div>
 

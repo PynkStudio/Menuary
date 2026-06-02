@@ -70,10 +70,11 @@ export function InteractiveMenu({
   );
 
   const tableIdForMenus = cartContext.type === "tavolo" ? cartContext.tableId ?? null : null;
+  const menuChannel = cartContext.type === "tavolo" ? "table" : "online";
 
   const visibleMenuLists = useMemo(
-    () => selectVisibleMenuLists(menuLists, { tableId: tableIdForMenus }),
-    [menuLists, tableIdForMenus],
+    () => selectVisibleMenuLists(menuLists, { tableId: tableIdForMenus, channel: menuChannel }),
+    [menuChannel, menuLists, tableIdForMenus],
   );
 
   const selectedMenuList = useMemo(() => {
@@ -97,8 +98,12 @@ export function InteractiveMenu({
   }, [selectedMenuList, visibleMenuLists]);
 
   const activeItemIds = useMemo(
-    () => (selectedMenuList ? new Set(selectedMenuList.itemIds) : null),
-    [selectedMenuList],
+    () => selectedMenuList
+      ? new Set(selectedMenuList.itemIds)
+      : menuLists.length > 0
+        ? new Set<string>()
+        : null,
+    [menuLists.length, selectedMenuList],
   );
 
   const populatedCategories = useMemo(
@@ -193,9 +198,11 @@ export function InteractiveMenu({
             </section>
           ))}
 
-          <div className="space-y-6 pt-10">
-            <MenuDisclaimer />
-          </div>
+          {tenant.id === "bepork" && (
+            <div className="space-y-6 pt-10">
+              <MenuDisclaimer />
+            </div>
+          )}
         </div>
       </div>
     </>

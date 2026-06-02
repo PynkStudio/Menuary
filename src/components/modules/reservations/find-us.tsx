@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Phone, Clock, MessageCircle } from "lucide-react";
+import { CalendarDays, MapPin, Phone, Clock, MessageCircle } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import {
@@ -80,8 +80,8 @@ export function FindUs() {
 
             <div className="mt-8 flex flex-wrap gap-3">
               <VenueWhatsappLink className="btn-primary text-base">
-                <MessageCircle size={20} />
-                {isDoca ? docaCopy.reserve : "Prenota un tavolo"}
+                {isDoca ? <CalendarDays size={20} /> : <MessageCircle size={20} />}
+                {isDoca ? docaCopy.reserveHere : "Prenota un tavolo"}
               </VenueWhatsappLink>
               <VenueGoogleMapsLink className="btn-ghost text-base">
                 {isDoca ? docaCopy.maps : "Apri in Google Maps"}

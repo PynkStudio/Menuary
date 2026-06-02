@@ -367,6 +367,18 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     category: "Integrazioni",
     requires: ["onlineMenu"],
   },
+  {
+    key: "payments",
+    label: "Pagamenti Stripe",
+    description: "Collega l'account Stripe del locale per incassare i pagamenti di ordini online, al tavolo, WhatsApp e voce AI. Ogni tenant resta indipendente con la propria dashboard Stripe.",
+    category: "Integrazioni",
+    verticalCopy: {
+      services: {
+        label: "Pagamenti Stripe",
+        description: "Collega l'account Stripe dell'attività per incassare i pagamenti di appuntamenti, servizi e richieste via WhatsApp o voce AI.",
+      },
+    },
+  },
 ];
 
 export const TENANT_MODULE_CATEGORIES: TenantModuleCategory[] = [

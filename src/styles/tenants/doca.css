@@ -1,7 +1,7 @@
 /* doca.css — Doca: insegna crema, logotipo terracotta, bakery brasiliana di quartiere. */
 @layer components {
   [data-tenant-surface="doca"] {
-    --doca-font-display: var(--font-menuary-display), "Fraunces", Georgia, serif;
+    --doca-font-display: Georgia, "Times New Roman", serif;
     --doca-font-body: var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
     --doca-cream: #f4dfab;
     --doca-cream-soft: #fff3d1;
