@@ -54,14 +54,10 @@ export function Hero() {
               transition={reduceMotion ? { duration: 0 } : { duration: 0.7, ease: "easeOut" }}
               className="doca-hero-copy"
             >
-              <div className="doca-logo-word" aria-label="Doca">
+              <h1 className="doca-logo-word" aria-label="Doca">
                 DOCA
-              </div>
-              <h1 className="doca-hero-title">
-                <span>Pane,</span>
-                <span>caffè,</span>
-                <em>saudade.</em>
               </h1>
+              <p className="doca-hero-title">Pane, caffè e saudade.</p>
               <p className="doca-hero-text">
                 {docaCopy.heroBody}
               </p>
@@ -244,7 +240,7 @@ function DocaFloatingFood({ reduceMotion }: { reduceMotion: boolean | null }) {
   return (
     <div className="doca-characters" aria-hidden="true">
       <motion.span className="doca-floating-food doca-floating-coffee" animate={animation} transition={transition}>
-        <Image src="/doca/caffe-splash.webp" alt="" fill sizes="110px" className="doca-floating-food-image object-contain" />
+        <Image src="/doca/caffe-splash.webp" alt="" fill sizes="180px" className="doca-floating-food-image object-contain" />
       </motion.span>
       <motion.span
         className="doca-floating-food doca-floating-bread"
@@ -258,7 +254,7 @@ function DocaFloatingFood({ reduceMotion }: { reduceMotion: boolean | null }) {
         animate={reduceMotion ? undefined : { y: [0, -6, 0], rotate: [0, -3, 0] }}
         transition={reduceMotion ? undefined : { repeat: Infinity, duration: 3.1, ease: "easeInOut", delay: 0.5 }}
       >
-        <Image src="/doca/tortino-splash.webp" alt="" fill sizes="110px" className="doca-floating-food-image object-contain" />
+        <Image src="/doca/tortino-splash.webp" alt="" fill sizes="150px" className="doca-floating-food-image object-contain" />
       </motion.span>
     </div>
   );

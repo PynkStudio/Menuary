@@ -105,6 +105,7 @@
   [data-tenant-surface="doca"] .doca-logo-word {
     width: max-content;
     max-width: 100%;
+    margin: 0;
     font-family: var(--doca-font-display);
     font-size: clamp(4.4rem, 9vw, 9.6rem);
     font-weight: 900;
@@ -124,23 +125,14 @@
   }
 
   [data-tenant-surface="doca"] .doca-hero-title {
-    margin-top: 1.5rem;
+    margin-top: 0.7rem;
     font-family: var(--doca-font-display);
-    font-size: clamp(3.15rem, 7vw, 7.6rem);
-    font-weight: 720;
-    line-height: 0.96;
+    font-size: clamp(1.45rem, 2.8vw, 2.65rem);
+    font-weight: 760;
+    line-height: 1.06;
     letter-spacing: 0;
-    text-wrap: balance;
-  }
-
-  [data-tenant-surface="doca"] .doca-hero-title span,
-  [data-tenant-surface="doca"] .doca-hero-title em {
-    display: block;
-  }
-
-  [data-tenant-surface="doca"] .doca-hero-title em {
     color: var(--doca-red);
-    font-style: italic;
+    white-space: nowrap;
   }
 
   [data-tenant-surface="doca"] .doca-hero-text {
@@ -290,12 +282,13 @@
   }
 
   [data-tenant-surface="doca"] .doca-floating-food-image {
-    padding: 0.2rem;
+    padding: 0.12rem;
   }
 
   [data-tenant-surface="doca"] .doca-floating-coffee {
-    right: 5%;
-    top: 0;
+    width: clamp(6.6rem, 13vw, 10.8rem);
+    right: -1%;
+    top: -4%;
   }
 
   [data-tenant-surface="doca"] .doca-floating-bread {
@@ -304,8 +297,9 @@
   }
 
   [data-tenant-surface="doca"] .doca-floating-cake {
-    right: 22%;
-    bottom: -2%;
+    width: clamp(5.8rem, 11vw, 9rem);
+    right: 18%;
+    bottom: -4%;
   }
 
   [data-tenant-surface="doca"] .doca-scroll {
@@ -414,8 +408,8 @@
     }
 
     [data-tenant-surface="doca"] .doca-hero-title {
-      margin-top: 1rem;
-      font-size: clamp(3rem, 5.8vw, 6.4rem);
+      margin-top: 0.55rem;
+      font-size: clamp(1.35rem, 2.2vw, 2.2rem);
     }
 
     [data-tenant-surface="doca"] .doca-hero-text {
@@ -476,7 +470,8 @@
     }
 
     [data-tenant-surface="doca"] .doca-hero-title {
-      font-size: clamp(3rem, 14vw, 4.15rem);
+      font-size: clamp(1.28rem, 7vw, 1.8rem);
+      white-space: normal;
     }
 
     [data-tenant-surface="doca"] .doca-hero-copy {
