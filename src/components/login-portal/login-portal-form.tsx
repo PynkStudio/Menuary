@@ -69,6 +69,15 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
     setError(null);
 
     const supabase = createSupabaseBrowserClient();
+
+    // Un refresh-token orfano (lasciato in un cookie .menuary.it scaduto/ruotato)
+    // mandava il client GoTrue in loop su /token?grant_type=refresh_token (400/429):
+    // il SIGNED_OUT scatenato dal refresh fallito ripuliva l'header Authorization
+    // subito dopo signInWithPassword, e la query a `siteadmin` partiva come anon →
+    // RLS nascondeva la riga → "account non abilitato al pannello admin" anche per
+    // i superadmin reali. Forzare un signOut locale azzera lo stato prima del login.
+    await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -80,8 +89,15 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
       return;
     }
 
-    // Recupera ruolo dal DB
-    const access = await resolveUserAccess(supabase, data.user.id);
+    // Recupera ruolo dal DB usando un client isolato con la sessione appena
+    // ottenuta, per non dipendere dallo stato auth del client principale (che
+    // potrebbe essere ancora in mezzo a un refresh in volo).
+    const authedSupabase = createSupabaseBrowserClient();
+    await authedSupabase.auth.setSession({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    });
+    const access = await resolveUserAccess(authedSupabase, data.user.id);
     const accessError = portalAccessError(from);
     const isWrongPortal =
       (from === "admin" && !access.isSiteadmin) ||
