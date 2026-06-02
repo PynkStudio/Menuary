@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { Menu, X, MessageCircle } from "lucide-react";
+import { CalendarDays, Menu, X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { useFavoritesStore } from "@/store/favorites-store";
@@ -32,6 +32,7 @@ export function Navbar() {
   const setFavOpen = useFavoritesStore((s) => s.setOpen);
   const { allowTakeaway, favoritesEnabled, modules } = useEffectiveFeatures();
   const tenantHref = useTenantLocalizedHref();
+  const isDoca = tenant.id === "doca";
 
   const beporkModuleNav = useMemo(() => {
     if (tenant.id !== "bepork") return [] as { label: string; href: string }[];
@@ -121,10 +122,17 @@ export function Navbar() {
 
           <div className="hidden items-center gap-3 lg:flex">
             <LocationPicker />
-            <VenueWhatsappLink className="btn-primary text-sm">
-              <MessageCircle size={18} />
-              Prenota
-            </VenueWhatsappLink>
+            {isDoca ? (
+              <Link href={tenantHref("/prenota")} className="btn-primary text-sm">
+                <CalendarDays size={18} />
+                Prenota
+              </Link>
+            ) : (
+              <VenueWhatsappLink className="btn-primary text-sm">
+                <MessageCircle size={18} />
+                Prenota
+              </VenueWhatsappLink>
+            )}
           </div>
 
           <button
@@ -175,13 +183,24 @@ export function Navbar() {
           </nav>
           <div className="flex flex-col gap-3">
             <LocationPicker />
-            <VenueWhatsappLink
-              className="btn-mustard w-full text-lg"
-              onClick={() => setOpen(false)}
-            >
-              <MessageCircle size={22} />
-              {content.hero.ctaLabel}
-            </VenueWhatsappLink>
+            {isDoca ? (
+              <Link
+                href={tenantHref("/prenota")}
+                className="btn-mustard w-full text-lg"
+                onClick={() => setOpen(false)}
+              >
+                <CalendarDays size={22} />
+                Prenota
+              </Link>
+            ) : (
+              <VenueWhatsappLink
+                className="btn-mustard w-full text-lg"
+                onClick={() => setOpen(false)}
+              >
+                <MessageCircle size={22} />
+                {content.hero.ctaLabel}
+              </VenueWhatsappLink>
+            )}
           </div>
         </div>
       </div>

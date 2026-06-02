@@ -29,12 +29,26 @@ export type AiPhoneQuickSettings = {
   notesForAssistant: string;
 };
 
+/**
+ * Metodi di pagamento accettati per ordini gestiti dall'assistente AI.
+ * - online_only: il pagamento avviene sempre tramite link inviato via SMS/WA.
+ *   L'agente comunica al cliente che riceverà il link.
+ * - on_site_only: pagamento solo al ritiro / alla consegna. L'agente lo comunica.
+ * - both: l'agente chiede al cliente quale metodo preferisce.
+ */
+export type AiPaymentMethodsPolicy = "online_only" | "on_site_only" | "both";
+
 export type ChannelPaymentControls = {
   enabled: boolean;
   requireForTakeaway: boolean;
   requireForDelivery: boolean;
+  /** Canale primario per inviare link pagamento/riepilogo. Default "whatsapp". */
   defaultChannel: "sms" | "whatsapp";
+  /** Canale di fallback se il primario fallisce (es. WA: utente non ha WA installato). null = nessun fallback. */
+  fallbackChannel: "sms" | "whatsapp" | null;
   sendAutomatically: boolean;
+  /** Metodi di pagamento offerti al cliente dall'assistente AI. Default "on_site_only" se Stripe non collegato. */
+  acceptedMethods: AiPaymentMethodsPolicy;
 };
 
 export type AiPhoneSettings = {
@@ -159,12 +173,33 @@ function normalizeQuickSettings(row: AiPhoneSettingsRow | null): AiPhoneQuickSet
 
 function normalizePaymentControls(row: AiPhoneSettingsRow | null): ChannelPaymentControls {
   const raw = asObject(row?.payment_controls);
+  const acceptedMethodsRaw = raw.acceptedMethods;
+  const acceptedMethods: AiPaymentMethodsPolicy =
+    acceptedMethodsRaw === "online_only" ||
+    acceptedMethodsRaw === "on_site_only" ||
+    acceptedMethodsRaw === "both"
+      ? acceptedMethodsRaw
+      : "on_site_only";
+  // Default canale primario: WhatsApp (più affidabile + interattivo). Fallback automatico: SMS.
+  const defaultChannel: ChannelPaymentControls["defaultChannel"] =
+    raw.defaultChannel === "sms" ? "sms" : "whatsapp";
+  let fallbackChannel: ChannelPaymentControls["fallbackChannel"];
+  if (raw.fallbackChannel === null) {
+    fallbackChannel = null;
+  } else if (raw.fallbackChannel === "whatsapp" || raw.fallbackChannel === "sms") {
+    fallbackChannel = raw.fallbackChannel;
+  } else {
+    // Default coerente col primario: se primario=WA, fallback=SMS, e viceversa.
+    fallbackChannel = defaultChannel === "whatsapp" ? "sms" : "whatsapp";
+  }
   return {
     enabled: typeof raw.enabled === "boolean" ? raw.enabled : false,
     requireForTakeaway: typeof raw.requireForTakeaway === "boolean" ? raw.requireForTakeaway : false,
     requireForDelivery: typeof raw.requireForDelivery === "boolean" ? raw.requireForDelivery : false,
-    defaultChannel: raw.defaultChannel === "whatsapp" ? "whatsapp" : "sms",
+    defaultChannel,
+    fallbackChannel,
     sendAutomatically: typeof raw.sendAutomatically === "boolean" ? raw.sendAutomatically : true,
+    acceptedMethods,
   };
 }
 

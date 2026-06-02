@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RotateCcw, ShieldCheck, Power, ExternalLink, ChevronDown, MapPin, CreditCard, Plug } from "lucide-react";
 import { useEffect, useState } from "react";
 import { HubriseIntegrationModal } from "@/components/admin/tenant/hubrise-integration-modal";
+import { StripeIntegrationModal } from "@/components/admin/tenant/stripe-integration-modal";
 import { HubriseInboxBanner } from "@/components/admin/tenant/hubrise-inbox-banner";
 import type { TenantStatus } from "@/lib/tenant";
 import { TENANTS } from "@/lib/tenant-registry";
@@ -56,6 +57,7 @@ export default function AdminTenantPage() {
   const [demoSaving, setDemoSaving] = useState<Record<string, boolean>>({});
   const [demoError, setDemoError] = useState<string | null>(null);
   const [hubriseOpenFor, setHubriseOpenFor] = useState<string | null>(null);
+  const [stripeOpenFor, setStripeOpenFor] = useState<string | null>(null);
 
   useEffect(() => {
     void fetch("/api/admin/demo-status", { cache: "no-store" })
@@ -411,6 +413,29 @@ export default function AdminTenantPage() {
                     <Plug size={14} />
                     HubRise
                   </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      if (!effective.features.payments) return;
+                      setStripeOpenFor(tenant.id);
+                    }}
+                    disabled={!effective.features.payments}
+                    className={
+                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition " +
+                      (effective.features.payments
+                        ? "bg-white ring-1 ring-pork-ink/15 hover:ring-pork-red/40 hover:text-pork-red"
+                        : "bg-pork-ink/5 text-pork-ink/35 cursor-not-allowed")
+                    }
+                    title={
+                      effective.features.payments
+                        ? "Collega l'account Stripe del tenant per incassare pagamenti"
+                        : "Attiva prima il modulo 'Pagamenti Stripe' nei moduli"
+                    }
+                  >
+                    <Plug size={14} />
+                    Stripe
+                  </button>
                 </div>
               </div>
             </details>
@@ -424,6 +449,14 @@ export default function AdminTenantPage() {
           tenantName={TENANTS.find((t) => t.id === hubriseOpenFor)?.label ?? hubriseOpenFor}
           open
           onClose={() => setHubriseOpenFor(null)}
+        />
+      )}
+      {stripeOpenFor && (
+        <StripeIntegrationModal
+          tenantId={stripeOpenFor}
+          tenantName={TENANTS.find((t) => t.id === stripeOpenFor)?.label ?? stripeOpenFor}
+          open
+          onClose={() => setStripeOpenFor(null)}
         />
       )}
     </div>

@@ -10,6 +10,9 @@ import {
   type RetellAvailabilityInput,
 } from "@/lib/retell/inbound-orchestrator";
 import { isAuthorizedWhatsappWebBridgeRequest } from "@/lib/whatsapp/web-bridge-auth";
+import { findTenantById } from "@/lib/tenant-registry";
+import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
+import { buildAiPaymentInstruction, type AiPaymentInstruction } from "@/lib/payments/ai-payment-instruction";
 
 type WhatsappActionBody =
   | ({ action: "context" } & { tenantId?: string; tenant_id?: string; locationId?: string | null; location_id?: string | null })
@@ -33,6 +36,8 @@ type WhatsappOrderDraft = {
     notes?: string | null;
   } | null;
   requestPayment?: boolean;
+  /** Scelta del cliente raccolta dall'assistente WA quando la policy è "both". */
+  paymentMethodChoice?: "online" | "on_site" | null;
   lines: {
     itemCode: string;
     quantity: number;
@@ -132,6 +137,7 @@ const WHATSAPP_AI_SCHEMA = {
             "fulfillmentType",
             "delivery",
             "requestPayment",
+            "paymentMethodChoice",
             "lines",
           ],
           properties: {
@@ -159,6 +165,12 @@ const WHATSAPP_AI_SCHEMA = {
               ],
             },
             requestPayment: { type: "boolean" },
+            paymentMethodChoice: {
+              anyOf: [
+                { type: "null" },
+                { type: "string", enum: ["online", "on_site"] },
+              ],
+            },
             lines: {
               type: "array",
               items: {
@@ -278,6 +290,10 @@ function normalizeOrderDraft(value: unknown): WhatsappOrderDraft | null {
         }
       : null,
     requestPayment: raw.requestPayment === true,
+    paymentMethodChoice:
+      raw.paymentMethodChoice === "online" || raw.paymentMethodChoice === "on_site"
+        ? raw.paymentMethodChoice
+        : null,
     lines: raw.lines
       .map((line) => {
         const row = line && typeof line === "object" && !Array.isArray(line) ? line as Record<string, unknown> : null;
@@ -445,6 +461,21 @@ function userFacingReservationError(error: unknown): string {
   return "Non sono riuscito a registrare la prenotazione. Posso passare la richiesta al locale per una verifica manuale.";
 }
 
+async function computeWhatsappPaymentInstruction(
+  context: RetellInboundContext,
+): Promise<AiPaymentInstruction> {
+  const tenantProfile = findTenantById(context.tenant.id);
+  const stripeAccount = tenantProfile?.features.payments
+    ? await getTenantPaymentAccount(context.tenant.id).catch(() => null)
+    : null;
+  return buildAiPaymentInstruction({
+    paymentsModuleEnabled: Boolean(tenantProfile?.features.payments),
+    stripeReady: Boolean(stripeAccount?.chargesEnabled),
+    policy: context.assistantSettings.paymentControls.acceptedMethods,
+    vertical: context.tenant.vertical === "services" ? "services" : "food",
+  });
+}
+
 async function analyzeIncomingWhatsappMessage(params: {
   context: RetellInboundContext;
   from: string;
@@ -453,6 +484,8 @@ async function analyzeIncomingWhatsappMessage(params: {
 }): Promise<WhatsappAiAnalysis | null> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
+
+  const paymentInstruction = await computeWhatsappPaymentInstruction(params.context);
 
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -473,7 +506,11 @@ async function analyzeIncomingWhatsappMessage(params: {
                 "Usa esclusivamente menu, prezzi, sedi, orari, extra e regole nel contesto. Non inventare prodotti, prezzi, disponibilita o policy.",
                 "Per gli ordini: crea righe solo con itemCode esistenti e disponibili. Se il cliente chiede 'americana con peperoni', itemCode deve essere la pizza/prodotto Americana se presente; peperoni va in addedExtraCodes se esiste tra le modifiche consentite, altrimenti va nella note della riga come richiesta da confermare.",
                 "Se un prodotto non e a menu o non e disponibile, chiedi alternativa o proponi prodotti simili presenti. Non creare ordine con prodotto mancante.",
-                "Per delivery raccogli indirizzo. Per ogni ordine raccogli almeno telefono e orario desiderato/asporto; nome se disponibile. Rispetta paymentControls: se serve pagamento, requestPayment deve essere true.",
+                "Per delivery raccogli indirizzo. Per ogni ordine raccogli almeno telefono e orario desiderato/asporto; nome se disponibile.",
+                `Politica pagamento: ${paymentInstruction.text}`,
+                paymentInstruction.shouldAsk
+                  ? "Quando la politica richiede di chiedere la preferenza, popola order.paymentMethodChoice con 'online' o 'on_site' solo dopo che il cliente ha effettivamente scelto. Se ancora non ha scelto, lascia paymentMethodChoice a null e nella reply chiedi la preferenza."
+                  : `Quando crei l'ordine imposta order.paymentMethodChoice a '${paymentInstruction.onlineAvailable ? "online" : "on_site"}' senza chiedere conferma al cliente.`,
                 "Per prenotazioni raccogli data, ora, numero persone, nome e telefono. Se manca qualcosa, chiedi solo i campi mancanti.",
                 "Se readyToCreate e true, il draft deve contenere tutti i dati minimi. Se confirmBeforeWrite e true e l'utente non ha confermato, readyToCreate puo essere true ma confirmed deve restare false e la reply deve chiedere conferma riepilogando.",
                 "Per elementi che richiedono approvazione del locale, spiega che bisogna attendere conferma e che verra comunicata appena disponibile.",
@@ -493,6 +530,12 @@ async function analyzeIncomingWhatsappMessage(params: {
                 message: params.text,
                 pending: params.pending,
                 context: compactContextForAi(params.context),
+                paymentPolicy: {
+                  text: paymentInstruction.text,
+                  onlineAvailable: paymentInstruction.onlineAvailable,
+                  onSiteAvailable: paymentInstruction.onSiteAvailable,
+                  shouldAsk: paymentInstruction.shouldAsk,
+                },
               }),
             },
           ],
@@ -540,10 +583,14 @@ async function executeWhatsappOrder(params: {
     source: "whatsapp",
     paymentChannel: "whatsapp",
     requestPayment: params.draft.requestPayment,
+    paymentMethodChoice: params.draft.paymentMethodChoice ?? undefined,
   });
   const paymentUrl = order.payment?.paymentUrl;
+  const paidOnline = order.paymentMethod === "online";
   const paymentLine = paymentUrl
-    ? `\nPagamento: ${paymentUrl}`
+    ? paidOnline
+      ? `\nPaga ora: ${paymentUrl}`
+      : `\nRiepilogo ordine: ${paymentUrl}`
     : "";
   return {
     ok: true,

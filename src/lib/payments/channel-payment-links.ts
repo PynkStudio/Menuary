@@ -2,6 +2,10 @@ import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Json } from "@/lib/supabase/types";
+import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
+import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
+import { applicationFeeCents, type PaymentSource } from "@/lib/payments/stripe/fees";
+import { getOrderPublicTokenById } from "@/lib/orders/public-checkout";
 
 export type PaymentLinkChannel = "retell" | "whatsapp" | "sms" | "manual";
 
@@ -15,6 +19,13 @@ export type CreateChannelPaymentRequestInput = {
   currency?: string;
   description: string;
   metadata?: Record<string, Json>;
+  /**
+   * Se false → il link inviato al cliente è solo il riepilogo ordine (pagina /checkout/[code]),
+   * il pulsante "Paga" sulla pagina sarà nascosto perché l'ordine è "Pagamento al ritiro/consegna".
+   * Quando false NON aggiorniamo `orders.payment_status` (resta come l'aveva impostato il chiamante).
+   * Default: true (comportamento storico, link con pagamento).
+   */
+  paymentRequired?: boolean;
 };
 
 export type ChannelPaymentRequest = {
@@ -31,24 +42,126 @@ function serviceDb() {
   return db;
 }
 
-async function createStripePaymentUrl(input: CreateChannelPaymentRequestInput) {
+function baseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "https://menuary.it"
+  );
+}
+
+// Mappa il canale conversazionale alla "source" usata per la fee policy.
+// Per ora coincide 1:1; lasciamo la funzione esplicita per chiarezza.
+function sourceForChannel(channel: PaymentLinkChannel): PaymentSource {
+  return channel;
+}
+
+type StripeAttempt = {
+  providerSessionId: string | null;
+  paymentUrl: string;
+  stripeAccountId: string | null;
+  paymentIntentId: string | null;
+  applicationFeeCents: number;
+  /** "checkout_page" = link alla pagina /checkout/[code]; "stripe_direct" = URL Stripe diretto (no order); "platform" = legacy chiave piattaforma; "pending" = placeholder. */
+  mode: "checkout_page" | "stripe_direct" | "platform" | "pending";
+};
+
+/**
+ * Per ordini collegati: produciamo un link alla pagina /checkout/[code]?t=[token]
+ * dove il cliente vede riepilogo + informativa privacy (recording disclosure per
+ * canali AI) e poi avvia il pagamento. Più professionale e GDPR-compliant rispetto
+ * a inviare via WA/SMS un link Stripe nudo.
+ */
+async function createCheckoutPageLink(
+  input: CreateChannelPaymentRequestInput,
+): Promise<StripeAttempt | null> {
+  if (!input.orderId) return null;
+  const token = await getOrderPublicTokenById(input.orderId);
+  if (!token) return null;
+  const url = `${baseUrl()}/checkout/${encodeURIComponent(token.code)}?t=${encodeURIComponent(token.token)}`;
+  return {
+    providerSessionId: null,
+    paymentUrl: url,
+    stripeAccountId: null,
+    paymentIntentId: null,
+    applicationFeeCents: applicationFeeCents(
+      Math.round(input.amount * 100),
+      sourceForChannel(input.channel),
+    ),
+    mode: "checkout_page",
+  };
+}
+
+/**
+ * Per richieste pagamento SENZA un order_id (es. acconto prenotazione, link
+ * generico admin): generiamo una Stripe Checkout Session diretta sull'account
+ * del tenant. Nessuna pagina di riepilogo intermedia perché non c'è ordine da
+ * mostrare.
+ */
+async function createStripeDirect(
+  input: CreateChannelPaymentRequestInput,
+): Promise<StripeAttempt | null> {
+  const account = await getTenantPaymentAccount(input.tenantId);
+  if (!account?.stripeAccountId || !account.chargesEnabled) return null;
+
+  const source = sourceForChannel(input.channel);
+  const url = baseUrl();
+  const session = await createCheckoutSession({
+    tenantId: input.tenantId,
+    source,
+    currency: input.currency ?? "eur",
+    items: [
+      {
+        name: input.description.slice(0, 250),
+        amountCents: Math.round(input.amount * 100),
+        quantity: 1,
+      },
+    ],
+    paymentIntentDescription: input.description,
+    successUrl: `${url}/pagamenti?status=success`,
+    cancelUrl: `${url}/pagamenti?status=cancel`,
+    metadata: {
+      channel: input.channel,
+      ...(input.reservationId ? { reservation_id: input.reservationId } : {}),
+    },
+  });
+
+  return {
+    providerSessionId: session.id,
+    paymentUrl: session.url,
+    stripeAccountId: session.stripeAccountId,
+    paymentIntentId: session.paymentIntentId,
+    applicationFeeCents: session.applicationFeeCents,
+    mode: "stripe_direct",
+  };
+}
+
+// Fallback storico: chiave piattaforma globale (nessuna app fee).
+// Usato solo se il tenant non ha Stripe collegato E non c'è order_id.
+async function createWithPlatform(
+  input: CreateChannelPaymentRequestInput,
+): Promise<StripeAttempt> {
   const secret = process.env.STRIPE_SECRET_KEY;
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://menuary.it";
+  const url = baseUrl();
   if (!secret) {
     return {
       providerSessionId: null,
-      paymentUrl: `${baseUrl}/pagamenti?pending=1`,
+      paymentUrl: `${url}/pagamenti?pending=1`,
+      stripeAccountId: null,
+      paymentIntentId: null,
+      applicationFeeCents: 0,
+      mode: "pending",
     };
   }
 
   const params = new URLSearchParams();
   params.set("mode", "payment");
-  params.set("success_url", `${baseUrl}/pagamenti?status=success`);
-  params.set("cancel_url", `${baseUrl}/pagamenti?status=cancel`);
+  params.set("success_url", `${url}/pagamenti?status=success`);
+  params.set("cancel_url", `${url}/pagamenti?status=cancel`);
   params.set("line_items[0][quantity]", "1");
   params.set("line_items[0][price_data][currency]", (input.currency ?? "EUR").toLowerCase());
   params.set("line_items[0][price_data][unit_amount]", String(Math.round(input.amount * 100)));
-  params.set("line_items[0][price_data][product_data][name]", input.description);
+  params.set("line_items[0][price_data][product_data][name]", input.description.slice(0, 250));
   params.set("metadata[tenant_id]", input.tenantId);
   if (input.orderId) params.set("metadata[order_id]", input.orderId);
   if (input.reservationId) params.set("metadata[reservation_id]", input.reservationId);
@@ -62,11 +175,23 @@ async function createStripePaymentUrl(input: CreateChannelPaymentRequestInput) {
     },
     body: params,
   });
-  const json = await res.json().catch(() => null) as { id?: string; url?: string; error?: { message?: string } } | null;
+  const json = (await res.json().catch(() => null)) as
+    | { id?: string; url?: string; error?: { message?: string } }
+    | null;
   if (!res.ok || !json?.url) {
     throw new Error(json?.error?.message ?? "stripe_session_failed");
   }
-  return { providerSessionId: json.id ?? null, paymentUrl: json.url };
+  return {
+    providerSessionId: json.id ?? null,
+    paymentUrl: json.url,
+    stripeAccountId: null,
+    paymentIntentId: null,
+    applicationFeeCents: applicationFeeCents(
+      Math.round(input.amount * 100),
+      sourceForChannel(input.channel),
+    ),
+    mode: "platform",
+  };
 }
 
 export async function createChannelPaymentRequest(
@@ -75,7 +200,27 @@ export async function createChannelPaymentRequest(
   if (!input.recipientPhone.trim()) throw new Error("recipient_phone_required");
   if (!Number.isFinite(input.amount) || input.amount <= 0) throw new Error("invalid_amount");
 
-  const stripe = await createStripePaymentUrl(input);
+  const paymentRequired = input.paymentRequired !== false;
+
+  // Priorità:
+  // 1. Se c'è un order_id → link a /checkout/[code] (riepilogo + privacy + eventuale pagamento).
+  //    La Stripe Session sarà creata lazy quando il cliente clicca "Paga".
+  //    Vale anche per ordini "pagamento al ritiro": stesso link, ma la pagina nasconde il bottone.
+  // 2. Senza order_id e con pagamento richiesto: Stripe Checkout diretta sull'account tenant.
+  // 3. Fallback piattaforma (legacy, tenant non collegato).
+  const stripe =
+    (await createCheckoutPageLink(input)) ??
+    (paymentRequired ? await createStripeDirect(input) : null) ??
+    (paymentRequired ? await createWithPlatform(input) : null) ??
+    {
+      providerSessionId: null,
+      paymentUrl: `${baseUrl()}/pagamenti?pending=1`,
+      stripeAccountId: null,
+      paymentIntentId: null,
+      applicationFeeCents: 0,
+      mode: "pending" as const,
+    };
+
   const db = serviceDb();
   const { data, error } = await (db as unknown as {
     from: (table: "channel_payment_requests") => {
@@ -107,11 +252,16 @@ export async function createChannelPaymentRequest(
       provider: "stripe",
       provider_session_id: stripe.providerSessionId,
       payment_url: stripe.paymentUrl,
+      stripe_account_id: stripe.stripeAccountId,
+      stripe_payment_intent_id: stripe.paymentIntentId,
+      application_fee_amount_cents: stripe.applicationFeeCents,
       status: "pending",
       // Messaging provider not wired yet: queued means SMS/WA sender can pick this up.
       message_status: "queued",
       metadata: {
         description: input.description,
+        mode: stripe.mode,
+        paymentRequired,
         ...(input.metadata ?? {}),
       },
     })
@@ -121,6 +271,19 @@ export async function createChannelPaymentRequest(
   if (error || !data) throw new Error(error?.message ?? "payment_request_failed");
 
   if (input.orderId) {
+    const orderUpdate: Record<string, unknown> = {
+      payment_link_url: stripe.paymentUrl,
+    };
+    if (paymentRequired) {
+      // Solo se il pagamento è richiesto online aggiorniamo payment_status=pending
+      // e popoliamo i campi Stripe sull'ordine. Per ordini "pagamento al ritiro"
+      // l'ordine resta come l'aveva impostato il chiamante (es. not_required).
+      orderUpdate.payment_status = "pending";
+      orderUpdate.payment_provider = "stripe";
+      orderUpdate.stripe_checkout_session_id = stripe.providerSessionId;
+      orderUpdate.stripe_account_id = stripe.stripeAccountId;
+      orderUpdate.application_fee_amount_cents = stripe.applicationFeeCents;
+    }
     await (db as unknown as {
       from: (table: "orders") => {
         update: (row: Record<string, unknown>) => {
@@ -129,7 +292,7 @@ export async function createChannelPaymentRequest(
       };
     })
       .from("orders")
-      .update({ payment_status: "pending", payment_link_url: stripe.paymentUrl })
+      .update(orderUpdate)
       .eq("id", input.orderId);
   }
 

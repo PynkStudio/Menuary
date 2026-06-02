@@ -26,7 +26,9 @@ type PaymentControls = {
   requireForTakeaway: boolean;
   requireForDelivery: boolean;
   defaultChannel: "sms" | "whatsapp";
+  fallbackChannel: "sms" | "whatsapp" | null;
   sendAutomatically: boolean;
+  acceptedMethods: "online_only" | "on_site_only" | "both";
 };
 
 type Settings = {
@@ -128,8 +130,10 @@ function blankSettings(tenantId: string): Settings {
       enabled: false,
       requireForTakeaway: false,
       requireForDelivery: false,
-      defaultChannel: "sms",
+      defaultChannel: "whatsapp",
+      fallbackChannel: "sms",
       sendAutomatically: true,
+      acceptedMethods: "on_site_only",
     },
     updatedAt: null,
   };
@@ -310,14 +314,54 @@ export function AiPhoneAdminPage({ tenants }: { tenants: TenantOption[] }) {
               <Toggle label="Richiedi per asporto" checked={current.paymentControls.requireForTakeaway} onChange={(requireForTakeaway) => patchPayment({ requireForTakeaway })} />
               <Toggle label="Richiedi per delivery" checked={current.paymentControls.requireForDelivery} onChange={(requireForDelivery) => patchPayment({ requireForDelivery })} />
             </div>
-            <Field label="Canale default link pagamento">
+            <Field
+              label="Canale primario invio link"
+              hint="Default WhatsApp. Se il numero non ha WA o il send fallisce, useremo il canale di fallback."
+            >
               <select
                 value={current.paymentControls.defaultChannel}
-                onChange={(event) => patchPayment({ defaultChannel: event.target.value === "whatsapp" ? "whatsapp" : "sms" })}
+                onChange={(event) => patchPayment({ defaultChannel: event.target.value === "sms" ? "sms" : "whatsapp" })}
+                className="input-base"
+              >
+                <option value="whatsapp">WhatsApp</option>
+                <option value="sms">SMS</option>
+              </select>
+            </Field>
+            <Field label="Canale di fallback">
+              <select
+                value={current.paymentControls.fallbackChannel ?? "none"}
+                onChange={(event) => {
+                  const v = event.target.value;
+                  patchPayment({
+                    fallbackChannel:
+                      v === "whatsapp" ? "whatsapp" : v === "sms" ? "sms" : null,
+                  });
+                }}
                 className="input-base"
               >
                 <option value="sms">SMS</option>
                 <option value="whatsapp">WhatsApp</option>
+                <option value="none">Nessuno (riprova solo il primario)</option>
+              </select>
+            </Field>
+            <Field
+              label="Metodi di pagamento accettati"
+              hint="L'assistente AI plasma la conversazione in base a questa policy. 'Online' richiede Stripe collegato; in caso contrario l'agente proporrà sempre pagamento al posto."
+            >
+              <select
+                value={current.paymentControls.acceptedMethods}
+                onChange={(event) => {
+                  const v = event.target.value;
+                  patchPayment({
+                    acceptedMethods:
+                      v === "online_only" || v === "on_site_only" || v === "both" ? v : "on_site_only",
+                  });
+                }}
+                className="input-base"
+              >
+                <option value="on_site_only">Solo al ritiro / consegna</option>
+                <option value="online_only">Solo online (link Stripe)</option>
+                <option value="both">Entrambi · l'agente chiede al cliente</option>
               </select>
             </Field>
           </div>

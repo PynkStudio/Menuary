@@ -329,6 +329,7 @@ const PREVIEW_GLOBAL_TENANT_ROUTES = new Set([
   "cucina",
   "galleria",
   "ordina",
+  "prenota",
   "preferiti",
   "privacy",
   "staff",

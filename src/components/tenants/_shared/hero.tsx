@@ -28,6 +28,7 @@ export function Hero() {
       ? `/${tenant.previewSlug}/menu`
       : "/menu";
   const menuHref = tenantHref(baseMenuHref);
+  const reservationHref = tenantHref("/prenota");
 
   const scrollToNext = () => {
     document.getElementById("tre-anime")?.scrollIntoView({
@@ -43,6 +44,9 @@ export function Hero() {
         <div className="doca-checker doca-checker-bottom" aria-hidden="true" />
 
         <div className="container-wide relative z-10">
+          <div className="doca-language-selector-wrap">
+            <DocaLanguageSelector />
+          </div>
           <div className="doca-hero-grid">
             <motion.div
               initial={reduceMotion ? false : { opacity: 0, y: 18 }}
@@ -50,7 +54,6 @@ export function Hero() {
               transition={reduceMotion ? { duration: 0 } : { duration: 0.7, ease: "easeOut" }}
               className="doca-hero-copy"
             >
-              <DocaLanguageSelector />
               <div className="doca-logo-word" aria-label="Doca">
                 DOCA
               </div>
@@ -63,10 +66,10 @@ export function Hero() {
                 {docaCopy.heroBody}
               </p>
               <div className="doca-hero-actions">
-                <VenueWhatsappLink className="doca-button doca-button-primary">
+                <Link href={reservationHref} className="doca-button doca-button-primary">
                   <CalendarDays size={20} />
                   {docaCopy.reserve}
-                </VenueWhatsappLink>
+                </Link>
                 <Link href={menuHref} className="doca-button doca-button-secondary">
                   <UtensilsCrossed size={20} />
                   {docaCopy.menu}

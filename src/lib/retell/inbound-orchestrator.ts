@@ -9,6 +9,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database, Json } from "@/lib/supabase/types";
 import { getAiPhoneSettings, isAiPhoneControlAccepting, type AiPhoneSettings } from "@/lib/retell/settings";
 import { createChannelPaymentRequest, type ChannelPaymentRequest, type PaymentLinkChannel } from "@/lib/payments/channel-payment-links";
+import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
 import type { MenuOrderChannel } from "@/lib/types";
@@ -169,6 +170,14 @@ export type CreateRetellOrderInput = {
   } | null;
   requestPayment?: boolean;
   paymentChannel?: PaymentLinkChannel;
+  /**
+   * Scelta del cliente raccolta dall'agente AI sulla modalità di pagamento.
+   * - "online"  → riceve link con riepilogo + pulsante Paga
+   * - "on_site" → riceve link col solo riepilogo, pagamento al ritiro/consegna
+   * Se omesso, si applica la policy tenant (paymentControls.acceptedMethods) +
+   * fallback ai flag requireFor* per retrocompatibilità.
+   */
+  paymentMethodChoice?: "online" | "on_site";
   lines: {
     itemCode: string;
     quantity: number;
@@ -865,11 +874,37 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   if (fulfillmentType === "delivery" && !input.delivery?.address?.trim()) {
     throw new Error("delivery_address_required");
   }
-  const shouldRequestPayment =
-    input.requestPayment === true ||
-    (fulfillmentType === "delivery"
-      ? settings.paymentControls.requireForDelivery
-      : settings.paymentControls.requireForTakeaway);
+  // Risoluzione metodo di pagamento effettivo, tenendo conto di:
+  //   1) scelta esplicita raccolta dall'agente (`paymentMethodChoice`);
+  //   2) policy tenant `acceptedMethods` (online_only / on_site_only / both);
+  //   3) stato Stripe Connect (se non ready → forziamo on_site);
+  //   4) fallback storico ai flag requireForTakeaway/Delivery quando policy="both"
+  //      e nessuna scelta esplicita è stata raccolta.
+  const tenantProfile = findTenantById(input.tenantId);
+  const stripeAccount = tenantProfile?.features.payments
+    ? await getTenantPaymentAccount(input.tenantId).catch(() => null)
+    : null;
+  const stripeReady = Boolean(stripeAccount?.chargesEnabled);
+  const policy = settings.paymentControls.acceptedMethods;
+
+  let effectivePaymentMethod: "online" | "on_site";
+  if (!stripeReady || policy === "on_site_only") {
+    effectivePaymentMethod = "on_site";
+  } else if (policy === "online_only") {
+    effectivePaymentMethod = "online";
+  } else if (input.paymentMethodChoice === "online" || input.paymentMethodChoice === "on_site") {
+    effectivePaymentMethod = input.paymentMethodChoice;
+  } else {
+    // policy=both, agente non ha raccolto scelta → fallback legacy.
+    const legacyRequire =
+      input.requestPayment === true ||
+      (fulfillmentType === "delivery"
+        ? settings.paymentControls.requireForDelivery
+        : settings.paymentControls.requireForTakeaway);
+    effectivePaymentMethod = legacyRequire ? "online" : "on_site";
+  }
+
+  const shouldRequestPayment = effectivePaymentMethod === "online";
   if (shouldRequestPayment && !input.customerPhone?.trim()) {
     throw new Error("payment_phone_required");
   }
@@ -1001,8 +1036,17 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     });
   }
 
+  // Invio link al cliente:
+  // - pagamento online  → link a /checkout/[code] con pulsante Paga abilitato
+  // - pagamento on_site → stesso link, ma la pagina mostra solo il riepilogo
+  //   (badge "Pagamento al ritiro/consegna") e nasconde il bottone Paga.
+  // Inviamo solo se abbiamo un telefono; in caso contrario l'agente comunicherà
+  // verbalmente che l'ordine è registrato.
   let payment: ChannelPaymentRequest | null = null;
-  if (shouldRequestPayment && settings.paymentControls.enabled) {
+  const canSendLink =
+    settings.paymentControls.enabled &&
+    Boolean(input.customerPhone?.trim());
+  if (canSendLink) {
     payment = await createChannelPaymentRequest({
       tenantId: input.tenantId,
       orderId: order.id,
@@ -1011,12 +1055,15 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       amount: total,
       currency: "EUR",
       description: `Ordine ${order.code}`,
+      paymentRequired: effectivePaymentMethod === "online",
       metadata: {
         source: "retell",
         fulfillmentType,
+        paymentMethod: effectivePaymentMethod,
+        fallbackChannel: settings.paymentControls.fallbackChannel,
       },
     });
   }
 
-  return { ...order, payment };
+  return { ...order, payment, paymentMethod: effectivePaymentMethod };
 }

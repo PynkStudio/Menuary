@@ -46,6 +46,7 @@
 
   [data-tenant-surface="doca"] .doca-hero {
     min-height: 100dvh;
+    box-sizing: border-box;
     padding: calc(4.5rem + env(safe-area-inset-top)) 0 6.5rem;
     background:
       radial-gradient(circle at 8% 18%, rgba(183, 53, 37, 0.18), transparent 24rem),
@@ -247,10 +248,16 @@
   [data-tenant-surface="doca"] .doca-language-selector {
     display: inline-flex;
     gap: 0.3rem;
-    margin-bottom: 1rem;
     padding: 0.25rem;
     border: 2px solid rgba(132, 35, 22, 0.32);
     background: rgba(255, 243, 209, 0.52);
+  }
+
+  [data-tenant-surface="doca"] .doca-language-selector-wrap {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 30;
   }
 
   [data-tenant-surface="doca"] .doca-language-selector button {
@@ -388,6 +395,40 @@
     }
   }
 
+  @media (min-width: 1024px) and (max-height: 940px) {
+    [data-tenant-surface="doca"] .doca-hero {
+      padding-top: calc(3.65rem + env(safe-area-inset-top));
+      padding-bottom: 3.75rem;
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-grid {
+      gap: clamp(2rem, 4vw, 4rem);
+    }
+
+    [data-tenant-surface="doca"] .doca-logo-word {
+      font-size: clamp(4.2rem, 7.4vw, 8rem);
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-title {
+      margin-top: 1rem;
+      font-size: clamp(3rem, 5.8vw, 6.4rem);
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-text {
+      margin-top: 1rem;
+      font-size: clamp(1rem, 1.2vw, 1.15rem);
+      line-height: 1.5;
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-actions {
+      margin-top: 1.4rem;
+    }
+
+    [data-tenant-surface="doca"] .doca-hero-board {
+      min-height: min(52vw, 36rem);
+    }
+  }
+
   @media (max-width: 640px) {
     [data-tenant-surface="doca"] .doca-hero {
       padding-bottom: 5rem;
@@ -404,6 +445,11 @@
 
     [data-tenant-surface="doca"] .doca-hero-copy {
       max-width: min(100%, 22rem);
+    }
+
+    [data-tenant-surface="doca"] .doca-language-selector-wrap {
+      position: static;
+      margin-bottom: 1rem;
     }
 
     [data-tenant-surface="doca"] .doca-hero-text {

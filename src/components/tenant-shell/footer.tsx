@@ -91,9 +91,18 @@ export function Footer() {
             <Phone size={18} className="shrink-0 text-pork-cream/80" />
             <VenuePhoneDisplay className="text-pork-cream/80 transition-colors hover:text-pork-mustard" />
           </div>
-          <VenueWhatsappLink className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard hover:underline">
-            {isDoca ? docaCopy.whatsappFooter : "Scrivici su WhatsApp ->"}
-          </VenueWhatsappLink>
+          {isDoca ? (
+            <Link
+              href={tenantHref("/prenota")}
+              className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard hover:underline"
+            >
+              {docaCopy.whatsappFooter}
+            </Link>
+          ) : (
+            <VenueWhatsappLink className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard hover:underline">
+              Scrivici su WhatsApp -&gt;
+            </VenueWhatsappLink>
+          )}
         </div>
 
         <div>

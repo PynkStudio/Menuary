@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   const error = url.searchParams.get("error");
   const errorDescription = url.searchParams.get("error_description");
 
-  const baseRedirect = "/admin/integrazioni/pagamenti";
+  const baseRedirect = "/admin/tenant";
 
   if (error) {
     return NextResponse.redirect(

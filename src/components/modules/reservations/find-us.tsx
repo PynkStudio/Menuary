@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CalendarDays, MapPin, Phone, Clock, MessageCircle } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
@@ -12,12 +13,14 @@ import {
   VenueWhatsappLink,
 } from "@/components/modules/reservations/venue-display";
 import { useDocaCopy } from "@/lib/doca-i18n";
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 export function FindUs() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
   const isDoca = tenant.id === "doca";
   const docaCopy = useDocaCopy();
+  const tenantHref = useTenantLocalizedHref();
 
   return (
     <section className="tenant-find-us bg-pork-cream py-20 md:py-28">
@@ -79,10 +82,17 @@ export function FindUs() {
             </dl>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <VenueWhatsappLink className="btn-primary text-base">
-                {isDoca ? <CalendarDays size={20} /> : <MessageCircle size={20} />}
-                {isDoca ? docaCopy.reserveHere : "Prenota un tavolo"}
-              </VenueWhatsappLink>
+              {isDoca ? (
+                <Link href={tenantHref("/prenota")} className="btn-primary text-base">
+                  <CalendarDays size={20} />
+                  {docaCopy.reserveHere}
+                </Link>
+              ) : (
+                <VenueWhatsappLink className="btn-primary text-base">
+                  <MessageCircle size={20} />
+                  Prenota un tavolo
+                </VenueWhatsappLink>
+              )}
               <VenueGoogleMapsLink className="btn-ghost text-base">
                 {isDoca ? docaCopy.maps : "Apri in Google Maps"}
               </VenueGoogleMapsLink>
