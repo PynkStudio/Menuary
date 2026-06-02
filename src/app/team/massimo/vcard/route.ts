@@ -1,6 +1,4 @@
-import type { NextRequest } from "next/server";
-
-export function GET(_req: NextRequest) {
+export function GET() {
   const vcard = [
     "BEGIN:VCARD",
     "VERSION:3.0",
