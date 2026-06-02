@@ -45,9 +45,11 @@
   }
 
   [data-tenant-surface="doca"] .doca-hero {
+    display: flex;
+    align-items: center;
     min-height: 100dvh;
     box-sizing: border-box;
-    padding: calc(4.5rem + env(safe-area-inset-top)) 0 6.5rem;
+    padding: calc(4.75rem + env(safe-area-inset-top)) 0 5.25rem;
     background:
       radial-gradient(circle at 8% 18%, rgba(183, 53, 37, 0.18), transparent 24rem),
       radial-gradient(circle at 85% 20%, rgba(140, 81, 115, 0.18), transparent 23rem),
@@ -95,6 +97,7 @@
     gap: clamp(2.5rem, 5vw, 5.5rem);
     align-items: center;
     grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
+    width: 100%;
   }
 
   [data-tenant-surface="doca"] .doca-hero-copy {
@@ -107,7 +110,7 @@
     display: inline-block;
     width: max-content;
     max-width: 100%;
-    padding-bottom: 1.95rem;
+    padding-bottom: 2.25rem;
   }
 
   [data-tenant-surface="doca"] .doca-logo-word {
@@ -150,7 +153,7 @@
 
   [data-tenant-surface="doca"] .doca-hero-text {
     max-width: 34rem;
-    margin-top: 1.2rem;
+    margin-top: 1.45rem;
     color: var(--doca-muted);
     font-size: clamp(1.05rem, 1.5vw, 1.28rem);
     line-height: 1.62;
@@ -159,7 +162,8 @@
   }
 
   [data-tenant-surface="doca"] .doca-hero-text strong,
-  [data-tenant-surface="doca"] footer strong {
+  [data-tenant-surface="doca"] .tenant-souls strong,
+  [data-tenant-surface="doca"] .doca-about strong {
     color: var(--doca-red-deep);
     font-weight: 900;
   }
@@ -278,17 +282,19 @@
 
   [data-tenant-surface="doca"] .doca-language-selector {
     display: inline-flex;
+    flex-direction: column;
     gap: 0.3rem;
     padding: 0.25rem;
     border: 2px solid rgba(132, 35, 22, 0.32);
-    background: rgba(255, 243, 209, 0.52);
+    background: rgba(255, 243, 209, 0.86);
+    box-shadow: 8px 8px 0 rgba(132, 35, 22, 0.1);
   }
 
   [data-tenant-surface="doca"] .doca-language-selector-wrap {
     position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 30;
+    top: clamp(3.25rem, 6vh, 5rem);
+    right: clamp(1rem, 3vw, 2.75rem);
+    z-index: 50;
   }
 
   [data-tenant-surface="doca"] .doca-language-selector button {
@@ -326,8 +332,8 @@
 
   [data-tenant-surface="doca"] .doca-floating-coffee {
     width: clamp(6.6rem, 13vw, 10.8rem);
-    right: -1%;
-    top: -4%;
+    right: 10%;
+    top: 2%;
   }
 
   [data-tenant-surface="doca"] .doca-floating-bread {
@@ -420,7 +426,8 @@
 
   @media (max-width: 1023px) {
     [data-tenant-surface="doca"] .doca-hero {
-      padding-top: calc(4rem + env(safe-area-inset-top));
+      align-items: flex-start;
+      padding-top: calc(5.5rem + env(safe-area-inset-top));
     }
 
     [data-tenant-surface="doca"] .doca-hero-grid {
@@ -432,10 +439,17 @@
     }
   }
 
+  @media (min-width: 1024px) {
+    [data-tenant-surface="doca"] .doca-hero-grid {
+      box-sizing: border-box;
+      padding-right: clamp(4.75rem, 6vw, 5.75rem);
+    }
+  }
+
   @media (min-width: 1024px) and (max-height: 940px) {
     [data-tenant-surface="doca"] .doca-hero {
-      padding-top: calc(3.65rem + env(safe-area-inset-top));
-      padding-bottom: 3.75rem;
+      padding-top: calc(4rem + env(safe-area-inset-top));
+      padding-bottom: 4rem;
     }
 
     [data-tenant-surface="doca"] .doca-hero-grid {
@@ -500,7 +514,7 @@
     }
 
     [data-tenant-surface="doca"] .doca-hero {
-      padding-bottom: 5rem;
+      padding-bottom: 4.25rem;
     }
 
     [data-tenant-surface="doca"] .tenant-souls,
@@ -528,8 +542,9 @@
     }
 
     [data-tenant-surface="doca"] .doca-language-selector-wrap {
-      position: static;
-      margin-bottom: 1rem;
+      top: calc(2.9rem + env(safe-area-inset-top));
+      right: 1rem;
+      margin-bottom: 0;
     }
 
     [data-tenant-surface="doca"] .doca-hero-text {

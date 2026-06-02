@@ -44,11 +44,6 @@ type SocialLinkKey,
   type SocialLinks,
 } from "@/store/settings-store";
 
-type RichTextPart = {
-  text: string;
-  bold?: boolean;
-};
-
 const SOCIAL_ITEMS: Array<{
   key: SocialLinkKey;
   label: string;
@@ -80,12 +75,6 @@ function isTenantHomePath(pathname: string | null, tenantId: string, previewSlug
 
 function mailtoHref(email: string, subject: string) {
   return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
-}
-
-function renderRichText(parts: readonly RichTextPart[]) {
-  return parts.map((part, index) =>
-    part.bold ? <strong key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>,
-  );
 }
 
 function defaultSocialLinks(content: ReturnType<typeof getTenantContent>): SocialLinks {
@@ -166,7 +155,7 @@ export function Footer() {
             </div>
           </div>
           <p className="mt-6 max-w-md text-pork-cream/70">
-            {isDoca ? renderRichText(docaCopy.footerBodyParts) : content.footer.body}
+            {isDoca ? docaCopy.footerBody : content.footer.body}
           </p>
         </div>
 

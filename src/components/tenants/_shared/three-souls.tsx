@@ -11,6 +11,17 @@ import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useDocaCopy } from "@/lib/doca-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
+type RichTextPart = {
+  text: string;
+  bold?: boolean;
+};
+
+function renderRichText(parts: readonly RichTextPart[]) {
+  return parts.map((part, index) =>
+    part.bold ? <strong key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>,
+  );
+}
+
 export function ThreeSouls() {
   const tenant = useTenant();
   const mode = usePlatformMode();
@@ -34,7 +45,7 @@ export function ThreeSouls() {
             <span className="text-pork-red">{isDoca ? docaCopy.introTitleAccent : content.soulsIntro.titleAccent}</span>
           </h2>
           <p className="mt-4 max-w-2xl text-lg text-pork-ink/70">
-            {isDoca ? docaCopy.introBody : content.soulsIntro.body}
+            {isDoca ? renderRichText(docaCopy.introBodyParts) : content.soulsIntro.body}
           </p>
         </div>
 

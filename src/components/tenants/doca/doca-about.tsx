@@ -3,6 +3,17 @@
 import Image from "next/image";
 import { useDocaCopy } from "@/lib/doca-i18n";
 
+type RichTextPart = {
+  text: string;
+  bold?: boolean;
+};
+
+function renderRichText(parts: readonly RichTextPart[]) {
+  return parts.map((part, index) =>
+    part.bold ? <strong key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>,
+  );
+}
+
 export function DocaAbout() {
   const text = useDocaCopy();
 
@@ -23,8 +34,12 @@ export function DocaAbout() {
           <h2 className="headline mt-4 text-5xl text-balance sm:text-6xl lg:text-7xl">
             {text.aboutTitle}
           </h2>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-pork-ink/75">{text.aboutBody}</p>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-pork-ink/75">{text.aboutDetail}</p>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-pork-ink/75">
+            {renderRichText(text.aboutBodyParts)}
+          </p>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-pork-ink/75">
+            {renderRichText(text.aboutDetailParts)}
+          </p>
         </div>
       </div>
     </section>

@@ -23,6 +23,13 @@ const translations = {
     introTitleAccent: "con radici brasiliane.",
     introBody:
       'Doca viene da "padoca": quella panetteria sotto casa dove vai ogni mattina, conosci chi ti serve e ti senti a casa. Forno, caffè e dolci brasiliani sotto lo stesso tetto, in uno spazio che unisce bottega e laboratorio.',
+    introBodyParts: [
+      { text: 'Doca viene da "' },
+      { text: "padoca", bold: true },
+      { text: '": quella panetteria sotto casa dove vai ogni mattina, conosci chi ti serve e ti senti a casa. ' },
+      { text: "Forno, caffè e dolci brasiliani", bold: true },
+      { text: " sotto lo stesso tetto, in uno spazio che unisce bottega e laboratorio." },
+    ],
     categories: [
       { title: "Il salato", kicker: "Dal forno", desc: "Pane a lievitazione naturale, pão de queijo e proposte salate preparate ogni giorno." },
       { title: "Il dolce", kicker: "Ricette brasiliane", desc: "Torta di carote e brigadeiro, dolci di casa e sapori che attraversano l'oceano." },
@@ -31,9 +38,19 @@ const translations = {
     aboutEyebrow: "Chi siamo",
     aboutTitle: "Tecnica, memoria e quotidianità.",
     aboutBody:
-      "DOCA nasce dal viaggio personale e professionale di Queren Girardi, bakery chef brasiliana arrivata a Milano con il desiderio di creare un luogo capace di unire tecnica, memoria e quotidianità.",
+      "Doca nasce dal viaggio personale e professionale di Queren Girardi, bakery chef brasiliana arrivata a Milano con il desiderio di creare un luogo capace di unire tecnica, memoria e quotidianità.",
+    aboutBodyParts: [
+      { text: "Doca nasce dal viaggio personale e professionale di " },
+      { text: "Queren Girardi", bold: true },
+      { text: ", bakery chef brasiliana arrivata a Milano con il desiderio di creare un luogo capace di unire tecnica, memoria e quotidianità." },
+    ],
     aboutDetail:
       "Dopo una formazione legata alle Scienze Gastronomiche in Brasile e diverse esperienze nella panificazione contemporanea milanese, Queren ha immaginato una bakery diversa: un posto dove pane, caffè e dolci diventano strumenti di racconto, incontro e contaminazione culturale.",
+    aboutDetailParts: [
+      { text: "Dopo una formazione legata alle Scienze Gastronomiche in Brasile e diverse esperienze nella panificazione contemporanea milanese, Queren ha immaginato una bakery diversa: " },
+      { text: "un posto dove pane, caffè e dolci diventano strumenti di racconto, incontro e contaminazione culturale", bold: true },
+      { text: "." },
+    ],
     reviewsEyebrow: "Dicono di noi",
     reviewsTitleLead: "Una bakery",
     reviewsTitleAccent: "già cercata.",
@@ -67,7 +84,7 @@ const translations = {
   },
   pt: {
     languageLabel: "Idioma",
-    heroPayoff: "PÃO ⋆ CAFÉ ⋆ SAUDADE",
+    heroPayoff: "PANE ⋆ CAFFÈ ⋆ SAUDADE",
     heroBody:
       "Padaria de bairro de uma brasileira em Milano Corvetto, um espaço onde tradições diferentes se encontram. Um lugar que fala de viagem, mistura e vizinhança. Onde você pode reencontrar uma lembrança… ou criar uma nova.",
     heroBodyParts: [
@@ -87,6 +104,13 @@ const translations = {
     introTitleAccent: "com raízes brasileiras.",
     introBody:
       'Doca vem de "padoca": aquela padaria perto de casa onde você vai todas as manhãs, conhece quem atende e se sente em casa. Forno, café e doces brasileiros sob o mesmo teto, em um espaço que une loja e laboratório.',
+    introBodyParts: [
+      { text: 'Doca vem de "' },
+      { text: "padoca", bold: true },
+      { text: '": aquela padaria perto de casa onde você vai todas as manhãs, conhece quem atende e se sente em casa. ' },
+      { text: "Forno, café e doces brasileiros", bold: true },
+      { text: " sob o mesmo teto, em um espaço que une loja e laboratório." },
+    ],
     categories: [
       { title: "Os salgados", kicker: "Do forno", desc: "Pão de fermentação natural, pão de queijo e salgados preparados todos os dias." },
       { title: "Os doces", kicker: "Receitas brasileiras", desc: "Bolo de cenoura com brigadeiro, doces da casa e sabores que atravessam o oceano." },
@@ -95,9 +119,19 @@ const translations = {
     aboutEyebrow: "Quem somos",
     aboutTitle: "Técnica, memória e cotidiano.",
     aboutBody:
-      "A DOCA nasce da viagem pessoal e profissional de Queren Girardi, bakery chef brasileira que chegou a Milão com o desejo de criar um lugar capaz de unir técnica, memória e cotidiano.",
+      "A Doca nasce da viagem pessoal e profissional de Queren Girardi, bakery chef brasileira que chegou a Milão com o desejo de criar um lugar capaz de unir técnica, memória e cotidiano.",
+    aboutBodyParts: [
+      { text: "A Doca nasce da viagem pessoal e profissional de " },
+      { text: "Queren Girardi", bold: true },
+      { text: ", bakery chef brasileira que chegou a Milão com o desejo de criar um lugar capaz de unir técnica, memória e cotidiano." },
+    ],
     aboutDetail:
       "Depois de uma formação ligada às Ciências Gastronômicas no Brasil e de experiências na panificação contemporânea milanesa, Queren imaginou uma padaria diferente: um lugar onde pão, café e doces se tornam instrumentos de história, encontro e mistura cultural.",
+    aboutDetailParts: [
+      { text: "Depois de uma formação ligada às Ciências Gastronômicas no Brasil e de experiências na panificação contemporânea milanesa, Queren imaginou uma padaria diferente: " },
+      { text: "um lugar onde pão, café e doces se tornam instrumentos de história, encontro e mistura cultural", bold: true },
+      { text: "." },
+    ],
     reviewsEyebrow: "Falam de nos",
     reviewsTitleLead: "Uma padaria",
     reviewsTitleAccent: "que já virou destino.",
@@ -112,7 +146,7 @@ const translations = {
     hours: "Horários",
     maps: "Abrir no Google Maps",
     closed: "Fechado",
-    footerTagline: "PÃO ⋆ CAFÉ ⋆ SAUDADE",
+    footerTagline: "PANE ⋆ CAFFÈ ⋆ SAUDADE",
     footerBody: "Padaria de bairro de uma brasileira fundada por Queren Girardi em Milano Corvetto. Pão, café coado e doces brasileiros sob o mesmo teto.",
     footerBodyParts: [
       { text: "Padaria de bairro de uma brasileira", bold: true },
@@ -131,7 +165,7 @@ const translations = {
   },
   en: {
     languageLabel: "Language",
-    heroPayoff: "BREAD ⋆ COFFEE ⋆ SAUDADE",
+    heroPayoff: "PANE ⋆ CAFFÈ ⋆ SAUDADE",
     heroBody:
       "A Brazilian neighborhood bakery in Milan's Corvetto district, where different traditions meet. A place shaped by travel, exchange and community. Somewhere to find an old memory, or make a new one.",
     heroBodyParts: [
@@ -151,6 +185,13 @@ const translations = {
     introTitleAccent: "with Brazilian roots.",
     introBody:
       'Doca comes from "padoca": the bakery around the corner where you go every morning, know the person serving you and feel at home. Brazilian bread, coffee and cakes under one roof, in a space that brings the shop and bakery lab together.',
+    introBodyParts: [
+      { text: 'Doca comes from "' },
+      { text: "padoca", bold: true },
+      { text: '": the bakery around the corner where you go every morning, know the person serving you and feel at home. ' },
+      { text: "Brazilian bread, coffee and cakes", bold: true },
+      { text: " under one roof, in a space that brings the shop and bakery lab together." },
+    ],
     categories: [
       { title: "Savoury", kicker: "From the oven", desc: "Naturally leavened bread, pão de queijo and savoury bakes prepared every day." },
       { title: "Sweet", kicker: "Brazilian recipes", desc: "Carrot cake with brigadeiro, homemade cakes and flavors that travel across the ocean." },
@@ -159,9 +200,19 @@ const translations = {
     aboutEyebrow: "About us",
     aboutTitle: "Technique, memory and everyday life.",
     aboutBody:
-      "DOCA grew out of Queren Girardi's personal and professional journey. The Brazilian bakery chef arrived in Milan wanting to create a place that could bring together technique, memory and everyday life.",
+      "Doca grew out of Queren Girardi's personal and professional journey. The Brazilian bakery chef arrived in Milan wanting to create a place that could bring together technique, memory and everyday life.",
+    aboutBodyParts: [
+      { text: "Doca grew out of " },
+      { text: "Queren Girardi", bold: true },
+      { text: "'s personal and professional journey. The Brazilian bakery chef arrived in Milan wanting to create a place that could bring together technique, memory and everyday life." },
+    ],
     aboutDetail:
       "After studying a field related to Gastronomic Sciences in Brazil and working in Milan's contemporary baking scene, Queren imagined a different bakery: a place where bread, coffee and cakes become ways to share stories, meet and mix cultures.",
+    aboutDetailParts: [
+      { text: "After studying a field related to Gastronomic Sciences in Brazil and working in Milan's contemporary baking scene, Queren imagined a different bakery: " },
+      { text: "a place where bread, coffee and cakes become ways to share stories, meet and mix cultures", bold: true },
+      { text: "." },
+    ],
     reviewsEyebrow: "What they say",
     reviewsTitleLead: "A bakery",
     reviewsTitleAccent: "worth seeking out.",
@@ -176,7 +227,7 @@ const translations = {
     hours: "Hours",
     maps: "Open in Google Maps",
     closed: "Closed",
-    footerTagline: "BREAD ⋆ COFFEE ⋆ SAUDADE",
+    footerTagline: "PANE ⋆ CAFFÈ ⋆ SAUDADE",
     footerBody: "A Brazilian neighborhood bakery founded by Queren Girardi in Milan's Corvetto district. Bread, filter coffee and Brazilian cakes under one roof.",
     footerBodyParts: [
       { text: "A Brazilian neighborhood bakery", bold: true },
