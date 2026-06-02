@@ -40,9 +40,14 @@ import { getTenantLocaleConfig, matchTenantLocale } from "@/lib/tenant-locales";
 import { useSettingsStore } from "@/store/settings-store";
 import {
   EMPTY_SOCIAL_LINKS,
-  type SocialLinkKey,
+type SocialLinkKey,
   type SocialLinks,
 } from "@/store/settings-store";
+
+type RichTextPart = {
+  text: string;
+  bold?: boolean;
+};
 
 const SOCIAL_ITEMS: Array<{
   key: SocialLinkKey;
@@ -75,6 +80,12 @@ function isTenantHomePath(pathname: string | null, tenantId: string, previewSlug
 
 function mailtoHref(email: string, subject: string) {
   return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+}
+
+function renderRichText(parts: readonly RichTextPart[]) {
+  return parts.map((part, index) =>
+    part.bold ? <strong key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>,
+  );
 }
 
 function defaultSocialLinks(content: ReturnType<typeof getTenantContent>): SocialLinks {
@@ -147,15 +158,15 @@ export function Footer() {
               unoptimized
               className="h-16 w-16 object-contain"
             />
-            <div>
-              <p className="impact-title text-3xl text-pork-mustard">{tenant.name}</p>
-              <p className="text-sm text-pork-cream/70">
+            <div className={isDoca ? "doca-footer-logo-stack" : ""}>
+              <p className="impact-title text-3xl text-pork-mustard">{isDoca ? "DOCA" : tenant.name}</p>
+              <p className={`text-sm text-pork-cream/70 ${isDoca ? "doca-footer-tagline" : ""}`}>
                 {isDoca ? docaCopy.footerTagline : content.footer.tagline}
               </p>
             </div>
           </div>
           <p className="mt-6 max-w-md text-pork-cream/70">
-            {isDoca ? docaCopy.footerBody : content.footer.body}
+            {isDoca ? renderRichText(docaCopy.footerBodyParts) : content.footer.body}
           </p>
         </div>
 

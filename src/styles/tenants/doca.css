@@ -102,6 +102,14 @@
     min-width: 0;
   }
 
+  [data-tenant-surface="doca"] .doca-logo-stack {
+    position: relative;
+    display: inline-block;
+    width: max-content;
+    max-width: 100%;
+    padding-bottom: 1.95rem;
+  }
+
   [data-tenant-surface="doca"] .doca-logo-word {
     width: max-content;
     max-width: 100%;
@@ -125,24 +133,55 @@
   }
 
   [data-tenant-surface="doca"] .doca-hero-title {
-    margin-top: 0.7rem;
-    font-family: var(--doca-font-display);
-    font-size: clamp(1.45rem, 2.8vw, 2.65rem);
-    font-weight: 760;
-    line-height: 1.06;
+    position: absolute;
+    top: calc(100% - 1.35rem);
+    left: 0;
+    width: 100%;
+    margin-top: 0;
+    font-family: var(--doca-font-body);
+    font-size: clamp(0.82rem, 1.18vw, 1.05rem);
+    font-weight: 950;
+    line-height: 1.15;
     letter-spacing: 0;
     color: var(--doca-red);
+    text-align: center;
     white-space: nowrap;
   }
 
   [data-tenant-surface="doca"] .doca-hero-text {
     max-width: 34rem;
-    margin-top: 1.4rem;
+    margin-top: 1.2rem;
     color: var(--doca-muted);
     font-size: clamp(1.05rem, 1.5vw, 1.28rem);
     line-height: 1.62;
     text-wrap: pretty;
     overflow-wrap: anywhere;
+  }
+
+  [data-tenant-surface="doca"] .doca-hero-text strong,
+  [data-tenant-surface="doca"] footer strong {
+    color: var(--doca-red-deep);
+    font-weight: 900;
+  }
+
+  [data-tenant-surface="doca"] .doca-footer-tagline {
+    position: absolute;
+    top: calc(100% - 0.95rem);
+    left: 0;
+    width: 100%;
+    font-weight: 900;
+    font-size: 0.62rem;
+    line-height: 1.15;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  [data-tenant-surface="doca"] .doca-footer-logo-stack {
+    position: relative;
+    display: inline-block;
+    width: max-content;
+    max-width: 100%;
+    padding-bottom: 1.15rem;
   }
 
   [data-tenant-surface="doca"] .doca-hero-actions {
@@ -478,12 +517,10 @@
 
     [data-tenant-surface="doca"] .doca-logo-word {
       font-size: clamp(4rem, 19vw, 6.5rem);
-      width: 100%;
     }
 
     [data-tenant-surface="doca"] .doca-hero-title {
-      font-size: clamp(1.28rem, 7vw, 1.8rem);
-      white-space: normal;
+      font-size: clamp(0.72rem, 3.3vw, 0.88rem);
     }
 
     [data-tenant-surface="doca"] .doca-hero-copy {

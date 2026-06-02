@@ -13,6 +13,17 @@ import { useDocaCopy } from "@/lib/doca-i18n";
 import { DocaLanguageSelector } from "@/components/tenants/doca/doca-language-selector";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
+type RichTextPart = {
+  text: string;
+  bold?: boolean;
+};
+
+function renderRichText(parts: readonly RichTextPart[]) {
+  return parts.map((part, index) =>
+    part.bold ? <strong key={index}>{part.text}</strong> : <span key={index}>{part.text}</span>,
+  );
+}
+
 export function Hero() {
   const reduceMotion = useReducedMotion();
   const tenant = useTenant();
@@ -54,12 +65,14 @@ export function Hero() {
               transition={reduceMotion ? { duration: 0 } : { duration: 0.7, ease: "easeOut" }}
               className="doca-hero-copy"
             >
-              <h1 className="doca-logo-word" aria-label="Doca">
-                DOCA
-              </h1>
-              <p className="doca-hero-title">Pane, caffè e saudade.</p>
+              <div className="doca-logo-stack">
+                <h1 className="doca-logo-word" aria-label="Doca">
+                  DOCA
+                </h1>
+                <p className="doca-hero-title">{docaCopy.heroPayoff}</p>
+              </div>
               <p className="doca-hero-text">
-                {docaCopy.heroBody}
+                {renderRichText(docaCopy.heroBodyParts)}
               </p>
               <div className="doca-hero-actions">
                 <Link href={reservationHref} className="doca-button doca-button-primary">
