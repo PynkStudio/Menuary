@@ -21,7 +21,7 @@ export function SlabbbyScriptGate({ skipInPreview = false }: { skipInPreview?: b
   const mode = usePlatformMode();
   const pathname = usePathname();
 
-  if (mode === "gestione-bizery") return null;
+  if (mode === "gestione-bizery" || mode === "marketing-bizery") return null;
 
   // In preview mode il layout ha risolto il tenant dall'host (default del verticale),
   // non dallo slug. Lasciamo che la pagina di preview gestisca il proprio gate.
