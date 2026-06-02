@@ -129,7 +129,7 @@ export function CheckoutClient({
             <CheckCircle2 size={22} />
             <div className="text-sm">
               <div className="font-bold">Pagamento ricevuto</div>
-              <div className="text-emerald-700/80">Il locale prenderà in carico l'ordine a breve.</div>
+              <div className="text-emerald-700/80">Il locale prenderà in carico l&apos;ordine a breve.</div>
             </div>
           </div>
         )}
@@ -143,7 +143,7 @@ export function CheckoutClient({
                   Pagamento {tenantVertical === "services" ? "all'appuntamento" : (order.dineOption === "delivery" ? "alla consegna" : "al ritiro")}
                 </div>
                 <div className="text-pork-ink/65">
-                  Conferma e dettagli ti sono stati inviati. L'ordine è confermato e verrà preparato.
+                  Conferma e dettagli ti sono stati inviati. L&apos;ordine è confermato e verrà preparato.
                 </div>
               </div>
             </div>
@@ -273,10 +273,10 @@ export function CheckoutClient({
               )}
 
               <ul className="mt-3 space-y-2 text-xs text-pork-ink/65 leading-relaxed">
-                <li>• Pagando confermi l'ordine sopra riportato. La conferma definitiva sarà visibile al locale solo a pagamento avvenuto.</li>
+                <li>• Pagando confermi l&apos;ordine sopra riportato. La conferma definitiva sarà visibile al locale solo a pagamento avvenuto.</li>
                 <li>• Pagamento elaborato in modo sicuro tramite <strong>Stripe</strong>: i dati della carta non transitano dai server di Menuary né del locale.</li>
                 <li>• Ricevuta e dati di fatturazione: ricevi automaticamente la ricevuta Stripe via email; per fattura intestata contatta direttamente {tenantName}.</li>
-                <li>• Rimborsi e contestazioni vanno gestiti direttamente con {tenantName}, titolare dell'incasso.</li>
+                <li>• Rimborsi e contestazioni vanno gestiti direttamente con {tenantName}, titolare dell&apos;incasso.</li>
               </ul>
 
               <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-xl bg-pork-cream/60 p-3 text-sm text-pork-ink hover:bg-pork-cream">
@@ -287,7 +287,7 @@ export function CheckoutClient({
                   className="mt-0.5 h-4 w-4 accent-pork-red"
                 />
                 <span>
-                  Ho letto e accetto l'informativa sulla privacy e le condizioni di servizio.
+                  Ho letto e accetto l&apos;informativa sulla privacy e le condizioni di servizio.
                 </span>
               </label>
             </section>

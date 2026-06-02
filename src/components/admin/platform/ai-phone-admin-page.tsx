@@ -361,7 +361,7 @@ export function AiPhoneAdminPage({ tenants }: { tenants: TenantOption[] }) {
               >
                 <option value="on_site_only">Solo al ritiro / consegna</option>
                 <option value="online_only">Solo online (link Stripe)</option>
-                <option value="both">Entrambi · l'agente chiede al cliente</option>
+                <option value="both">Entrambi · l&apos;agente chiede al cliente</option>
               </select>
             </Field>
           </div>

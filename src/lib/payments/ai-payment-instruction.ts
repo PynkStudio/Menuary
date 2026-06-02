@@ -41,7 +41,6 @@ export function buildAiPaymentInstruction(
 ): AiPaymentInstruction {
   const effectiveOnline =
     input.paymentsModuleEnabled && input.stripeReady && input.policy !== "on_site_only";
-  const effectiveOnSite = input.policy !== "online_only" || !effectiveOnline;
   const word = deliveryWord(input.vertical);
 
   // Caso 1: online non realmente disponibile → comunica pagamento sul posto.

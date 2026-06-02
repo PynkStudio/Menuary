@@ -148,7 +148,7 @@ export function StripeIntegrationModal({
           <p className="impact-title text-xs text-pork-red">Integrazione · Stripe (Connect Standard)</p>
           <h2 className="headline mt-1 text-2xl">{tenantName}</h2>
           <p className="mt-2 text-sm text-pork-ink/60">
-            Ogni tenant collega il proprio account Stripe. I pagamenti vanno direttamente sull'account del locale.
+            Ogni tenant collega il proprio account Stripe. I pagamenti vanno direttamente sull&apos;account del locale.
             Fee piattaforma: <strong>0%</strong> per ordini al tavolo e online, <strong>3%</strong> per ordini AI (WhatsApp, voce Retell).
           </p>
         </header>
@@ -207,7 +207,7 @@ export function StripeIntegrationModal({
 
               {!isConnected && (
                 <p className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
-                  L'account è collegato ma non ancora pronto a incassare. Il tenant deve completare l'onboarding su Stripe (dati attività, conto bancario, verifica identità).
+                  L&apos;account è collegato ma non ancora pronto a incassare. Il tenant deve completare l&apos;onboarding su Stripe (dati attività, conto bancario, verifica identità).
                 </p>
               )}
 
@@ -249,7 +249,7 @@ export function StripeIntegrationModal({
         </div>
 
         <p className="mt-4 text-xs text-pork-ink/45">
-          Stripe Connect Standard: il tenant è proprietario dell'account, ha la propria dashboard Stripe per fatture, rimborsi e dispute. Menuary preleva solo l'application fee configurata per la sorgente dell'ordine.
+          Stripe Connect Standard: il tenant è proprietario dell&apos;account, ha la propria dashboard Stripe per fatture, rimborsi e dispute. Menuary preleva solo l&apos;application fee configurata per la sorgente dell&apos;ordine.
         </p>
       </div>
     </div>
