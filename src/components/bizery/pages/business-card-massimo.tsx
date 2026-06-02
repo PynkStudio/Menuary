@@ -8,27 +8,37 @@ const PHONE_DISPLAY = "+39 351 376 8607";
 const PHONE_E164 = "+393513768607";
 const EMAIL = "massimo@menuary.it";
 
+const BIZERY_VARS: Record<string, string> = {
+  "--menuary-ink":       "#0F172A",
+  "--menuary-paper":     "#FFFFFF",
+  "--menuary-porcelain": "#F0F5FF",
+  "--menuary-muted":     "#64748B",
+  "--menuary-line":      "#E2E8F0",
+  "--menuary-copper":    "#2563EB",
+  "--menuary-gold":      "#DBEAFE",
+};
+
 export function BizeryMassimoCard() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center p-6"
-      style={{ backgroundColor: "var(--menuary-ink)" }}
+      style={{ backgroundColor: "#EFF6FF", ...BIZERY_VARS } as React.CSSProperties}
     >
       <div className="w-full max-w-[360px]">
         {/* Wordmark */}
         <p
           className="text-center mb-8 text-xs tracking-[0.35em] uppercase"
-          style={{ color: "rgba(243,239,231,0.45)" }}
+          style={{ color: "var(--menuary-muted)" }}
         >
           Bizery
         </p>
 
         {/* Card */}
         <div
-          className="rounded-2xl overflow-hidden shadow-[0_4px_40px_rgba(0,0,0,0.4)]"
-          style={{ background: "var(--menuary-porcelain)", border: "1px solid rgba(243,239,231,0.08)" }}
+          className="rounded-2xl overflow-hidden shadow-[0_2px_24px_rgba(15,23,42,0.10)]"
+          style={{ background: "var(--menuary-paper)", border: "1px solid var(--menuary-line)" }}
         >
-          {/* Copper stripe */}
+          {/* Blue stripe */}
           <div
             className="h-[3px]"
             style={{
@@ -133,7 +143,7 @@ export function BizeryMassimoCard() {
               <QRCodeSVG
                 value={CARD_URL}
                 size={128}
-                fgColor="#18231f"
+                fgColor="#0F172A"
                 bgColor="transparent"
                 level="M"
               />
@@ -153,12 +163,12 @@ export function BizeryMassimoCard() {
           <a
             href="/bizery/team/massimo/vcard"
             className="text-[12px] underline underline-offset-2 transition-colors"
-            style={{ color: "rgba(243,239,231,0.4)" }}
+            style={{ color: "var(--menuary-muted)" }}
             onMouseEnter={(e) =>
               (e.currentTarget.style.color = "var(--menuary-copper)")
             }
             onMouseLeave={(e) =>
-              (e.currentTarget.style.color = "rgba(243,239,231,0.4)")
+              (e.currentTarget.style.color = "var(--menuary-muted)")
             }
           >
             Salva contatto
