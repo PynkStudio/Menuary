@@ -86,10 +86,12 @@
 
   [data-tenant-surface="doca"] .doca-checker-top {
     top: 1.25rem;
+    animation: doca-checker-slide-right 42s linear infinite;
   }
 
   [data-tenant-surface="doca"] .doca-checker-bottom {
     bottom: 1.25rem;
+    animation: doca-checker-slide-left 42s linear infinite;
   }
 
   [data-tenant-surface="doca"] .doca-hero-grid {
@@ -110,7 +112,7 @@
     display: inline-block;
     width: max-content;
     max-width: 100%;
-    padding-bottom: 2.25rem;
+    padding-bottom: 3rem;
   }
 
   [data-tenant-surface="doca"] .doca-logo-word {
@@ -153,7 +155,7 @@
 
   [data-tenant-surface="doca"] .doca-hero-text {
     max-width: 34rem;
-    margin-top: 1.45rem;
+    margin-top: 2rem;
     color: var(--doca-muted);
     font-size: clamp(1.05rem, 1.5vw, 1.28rem);
     line-height: 1.62;
@@ -166,6 +168,25 @@
   [data-tenant-surface="doca"] .doca-about strong {
     color: var(--doca-red-deep);
     font-weight: 900;
+  }
+
+  @keyframes doca-checker-slide-right {
+    to {
+      background-position: 36px 0, 45px 9px;
+    }
+  }
+
+  @keyframes doca-checker-slide-left {
+    to {
+      background-position: -36px 0, -27px 9px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-tenant-surface="doca"] .doca-checker-top,
+    [data-tenant-surface="doca"] .doca-checker-bottom {
+      animation: none;
+    }
   }
 
   [data-tenant-surface="doca"] .doca-footer-tagline {
@@ -331,7 +352,6 @@
   }
 
   [data-tenant-surface="doca"] .doca-floating-coffee {
-    width: clamp(6.6rem, 13vw, 10.8rem);
     right: 10%;
     top: 2%;
   }
@@ -342,7 +362,6 @@
   }
 
   [data-tenant-surface="doca"] .doca-floating-cake {
-    width: clamp(5.8rem, 11vw, 9rem);
     right: 18%;
     bottom: -4%;
   }
@@ -466,7 +485,7 @@
     }
 
     [data-tenant-surface="doca"] .doca-hero-text {
-      margin-top: 1rem;
+      margin-top: 1.6rem;
       font-size: clamp(1rem, 1.2vw, 1.15rem);
       line-height: 1.5;
     }
@@ -547,8 +566,13 @@
       margin-bottom: 0;
     }
 
+    [data-tenant-surface="doca"] .doca-language-selector {
+      flex-direction: row;
+    }
+
     [data-tenant-surface="doca"] .doca-hero-text {
       max-width: 20rem;
+      margin-top: 1.75rem;
       font-size: 1rem;
       line-height: 1.5;
       text-wrap: wrap;

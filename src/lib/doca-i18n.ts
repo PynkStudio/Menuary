@@ -7,7 +7,7 @@ const translations = {
     heroBody:
       "Bakery di una brasiliana di quartiere a Milano Corvetto, uno spazio dove tradizioni diverse si incontrano. Un luogo che parla di viaggio, contaminazione e quartiere. Dove magari ritrovate un ricordo… o ne create uno nuovo.",
     heroBodyParts: [
-      { text: "Bakery di una brasiliana di quartiere" },
+      { text: "Bakery di una brasiliana di quartiere", bold: true },
       { text: " a Milano Corvetto, uno spazio dove " },
       { text: "tradizioni diverse si incontrano", bold: true },
       { text: ". Un luogo che parla di " },
@@ -42,7 +42,9 @@ const translations = {
     aboutBodyParts: [
       { text: "Doca nasce dal viaggio personale e professionale di " },
       { text: "Queren Girardi", bold: true },
-      { text: ", bakery chef brasiliana arrivata a Milano con il desiderio di creare un luogo capace di unire tecnica, memoria e quotidianità." },
+      { text: ", bakery chef brasiliana arrivata a Milano con il desiderio di creare un luogo capace di unire " },
+      { text: "tecnica, memoria e quotidianità", bold: true },
+      { text: "." },
     ],
     aboutDetail:
       "Dopo una formazione legata alle Scienze Gastronomiche in Brasile e diverse esperienze nella panificazione contemporanea milanese, Queren ha immaginato una bakery diversa: un posto dove pane, caffè e dolci diventano strumenti di racconto, incontro e contaminazione culturale.",
@@ -88,7 +90,7 @@ const translations = {
     heroBody:
       "Padaria de bairro de uma brasileira em Milano Corvetto, um espaço onde tradições diferentes se encontram. Um lugar que fala de viagem, mistura e vizinhança. Onde você pode reencontrar uma lembrança… ou criar uma nova.",
     heroBodyParts: [
-      { text: "Padaria de bairro de uma brasileira" },
+      { text: "Padaria de bairro de uma brasileira", bold: true },
       { text: " em Milano Corvetto, um espaço onde " },
       { text: "tradições diferentes se encontram", bold: true },
       { text: ". Um lugar que fala de " },
@@ -123,7 +125,9 @@ const translations = {
     aboutBodyParts: [
       { text: "A Doca nasce da viagem pessoal e profissional de " },
       { text: "Queren Girardi", bold: true },
-      { text: ", bakery chef brasileira que chegou a Milão com o desejo de criar um lugar capaz de unir técnica, memória e cotidiano." },
+      { text: ", bakery chef brasileira que chegou a Milão com o desejo de criar um lugar capaz de unir " },
+      { text: "técnica, memória e cotidiano", bold: true },
+      { text: "." },
     ],
     aboutDetail:
       "Depois de uma formação ligada às Ciências Gastronômicas no Brasil e de experiências na panificação contemporânea milanesa, Queren imaginou uma padaria diferente: um lugar onde pão, café e doces se tornam instrumentos de história, encontro e mistura cultural.",
@@ -169,7 +173,7 @@ const translations = {
     heroBody:
       "A Brazilian neighborhood bakery in Milan's Corvetto district, where different traditions meet. A place shaped by travel, exchange and community. Somewhere to find an old memory, or make a new one.",
     heroBodyParts: [
-      { text: "A Brazilian neighborhood bakery" },
+      { text: "A Brazilian neighborhood bakery", bold: true },
       { text: " in Milan's Corvetto district, where " },
       { text: "different traditions meet", bold: true },
       { text: ". A place shaped by " },
@@ -204,7 +208,9 @@ const translations = {
     aboutBodyParts: [
       { text: "Doca grew out of " },
       { text: "Queren Girardi", bold: true },
-      { text: "'s personal and professional journey. The Brazilian bakery chef arrived in Milan wanting to create a place that could bring together technique, memory and everyday life." },
+      { text: "'s personal and professional journey. The Brazilian bakery chef arrived in Milan wanting to create a place that could bring together " },
+      { text: "technique, memory and everyday life", bold: true },
+      { text: "." },
     ],
     aboutDetail:
       "After studying a field related to Gastronomic Sciences in Brazil and working in Milan's contemporary baking scene, Queren imagined a different bakery: a place where bread, coffee and cakes become ways to share stories, meet and mix cultures.",
