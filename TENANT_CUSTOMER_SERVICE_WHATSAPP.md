@@ -29,6 +29,54 @@ Payload minimo:
 
 La response contiene `replies`, array di messaggi che il bridge WhatsApp deve inviare al numero scrivente.
 
+## Bridge Twilio WhatsApp
+
+Endpoint Twilio ufficiale:
+
+`POST /api/webhooks/twilio/whatsapp`
+
+Modalita supportate:
+
+- `mode=customer`: inoltra il messaggio all'assistente WhatsApp pubblico del tenant tramite `/api/whatsapp/inbound`.
+- `mode=tenant-support`: inoltra il messaggio al supporto operativo tenant tramite `handleTenantSupportWhatsappMessage`.
+
+Env richieste per inviare messaggi e media:
+
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_API_KEY`
+- `TWILIO_API_SECRET`
+- `TWILIO_WHATSAPP_FROM`, nel formato `whatsapp:+393513768607`
+
+Protezione webhook:
+
+- consigliato: `TWILIO_WEBHOOK_AUTH_TOKEN` per validare `X-Twilio-Signature`.
+- alternativa senza Auth Token: `TWILIO_WEBHOOK_SECRET`, da aggiungere al callback URL come query param `secret`.
+- opzionale: `TWILIO_WEBHOOK_URL` se il proxy/deploy cambia host o protocollo rispetto all'URL configurato in Twilio.
+
+Callback URL per assistente clienti:
+
+```text
+https://<app-domain>/api/webhooks/twilio/whatsapp?mode=customer&tenant_id=<tenant-id>&secret=<TWILIO_WEBHOOK_SECRET>
+```
+
+Per BePork su produzione:
+
+```text
+https://menuary.it/api/webhooks/twilio/whatsapp?mode=customer&tenant_id=bepork&secret=<TWILIO_WEBHOOK_SECRET>
+```
+
+Callback URL per supporto operativo tenant:
+
+```text
+https://<app-domain>/api/webhooks/twilio/whatsapp?mode=tenant-support&secret=<TWILIO_WEBHOOK_SECRET>
+```
+
+I messaggi outbound accodati in `outbound_text_messages` vengono inviati subito via Twilio quando le env Twilio sono configurate; in caso contrario restano accodati come prima. Il sender Twilio e' condiviso tra tenant Menuary e Bizery, quindi il body inviato viene prefissato con:
+
+```text
+Da <tenant_name> tramite <Menuary|Bizery>:
+```
+
 ## Bridge open-wa su Render
 
 Il processo WhatsApp Web e' in `scripts/openwa/worker.mjs` e gira separato dalla app Next.

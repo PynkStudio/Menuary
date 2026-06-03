@@ -2,6 +2,8 @@ import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Json } from "@/lib/supabase/types";
+import { findTenantById } from "@/lib/tenant-registry";
+import { isTwilioOutboundReady, sendTwilioTextMessage } from "@/lib/twilio/messages";
 
 export type OutboundChannel = "whatsapp" | "sms";
 export type OutboundKind = "payment_link" | "order_summary" | "menu_link" | "custom";
@@ -32,12 +34,32 @@ function normalizePhone(raw: string): string {
   return raw.trim();
 }
 
+function platformLabelForTenant(tenantId: string): string {
+  const tenant = findTenantById(tenantId);
+  return tenant?.vertical === "services" ? "Bizery" : "Menuary";
+}
+
+function tenantNameForMessage(tenantId: string): string {
+  const tenant = findTenantById(tenantId);
+  return tenant?.name?.trim() || tenantId.trim() || "Tenant";
+}
+
+function withSharedSenderPrefix(input: EnqueueOutboundMessageInput): string {
+  const body = input.body.trim();
+  const tenantName = tenantNameForMessage(input.tenantId);
+  const platform = platformLabelForTenant(input.tenantId);
+  const prefix = `Da ${tenantName} tramite ${platform}:`;
+  if (body.startsWith(prefix)) return body.slice(0, 4000);
+  return `${prefix}\n${body}`.slice(0, 4000);
+}
+
 export async function enqueueOutboundMessage(
   input: EnqueueOutboundMessageInput,
 ): Promise<EnqueuedOutboundMessage> {
   const phone = normalizePhone(input.recipientPhone);
   if (!phone) throw new Error("recipient_phone_required");
   if (!input.body?.trim()) throw new Error("body_required");
+  const outboundBody = withSharedSenderPrefix(input);
 
   const db = createSupabaseServiceClient();
   if (!db) throw new Error("supabase_service_unconfigured");
@@ -66,7 +88,7 @@ export async function enqueueOutboundMessage(
       channel: input.channel,
       fallback_channel: input.fallbackChannel ?? null,
       recipient_phone: phone,
-      body: input.body.trim().slice(0, 4000),
+      body: outboundBody,
       source: input.source ?? "system",
       order_id: input.orderId ?? null,
       channel_payment_request_id: input.channelPaymentRequestId ?? null,
@@ -77,6 +99,57 @@ export async function enqueueOutboundMessage(
     .single();
 
   if (error || !data) throw new Error(error?.message ?? "enqueue_failed");
+
+  if (isTwilioOutboundReady(input.channel)) {
+    try {
+      const sent = await sendTwilioTextMessage({
+        channel: input.channel,
+        to: phone,
+        body: outboundBody,
+      });
+      await (db as unknown as {
+        from: (t: "outbound_text_messages") => {
+          update: (row: Record<string, unknown>) => {
+            eq: (column: string, value: string) => Promise<unknown>;
+          };
+        };
+      })
+        .from("outbound_text_messages")
+        .update({
+          status: "sent",
+          metadata: {
+            ...(input.metadata ?? {}),
+            twilio: sent,
+          },
+        })
+        .eq("id", data.id);
+      return {
+        id: data.id,
+        status: "sent",
+        channel: data.channel,
+        fallbackChannel: data.fallback_channel,
+      };
+    } catch (sendError) {
+      await (db as unknown as {
+        from: (t: "outbound_text_messages") => {
+          update: (row: Record<string, unknown>) => {
+            eq: (column: string, value: string) => Promise<unknown>;
+          };
+        };
+      })
+        .from("outbound_text_messages")
+        .update({
+          status: "failed",
+          metadata: {
+            ...(input.metadata ?? {}),
+            twilio: {
+              error: sendError instanceof Error ? sendError.message : String(sendError),
+            },
+          },
+        })
+        .eq("id", data.id);
+    }
+  }
 
   return {
     id: data.id,

@@ -23,6 +23,18 @@ export async function findLeadsByEmails(addresses: string[]): Promise<LeadMatch[
   return (data ?? []) as LeadMatch[];
 }
 
+/** Recupera i lead per id (per risolvere FK in nome leggibile). */
+export async function getLeadsByIds(ids: string[]): Promise<LeadMatch[]> {
+  if (ids.length === 0) return [];
+  const admin = createSupabaseAdminClient();
+  const { data, error } = await admin
+    .from("platform_leads")
+    .select("id, business_name, contact_name, contact_email, business_vertical, status")
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as LeadMatch[];
+}
+
 /** Ricerca testuale lead per nome attività o email contatto (per il selettore manuale). */
 export async function searchLeads(query: string): Promise<LeadMatch[]> {
   if (!query.trim()) return [];
