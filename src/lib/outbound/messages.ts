@@ -59,7 +59,8 @@ export async function enqueueOutboundMessage(
   const phone = normalizePhone(input.recipientPhone);
   if (!phone) throw new Error("recipient_phone_required");
   if (!input.body?.trim()) throw new Error("body_required");
-  const outboundBody = withSharedSenderPrefix(input);
+  const outboundBody = input.body.trim().slice(0, 4000);
+  const twilioBody = input.channel === "whatsapp" ? withSharedSenderPrefix(input) : outboundBody;
 
   const db = createSupabaseServiceClient();
   if (!db) throw new Error("supabase_service_unconfigured");
@@ -88,7 +89,7 @@ export async function enqueueOutboundMessage(
       channel: input.channel,
       fallback_channel: input.fallbackChannel ?? null,
       recipient_phone: phone,
-      body: outboundBody,
+      body: twilioBody,
       source: input.source ?? "system",
       order_id: input.orderId ?? null,
       channel_payment_request_id: input.channelPaymentRequestId ?? null,
@@ -105,7 +106,7 @@ export async function enqueueOutboundMessage(
       const sent = await sendTwilioTextMessage({
         channel: input.channel,
         to: phone,
-        body: outboundBody,
+        body: twilioBody,
       });
       await (db as unknown as {
         from: (t: "outbound_text_messages") => {
@@ -117,8 +118,11 @@ export async function enqueueOutboundMessage(
         .from("outbound_text_messages")
         .update({
           status: "sent",
+          sent_at: new Date().toISOString(),
           metadata: {
             ...(input.metadata ?? {}),
+            delivery_route: input.channel === "whatsapp" ? "twilio_whatsapp_shared" : "twilio_sms",
+            sender: input.channel === "whatsapp" ? "menuary_twilio_whatsapp" : "twilio_sms",
             twilio: sent,
           },
         })
@@ -140,8 +144,11 @@ export async function enqueueOutboundMessage(
         .from("outbound_text_messages")
         .update({
           status: "failed",
+          last_error: sendError instanceof Error ? sendError.message : String(sendError),
           metadata: {
             ...(input.metadata ?? {}),
+            delivery_route: input.channel === "whatsapp" ? "twilio_whatsapp_shared" : "twilio_sms",
+            sender: input.channel === "whatsapp" ? "menuary_twilio_whatsapp" : "twilio_sms",
             twilio: {
               error: sendError instanceof Error ? sendError.message : String(sendError),
             },
@@ -149,6 +156,25 @@ export async function enqueueOutboundMessage(
         })
         .eq("id", data.id);
     }
+  } else {
+    await (db as unknown as {
+      from: (t: "outbound_text_messages") => {
+        update: (row: Record<string, unknown>) => {
+          eq: (column: string, value: string) => Promise<unknown>;
+        };
+      };
+    })
+      .from("outbound_text_messages")
+      .update({
+        status: "failed",
+        last_error: `${input.channel}_sender_not_configured`,
+        metadata: {
+          ...(input.metadata ?? {}),
+          delivery_route: input.channel === "whatsapp" ? "twilio_whatsapp_shared" : "twilio_sms",
+          sender_error: `${input.channel}_sender_not_configured`,
+        },
+      })
+      .eq("id", data.id);
   }
 
   return {

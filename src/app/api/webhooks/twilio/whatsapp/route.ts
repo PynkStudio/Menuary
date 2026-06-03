@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
 import { handleTenantSupportWhatsappMessage } from "@/lib/tenant-support/whatsapp-service";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { findTenantById } from "@/lib/tenant-registry";
 import { normalizeE164Address, twilioBasicAuthHeader } from "@/lib/twilio/config";
 import { twimlResponse } from "@/lib/twilio/twiml";
 
 export const runtime = "nodejs";
 
-type TwilioWebhookMode = "customer" | "tenant-support";
+type TwilioWebhookMode = "customer" | "platform" | "tenant-support";
 
 type TwilioWhatsappWebhookPayload = {
   accountSid: string | null;
@@ -32,7 +34,10 @@ function formRecord(form: FormData): Record<string, string> {
 }
 
 function webhookMode(req: NextRequest): TwilioWebhookMode {
-  return req.nextUrl.searchParams.get("mode") === "tenant-support" ? "tenant-support" : "customer";
+  const mode = req.nextUrl.searchParams.get("mode");
+  if (mode === "tenant-support") return "tenant-support";
+  if (mode === "customer" || req.nextUrl.searchParams.has("tenant_id") || req.nextUrl.searchParams.has("tenantId")) return "customer";
+  return "platform";
 }
 
 function webhookUrlForSignature(req: NextRequest): string {
@@ -99,8 +104,8 @@ async function handleTenantSupport(payload: TwilioWhatsappWebhookPayload) {
   return twimlResponse(result.replies);
 }
 
-async function handleCustomerAssistant(req: NextRequest, payload: TwilioWhatsappWebhookPayload) {
-  const tenantId = req.nextUrl.searchParams.get("tenant_id") || req.nextUrl.searchParams.get("tenantId");
+async function handleCustomerAssistant(req: NextRequest, payload: TwilioWhatsappWebhookPayload, tenantOverride?: string) {
+  const tenantId = tenantOverride || req.nextUrl.searchParams.get("tenant_id") || req.nextUrl.searchParams.get("tenantId");
   if (!tenantId) return twimlResponse(["Canale WhatsApp non configurato: manca il tenant."]);
   if (!payload.from || !payload.body) return twimlResponse(["Messaggio ricevuto. Puoi scrivermi la tua richiesta?"]);
 
@@ -123,6 +128,7 @@ async function handleCustomerAssistant(req: NextRequest, payload: TwilioWhatsapp
       from: payload.from,
       text: payload.body,
       messageId: payload.messageSid ?? undefined,
+      sharedTwilioSender: true,
     }),
   });
 
@@ -136,6 +142,79 @@ async function handleCustomerAssistant(req: NextRequest, payload: TwilioWhatsapp
   return twimlResponse(Array.isArray(json?.replies) ? json.replies : []);
 }
 
+function detectTenantSimulation(text: string): { tenantId: string; body: string } | null {
+  const match = text.match(/^\s*(?:\[?\s*)?(?:demo|tenant)\s*[:\s]\s*([a-z0-9-]{2,64})(?:\s*\]?\s*[,;:\-]?\s*)(.*)$/i);
+  const tenantId = match?.[1]?.toLowerCase();
+  if (!tenantId || !findTenantById(tenantId)) return null;
+
+  const body = (match?.[2] ?? "").trim() || text.trim();
+  return { tenantId, body };
+}
+
+function detectPlatform(req: NextRequest, text: string): "food" | "services" {
+  const platform = req.nextUrl.searchParams.get("platform")?.toLowerCase();
+  if (platform === "bizery" || platform === "services") return "services";
+  if (platform === "menuary" || platform === "food") return "food";
+  if (/\b(bizery|azienda|professionista|studio|servizi|consulenza|legale|salone|clinica)\b/i.test(text)) return "services";
+  return "food";
+}
+
+async function savePlatformWhatsappLead(params: {
+  vertical: "food" | "services";
+  phone: string;
+  message: string;
+  messageId: string | null;
+}) {
+  const db = createSupabaseServiceClient();
+  if (!db || !params.phone) return;
+  const digits = params.phone.replace(/\D/g, "") || "unknown";
+  await (db as unknown as {
+    from: (table: "platform_leads") => {
+      insert: (row: Record<string, unknown>) => Promise<{ error: unknown }>;
+    };
+  })
+    .from("platform_leads")
+    .insert({
+      business_name: "Contatto WhatsApp",
+      business_vertical: params.vertical === "services" ? "services" : "food",
+      contact_name: "Contatto WhatsApp",
+      contact_email: `whatsapp-${digits}@menuary.local`,
+      contact_phone: params.phone,
+      country: "IT",
+      status: "lead",
+      source: params.vertical === "services" ? "bizery-whatsapp" : "menuary-whatsapp",
+      notes: [
+        `Messaggio WhatsApp: ${params.message}`,
+        params.messageId ? `Twilio message id: ${params.messageId}` : null,
+      ].filter(Boolean).join("\n"),
+    });
+}
+
+async function handlePlatformAssistant(req: NextRequest, payload: TwilioWhatsappWebhookPayload) {
+  const simulation = detectTenantSimulation(payload.body);
+  if (simulation) {
+    return handleCustomerAssistant(req, { ...payload, body: simulation.body }, simulation.tenantId);
+  }
+
+  const vertical = detectPlatform(req, payload.body);
+  await savePlatformWhatsappLead({
+    vertical,
+    phone: payload.from,
+    message: payload.body,
+    messageId: payload.messageSid,
+  }).catch((error) => {
+    console.error("[twilio-whatsapp] platform lead save failed", error instanceof Error ? error.message : String(error));
+  });
+
+  const brand = vertical === "services" ? "Bizery" : "Menuary";
+  const audience = vertical === "services"
+    ? "la tua azienda o studio"
+    : "il tuo ristorante, bar o locale";
+  return twimlResponse([
+    `Ciao, sono ${brand}. Ho ricevuto il tuo messaggio per ${audience}. Dimmi pure di cosa hai bisogno: sito, prenotazioni, menu digitale, ordini, CRM o automazioni AI. Se vuoi simulare un cliente su un tenant, scrivi "demo kimos, buonasera vorrei ordinare una margherita".`,
+  ]);
+}
+
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const params = formRecord(form);
@@ -147,6 +226,9 @@ export async function POST(req: NextRequest) {
   try {
     if (webhookMode(req) === "tenant-support") {
       return await handleTenantSupport(payload);
+    }
+    if (webhookMode(req) === "platform") {
+      return await handlePlatformAssistant(req, payload);
     }
     return await handleCustomerAssistant(req, payload);
   } catch (error) {

@@ -492,9 +492,9 @@ async function loadActiveMenuLists(db: Db, tenantId: string, channel: MenuOrderC
   };
 }
 
-function requireRetellFeature(features: Json, registryEnabled: boolean): boolean {
+function requireRetellFeature(features: Json, key: "aiPhone" | "aiWhatsapp", registryEnabled: boolean): boolean {
   if (features && typeof features === "object" && !Array.isArray(features)) {
-    const value = (features as Record<string, Json | undefined>).aiPhone;
+    const value = (features as Record<string, Json | undefined>)[key];
     if (typeof value === "boolean") return value;
   }
   return registryEnabled;
@@ -529,7 +529,12 @@ function conversationalMenuChannel(channel: "retell" | "whatsapp" | undefined): 
 
 export async function buildRetellInboundContext(
   tenantId: string,
-  options: { locationId?: string | null; includeUnavailable?: boolean; channel?: "retell" | "whatsapp" } = {},
+  options: {
+    locationId?: string | null;
+    includeUnavailable?: boolean;
+    channel?: "retell" | "whatsapp";
+    sharedWhatsappSender?: boolean;
+  } = {},
 ): Promise<RetellInboundContext> {
   const db = svc();
   const registryTenant = findTenantById(tenantId);
@@ -561,11 +566,16 @@ export async function buildRetellInboundContext(
       .order("date", { ascending: true }),
   ]);
 
-  const enabled = Boolean(tenantRow?.enabled ?? registryTenant.enabled);
-  const aiPhoneEnabled = requireRetellFeature(tenantRow?.features ?? {}, registryTenant.features.aiPhone);
-  const aiWhatsappEnabled = requireRetellFeature(tenantRow?.features ?? {}, registryTenant.features.aiWhatsapp);
-  const channelEnabled = options.channel === "whatsapp" ? aiWhatsappEnabled : aiPhoneEnabled;
+  const enabled = options.channel === "whatsapp" && options.sharedWhatsappSender === true
+    ? registryTenant.enabled
+    : Boolean(tenantRow?.enabled ?? registryTenant.enabled);
+  const aiPhoneEnabled = requireRetellFeature(tenantRow?.features ?? {}, "aiPhone", registryTenant.features.aiPhone);
+  const aiWhatsappEnabled = requireRetellFeature(tenantRow?.features ?? {}, "aiWhatsapp", registryTenant.features.aiWhatsapp);
+  const channelEnabled = options.channel === "whatsapp"
+    ? aiWhatsappEnabled || options.sharedWhatsappSender === true
+    : aiPhoneEnabled;
   const aiSettings = await getAiPhoneSettings(tenantId);
+  const assistantEnabled = aiSettings.enabled || (options.channel === "whatsapp" && options.sharedWhatsappSender === true);
   const acceptingOrders = isAiPhoneControlAccepting(aiSettings.quickSettings.acceptNewOrders);
   const acceptingReservations = isAiPhoneControlAccepting(aiSettings.quickSettings.acceptReservations);
   const fallbackHours = isDayScheduleArray(tenantRow?.hours)
@@ -649,12 +659,12 @@ export async function buildRetellInboundContext(
     locale: "it-IT",
     generatedAt: new Date().toISOString(),
     capabilities: {
-      canAnswerQuestions: enabled && channelEnabled && aiSettings.enabled,
-      canCreateTakeawayOrders: enabled && channelEnabled && aiSettings.enabled && acceptingOrders && registryTenant.features.takeaway,
-      canCreateDeliveryOrders: enabled && channelEnabled && aiSettings.enabled && acceptingOrders && registryTenant.features.deliveryHub,
-      canCreateReservations: enabled && channelEnabled && aiSettings.enabled && acceptingReservations && registryTenant.features.reservations,
-      canCreateAppointments: enabled && channelEnabled && aiSettings.enabled && acceptingReservations && registryTenant.vertical === "services" && registryTenant.features.reservations,
-      canRequestPaymentLinks: enabled && channelEnabled && aiSettings.enabled && aiSettings.paymentControls.enabled,
+      canAnswerQuestions: enabled && channelEnabled && assistantEnabled,
+      canCreateTakeawayOrders: enabled && channelEnabled && assistantEnabled && acceptingOrders && registryTenant.features.takeaway,
+      canCreateDeliveryOrders: enabled && channelEnabled && assistantEnabled && acceptingOrders && registryTenant.features.deliveryHub,
+      canCreateReservations: enabled && channelEnabled && assistantEnabled && acceptingReservations && registryTenant.features.reservations,
+      canCreateAppointments: enabled && channelEnabled && assistantEnabled && acceptingReservations && registryTenant.vertical === "services" && registryTenant.features.reservations,
+      canRequestPaymentLinks: enabled && channelEnabled && assistantEnabled && aiSettings.paymentControls.enabled,
     },
     assistantSettings: {
       phoneNumber: aiSettings.phoneNumber,
