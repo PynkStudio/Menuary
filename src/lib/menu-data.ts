@@ -18,9 +18,12 @@ export type PriceFormat =
       kind: "volume";
       small: { label: string; price: number };
       large: { label: string; price: number };
+      variants?: Array<{ id: string; label: string; price: number }>;
     };
 
-export type MenuTag = "firma" | "piccante" | "veg" | "novita";
+export type BuiltInMenuTag = "firma" | "piccante" | "veg" | "novita";
+export type MenuTag = BuiltInMenuTag | (string & {});
+export type MenuTagMeta = Record<string, { expiresAt?: string }>;
 
 /** Intensità piccante (tocchi consecutivi su «Piccante» in admin). */
 export type PiccanteLevel = 1 | 2 | 3 | 4;
@@ -47,6 +50,8 @@ export type MenuItem = {
   description?: string;
   price: PriceFormat;
   tags?: MenuTag[];
+  /** Metadati tag tenant/item: scadenze temporanee, label custom future, ecc. */
+  tagMeta?: MenuTagMeta;
   /** Livello piccante se il tag `piccante` è attivo (default in lettura: 1). */
   piccanteLevel?: PiccanteLevel;
   /** Allegati Reg. UE 1169/2011 — Allegato II. */
@@ -1615,11 +1620,9 @@ export const formatPrice = (price: PriceFormat): string => {
         .toFixed(2)
         .replace(".", ",")}`;
     case "volume":
-      return `${price.small.label} € ${price.small.price
-        .toFixed(2)
-        .replace(".", ",")} / ${price.large.label} € ${price.large.price
-        .toFixed(2)
-        .replace(".", ",")}`;
+      return (price.variants?.length ? price.variants : [price.small, price.large])
+        .map((variant) => `${variant.label} € ${variant.price.toFixed(2).replace(".", ",")}`)
+        .join(" / ");
   }
 };
 
@@ -1632,6 +1635,6 @@ export const priceFromNumber = (price: PriceFormat): number => {
     case "persone":
       return price.per2;
     case "volume":
-      return price.small.price;
+      return (price.variants?.[0] ?? price.small).price;
   }
 };

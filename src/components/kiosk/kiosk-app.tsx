@@ -95,6 +95,13 @@ function priceOf(price: unknown, kind: Item["price_kind"]): number {
     if (kind === "sized" && typeof p.big === "number") return p.big;
     if (kind === "persone" && typeof p.per2 === "number") return p.per2;
     if (kind === "volume") {
+      const variants = p.variants;
+      if (Array.isArray(variants)) {
+        const first = variants.find((variant) => {
+          return variant && typeof variant === "object" && "price" in variant && typeof variant.price === "number";
+        }) as { price?: number } | undefined;
+        if (typeof first?.price === "number") return first.price;
+      }
       const small = p.small as { price?: number } | undefined;
       if (small?.price) return small.price;
     }

@@ -47,9 +47,11 @@ function toMenuTags(tags: string[]): MenuTag[] {
 export function MenuPhotoImporter({
   categories,
   isServices,
+  tenantId,
 }: {
   categories: AdminMenuCategory[];
   isServices: boolean;
+  tenantId: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const addItems = useMenuStore((s) => s.addItems);
@@ -69,7 +71,7 @@ export function MenuPhotoImporter({
       form.append("file", file);
       form.append("locale", "it");
       form.append("context", isServices ? "Listino servizi" : "Menu ristorante");
-      const response = await fetch("/api/ai/menu-photo-import", {
+      const response = await fetch(`/api/ai/menu-photo-import?tenantId=${encodeURIComponent(tenantId)}`, {
         method: "POST",
         headers: { [ADMIN_TOKEN_HEADER]: getAdminPassword() },
         body: form,
@@ -273,7 +275,11 @@ export function MenuPhotoImporter({
                       </button>
                     )}
                   </div>
-                  <ImageUpload value={draft.image} onChange={(image) => patchDraft(draft.id, { image })} />
+                  <ImageUpload
+                    value={draft.image}
+                    tenantId={tenantId}
+                    onChange={(image) => patchDraft(draft.id, { image })}
+                  />
                 </div>
               </div>
             ))}

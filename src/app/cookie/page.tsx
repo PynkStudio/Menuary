@@ -17,8 +17,7 @@ export default function CookiePolicyPage() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-pork-cream/75">
             Come utilizziamo cookie, storage del browser e strumenti collegati alle funzioni che
-            decidi di usare (menu, preferiti, ordine). Le sezioni operative variano se asporto o
-            tavolo sono attivi.
+            decidi di usare durante la navigazione.
           </p>
         </div>
       </section>

@@ -51,6 +51,8 @@ src/
 
 - Non copiare mai colori, font, classi CSS, token o componenti UI da un tenant all'altro.
 - Quando aggiungi un nuovo tenant, crei da zero i suoi componenti in `src/components/tenants/(slug)/` e il suo foglio di stile in `src/styles/tenants/(slug).css`.
+- Il foglio `src/styles/tenants/(slug).css` deve includere sempre anche il tema del pannello `gestione` del tenant (`.gestione-admin[data-gestione-tenant="(slug)"]`): colori, font, superfici, bordi, form, bottoni, tabelle, card, tab, stati vuoti/errore/successo e ogni altro campo UI.
+- Il CSS gestione va scritto per **tutti** i moduli della piattaforma, non solo per quelli attivi nel feature set iniziale del tenant. Moduli oggi disattivi devono avere gia' uno stile coerente, cosi' possono essere abilitati in qualsiasi momento senza toccare il CSS del tenant.
 - Non importare mai da `src/components/tenants/bepork/` o da qualsiasi altra cartella tenant per usarla in un tenant diverso. BePork è un tenant come gli altri, non è un "base template".
 - La cartella `_shared/` in `src/components/tenants/_shared/` contiene solo elementi che il proprietario ha esplicitamente autorizzato a condividere tra più tenant. Non aggiungere nulla lì senza autorizzazione esplicita.
 
@@ -123,6 +125,7 @@ Crea `src/components/tenants/(slug)/pages/` con i componenti propri del tenant.
 
 - Stile completamente originale: nessun riuso di variabili CSS, classi o token di altri tenant.
 - Font, palette, spaziatura, motion: definiti da zero in `src/styles/tenants/(slug).css`.
+- Gestione: nello stesso CSS crea il blocco `.gestione-admin[data-gestione-tenant="(slug)"]` e copri tutti i campi/stati/moduli del pannello, inclusi quelli disattivi nei feature-flag iniziali.
 - Naming: usa il prefisso del tenant per evitare collisioni (`<BizeryHero />`, non `<Hero />`).
 
 ### 5. Route Next.js

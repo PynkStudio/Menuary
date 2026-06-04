@@ -17,8 +17,7 @@ export default function PrivacyPage() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-pork-cream/75">
             Trasparenza sul trattamento dei dati in relazione al sito e ai servizi digitali del
-            locale. Alcune parti si adattano automaticamente ai moduli attivi (asporto, tavolo,
-            cucina).
+            locale.
           </p>
         </div>
       </section>

@@ -1330,6 +1330,7 @@ export type Database = {
           price: Json
           price_kind: Database["public"]["Enums"]["price_kind"]
           service_notes: string[]
+          tag_meta: Json
           tags: string[]
           tenant_id: string
           updated_at: string
@@ -1355,6 +1356,7 @@ export type Database = {
           price: Json
           price_kind: Database["public"]["Enums"]["price_kind"]
           service_notes?: string[]
+          tag_meta?: Json
           tags?: string[]
           tenant_id: string
           updated_at?: string
@@ -1380,6 +1382,7 @@ export type Database = {
           price?: Json
           price_kind?: Database["public"]["Enums"]["price_kind"]
           service_notes?: string[]
+          tag_meta?: Json
           tags?: string[]
           tenant_id?: string
           updated_at?: string

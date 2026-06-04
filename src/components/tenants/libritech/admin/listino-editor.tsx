@@ -161,7 +161,7 @@ export function LibritechListinoEditor() {
             key={book.id}
             className="grid gap-3 rounded-xl p-3 sm:grid-cols-[88px_1.4fr_2fr_120px_110px_44px] sm:items-start"
             style={{
-              background: "rgba(255,255,255,0.03)",
+              background: "var(--ga-surface)",
               border: "1px solid var(--ga-border-soft)",
               opacity: book.available ? 1 : 0.55,
             }}

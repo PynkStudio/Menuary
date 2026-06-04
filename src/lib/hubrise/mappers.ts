@@ -26,10 +26,15 @@ function skusForPrice(itemId: string, price: PriceFormat): HubriseSku[] {
         { ref: `${itemId}__per4`, name: "Per 4", price: dec(price.per4), enabled: true },
       ];
     case "volume":
-      return [
-        { ref: `${itemId}__small`, name: price.small.label, price: dec(price.small.price), enabled: true },
-        { ref: `${itemId}__large`, name: price.large.label, price: dec(price.large.price), enabled: true },
-      ];
+      return (price.variants?.length ? price.variants : [
+        { id: "small", ...price.small },
+        { id: "large", ...price.large },
+      ]).map((variant) => ({
+        ref: `${itemId}__${variant.id}`,
+        name: variant.label,
+        price: dec(variant.price),
+        enabled: true,
+      }));
   }
 }
 

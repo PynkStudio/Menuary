@@ -4,7 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { MenuCategory } from "@/lib/menu-data";
 
-export function MenuCategoryNav({ categories }: { categories: MenuCategory[] }) {
+export function MenuCategoryNav({
+  categories,
+  hasGlobalHeader = true,
+}: {
+  categories: MenuCategory[];
+  hasGlobalHeader?: boolean;
+}) {
   const [active, setActive] = useState<string>(categories[0]?.id ?? "");
   const categoriesRef = useRef(categories);
   categoriesRef.current = categories;
@@ -34,7 +40,14 @@ export function MenuCategoryNav({ categories }: { categories: MenuCategory[] }) 
   }, [categoryIds]);
 
   return (
-    <div className="sticky z-30 -mx-5 overflow-x-hidden border-y border-pork-ink/10 bg-pork-cream/95 backdrop-blur-lg sm:-mx-8 lg:-mx-12 top-[calc(4.75rem+env(safe-area-inset-top))] md:top-[calc(5.5rem+env(safe-area-inset-top))]">
+    <div
+      className={cn(
+        "sticky z-30 -mx-5 border-y border-pork-ink/10 bg-pork-cream/95 backdrop-blur-lg sm:-mx-8 lg:-mx-12",
+        hasGlobalHeader
+          ? "top-[calc(4.75rem+env(safe-area-inset-top))] md:top-[calc(5.5rem+env(safe-area-inset-top))]"
+          : "top-0",
+      )}
+    >
       <div className="container-wide">
         <nav
           aria-label="Categorie del menu"

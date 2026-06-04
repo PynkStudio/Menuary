@@ -135,7 +135,7 @@ export function Footer() {
     : buildTenantManagementUrl(tenant.id) ?? buildTenantDemoManagementUrl(tenant.id);
 
   return (
-    <footer className="relative mt-16 bg-pork-ink pb-[env(safe-area-inset-bottom)] text-pork-cream">
+    <footer className="tenant-site-footer relative mt-16 bg-pork-ink pb-[env(safe-area-inset-bottom)] text-pork-cream">
       <div className={`container-wide grid gap-12 pt-16 pb-8 ${footerGridClass}`}>
         <div className="md:col-span-2">
           <div className="flex items-center gap-4">

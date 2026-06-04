@@ -290,6 +290,14 @@ src/styles/
     vertical-b.css      ← TODO: stili secondo verticale (file vuoto)
 ```
 
+Ogni file `src/styles/tenants/(slug).css` deve contenere anche il tema completo
+del gestionale del tenant tramite `.gestione-admin[data-gestione-tenant="(slug)"]`.
+Questo blocco deve coprire colori, font, superfici, bordi, bottoni, form, tabelle,
+card, tab, stati vuoti/errore/successo e tutti i campi UI usati dal pannello.
+La copertura deve valere per **tutti i moduli disponibili della piattaforma**,
+anche se nel `TenantFeatureFlags` iniziale sono disattivi: il tenant deve poter
+abilitare nuovi moduli in qualsiasi momento senza modifiche CSS.
+
 Tutti e tre i file vengono importati in `src/app/layout.tsx` dopo `globals.css`.
 Il `globals.css` mantiene: `@tailwind`, `@font-face` Faak Avenir, `@layer base`
 (variabili CSS, reset html/body, variabili Menuary su `data-platform="marketing"`),
@@ -392,6 +400,12 @@ Quando il secondo verticale avrà un nome:
 5. **Aggiungi asset** in `public/` se necessario (logo, foto, font custom)
    e configura il font in `src/app/layout.tsx` se il locale usa un typeface dedicato
    (come Faak usa Avenir).
+
+6. **Completa il CSS tenant, incluso gestione**:
+   - Crea/aggiorna `src/styles/tenants/nomelocale.css`
+   - Definisci il sito pubblico e il blocco `.gestione-admin[data-gestione-tenant="nomelocale"]`
+   - Copri tutti i campi/stati del gestionale e tutti i moduli disponibili, non solo quelli attivi oggi
+   - Verifica che abilitare un modulo disattivo richieda solo feature-flag/dati, non nuove regole CSS
 
 ---
 

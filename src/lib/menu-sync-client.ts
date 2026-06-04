@@ -11,6 +11,8 @@ function toBundle(): MenuSyncBundle {
     items: state.items,
     menuLists: state.menuLists,
     extraLists: state.extraLists,
+    customTags: state.customTags,
+    volumeLabels: state.volumeLabels,
   };
 }
 
@@ -25,6 +27,8 @@ export function useSupabaseMenuSync(
   const items = useMenuStore((s) => s.items);
   const menuLists = useMenuStore((s) => s.menuLists);
   const extraLists = useMenuStore((s) => s.extraLists);
+  const customTags = useMenuStore((s) => s.customTags);
+  const volumeLabels = useMenuStore((s) => s.volumeLabels);
   const lastSavedRef = useRef("");
   const loadedTenantRef = useRef<string | null>(null);
 
@@ -58,8 +62,8 @@ export function useSupabaseMenuSync(
   }, [enabled, replaceMenuData, tenantId]);
 
   const snapshot = useMemo(
-    () => JSON.stringify({ categories, items, menuLists, extraLists }),
-    [categories, extraLists, items, menuLists],
+    () => JSON.stringify({ categories, items, menuLists, extraLists, customTags, volumeLabels }),
+    [categories, customTags, extraLists, items, menuLists, volumeLabels],
   );
 
   useEffect(() => {

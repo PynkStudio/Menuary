@@ -21,8 +21,10 @@ import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 
 export function InteractiveMenu({
   showOnlyAvailable = true,
+  hasGlobalHeader = true,
 }: {
   showOnlyAvailable?: boolean;
+  hasGlobalHeader?: boolean;
 }) {
   const hydrated = useHydrated();
   const tenant = useTenant();
@@ -135,7 +137,10 @@ export function InteractiveMenu({
 
   return (
     <>
-      <MenuCategoryNav categories={categoryNavCategories} />
+      <MenuCategoryNav
+        categories={categoryNavCategories}
+        hasGlobalHeader={hasGlobalHeader}
+      />
 
       <div className="bg-pork-cream pb-[max(8rem,calc(6rem+env(safe-area-inset-bottom)))] pt-10">
         <div className="container-wide space-y-20">
@@ -172,7 +177,9 @@ export function InteractiveMenu({
             <section
               key={category.id}
               id={category.id}
-              className="scroll-mt-[calc(10.5rem+env(safe-area-inset-top))] md:scroll-mt-[calc(11.5rem+env(safe-area-inset-top))]"
+              className={hasGlobalHeader
+                ? "scroll-mt-[calc(10.5rem+env(safe-area-inset-top))] md:scroll-mt-[calc(11.5rem+env(safe-area-inset-top))]"
+                : "scroll-mt-[calc(5.75rem+env(safe-area-inset-top))] md:scroll-mt-[calc(6.25rem+env(safe-area-inset-top))]"}
             >
               <header className="mb-8 flex flex-col gap-2 border-b-2 border-pork-ink/10 pb-4">
                 <span className="impact-title text-sm text-pork-red">

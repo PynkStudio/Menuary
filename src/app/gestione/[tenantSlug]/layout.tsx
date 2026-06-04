@@ -142,6 +142,7 @@ export default async function GestioneLayout({ children, params }: Props) {
   }
 
   const navBaseHref = getGestioneBaseHref(host, tenant);
+  const cssVars = tenantThemeCssVars(tenant.theme);
 
   // Sedi: solo se il tenant ha multiLocation abilitato.
   // Su demo non interroghiamo il DB: l'idratazione avviene client-side da localStorage.
@@ -167,8 +168,10 @@ export default async function GestioneLayout({ children, params }: Props) {
     <div
       className="gestione-admin"
       data-gestione-tenant={tenantSlug}
+      data-tenant-surface={tenantSlug}
       data-backend-live={backendLive ? "true" : "false"}
       style={{
+        ...cssVars,
         ["--ga-accent" as string]: tenant.theme.red,
         ["--ga-accent-soft" as string]: `${tenant.theme.red}24`,
         ["--ga-accent-ring" as string]: `${tenant.theme.red}52`,

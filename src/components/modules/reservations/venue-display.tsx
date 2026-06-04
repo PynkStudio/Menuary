@@ -405,7 +405,9 @@ export function VenueHoursList({
         : "mt-1 space-y-2 text-sm";
 
   const dayTextClass = isDark ? "font-semibold text-pork-cream/90" : "font-semibold";
-  const slotTextClass = isDark ? "text-right text-pork-cream/70" : "text-right text-pork-ink/70";
+  const slotTextClass = isDark
+    ? "shrink-0 whitespace-nowrap text-right text-pork-cream/70"
+    : "shrink-0 whitespace-nowrap text-right text-pork-ink/70";
   const todayHighlight = isDark
     ? "bg-pork-mustard/10 ring-1 ring-pork-mustard/40"
     : "bg-pork-mustard/10 ring-1 ring-pork-mustard/40";
@@ -429,7 +431,11 @@ export function VenueHoursList({
                 showTodayBadgeHere ? todayHighlight : ""
               }`}
             >
-              <span className={`flex flex-wrap items-center gap-2 ${dayTextClass}`}>
+              <span
+                className={`flex min-w-0 ${
+                  showTodayBadgeHere ? "flex-col items-start gap-1.5" : "flex-wrap items-center gap-2"
+                } ${dayTextClass}`}
+              >
                 <span className={stale ? "line-through opacity-60" : ""}>{g.label}</span>
                 {showTodayBadgeHere && <StatusBadge status={status} label={statusLabels[status.kind]} />}
               </span>
@@ -445,11 +451,11 @@ export function VenueHoursList({
         <div
           className={`flex items-start justify-between gap-3 rounded-md border px-2.5 py-2 text-sm ${specialBoxClass}`}
         >
-          <span className="flex flex-wrap items-center gap-2 font-semibold">
+          <span className="flex min-w-0 flex-col items-start gap-1.5 font-semibold">
             <span>Oggi · {today.special.label?.trim() || "Orario speciale"}</span>
             <StatusBadge status={status} label={statusLabels[status.kind]} />
           </span>
-          <span className="text-right">{renderSlots(today.closed, today.slots)}</span>
+          <span className="shrink-0 whitespace-nowrap text-right">{renderSlots(today.closed, today.slots)}</span>
         </div>
       )}
 

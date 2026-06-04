@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_TOKEN_HEADER, getAdminPassword } from "@/lib/admin-auth";
+import { authorizeGestione } from "@/lib/gestione-auth";
 import { extractMenuItemsFromImage } from "@/lib/menu-photo-import";
 
 export const runtime = "nodejs";
@@ -16,9 +17,11 @@ type JsonBody = {
   context?: string;
 };
 
-function isAuthorized(request: NextRequest): boolean {
+async function isAuthorized(request: NextRequest, tenantId: string | null): Promise<boolean> {
   const adminToken = request.headers.get(ADMIN_TOKEN_HEADER);
-  if (adminToken && adminToken === getAdminPassword()) return true;
+  if (adminToken !== null && adminToken === getAdminPassword()) return true;
+
+  if (tenantId && (await authorizeGestione(tenantId)).ok) return true;
 
   const supportSecret = process.env.TENANT_SUPPORT_WHATSAPP_SECRET || process.env.WHATSAPP_WEB_BRIDGE_SECRET;
   if (!supportSecret) return false;
@@ -93,7 +96,8 @@ async function imageDataFromRequest(request: NextRequest): Promise<{
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
+  const tenantId = request.nextUrl.searchParams.get("tenantId");
+  if (!(await isAuthorized(request, tenantId))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

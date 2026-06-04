@@ -26,7 +26,7 @@ export async function getMenuForTenant(tenantId: string): Promise<MenuCategory[]
       supabase
         .from("menu_items")
         .select(
-          "id,code,category_id,name,description,price,tags,piccante_level,allergens,abv,image,service_notes,bundle_slots,extra_list_id,available,position",
+          "id,code,category_id,name,description,price,tags,tag_meta,piccante_level,allergens,abv,image,service_notes,bundle_slots,extra_list_id,available,position",
         )
         .eq("tenant_id", tenantId)
         .eq("available", true)
@@ -64,6 +64,7 @@ export async function getMenuForTenant(tenantId: string): Promise<MenuCategory[]
           description: it.description ?? undefined,
           price: it.price as PriceFormat,
           tags: (it.tags ?? []) as MenuTag[],
+          tagMeta: (it.tag_meta ?? undefined) as MenuItem["tagMeta"],
           piccanteLevel: (it.piccante_level ?? undefined) as PiccanteLevel | undefined,
           allergens: (it.allergens ?? []) as MenuAllergen[],
           abv: it.abv ?? undefined,

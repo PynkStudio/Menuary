@@ -71,7 +71,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<Me
     supabase
       .from("menu_items")
       .select(
-        "id,code,category_id,name,description,price,tags,piccante_level,allergens,abv,image,service_notes,bundle_slots,extra_list_id,available,position",
+        "id,code,category_id,name,description,price,tags,tag_meta,piccante_level,allergens,abv,image,service_notes,bundle_slots,extra_list_id,available,position",
       )
       .eq("tenant_id", tenantId)
       .order("position"),
@@ -132,6 +132,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<Me
       description: item.description ?? undefined,
       price: item.price as PriceFormat,
       tags: item.tags as AdminMenuItem["tags"],
+      tagMeta: item.tag_meta as AdminMenuItem["tagMeta"],
       piccanteLevel: item.piccante_level as AdminMenuItem["piccanteLevel"],
       allergens: item.allergens as AdminMenuItem["allergens"],
       abv: item.abv ?? undefined,
@@ -224,6 +225,7 @@ async function writeBundle(supabase: SupabaseAdmin, tenantId: string, bundle: Me
       price: item.price as Database["public"]["Tables"]["menu_items"]["Insert"]["price"],
       price_kind: priceKind(item.price),
       tags: item.tags ?? [],
+      tag_meta: (item.tagMeta ?? {}) as Database["public"]["Tables"]["menu_items"]["Insert"]["tag_meta"],
       piccante_level: item.piccanteLevel ?? null,
       allergens: item.allergens ?? [],
       abv: item.abv ?? null,

@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Clock,
   Eye,
+  GripVertical,
   ListChecks,
   ListPlus,
   Plus,
@@ -19,6 +20,7 @@ import {
   selectItemsByCategory,
   selectMenuListsOrdered,
 } from "@/store/menu-store";
+import { activeMenuTags, menuTagLabel } from "@/lib/menu-tags";
 import type { AdminMenuItem, AdminMenuList, MenuAvailability, MenuDay, MenuOrderChannel } from "@/lib/types";
 import { formatEuro, minPrice } from "@/lib/price-utils";
 import { ItemEditor } from "@/components/admin/item-editor";
@@ -102,6 +104,9 @@ export default function AdminMenuPage() {
   const toggleMenuListItem = useMenuStore((s) => s.toggleMenuListItem);
   const extraLists = useMenuStore((s) => s.extraLists);
   const applyExtraListToItemIds = useMenuStore((s) => s.applyExtraListToItemIds);
+  const reorderCategoryItems = useMenuStore((s) => s.reorderCategoryItems);
+  const customTags = useMenuStore((s) => s.customTags);
+  const volumeLabels = useMenuStore((s) => s.volumeLabels);
 
   const [view, setView] = useState<"items" | "menus">("items");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -112,6 +117,7 @@ export default function AdminMenuPage() {
   );
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [bulkListId, setBulkListId] = useState("");
+  const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -163,6 +169,17 @@ export default function AdminMenuPage() {
     if (filter === "available") out = out.filter((i) => i.available);
     if (filter === "unavailable") out = out.filter((i) => !i.available);
     return out;
+  }
+
+  function moveItemWithinCategory(categoryId: string, draggedId: string, targetId: string) {
+    if (draggedId === targetId) return;
+    const ordered = selectItemsByCategory(items, categoryId).map((item) => item.id);
+    const from = ordered.indexOf(draggedId);
+    const to = ordered.indexOf(targetId);
+    if (from < 0 || to < 0) return;
+    const [moved] = ordered.splice(from, 1);
+    ordered.splice(to, 0, moved);
+    reorderCategoryItems(categoryId, ordered);
   }
 
   return (
@@ -244,7 +261,7 @@ export default function AdminMenuPage() {
         </section>
       )}
 
-      {view === "items" && <MenuPhotoImporter categories={categories} isServices={isServices} />}
+      {view === "items" && <MenuPhotoImporter categories={categories} isServices={isServices} tenantId={tenantId} />}
 
       {view === "items" && <ExtraListsManager />}
 
@@ -719,8 +736,31 @@ export default function AdminMenuPage() {
                   catItems.map((it) => (
                     <li
                       key={it.id}
+                      draggable
+                      onDragStart={(event) => {
+                        setDraggingItemId(it.id);
+                        event.dataTransfer.effectAllowed = "move";
+                        event.dataTransfer.setData("text/plain", it.id);
+                      }}
+                      onDragOver={(event) => {
+                        if (draggingItemId) event.preventDefault();
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        const draggedId = event.dataTransfer.getData("text/plain") || draggingItemId;
+                        if (draggedId) moveItemWithinCategory(cat.id, draggedId, it.id);
+                        setDraggingItemId(null);
+                      }}
+                      onDragEnd={() => setDraggingItemId(null)}
                       className="group flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-pork-ink/5"
                     >
+                      <span
+                        className="cursor-grab touch-none text-pork-ink/30 active:cursor-grabbing"
+                        aria-label="Sposta"
+                        title="Trascina per ordinare"
+                      >
+                        <GripVertical size={18} />
+                      </span>
                       <input
                         type="checkbox"
                         className="h-4 w-4 shrink-0 accent-pork-red"
@@ -754,9 +794,12 @@ export default function AdminMenuPage() {
                         </p>
                         <p className="text-xs text-pork-ink/60">
                           da {formatEuro(minPrice(it.price))}
-                          {it.tags && it.tags.length > 0 && (
+                          {activeMenuTags(it).filter((tag) => tag !== "piccante").length > 0 && (
                             <span className="ml-1 text-pork-red">
-                              · {it.tags.join(", ")}
+                              · {activeMenuTags(it)
+                                .filter((tag) => tag !== "piccante")
+                                .map(menuTagLabel)
+                                .join(", ")}
                             </span>
                           )}
                         </p>
@@ -803,7 +846,12 @@ export default function AdminMenuPage() {
         })}
 
       {editing && (
-        <ItemEditor item={editing} onClose={() => setEditingId(null)} />
+        <ItemEditor
+          item={editing}
+          customTags={customTags}
+          volumeLabelPresets={volumeLabels}
+          onClose={() => setEditingId(null)}
+        />
       )}
     </div>
   );

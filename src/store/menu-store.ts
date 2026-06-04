@@ -27,6 +27,7 @@ import type {
   MenuTag,
   Table,
   TableSession,
+  TenantMenuTagDefinition,
 } from "@/lib/types";
 import type { MenuIngredient } from "@/lib/ingredients";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
@@ -250,6 +251,8 @@ export interface MenuState {
   categories: AdminMenuCategory[];
   items: AdminMenuItem[];
   menuLists: AdminMenuList[];
+  customTags: TenantMenuTagDefinition[];
+  volumeLabels: string[];
   /** Liste aggiunte condivise: modificate una volta, tutti i piatti collegati le vedono. */
   extraLists: ExtraList[];
   orders: Order[];
@@ -266,6 +269,9 @@ export interface MenuState {
   updateExtras: (id: string, extras: Extra[]) => void;
   updateImage: (id: string, image: string | undefined) => void;
   updateTags: (id: string, tags: MenuTag[]) => void;
+  addCustomTag: (label: string) => string;
+  addVolumeLabel: (label: string) => void;
+  reorderCategoryItems: (categoryId: string, orderedIds: string[]) => void;
   addExtraList: (name: string) => string;
   updateExtraList: (id: string, list: ExtraList) => void;
   removeExtraList: (id: string) => void;
@@ -301,6 +307,52 @@ export interface MenuState {
   setTenantSeed: (tenantId: string) => void;
 }
 
+function slugifyTag(label: string): string {
+  return label
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+}
+
+function mergeCustomTags(
+  explicit: TenantMenuTagDefinition[] | undefined,
+  items: AdminMenuItem[],
+): TenantMenuTagDefinition[] {
+  const builtIn = new Set(["firma", "piccante", "veg", "novita"]);
+  const byId = new Map<string, TenantMenuTagDefinition>();
+  for (const tag of explicit ?? []) {
+    if (tag.id && tag.label && !builtIn.has(tag.id)) byId.set(tag.id, tag);
+  }
+  for (const item of items) {
+    for (const tag of item.tags ?? []) {
+      if (builtIn.has(tag)) continue;
+      byId.set(tag, byId.get(tag) ?? { id: tag, label: tag });
+    }
+  }
+  return [...byId.values()].sort((a, b) => a.label.localeCompare(b.label, "it"));
+}
+
+function mergeVolumeLabels(
+  explicit: string[] | undefined,
+  items: AdminMenuItem[],
+): string[] {
+  const labels = new Set((explicit ?? []).map((label) => label.trim()).filter(Boolean));
+  for (const item of items) {
+    if (item.price.kind !== "volume") continue;
+    const variants = item.price.variants?.length
+      ? item.price.variants
+      : [item.price.small, item.price.large];
+    for (const variant of variants) {
+      if (variant.label.trim()) labels.add(variant.label.trim());
+    }
+  }
+  return [...labels].sort((a, b) => a.localeCompare(b, "it"));
+}
+
 function seedTables(): Table[] {
   const now = Date.now();
   return [1, 2, 3, 4, 5, 6].map((n, i) => ({
@@ -320,6 +372,8 @@ function buildInitial(tenantId = DEFAULT_MENU_TENANT_ID) {
     categories,
     items,
     menuLists: seedMenuLists(tenantId, categories, items),
+    customTags: mergeCustomTags(undefined, items),
+    volumeLabels: mergeVolumeLabels(undefined, items),
     extraLists: mergeExtraListsWithDefaults(undefined, DEFAULT_EXTRA_LISTS),
     orders: [] as Order[],
     lastOrderSeq: 0,
@@ -429,6 +483,40 @@ export const useMenuStore = create<MenuState>()(
           items: s.items.map((it) => (it.id === id ? { ...it, tags } : it)),
         })),
 
+      addCustomTag: (label) => {
+        const cleaned = label.trim();
+        const id = slugifyTag(cleaned);
+        if (!cleaned || !id) return "";
+        set((s) => ({
+          customTags: s.customTags.some((tag) => tag.id === id)
+            ? s.customTags
+            : [...s.customTags, { id, label: cleaned }],
+        }));
+        return id;
+      },
+
+      addVolumeLabel: (label) => {
+        const cleaned = label.trim();
+        if (!cleaned) return;
+        set((s) => ({
+          volumeLabels: s.volumeLabels.includes(cleaned)
+            ? s.volumeLabels
+            : [...s.volumeLabels, cleaned].sort((a, b) => a.localeCompare(b, "it")),
+        }));
+      },
+
+      reorderCategoryItems: (categoryId, orderedIds) =>
+        set((s) => {
+          const orderById = new Map(orderedIds.map((id, index) => [id, index]));
+          return {
+            items: s.items.map((item) =>
+              item.categoryId === categoryId && orderById.has(item.id)
+                ? { ...item, order: orderById.get(item.id)! }
+                : item,
+            ),
+          };
+        }),
+
       addItem: (categoryId, draft) => {
         const id =
           draft.id ??
@@ -442,6 +530,7 @@ export const useMenuStore = create<MenuState>()(
           description: draft.description,
           price: draft.price ?? { kind: "single", value: 0 },
           tags: draft.tags,
+          tagMeta: draft.tagMeta,
           piccanteLevel: draft.piccanteLevel,
           allergens: draft.allergens,
           abv: draft.abv,
@@ -476,6 +565,7 @@ export const useMenuStore = create<MenuState>()(
             description: draft.description,
             price: draft.price ?? { kind: "single", value: 0 },
             tags: draft.tags,
+            tagMeta: draft.tagMeta,
             piccanteLevel: draft.piccanteLevel,
             allergens: draft.allergens,
             abv: draft.abv,
@@ -575,6 +665,8 @@ export const useMenuStore = create<MenuState>()(
                 }))
               : seedMenuLists(s.currentTenantId, bundle.categories, bundle.items),
           extraLists: mergeExtraListsWithDefaults(bundle.extraLists, DEFAULT_EXTRA_LISTS),
+          customTags: mergeCustomTags(bundle.customTags, bundle.items),
+          volumeLabels: mergeVolumeLabels(bundle.volumeLabels, bundle.items),
         })),
 
       addOrder: (o) => {

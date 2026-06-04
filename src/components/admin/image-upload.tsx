@@ -7,9 +7,11 @@ import { ADMIN_TOKEN_HEADER, getAdminPassword } from "@/lib/admin-auth";
 
 export function ImageUpload({
   value,
+  tenantId,
   onChange,
 }: {
   value?: string;
+  tenantId?: string;
   onChange: (path: string | undefined) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -22,6 +24,7 @@ export function ImageUpload({
     try {
       const fd = new FormData();
       fd.append("file", file);
+      if (tenantId) fd.append("tenantId", tenantId);
       const res = await fetch("/api/upload", {
         method: "POST",
         headers: {

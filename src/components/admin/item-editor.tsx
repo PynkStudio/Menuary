@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Save, X } from "lucide-react";
+import { Plus, Save, X } from "lucide-react";
 import { resolveExtrasForItem } from "@/lib/extra-lists";
 import type {
   AdminMenuItem,
@@ -9,6 +9,7 @@ import type {
   MenuAllergen,
   MenuTag,
   PiccanteLevel,
+  TenantMenuTagDefinition,
 } from "@/lib/types";
 import { ALLERGEN_OPTIONS } from "@/lib/allergens";
 import { PriceEditor } from "./price-editor";
@@ -16,6 +17,7 @@ import { ImageUpload } from "./image-upload";
 import { useMenuStore } from "@/store/menu-store";
 import { formatEuro } from "@/lib/price-utils";
 import { normalizeMenuIngredients, type MenuIngredient } from "@/lib/ingredients";
+import { defaultExpiryDate, isBuiltInMenuTag } from "@/lib/menu-tags";
 
 const TAGS: { key: MenuTag; label: string }[] = [
   { key: "firma", label: "Firma" },
@@ -26,14 +28,21 @@ const TAGS: { key: MenuTag; label: string }[] = [
 
 export function ItemEditor({
   item,
+  customTags = [],
+  volumeLabelPresets = [],
   onClose,
 }: {
   item: AdminMenuItem;
+  customTags?: TenantMenuTagDefinition[];
+  volumeLabelPresets?: string[];
   onClose: () => void;
 }) {
   const updateItem = useMenuStore((s) => s.updateItem);
   const removeItem = useMenuStore((s) => s.removeItem);
   const extraLists = useMenuStore((s) => s.extraLists);
+  const addCustomTag = useMenuStore((s) => s.addCustomTag);
+  const addVolumeLabel = useMenuStore((s) => s.addVolumeLabel);
+  const tenantId = useMenuStore((s) => s.currentTenantId);
 
   const [draft, setDraft] = useState<AdminMenuItem>(item);
   const [extrasMode, setExtrasMode] = useState<"none" | "list" | "inline">(
@@ -48,6 +57,7 @@ export function ItemEditor({
   const [ingInput, setIngInput] = useState("");
   const [extraName, setExtraName] = useState("");
   const [extraPrice, setExtraPrice] = useState("");
+  const [newTagName, setNewTagName] = useState("");
 
   function save() {
     if (extrasMode === "list") {
@@ -148,11 +158,28 @@ export function ItemEditor({
     if (t === "piccante") return;
     setDraft((d) => {
       const has = d.tags?.includes(t);
+      const nextTags = has ? d.tags?.filter((x) => x !== t) : [...(d.tags ?? []), t];
+      const nextMeta = { ...(d.tagMeta ?? {}) };
+      if (t === "novita" && !has) {
+        nextMeta.novita = { expiresAt: nextMeta.novita?.expiresAt ?? defaultExpiryDate(14) };
+      }
+      if (has) delete nextMeta[t];
       return {
         ...d,
-        tags: has ? d.tags?.filter((x) => x !== t) : [...(d.tags ?? []), t],
+        tags: nextTags,
+        tagMeta: Object.keys(nextMeta).length ? nextMeta : undefined,
       };
     });
+  }
+
+  function addAndToggleCustomTag() {
+    const id = addCustomTag(newTagName);
+    if (!id) return;
+    setDraft((d) => ({
+      ...d,
+      tags: d.tags?.includes(id) ? d.tags : [...(d.tags ?? []), id],
+    }));
+    setNewTagName("");
   }
 
   /** Tocchi consecutivi: off → 1 → 2 → 3 → 4 → off. */
@@ -241,6 +268,8 @@ export function ItemEditor({
               <Field label="Prezzo">
                 <PriceEditor
                   value={draft.price}
+                  volumeLabelPresets={volumeLabelPresets}
+                  onAddVolumeLabelPreset={addVolumeLabel}
                   onChange={(p) => setDraft({ ...draft, price: p })}
                 />
               </Field>
@@ -476,6 +505,71 @@ export function ItemEditor({
                     );
                   })}
                 </div>
+                {draft.tags?.includes("novita") && (
+                  <label className="mt-3 block">
+                    <span className="mb-1 block text-[10px] font-black uppercase tracking-wide text-pork-ink/45">
+                      Scadenza novità
+                    </span>
+                    <input
+                      type="date"
+                      value={draft.tagMeta?.novita?.expiresAt ?? defaultExpiryDate(14)}
+                      onChange={(event) =>
+                        setDraft((d) => ({
+                          ...d,
+                          tagMeta: {
+                            ...(d.tagMeta ?? {}),
+                            novita: { expiresAt: event.target.value || undefined },
+                          },
+                        }))
+                      }
+                      className="w-full rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
+                    />
+                  </label>
+                )}
+                {(customTags.length > 0 || draft.tags?.some((tag) => !isBuiltInMenuTag(tag))) && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {mergeTagDefinitions(customTags, draft.tags ?? []).map((tag) => {
+                      const active = draft.tags?.includes(tag.id);
+                      return (
+                        <button
+                          key={tag.id}
+                          type="button"
+                          onClick={() => toggleTag(tag.id)}
+                          className={
+                            "rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors " +
+                            (active
+                              ? "bg-pork-ink text-pork-cream"
+                              : "bg-pork-ink/5 text-pork-ink/60 hover:bg-pork-ink/10")
+                          }
+                        >
+                          {tag.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type="text"
+                    value={newTagName}
+                    onChange={(event) => setNewTagName(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        addAndToggleCustomTag();
+                      }
+                    }}
+                    placeholder="Nuovo tag personalizzato"
+                    className="min-w-0 flex-1 rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
+                  />
+                  <button
+                    type="button"
+                    onClick={addAndToggleCustomTag}
+                    className="inline-flex items-center gap-1 rounded-xl bg-pork-ink px-3 text-sm font-bold text-pork-cream"
+                  >
+                    <Plus size={14} /> Tag
+                  </button>
+                </div>
               </Field>
 
               <Field label="Allergeni (UE 1169/2011)">
@@ -523,6 +617,7 @@ export function ItemEditor({
               <Field label="Foto">
                 <ImageUpload
                   value={draft.image}
+                  tenantId={tenantId}
                   onChange={(p) => setDraft({ ...draft, image: p })}
                 />
               </Field>
@@ -593,4 +688,16 @@ function Field({
       {children}
     </div>
   );
+}
+
+function mergeTagDefinitions(
+  customTags: TenantMenuTagDefinition[],
+  activeTags: MenuTag[],
+): TenantMenuTagDefinition[] {
+  const out = new Map<string, TenantMenuTagDefinition>();
+  for (const tag of customTags) out.set(tag.id, tag);
+  for (const tag of activeTags) {
+    if (!isBuiltInMenuTag(tag)) out.set(tag, out.get(tag) ?? { id: tag, label: tag });
+  }
+  return [...out.values()].sort((a, b) => a.label.localeCompare(b.label, "it"));
 }

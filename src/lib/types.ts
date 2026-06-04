@@ -45,6 +45,11 @@ export type AdminMenuItem = MenuItem & {
   extras?: Extra[];
 };
 
+export type TenantMenuTagDefinition = {
+  id: string;
+  label: string;
+};
+
 export type { ExtraList } from "./extra-lists";
 
 export type AdminMenuCategory = Omit<MenuCategory, "items"> & {

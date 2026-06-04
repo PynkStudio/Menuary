@@ -156,30 +156,28 @@
 
   /* ============================================================
      Gestione admin — modulo condiviso della piattaforma.
-     Stile platform-neutral (dark) IDENTICO per tutti i tenant.
-     L'unico elemento variabile è l'accent (--ga-accent), passato
-     dal layout via inline style dal tenant.theme.red, ma il sistema
-     di token NON eredita né nomi né valori da nessun tenant specifico.
+     I token --ga-* sono una traduzione del tema tenant corrente:
+     colori, superfici e font arrivano dal CSS/registry del tenant.
      ============================================================ */
   .gestione-admin {
-    --ga-bg:          #0A0A0B;
-    --ga-surface:     #131316;
-    --ga-surface-2:   #18181B;
-    --ga-surface-3:   #232329;
-    --ga-border:      rgba(255, 255, 255, 0.08);
-    --ga-border-soft: rgba(255, 255, 255, 0.05);
-    --ga-ink:         #F5F5F7;
-    --ga-ink-muted:   rgba(245, 245, 247, 0.6);
-    --ga-ink-faint:   rgba(245, 245, 247, 0.4);
-    --ga-ink-dim:     rgba(245, 245, 247, 0.25);
-    --ga-accent:      #2563EB;        /* override via inline style dal layout */
-    --ga-accent-soft: rgba(37, 99, 235, 0.14);
-    --ga-accent-ring: rgba(37, 99, 235, 0.32);
-    --ga-accent-ink:  #0A0A0B;        /* testo sopra l'accent (sticker, pill) */
+    --ga-bg:          rgb(var(--tenant-cream));
+    --ga-surface:     color-mix(in srgb, rgb(var(--tenant-cream)) 72%, white);
+    --ga-surface-2:   color-mix(in srgb, rgb(var(--tenant-cream)) 54%, white);
+    --ga-surface-3:   color-mix(in srgb, rgb(var(--tenant-peach)) 42%, white);
+    --ga-border:      rgb(var(--tenant-ink) / 0.12);
+    --ga-border-soft: rgb(var(--tenant-ink) / 0.07);
+    --ga-ink:         rgb(var(--tenant-ink));
+    --ga-ink-muted:   rgb(var(--tenant-ink) / 0.66);
+    --ga-ink-faint:   rgb(var(--tenant-ink) / 0.45);
+    --ga-ink-dim:     rgb(var(--tenant-ink) / 0.28);
+    --ga-accent:      rgb(var(--tenant-red));
+    --ga-accent-soft: rgb(var(--tenant-red) / 0.14);
+    --ga-accent-ring: rgb(var(--tenant-red) / 0.32);
+    --ga-accent-ink:  #FFFFFF;
     --ga-radius:      14px;
     --ga-radius-lg:   18px;
-    --ga-font-display: var(--ga-font-body);
-    --ga-font-body:   system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ga-font-display: var(--font-display), var(--ga-font-body);
+    --ga-font-body:   var(--font-body), system-ui, -apple-system, "Segoe UI", sans-serif;
 
     min-height: 100vh;
     background: var(--ga-bg);
@@ -189,12 +187,101 @@
 
   .gestione-admin a { color: inherit; }
 
+  .gestione-admin[data-gestione-tenant="doca"] {
+    --ga-bg:          var(--doca-paper);
+    --ga-surface:     var(--doca-cream-soft);
+    --ga-surface-2:   color-mix(in srgb, var(--doca-paper) 72%, white);
+    --ga-surface-3:   var(--doca-cream);
+    --ga-border:      rgba(39, 21, 13, 0.14);
+    --ga-border-soft: rgba(39, 21, 13, 0.08);
+    --ga-ink:         var(--doca-ink);
+    --ga-ink-muted:   rgba(39, 21, 13, 0.66);
+    --ga-ink-faint:   rgba(39, 21, 13, 0.45);
+    --ga-ink-dim:     rgba(39, 21, 13, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: var(--doca-font-display);
+    --ga-font-body:    var(--doca-font-body);
+  }
+
+  .gestione-admin[data-gestione-tenant="doca"] .ga-header {
+    background:
+      linear-gradient(90deg, rgba(132, 35, 22, 0.05) 1px, transparent 1px),
+      color-mix(in srgb, var(--doca-paper) 88%, transparent);
+    background-size: 56px 56px, auto;
+  }
+
+  .gestione-admin[data-gestione-tenant="junior-food"] {
+    --ga-bg:          #FFFFFF;
+    --ga-surface:     #FFFFFF;
+    --ga-surface-2:   var(--jf-soft);
+    --ga-surface-3:   var(--jf-cream);
+    --ga-border:      var(--jf-line);
+    --ga-border-soft: rgba(17, 17, 17, 0.07);
+    --ga-ink:         var(--jf-ink);
+    --ga-ink-muted:   rgba(17, 17, 17, 0.66);
+    --ga-ink-faint:   rgba(17, 17, 17, 0.45);
+    --ga-ink-dim:     rgba(17, 17, 17, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: Georgia, "Times New Roman", serif;
+    --ga-font-body:    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .gestione-admin[data-gestione-tenant="junior-food"] .ga-header {
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .gestione-admin[data-gestione-tenant="nom-sushi"] {
+    --ga-bg:          var(--nom-rice);
+    --ga-surface:     var(--nom-paper);
+    --ga-surface-2:   color-mix(in srgb, var(--nom-rice) 56%, white);
+    --ga-surface-3:   color-mix(in srgb, var(--nom-ginger) 24%, white);
+    --ga-border:      var(--nom-line);
+    --ga-border-soft: rgba(23, 40, 32, 0.07);
+    --ga-ink:         var(--nom-ink);
+    --ga-ink-muted:   rgba(23, 40, 32, 0.66);
+    --ga-ink-faint:   rgba(23, 40, 32, 0.45);
+    --ga-ink-dim:     rgba(23, 40, 32, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: var(--font-menuary-display), Fraunces, Georgia, serif;
+    --ga-font-body:    var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+  }
+
+  .gestione-admin[data-gestione-tenant="nom-sushi"] .ga-header {
+    background:
+      linear-gradient(90deg, rgba(23, 40, 32, 0.035) 1px, transparent 1px),
+      color-mix(in srgb, var(--nom-rice) 88%, transparent);
+    background-size: 38px 38px, auto;
+  }
+
+  .gestione-admin[data-gestione-tenant="kimos"] {
+    --ga-bg:          var(--km-paper);
+    --ga-surface:     var(--km-card);
+    --ga-surface-2:   color-mix(in srgb, var(--km-paper) 46%, white);
+    --ga-surface-3:   color-mix(in srgb, var(--km-warm) 24%, white);
+    --ga-border:      var(--km-line);
+    --ga-border-soft: rgba(23, 21, 18, 0.08);
+    --ga-ink:         var(--km-ink);
+    --ga-ink-muted:   rgba(23, 21, 18, 0.66);
+    --ga-ink-faint:   rgba(23, 21, 18, 0.45);
+    --ga-ink-dim:     rgba(23, 21, 18, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: "Arial Black", Impact, Haettenschweiler, sans-serif;
+    --ga-font-body:    "Manrope", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .gestione-admin[data-gestione-tenant="kimos"] .ga-header {
+    background:
+      linear-gradient(90deg, rgba(23, 21, 18, 0.035) 1px, transparent 1px),
+      color-mix(in srgb, var(--km-paper) 88%, transparent);
+    background-size: 2rem 2rem, auto;
+  }
+
   /* Layout primitives */
   .ga-header {
     position: sticky;
     top: 0;
     z-index: 40;
-    background: rgba(10, 10, 11, 0.82);
+    background: color-mix(in srgb, var(--ga-bg) 86%, transparent);
     backdrop-filter: blur(14px) saturate(140%);
     border-bottom: 1px solid var(--ga-border);
   }
@@ -258,7 +345,7 @@
     cursor: pointer;
     transition: border-color 160ms ease, background 160ms ease;
   }
-  .ga-logout:hover { border-color: var(--ga-accent-ring); background: rgba(255,255,255,0.03); }
+  .ga-logout:hover { border-color: var(--ga-accent-ring); background: var(--ga-surface); }
 
   .ga-location-select {
     appearance: none;
@@ -288,7 +375,7 @@
     color: var(--ga-ink-muted);
     transition: color 160ms ease, background 160ms ease;
   }
-  .ga-nav-link:hover { color: var(--ga-ink); background: rgba(255,255,255,0.04); }
+  .ga-nav-link:hover { color: var(--ga-ink); background: var(--ga-surface); }
   .ga-nav-link[data-active="true"] {
     background: var(--ga-ink);
     color: var(--ga-bg);
@@ -1065,7 +1152,7 @@
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid var(--ga-border);
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--ga-surface);
     color: var(--ga-ink);
     font-size: 13px;
     outline: none;
@@ -1076,7 +1163,7 @@
   .ga-select:focus,
   .ga-textarea:focus {
     border-color: var(--ga-accent-ring);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--ga-surface-2);
   }
   .ga-input:disabled,
   .ga-select:disabled,
@@ -1112,10 +1199,10 @@
     transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, opacity 160ms ease;
   }
   .ga-btn:hover:not(:disabled) { transform: translateY(-1px); }
-  .ga-btn-primary { background: var(--ga-accent); color: #0A0A0B; border-color: var(--ga-accent); }
+  .ga-btn-primary { background: var(--ga-accent); color: var(--ga-accent-ink); border-color: var(--ga-accent); }
   .ga-btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
   .ga-btn-ghost { background: transparent; color: var(--ga-ink); border-color: var(--ga-border); }
-  .ga-btn-ghost:hover:not(:disabled) { border-color: var(--ga-accent-ring); background: rgba(255,255,255,0.03); }
+  .ga-btn-ghost:hover:not(:disabled) { border-color: var(--ga-accent-ring); background: var(--ga-surface); }
   .ga-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .ga-pill-link {

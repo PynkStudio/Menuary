@@ -64,6 +64,7 @@ Regole per le IA che lavorano sulla repo: vedi [CLAUDE.md](CLAUDE.md).
 2. **Moduli logici condivisi**: l'unico riuso ammesso è in `components/modules/` e `lib/`. Modifiche ai moduli richiedono autorizzazione esplicita e devono restare retrocompatibili per tutti i tenant.
 3. **Isolamento dati**: i dati di un tenant (listino, prodotti, prenotazioni) non compaiono mai in un altro. Nessun fallback cross-tenant.
 4. **Multilingua e SEO**: ogni tenant nasce predisposto per URL localizzati, copy traducibili, canonical, `hreflang` con `x-default` e sitemap localizzata. Usa Doca come riferimento tecnico, senza copiarne UI o contenuti.
+5. **Gestione tenant completa**: il CSS del tenant deve coprire anche `gestione.<tenant_domain>` e `demo.<vertical>/<tenant_slug>/gestione` per tutti i campi, stati e moduli della piattaforma, inclusi quelli disattivi al momento del rilascio. Un modulo deve poter essere abilitato in futuro senza dover riaprire il CSS del tenant.
 
 ## Aggiungere un nuovo tenant
 
@@ -72,7 +73,7 @@ Regole per le IA che lavorano sulla repo: vedi [CLAUDE.md](CLAUDE.md).
 3. Predisponi il multilingua sul pattern Doca: `tenant-locales.ts`, `(slug)-i18n.ts`, URL e sitemap localizzati, canonical e `hreflang`.
 4. Verifica/aggiorna il verticale in `src/lib/vertical.ts` (e `platform.ts` se serve).
 5. Crea i componenti UI in `src/components/tenants/(slug)/` con prefisso univoco (`<BizeryHero />`, non `<Hero />`).
-6. Crea i token CSS in `src/styles/tenants/(slug).css`.
+6. Crea i token CSS in `src/styles/tenants/(slug).css`, includendo sempre gli override `.gestione-admin[data-gestione-tenant="(slug)"]` per tutti i campi e per tutti i moduli disponibili, attivi o disattivi.
 7. Asset in `public/(slug)/`.
 8. Eventuali route dedicate in `src/app/(slug)/`.
 

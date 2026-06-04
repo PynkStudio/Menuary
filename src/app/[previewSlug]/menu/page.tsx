@@ -29,7 +29,7 @@ export default async function PreviewTenantMenu({
         data-tenant-surface={tenant.id}
         style={themeVars as React.CSSProperties}
       >
-        <MenuPageShell />
+        <MenuPageShell hasGlobalHeader={false} />
       </div>
     </TenantProvider>
   );

@@ -39,6 +39,13 @@ export function priceVariants(price: PriceFormat): PriceVariant[] {
         { key: "per4", label: "4 persone", price: price.per4 },
       ];
     case "volume":
+      if (price.variants?.length) {
+        return price.variants.map((variant) => ({
+          key: variant.id,
+          label: variant.label,
+          price: variant.price,
+        }));
+      }
       return [
         { key: "small", label: price.small.label, price: price.small.price },
         { key: "large", label: price.large.label, price: price.large.price },

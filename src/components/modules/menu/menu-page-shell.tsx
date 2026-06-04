@@ -10,7 +10,11 @@ import { PersonalizedMenuHint } from "@/components/modules/menu/personalized-men
 import { useTenant } from "@/components/core/tenant-provider";
 import { DocaLanguageSelector } from "@/components/tenants/doca/doca-language-selector";
 
-export function MenuPageShell() {
+export function MenuPageShell({
+  hasGlobalHeader = true,
+}: {
+  hasGlobalHeader?: boolean;
+}) {
   const tenant = useTenant();
   const isFaak = tenant.id === "faak";
   const isDoca = tenant.id === "doca";
@@ -89,7 +93,7 @@ export function MenuPageShell() {
       </section>
 
       <Suspense fallback={null}>
-        <InteractiveMenu />
+        <InteractiveMenu hasGlobalHeader={hasGlobalHeader} />
       </Suspense>
 
       <DeliveryStrip />

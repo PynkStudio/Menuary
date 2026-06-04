@@ -359,7 +359,7 @@ export function ActivitySettingsPanel() {
               key={day.label}
               className="grid gap-3 rounded-xl p-3 sm:grid-cols-[120px_120px_1fr]"
               style={{
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--ga-surface)",
                 border: "1px solid var(--ga-border-soft)",
               }}
             >

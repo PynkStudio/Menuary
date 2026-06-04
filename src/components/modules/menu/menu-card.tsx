@@ -6,11 +6,9 @@ import { SpicyLevelBadge } from "@/components/modules/menu/spicy-level-badge";
 import { getResolvedPiccanteLevel } from "@/lib/piccante";
 import { PriceSticker } from "@/components/modules/menu/price-sticker";
 import { cn } from "@/lib/utils";
+import { activeMenuTags, isBuiltInMenuTag, menuTagLabel } from "@/lib/menu-tags";
 
-const tagMeta: Record<
-  NonNullable<MenuItem["tags"]>[number],
-  { label: string; icon: React.ReactNode; className: string }
-> = {
+const tagMeta: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
   firma: {
     label: "Firma",
     icon: <Star size={12} />,
@@ -62,18 +60,19 @@ function formatPriceChunks(price: MenuItem["price"]): {
         },
       ];
     case "volume":
-      return [
-        {
-          main: `€ ${price.small.price.toFixed(2).replace(".", ",")}`,
-          sub: price.small.label,
-          variant: "mustard",
-        },
-        {
-          main: `€ ${price.large.price.toFixed(2).replace(".", ",")}`,
-          sub: price.large.label,
-          variant: "red",
-        },
-      ];
+      return (price.variants?.length ? price.variants : [price.small, price.large]).map(
+        (variant, index) => ({
+          main: `€ ${variant.price.toFixed(2).replace(".", ",")}`,
+          sub: variant.label,
+          variant: (index % 4 === 0
+            ? "mustard"
+            : index % 4 === 1
+              ? "red"
+              : index % 4 === 2
+                ? "green"
+                : "pink") as "mustard" | "red" | "green" | "pink",
+        }),
+      );
   }
 }
 
@@ -157,10 +156,14 @@ export function MenuCard({
           )}
           <AllergenBadges allergens={item.allergens} />
           {spicyLevel ? <SpicyLevelBadge level={spicyLevel} /> : null}
-          {item.tags
+          {activeMenuTags(item)
             ?.filter((t) => t !== "piccante")
             .map((t) => {
-              const meta = tagMeta[t];
+              const meta = tagMeta[t] ?? {
+                label: menuTagLabel(t),
+                icon: <Star size={12} />,
+                className: "bg-pork-ink text-pork-cream",
+              };
               return (
                 <span
                   key={t}
@@ -170,7 +173,7 @@ export function MenuCard({
                   )}
                 >
                   {meta.icon}
-                  {meta.label}
+                  {isBuiltInMenuTag(t) ? meta.label : menuTagLabel(t)}
                 </span>
               );
             })}

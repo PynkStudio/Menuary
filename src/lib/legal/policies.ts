@@ -58,7 +58,7 @@ export function buildPrivacySections(
     orderBullets.push(
       `ordine al tavolo (QR o codice sala): associazione del dispositivo al tavolo o alla sessione, contenuto dell’ordine, eventuali coperti dichiarati${
         f.dinerSeparationAtTables
-          ? "; nominativo o nickname per commensali distinti sulla stessa sessione"
+          ? "; nominativo o nickname per distinguere i commensali nella stessa sessione"
           : ""
       };`,
     );
@@ -70,10 +70,12 @@ export function buildPrivacySections(
       id: "finalita",
       title: "Quali dati trattiamo e perché",
       body: [
-        "Trattiamo dati personali solo nella misura necessaria al funzionamento del sito informativo, alla gestione delle richieste di contatto e — se attivate — alle funzioni digitali di ordinazione descritte di seguito.",
+        hasAnyOrdering(f)
+          ? "Trattiamo dati personali solo nella misura necessaria al funzionamento del sito, alla gestione delle richieste di contatto e ai servizi digitali di consultazione e ordinazione offerti dal locale."
+          : "Trattiamo dati personali solo nella misura necessaria al funzionamento del sito informativo e alla gestione delle richieste inviate attraverso i canali di contatto pubblicati.",
         hasAnyOrdering(f)
           ? "Le basi giuridiche prevalenti sono l’esecuzione di misure precontrattuali o contrattuali su richiesta dell’interessato (ordinazione), il legittimo interesse a gestire il locale in modo ordinato e sicuro, e il consenso ove richiesto per comunicazioni commerciali facoltative."
-          : "In assenza di ordinazione digitale dal sito, prevalgono il legittimo interesse alla gestione del rapporto con la clientela (richieste, prenotazioni tramite canali dedicati come WhatsApp), l’eventuale consenso per comunicazioni promozionali e gli obblighi di legge.",
+          : "Le basi giuridiche prevalenti sono il legittimo interesse alla gestione del rapporto con la clientela, l’eventuale consenso per comunicazioni promozionali e gli obblighi di legge applicabili.",
       ],
       bullets: [
         "dati tecnici minimi della navigazione sul sito e identificatori di sessione tramite tecnologie sul dispositivo (cookie o spazio locale del browser), necessari al funzionamento delle pagine;",
@@ -86,8 +88,8 @@ export function buildPrivacySections(
       title: "Modalità del trattamento",
       body: [
         hasAnyOrdering(f)
-          ? "Molte informazioni degli ordini e delle sessioni sono memorizzate sul tuo browser (storage locale) e nei dati gestiti dall’applicazione per essere mostrate a cucina e cassa nell’ambito dell’organizzazione del locale. Si tratta di una soluzione tecnica integrata nel sito; il titolare definisce quali servizi sono attivi (asporto, tavolo, ecc.)."
-          : "Il sito è prevalentemente informativo: non è attiva l’ordinazione digitale tramite questo sito secondo la configurazione corrente; restano possibili contatto tramite i canali pubblicati (es. WhatsApp, telefono).",
+          ? "Alcune informazioni degli ordini e delle sessioni sono memorizzate sul browser (storage locale) e nei dati gestiti dall’applicazione per consentire l’invio dell’ordine e il coordinamento operativo del servizio."
+          : "I dati vengono trattati attraverso il sito e i canali di contatto indicati dal locale, con strumenti tecnici proporzionati alle richieste ricevute.",
         "Non vendiamo i tuoi dati personali. Eventuali fornitori tecnici (es. hosting del sito) operano come responsabili o incaricati secondo accordi conformi alla normativa.",
       ],
     },
@@ -97,7 +99,7 @@ export function buildPrivacySections(
       body: [
         hasAnyOrdering(f)
           ? "I dati legati agli ordini sono conservati per il tempo necessario a gestire il servizio in sala o al banco e per gli adempimenti civilistici e fiscali applicabili al caso."
-          : "Le richieste di contatto sono conservate per il tempo necessario a evadere la pratica.",
+          : "Le richieste di contatto sono conservate per il tempo necessario a evadere la pratica e gestire gli eventuali adempimenti collegati.",
         "I dati tecnici delle visite sul sito non sono conservati per profilazione invasiva al di fuori degli strumenti eventualmente richiesti dal gestore tecnico dell’hosting.",
       ],
     },
@@ -117,7 +119,7 @@ export function buildPrivacySections(
       id: "cucina",
       title: "Monitor di cucina",
       body: [
-        "Se la funzione è attiva nel locale, gli ordini confermati possono essere visualizzati sullo schermo cucina dedicato allo staff per preparare i piatti e coordinare il servizio. Tale trattamento è finalizzato alla gestione operativa del rapporto contrattuale con il cliente che ordina.",
+        "Gli ordini confermati possono essere visualizzati sullo schermo cucina dedicato allo staff per preparare i piatti e coordinare il servizio. Tale trattamento è finalizzato alla gestione operativa del rapporto contrattuale con il cliente che ordina.",
       ],
     });
   }
@@ -138,7 +140,9 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
     );
     if (f.allowTableOrders) {
       techLines.push(
-        "informazioni sulla sessione al tavolo (codice sala, eventualmente nickname dei commensali se la modalità è attiva);",
+        f.dinerSeparationAtTables
+          ? "informazioni sulla sessione al tavolo (codice sala e nickname dei commensali);"
+          : "informazioni sulla sessione al tavolo (codice sala);",
       );
     }
   }
@@ -149,7 +153,7 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
       title: "Informazioni sulle tecnologie sul dispositivo",
       body: [
         "Questo sito utilizza, oltre ai cookie classici ove il browser li imposti automaticamente per la sessione, anche lo «spazio locale» del browser (local/session storage) per funzionare senza server dedicato alla gestione account.",
-        "La tabella sintetizza le tipologie secondo lo stato dei servizi attivati dall’attività (impostazioni del gestore del locale). Puoi sempre cancellare i dati tramite le impostazioni del browser.",
+        "Le tecnologie utilizzate servono a rendere disponibili le funzioni richieste dall’utente e a mantenere stabile l’esperienza di navigazione. Puoi sempre cancellare i dati tramite le impostazioni del browser.",
       ],
     },
     {
@@ -166,7 +170,7 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
       body: [
         hasAnyOrdering(f)
           ? "Senza queste tecnologie non è possibile completare il flusso di ordinazione sul dispositivo (carrello, invio ordine al locale)."
-          : "Con la configurazione attuale non è richiesto un carrello digitale sul sito; restano comunque necessarie alcune memorizzazioni minime per preferiti e corretta visualizzazione.",
+          : "Queste tecnologie consentono di ricordare preferenze essenziali, preferiti e impostazioni necessarie alla corretta visualizzazione del sito.",
       ],
     },
     {

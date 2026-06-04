@@ -87,6 +87,14 @@ const tenant = resolveTenantFromSlug(params.tenantSlug)  // da tenant-registry
 // verifica che l'utente autenticato possa accedere a questo tenant
 ```
 
+**CSS gestione tenant**
+
+Ogni tenant deve avere in `src/styles/tenants/[slug].css` anche il blocco
+`.gestione-admin[data-gestione-tenant="[slug]"]`, completo per tutti i campi,
+stati e moduli del gestionale. La copertura CSS non deve dipendere dai moduli
+attivi oggi: anche i moduli disattivi nei feature-flag iniziali devono risultare
+gia' brandizzati, cosi' possono essere abilitati in futuro senza modifiche CSS.
+
 ### 3. Enrollment flow (set-password per staff)
 
 `gestione.menuary.it/[slug]/set-password` deve:

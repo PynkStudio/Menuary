@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import type { MouseEvent } from "react";
-import { useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import type { KeyboardEvent, MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Flame, Heart, Leaf, Minus, Plus, Star, XCircle } from "lucide-react";
+import { Flame, Heart, Leaf, Minus, Plus, Star, X, XCircle } from "lucide-react";
 import type { AdminMenuItem } from "@/lib/types";
 import {
   priceVariants,
@@ -36,11 +37,11 @@ import { AllergenBadges } from "@/components/modules/menu/allergen-badges";
 import { SpicyLevelBadge } from "@/components/modules/menu/spicy-level-badge";
 import { getResolvedPiccanteLevel } from "@/lib/piccante";
 import { useMenuStore } from "@/store/menu-store";
+import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
+import { resolveExtrasForItem } from "@/lib/extra-lists";
+import { activeMenuTags, menuTagLabel } from "@/lib/menu-tags";
 
-const tagMeta: Record<
-  NonNullable<AdminMenuItem["tags"]>[number],
-  { label: string; icon: React.ReactNode; className: string }
-> = {
+const tagMeta: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
   firma: {
     label: "Firma",
     icon: <Star size={12} />,
@@ -63,7 +64,7 @@ const tagMeta: Record<
   },
 };
 
-const priceVariantColors: Array<"mustard" | "red"> = ["mustard", "red"];
+const priceVariantColors: Array<"mustard" | "red" | "green" | "pink"> = ["mustard", "red", "green", "pink"];
 
 export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
   const tenant = useTenant();
@@ -87,6 +88,7 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
   const [customizerOpen, setCustomizerOpen] = useState(false);
   const [bundleOpen, setBundleOpen] = useState(false);
   const [formatoOpen, setFormatoOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const lines = useCartStore((s) => s.lines);
   const addLine = useCartStore((s) => s.addLine);
@@ -138,6 +140,18 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
     }
   }
 
+  function handleCardKeyDown(e: KeyboardEvent<HTMLElement>) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    if ((e.target as HTMLElement).closest("button, a, input, select, textarea")) return;
+    e.preventDefault();
+    setDetailOpen(true);
+  }
+
+  function handleOrderFromDetail() {
+    setDetailOpen(false);
+    handleAddClick();
+  }
+
   function handleDecClick(e: MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     if (unavailable || !orderingAllowed || qtyInCart <= 0) return;
@@ -149,8 +163,13 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
 
   return (
     <article
+      role="button"
+      tabIndex={0}
+      aria-label={`Apri dettagli di ${item.name}`}
+      onClick={() => setDetailOpen(true)}
+      onKeyDown={handleCardKeyDown}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-pork-ink/5 transition-all",
+        "group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-pork-ink/5 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pork-red/35",
         unavailable
           ? "opacity-70"
           : "hover:-translate-y-1 hover:shadow-xl",
@@ -167,7 +186,10 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
           type="button"
           aria-label={isFav ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"}
           aria-pressed={isFav}
-          onClick={() => toggleFav(item.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFav(item.id);
+          }}
           className={cn(
             "absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all active:scale-90",
             isFav
@@ -223,10 +245,14 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
           )}
           <AllergenBadges allergens={item.allergens} />
           {spicyLevel ? <SpicyLevelBadge level={spicyLevel} /> : null}
-          {item.tags
+          {activeMenuTags(item)
             ?.filter((t) => t !== "piccante")
             .map((t) => {
-              const meta = tagMeta[t];
+              const meta = tagMeta[t] ?? {
+                label: menuTagLabel(t),
+                icon: <Star size={12} />,
+                className: "bg-pork-ink text-pork-cream",
+              };
               return (
                 <span
                   key={t}
@@ -312,7 +338,10 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
                   <button
                     ref={addBtnRef}
                     type="button"
-                    onClick={handleAddClick}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddClick();
+                    }}
                     className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-pork-ink text-pork-cream shadow-lg transition-all hover:bg-pork-red active:scale-90"
                     aria-label={`Aggiungi ${item.name} al carrello`}
                   >
@@ -333,6 +362,26 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
         </div>
       </div>
 
+      {detailOpen && (
+        <MenuItemDetailModal
+          item={item}
+          showPrices={showPrices}
+          showOrder={showAdd}
+          serviceNotes={serviceNotes}
+          extraLists={extraLists}
+          orderLabel={
+            hasMenuBundle(item)
+              ? "Scegli nel menu"
+              : hasOnlyPriceVariants(item, extraLists)
+                ? "Scegli formato"
+                : canCustomize
+                  ? "Personalizza"
+                  : "Aggiungi"
+          }
+          onClose={() => setDetailOpen(false)}
+          onOrder={handleOrderFromDetail}
+        />
+      )}
       {customizerOpen && (
         <ItemCustomizer
           item={item}
@@ -364,5 +413,232 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
         />
       )}
     </article>
+  );
+}
+
+function MenuItemDetailModal({
+  item,
+  showPrices,
+  showOrder,
+  serviceNotes,
+  extraLists,
+  orderLabel,
+  onClose,
+  onOrder,
+}: {
+  item: AdminMenuItem;
+  showPrices: boolean;
+  showOrder: boolean;
+  serviceNotes: ReturnType<typeof getMenuServiceNotes>;
+  extraLists: ReturnType<typeof useMenuStore.getState>["extraLists"];
+  orderLabel: string;
+  onClose: () => void;
+  onOrder: () => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+  const variants = priceVariants(item.price);
+  const ingredientRows = useMemo(
+    () => normalizeMenuIngredients(item.id, item.ingredients),
+    [item.id, item.ingredients],
+  );
+  const extras = useMemo(() => resolveExtrasForItem(item, extraLists), [item, extraLists]);
+  const spicyLevel = getResolvedPiccanteLevel(item);
+
+  useEffect(() => {
+    setMounted(true);
+    bodyScrollLock();
+    return () => bodyScrollUnlock();
+  }, []);
+
+  useEffect(() => {
+    function onKey(e: globalThis.KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
+      <div
+        className="flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-pork-cream shadow-2xl sm:max-h-[88dvh] sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {item.image ? (
+          <div className="relative aspect-[16/10] max-h-[42dvh] shrink-0 overflow-hidden bg-pork-ink/5">
+            <Image
+              src={item.image}
+              alt={item.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 640px"
+              className="object-cover"
+            />
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-pork-ink shadow-md transition hover:bg-pork-red hover:text-white"
+              aria-label="Chiudi"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        ) : null}
+
+        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-pork-ink/10 px-5 py-4">
+          <div className="min-w-0">
+            <p className="impact-title text-xs text-pork-red">Dettaglio piatto</p>
+            <h2 className="headline text-3xl leading-tight text-pork-ink">{item.name}</h2>
+            {item.description && (
+              <p className="mt-2 text-sm leading-relaxed text-pork-ink/70">
+                {item.description}
+              </p>
+            )}
+          </div>
+          {!item.image && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full hover:bg-pork-ink/10 active:bg-pork-ink/15"
+              aria-label="Chiudi"
+            >
+              <X size={20} />
+            </button>
+          )}
+        </header>
+
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-y-contain px-5 py-4">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {item.abv && (
+              <span className="chip bg-pork-ink text-pork-cream">{item.abv} vol.</span>
+            )}
+            <AllergenBadges allergens={item.allergens} />
+            {spicyLevel ? <SpicyLevelBadge level={spicyLevel} /> : null}
+            {item.tags
+              ?.filter((t) => t !== "piccante")
+              .map((t) => {
+                const meta = tagMeta[t];
+                return (
+                  <span
+                    key={t}
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide",
+                      meta.className,
+                    )}
+                  >
+                    {meta.icon}
+                    {meta.label}
+                  </span>
+                );
+              })}
+          </div>
+
+          {showPrices && (
+            <DetailSection title="Prezzo">
+              <div className="flex flex-wrap gap-2">
+                {variants.map((v) => (
+                  <div
+                    key={v.key}
+                    className="rounded-2xl border border-pork-ink/10 bg-white px-4 py-3"
+                  >
+                    <p className="impact-title text-xs text-pork-ink/55">
+                      {v.label ?? "Standard"}
+                    </p>
+                    <p className="headline text-2xl text-pork-red">
+                      {formatEuro(v.price)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </DetailSection>
+          )}
+
+          {ingredientRows.length > 0 && (
+            <DetailSection title="Ingredienti">
+              <p className="text-sm leading-relaxed text-pork-ink/70">
+                {formatIngredientsLine(ingredientRows)}
+              </p>
+            </DetailSection>
+          )}
+
+          {extras.length > 0 && (
+            <DetailSection title="Aggiunte disponibili">
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {extras.map((extra) => (
+                  <li
+                    key={extra.id}
+                    className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-sm"
+                  >
+                    <span className="font-semibold">{extra.name}</span>
+                    <span className="font-impact text-pork-red">
+                      +{formatEuro(extra.price)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </DetailSection>
+          )}
+
+          {item.bundleSlots && item.bundleSlots.length > 0 && (
+            <DetailSection title="Opzioni menu">
+              <ul className="space-y-2">
+                {item.bundleSlots.map((slot) => (
+                  <li key={slot.id} className="rounded-xl bg-white px-3 py-2">
+                    <p className="impact-title text-xs text-pork-ink/70">{slot.label}</p>
+                    {slot.hint && (
+                      <p className="mt-1 text-xs text-pork-ink/55">{slot.hint}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </DetailSection>
+          )}
+
+          {serviceNotes.length > 0 && (
+            <DetailSection title="Note">
+              <ul className="space-y-1 text-sm leading-relaxed text-pork-ink/65">
+                {serviceNotes.map((k) => (
+                  <li key={k}>{menuServiceNoteText(k)}</li>
+                ))}
+              </ul>
+            </DetailSection>
+          )}
+        </div>
+
+        <footer className="flex shrink-0 gap-2 border-t border-pork-ink/10 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+          <button type="button" onClick={onClose} className="btn-ghost flex-1">
+            Chiudi
+          </button>
+          {showOrder && (
+            <button type="button" onClick={onOrder} className="btn-primary flex-1">
+              {orderLabel}
+            </button>
+          )}
+        </footer>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function DetailSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h3 className="impact-title mb-2 text-sm text-pork-ink">{title}</h3>
+      {children}
+    </section>
   );
 }

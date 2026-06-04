@@ -244,6 +244,18 @@ function formatPrice(price: Json): string {
     return `2 persone ${formatEuro(p.per2)}, 4 persone ${formatEuro(p.per4)}`;
   }
   if (p.kind === "volume" && p.small && p.large) {
+    if (Array.isArray(p.variants)) {
+      const variants = p.variants
+        .map((variant) => {
+          if (!variant || typeof variant !== "object" || Array.isArray(variant)) return null;
+          const v = variant as Record<string, Json | undefined>;
+          return typeof v.label === "string" && typeof v.price === "number"
+            ? `${v.label} ${formatEuro(v.price)}`
+            : null;
+        })
+        .filter(Boolean);
+      if (variants.length > 0) return variants.join(", ");
+    }
     const small = p.small as Record<string, Json | undefined>;
     const large = p.large as Record<string, Json | undefined>;
     if (typeof small.label === "string" && typeof small.price === "number" && typeof large.label === "string" && typeof large.price === "number") {
@@ -273,6 +285,15 @@ function listPriceOptions(price: Json): { code: string; label: string; value: nu
     ];
   }
   if (p.kind === "volume" && p.small && p.large) {
+    if (Array.isArray(p.variants)) {
+      return p.variants.flatMap((variant, index) => {
+        if (!variant || typeof variant !== "object" || Array.isArray(variant)) return [];
+        const v = variant as Record<string, Json | undefined>;
+        return typeof v.label === "string" && typeof v.price === "number"
+          ? [{ code: typeof v.id === "string" ? v.id : `volume-${index}`, label: v.label, value: v.price }]
+          : [];
+      });
+    }
     const small = p.small as Record<string, Json | undefined>;
     const large = p.large as Record<string, Json | undefined>;
     if (typeof small.label === "string" && typeof small.price === "number" && typeof large.label === "string" && typeof large.price === "number") {

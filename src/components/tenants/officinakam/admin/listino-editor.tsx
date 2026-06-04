@@ -161,7 +161,7 @@ export function OfficinakamListinoEditor() {
             data-active={cat.id === active.id}
             style={
               cat.id === active.id
-                ? { background: "var(--ga-accent)", color: "#0A0A0B", borderColor: "var(--ga-accent)" }
+                ? { background: "var(--ga-accent)", color: "var(--ga-accent-ink)", borderColor: "var(--ga-accent)" }
                 : undefined
             }
           >
@@ -197,7 +197,7 @@ export function OfficinakamListinoEditor() {
               key={item.id}
               className="grid gap-3 rounded-xl p-3 sm:grid-cols-[1fr_2fr_140px_44px] sm:items-start"
               style={{
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--ga-surface)",
                 border: "1px solid var(--ga-border-soft)",
               }}
             >
