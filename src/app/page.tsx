@@ -8,6 +8,7 @@ import { StudioHomePage } from "@/components/studio/studio-home-page";
 import { StudioShell } from "@/components/studio/studio-shell";
 import { BizeryStudioHomePage } from "@/components/bizery-studio/bizery-studio-home-page";
 import { BizeryStudioShell } from "@/components/bizery-studio/bizery-studio-shell";
+import { PreviewNoSlug } from "@/components/preview/preview-no-slug";
 
 export default async function HomePage() {
   const h = await headers();
@@ -15,6 +16,8 @@ export default async function HomePage() {
 
   if (mode === "marketing") return <MarketingHomePage />;
   // marketing-bizery → gestito dal middleware con rewrite su /bizery
+  if (mode === "preview") return <PreviewNoSlug mode="preview" />;
+  if (mode === "preview-bizery") return <PreviewNoSlug mode="preview-bizery" />;
   if (mode === "clients") {
     return (
       <ClientsShell>

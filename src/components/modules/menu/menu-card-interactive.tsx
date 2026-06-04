@@ -473,7 +473,7 @@ function MenuItemDetailModal({
         onClick={(e) => e.stopPropagation()}
       >
         {item.image ? (
-          <div className="relative aspect-[16/10] max-h-[42dvh] shrink-0 overflow-hidden bg-pork-ink/5">
+          <div className="relative aspect-[16/10] max-h-[42dvh] w-full shrink-0 overflow-hidden bg-pork-ink/5">
             <Image
               src={item.image}
               alt={item.name}
