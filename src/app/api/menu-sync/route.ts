@@ -2,7 +2,7 @@ import { after, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getSeedMenuForTenant } from "@/lib/tenant-menu-data";
 import { libritechCatalog } from "@/lib/libritech-catalog";
-import { DEFAULT_EXTRA_LISTS } from "@/lib/extra-lists";
+import { getTenantDefaultExtraLists } from "@/lib/extra-lists";
 import { pushMenuToHubrise } from "@/lib/hubrise/push-menu";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, PriceFormat } from "@/lib/types";
@@ -440,7 +440,7 @@ function seedBundle(tenantId: string): MenuSyncBundle {
       itemIds: items.map((item) => item.id),
       visibility: {},
     }],
-    extraLists: DEFAULT_EXTRA_LISTS.map((list) => ({
+    extraLists: getTenantDefaultExtraLists(tenantId).map((list) => ({
       ...list,
       extras: [...list.extras],
     })),

@@ -40,16 +40,24 @@ const EX_LIST_CLUB: ExtraRow[] = [
   { id: "cl-mayo", name: "Mayo extra", price: 0.5 },
 ];
 
-/** Ids fissi usati dal menu seed: aggiornando la lista in admin si propagano tutti i piatti collegati. */
+/** Ids fissi usati dal menu seed BePork: aggiornando la lista in admin si propagano tutti i piatti collegati. */
 export const LIST_ID_PIZZA = "lista-pizze" as const;
 export const LIST_ID_BURGER = "lista-burger" as const;
 export const LIST_ID_CLUB = "lista-club" as const;
 
-export const DEFAULT_EXTRA_LISTS: readonly ExtraList[] = [
+const BEPORK_EXTRA_LISTS: readonly ExtraList[] = [
   { id: LIST_ID_PIZZA, name: "Aggiunte pizze", extras: [...EX_LIST_PIZZA] },
   { id: LIST_ID_BURGER, name: "Aggiunte burger", extras: [...EX_LIST_BURGER] },
   { id: LIST_ID_CLUB, name: "Aggiunte club sandwich", extras: [...EX_LIST_CLUB] },
 ] as const;
+
+/** @deprecated usa getTenantDefaultExtraLists(tenantId) */
+export const DEFAULT_EXTRA_LISTS = BEPORK_EXTRA_LISTS;
+
+/** Restituisce le liste aggiunte predefinite per il tenant. Solo BePork ha un seed; gli altri partono vuoti. */
+export function getTenantDefaultExtraLists(tenantId: string): readonly ExtraList[] {
+  return tenantId === "bepork" ? BEPORK_EXTRA_LISTS : [];
+}
 
 export function resolveExtrasForItem(
   item: { extraListId?: string; extras?: ExtraRow[] },

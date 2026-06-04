@@ -189,6 +189,10 @@ function PickerCarousel({ children, itemCount }: { children: React.ReactNode; it
   );
 }
 
+// Minimum minutes between now and the earliest selectable pickup slot.
+// TODO: replace with tenant order-settings field when one is introduced.
+const MIN_LEAD_MINUTES = 30;
+
 function formatDate(date: Date) {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -229,8 +233,19 @@ export function DocaProductReservationPage() {
   const availableTimeSlots = useMemo(() => {
     if (!selectedDateObj) return [];
     const day = scheduleDayForDate(hoursWeek, selectedDateObj);
-    return day.closed ? [] : generateTimeSlots(day.slots, 30);
-  }, [hoursWeek, selectedDateObj]);
+    if (day.closed) return [];
+    const slots = generateTimeSlots(day.slots, 30);
+
+    const isToday = formatDate(selectedDateObj) === formatDate(today);
+    if (!isToday) return slots;
+
+    const now = new Date();
+    const cutoffMinutes = now.getHours() * 60 + now.getMinutes() + MIN_LEAD_MINUTES;
+    return slots.filter((slot) => {
+      const [h, m] = slot.split(":").map(Number);
+      return h * 60 + m >= cutoffMinutes;
+    });
+  }, [hoursWeek, selectedDateObj, today]);
 
   const selectedProducts = products.filter((product) => quantities[product.code] > 0);
   const hasOther = quantities.other > 0;
@@ -379,7 +394,7 @@ export function DocaProductReservationPage() {
             <p className="mt-4 max-w-md text-base leading-7 text-pork-ink/70">{t.body}</p>
           </div>
 
-          <div className="rounded-3xl bg-white p-5 shadow-xl ring-1 ring-pork-ink/10 sm:p-8">
+          <div className="max-h-[calc(100svh_-_8rem)] overflow-y-auto rounded-3xl bg-white p-5 shadow-xl ring-1 ring-pork-ink/10 sm:p-8">
             {/* Prodotti */}
             <h2 className="headline text-3xl">{t.what}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">

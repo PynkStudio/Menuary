@@ -199,16 +199,6 @@ export default function AdminTenantPage() {
                         <ExternalLink size={12} />
                         Link demo
                       </a>
-                      <span
-                        className={
-                          "rounded-full px-2 py-1 text-[10px] font-black uppercase " +
-                          (demoEnabled
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-pork-ink/10 text-pork-ink/55")
-                        }
-                      >
-                        {demoEnabled ? "Demo online" : "Demo offline"}
-                      </span>
                       <button
                         type="button"
                         disabled={isDemoSaving}
@@ -219,27 +209,12 @@ export default function AdminTenantPage() {
                         className={
                           "rounded-full px-2 py-1 text-[10px] font-black uppercase transition disabled:cursor-wait disabled:opacity-50 " +
                           (demoEnabled
-                            ? "bg-pork-ink/5 text-pork-ink/45 hover:bg-pork-ink/10"
-                            : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100")
+                            ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                            : "bg-pork-ink/10 text-pork-ink/55 hover:bg-pork-ink/15")
                         }
                       >
-                        {isDemoSaving
-                          ? "Salvataggio..."
-                          : demoEnabled
-                            ? "Disattiva demo"
-                            : "Riattiva demo"}
+                        {isDemoSaving ? "…" : demoEnabled ? "Demo online" : "Demo offline"}
                       </button>
-                      <span
-                        className={
-                          "rounded-full px-2 py-1 text-[10px] font-black uppercase " +
-                          (backendLive
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-pork-ink/5 text-pork-ink/45")
-                        }
-                        title="Quando attivo, la gestione del tenant su demo.menuary.it parla con Supabase reale (ordini, prenotazioni, scritture vere). Leva siteadmin-only per i test end-to-end."
-                      >
-                        {backendLive ? "Backend live" : "Backend demo"}
-                      </span>
                       <button
                         type="button"
                         disabled={isDemoSaving}
@@ -247,18 +222,15 @@ export default function AdminTenantPage() {
                           event.preventDefault();
                           void persistBackendLive(tenant.id, !backendLive);
                         }}
+                        title="Quando attivo, la gestione su demo.menuary.it usa Supabase reale (ordini, menu, scritture vere)."
                         className={
                           "rounded-full px-2 py-1 text-[10px] font-black uppercase transition disabled:cursor-wait disabled:opacity-50 " +
                           (backendLive
-                            ? "bg-pork-ink/5 text-pork-ink/45 hover:bg-pork-ink/10"
-                            : "bg-amber-50 text-amber-800 hover:bg-amber-100")
+                            ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
+                            : "bg-pork-ink/5 text-pork-ink/45 hover:bg-pork-ink/10")
                         }
                       >
-                        {isDemoSaving
-                          ? "Salvataggio..."
-                          : backendLive
-                            ? "Torna a fixture"
-                            : "Attiva backend"}
+                        {isDemoSaving ? "…" : backendLive ? "Backend live" : "Backend demo"}
                       </button>
                     </div>
                   )}

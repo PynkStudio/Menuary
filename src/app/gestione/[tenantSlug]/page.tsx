@@ -16,6 +16,7 @@ import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isDemoHost } from "@/lib/platform";
+import { getTenantDemoControl } from "@/lib/demo-controls";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { TENANT_MODULES } from "@/lib/tenant-modules";
 import { demoDashboardKpis } from "@/lib/demo-fixtures";
@@ -98,7 +99,9 @@ export default async function GestioneDashboardPage({
   if (!tenant) return null;
 
   const host = (await headers()).get("host") ?? "";
-  const isDemo = isDemoHost(host);
+  const isDemoHostname = isDemoHost(host);
+  const demoControl = isDemoHostname ? await getTenantDemoControl(tenantSlug).catch(() => null) : null;
+  const isDemo = isDemoHostname && !demoControl?.backendLive;
   const vertical = getVerticalMeta(tenant.vertical);
   const access = getGestioneModuleAccess(tenant.features);
   const base = getGestioneBaseHref(host, tenant) || `/gestione/${tenant.id}`;

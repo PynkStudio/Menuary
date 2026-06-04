@@ -52,6 +52,7 @@ export default async function NotFound() {
   return (
     <section
       className="flex min-h-[70vh] flex-col items-center justify-center px-5 py-32 text-center"
+      data-tenant-surface={tenant.id}
       style={{
         ...cssVars,
         backgroundColor: tenant.theme.cream,

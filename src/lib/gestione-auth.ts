@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { isDemoHost } from "@/lib/platform";
+import { getTenantDemoControl } from "@/lib/demo-controls";
 
 export type GestioneAuth =
   | { ok: true; isDemo: true }
@@ -10,12 +11,19 @@ export type GestioneAuth =
 
 /**
  * Verifica che l'utente corrente abbia accesso al pannello gestione del tenant.
- * In demo l'accesso è sempre garantito (lettura/scrittura mock). Fuori demo
- * l'utente deve essere siteadmin, tenantadmin o employee abilitato per il tenant.
+ * In demo l'accesso è sempre garantito. Se il tenant ha backendLive attivo su
+ * tenant_demo_controls, le operazioni usano Supabase reale invece dei fixture.
+ * Fuori demo l'utente deve essere siteadmin, tenantadmin o employee abilitato.
  */
 export async function authorizeGestione(tenantSlug: string): Promise<GestioneAuth> {
   const host = (await headers()).get("host") ?? "";
-  if (isDemoHost(host)) return { ok: true, isDemo: true };
+  if (isDemoHost(host)) {
+    const control = await getTenantDemoControl(tenantSlug).catch(() => null);
+    if (control?.backendLive) {
+      return { ok: true, isDemo: false, userId: "demo", isAdmin: true };
+    }
+    return { ok: true, isDemo: true };
+  }
 
   const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
   const { data: { user } } = await supabase.auth.getUser();

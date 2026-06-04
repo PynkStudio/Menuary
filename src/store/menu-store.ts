@@ -7,7 +7,7 @@ import { getSeedMenuForTenant } from "@/lib/tenant-menu-data";
 import type { MenuCategory } from "@/lib/menu-data";
 import {
   type ExtraList,
-  DEFAULT_EXTRA_LISTS,
+  getTenantDefaultExtraLists,
   mergeExtraListsWithDefaults,
 } from "@/lib/extra-lists";
 import {
@@ -374,7 +374,7 @@ function buildInitial(tenantId = DEFAULT_MENU_TENANT_ID) {
     menuLists: seedMenuLists(tenantId, categories, items),
     customTags: mergeCustomTags(undefined, items),
     volumeLabels: mergeVolumeLabels(undefined, items),
-    extraLists: mergeExtraListsWithDefaults(undefined, DEFAULT_EXTRA_LISTS),
+    extraLists: mergeExtraListsWithDefaults(undefined, getTenantDefaultExtraLists(tenantId)),
     orders: [] as Order[],
     lastOrderSeq: 0,
     tables: seedTables(),
@@ -664,7 +664,7 @@ export const useMenuStore = create<MenuState>()(
                   visibility: list.visibility ?? {},
                 }))
               : seedMenuLists(s.currentTenantId, bundle.categories, bundle.items),
-          extraLists: mergeExtraListsWithDefaults(bundle.extraLists, DEFAULT_EXTRA_LISTS),
+          extraLists: mergeExtraListsWithDefaults(bundle.extraLists, getTenantDefaultExtraLists(s.currentTenantId)),
           customTags: mergeCustomTags(bundle.customTags, bundle.items),
           volumeLabels: mergeVolumeLabels(bundle.volumeLabels, bundle.items),
         })),
