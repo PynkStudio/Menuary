@@ -7,6 +7,7 @@ import type { AdminMenuItem } from "@/lib/types";
 import { formatEuro, priceVariants, type PriceVariant } from "@/lib/price-utils";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { cn } from "@/lib/utils";
+import { useModalAnimation } from "@/lib/use-modal-animation";
 
 /** Solo scelta formato (piatto senza ingredienti/extra configurabili). */
 export function FormatoChoiceModal({
@@ -22,6 +23,7 @@ export function FormatoChoiceModal({
   const [key, setKey] = useState(variants[0]?.key ?? "default");
   const [mounted, setMounted] = useState(false);
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const { closing, requestClose, panelRef } = useModalAnimation(onClose);
 
   useEffect(() => {
     setMounted(true);
@@ -31,11 +33,11 @@ export function FormatoChoiceModal({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [requestClose]);
 
   const active = variants.find((v) => v.key === key) ?? variants[0];
 
@@ -43,11 +45,20 @@ export function FormatoChoiceModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center"
-      onClick={onClose}
+      className={cn(
+        "fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center",
+        closing ? "motion-safe:animate-modal-overlay-out" : "motion-safe:animate-modal-overlay-in",
+      )}
+      onClick={requestClose}
     >
       <div
-        className="flex max-h-[88dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-pork-cream shadow-2xl sm:rounded-3xl"
+        ref={panelRef}
+        className={cn(
+          "flex max-h-[88dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-pork-cream shadow-2xl sm:rounded-3xl",
+          closing
+            ? "motion-safe:animate-modal-sheet-out motion-safe:sm:animate-modal-scale-out"
+            : "motion-safe:animate-modal-sheet-in motion-safe:sm:animate-modal-scale-in",
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="flex shrink-0 items-start justify-between gap-3 border-b border-pork-ink/10 px-5 py-4">
@@ -60,7 +71,7 @@ export function FormatoChoiceModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full hover:bg-pork-ink/10"
             aria-label="Chiudi"
           >
@@ -94,7 +105,7 @@ export function FormatoChoiceModal({
         </div>
 
         <footer className="flex shrink-0 gap-2 border-t border-pork-ink/10 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
-          <button type="button" onClick={onClose} className="btn-ghost flex-1">
+          <button type="button" onClick={requestClose} className="btn-ghost flex-1">
             Annulla
           </button>
           <button

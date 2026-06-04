@@ -47,6 +47,7 @@ import { fetchLocations } from "@/lib/location";
 import { LocationProvider } from "@/components/core/location-provider";
 import { Suspense } from "react";
 import { TenantLanguageProvider } from "@/lib/tenant-i18n";
+import { PageTransitionShell } from "@/components/core/page-transition-shell";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 import { tenantLanguageAlternates } from "@/lib/tenant-localized-path";
 
@@ -548,7 +549,9 @@ export default async function RootLayout({
                   ) : (
                     <>
                       <SiteChrome />
-                      <main className="min-w-0 overflow-x-clip">{children}</main>
+                      <main>
+                        <PageTransitionShell>{children}</PageTransitionShell>
+                      </main>
                       <SiteFooterGate />
                     </>
                   )}

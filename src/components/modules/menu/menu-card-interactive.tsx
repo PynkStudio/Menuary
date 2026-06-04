@@ -15,6 +15,7 @@ import {
 import { PriceSticker } from "@/components/modules/menu/price-sticker";
 import { cn } from "@/lib/utils";
 import { useCartStore, cartQtyForItem } from "@/store/cart-store";
+import { useModalAnimation } from "@/lib/use-modal-animation";
 import { spawnCartFly } from "@/lib/cart-fly";
 import { useFavoritesStore } from "@/store/favorites-store";
 import { ItemCustomizer, needsCustomization } from "@/components/modules/shop/item-customizer";
@@ -436,6 +437,7 @@ function MenuItemDetailModal({
   onOrder: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
+  const { closing, requestClose, panelRef } = useModalAnimation(onClose);
   const variants = priceVariants(item.price);
   const ingredientRows = useMemo(
     () => normalizeMenuIngredients(item.id, item.ingredients),
@@ -452,24 +454,33 @@ function MenuItemDetailModal({
 
   useEffect(() => {
     function onKey(e: globalThis.KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [requestClose]);
 
   if (!mounted) return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center"
+      className={cn(
+        "fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center",
+        closing ? "motion-safe:animate-modal-overlay-out" : "motion-safe:animate-modal-overlay-in",
+      )}
       onClick={(e) => {
         e.stopPropagation();
-        onClose();
+        requestClose();
       }}
     >
       <div
-        className="flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-pork-cream shadow-2xl sm:max-h-[88dvh] sm:rounded-3xl"
+        ref={panelRef}
+        className={cn(
+          "flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-pork-cream shadow-2xl sm:max-h-[88dvh] sm:rounded-3xl",
+          closing
+            ? "motion-safe:animate-modal-sheet-out motion-safe:sm:animate-modal-scale-out"
+            : "motion-safe:animate-modal-sheet-in motion-safe:sm:animate-modal-scale-in",
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         {item.image ? (
@@ -483,7 +494,7 @@ function MenuItemDetailModal({
             />
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-pork-ink shadow-md transition hover:bg-pork-red hover:text-white"
               aria-label="Chiudi"
             >
@@ -505,7 +516,7 @@ function MenuItemDetailModal({
           {!item.image && (
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full hover:bg-pork-ink/10 active:bg-pork-ink/15"
               aria-label="Chiudi"
             >
@@ -613,7 +624,7 @@ function MenuItemDetailModal({
         </div>
 
         <footer className="flex shrink-0 gap-2 border-t border-pork-ink/10 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
-          <button type="button" onClick={onClose} className="btn-ghost flex-1">
+          <button type="button" onClick={requestClose} className="btn-ghost flex-1">
             Chiudi
           </button>
           {showOrder && (
