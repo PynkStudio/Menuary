@@ -17,7 +17,7 @@ export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = {
   shop: false,
   slabbby: false,
   aiPhone: false,
-  aiWhatsapp: false,
+  aiWhatsapp: true,
   hubriseSync: false,
   payments: false,
 };

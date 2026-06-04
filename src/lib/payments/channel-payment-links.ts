@@ -6,6 +6,8 @@ import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { applicationFeeCents, type PaymentSource } from "@/lib/payments/stripe/fees";
 import { getOrderPublicTokenById } from "@/lib/orders/public-checkout";
+import { enqueueOutboundMessage, type OutboundChannel } from "@/lib/outbound/messages";
+import { getAiPhoneSettings } from "@/lib/retell/settings";
 
 export type PaymentLinkChannel = "retell" | "whatsapp" | "sms" | "manual";
 
@@ -269,6 +271,51 @@ export async function createChannelPaymentRequest(
     .single();
 
   if (error || !data) throw new Error(error?.message ?? "payment_request_failed");
+
+  // Enqueue nella coda unificata. Il worker outbound legge da qui (e da menu_link)
+  // e gestisce primary → fallback. channel_payment_requests.message_status resta
+  // come "intent" iniziale ma la verità operativa è in outbound_text_messages.
+  if (stripe.paymentUrl) {
+    try {
+      const aiSettings = await getAiPhoneSettings(input.tenantId);
+      const primaryChannel: OutboundChannel =
+        input.channel === "sms" || input.channel === "whatsapp"
+          ? input.channel
+          : aiSettings.paymentControls.defaultChannel;
+      // Fallback: se il chiamante ha forzato un canale specifico (manual/retell)
+      // usiamo il fallback configurato; altrimenti il complementare al primario.
+      const fallbackChannel: OutboundChannel | null =
+        aiSettings.paymentControls.fallbackChannel ??
+        (primaryChannel === "whatsapp" ? "sms" : "whatsapp");
+
+      const kind = input.paymentRequired === false ? "order_summary" : "payment_link";
+      const greeting = input.paymentRequired === false
+        ? `Riepilogo del tuo ordine: ${stripe.paymentUrl}`
+        : `Per completare l'ordine paga qui: ${stripe.paymentUrl}`;
+
+      await enqueueOutboundMessage({
+        tenantId: input.tenantId,
+        kind,
+        channel: primaryChannel,
+        fallbackChannel,
+        recipientPhone: input.recipientPhone,
+        body: `${input.description}\n${greeting}`,
+        source: input.channel === "retell" ? "retell" : input.channel === "whatsapp" ? "whatsapp" : "system",
+        orderId: input.orderId ?? null,
+        channelPaymentRequestId: data.id,
+        metadata: {
+          payment_url: stripe.paymentUrl,
+          payment_required: input.paymentRequired !== false,
+          mode: stripe.mode,
+        },
+      });
+    } catch (enqueueErr) {
+      // Non blocchiamo la creazione dell'ordine se l'enqueue fallisce: il payment_request
+      // è già salvato. Worker / admin possono ritentare leggendo righe orfane (payment_request
+      // senza outbound_text_messages corrispondente).
+      console.error("[channel-payment-links] enqueue_failed", enqueueErr instanceof Error ? enqueueErr.message : String(enqueueErr));
+    }
+  }
 
   if (input.orderId) {
     const orderUpdate: Record<string, unknown> = {

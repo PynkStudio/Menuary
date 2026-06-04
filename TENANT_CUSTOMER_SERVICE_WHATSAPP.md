@@ -1,8 +1,8 @@
-# Servizio clienti tenant via WhatsApp
+# WhatsApp tenant via Twilio
 
-Modulo operativo per consentire agli admin del tenant di scrivere a Menuary via WhatsApp e modificare solo cio che e' gia gestibile dal pannello `gestione.[tenant]`.
+Modulo operativo WhatsApp basato solo su Twilio. Lo stesso sender WhatsApp Twilio riceve messaggi per Menuary/Bizery, demo tenant e assistenti pubblici tenant, e invia outbound con contesto tenant nel testo.
 
-## Endpoint
+## Endpoint supporto tenant
 
 `POST /api/webhooks/whatsapp/tenant-support`
 
@@ -27,46 +27,82 @@ Payload minimo:
 }
 ```
 
-La response contiene `replies`, array di messaggi che il bridge WhatsApp deve inviare al numero scrivente.
+La response contiene `replies`, array di messaggi. Nel flusso supportato la chiamata arriva dal webhook Twilio `mode=tenant-support`, che trasforma le replies in TwiML.
 
-## Bridge open-wa su Render
+## Twilio WhatsApp
 
-Il processo WhatsApp Web e' in `scripts/openwa/worker.mjs` e gira separato dalla app Next.
+Endpoint Twilio ufficiale:
 
-Comando locale:
+`POST /api/webhooks/twilio/whatsapp`
 
-```bash
-WHATSAPP_API_BASE_URL=http://localhost:3000 \
-WHATSAPP_WEB_BRIDGE_SECRET=dev-secret \
-npm run whatsapp:worker
+Modalita supportate:
+
+- `mode=platform`: router centrale per i canali commerciali Menuary/Bizery e demo tenant.
+- `mode=customer`: inoltra il messaggio all'assistente WhatsApp pubblico del tenant tramite `/api/whatsapp/inbound`.
+- `mode=tenant-support`: inoltra il messaggio al supporto operativo tenant tramite `handleTenantSupportWhatsappMessage`.
+
+Env richieste per inviare messaggi e media:
+
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_API_KEY`
+- `TWILIO_API_SECRET`
+- `TWILIO_WHATSAPP_FROM`, nel formato `whatsapp:+393513768607`
+
+Protezione webhook:
+
+- consigliato: `TWILIO_WEBHOOK_AUTH_TOKEN` per validare `X-Twilio-Signature`.
+- alternativa senza Auth Token: `TWILIO_WEBHOOK_SECRET`, da aggiungere al callback URL come query param `secret`.
+- opzionale: `TWILIO_WEBHOOK_URL` se il proxy/deploy cambia host o protocollo rispetto all'URL configurato in Twilio.
+
+Callback URL centrale consigliato per il numero condiviso:
+
+```text
+https://<app-domain>/api/webhooks/twilio/whatsapp?mode=platform&secret=<TWILIO_WEBHOOK_SECRET>
 ```
 
-Su Render usa il Blueprint `render.yaml`, che crea un Background Worker Docker con disco persistente montato in `/var/data/openwa`. Il disco conserva la sessione open-wa, quindi dopo il primo QR scan non serve riautenticare ad ogni deploy.
+Per produzione:
 
-Env Render richieste:
+```text
+https://menuary.it/api/webhooks/twilio/whatsapp?mode=platform&secret=<TWILIO_WEBHOOK_SECRET>
+```
 
-- `WHATSAPP_API_BASE_URL`: URL pubblico della app Next, es. `https://admin.menuary.it`.
-- `WHATSAPP_WEB_BRIDGE_SECRET`: stesso valore configurato nella app Next.
-- `TENANT_SUPPORT_WHATSAPP_SECRET`: opzionale, se il canale supporto usa un secret dedicato.
-- `TENANT_SUPPORT_WEBHOOK_PATH`: default `/api/webhooks/whatsapp/tenant-support`.
-- `WA_SESSION_ID`: default `menuary-tenant-support`.
+Il router centrale:
 
-Al primo avvio il worker stampa il QR nei log Render, salvo `OPENWA_QR_LOG_SKIP=true`.
+- tratta messaggi con `[menuary]` o senza tag come canale commerciale Menuary.
+- tratta messaggi con `[bizery]` o parole chiave services come canale commerciale Bizery.
+- inoltra alle demo tenant quando il messaggio inizia con `demo <tenant-id>` o `tenant <tenant-id>`, per esempio `demo kimos, buonasera vorrei ordinare una margherita`.
+- Restano compatibili anche `demo:<tenant-id>` e `tenant:<tenant-id>`.
+- Il prefisso di routing viene rimosso prima di inoltrare il testo all'assistente tenant.
 
-Per un numero WhatsApp pubblico di un tenant, crea un worker open-wa dedicato con:
+Callback URL per forzare un assistente tenant specifico:
 
-- `WHATSAPP_TENANT_ID`: id tenant, es. `bepork`.
-- `WA_SESSION_ID`: id sessione stabile, es. `tenant-bepork`.
-- `WHATSAPP_API_BASE_URL`: URL pubblico della app.
-- `WHATSAPP_WEB_BRIDGE_SECRET`: stesso secret della app.
+```text
+https://<app-domain>/api/webhooks/twilio/whatsapp?mode=customer&tenant_id=<tenant-id>&secret=<TWILIO_WEBHOOK_SECRET>
+```
 
-Quando `WHATSAPP_TENANT_ID` e' presente, il worker pubblica QR, heartbeat e stato su `/api/webhooks/whatsapp/session-status`. Il pannello `gestione/[tenant]/assistente-ai` mostra il QR da inquadrare e lo stato operativo della sessione. Il cron `/api/cron/whatsapp-session-health` invia alert automatici se la sessione non manda heartbeat.
+Webhook centralizzato Menuary/Bizery su produzione:
 
-Destinatari alert:
+```text
+https://menuary.it/api/webhooks/twilio/whatsapp?mode=platform&secret=<TWILIO_WEBHOOK_SECRET>
+```
 
-- `support@menuary.it` per vertical `food`.
-- `support@bizery.it` per vertical `services`.
-- email dei `tenantadmin` abilitati del tenant.
+Callback URL per supporto operativo tenant:
+
+```text
+https://<app-domain>/api/webhooks/twilio/whatsapp?mode=tenant-support&secret=<TWILIO_WEBHOOK_SECRET>
+```
+
+I messaggi outbound WhatsApp passano sempre dal sender Twilio condiviso Menuary/Bizery. `outbound_text_messages` resta la tabella di audit/correlazione, ma non esiste piu un worker OpenWA che polla la coda. Il sender Twilio condiviso aggiunge sempre contesto tenant nel body inviato:
+
+```text
+Da <tenant_name> tramite <Menuary|Bizery>:
+```
+
+Nel record `outbound_text_messages.metadata`:
+
+- `delivery_route: "twilio_whatsapp_shared"` indica invio WhatsApp dal sender Twilio condiviso.
+- `sender: "menuary_twilio_whatsapp"` identifica il sender condiviso.
+- `twilio` contiene SID/status restituiti da Twilio o l'errore di invio.
 
 ## Numeri autorizzati
 

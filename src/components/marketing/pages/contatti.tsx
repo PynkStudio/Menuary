@@ -18,7 +18,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
 export async function MarketingContactsPage() {
   const t = (await getTranslations("marketing")).contact;
   const lt = (await getTranslations("marketing")).leadForm;
-  const waMessage = encodeURIComponent("Ciao Menuary, vorrei avere informazioni per il mio locale.");
+  const waMessage = encodeURIComponent("[menuary] Ciao Menuary, vorrei avere informazioni per il mio locale.");
   const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMessage}`;
 
   return (

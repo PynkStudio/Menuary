@@ -15,6 +15,7 @@ import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 import { tenantLocaleFromPath } from "@/lib/tenant-localized-path";
 import { prioritizeReviewsByLanguage } from "@/lib/google/review-language";
+import { GoogleLogo } from "./google-logo";
 
 export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; limit?: number }) {
   const tenant = useTenant();
@@ -116,8 +117,8 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
                 : "flex items-center gap-4 rounded-3xl bg-white p-6 shadow-lg"
             }
           >
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-pork-ink text-lg font-black text-pork-cream">
-              G
+            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${dark ? "bg-white/10" : "bg-white ring-1 ring-pork-ink/8"}`}>
+              <GoogleLogo className="h-8 w-8" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">

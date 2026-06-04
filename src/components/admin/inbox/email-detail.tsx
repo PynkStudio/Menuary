@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect, useRef } from "react";
 import { Archive, ArrowLeft, Download, ExternalLink, Link2, Paperclip, Reply, Search, Star, Trash2, UserCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { markEmailRead, starEmail, archiveEmail, deleteEmail, assignEmail } from "@/lib/email/inbound-queries";
-import { findLeadsByEmails, searchLeads, linkInboundEmailToLead } from "@/lib/email/lead-link-queries";
+import { findLeadsByEmails, searchLeads, linkInboundEmailToLead, getLeadsByIds } from "@/lib/email/lead-link-queries";
 import { getSiteadminForAssignment, type SiteadminAssignee } from "@/lib/email/assignment-queries";
 
 function formatAssigneeName(a: Pick<SiteadminAssignee, "first_name" | "last_name" | "email">): string {
@@ -128,7 +128,18 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
   const [searchResults, setSearchResults] = useState<LeadMatch[]>([]);
   const [searching, setSearching]       = useState(false);
   const [open, setOpen]                 = useState(false);
+  const [linkedLead, setLinkedLead]     = useState<LeadMatch | null>(null);
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!linkedLeadId) { setLinkedLead(null); return; }
+    if (linkedLead?.id === linkedLeadId) return;
+    let cancelled = false;
+    getLeadsByIds([linkedLeadId])
+      .then((rows) => { if (!cancelled) setLinkedLead(rows[0] ?? null); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [linkedLeadId, linkedLead?.id]);
 
   function handleSearch(q: string) {
     setSearchQuery(q);
@@ -176,7 +187,16 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
       {linkedLeadId ? (
         <div className="mt-2 flex items-center gap-2">
           <span className="flex-1 rounded-lg bg-[var(--ma-surface)] px-3 py-1.5 text-sm font-medium text-[var(--ma-ink)]">
-            Lead #{linkedLeadId.slice(0, 8)}…
+            {linkedLead ? (
+              <>
+                {linkedLead.business_name}
+                <span className="ml-1 text-xs font-normal text-[var(--ma-muted)]">
+                  · {linkedLead.contact_name || linkedLead.contact_email}
+                </span>
+              </>
+            ) : (
+              <span className="text-[var(--ma-muted)]">Caricamento…</span>
+            )}
           </span>
           <button
             onClick={() => handleLink(null)}
@@ -253,15 +273,18 @@ function AssignPanel({ emailId, assignedToUserId, onAssigned }: AssignPanelProps
   const [users, setUsers]             = useState<SiteadminAssignee[]>([]);
   const [loading, setLoading]         = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getSiteadminForAssignment()
+      .then((u) => { if (!cancelled) setUsers(u); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   function handleOpen() {
     setOpen((v) => !v);
-    if (users.length === 0 && !loading) {
-      setLoading(true);
-      getSiteadminForAssignment()
-        .then(setUsers)
-        .catch(() => {})
-        .finally(() => setLoading(false));
-    }
   }
 
   function handleAssign(siteadminId: string | null) {

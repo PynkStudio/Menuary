@@ -5,7 +5,7 @@ import { ArrowLeft, Link2, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTrackingEventsForEmail } from "@/lib/email/tracking-queries";
 import { TRACKING_EVENT_LABELS, TRACKING_EVENT_COLORS } from "@/lib/email/tracking-types";
-import { findLeadsByEmails, searchLeads, linkSentEmailToLead } from "@/lib/email/lead-link-queries";
+import { findLeadsByEmails, searchLeads, linkSentEmailToLead, getLeadsByIds } from "@/lib/email/lead-link-queries";
 import { buildEmailSrcDoc } from "@/lib/email/render-html";
 import type { SentEmail } from "@/lib/email/sent-queries";
 import type { TrackingEvent } from "@/lib/email/tracking-queries";
@@ -64,7 +64,18 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
   const [searchResults, setSearchResults] = useState<LeadMatch[]>([]);
   const [searching, setSearching]         = useState(false);
   const [open, setOpen]                   = useState(false);
+  const [linkedLead, setLinkedLead]       = useState<LeadMatch | null>(null);
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!linkedLeadId) { setLinkedLead(null); return; }
+    if (linkedLead?.id === linkedLeadId) return;
+    let cancelled = false;
+    getLeadsByIds([linkedLeadId])
+      .then((rows) => { if (!cancelled) setLinkedLead(rows[0] ?? null); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [linkedLeadId, linkedLead?.id]);
 
   function handleSearch(q: string) {
     setSearchQuery(q);
@@ -111,7 +122,16 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
       {linkedLeadId ? (
         <div className="mt-2 flex items-center gap-2">
           <span className="flex-1 rounded-lg bg-[var(--ma-surface)] px-3 py-1.5 text-sm font-medium text-[var(--ma-ink)]">
-            Lead #{linkedLeadId.slice(0, 8)}…
+            {linkedLead ? (
+              <>
+                {linkedLead.business_name}
+                <span className="ml-1 text-xs font-normal text-[var(--ma-muted)]">
+                  · {linkedLead.contact_name || linkedLead.contact_email}
+                </span>
+              </>
+            ) : (
+              <span className="text-[var(--ma-muted)]">Caricamento…</span>
+            )}
           </span>
           <button
             onClick={() => handleLink(null)}

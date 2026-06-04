@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
+import { Mail, Phone, MapPin, ArrowUpRight, MessageCircle } from "lucide-react";
 import { BizeryShell } from "@/components/bizery/bizery-shell";
 import { BizeryContactForm } from "@/components/bizery/bizery-contact-form";
 
@@ -37,6 +37,13 @@ export function BizeryContattiPage() {
                   label="Telefono"
                   value="+39 351 376 8607"
                   href="tel:+393513768607"
+                />
+                <ContactRow
+                  icon={MessageCircle}
+                  label="WhatsApp"
+                  value="Scrivici su Bizery"
+                  href={`https://wa.me/393513768607?text=${encodeURIComponent("[bizery] Ciao Bizery, vorrei informazioni per la mia azienda.")}`}
+                  external
                 />
                 <ContactRow
                   icon={MapPin}
@@ -108,4 +115,3 @@ function ContactRow({
   if (external) return <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>;
   return <a href={href} className={cls}>{inner}</a>;
 }
-

@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, Check, ChevronLeft, CreditCard, Minus, Plus, Store } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, Check, ChevronLeft, ChevronRight, CreditCard, Minus, Plus, Store } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useDocaLanguage } from "@/lib/doca-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import { useRestaurantServicesStore } from "@/store/restaurant-services-store";
+import {
+  defaultHoursWeekForTenant,
+  openPickupDates,
+  scheduleDayForDate,
+  generateTimeSlots,
+} from "@/lib/venue-hours";
 
 type ProductCode = "bread" | "brigadeiro" | "carrot_cake" | "other";
 type PaymentMethod = "on_site" | "stripe";
@@ -27,15 +33,15 @@ const copy = {
     back: "Torna a DOCA",
     eyebrow: "Prenotazione online",
     title: "Prenota il tuo ritiro.",
-    body: "Scegli cosa vuoi trovare pronto in bottega. Puoi prenotare per oggi o per uno dei prossimi tre giorni.",
+    body: "Scegli cosa vuoi trovare pronto in bottega. Puoi prenotare per oggi o per uno dei prossimi giorni di apertura.",
     what: "Cosa vuoi prenotare?",
     other: "Scrivi cosa desideri prenotare",
     details: "Quando passi a ritirare?",
     customer: "I tuoi dati",
     name: "Nome",
     phone: "Telefono",
-    date: "Giorno",
-    time: "Ora di ritiro",
+    date: "Scegli il giorno",
+    time: "Scegli l'orario",
     notes: "Note",
     notesPlaceholder: "Allergie, preferenze o indicazioni utili",
     payment: "Come vuoi pagare?",
@@ -46,7 +52,7 @@ const copy = {
     stripeOther: "Per una richiesta libera il pagamento avviene in sede.",
     submit: "Invia prenotazione",
     submitting: "Invio in corso…",
-    missing: "Inserisci i dati richiesti e seleziona almeno un prodotto.",
+    missing: "Inserisci i dati richiesti, scegli giorno e orario e seleziona almeno un prodotto.",
     sent: "Prenotazione inviata. La richiesta è visibile allo staff DOCA.",
     sentStripe: "Prenotazione inviata. Ora ti portiamo al pagamento sicuro.",
     stripeFallback: "Prenotazione inviata. Il pagamento online non è disponibile in questo momento: pagherai al ritiro.",
@@ -56,15 +62,15 @@ const copy = {
     back: "Voltar para a DOCA",
     eyebrow: "Reserva online",
     title: "Reserve sua retirada.",
-    body: "Escolha o que deseja encontrar pronto na loja. Você pode reservar para hoje ou para um dos próximos três dias.",
+    body: "Escolha o que deseja encontrar pronto na loja. Você pode reservar para hoje ou para um dos próximos dias de abertura.",
     what: "O que você deseja reservar?",
     other: "Escreva o que deseja reservar",
     details: "Quando você vem retirar?",
     customer: "Seus dados",
     name: "Nome",
     phone: "Telefone",
-    date: "Dia",
-    time: "Horário da retirada",
+    date: "Escolha o dia",
+    time: "Escolha o horário",
     notes: "Observações",
     notesPlaceholder: "Alergias, preferências ou informações úteis",
     payment: "Como deseja pagar?",
@@ -75,7 +81,7 @@ const copy = {
     stripeOther: "Para um pedido livre, o pagamento é feito na loja.",
     submit: "Enviar reserva",
     submitting: "Enviando…",
-    missing: "Preencha os dados solicitados e selecione pelo menos um produto.",
+    missing: "Preencha os dados, escolha dia e horário e selecione pelo menos um produto.",
     sent: "Reserva enviada. A equipe da DOCA já pode ver seu pedido.",
     sentStripe: "Reserva enviada. Agora vamos direcionar você ao pagamento seguro.",
     stripeFallback: "Reserva enviada. O pagamento online não está disponível no momento: você pagará na retirada.",
@@ -85,15 +91,15 @@ const copy = {
     back: "Back to DOCA",
     eyebrow: "Online booking",
     title: "Book your pickup.",
-    body: "Choose what you would like us to have ready. You can book for today or one of the next three days.",
+    body: "Choose what you would like us to have ready. You can book for today or one of the next open days.",
     what: "What would you like to book?",
     other: "Tell us what you would like to book",
     details: "When will you collect it?",
     customer: "Your details",
     name: "Name",
     phone: "Phone",
-    date: "Day",
-    time: "Pickup time",
+    date: "Choose a day",
+    time: "Choose a time",
     notes: "Notes",
     notesPlaceholder: "Allergies, preferences or useful details",
     payment: "How would you like to pay?",
@@ -104,13 +110,84 @@ const copy = {
     stripeOther: "Custom requests are paid for in store.",
     submit: "Send booking",
     submitting: "Sending…",
-    missing: "Fill in the required details and select at least one product.",
+    missing: "Fill in your details, choose a day and time, and select at least one product.",
     sent: "Booking sent. The DOCA team can now see your request.",
     sentStripe: "Booking sent. Taking you to secure payment now.",
     stripeFallback: "Booking sent. Online payment is not available right now: please pay when you collect your order.",
     failed: "We could not send your booking. Please try again shortly.",
   },
 } as const;
+
+const DAY_SHORT: Record<"it" | "pt" | "en", string[]> = {
+  it: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+  pt: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+  en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+};
+
+const MONTH_SHORT: Record<"it" | "pt" | "en", string[]> = {
+  it: ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"],
+  pt: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"],
+  en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+};
+
+function PickerCarousel({ children, itemCount }: { children: React.ReactNode; itemCount: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+
+  function sync() {
+    const el = ref.current;
+    if (!el) return;
+    setAtStart(el.scrollLeft <= 0);
+    setAtEnd(el.scrollLeft >= el.scrollWidth - el.clientWidth - 1);
+  }
+
+  useEffect(() => {
+    sync();
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => ro.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemCount]);
+
+  function scroll(dir: "left" | "right") {
+    ref.current?.scrollBy({ left: dir === "right" ? 260 : -260, behavior: "smooth" });
+    setTimeout(sync, 320);
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => scroll("left")}
+        disabled={atStart}
+        className="shrink-0 inline-flex size-8 items-center justify-center rounded-full border-2 border-pork-ink/10 bg-white text-pork-ink transition-opacity disabled:pointer-events-none disabled:opacity-20"
+        aria-label="Precedente"
+      >
+        <ChevronLeft size={15} />
+      </button>
+      <div
+        ref={ref}
+        onScroll={sync}
+        className="flex flex-1 gap-2 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {children}
+      </div>
+      <button
+        type="button"
+        onClick={() => scroll("right")}
+        disabled={atEnd}
+        className="shrink-0 inline-flex size-8 items-center justify-center rounded-full border-2 border-pork-ink/10 bg-white text-pork-ink transition-opacity disabled:pointer-events-none disabled:opacity-20"
+        aria-label="Successivo"
+      >
+        <ChevronRight size={15} />
+      </button>
+    </div>
+  );
+}
 
 function formatDate(date: Date) {
   const year = date.getFullYear();
@@ -138,12 +215,23 @@ export function DocaProductReservationPage() {
   const [payment, setPayment] = useState<PaymentMethod>("on_site");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+
+  const hoursWeek = useMemo(() => defaultHoursWeekForTenant(tenant.id), [tenant.id]);
   const today = useMemo(() => new Date(), []);
-  const maxDate = useMemo(() => {
-    const date = new Date(today);
-    date.setDate(date.getDate() + 3);
-    return date;
-  }, [today]);
+  const availableDates = useMemo(() => openPickupDates(hoursWeek, today, 14), [hoursWeek, today]);
+
+  const selectedDateObj = useMemo(() => {
+    if (!draft.date) return null;
+    const [y, m, d] = draft.date.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }, [draft.date]);
+
+  const availableTimeSlots = useMemo(() => {
+    if (!selectedDateObj) return [];
+    const day = scheduleDayForDate(hoursWeek, selectedDateObj);
+    return day.closed ? [] : generateTimeSlots(day.slots, 30);
+  }, [hoursWeek, selectedDateObj]);
+
   const selectedProducts = products.filter((product) => quantities[product.code] > 0);
   const hasOther = quantities.other > 0;
   const canPayOnline = stripeAvailable && !hasOther;
@@ -275,7 +363,10 @@ export function DocaProductReservationPage() {
   if (tenant.id !== "doca") return null;
 
   return (
-    <section className="min-h-screen bg-pork-cream px-5 py-12 text-pork-ink sm:py-16">
+    <section
+      className="min-h-screen bg-pork-cream px-5 py-12 text-pork-ink sm:py-16"
+      data-tenant-surface="doca"
+    >
       <div className="mx-auto max-w-5xl">
         <Link href={tenantHref("/")} className="inline-flex items-center gap-2 text-sm font-black text-pork-red hover:underline">
           <ChevronLeft size={18} />
@@ -289,6 +380,7 @@ export function DocaProductReservationPage() {
           </div>
 
           <div className="rounded-3xl bg-white p-5 shadow-xl ring-1 ring-pork-ink/10 sm:p-8">
+            {/* Prodotti */}
             <h2 className="headline text-3xl">{t.what}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {products.map((product) => (
@@ -310,18 +402,67 @@ export function DocaProductReservationPage() {
               <input value={draft.other} onChange={(event) => setDraft((current) => ({ ...current, other: event.target.value }))} placeholder={t.other} className="mt-3 w-full rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red" />
             )}
 
+            {/* Ritiro */}
             <h2 className="headline mt-8 text-3xl">{t.details}</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="text-sm font-bold">
-                {t.date}
-                <input type="date" min={formatDate(today)} max={formatDate(maxDate)} value={draft.date} onChange={(event) => setDraft((current) => ({ ...current, date: event.target.value }))} className="mt-1 block w-full rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red" />
-              </label>
-              <label className="text-sm font-bold">
-                {t.time}
-                <input type="time" value={draft.time} onChange={(event) => setDraft((current) => ({ ...current, time: event.target.value }))} className="mt-1 block w-full rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red" />
-              </label>
+
+            {/* Date card picker — carosello */}
+            <p className="mt-4 text-sm font-bold">{t.date}</p>
+            <div className="mt-2">
+              <PickerCarousel itemCount={availableDates.length}>
+                {availableDates.map((date) => {
+                  const value = formatDate(date);
+                  const selected = draft.date === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setDraft((current) => ({ ...current, date: value, time: "" }))}
+                      className={`shrink-0 rounded-xl border-2 px-3 py-2 text-center text-sm leading-tight transition-colors ${
+                        selected
+                          ? "border-pork-red bg-pork-red text-white"
+                          : "border-pork-ink/10 bg-pork-ink/[0.03] hover:border-pork-red/50"
+                      }`}
+                    >
+                      <span className="block font-bold">{DAY_SHORT[language][date.getDay()]}</span>
+                      <span className="block text-lg font-black leading-none">{date.getDate()}</span>
+                      <span className={`block text-xs ${selected ? "opacity-80" : "opacity-50"}`}>
+                        {MONTH_SHORT[language][date.getMonth()]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </PickerCarousel>
             </div>
 
+            {/* Time slot grid — carosello, appare solo dopo aver scelto il giorno */}
+            {draft.date && availableTimeSlots.length > 0 && (
+              <>
+                <p className="mt-5 text-sm font-bold">{t.time}</p>
+                <div className="mt-2">
+                  <PickerCarousel itemCount={availableTimeSlots.length}>
+                    {availableTimeSlots.map((slot) => {
+                      const selected = draft.time === slot;
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setDraft((current) => ({ ...current, time: slot }))}
+                          className={`shrink-0 rounded-xl border-2 px-3 py-2 text-sm font-bold tabular-nums transition-colors ${
+                            selected
+                              ? "border-pork-red bg-pork-red text-white"
+                              : "border-pork-ink/10 bg-pork-ink/[0.03] hover:border-pork-red/50"
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      );
+                    })}
+                  </PickerCarousel>
+                </div>
+              </>
+            )}
+
+            {/* Dati cliente */}
             <h2 className="headline mt-8 text-3xl">{t.customer}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <input value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} placeholder={t.name} className="rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red" />
@@ -329,6 +470,7 @@ export function DocaProductReservationPage() {
               <textarea rows={3} value={draft.notes} onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))} placeholder={t.notesPlaceholder} aria-label={t.notes} className="rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red sm:col-span-2" />
             </div>
 
+            {/* Pagamento */}
             <h2 className="headline mt-8 text-3xl">{t.payment}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <PaymentButton active={payment === "on_site"} icon={<Store size={18} />} title={t.onsite} detail={t.onsiteDetail} onClick={() => setPayment("on_site")} />

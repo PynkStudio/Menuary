@@ -47,15 +47,18 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => null);
-  const { tenantId, enabled } = (body ?? {}) as {
+  const { tenantId, enabled, backendLive } = (body ?? {}) as {
     tenantId?: string;
     enabled?: boolean;
+    backendLive?: boolean;
   };
   const tenant = tenantId ? findTenantById(tenantId) : undefined;
+  const hasEnabledPatch = typeof enabled === "boolean";
+  const hasBackendPatch = typeof backendLive === "boolean";
 
-  if (!tenant?.previewSlug || typeof enabled !== "boolean") {
+  if (!tenant?.previewSlug || (!hasEnabledPatch && !hasBackendPatch)) {
     return NextResponse.json(
-      { error: "Tenant demo o stato non valido." },
+      { error: "Tenant demo o patch non valido." },
       { status: 400 },
     );
   }
@@ -65,7 +68,8 @@ export async function PATCH(request: NextRequest) {
       tenantId: tenant.id,
       previewSlug: tenant.previewSlug,
       vertical: tenant.vertical,
-      enabled,
+      ...(hasEnabledPatch ? { enabled } : {}),
+      ...(hasBackendPatch ? { backendLive } : {}),
     });
     return NextResponse.json({ control });
   } catch (error) {

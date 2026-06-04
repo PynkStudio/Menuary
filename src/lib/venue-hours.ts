@@ -72,6 +72,75 @@ export function defaultHoursWeekForTenant(tenantId: string): DaySchedule[] {
   return defaultHoursWeek();
 }
 
+/**
+ * Restituisce il DaySchedule per una data specifica.
+ * L'array hoursWeek è indicizzato Monday=0 … Sunday=6.
+ */
+export function scheduleDayForDate(hoursWeek: DaySchedule[], date: Date): DaySchedule {
+  const index = (date.getDay() + 6) % 7;
+  return hoursWeek[index] ?? { label: "", closed: true, slots: [] };
+}
+
+/**
+ * Parsa "08:00 – 18:30" (en-dash) in { open: "08:00", close: "18:30" }.
+ * Restituisce null se il formato non è riconoscibile.
+ */
+export function parseSlotBounds(slot: string): { open: string; close: string } | null {
+  const parts = slot.split("–").map((s) => s.trim());
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+  return { open: parts[0], close: parts[1] };
+}
+
+/**
+ * Restituisce le date aperte in [startDate, startDate + windowDays).
+ * Usa solo i giorni non segnati come closed nello schedule del tenant.
+ */
+export function openPickupDates(hoursWeek: DaySchedule[], startDate: Date, windowDays: number): Date[] {
+  const dates: Date[] = [];
+  for (let i = 0; i < windowDays; i++) {
+    const d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i);
+    if (!scheduleDayForDate(hoursWeek, d).closed) dates.push(d);
+  }
+  return dates;
+}
+
+/**
+ * Verifica che una stringa "HH:mm" cada dentro almeno una fascia oraria del giorno.
+ * Il confronto stringa funziona per orari in formato 24h zero-padded.
+ */
+export function isTimeInOpenSlots(time: string, slots: string[]): boolean {
+  for (const slot of slots) {
+    const bounds = parseSlotBounds(slot);
+    if (!bounds) continue;
+    if (time >= bounds.open && time <= bounds.close) return true;
+  }
+  return false;
+}
+
+/**
+ * Genera gli slot orari cliccabili a partire dalle fasce di un giorno.
+ * stepMinutes: granularità in minuti (default 30).
+ * Es. ["08:00 – 18:30"] con step 30 → ["08:00", "08:30", ..., "18:30"]
+ */
+export function generateTimeSlots(slots: string[], stepMinutes = 30): string[] {
+  const result: string[] = [];
+  for (const slot of slots) {
+    const bounds = parseSlotBounds(slot);
+    if (!bounds) continue;
+    const [openH, openM] = bounds.open.split(":").map(Number);
+    const [closeH, closeM] = bounds.close.split(":").map(Number);
+    let current = openH * 60 + openM;
+    const end = closeH * 60 + closeM;
+    while (current <= end) {
+      const h = Math.floor(current / 60).toString().padStart(2, "0");
+      const m = (current % 60).toString().padStart(2, "0");
+      result.push(`${h}:${m}`);
+      current += stepMinutes;
+    }
+  }
+  return result;
+}
+
 export function cloneHoursWeek(w: DaySchedule[]): DaySchedule[] {
   return w.map((d) => ({
     label: d.label,

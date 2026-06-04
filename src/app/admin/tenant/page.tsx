@@ -40,6 +40,7 @@ const STATUS_BADGE: Record<TenantStatus, { label: string; className: string }> =
 type DemoControl = {
   tenantId: string;
   enabled: boolean;
+  backendLive: boolean;
 };
 
 export default function AdminTenantPage() {
@@ -82,14 +83,14 @@ export default function AdminTenantPage() {
     });
   }
 
-  async function persistDemoEnabled(tenantId: string, enabled: boolean) {
+  async function patchDemoControl(tenantId: string, patch: { enabled?: boolean; backendLive?: boolean }) {
     setDemoSaving((previous) => ({ ...previous, [tenantId]: true }));
     setDemoError(null);
     try {
       const response = await fetch("/api/admin/demo-status", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId, enabled }),
+        body: JSON.stringify({ tenantId, ...patch }),
       });
       const payload = await response.json() as { control?: DemoControl; error?: string };
       if (!response.ok || !payload.control) {
@@ -105,6 +106,11 @@ export default function AdminTenantPage() {
       setDemoSaving((previous) => ({ ...previous, [tenantId]: false }));
     }
   }
+
+  const persistDemoEnabled = (tenantId: string, enabled: boolean) =>
+    patchDemoControl(tenantId, { enabled });
+  const persistBackendLive = (tenantId: string, backendLive: boolean) =>
+    patchDemoControl(tenantId, { backendLive });
 
   if (mode !== "platform-admin") {
     return (
@@ -149,6 +155,7 @@ export default function AdminTenantPage() {
             ? PLATFORM_SUBSCRIPTIONS.find((item) => item.lead_id === lead.id)
             : null;
           const demoEnabled = demoControls[tenant.id]?.enabled ?? true;
+          const backendLive = demoControls[tenant.id]?.backendLive ?? false;
           const isDemoSaving = demoSaving[tenant.id] ?? false;
 
           return (
@@ -221,6 +228,37 @@ export default function AdminTenantPage() {
                           : demoEnabled
                             ? "Disattiva demo"
                             : "Riattiva demo"}
+                      </button>
+                      <span
+                        className={
+                          "rounded-full px-2 py-1 text-[10px] font-black uppercase " +
+                          (backendLive
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-pork-ink/5 text-pork-ink/45")
+                        }
+                        title="Quando attivo, la gestione del tenant su demo.menuary.it parla con Supabase reale (ordini, prenotazioni, scritture vere). Leva siteadmin-only per i test end-to-end."
+                      >
+                        {backendLive ? "Backend live" : "Backend demo"}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isDemoSaving}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          void persistBackendLive(tenant.id, !backendLive);
+                        }}
+                        className={
+                          "rounded-full px-2 py-1 text-[10px] font-black uppercase transition disabled:cursor-wait disabled:opacity-50 " +
+                          (backendLive
+                            ? "bg-pork-ink/5 text-pork-ink/45 hover:bg-pork-ink/10"
+                            : "bg-amber-50 text-amber-800 hover:bg-amber-100")
+                        }
+                      >
+                        {isDemoSaving
+                          ? "Salvataggio..."
+                          : backendLive
+                            ? "Torna a fixture"
+                            : "Attiva backend"}
                       </button>
                     </div>
                   )}

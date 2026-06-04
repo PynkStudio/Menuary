@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useEffect, useRef } from "react";
 import { Mail, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -111,6 +111,23 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, unreadMine, cu
   const [composePrefill, setComposePrefill]   = useState<ComposePrefill>({});
   const [isPending, startTransition]          = useTransition();
 
+  const prevInboxIdsRef = useRef<Set<string>>(new Set(initialInbox.emails.map((e) => e.id)));
+
+  const refreshSidebarCounters = useCallback(async () => {
+    try {
+      const [inboxAll, mineAll] = await Promise.all([
+        getInboundEmails({ brand: "all" }),
+        currentSiteadminId
+          ? getInboundEmails({ brand: "all", assignedToUserId: currentSiteadminId })
+          : Promise.resolve({ emails: [], total: 0, page: 1, pageSize: 0 } as InboxPage),
+      ]);
+      setUnread(inboxAll.emails.filter((e) => !e.read).length);
+      setUnreadMyCount(mineAll.emails.filter((e) => !e.read).length);
+    } catch {
+      /* noop */
+    }
+  }, [currentSiteadminId]);
+
   const reload = useCallback(
     (v: MailView = view, b: BrandFilter = brand) => {
       startTransition(async () => {
@@ -125,13 +142,31 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, unreadMine, cu
             assignedToUserId:  v === "mine" && currentSiteadminId ? currentSiteadminId : undefined,
           });
           setInbox(fresh);
-          if (v === "inbox") setUnread(fresh.emails.filter((e) => !e.read).length);
-          if (v === "mine")   setUnreadMyCount(fresh.emails.filter((e) => !e.read).length);
+          if (v === "inbox") {
+            const incomingIds = fresh.emails.map((e) => e.id);
+            const hasNew = incomingIds.some((id) => !prevInboxIdsRef.current.has(id));
+            prevInboxIdsRef.current = new Set(incomingIds);
+            if (hasNew && typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("inbox:refresh"));
+            }
+          }
         }
+        await refreshSidebarCounters();
       });
     },
-    [view, brand, currentSiteadminId],
+    [view, brand, currentSiteadminId, refreshSidebarCounters],
   );
+
+  // Polling + refresh su focus per aggiornamento automatico inbox.
+  useEffect(() => {
+    const tick = () => reload();
+    const interval = setInterval(tick, 25_000);
+    window.addEventListener("focus", tick);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", tick);
+    };
+  }, [reload]);
 
   function handleAssigned(emailId: string, siteadminId: string | null) {
     setInbox((prev) => ({
@@ -169,6 +204,9 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, unreadMine, cu
         emails: prev.emails.map((e) => e.id === email.id ? { ...e, read: true } : e),
       }));
       setUnread((n) => Math.max(0, n - 1));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("inbox:refresh"));
+      }
     }
   }
 

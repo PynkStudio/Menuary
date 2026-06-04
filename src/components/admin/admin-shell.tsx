@@ -159,11 +159,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     }
 
     fetchUnread();
-    const interval = setInterval(fetchUnread, 60_000);
+    const interval = setInterval(fetchUnread, 25_000);
     window.addEventListener("focus", fetchUnread);
+    window.addEventListener("inbox:refresh", fetchUnread as EventListener);
     return () => {
       clearInterval(interval);
       window.removeEventListener("focus", fetchUnread);
+      window.removeEventListener("inbox:refresh", fetchUnread as EventListener);
     };
   }, [mode]);
 

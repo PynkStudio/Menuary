@@ -2846,6 +2846,7 @@ export type Database = {
       }
       tenant_demo_controls: {
         Row: {
+          backend_live: boolean
           created_at: string
           disabled_at: string | null
           enabled: boolean
@@ -2855,6 +2856,7 @@ export type Database = {
           vertical: string
         }
         Insert: {
+          backend_live?: boolean
           created_at?: string
           disabled_at?: string | null
           enabled?: boolean
@@ -2864,6 +2866,7 @@ export type Database = {
           vertical?: string
         }
         Update: {
+          backend_live?: boolean
           created_at?: string
           disabled_at?: string | null
           enabled?: boolean

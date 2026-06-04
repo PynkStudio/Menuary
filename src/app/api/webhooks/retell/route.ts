@@ -6,6 +6,21 @@ import { getAiPhoneSettings, listAiPhoneSettings } from "@/lib/retell/settings";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { buildAiPaymentInstruction } from "@/lib/payments/ai-payment-instruction";
 import { findTenantById } from "@/lib/tenant-registry";
+import { getTenantContent } from "@/lib/tenant-content";
+
+// Saluto contestuale in base all'ora locale (Europe/Rome): Buongiorno / Buon pomeriggio / Buonasera.
+function italianGreetingForNow(now = new Date()): string {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Rome",
+      hour: "2-digit",
+      hourCycle: "h23",
+    }).format(now),
+  );
+  if (hour >= 6 && hour < 13) return "Buongiorno";
+  if (hour >= 13 && hour < 19) return "Buon pomeriggio";
+  return "Buonasera";
+}
 
 function normalizePhoneCandidates(value: string | null | undefined): string[] {
   if (!value) return [];
@@ -35,18 +50,68 @@ async function resolveTenantFromInbound(payload: Record<string, unknown>): Promi
   return null;
 }
 
-async function buildInboundDynamicVariables(tenantId: string) {
+async function buildInboundDynamicVariables(
+  tenantId: string,
+  inbound: { fromNumber?: string | null; toNumber?: string | null } = {},
+) {
   const settings = await getAiPhoneSettings(tenantId);
   const variables: Record<string, string> = {
     tenant_id: tenantId,
     daily_notes: (settings.quickSettings.notesForAssistant ?? "").trim(),
+    caller_phone: (inbound.fromNumber ?? "").trim(),
+    called_number: (inbound.toNumber ?? "").trim(),
+    greeting: italianGreetingForNow(),
+    // Default conservativi: la flow li può overrideare se manca contesto.
+    multi_location_choice_required: "false",
+    location_id: "",
+    location_name: "",
+    open_hours: "",
+    special_hours: "",
+    payment_instruction: "",
+    payment_online_available: "false",
+    payment_on_site_available: "true",
+    payment_should_ask: "false",
+    suggest_alternatives: settings.quickSettings.suggestAlternatives ? "true" : "false",
+    ask_allergies: settings.quickSettings.askAllergiesForOrders ? "true" : "false",
+    collect_marketing_consent: settings.quickSettings.collectMarketingConsent ? "true" : "false",
+    human_transfer_enabled: settings.humanTransferEnabled ? "true" : "false",
+    handoff_phone: settings.handoffPhone ?? "",
+    accepting_orders: settings.quickSettings.acceptNewOrders.accepting ? "true" : "false",
+    accepting_reservations: settings.quickSettings.acceptReservations.accepting ? "true" : "false",
   };
+
+  // Anagrafica statica del locale dal content registry — tutto stringificato per Retell.
+  try {
+    const content = getTenantContent(tenantId);
+    variables.venue_name = content.logoAlt ?? "";
+    variables.venue_description = content.description ?? "";
+    variables.venue_address = content.address?.full ?? "";
+    variables.venue_phone = content.contact?.phone ?? "";
+    variables.venue_website = (content.url ?? "").replace(/^https?:\/\//, "");
+    variables.venue_specialty = (content.souls ?? [])
+      .map((soul) => soul.title)
+      .filter(Boolean)
+      .join(", ");
+    variables.venue_social_facebook = content.social?.facebook ?? "";
+    variables.venue_social_instagram = content.social?.instagram ?? "";
+    variables.venue_whatsapp_digits = content.contact?.whatsappDigits ?? "";
+  } catch {
+    // Tenant senza content registry: skip campi anagrafici, il resto basta.
+  }
+
   try {
     const context = await buildRetellInboundContext(tenantId);
     variables.tenant_name = context.tenant.name;
+    // venue_name preferisce il display name del registry; se mancante, ripiega sul nome tecnico.
+    if (!variables.venue_name) variables.venue_name = context.tenant.name;
     const location = context.locations[0];
     if (location) {
+      variables.location_id = location.id;
       variables.location_name = location.name;
+      // Multi-sede: la flow chiede esplicitamente la sede solo quando il numero
+      // chiamato non identifica univocamente una location.
+      variables.multi_location_choice_required =
+        context.locations.length > 1 ? "true" : "false";
       const weekly = location.weeklyHours
         .map((day) => `${day.label}: ${day.closed ? "chiuso" : day.slots.join(", ")}`)
         .join(" | ");
@@ -71,7 +136,7 @@ async function buildInboundDynamicVariables(tenantId: string) {
     variables.payment_on_site_available = instruction.onSiteAvailable ? "true" : "false";
     variables.payment_should_ask = instruction.shouldAsk ? "true" : "false";
   } catch {
-    // Contesto opzionale: la chiamata può proseguire con sole note del giorno.
+    // Contesto opzionale: la chiamata può proseguire con sole note del giorno + anagrafica statica.
   }
   return variables;
 }
@@ -96,7 +161,13 @@ export async function POST(req: NextRequest) {
   // Qui iniettiamo le "Note del giorno" del ristoratore (quickSettings.notesForAssistant) + orari aggiornati.
   if (eventType === "call_inbound") {
     const tenantId = tenantIdParam || (await resolveTenantFromInbound(payload));
-    const dynamicVariables = tenantId ? await buildInboundDynamicVariables(tenantId) : {};
+    const inbound = (payload.call_inbound ?? payload.call ?? {}) as Record<string, unknown>;
+    const dynamicVariables = tenantId
+      ? await buildInboundDynamicVariables(tenantId, {
+          fromNumber: typeof inbound.from_number === "string" ? inbound.from_number : null,
+          toNumber: typeof inbound.to_number === "string" ? inbound.to_number : null,
+        })
+      : {};
     const svc = createSupabaseServiceClient();
     if (svc) {
       await svc.from("channel_webhook_events").insert({

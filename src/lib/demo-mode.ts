@@ -20,6 +20,17 @@ export function isDemoBrowser(): boolean {
   return isDemoHostname(window.location.hostname);
 }
 
+// Vero solo se il browser è su un host demo E il layout gestione non ha
+// l'override "backend live" attivo per il tenant. Da preferire a isDemoBrowser()
+// nei componenti di gestione che devono decidere fra fixture localStorage e
+// fetch reali al server.
+export function isGestioneFixtureMode(): boolean {
+  if (!isDemoBrowser()) return false;
+  if (typeof document === "undefined") return true;
+  const wrapper = document.querySelector<HTMLElement>("[data-gestione-tenant]");
+  return wrapper?.dataset.backendLive !== "true";
+}
+
 const STORE_PREFIX = "menuary:demo:";
 
 function storeKey(tenantId: string, bucket: string): string {

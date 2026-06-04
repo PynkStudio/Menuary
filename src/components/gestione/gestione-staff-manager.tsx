@@ -8,7 +8,7 @@ import {
   ROLE_DEFAULTS,
   EMPLOYEE_ROLES,
 } from "@/lib/store-roles";
-import { isDemoBrowser, readDemoStaff, type StaffRecord } from "@/lib/demo-mode";
+import { isGestioneFixtureMode, readDemoStaff, type StaffRecord } from "@/lib/demo-mode";
 
 type StoreRole = (typeof EMPLOYEE_ROLES)[number];
 
@@ -34,7 +34,7 @@ const INVITABLE_ROLES: StoreRole[] = [
 ];
 
 function hydrateStaffFromDemo(tenantSlug: string): StaffRow[] | null {
-  if (!isDemoBrowser()) return null;
+  if (!isGestioneFixtureMode()) return null;
   const persisted: StaffRecord[] = readDemoStaff(tenantSlug);
   return persisted.map((s) => ({
     id: s.id,
@@ -93,7 +93,7 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
       setInviteError(json.error ?? "Errore durante l'invito.");
       return;
     }
-    if (isDemoBrowser() && json.employee) {
+    if (isGestioneFixtureMode() && json.employee) {
       const e = json.employee as StaffRecord;
       setStaff((prev) => [...prev, {
         id: e.id, email: e.email, role: e.role,
@@ -119,7 +119,7 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
       alert("Errore durante la revoca.");
       return;
     }
-    if (isDemoBrowser()) {
+    if (isGestioneFixtureMode()) {
       setStaff((prev) => prev.map((s) => (s.id === adminUserId ? { ...s, enabled: false } : s)));
     } else {
       startTransition(() => router.refresh());
@@ -136,7 +136,7 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
       alert("Errore durante il ripristino.");
       return;
     }
-    if (isDemoBrowser()) {
+    if (isGestioneFixtureMode()) {
       setStaff((prev) => prev.map((s) => (s.id === adminUserId ? { ...s, enabled: true } : s)));
     } else {
       startTransition(() => router.refresh());

@@ -278,7 +278,7 @@ export function ComposeDrawer({
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Pannello */}
-      <div className="relative z-10 flex w-full max-w-2xl flex-col rounded-2xl bg-white shadow-2xl">
+      <div className="relative z-10 flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--ma-line)] px-5 py-4">
           <h2 className="font-semibold text-[var(--ma-ink)]">Nuovo messaggio</h2>
@@ -384,7 +384,7 @@ export function ComposeDrawer({
           contentEditable
           suppressContentEditableWarning
           onInput={syncEditor}
-          className="compose-rich-editor min-h-[220px] flex-1 overflow-y-auto px-5 py-4 text-sm text-[var(--ma-ink)] focus:outline-none"
+          className="compose-rich-editor min-h-0 flex-1 overflow-y-auto px-5 py-4 text-sm text-[var(--ma-ink)] focus:outline-none"
           dangerouslySetInnerHTML={{ __html: bodyHtml }}
           data-placeholder="Scrivi il tuo messaggio..."
         />

@@ -16,7 +16,7 @@ import { buildAiPaymentInstruction, type AiPaymentInstruction } from "@/lib/paym
 
 type WhatsappActionBody =
   | ({ action: "context" } & { tenantId?: string; tenant_id?: string; locationId?: string | null; location_id?: string | null })
-  | ({ action: "incoming_message"; tenantId?: string; tenant_id?: string; from: string; text: string; messageId?: string })
+  | ({ action: "incoming_message"; tenantId?: string; tenant_id?: string; from: string; text: string; messageId?: string; sharedTwilioSender?: boolean })
   | ({ action: "availability" } & RetellAvailabilityInput)
   | ({ action: "create_reservation" } & CreateRetellReservationInput)
   | ({ action: "create_order" } & CreateRetellOrderInput);
@@ -644,7 +644,11 @@ async function handleIncomingWhatsappMessage(req: NextRequest, body: Extract<Wha
   const tenantId = tenantFrom(req, body);
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
 
-  const context = await buildRetellInboundContext(tenantId, { locationId: locationFrom(req, body), channel: "whatsapp" });
+  const context = await buildRetellInboundContext(tenantId, {
+    locationId: locationFrom(req, body),
+    channel: "whatsapp",
+    sharedWhatsappSender: body.sharedTwilioSender === true,
+  });
   if (!context.tenant.aiWhatsappEnabled) {
     return NextResponse.json({ error: "ai_whatsapp_not_enabled", context }, { status: 403 });
   }
