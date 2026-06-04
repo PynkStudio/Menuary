@@ -117,6 +117,30 @@ export function isTimeInOpenSlots(time: string, slots: string[]): boolean {
   return false;
 }
 
+/**
+ * Genera gli slot orari cliccabili a partire dalle fasce di un giorno.
+ * stepMinutes: granularità in minuti (default 30).
+ * Es. ["08:00 – 18:30"] con step 30 → ["08:00", "08:30", ..., "18:30"]
+ */
+export function generateTimeSlots(slots: string[], stepMinutes = 30): string[] {
+  const result: string[] = [];
+  for (const slot of slots) {
+    const bounds = parseSlotBounds(slot);
+    if (!bounds) continue;
+    const [openH, openM] = bounds.open.split(":").map(Number);
+    const [closeH, closeM] = bounds.close.split(":").map(Number);
+    let current = openH * 60 + openM;
+    const end = closeH * 60 + closeM;
+    while (current <= end) {
+      const h = Math.floor(current / 60).toString().padStart(2, "0");
+      const m = (current % 60).toString().padStart(2, "0");
+      result.push(`${h}:${m}`);
+      current += stepMinutes;
+    }
+  }
+  return result;
+}
+
 export function cloneHoursWeek(w: DaySchedule[]): DaySchedule[] {
   return w.map((d) => ({
     label: d.label,

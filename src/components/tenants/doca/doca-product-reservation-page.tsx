@@ -11,8 +11,7 @@ import {
   defaultHoursWeekForTenant,
   openPickupDates,
   scheduleDayForDate,
-  parseSlotBounds,
-  isTimeInOpenSlots,
+  generateTimeSlots,
 } from "@/lib/venue-hours";
 
 type ProductCode = "bread" | "brigadeiro" | "carrot_cake" | "other";
@@ -41,9 +40,8 @@ const copy = {
     customer: "I tuoi dati",
     name: "Nome",
     phone: "Telefono",
-    date: "Giorno",
-    noDate: "Scegli il giorno",
-    time: "Ora di ritiro",
+    date: "Scegli il giorno",
+    time: "Scegli l'orario",
     notes: "Note",
     notesPlaceholder: "Allergie, preferenze o indicazioni utili",
     payment: "Come vuoi pagare?",
@@ -52,11 +50,9 @@ const copy = {
     stripe: "Pagamento online",
     stripeDetail: "Completa il pagamento con Stripe dopo l'invio.",
     stripeOther: "Per una richiesta libera il pagamento avviene in sede.",
-    openHours: "Aperto:",
     submit: "Invia prenotazione",
     submitting: "Invio in corso…",
-    missing: "Inserisci i dati richiesti e seleziona almeno un prodotto.",
-    invalidTime: "Seleziona un orario durante l'apertura.",
+    missing: "Inserisci i dati richiesti, scegli giorno e orario e seleziona almeno un prodotto.",
     sent: "Prenotazione inviata. La richiesta è visibile allo staff DOCA.",
     sentStripe: "Prenotazione inviata. Ora ti portiamo al pagamento sicuro.",
     stripeFallback: "Prenotazione inviata. Il pagamento online non è disponibile in questo momento: pagherai al ritiro.",
@@ -73,9 +69,8 @@ const copy = {
     customer: "Seus dados",
     name: "Nome",
     phone: "Telefone",
-    date: "Dia",
-    noDate: "Escolha o dia",
-    time: "Horário da retirada",
+    date: "Escolha o dia",
+    time: "Escolha o horário",
     notes: "Observações",
     notesPlaceholder: "Alergias, preferências ou informações úteis",
     payment: "Como deseja pagar?",
@@ -84,11 +79,9 @@ const copy = {
     stripe: "Pagamento online",
     stripeDetail: "Finalize o pagamento com Stripe após o envio.",
     stripeOther: "Para um pedido livre, o pagamento é feito na loja.",
-    openHours: "Aberto:",
     submit: "Enviar reserva",
     submitting: "Enviando…",
-    missing: "Preencha os dados solicitados e selecione pelo menos um produto.",
-    invalidTime: "Selecione um horário dentro do horário de funcionamento.",
+    missing: "Preencha os dados, escolha dia e horário e selecione pelo menos um produto.",
     sent: "Reserva enviada. A equipe da DOCA já pode ver seu pedido.",
     sentStripe: "Reserva enviada. Agora vamos direcionar você ao pagamento seguro.",
     stripeFallback: "Reserva enviada. O pagamento online não está disponível no momento: você pagará na retirada.",
@@ -105,9 +98,8 @@ const copy = {
     customer: "Your details",
     name: "Name",
     phone: "Phone",
-    date: "Day",
-    noDate: "Choose a day",
-    time: "Pickup time",
+    date: "Choose a day",
+    time: "Choose a time",
     notes: "Notes",
     notesPlaceholder: "Allergies, preferences or useful details",
     payment: "How would you like to pay?",
@@ -116,11 +108,9 @@ const copy = {
     stripe: "Pay online",
     stripeDetail: "Complete your Stripe payment after submitting.",
     stripeOther: "Custom requests are paid for in store.",
-    openHours: "Open:",
     submit: "Send booking",
     submitting: "Sending…",
-    missing: "Fill in the required details and select at least one product.",
-    invalidTime: "Please choose a time within opening hours.",
+    missing: "Fill in your details, choose a day and time, and select at least one product.",
     sent: "Booking sent. The DOCA team can now see your request.",
     sentStripe: "Booking sent. Taking you to secure payment now.",
     stripeFallback: "Booking sent. Online payment is not available right now: please pay when you collect your order.",
@@ -128,13 +118,13 @@ const copy = {
   },
 } as const;
 
-const DATE_LABEL_DAY: Record<"it" | "pt" | "en", string[]> = {
+const DAY_SHORT: Record<"it" | "pt" | "en", string[]> = {
   it: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
   pt: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
   en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
 };
 
-const DATE_LABEL_MONTH: Record<"it" | "pt" | "en", string[]> = {
+const MONTH_SHORT: Record<"it" | "pt" | "en", string[]> = {
   it: ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"],
   pt: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"],
   en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
@@ -145,12 +135,6 @@ function formatDate(date: Date) {
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
   const day = `${date.getDate()}`.padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-function formatDateLabel(date: Date, lang: "it" | "pt" | "en"): string {
-  const dayName = DATE_LABEL_DAY[lang][date.getDay()];
-  const monthName = DATE_LABEL_MONTH[lang][date.getMonth()];
-  return `${dayName} ${date.getDate()} ${monthName}`;
 }
 
 export function DocaProductReservationPage() {
@@ -183,20 +167,11 @@ export function DocaProductReservationPage() {
     return new Date(y, m - 1, d);
   }, [draft.date]);
 
-  const selectedDaySchedule = useMemo(
-    () => (selectedDateObj ? scheduleDayForDate(hoursWeek, selectedDateObj) : null),
-    [hoursWeek, selectedDateObj],
-  );
-
-  const timeMin = useMemo(() => {
-    if (!selectedDaySchedule?.slots.length) return undefined;
-    return parseSlotBounds(selectedDaySchedule.slots[0])?.open;
-  }, [selectedDaySchedule]);
-
-  const timeMax = useMemo(() => {
-    if (!selectedDaySchedule?.slots.length) return undefined;
-    return parseSlotBounds(selectedDaySchedule.slots[selectedDaySchedule.slots.length - 1])?.close;
-  }, [selectedDaySchedule]);
+  const availableTimeSlots = useMemo(() => {
+    if (!selectedDateObj) return [];
+    const day = scheduleDayForDate(hoursWeek, selectedDateObj);
+    return day.closed ? [] : generateTimeSlots(day.slots, 30);
+  }, [hoursWeek, selectedDateObj]);
 
   const selectedProducts = products.filter((product) => quantities[product.code] > 0);
   const hasOther = quantities.other > 0;
@@ -273,9 +248,6 @@ export function DocaProductReservationPage() {
   }
 
   async function submit() {
-    const slots = selectedDaySchedule?.slots ?? [];
-    const timeInvalid = draft.time && slots.length > 0 && !isTimeInOpenSlots(draft.time, slots);
-
     if (
       tenant.id !== "doca" ||
       !draft.name.trim() ||
@@ -286,10 +258,6 @@ export function DocaProductReservationPage() {
       (hasOther && !draft.other.trim())
     ) {
       setMessage({ kind: "error", text: t.missing });
-      return;
-    }
-    if (timeInvalid) {
-      setMessage({ kind: "error", text: t.invalidTime });
       return;
     }
     setSubmitting(true);
@@ -353,6 +321,7 @@ export function DocaProductReservationPage() {
           </div>
 
           <div className="rounded-3xl bg-white p-5 shadow-xl ring-1 ring-pork-ink/10 sm:p-8">
+            {/* Prodotti */}
             <h2 className="headline text-3xl">{t.what}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {products.map((product) => (
@@ -374,42 +343,63 @@ export function DocaProductReservationPage() {
               <input value={draft.other} onChange={(event) => setDraft((current) => ({ ...current, other: event.target.value }))} placeholder={t.other} className="mt-3 w-full rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red" />
             )}
 
+            {/* Ritiro */}
             <h2 className="headline mt-8 text-3xl">{t.details}</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="text-sm font-bold">
-                {t.date}
-                <select
-                  value={draft.date}
-                  onChange={(event) => setDraft((current) => ({ ...current, date: event.target.value, time: "" }))}
-                  className="mt-1 block w-full rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2.5 outline-none focus:border-pork-red"
-                >
-                  <option value="">{t.noDate}</option>
-                  {availableDates.map((date) => (
-                    <option key={formatDate(date)} value={formatDate(date)}>
-                      {formatDateLabel(date, language)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-sm font-bold">
-                {t.time}
-                <input
-                  type="time"
-                  value={draft.time}
-                  min={timeMin}
-                  max={timeMax}
-                  disabled={!draft.date}
-                  onChange={(event) => setDraft((current) => ({ ...current, time: event.target.value }))}
-                  className="mt-1 block w-full rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red disabled:opacity-40"
-                />
-                {selectedDaySchedule && selectedDaySchedule.slots.length > 0 && (
-                  <span className="mt-1 block text-xs text-pork-ink/50">
-                    {t.openHours} {selectedDaySchedule.slots.join(", ")}
-                  </span>
-                )}
-              </label>
+
+            {/* Date card picker */}
+            <p className="mt-4 text-sm font-bold">{t.date}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {availableDates.map((date) => {
+                const value = formatDate(date);
+                const selected = draft.date === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setDraft((current) => ({ ...current, date: value, time: "" }))}
+                    className={`rounded-xl border-2 px-3 py-2 text-center text-sm leading-tight transition-colors ${
+                      selected
+                        ? "border-pork-red bg-pork-red text-white"
+                        : "border-pork-ink/10 bg-pork-ink/[0.03] hover:border-pork-red/50"
+                    }`}
+                  >
+                    <span className="block font-bold">{DAY_SHORT[language][date.getDay()]}</span>
+                    <span className="block text-lg font-black leading-none">{date.getDate()}</span>
+                    <span className={`block text-xs ${selected ? "opacity-80" : "opacity-50"}`}>
+                      {MONTH_SHORT[language][date.getMonth()]}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
+            {/* Time slot grid — appare solo dopo aver scelto il giorno */}
+            {draft.date && availableTimeSlots.length > 0 && (
+              <>
+                <p className="mt-5 text-sm font-bold">{t.time}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {availableTimeSlots.map((slot) => {
+                    const selected = draft.time === slot;
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setDraft((current) => ({ ...current, time: slot }))}
+                        className={`rounded-xl border-2 px-3 py-2 text-sm font-bold tabular-nums transition-colors ${
+                          selected
+                            ? "border-pork-red bg-pork-red text-white"
+                            : "border-pork-ink/10 bg-pork-ink/[0.03] hover:border-pork-red/50"
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Dati cliente */}
             <h2 className="headline mt-8 text-3xl">{t.customer}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <input value={draft.name} onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))} placeholder={t.name} className="rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red" />
@@ -417,6 +407,7 @@ export function DocaProductReservationPage() {
               <textarea rows={3} value={draft.notes} onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))} placeholder={t.notesPlaceholder} aria-label={t.notes} className="rounded-xl border-2 border-pork-ink/10 px-3 py-2.5 outline-none focus:border-pork-red sm:col-span-2" />
             </div>
 
+            {/* Pagamento */}
             <h2 className="headline mt-8 text-3xl">{t.payment}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <PaymentButton active={payment === "on_site"} icon={<Store size={18} />} title={t.onsite} detail={t.onsiteDetail} onClick={() => setPayment("on_site")} />
