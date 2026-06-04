@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
@@ -17,6 +18,7 @@ export function MenuCategoryNav({
 }) {
   const tenant = useTenant();
   const tenantHref = useTenantLocalizedHref();
+  const router = useRouter();
   const isDoca = tenant.id === "doca";
   const [active, setActive] = useState<string>(categories[0]?.id ?? "");
   const categoriesRef = useRef(categories);
@@ -56,6 +58,17 @@ export function MenuCategoryNav({
       )}
     >
       <div className="container-wide flex items-center gap-3">
+        {!hasGlobalHeader && (
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="shrink-0 inline-flex h-9 items-center gap-1.5 rounded-full bg-pork-ink/8 px-3 text-sm font-bold text-pork-ink/70 transition hover:bg-pork-ink/15 hover:text-pork-ink"
+            aria-label="Torna indietro"
+          >
+            <ArrowLeft size={15} />
+            Indietro
+          </button>
+        )}
         <nav
           aria-label="Categorie del menu"
           className="touch-pan-x flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain py-4 pl-0.5 pr-1 [-webkit-overflow-scrolling:touch] md:py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
