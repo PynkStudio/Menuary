@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, Check, ChevronLeft, CreditCard, Minus, Plus, Store } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, Check, ChevronLeft, ChevronRight, CreditCard, Minus, Plus, Store } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useDocaLanguage } from "@/lib/doca-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
@@ -129,6 +129,65 @@ const MONTH_SHORT: Record<"it" | "pt" | "en", string[]> = {
   pt: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"],
   en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 };
+
+function PickerCarousel({ children, itemCount }: { children: React.ReactNode; itemCount: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+
+  function sync() {
+    const el = ref.current;
+    if (!el) return;
+    setAtStart(el.scrollLeft <= 0);
+    setAtEnd(el.scrollLeft >= el.scrollWidth - el.clientWidth - 1);
+  }
+
+  useEffect(() => {
+    sync();
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => ro.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemCount]);
+
+  function scroll(dir: "left" | "right") {
+    ref.current?.scrollBy({ left: dir === "right" ? 260 : -260, behavior: "smooth" });
+    setTimeout(sync, 320);
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => scroll("left")}
+        disabled={atStart}
+        className="shrink-0 inline-flex size-8 items-center justify-center rounded-full border-2 border-pork-ink/10 bg-white text-pork-ink transition-opacity disabled:pointer-events-none disabled:opacity-20"
+        aria-label="Precedente"
+      >
+        <ChevronLeft size={15} />
+      </button>
+      <div
+        ref={ref}
+        onScroll={sync}
+        className="flex flex-1 gap-2 overflow-x-auto scroll-smooth [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {children}
+      </div>
+      <button
+        type="button"
+        onClick={() => scroll("right")}
+        disabled={atEnd}
+        className="shrink-0 inline-flex size-8 items-center justify-center rounded-full border-2 border-pork-ink/10 bg-white text-pork-ink transition-opacity disabled:pointer-events-none disabled:opacity-20"
+        aria-label="Successivo"
+      >
+        <ChevronRight size={15} />
+      </button>
+    </div>
+  );
+}
 
 function formatDate(date: Date) {
   const year = date.getFullYear();
@@ -346,55 +405,59 @@ export function DocaProductReservationPage() {
             {/* Ritiro */}
             <h2 className="headline mt-8 text-3xl">{t.details}</h2>
 
-            {/* Date card picker */}
+            {/* Date card picker — carosello */}
             <p className="mt-4 text-sm font-bold">{t.date}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {availableDates.map((date) => {
-                const value = formatDate(date);
-                const selected = draft.date === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setDraft((current) => ({ ...current, date: value, time: "" }))}
-                    className={`rounded-xl border-2 px-3 py-2 text-center text-sm leading-tight transition-colors ${
-                      selected
-                        ? "border-pork-red bg-pork-red text-white"
-                        : "border-pork-ink/10 bg-pork-ink/[0.03] hover:border-pork-red/50"
-                    }`}
-                  >
-                    <span className="block font-bold">{DAY_SHORT[language][date.getDay()]}</span>
-                    <span className="block text-lg font-black leading-none">{date.getDate()}</span>
-                    <span className={`block text-xs ${selected ? "opacity-80" : "opacity-50"}`}>
-                      {MONTH_SHORT[language][date.getMonth()]}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="mt-2">
+              <PickerCarousel itemCount={availableDates.length}>
+                {availableDates.map((date) => {
+                  const value = formatDate(date);
+                  const selected = draft.date === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setDraft((current) => ({ ...current, date: value, time: "" }))}
+                      className={`shrink-0 rounded-xl border-2 px-3 py-2 text-center text-sm leading-tight transition-colors ${
+                        selected
+                          ? "border-pork-red bg-pork-red text-white"
+                          : "border-pork-ink/10 bg-pork-ink/[0.03] hover:border-pork-red/50"
+                      }`}
+                    >
+                      <span className="block font-bold">{DAY_SHORT[language][date.getDay()]}</span>
+                      <span className="block text-lg font-black leading-none">{date.getDate()}</span>
+                      <span className={`block text-xs ${selected ? "opacity-80" : "opacity-50"}`}>
+                        {MONTH_SHORT[language][date.getMonth()]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </PickerCarousel>
             </div>
 
-            {/* Time slot grid — appare solo dopo aver scelto il giorno */}
+            {/* Time slot grid — carosello, appare solo dopo aver scelto il giorno */}
             {draft.date && availableTimeSlots.length > 0 && (
               <>
                 <p className="mt-5 text-sm font-bold">{t.time}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {availableTimeSlots.map((slot) => {
-                    const selected = draft.time === slot;
-                    return (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setDraft((current) => ({ ...current, time: slot }))}
-                        className={`rounded-xl border-2 px-3 py-2 text-sm font-bold tabular-nums transition-colors ${
-                          selected
-                            ? "border-pork-red bg-pork-red text-white"
-                            : "border-pork-ink/10 bg-pork-ink/[0.03] hover:border-pork-red/50"
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    );
-                  })}
+                <div className="mt-2">
+                  <PickerCarousel itemCount={availableTimeSlots.length}>
+                    {availableTimeSlots.map((slot) => {
+                      const selected = draft.time === slot;
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setDraft((current) => ({ ...current, time: slot }))}
+                          className={`shrink-0 rounded-xl border-2 px-3 py-2 text-sm font-bold tabular-nums transition-colors ${
+                            selected
+                              ? "border-pork-red bg-pork-red text-white"
+                              : "border-pork-ink/10 bg-pork-ink/[0.03] hover:border-pork-red/50"
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      );
+                    })}
+                  </PickerCarousel>
                 </div>
               </>
             )}
