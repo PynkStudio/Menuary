@@ -1,5 +1,3 @@
-import type { PlatformMode } from "@/lib/platform";
-
 interface PreviewNoSlugProps {
   mode: "preview" | "preview-bizery";
 }
