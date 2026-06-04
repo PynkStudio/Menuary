@@ -25,7 +25,7 @@ import { findTenantById } from "@/lib/tenant-registry";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
 import { getTenantContent } from "@/lib/tenant-content";
-import { buildIconSet, themeColor } from "@/lib/favicon";
+import { buildIconSet, buildTenantIconSet, themeColor } from "@/lib/favicon";
 import { CLIENTS_PUBLIC_ORIGIN, clientsSite } from "@/lib/clients-config";
 import { STUDIO_PUBLIC_ORIGIN, studioSite } from "@/lib/studio-config";
 import { isAppLocale, LOCALE_HEADER } from "@/i18n/locales";
@@ -374,7 +374,7 @@ export async function generateMetadata(): Promise<Metadata> {
             }
           : {}),
     },
-    icons: buildIconSet(mode, tenant),
+    icons: previewTenantId ? buildTenantIconSet(tenant) : buildIconSet(mode, tenant),
   };
 }
 
