@@ -19,6 +19,12 @@ import { useHydrated } from "@/components/core/providers";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 
+const DOCA_CATEGORY_TITLES: Record<string, string> = {
+  pane: "Salati",
+  dolci: "Dolci",
+  caffe: "Bevande",
+};
+
 export function InteractiveMenu({
   showOnlyAvailable = true,
 }: {
@@ -65,8 +71,13 @@ export function InteractiveMenu({
   }, [tableParam, hydrated, setContext, currentTenantId, tenant.id]);
 
   const categories = useMemo(
-    () => selectCategoriesOrdered({ categories: categoriesRaw } as never),
-    [categoriesRaw],
+    () =>
+      selectCategoriesOrdered({ categories: categoriesRaw } as never).map((category) =>
+        tenant.id === "doca" && DOCA_CATEGORY_TITLES[category.id]
+          ? { ...category, title: DOCA_CATEGORY_TITLES[category.id] }
+          : category,
+      ),
+    [categoriesRaw, tenant.id],
   );
 
   const tableIdForMenus = cartContext.type === "tavolo" ? cartContext.tableId ?? null : null;

@@ -1,19 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { ShoppingBag, Truck } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { useDocaCopy } from "@/lib/doca-i18n";
-import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
-export function DeliveryStrip({ showDocaReservationCta = false }: { showDocaReservationCta?: boolean }) {
+export function DeliveryStrip() {
   const tenant = useTenant();
   const content = getTenantContent(tenant.id);
   const docaCopy = useDocaCopy();
   const isDoca = tenant.id === "doca";
-  const tenantHref = useTenantLocalizedHref();
 
   return (
     <section className={`tenant-delivery-strip bg-pork-ink text-pork-cream ${isDoca ? "doca-delivery-strip" : ""}`}>
@@ -30,14 +27,6 @@ export function DeliveryStrip({ showDocaReservationCta = false }: { showDocaRese
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {isDoca && showDocaReservationCta && (
-            <Link
-              href={tenantHref("/prenota")}
-              className="inline-flex min-h-16 items-center justify-center border-2 border-pork-mustard bg-pork-mustard px-5 py-3 text-base font-black text-pork-ink transition-transform hover:-translate-y-1"
-            >
-              Prenota ora
-            </Link>
-          )}
           {content.delivery.partners.map((d) => (
             <a
               key={d.name}

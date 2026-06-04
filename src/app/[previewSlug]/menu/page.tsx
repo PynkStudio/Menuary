@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { TenantProvider } from "@/components/core/tenant-provider";
 import { MenuPageShell } from "@/components/modules/menu/menu-page-shell";
 import { Footer } from "@/components/tenant-shell/footer";
-import { Navbar } from "@/components/tenant-shell/navbar";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
@@ -31,7 +30,6 @@ export default async function PreviewTenantMenu({
         data-tenant-surface={tenant.id}
         style={themeVars as React.CSSProperties}
       >
-        <Navbar />
         <MenuPageShell />
         <Footer />
       </div>

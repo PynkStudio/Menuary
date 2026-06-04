@@ -81,7 +81,7 @@ export function MenuPageShell() {
         <InteractiveMenu />
       </Suspense>
 
-      <DeliveryStrip showDocaReservationCta={isDoca} />
+      <DeliveryStrip />
     </>
   );
 }

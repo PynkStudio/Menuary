@@ -1,10 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTenant } from "@/components/core/tenant-provider";
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import type { MenuCategory } from "@/lib/menu-data";
 
 export function MenuCategoryNav({ categories }: { categories: MenuCategory[] }) {
+  const tenant = useTenant();
+  const tenantHref = useTenantLocalizedHref();
+  const isDoca = tenant.id === "doca";
   const [active, setActive] = useState<string>(categories[0]?.id ?? "");
   const categoriesRef = useRef(categories);
   categoriesRef.current = categories;
@@ -34,11 +41,18 @@ export function MenuCategoryNav({ categories }: { categories: MenuCategory[] }) 
   }, [categoryIds]);
 
   return (
-    <div className="sticky z-30 -mx-5 overflow-x-hidden border-y border-pork-ink/10 bg-pork-cream/95 backdrop-blur-lg sm:-mx-8 lg:-mx-12 top-[calc(4.75rem+env(safe-area-inset-top))] md:top-[calc(5.5rem+env(safe-area-inset-top))]">
-      <div className="container-wide">
+    <div
+      className={cn(
+        "sticky z-30 -mx-5 overflow-x-hidden border-y border-pork-ink/10 bg-pork-cream/95 backdrop-blur-lg sm:-mx-8 lg:-mx-12",
+        isDoca
+          ? "top-0"
+          : "top-[calc(4.75rem+env(safe-area-inset-top))] md:top-[calc(5.5rem+env(safe-area-inset-top))]",
+      )}
+    >
+      <div className="container-wide flex items-center gap-3">
         <nav
           aria-label="Categorie del menu"
-          className="touch-pan-x flex gap-2 overflow-x-auto overscroll-x-contain py-4 pl-0.5 pr-1 [-webkit-overflow-scrolling:touch] md:py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="touch-pan-x flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain py-4 pl-0.5 pr-1 [-webkit-overflow-scrolling:touch] md:py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {categories.map((c) => (
             <a
@@ -55,6 +69,12 @@ export function MenuCategoryNav({ categories }: { categories: MenuCategory[] }) 
             </a>
           ))}
         </nav>
+        {isDoca && (
+          <Link href={tenantHref("/prenota")} className="btn-primary shrink-0 text-sm">
+            <CalendarDays size={18} />
+            Prenota ora
+          </Link>
+        )}
       </div>
     </div>
   );

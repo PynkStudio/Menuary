@@ -148,7 +148,7 @@ function seedMenuLists(
       {
         ...fullMenu,
         name: "Banco Doca",
-        description: "Pane, dolci e caffè disponibili in bottega.",
+        description: "Salati, dolci e bevande disponibili in bottega.",
       },
     ];
   }
