@@ -77,7 +77,7 @@ export function Navbar() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)] transition-all duration-300",
+          "sticky inset-x-0 top-0 z-50 pt-[env(safe-area-inset-top)] transition-all duration-300",
           scrolled
             ? "bg-pork-cream shadow-md"
             : "bg-transparent"

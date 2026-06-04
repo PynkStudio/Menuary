@@ -548,7 +548,7 @@ export default async function RootLayout({
                   ) : (
                     <>
                       <SiteChrome />
-                      <main className="min-w-0 overflow-x-hidden">{children}</main>
+                      <main className="min-w-0 overflow-x-clip">{children}</main>
                       <SiteFooterGate />
                     </>
                   )}

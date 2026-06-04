@@ -119,7 +119,7 @@ export const faakMenu: MenuCategory[] = [
 export const docaMenu: MenuCategory[] = [
   {
     id: "pane",
-    title: "Pane",
+    title: "Salati",
     subtitle: "Lievitazione naturale, farine vive",
     description:
       "Una carta corta da forno di quartiere: pane quotidiano, pani speciali e pezzi legati alla memoria brasiliana.",
@@ -153,7 +153,7 @@ export const docaMenu: MenuCategory[] = [
   },
   {
     id: "dolci",
-    title: "Dolci brasiliani",
+    title: "Dolci",
     subtitle: "Guava, mais, carote, manioca",
     description:
       "Niente croissant di repertorio: dolci da banco con ingredienti brasiliani e mano da pasticceria contemporanea.",
@@ -205,7 +205,7 @@ export const docaMenu: MenuCategory[] = [
   },
   {
     id: "caffe",
-    title: "Caffè",
+    title: "Bevande",
     subtitle: "Cafezal e tempi piu lenti",
     description:
       "Espresso italiano e filtro brasiliano, per tenere insieme il gesto veloce e quello conviviale.",
