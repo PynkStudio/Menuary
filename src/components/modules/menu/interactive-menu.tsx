@@ -18,6 +18,7 @@ import { useCartStore } from "@/store/cart-store";
 import { useHydrated } from "@/components/core/providers";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
+import { MenuSkeleton } from "@/components/modules/menu/menu-skeleton";
 
 const DOCA_CATEGORY_TITLES: Record<string, string> = {
   pane: "Salati",
@@ -144,7 +145,9 @@ export function InteractiveMenu({
     [populatedCategories],
   );
 
-  if (!hydrated || currentTenantId !== tenant.id || syncStatus === "loading") return null;
+  if (!hydrated || currentTenantId !== tenant.id || syncStatus === "loading") {
+    return <MenuSkeleton hasGlobalHeader={hasGlobalHeader} />;
+  }
 
   return (
     <>
