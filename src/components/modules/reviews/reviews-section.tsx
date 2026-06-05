@@ -12,6 +12,7 @@ import { useTenant } from "@/components/core/tenant-provider";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useDocaCopy } from "@/lib/doca-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
+import { DocaMobileCarousel } from "@/components/tenants/doca/doca-mobile-carousel";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 import { tenantLocaleFromPath } from "@/lib/tenant-localized-path";
 import { prioritizeReviewsByLanguage } from "@/lib/google/review-language";
@@ -150,8 +151,8 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
           </div>
         </div>
 
-        <div className={`mt-12 grid gap-5 md:grid-cols-3 ${isDoca ? "doca-mobile-carousel" : ""}`}>
-          {shown.map((r, i) => (
+        {(() => {
+          const cards = shown.map((r, i) => (
             <motion.div
               key={r.id}
               initial={{ opacity: 0, y: 24 }}
@@ -161,8 +162,15 @@ export function ReviewsSection({ dark = false, limit = 3 }: { dark?: boolean; li
             >
               <ReviewCard review={r} variant={dark ? "dark" : "light"} />
             </motion.div>
-          ))}
-        </div>
+          ));
+          return isDoca ? (
+            <DocaMobileCarousel className="mt-12 grid gap-5 md:grid-cols-3 doca-mobile-carousel">
+              {cards}
+            </DocaMobileCarousel>
+          ) : (
+            <div className="mt-12 grid gap-5 md:grid-cols-3">{cards}</div>
+          );
+        })()}
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           {!isDoca && (

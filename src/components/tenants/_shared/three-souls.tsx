@@ -10,6 +10,7 @@ import { getTenantContent } from "@/lib/tenant-content";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useDocaCopy } from "@/lib/doca-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
+import { DocaMobileCarousel } from "@/components/tenants/doca/doca-mobile-carousel";
 
 type RichTextPart = {
   text: string;
@@ -49,45 +50,52 @@ export function ThreeSouls() {
           </p>
         </div>
 
-        <div className={`grid gap-5 md:grid-cols-3 ${isDoca ? "doca-mobile-carousel" : ""}`}>
-          {content.souls.map((soul, i) => {
+        {(() => {
+          const cards = content.souls.map((soul, i) => {
             const localizedSoul = isDoca ? docaCopy.categories[i] : undefined;
             return (
-            <motion.div
-              key={soul.id}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
-            >
-              <Link
-                href={tenantHref(`${previewPrefix}${soul.href}`)}
-                className="group relative block h-[28rem] overflow-hidden rounded-3xl bg-pork-ink shadow-xl"
+              <motion.div
+                key={soul.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
               >
-                <Image
-                  src={soul.image}
-                  alt=""
-                  fill
-                  loading={isDoca ? "eager" : "lazy"}
-                  sizes="(max-width: 640px) 82vw, (max-width: 768px) 100vw, 400px"
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-pork-ink via-pork-ink/40 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-6 text-pork-cream">
-                  <span className="impact-title text-sm text-pork-mustard">
-                    {localizedSoul?.kicker ?? soul.kicker}
-                  </span>
-                  <h3 className="headline mt-1 text-4xl">{localizedSoul?.title ?? soul.title}</h3>
-                  <p className="mt-2 text-pork-cream/80">{localizedSoul?.desc ?? soul.desc}</p>
-                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard transition-all group-hover:gap-3">
-                    {isDoca ? docaCopy.menu : "Scopri i piatti"} <ArrowRight size={16} />
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
+                <Link
+                  href={tenantHref(`${previewPrefix}${soul.href}`)}
+                  className="group relative block h-[28rem] overflow-hidden rounded-3xl bg-pork-ink shadow-xl"
+                >
+                  <Image
+                    src={soul.image}
+                    alt=""
+                    fill
+                    loading={isDoca ? "eager" : "lazy"}
+                    sizes="(max-width: 640px) 82vw, (max-width: 768px) 100vw, 400px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-pork-ink via-pork-ink/40 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-6 text-pork-cream">
+                    <span className="impact-title text-sm text-pork-mustard">
+                      {localizedSoul?.kicker ?? soul.kicker}
+                    </span>
+                    <h3 className="headline mt-1 text-4xl">{localizedSoul?.title ?? soul.title}</h3>
+                    <p className="mt-2 text-pork-cream/80">{localizedSoul?.desc ?? soul.desc}</p>
+                    <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard transition-all group-hover:gap-3">
+                      {isDoca ? docaCopy.menu : "Scopri i piatti"} <ArrowRight size={16} />
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
             );
-          })}
-        </div>
+          });
+          return isDoca ? (
+            <DocaMobileCarousel className="grid gap-5 md:grid-cols-3 doca-mobile-carousel">
+              {cards}
+            </DocaMobileCarousel>
+          ) : (
+            <div className="grid gap-5 md:grid-cols-3">{cards}</div>
+          );
+        })()}
       </div>
     </section>
   );

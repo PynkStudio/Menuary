@@ -520,7 +520,7 @@
     }
 
     [data-tenant-surface="doca"] .doca-mobile-carousel > * {
-      flex: 0 0 min(82vw, 20rem);
+      flex: 0 0 min(78vw, 19rem);
       scroll-snap-align: start;
     }
 
@@ -567,7 +567,7 @@
     }
 
     [data-tenant-surface="doca"] .doca-language-selector {
-      flex-direction: row;
+      flex-direction: column;
     }
 
     [data-tenant-surface="doca"] .doca-hero-text {
