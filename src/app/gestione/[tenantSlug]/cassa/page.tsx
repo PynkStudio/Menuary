@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Power, Plus, ArrowDown, ArrowUp, Banknote, CreditCard, AlarmClock } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { openCashSession, closeCashSession, addCashMovement } from "./actions";
 import { confirmPendingOrder, rejectPendingOrder } from "../ordini/actions";
@@ -127,6 +128,7 @@ export default async function CassaPage({
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) return null;
+  if (!getGestioneModuleAccess(tenant.features).canManageCheckout) notFound();
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 

@@ -137,6 +137,19 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     },
   },
   {
+    key: "cashRegister",
+    label: "Cassa",
+    description: "Abilita apertura, chiusura e movimenti del registro di cassa nel pannello gestione.",
+    category: "Operatività",
+    requiresAny: ["takeaway", "tableOrders", "orderKiosk"],
+    verticalCopy: {
+      services: {
+        label: "Cassa",
+        description: "Abilita apertura, chiusura e movimenti del registro incassi nel pannello gestione.",
+      },
+    },
+  },
+  {
     key: "kitchenDisplay",
     label: "Schermo cucina",
     description: "Rende disponibile la vista operativa per la brigata.",

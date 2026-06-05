@@ -48,6 +48,7 @@ export type TenantFeatureFlags = {
   analytics: boolean;
   takeawaySlots: boolean;
   deliveryHub: boolean;
+  cashRegister: boolean;
   inventoryFoodCost: boolean;
   printStations: boolean;
   staffRoles: boolean;

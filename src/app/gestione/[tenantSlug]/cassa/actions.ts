@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { TENANTS } from "@/lib/tenant-registry";
 
 function num(formData: FormData, key: string): number {
   const raw = formData.get(key);
@@ -10,9 +12,17 @@ function num(formData: FormData, key: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function assertCashRegisterEnabled(tenantSlug: string) {
+  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  if (!tenant || !getGestioneModuleAccess(tenant.features).canManageCheckout) {
+    throw new Error("cash_register_disabled");
+  }
+}
+
 export async function openCashSession(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
   if (!tenantSlug) return;
+  assertCashRegisterEnabled(tenantSlug);
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
@@ -34,6 +44,7 @@ export async function closeCashSession(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
   const sessionId = String(formData.get("sessionId") ?? "");
   if (!tenantSlug || !sessionId) return;
+  assertCashRegisterEnabled(tenantSlug);
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
@@ -85,6 +96,7 @@ export async function addCashMovement(formData: FormData) {
   const amount = num(formData, "amount");
 
   if (!tenantSlug || !sessionId || !kind || amount <= 0) return;
+  assertCashRegisterEnabled(tenantSlug);
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;

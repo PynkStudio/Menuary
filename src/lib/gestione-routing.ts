@@ -28,7 +28,7 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     canManageMenu: modules.onlineMenu,
     canManageTables: modules.tablePlanner,
     canManageReservations: modules.reservations,
-    canManageCheckout: hasOrders,
+    canManageCheckout: modules.cashRegister,
     canManageShifts: modules.staffRoles,
     canManageStaff: modules.staffRoles,
     canViewAnalytics: modules.analytics,
