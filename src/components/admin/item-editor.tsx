@@ -942,7 +942,7 @@ export function ItemEditor({
 
             {activeLang === "it" ? (
               <p className="text-xs text-pork-ink/45">
-                I campi in italiano sono quelli principali nell'editor qui sopra.
+                I campi in italiano sono quelli principali nell&apos;editor qui sopra.
               </p>
             ) : (
               <div className="space-y-3">
