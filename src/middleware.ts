@@ -41,6 +41,7 @@ import {
 } from "@/lib/tenant-locales";
 
 const LOCALE_SET = new Set<string>(SUPPORTED_LOCALES);
+const TENANT_LOCALE_REWRITE_HEADER = "x-tenant-locale-rewrite";
 
 function extractLocaleFromPath(pathname: string): { locale: AppLocale | null; rest: string } {
   const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
@@ -309,6 +310,7 @@ function tenantLocaleRewrite(
   requestHeaders.set(LOCALE_HEADER, locale);
   requestHeaders.set(PLATFORM_MODE_HEADER, mode);
   requestHeaders.set("x-tenant-public-path", request.nextUrl.pathname);
+  requestHeaders.set(TENANT_LOCALE_REWRITE_HEADER, "1");
   if (previewTenantId) {
     requestHeaders.set("x-preview-tenant-id", previewTenantId);
   }
@@ -346,6 +348,7 @@ function handlePreviewTenantLocale(
   const { pathname } = request.nextUrl;
   const parts = pathname.split("/").filter(Boolean);
   if (parts[0] !== previewSlug || parts[1] === "gestione" || parts[1] === "k") return null;
+  if (request.headers.get(TENANT_LOCALE_REWRITE_HEADER) === "1") return null;
   const routeLocale = matchTenantLocale(parts[1], config.locales);
   if (!routeLocale) {
     const locale = detectTenantLocaleFromRequest(request, tenantId, config);
