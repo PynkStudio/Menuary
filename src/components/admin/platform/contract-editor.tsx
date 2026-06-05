@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -45,6 +45,7 @@ import {
 } from "@/lib/contracts/contracts-store";
 import { upsertSubscriptionFromContract } from "@/lib/contracts/contract-to-subscription";
 import { useMailLauncher } from "@/components/admin/inbox/mail-launcher";
+import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
 
 type Props = {
   contractId?: string;
@@ -62,6 +63,14 @@ export function ContractEditor({ contractId }: Props) {
   const [packageSlug, setPackageSlug] = useState<string>("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  type ContractDraft = { data: ContractData; overrides: Record<string, string> };
+  const draftKey = `draft:contract:${contractId ?? "new"}`;
+  const contractDraft = useDraftPersistence<ContractDraft>(draftKey, {
+    serverUpdatedAt: stored?.updatedAt,
+  });
+  // Segnala che il caricamento iniziale da contracts-store è avvenuto
+  const loadedRef = useRef(false);
 
   useEffect(() => {
     if (contractId) {
@@ -81,6 +90,7 @@ export function ContractEditor({ contractId }: Props) {
         setLeadId(c.leadId ?? "");
         setPackageSlug(c.packageSlug ?? "");
       }
+      loadedRef.current = true;
       return;
     }
     const prefillLead = search.get("leadId");
@@ -88,8 +98,21 @@ export function ContractEditor({ contractId }: Props) {
       setLeadId(prefillLead);
       applyLead(prefillLead);
     }
+    loadedRef.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contractId]);
+
+  // Salva bozza ad ogni modifica utente (salta il primo ciclo = caricamento iniziale)
+  const skipFirstSaveRef = useRef(true);
+  useEffect(() => {
+    if (skipFirstSaveRef.current) {
+      skipFirstSaveRef.current = false;
+      return;
+    }
+    if (loadedRef.current) contractDraft.saveDraft({ data, overrides });
+    // contractDraft.saveDraft è stabile, data/overrides sono le dipendenze rilevanti
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, overrides]);
 
   const clauses = useMemo(() => buildClauses(data), [data]);
   const attachments = useMemo(() => buildAttachments(data), [data]);
@@ -153,6 +176,7 @@ export function ContractEditor({ contractId }: Props) {
       id: stored?.id,
     });
     setStored(saved);
+    contractDraft.clearDraft();
     setFeedback("Contratto salvato nello storico");
     if (!stored && saved) router.replace(`/admin/contratti/${saved.id}`);
     return saved;
@@ -302,6 +326,32 @@ export function ContractEditor({ contractId }: Props) {
           </Link>
           <span className={`status-pill ${statusColor}`}>{statusLabel}</span>
         </div>
+
+        {contractDraft.draftDate && (
+          <div className="contract-feedback" style={{ background: "#fffbeb", borderColor: "#f59e0b", color: "#92400e" }}>
+            <span style={{ fontSize: 13 }}>
+              Bozza non salvata del{" "}
+              {contractDraft.draftDate.toLocaleDateString("it-IT", {
+                day: "2-digit", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit",
+              })}
+            </span>
+            <div style={{ marginTop: 6, display: "flex", gap: 8 }}>
+              <button type="button" onClick={() => contractDraft.clearDraft()}
+                style={{ fontSize: 12, fontWeight: 700, color: "#92400e", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                Ignora
+              </button>
+              <button type="button"
+                onClick={() => {
+                  const d = contractDraft.readDraft();
+                  if (d) { setData(d.data); setOverrides(d.overrides); contractDraft.clearDraft(); }
+                }}
+                style={{ fontSize: 12, fontWeight: 700, background: "#92400e", color: "#fff", border: "none", borderRadius: 999, padding: "3px 10px", cursor: "pointer" }}>
+                Recupera modifiche
+              </button>
+            </div>
+          </div>
+        )}
 
         {feedback && <div className="contract-feedback">{feedback}</div>}
 

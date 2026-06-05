@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 import {
   Facebook,
   Globe2,
+  HelpCircle,
   Instagram,
   Linkedin,
   Lock,
@@ -16,6 +17,7 @@ import {
   Music2,
   Phone,
   Twitter,
+  X,
   Youtube,
 } from "lucide-react";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
@@ -94,6 +96,100 @@ function socialHref(key: SocialLinkKey, value: string) {
   }
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
   return `https://${trimmed}`;
+}
+
+/** Tooltip su desktop, bottom-sheet su mobile per i link email del footer. */
+function FooterEmailHint({
+  href,
+  label,
+  description,
+}: {
+  href: string;
+  label: string;
+  description: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    if (!open || isMobile) return;
+    function onClickOutside(e: MouseEvent) {
+      if (!triggerRef.current?.parentElement?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open, isMobile]);
+
+  return (
+    <span className="relative inline-flex items-center gap-1">
+      <a href={href} className="text-pork-cream/55 transition-colors hover:text-pork-mustard hover:underline">
+        {label}
+      </a>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-label={`Info su ${label}`}
+        onClick={() => setOpen((v) => !v)}
+        className="text-pork-cream/30 transition-colors hover:text-pork-mustard"
+      >
+        <HelpCircle size={12} />
+      </button>
+
+      {/* Desktop: tooltip */}
+      {open && !isMobile && (
+        <span
+          role="tooltip"
+          className="absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 rounded-xl bg-pork-cream px-3 py-2.5 text-xs text-pork-ink shadow-xl"
+        >
+          {description}
+        </span>
+      )}
+
+      {/* Mobile: bottom-sheet overlay */}
+      {open && isMobile && (
+        <span
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[100] flex items-end"
+        >
+          <span
+            className="absolute inset-0 bg-pork-ink/60"
+            onClick={() => setOpen(false)}
+          />
+          <span className="relative w-full rounded-t-3xl bg-pork-cream px-6 pb-10 pt-5 shadow-2xl">
+            <span className="mb-3 flex items-center justify-between">
+              <span className="font-bold text-pork-ink">{label}</span>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Chiudi"
+                className="rounded-full p-1 text-pork-ink/40 hover:text-pork-ink"
+              >
+                <X size={18} />
+              </button>
+            </span>
+            <p className="text-sm text-pork-ink/70">{description}</p>
+            <a
+              href={href}
+              className="mt-4 inline-block rounded-full bg-pork-ink px-5 py-2.5 text-sm font-bold text-pork-cream"
+              onClick={() => setOpen(false)}
+            >
+              Scrivi ora
+            </a>
+          </span>
+        </span>
+      )}
+    </span>
+  );
 }
 
 export function Footer() {
@@ -293,20 +389,18 @@ export function Footer() {
                 Cookie
               </Link>
               {workWithUsEnabled && workWithUsRecipient && (
-                <a
+                <FooterEmailHint
                   href={mailtoHref(workWithUsRecipient, `Lavora con noi - ${tenant.name}`)}
-                  className="text-pork-cream/55 transition-colors hover:text-pork-mustard hover:underline"
-                >
-                  Lavora con noi
-                </a>
+                  label="Lavora con noi"
+                  description={`Vuoi far parte del team di ${tenant.name}? Mandaci il tuo curriculum o una lettera di presentazione. Siamo sempre aperti a nuove candidature.`}
+                />
               )}
               {collaborationsEnabled && collaborationsRecipient && (
-                <a
+                <FooterEmailHint
                   href={mailtoHref(collaborationsRecipient, `Proposta di collaborazione - ${tenant.name}`)}
-                  className="text-pork-cream/55 transition-colors hover:text-pork-mustard hover:underline"
-                >
-                  Collaborazioni
-                </a>
+                  label="Collaborazioni"
+                  description={`Sei un influencer, content creator, azienda o fornitore e vuoi proporre una collaborazione o un'iniziativa commerciale con ${tenant.name}? Scrivici.`}
+                />
               )}
             </span>
             <span className="hidden text-pork-cream/25 sm:inline" aria-hidden>

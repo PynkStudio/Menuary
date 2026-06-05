@@ -21,17 +21,24 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { tenantId, locationId, date, closed, slots, label } = (await request.json()) as {
-    tenantId: string;
-    locationId?: string | null;
-    date: string;
-    closed: boolean;
-    slots: string[];
-    label?: string;
-  };
+  const { tenantId, locationId, date, end_date, weekday, kind, closed, slots, label } =
+    (await request.json()) as {
+      tenantId: string;
+      locationId?: string | null;
+      date: string;
+      end_date?: string | null;
+      weekday?: number | null;
+      kind?: string;
+      closed: boolean;
+      slots: string[];
+      label?: string | null;
+    };
 
   await upsertSpecialHour(tenantId, {
     date,
+    end_date: end_date ?? null,
+    weekday: weekday ?? null,
+    kind: (kind ?? "single") as import("@/lib/data/special-hours").SpecialHourKind,
     closed,
     slots,
     label: label ?? null,

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useTransition, useRef } from "react";
+import { useState, useEffect, useTransition, useRef, useCallback } from "react";
+import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
 import { Bold, IndentDecrease, IndentIncrease, Italic, Link2, List, ListOrdered, Paperclip, Quote, Send, Trash2, Underline, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
@@ -124,6 +125,30 @@ export function ComposeDrawer({
   const [isPending, start]      = useTransition();
   const toRef = useRef<HTMLInputElement>(null);
 
+  // Autosave bozza solo per composizione fresh (non reply/forward con prefill)
+  const isFreshCompose = !initialTo && !initialSubject && !initialBody;
+  const composeDraft = useDraftPersistence<{ to: string; subject: string; bodyHtml: string }>(
+    "draft:compose",
+  );
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+
+  // Watcher su to/subject: salva bozza quando cambiano
+  useEffect(() => {
+    if (!isFreshCompose || !open) return;
+    composeDraft.saveDraft({ to, subject, bodyHtml: bodyHtmlRef.current });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [to, subject]);
+
+  // Interval per catturare il corpo contenteditable (non è React state)
+  useEffect(() => {
+    if (!isFreshCompose || !open) return;
+    const id = window.setInterval(() => {
+      composeDraft.saveDraft({ to, subject, bodyHtml: bodyHtmlRef.current });
+    }, 3000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [to, subject, open, isFreshCompose]);
+
   // Carica firma quando cambia brand
   useEffect(() => {
     if (!open || !canCompose) return;
@@ -142,6 +167,11 @@ export function ComposeDrawer({
   // All'apertura applica i prefill (To / Oggetto / Brand) e gestisce il focus
   useEffect(() => {
     if (!open) return;
+    if (isFreshCompose && composeDraft.draftDate) {
+      setShowDraftBanner(true);
+    } else {
+      setShowDraftBanner(false);
+    }
     if (initialTo !== undefined) setTo(initialTo);
     if (initialSubject !== undefined) setSubject(initialSubject);
     const nextBodyHtml = plainTextToHtml(initialBody ?? "");
@@ -167,7 +197,21 @@ export function ComposeDrawer({
     bodyHtmlRef.current = EMPTY_EDITOR_HTML;
     setTo(""); setSubject(""); setBodyHtml(EMPTY_EDITOR_HTML); setError(null); setAttachments([]);
     if (editorRef.current) editorRef.current.innerHTML = EMPTY_EDITOR_HTML;
+    composeDraft.clearDraft();
+    setShowDraftBanner(false);
   }
+
+  const restoreComposeDraft = useCallback(() => {
+    const d = composeDraft.readDraft();
+    if (!d) return;
+    setTo(d.to);
+    setSubject(d.subject);
+    bodyHtmlRef.current = d.bodyHtml;
+    setBodyHtml(d.bodyHtml);
+    if (editorRef.current) editorRef.current.innerHTML = d.bodyHtml;
+    composeDraft.clearDraft();
+    setShowDraftBanner(false);
+  }, [composeDraft]);
 
   async function handleFiles(files: FileList | null) {
     if (!files || !files.length) return;
@@ -286,6 +330,29 @@ export function ComposeDrawer({
             <X size={16} />
           </button>
         </div>
+
+        {/* Banner bozza */}
+        {showDraftBanner && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-5 py-2.5">
+            <span className="text-xs font-semibold text-amber-800">
+              Hai una bozza del{" "}
+              {composeDraft.draftDate?.toLocaleDateString("it-IT", {
+                day: "2-digit", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit",
+              })}
+            </span>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => { composeDraft.clearDraft(); setShowDraftBanner(false); }}
+                className="text-xs font-bold text-amber-700 hover:underline">
+                Ignora
+              </button>
+              <button type="button" onClick={restoreComposeDraft}
+                className="rounded-full bg-amber-700 px-3 py-1 text-xs font-bold text-white hover:opacity-90">
+                Recupera
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Campi */}
         <div className="divide-y divide-[var(--ma-line)]">

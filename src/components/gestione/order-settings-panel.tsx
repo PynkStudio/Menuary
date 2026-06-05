@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Bike, Bot, CheckCircle2, Clock, QrCode, Save, ShoppingBag, UtensilsCrossed } from "lucide-react";
+import { AlertTriangle, Bike, Bot, CheckCircle2, Clock, QrCode, RotateCcw, Save, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import type { TenantOrderSettings } from "@/lib/types";
+import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
 
 type FormState = Omit<TenantOrderSettings, "id" | "tenantId" | "locationId">;
 
@@ -40,6 +41,7 @@ export function OrderSettingsPanel() {
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const draft = useDraftPersistence<FormState>(`draft:${tenant.id}:order-settings`);
   const [waSession, setWaSession] = useState<WhatsappSession | null>(null);
 
   useEffect(() => {
@@ -80,7 +82,11 @@ export function OrderSettingsPanel() {
   }, [tenant.id]);
 
   function patch<K extends keyof FormState>(key: K, value: FormState[K]) {
-    setForm((f) => ({ ...f, [key]: value }));
+    setForm((f) => {
+      const next = { ...f, [key]: value };
+      draft.saveDraft(next);
+      return next;
+    });
   }
 
   async function save(e: React.FormEvent) {
@@ -98,6 +104,7 @@ export function OrderSettingsPanel() {
         setMsg(err.error ?? "Errore salvataggio");
       } else {
         setMsg("Impostazioni salvate.");
+        draft.clearDraft();
       }
     } finally {
       setSaving(false);
@@ -110,6 +117,28 @@ export function OrderSettingsPanel() {
 
   return (
     <form onSubmit={save} className="max-w-3xl space-y-8">
+      {draft.draftDate && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-50 px-4 py-3">
+          <p className="text-sm font-semibold text-amber-800">
+            Modifiche non salvate del{" "}
+            {draft.draftDate.toLocaleDateString("it-IT", {
+              day: "2-digit", month: "long", year: "numeric",
+              hour: "2-digit", minute: "2-digit",
+            })}
+          </p>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => draft.clearDraft()}
+              className="rounded-full px-3 py-1.5 text-xs font-bold text-amber-700 hover:bg-amber-100">
+              Ignora
+            </button>
+            <button type="button"
+              onClick={() => { const s = draft.readDraft(); if (s) { setForm(s); draft.clearDraft(); } }}
+              className="inline-flex items-center gap-1 rounded-full bg-amber-700 px-3 py-1.5 text-xs font-bold text-white hover:opacity-90">
+              <RotateCcw size={12} /> Recupera
+            </button>
+          </div>
+        </div>
+      )}
       <header>
         <h1 className="text-3xl font-bold">Impostazioni ordini</h1>
         <p className="mt-2 text-sm text-zinc-500">
