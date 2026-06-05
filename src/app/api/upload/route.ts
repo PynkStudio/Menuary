@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "node:fs/promises";
-import path from "node:path";
 import sharp from "sharp";
 import { ADMIN_TOKEN_HEADER, getAdminPassword } from "@/lib/admin-auth";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const MAX_SIZE = 6 * 1024 * 1024;
+const BUCKET = "menu-images";
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get(ADMIN_TOKEN_HEADER);
@@ -41,9 +41,18 @@ export async function POST(req: NextRequest) {
     ? tenantId.trim().replace(/[^a-z0-9-]/gi, "-").toLowerCase()
     : "shared";
   const name = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.webp`;
-  const dir = path.join(process.cwd(), "public", "uploads", safeTenant);
-  await mkdir(dir, { recursive: true });
-  const filepath = path.join(dir, name);
-  await writeFile(filepath, webp);
-  return NextResponse.json({ path: `/uploads/${safeTenant}/${name}`, format: "webp" });
+  const objectPath = `${safeTenant}/${name}`;
+
+  const supabase = createSupabaseAdminClient();
+  const { error: uploadError } = await supabase.storage.from(BUCKET).upload(objectPath, webp, {
+    contentType: "image/webp",
+    cacheControl: "31536000, immutable",
+    upsert: false,
+  });
+  if (uploadError) {
+    return NextResponse.json({ error: "upload-failed", detail: uploadError.message }, { status: 500 });
+  }
+
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
+  return NextResponse.json({ path: data.publicUrl, format: "webp" });
 }
