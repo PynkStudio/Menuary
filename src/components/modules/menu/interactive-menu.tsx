@@ -218,6 +218,11 @@ export function InteractiveMenu({
                     {category.availability.from}\u2013{category.availability.to}
                   </span>
                 )}
+                {category.description && (
+                  <p className="max-w-2xl text-base leading-7 text-pork-ink/65 sm:text-lg">
+                    {category.description}
+                  </p>
+                )}
               </header>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {category.items.map((item) => (

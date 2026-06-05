@@ -4,6 +4,7 @@ import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
+  Archive,
   ChevronDown,
   ChevronUp,
   CheckCircle2,
@@ -17,6 +18,7 @@ import {
   Search,
   Save,
   Trash2,
+  RotateCcw,
   XCircle,
 } from "lucide-react";
 import {
@@ -108,7 +110,10 @@ export default function AdminMenuPage() {
   const updateCategory = useMenuStore((s) => s.updateCategory);
   const addCategory = useMenuStore((s) => s.addCategory);
   const removeCategory = useMenuStore((s) => s.removeCategory);
+  const reorderCategories = useMenuStore((s) => s.reorderCategories);
   const addItem = useMenuStore((s) => s.addItem);
+  const archivedItems = useMenuStore((s) => s.archivedItems);
+  const restoreArchivedItem = useMenuStore((s) => s.restoreArchivedItem);
   const addMenuList = useMenuStore((s) => s.addMenuList);
   const updateMenuList = useMenuStore((s) => s.updateMenuList);
   const removeMenuList = useMenuStore((s) => s.removeMenuList);
@@ -133,6 +138,8 @@ export default function AdminMenuPage() {
   const [canDragItems, setCanDragItems] = useState(false);
   const [itemPickerQuery, setItemPickerQuery] = useState("");
   const [importFromMenuId, setImportFromMenuId] = useState("");
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<string>>(() => new Set());
+  const [showArchivedCategoryIds, setShowArchivedCategoryIds] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     const media = window.matchMedia("(pointer: fine)");
@@ -202,12 +209,21 @@ export default function AdminMenuPage() {
       out = out.filter(
         (i) =>
           i.name.toLowerCase().includes(q) ||
-          i.description?.toLowerCase().includes(q),
+          i.description?.toLowerCase().includes(q) ||
+          i.ingredients?.some((ingredient) => ingredient.name.toLowerCase().includes(q)),
       );
     }
     if (filter === "available") out = out.filter((i) => i.available);
     if (filter === "unavailable") out = out.filter((i) => !i.available);
     return out;
+  }
+
+  function addItemToCategory(cat: AdminMenuCategory) {
+    const id = addItem(cat.id, {
+      name: `Nuovo in ${cat.title}`,
+      price: { kind: "single", value: 0 },
+    });
+    setEditingId(id);
   }
 
   function moveItemWithinCategory(categoryId: string, draggedId: string, targetId: string) {
@@ -229,6 +245,34 @@ export default function AdminMenuPage() {
     const [moved] = ordered.splice(from, 1);
     ordered.splice(to, 0, moved);
     reorderCategoryItems(categoryId, ordered);
+  }
+
+  function moveCategoryByStep(categoryId: string, step: -1 | 1) {
+    const ordered = categories.map((category) => category.id);
+    const from = ordered.indexOf(categoryId);
+    const to = from + step;
+    if (from < 0 || to < 0 || to >= ordered.length) return;
+    const [moved] = ordered.splice(from, 1);
+    ordered.splice(to, 0, moved);
+    reorderCategories(ordered);
+  }
+
+  function toggleCategoryExpanded(categoryId: string) {
+    setExpandedCategoryIds((current) => {
+      const next = new Set(current);
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
+      return next;
+    });
+  }
+
+  function toggleArchivedCategory(categoryId: string) {
+    setShowArchivedCategoryIds((current) => {
+      const next = new Set(current);
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
+      return next;
+    });
   }
 
   return (
@@ -360,7 +404,7 @@ export default function AdminMenuPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={isServices ? "Cerca servizio..." : "Cerca piatto..."}
+            placeholder={isServices ? "Cerca servizio, ingrediente..." : "Cerca piatto, ingrediente..."}
             className="w-full bg-transparent outline-none"
           />
         </div>
@@ -862,10 +906,22 @@ export default function AdminMenuPage() {
       )}
 
       {hydrated && view === "items" &&
-        categories.map((cat) => {
+        categories.map((cat, categoryIndex) => {
           const orderedCategoryItems = selectItemsByCategory(items, cat.id);
           const catItems = filtered(orderedCategoryItems);
           if (catItems.length === 0 && (query || filter !== "all")) return null;
+          const isCategoryExpanded = expandedCategoryIds.has(cat.id);
+          const visibleCatItems = isCategoryExpanded ? catItems : catItems.slice(0, 9);
+          const hiddenItemsCount = Math.max(0, catItems.length - visibleCatItems.length);
+          const catArchivedItems = archivedItems
+            .filter((it) => it.originalCategoryId === cat.id || it.categoryId === cat.id)
+            .sort((a, b) => b.archivedAt.localeCompare(a.archivedAt));
+          const showArchived = showArchivedCategoryIds.has(cat.id);
+          const addItemLabel = isServices
+            ? "Aggiungi servizio"
+            : catItems.length === 0
+              ? "Aggiungi un piatto"
+              : "Aggiungi piatto";
           return (
             <section key={cat.id} className="space-y-3">
               <div className="flex items-center justify-between gap-2">
@@ -883,7 +939,39 @@ export default function AdminMenuPage() {
                   />
                   <span className="text-xs text-pork-ink/40">{catItems.length}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <div className="flex w-7 flex-col overflow-hidden rounded-lg border border-pork-ink/10 bg-white">
+                    <button
+                      type="button"
+                      onClick={() => moveCategoryByStep(cat.id, -1)}
+                      disabled={categoryIndex === 0}
+                      className="flex h-6 items-center justify-center text-pork-ink/60 transition hover:bg-pork-cream hover:text-pork-red disabled:cursor-not-allowed disabled:text-pork-ink/20 disabled:hover:bg-transparent"
+                      aria-label={`Sposta categoria ${cat.title} sopra`}
+                      title="Sposta categoria sopra"
+                    >
+                      <ChevronUp size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveCategoryByStep(cat.id, 1)}
+                      disabled={categoryIndex === categories.length - 1}
+                      className="flex h-6 items-center justify-center border-t border-pork-ink/10 text-pork-ink/60 transition hover:bg-pork-cream hover:text-pork-red disabled:cursor-not-allowed disabled:text-pork-ink/20 disabled:hover:bg-transparent"
+                      aria-label={`Sposta categoria ${cat.title} sotto`}
+                      title="Sposta categoria sotto"
+                    >
+                      <ChevronDown size={15} />
+                    </button>
+                  </div>
+                  {catItems.length > 9 && (
+                    <button
+                      type="button"
+                      onClick={() => toggleCategoryExpanded(cat.id)}
+                      className="inline-flex items-center gap-1 rounded-full border border-pork-ink/15 bg-white px-2 py-1 text-[10px] font-bold uppercase text-pork-ink/60 hover:border-pork-red/40 hover:text-pork-red"
+                    >
+                      {isCategoryExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                      {isCategoryExpanded ? "Chiudi" : "Apri"}
+                    </button>
+                  )}
                   {catItems.length > 0 && (
                     <button
                       type="button"
@@ -894,19 +982,6 @@ export default function AdminMenuPage() {
                       Seleziona categoria
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const id = addItem(cat.id, {
-                        name: `Nuovo in ${cat.title}`,
-                        price: { kind: "single", value: 0 },
-                      });
-                      setEditingId(id);
-                    }}
-                    className="inline-flex items-center gap-1 rounded-full bg-pork-ink/5 px-3 py-1 text-xs font-bold hover:bg-pork-ink hover:text-pork-cream"
-                  >
-                    <Plus size={12} /> Aggiungi
-                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -959,16 +1034,11 @@ export default function AdminMenuPage() {
                 className="grid gap-2 md:grid-flow-col md:grid-cols-2 md:[grid-template-rows:repeat(var(--category-item-rows),minmax(0,auto))]"
                 style={
                   {
-                    "--category-item-rows": Math.max(1, Math.ceil(catItems.length / 2)).toString(),
+                    "--category-item-rows": Math.max(1, Math.ceil((visibleCatItems.length + 2) / 2)).toString(),
                   } as CSSProperties
                 }
               >
-                {catItems.length === 0 ? (
-                  <li className="col-span-full rounded-xl bg-white p-4 text-sm text-pork-ink/40">
-                    {isServices ? "Nessun servizio." : "Nessun piatto."}
-                  </li>
-                ) : (
-                  catItems.map((it) => {
+                {visibleCatItems.map((it) => {
                     const isDragging = draggingItemId === it.id;
                     const isDropTarget = dragOverItemId === it.id && draggingItemId !== null && draggingItemId !== it.id;
                     const orderIndex = orderedCategoryItems.findIndex((item) => item.id === it.id);
@@ -1121,9 +1191,75 @@ export default function AdminMenuPage() {
                       </button>
                     </li>
                     );
-                  })
-                )}
+                  })}
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => addItemToCategory(cat)}
+                    className="flex min-h-[5.5rem] w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-pork-ink/15 bg-white/60 p-3 text-sm font-bold text-pork-ink/50 transition-colors hover:border-pork-red/45 hover:bg-white hover:text-pork-red"
+                  >
+                    <Plus size={16} /> {addItemLabel}
+                  </button>
+                </li>
+                <li>
+                  <div className="min-h-[5.5rem] rounded-2xl border-2 border-dashed border-pork-ink/15 bg-white/60 p-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleArchivedCategory(cat.id)}
+                      className="flex w-full items-center justify-center gap-2 text-sm font-bold text-pork-ink/50 transition-colors hover:text-pork-red"
+                    >
+                      <Archive size={16} />
+                      Archiviati
+                      <span className="rounded-full bg-pork-ink/10 px-2 py-0.5 text-[10px] font-black">
+                        {catArchivedItems.length}
+                      </span>
+                    </button>
+                    {showArchived && (
+                      <div className="mt-3 space-y-2">
+                        {catArchivedItems.length === 0 ? (
+                          <p className="text-center text-xs font-semibold text-pork-ink/35">
+                            Nessun {isServices ? "servizio" : "piatto"} archiviato.
+                          </p>
+                        ) : (
+                          catArchivedItems.slice(0, 6).map((it) => (
+                            <div
+                              key={it.id}
+                              className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 text-xs ring-1 ring-pork-ink/10"
+                            >
+                              <span className="min-w-0 truncate font-bold text-pork-ink/70">
+                                {it.name}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => restoreArchivedItem(it.id, cat.id)}
+                                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-pork-ink px-2 py-1 font-bold text-pork-cream hover:bg-pork-red"
+                              >
+                                <RotateCcw size={12} />
+                                Ripristina
+                              </button>
+                            </div>
+                          ))
+                        )}
+                        {catArchivedItems.length > 6 && (
+                          <p className="text-center text-[10px] font-semibold text-pork-ink/35">
+                            +{catArchivedItems.length - 6} altri archiviati
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </li>
               </ul>
+              {hiddenItemsCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => toggleCategoryExpanded(cat.id)}
+                  className="inline-flex w-full items-center justify-center gap-1 rounded-xl border border-pork-ink/10 bg-white px-3 py-2 text-sm font-bold text-pork-ink/60 hover:border-pork-red/40 hover:text-pork-red"
+                >
+                  <ChevronDown size={15} />
+                  Mostra altri {hiddenItemsCount} {isServices ? "servizi" : "piatti"}
+                </button>
+              )}
             </section>
           );
         })}

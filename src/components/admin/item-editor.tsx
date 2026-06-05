@@ -38,6 +38,14 @@ type TranslationDraft = {
   ingredients?: string[];
 };
 
+function normalizeTranslationDraft(draft?: TranslationDraft) {
+  return {
+    name: draft?.name ?? "",
+    description: draft?.description ?? "",
+    ingredients: draft?.ingredients ?? [],
+  };
+}
+
 export function ItemEditor({
   item,
   customTags = [],
@@ -128,9 +136,20 @@ export function ItemEditor({
     [SUPPORTED_LANGS, draft.description, draft.name, translations],
   );
 
+  const hasUnsavedTranslations = useMemo(() => {
+    if (locales.length <= 1) return false;
+    return locales.some((lang) => {
+      if (lang === "it") return false;
+      return (
+        JSON.stringify(normalizeTranslationDraft(translations[lang])) !==
+        JSON.stringify(normalizeTranslationDraft(translationsSavedRef.current[lang]))
+      );
+    });
+  }, [locales, translations]);
+
   const isDirty = useMemo(() => {
-    return JSON.stringify(draft) !== JSON.stringify(item);
-  }, [draft, item]);
+    return JSON.stringify(draft) !== JSON.stringify(item) || hasUnsavedTranslations;
+  }, [draft, hasUnsavedTranslations, item]);
   useUnsavedChangesWarning(isDirty);
 
   function persist(patch: Partial<AdminMenuItem> = {}) {
@@ -148,11 +167,11 @@ export function ItemEditor({
     }
   }
 
-  function persistTranslations() {
+  function persistTranslations(translationsToPersist = translations) {
     if (locales.length <= 1) return;
     for (const lang of locales) {
       if (lang === "it") continue;
-      const draft_ = translations[lang];
+      const draft_ = translationsToPersist[lang];
       const saved = translationsSavedRef.current[lang];
       // Skip if nothing changed and nothing new
       if (!draft_ && !saved) continue;
@@ -200,6 +219,7 @@ export function ItemEditor({
     setShowMissingTransDialog(false);
     // Avvia traduzione in background per le lingue mancanti
     const source = readTranslationSource("it");
+    let nextTranslations = translations;
     if (source) {
       for (const toLang of missingTransLangs) {
         try {
@@ -218,14 +238,15 @@ export function ItemEditor({
           });
           if (res.ok) {
             const data = await res.json();
-            setTranslations((t) => ({
-              ...t,
+            nextTranslations = {
+              ...nextTranslations,
               [toLang]: {
                 name: data.name ?? "",
                 description: data.description ?? "",
                 ingredients: data.ingredients ?? [],
               },
-            }));
+            };
+            setTranslations(nextTranslations);
           }
         } catch {
           // fail silently — salviamo comunque
@@ -233,7 +254,7 @@ export function ItemEditor({
       }
     }
     persist();
-    persistTranslations();
+    persistTranslations(nextTranslations);
     onClose();
   }
 
@@ -1230,14 +1251,14 @@ export function ItemEditor({
           <button
             type="button"
             onClick={() => {
-              if (confirm(`Eliminare definitivamente "${draft.name}"?`)) {
+              if (confirm(`Archiviare "${draft.name}"? Potrai ripristinarlo dal box Archiviati della categoria.`)) {
                 removeItem(draft.id);
                 onClose();
               }
             }}
             className="text-sm font-semibold text-pork-red hover:underline"
           >
-            Elimina piatto
+            Archivia piatto
           </button>
           <div className="flex flex-wrap gap-2">
             <button onClick={tryClose} className="btn-ghost text-sm">

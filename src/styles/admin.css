@@ -350,6 +350,25 @@
   .ga-profile-link:hover,
   .ga-logout:hover { border-color: var(--ga-accent-ring); background: var(--ga-surface); }
 
+  .ga-profile-link[aria-label="Impostazioni"],
+  .ga-profile-link[aria-label="Settings"] {
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+    padding: 0;
+    border-radius: 999px;
+  }
+  .ga-profile-link[aria-label="Impostazioni"] svg,
+  .ga-profile-link[aria-label="Settings"] svg { flex: 0 0 auto; }
+  .ga-profile-link[aria-label="Impostazioni"] {
+    font-size: 0;
+    gap: 0;
+  }
+  .ga-profile-link[aria-label="Settings"] {
+    font-size: 0;
+    gap: 0;
+  }
+
   .ga-location-select {
     appearance: none;
     background: transparent;
@@ -1275,7 +1294,92 @@
   .ga-btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
   .ga-btn-ghost { background: transparent; color: var(--ga-ink); border-color: var(--ga-border); }
   .ga-btn-ghost:hover:not(:disabled) { border-color: var(--ga-accent-ring); background: var(--ga-surface); }
+  .ga-btn-danger {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.28);
+  }
+  .ga-btn-danger:hover:not(:disabled) {
+    background: #dc2626;
+    color: #fff;
+    border-color: #dc2626;
+  }
   .ga-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .ga-settings-grid {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 1024px) {
+    .ga-settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ga-settings-grid > .ga-card:first-child,
+    .ga-settings-grid > .ga-danger-zone { grid-column: 1 / -1; }
+  }
+  .ga-status-badge,
+  .ga-current-token,
+  .ga-language-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    border: 1px solid var(--ga-border);
+    background: var(--ga-surface);
+    color: var(--ga-ink);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .ga-status-badge { padding: 7px 10px; }
+  .ga-status-badge[data-status="active"],
+  .ga-status-badge[data-status="trial"] {
+    border-color: rgba(22, 163, 74, 0.25);
+    background: rgba(22, 163, 74, 0.1);
+    color: #16a34a;
+  }
+  .ga-status-badge[data-status="past_due"],
+  .ga-status-badge[data-status="missing"] {
+    border-color: rgba(217, 119, 6, 0.25);
+    background: rgba(217, 119, 6, 0.1);
+    color: #d97706;
+  }
+  .ga-status-badge[data-status="cancelled"],
+  .ga-status-badge[data-status="suspended"] {
+    border-color: rgba(220, 38, 38, 0.25);
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+  }
+  .ga-current-token { justify-content: center; min-width: 68px; padding: 0 12px; }
+  .ga-language-chip { padding: 7px 8px 7px 12px; }
+  .ga-language-chip button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    color: var(--ga-ink-muted);
+    transition: background 160ms ease, color 160ms ease;
+  }
+  .ga-language-chip button:hover:not(:disabled) {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+  }
+  .ga-danger-zone {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-color: rgba(220, 38, 38, 0.28);
+  }
+  .gestione-password-form label { color: var(--ga-ink); }
+  .gestione-password-form input {
+    border-color: var(--ga-border) !important;
+    background: var(--ga-surface) !important;
+    color: var(--ga-ink) !important;
+  }
+  .gestione-password-form button[type="submit"] {
+    background: var(--ga-accent) !important;
+    color: var(--ga-accent-ink) !important;
+  }
 
   .ga-pill-link {
     display: inline-flex;

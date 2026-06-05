@@ -127,7 +127,7 @@ export default async function GestioneDashboardPage({
 
   const quickActions: { href: string; label: string; hint: string; icon: React.ReactNode; show: boolean }[] = [
     {
-      href: `${base}/info`,
+      href: `${base}/impostazioni`,
       label: t.actions.activity.label,
       hint: t.actions.activity.hint,
       icon: <Settings size={16} strokeWidth={2} />,

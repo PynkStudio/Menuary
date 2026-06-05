@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { getPlatformModeFromHost } from "@/lib/platform";
+import { findTenantById, findTenantByPreviewSlug } from "@/lib/tenant-registry";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 
 export default async function NotFound() {
-  const host = (await headers()).get("host");
+  const h = await headers();
+  const host = h.get("host");
   const mode = getPlatformModeFromHost(host);
 
   // ── Stile per portali Menuary (admin, login, clienti, studio, gestione, marketing) ──
-  if (mode !== "tenant" && mode !== "preview") {
+  if (mode !== "tenant" && mode !== "preview" && mode !== "preview-bizery") {
     const labelByMode: Record<string, string> = {
       marketing: "Menuary",
       "marketing-bizery": "Bizery",
@@ -20,7 +22,6 @@ export default async function NotFound() {
       gestione: "Menuary · Gestione",
       "gestione-bizery": "Bizery · Gestione",
       "gestione-custom": "Gestione",
-      "preview-bizery": "Bizery",
     };
     const label = labelByMode[mode] ?? "Menuary";
 
@@ -46,12 +47,18 @@ export default async function NotFound() {
   }
 
   // ── Tenant / preview: applica il tema del tenant corrente ──
-  const tenant = resolveTenantFromHost(host);
+  const previewTenantId = h.get("x-preview-tenant-id");
+  const tenantPublicPath = h.get("x-tenant-public-path") ?? "";
+  const previewSlug = tenantPublicPath.split("/").filter(Boolean)[0];
+  const tenant =
+    findTenantById(previewTenantId ?? "") ??
+    findTenantByPreviewSlug(previewSlug) ??
+    resolveTenantFromHost(host);
   const cssVars = tenantThemeCssVars(tenant.theme);
 
   return (
     <section
-      className="flex min-h-[70vh] flex-col items-center justify-center px-5 py-32 text-center"
+      className="tenant-preview-surface flex min-h-[70vh] flex-col items-center justify-center px-5 py-32 text-center"
       data-tenant-surface={tenant.id}
       style={{
         ...cssVars,

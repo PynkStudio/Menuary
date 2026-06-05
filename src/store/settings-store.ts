@@ -83,6 +83,8 @@ export type SiteSettingsState = {
   socialLinks: SocialLinks;
   socialLinksConfigured: boolean;
   reservationTimeSettings: ReservationTimeSettings;
+  siteCurrency: string;
+  activeLanguages: string[];
 };
 
 export type SettingsStore = SiteSettingsState & {
@@ -115,6 +117,8 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettingsState = {
   socialLinks: EMPTY_SOCIAL_LINKS,
   socialLinksConfigured: false,
   reservationTimeSettings: DEFAULT_RESERVATION_TIME_SETTINGS,
+  siteCurrency: "EUR",
+  activeLanguages: ["it"],
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -207,6 +211,8 @@ export const useSettingsStore = create<SettingsStore>()(
         socialLinks: s.socialLinks,
         socialLinksConfigured: s.socialLinksConfigured,
         reservationTimeSettings: s.reservationTimeSettings,
+        siteCurrency: s.siteCurrency,
+        activeLanguages: s.activeLanguages,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<SiteSettingsState>;
@@ -217,6 +223,10 @@ export const useSettingsStore = create<SettingsStore>()(
         merged.socialLinks = { ...EMPTY_SOCIAL_LINKS, ...(p.socialLinks ?? {}) };
         merged.socialLinksConfigured = p.socialLinksConfigured ?? current.socialLinksConfigured;
         merged.reservationTimeSettings = { ...DEFAULT_RESERVATION_TIME_SETTINGS, ...(p.reservationTimeSettings ?? {}) };
+        merged.siteCurrency = p.siteCurrency ?? current.siteCurrency;
+        merged.activeLanguages = Array.isArray(p.activeLanguages) && p.activeLanguages.length > 0
+          ? p.activeLanguages
+          : current.activeLanguages;
         if (!merged.hoursWeek || merged.hoursWeek.length !== 7) {
           merged.hoursWeek = defaultHoursWeek();
         }

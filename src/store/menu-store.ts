@@ -49,6 +49,12 @@ function migrateItemIngredients(it: AdminMenuItem): AdminMenuItem {
   };
 }
 
+export type ArchivedMenuItem = AdminMenuItem & {
+  archivedAt: string;
+  originalCategoryId: string;
+  originalCategoryTitle?: string;
+};
+
 function seedCategories(seedMenu: MenuCategory[]): AdminMenuCategory[] {
   return seedMenu.map((c, order) => ({
     id: c.id,
@@ -251,6 +257,7 @@ export interface MenuState {
   currentTenantId: string;
   categories: AdminMenuCategory[];
   items: AdminMenuItem[];
+  archivedItems: ArchivedMenuItem[];
   menuLists: AdminMenuList[];
   customTags: TenantMenuTagDefinition[];
   volumeLabels: string[];
@@ -265,6 +272,7 @@ export interface MenuState {
   updateCategory: (id: string, patch: Partial<AdminMenuCategory>) => void;
   addCategory: (title: string) => string;
   removeCategory: (id: string) => void;
+  reorderCategories: (orderedIds: string[]) => void;
   updateItem: (id: string, patch: Partial<AdminMenuItem>) => void;
   setAvailable: (id: string, available: boolean) => void;
   updatePrice: (id: string, price: PriceFormat) => void;
@@ -282,6 +290,7 @@ export interface MenuState {
   addItem: (categoryId: string, draft: Partial<AdminMenuItem>) => string;
   addItems: (drafts: Array<Partial<AdminMenuItem> & { categoryId: string }>) => string[];
   removeItem: (id: string) => void;
+  restoreArchivedItem: (id: string, categoryId?: string) => void;
   addMenuList: (draft?: Partial<AdminMenuList>) => string;
   updateMenuList: (id: string, patch: Partial<AdminMenuList>) => void;
   removeMenuList: (id: string) => void;
@@ -374,6 +383,7 @@ function buildInitial(tenantId = DEFAULT_MENU_TENANT_ID) {
     currentTenantId: tenantId,
     categories,
     items,
+    archivedItems: [] as ArchivedMenuItem[],
     menuLists: seedMenuLists(tenantId, categories, items),
     customTags: mergeCustomTags(undefined, items),
     volumeLabels: mergeVolumeLabels(undefined, items),
@@ -420,10 +430,37 @@ export const useMenuStore = create<MenuState>()(
       },
 
       removeCategory: (id) =>
-        set((s) => ({
-          categories: s.categories.filter((cat) => cat.id !== id),
-          items: s.items.filter((it) => it.categoryId !== id),
-        })),
+        set((s) => {
+          const category = s.categories.find((cat) => cat.id === id);
+          const now = new Date().toISOString();
+          const archived = s.items
+            .filter((it) => it.categoryId === id)
+            .map((it) => ({
+              ...it,
+              archivedAt: now,
+              originalCategoryId: id,
+              originalCategoryTitle: category?.title,
+            }));
+          return {
+            categories: s.categories.filter((cat) => cat.id !== id),
+            items: s.items.filter((it) => it.categoryId !== id),
+            archivedItems: [...archived, ...s.archivedItems],
+            menuLists: s.menuLists.map((list) => ({
+              ...list,
+              itemIds: list.itemIds.filter((itemId) => !archived.some((it) => it.id === itemId)),
+            })),
+          };
+        }),
+
+      reorderCategories: (orderedIds) =>
+        set((s) => {
+          const orderById = new Map(orderedIds.map((id, index) => [id, index]));
+          return {
+            categories: s.categories.map((cat) =>
+              orderById.has(cat.id) ? { ...cat, order: orderById.get(cat.id)! } : cat,
+            ),
+          };
+        }),
 
       updateItem: (id, patch) =>
         set((s) => ({
@@ -613,13 +650,61 @@ export const useMenuStore = create<MenuState>()(
       },
 
       removeItem: (id) =>
-        set((s) => ({
-          items: s.items.filter((it) => it.id !== id),
-          menuLists: s.menuLists.map((list) => ({
-            ...list,
-            itemIds: list.itemIds.filter((itemId) => itemId !== id),
-          })),
-        })),
+        set((s) => {
+          const item = s.items.find((it) => it.id === id);
+          if (!item) return {};
+          const category = s.categories.find((cat) => cat.id === item.categoryId);
+          const archived: ArchivedMenuItem = {
+            ...item,
+            archivedAt: new Date().toISOString(),
+            originalCategoryId: item.categoryId,
+            originalCategoryTitle: category?.title,
+          };
+          return {
+            items: s.items.filter((it) => it.id !== id),
+            archivedItems: [archived, ...s.archivedItems.filter((it) => it.id !== id)],
+            menuLists: s.menuLists.map((list) => ({
+              ...list,
+              itemIds: list.itemIds.filter((itemId) => itemId !== id),
+            })),
+          };
+        }),
+
+      restoreArchivedItem: (id, categoryId) =>
+        set((s) => {
+          const archived = s.archivedItems.find((it) => it.id === id);
+          if (!archived) return {};
+          const targetCategoryId =
+            categoryId && s.categories.some((cat) => cat.id === categoryId)
+              ? categoryId
+              : s.categories.some((cat) => cat.id === archived.originalCategoryId)
+                ? archived.originalCategoryId
+                : s.categories[0]?.id;
+          if (!targetCategoryId) return {};
+          const { archivedAt, originalCategoryId, originalCategoryTitle, ...item } = archived;
+          void archivedAt;
+          void originalCategoryId;
+          void originalCategoryTitle;
+          const maxOrder = s.items
+            .filter((it) => it.categoryId === targetCategoryId)
+            .reduce((max, it) => Math.max(max, it.order), -1);
+          return {
+            items: [
+              ...s.items,
+              {
+                ...item,
+                categoryId: targetCategoryId,
+                order: maxOrder + 1,
+              },
+            ],
+            archivedItems: s.archivedItems.filter((it) => it.id !== id),
+            menuLists: s.menuLists.map((list) =>
+              list.id === "menu-completo"
+                ? { ...list, itemIds: [...list.itemIds, id] }
+                : list,
+            ),
+          };
+        }),
 
       addMenuList: (draft) => {
         const id = draft?.id ?? genId("ml");
@@ -679,6 +764,7 @@ export const useMenuStore = create<MenuState>()(
           ...s,
           categories: bundle.categories,
           items: bundle.items.map(migrateItemIngredients),
+          archivedItems: s.archivedItems,
           menuLists:
             bundle.menuLists.length > 0
               ? bundle.menuLists.map((list) => ({
@@ -824,6 +910,7 @@ export const useMenuStore = create<MenuState>()(
       storage: createBrowserLocalJSONStorage(),
       partialize: (s) => ({
         currentTenantId: s.currentTenantId,
+        archivedItems: s.archivedItems,
         orders: s.orders,
         lastOrderSeq: s.lastOrderSeq,
         tables: s.tables,
@@ -838,6 +925,7 @@ export const useMenuStore = create<MenuState>()(
           ...current,
           ...seeded,
           currentTenantId,
+          archivedItems: p.archivedItems ?? current.archivedItems,
           orders: p.orders ?? current.orders,
           lastOrderSeq: p.lastOrderSeq ?? current.lastOrderSeq,
           tables: p.tables ?? current.tables,

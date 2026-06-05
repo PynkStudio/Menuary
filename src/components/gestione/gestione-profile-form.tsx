@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
-import { ChangePasswordForm } from "@/components/shared/change-password-form";
 import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 
 type InitialProfile = {
@@ -20,6 +19,7 @@ const LANGUAGE_OPTIONS = [
   { value: "fr", label: "Francais" },
   { value: "es", label: "Espanol" },
   { value: "de", label: "Deutsch" },
+  { value: "pt-br", label: "Portugues brasileiro" },
 ];
 
 export function GestioneProfileForm({ initial }: { initial: InitialProfile }) {
@@ -67,7 +67,7 @@ export function GestioneProfileForm({ initial }: { initial: InitialProfile }) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.65fr)]">
+    <div>
       <form onSubmit={handleSubmit} className="ga-card space-y-5">
         <div className="ga-section-head">
           <div>
@@ -133,18 +133,6 @@ export function GestioneProfileForm({ initial }: { initial: InitialProfile }) {
           </div>
         </div>
       </form>
-
-      <section className="ga-card">
-        <div className="ga-section-head">
-          <div>
-            <h2 className="ga-section-title">Password</h2>
-            <p className="ga-card-hint">Aggiorna la password del tuo account.</p>
-          </div>
-        </div>
-        <div className="mt-5">
-          <ChangePasswordForm className="gestione-password-form" />
-        </div>
-      </section>
     </div>
   );
 }

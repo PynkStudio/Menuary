@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { LogOut, MapPin, UserRound } from "lucide-react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
+import { MapPin, Settings, UserRound } from "lucide-react";
+import type { LoginFrom } from "@/lib/login-url";
 import {
   getEffectiveCapabilities,
   type StoreCapabilities,
@@ -44,8 +43,6 @@ export function GestioneShell({
   currentUser,
   locations = [],
   navBaseHref,
-  loginFrom,
-  isDemo = false,
   children,
   messages,
 }: {
@@ -83,6 +80,7 @@ export function GestioneShell({
   const dashboardHref = base || "/";
   const sectionHref = (section: string) => `${base}/${section}`;
   const profileHref = sectionHref("profilo");
+  const settingsHref = sectionHref("impostazioni");
 
   const isAdmin = currentUser.isTenantAdmin;
   const verticalMeta = getVerticalMeta(tenant.vertical);
@@ -90,7 +88,6 @@ export function GestioneShell({
 
   const items: NavItem[] = [
     { label: t.nav.dashboard, href: dashboardHref, visible: () => true },
-    { label: t.nav.activity, href: sectionHref("info"), visible: () => access.canManageActivity },
     { label: t.nav.orders, href: sectionHref("ordini"), visible: () => access.hasOrders },
     { label: getModuleLabel("onlineMenu", tenant.vertical), href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
     { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
@@ -105,19 +102,10 @@ export function GestioneShell({
     { label: t.nav.loyalty, href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
     { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: t.nav.locations, href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
+    { label: t.nav.settings, href: settingsHref, visible: () => true },
   ];
 
   const visibleItems = items.filter((i) => i.visible(cap));
-
-  async function handleLogout() {
-    if (isDemo) {
-      router.push("/");
-      return;
-    }
-    const supabase = createSupabaseBrowserClient();
-    await supabase.auth.signOut();
-    router.push(buildLoginUrl({ from: loginFrom ?? `gestione.${tenant.id}` }));
-  }
 
   return (
     <>
@@ -137,10 +125,10 @@ export function GestioneShell({
               <UserRound size={12} strokeWidth={2} />
               {t.profile}
             </Link>
-            <button type="button" onClick={handleLogout} className="ga-logout">
-              <LogOut size={12} strokeWidth={2} />
-              {t.logout}
-            </button>
+            <Link href={settingsHref} className="ga-profile-link" aria-label={t.settings}>
+              <Settings size={13} strokeWidth={2} />
+              {t.settings}
+            </Link>
           </div>
         </div>
 

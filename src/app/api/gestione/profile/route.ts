@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { isDemoHost } from "@/lib/platform";
 
-const SUPPORTED_LANGUAGES = new Set(["it", "en", "fr", "es", "de"]);
+const SUPPORTED_LANGUAGES = new Set(["it", "en", "fr", "es", "de", "pt-br"]);
 
 function displayName(firstName: string, lastName: string) {
   return [firstName, lastName].filter(Boolean).join(" ").trim() || null;
