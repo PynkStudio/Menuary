@@ -44,6 +44,7 @@ export function GestioneShell({
   locations = [],
   navBaseHref,
   loginFrom,
+  isDemo = false,
   children,
 }: {
   tenant: Tenant;
@@ -51,6 +52,7 @@ export function GestioneShell({
   locations?: TenantLocation[];
   navBaseHref?: string;
   loginFrom?: LoginFrom;
+  isDemo?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -103,6 +105,10 @@ export function GestioneShell({
   const visibleItems = items.filter((i) => i.visible(cap));
 
   async function handleLogout() {
+    if (isDemo) {
+      router.push("/");
+      return;
+    }
     const supabase = createSupabaseBrowserClient();
     await supabase.auth.signOut();
     router.push(buildLoginUrl({ from: loginFrom ?? `gestione.${tenant.id}` }));

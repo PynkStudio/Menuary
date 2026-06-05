@@ -104,10 +104,7 @@ export function PreviewNoSlug({ mode }: PreviewNoSlugProps) {
         </div>
       </div>
 
-      <p style={{ color: "#555", fontSize: "0.8125rem", textAlign: "center", maxWidth: 360 }}>
-        Sostituisci <code style={{ color: "#888" }}>{placeholder}</code> con lo slug
-        del tenant che vuoi visualizzare.
-      </p>
+
     </div>
   );
 }

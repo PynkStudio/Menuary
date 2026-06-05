@@ -202,6 +202,7 @@ export default async function GestioneLayout({ children, params }: Props) {
         locations={visibleLocations}
         navBaseHref={navBaseHref}
         loginFrom={loginFrom}
+        isDemo={isDemo}
       >
         <TenantProvider tenant={tenant}>{children}</TenantProvider>
       </GestioneShell>

@@ -262,6 +262,8 @@ export interface MenuState {
   sessions: TableSession[];
 
   updateCategory: (id: string, patch: Partial<AdminMenuCategory>) => void;
+  addCategory: (title: string) => string;
+  removeCategory: (id: string) => void;
   updateItem: (id: string, patch: Partial<AdminMenuItem>) => void;
   setAvailable: (id: string, available: boolean) => void;
   updatePrice: (id: string, price: PriceFormat) => void;
@@ -399,6 +401,27 @@ export const useMenuStore = create<MenuState>()(
           categories: s.categories.map((cat) =>
             cat.id === id ? { ...cat, ...patch } : cat,
           ),
+        })),
+
+      addCategory: (title) => {
+        const id = genId("cat");
+        const cleanTitle = title.trim() || "Nuova categoria";
+        set((s) => {
+          const maxOrder = s.categories.reduce((m, c) => Math.max(m, c.order ?? 0), 0);
+          const next: AdminMenuCategory = {
+            id,
+            title: cleanTitle,
+            order: maxOrder + 1,
+          };
+          return { categories: [...s.categories, next] };
+        });
+        return id;
+      },
+
+      removeCategory: (id) =>
+        set((s) => ({
+          categories: s.categories.filter((cat) => cat.id !== id),
+          items: s.items.filter((it) => it.categoryId !== id),
         })),
 
       updateItem: (id, patch) =>

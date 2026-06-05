@@ -534,3 +534,92 @@ export function demoDashboardKpis(vertical: "food" | "services"): { reservations
     staffActive: 5,
   };
 }
+
+// ---------- Billing ----------
+
+export type BillingPlan = {
+  name: string;
+  tier: "starter" | "pro" | "business";
+  monthlyPrice: number;
+  includedModules: string[];
+  nextBillingDate: string;
+  paymentMethod: { type: "stripe" | "bonifico"; last4?: string; bankName?: string };
+  status: "active" | "past_due" | "canceled";
+};
+
+export type BillingInvoice = {
+  id: string;
+  date: string;
+  amount: number;
+  status: "paid" | "pending" | "failed";
+  description: string;
+  pdfUrl?: string;
+};
+
+export function demoBillingPlan(vertical: "food" | "services"): BillingPlan {
+  return {
+    name: vertical === "services" ? "Bizery Pro" : "Menuary Pro",
+    tier: "pro",
+    monthlyPrice: 49,
+    includedModules: [
+      "Menu online",
+      vertical === "services" ? "Appuntamenti" : "Prenotazioni",
+      "Google Business",
+      "Analytics",
+      "Staff",
+    ],
+    nextBillingDate: "2026-07-05",
+    paymentMethod: {
+      type: "stripe",
+      last4: "4242",
+    },
+    status: "active",
+  };
+}
+
+export function demoBillingInvoices(): BillingInvoice[] {
+  return [
+    {
+      id: "INV-2026-06",
+      date: "2026-06-01",
+      amount: 49,
+      status: "paid",
+      description: "Piano Pro – Giugno 2026",
+    },
+    {
+      id: "INV-2026-05",
+      date: "2026-05-01",
+      amount: 49,
+      status: "paid",
+      description: "Piano Pro – Maggio 2026",
+    },
+    {
+      id: "INV-2026-04",
+      date: "2026-04-01",
+      amount: 49,
+      status: "paid",
+      description: "Piano Pro – Aprile 2026",
+    },
+    {
+      id: "INV-2026-03",
+      date: "2026-03-01",
+      amount: 49,
+      status: "paid",
+      description: "Piano Pro – Marzo 2026",
+    },
+    {
+      id: "INV-2026-02",
+      date: "2026-02-01",
+      amount: 49,
+      status: "paid",
+      description: "Piano Pro – Febbraio 2026",
+    },
+    {
+      id: "INV-2026-01",
+      date: "2026-01-01",
+      amount: 39,
+      status: "paid",
+      description: "Piano Starter – Gennaio 2026 (upgrade in corso)",
+    },
+  ];
+}

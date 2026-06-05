@@ -12,6 +12,7 @@ import {
   markNoShowReservation,
 } from "./actions";
 import { demoReservations } from "@/lib/demo-fixtures";
+import { ReservationSettingsPanel } from "@/components/gestione/reservation-settings-panel";
 
 type Filter = "today" | "upcoming" | "pending" | "confirmed" | "history" | "all";
 const FILTERS: { id: Filter; label: string }[] = [
@@ -168,6 +169,8 @@ export default async function PrenotazioniPage({
         <h1 className="ga-heading">{title}</h1>
         <p className="ga-lead">{lead}</p>
       </header>
+
+      <ReservationSettingsPanel />
 
       <nav className="ga-pills" aria-label="Filtra prenotazioni">
         {FILTERS.map((opt) => (

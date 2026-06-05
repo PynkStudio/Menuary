@@ -69,7 +69,7 @@ function isTimeInWindow(current: number, start: unknown, end: unknown): boolean 
 
 function normalizeVisibility(value: unknown): MenuListVisibility {
   const raw = asObject(value);
-  const validChannels = new Set<MenuOrderChannel>(["phone", "whatsapp", "online", "table"]);
+  const validChannels = new Set<MenuOrderChannel>(["phone", "whatsapp", "online", "table", "reservation"]);
   return {
     days: Array.isArray(raw.days) ? raw.days.filter((day): day is number => typeof day === "number") : undefined,
     startTime: typeof raw.startTime === "string" ? raw.startTime : undefined,
@@ -85,9 +85,11 @@ function normalizeVisibility(value: unknown): MenuListVisibility {
 
 function isVisible(list: MenuListRow, channel: MenuOrderChannel, tableId: string | null, now: Date): boolean {
   if (!list.enabled) return false;
-  const local = localMenuTime(now);
   const visibility = normalizeVisibility(list.visibility);
   if (visibility.channels && !visibility.channels.includes(channel)) return false;
+  // Le prenotazioni ignorano vincoli di orario, giorno e tavolo: i prodotti sono sempre prenotabili.
+  if (channel === "reservation") return true;
+  const local = localMenuTime(now);
   if (visibility.days?.length && !visibility.days.includes(local.day)) return false;
   if (!isTimeInWindow(local.minutes, visibility.startTime, visibility.endTime)) return false;
   return !visibility.tableIds?.length || Boolean(tableId && visibility.tableIds.includes(tableId));

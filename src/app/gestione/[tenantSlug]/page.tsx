@@ -30,12 +30,14 @@ type Kpi = {
 async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services"): Promise<Kpi[]> {
   if (isDemo) {
     const k = demoDashboardKpis(vertical);
-    return [
+    const out: Kpi[] = [
       { label: vertical === "services" ? "Appuntamenti oggi" : "Prenotazioni oggi", value: String(k.reservationsToday) },
       { label: "Recensioni 7gg", value: String(k.reviews7d), hint: "★ 4.7 di media" },
-      { label: "Staff attivo", value: String(k.staffActive) },
-      { label: "Moduli attivi", value: String(Object.values(features.modules).filter(Boolean).length) },
     ];
+    if (features.canManageStaff) {
+      out.push({ label: "Staff attivo", value: String(k.staffActive) });
+    }
+    return out;
   }
 
   const supabase = await createSupabaseServerClient(resolveSessionCookieDomain((await headers()).get("host") ?? ""));

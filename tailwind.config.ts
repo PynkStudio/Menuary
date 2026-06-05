@@ -46,21 +46,13 @@ const config: Config = {
           from: { opacity: "1" },
           to: { opacity: "0" },
         },
-        "modal-sheet-in": {
-          from: { transform: "translateY(100%)" },
-          to: { transform: "translateY(0)" },
+        "modal-in": {
+          from: { opacity: "0", transform: "translateY(40px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
-        "modal-sheet-out": {
-          from: { transform: "translateY(0)" },
-          to: { transform: "translateY(100%)" },
-        },
-        "modal-scale-in": {
-          from: { opacity: "0", transform: "scale(0.96) translateY(12px)" },
-          to: { opacity: "1", transform: "scale(1) translateY(0)" },
-        },
-        "modal-scale-out": {
-          from: { opacity: "1", transform: "scale(1) translateY(0)" },
-          to: { opacity: "0", transform: "scale(0.96) translateY(12px)" },
+        "modal-out": {
+          from: { opacity: "1", transform: "translateY(0)" },
+          to: { opacity: "0", transform: "translateY(40px)" },
         },
         "page-fade-up": {
           from: { opacity: "0", transform: "translateY(10px)" },
@@ -72,10 +64,8 @@ const config: Config = {
         wiggle: "wiggle 2.5s ease-in-out infinite",
         "modal-overlay-in": "modal-overlay-in 0.22s ease-out both",
         "modal-overlay-out": "modal-overlay-out 0.2s ease-in both",
-        "modal-sheet-in": "modal-sheet-in 0.38s cubic-bezier(0.32,0.72,0,1) both",
-        "modal-sheet-out": "modal-sheet-out 0.26s ease-in both",
-        "modal-scale-in": "modal-scale-in 0.26s cubic-bezier(0.32,0.72,0,1) both",
-        "modal-scale-out": "modal-scale-out 0.2s ease-in both",
+        "modal-in": "modal-in 0.32s cubic-bezier(0.32,0.72,0,1) both",
+        "modal-out": "modal-out 0.22s ease-in both",
         "page-fade-up": "page-fade-up 0.32s ease-out both",
       },
     },

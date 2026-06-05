@@ -8,6 +8,7 @@ import { formatEuro, priceVariants, type PriceVariant } from "@/lib/price-utils"
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { cn } from "@/lib/utils";
 import { useModalAnimation } from "@/lib/use-modal-animation";
+import { useTenant } from "@/components/core/tenant-provider";
 
 /** Solo scelta formato (piatto senza ingredienti/extra configurabili). */
 export function FormatoChoiceModal({
@@ -19,6 +20,7 @@ export function FormatoChoiceModal({
   onClose: () => void;
   onConfirm: (v: PriceVariant, flyFrom?: DOMRect | null) => void;
 }) {
+  const tenant = useTenant();
   const variants = priceVariants(item.price);
   const [key, setKey] = useState(variants[0]?.key ?? "default");
   const [mounted, setMounted] = useState(false);
@@ -46,18 +48,17 @@ export function FormatoChoiceModal({
   return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center",
+        "tenant-preview-surface fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center",
         closing ? "motion-safe:animate-modal-overlay-out" : "motion-safe:animate-modal-overlay-in",
       )}
+      data-tenant-surface={tenant.id}
       onClick={requestClose}
     >
       <div
         ref={panelRef}
         className={cn(
           "flex max-h-[88dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-pork-cream shadow-2xl sm:rounded-3xl",
-          closing
-            ? "motion-safe:animate-modal-sheet-out motion-safe:sm:animate-modal-scale-out"
-            : "motion-safe:animate-modal-sheet-in motion-safe:sm:animate-modal-scale-in",
+          closing ? "motion-safe:animate-modal-out" : "motion-safe:animate-modal-in",
         )}
         onClick={(e) => e.stopPropagation()}
       >

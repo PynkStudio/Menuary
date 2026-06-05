@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useMemo, useState, type ComponentType } from "react";
 import {
   BriefcaseBusiness,
   CalendarClock,
@@ -13,12 +13,14 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  Mic2,
   Music2,
   Phone,
   Save,
   Twitter,
   Youtube,
 } from "lucide-react";
+import { HelpHint } from "@/components/gestione/help-hint";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useHydrated } from "@/components/core/providers";
 import { getTenantContent } from "@/lib/tenant-content";
@@ -42,10 +44,11 @@ const SOCIAL_FIELDS: Array<{
   label: string;
   placeholder: string;
   icon: ComponentType<{ size?: number }>;
+  primary?: boolean;
 }> = [
-  { key: "instagram", label: "Instagram", placeholder: "https://www.instagram.com/...", icon: Instagram },
-  { key: "facebook", label: "Facebook", placeholder: "https://www.facebook.com/...", icon: Facebook },
-  { key: "tiktok", label: "TikTok", placeholder: "https://www.tiktok.com/@...", icon: Music2 },
+  { key: "instagram", label: "Instagram", placeholder: "https://www.instagram.com/...", icon: Instagram, primary: true },
+  { key: "facebook", label: "Facebook", placeholder: "https://www.facebook.com/...", icon: Facebook, primary: true },
+  { key: "tiktok", label: "TikTok", placeholder: "https://www.tiktok.com/@...", icon: Music2, primary: true },
   { key: "youtube", label: "YouTube", placeholder: "https://www.youtube.com/...", icon: Youtube },
   { key: "linkedin", label: "LinkedIn", placeholder: "https://www.linkedin.com/company/...", icon: Linkedin },
   { key: "x", label: "X", placeholder: "https://x.com/...", icon: Twitter },
@@ -84,6 +87,44 @@ export function ActivitySettingsPanel() {
     ...settings.socialLinks,
   }));
   const [hoursDraft, setHoursDraft] = useState<DaySchedule[]>(() => defaultHoursWeekForTenant(tenant.id));
+  const [showAllSocials, setShowAllSocials] = useState(() =>
+    SOCIAL_FIELDS.some((f) => !f.primary && (settings.socialLinks?.[f.key] ?? "").trim().length > 0),
+  );
+
+  // Voce del ristorante
+  const [voice, setVoice] = useState({ tone: "", audience: "", keywords: "", do_examples: "", dont_examples: "" });
+  const [voiceLoaded, setVoiceLoaded] = useState(false);
+  const [voiceSaving, setVoiceSaving] = useState(false);
+  const [voiceSaved, setVoiceSaved] = useState(false);
+
+  const loadVoice = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/gestione/ai-voice?tenantId=${tenant.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data) setVoice({ tone: data.tone ?? "", audience: data.audience ?? "", keywords: data.keywords ?? "", do_examples: data.do_examples ?? "", dont_examples: data.dont_examples ?? "" });
+      }
+    } finally {
+      setVoiceLoaded(true);
+    }
+  }, [tenant.id]);
+
+  useEffect(() => { if (hydrated) loadVoice(); }, [hydrated, loadVoice]);
+
+  async function saveVoice() {
+    setVoiceSaving(true);
+    try {
+      await fetch("/api/gestione/ai-voice", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tenantId: tenant.id, ...voice }),
+      });
+      setVoiceSaved(true);
+      setTimeout(() => setVoiceSaved(false), 2500);
+    } finally {
+      setVoiceSaving(false);
+    }
+  }
 
   useEffect(() => {
     if (!hydrated) return;
@@ -246,7 +287,7 @@ export function ActivitySettingsPanel() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          {SOCIAL_FIELDS.map((field) => {
+          {SOCIAL_FIELDS.filter((f) => f.primary || showAllSocials).map((field) => {
             const Icon = field.icon;
             return (
               <label key={field.key} className="ga-card">
@@ -269,6 +310,14 @@ export function ActivitySettingsPanel() {
             );
           })}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowAllSocials((v) => !v)}
+          className="ga-btn-link"
+          style={{ marginTop: 12, fontSize: 13 }}
+        >
+          {showAllSocials ? "Mostra solo i principali" : "Mostra tutti i social"}
+        </button>
       </section>
 
       <section className="space-y-4">
@@ -394,6 +443,99 @@ export function ActivitySettingsPanel() {
               />
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Voce del ristorante */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="ga-card-title" style={{ fontSize: 16 }}>
+            <Mic2 size={17} /> Voce del ristorante
+            <HelpHint className="ml-1" text="Questi campi alimentano le funzioni AI dell'editor piatti (riscrivi descrizione, genera ingredienti, traduzioni). Più informazioni dai, più risultati accurati." />
+          </h2>
+          <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
+            Descrivi lo stile comunicativo del tuo locale per guidare le funzioni AI.
+          </p>
+        </div>
+
+        {voiceLoaded ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="ga-card">
+              <span className="ga-card-title">
+                Tono di voce
+                <HelpHint className="ml-1" text="Es: informale e caldo, elegante e formale, ironico e giocoso, semplice e diretto." />
+              </span>
+              <input
+                type="text"
+                value={voice.tone}
+                onChange={(e) => setVoice((v) => ({ ...v, tone: e.target.value }))}
+                placeholder="Es: informale, caldo, familiare"
+                className="ga-input mt-3"
+              />
+            </label>
+            <label className="ga-card">
+              <span className="ga-card-title">
+                Pubblico target
+                <HelpHint className="ml-1" text="Chi sono i tuoi clienti? Es: famiglie, coppie giovani, turisti, business lunch." />
+              </span>
+              <input
+                type="text"
+                value={voice.audience}
+                onChange={(e) => setVoice((v) => ({ ...v, audience: e.target.value }))}
+                placeholder="Es: famiglie e turisti, millennials foodies"
+                className="ga-input mt-3"
+              />
+            </label>
+            <label className="ga-card">
+              <span className="ga-card-title">
+                Parole chiave del brand
+                <HelpHint className="ml-1" text="Termini o concetti che usi spesso e vuoi ritrovare nelle descrizioni AI." />
+              </span>
+              <input
+                type="text"
+                value={voice.keywords}
+                onChange={(e) => setVoice((v) => ({ ...v, keywords: e.target.value }))}
+                placeholder="Es: artigianale, tradizione, brace, km0"
+                className="ga-input mt-3"
+              />
+            </label>
+            <div className="ga-card">
+              <span className="ga-card-title">Esempi di stile (do / don&apos;t)</span>
+              <textarea
+                rows={2}
+                value={voice.do_examples}
+                onChange={(e) => setVoice((v) => ({ ...v, do_examples: e.target.value }))}
+                placeholder="✓ Es: «Frollatura lenta di 40 giorni, crosta croccante e cuore rosa»"
+                className="ga-input mt-3 resize-none"
+              />
+              <textarea
+                rows={2}
+                value={voice.dont_examples}
+                onChange={(e) => setVoice((v) => ({ ...v, dont_examples: e.target.value }))}
+                placeholder="✗ Evita: «Gustosissimo piatto squisito e delizioso»"
+                className="ga-input mt-2 resize-none"
+              />
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-pork-ink/40">Caricamento...</p>
+        )}
+
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={saveVoice}
+            disabled={voiceSaving}
+            className="ga-btn ga-btn-primary"
+          >
+            {voiceSaving ? (
+              "Salvataggio..."
+            ) : voiceSaved ? (
+              "✓ Salvato"
+            ) : (
+              <><Save size={15} /> Salva voce</>
+            )}
+          </button>
         </div>
       </section>
 

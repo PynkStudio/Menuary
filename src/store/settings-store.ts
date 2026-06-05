@@ -41,6 +41,28 @@ export const EMPTY_SOCIAL_LINKS: SocialLinks = {
   whatsapp: "",
 };
 
+export type ReservationTimeMode = "opening_offset" | "fixed";
+
+export type ReservationTimeSettings = {
+  mode: ReservationTimeMode;
+  /** Minuti dopo l'apertura da cui accettare prenotazioni (modalità offset). */
+  startOffsetMinutes: number;
+  /** Minuti prima della chiusura entro cui accettare prenotazioni (modalità offset). */
+  endOffsetMinutes: number;
+  /** Orario fisso di inizio (HH:mm, modalità fixed). */
+  fixedStartTime: string;
+  /** Orario fisso di fine (HH:mm, modalità fixed). */
+  fixedEndTime: string;
+};
+
+export const DEFAULT_RESERVATION_TIME_SETTINGS: ReservationTimeSettings = {
+  mode: "opening_offset",
+  startOffsetMinutes: 0,
+  endOffsetMinutes: 0,
+  fixedStartTime: "",
+  fixedEndTime: "",
+};
+
 export type SiteSettingsState = {
   dinerSeparationAtTables: boolean;
   allowTakeaway: boolean;
@@ -60,6 +82,7 @@ export type SiteSettingsState = {
   collaborationsEmailOverride: string;
   socialLinks: SocialLinks;
   socialLinksConfigured: boolean;
+  reservationTimeSettings: ReservationTimeSettings;
 };
 
 export type SettingsStore = SiteSettingsState & {
@@ -91,6 +114,7 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettingsState = {
   collaborationsEmailOverride: "",
   socialLinks: EMPTY_SOCIAL_LINKS,
   socialLinksConfigured: false,
+  reservationTimeSettings: DEFAULT_RESERVATION_TIME_SETTINGS,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -182,6 +206,7 @@ export const useSettingsStore = create<SettingsStore>()(
         collaborationsEmailOverride: s.collaborationsEmailOverride,
         socialLinks: s.socialLinks,
         socialLinksConfigured: s.socialLinksConfigured,
+        reservationTimeSettings: s.reservationTimeSettings,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<SiteSettingsState>;
@@ -191,6 +216,7 @@ export const useSettingsStore = create<SettingsStore>()(
         merged.moduleSuspensions = merged.moduleSuspensions ?? {};
         merged.socialLinks = { ...EMPTY_SOCIAL_LINKS, ...(p.socialLinks ?? {}) };
         merged.socialLinksConfigured = p.socialLinksConfigured ?? current.socialLinksConfigured;
+        merged.reservationTimeSettings = { ...DEFAULT_RESERVATION_TIME_SETTINGS, ...(p.reservationTimeSettings ?? {}) };
         if (!merged.hoursWeek || merged.hoursWeek.length !== 7) {
           merged.hoursWeek = defaultHoursWeek();
         }

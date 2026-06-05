@@ -1,7 +1,7 @@
 "use client";
 
 import type { PriceFormat } from "@/lib/types";
-import { Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 
 type VolumeVariant = { id: string; label: string; price: number };
 
@@ -12,7 +12,7 @@ const KINDS: Array<{
   { value: "single", label: "Singolo" },
   { value: "sized", label: "Small / Big" },
   { value: "persone", label: "2 / 4 persone" },
-  { value: "volume", label: "Volume (0,2l / 0,4l…)" },
+  { value: "volume", label: "Personalizzato" },
 ];
 
 export function PriceEditor({
@@ -41,11 +41,11 @@ export function PriceEditor({
       case "volume":
         onChange({
           kind: "volume",
-          small: { label: "0,2 L", price: 0.5 },
-          large: { label: "0,4 L", price: 0.5 },
+          small: { label: "Variante 1", price: 0.5 },
+          large: { label: "Variante 2", price: 0.5 },
           variants: [
-            { id: genVolumeId(), label: "0,2 L", price: 0.5 },
-            { id: genVolumeId(), label: "0,4 L", price: 0.5 },
+            { id: genVolumeId(), label: "Variante 1", price: 0.5 },
+            { id: genVolumeId(), label: "Variante 2", price: 0.5 },
           ],
         });
         break;
@@ -87,6 +87,17 @@ export function PriceEditor({
         variant.id === id ? { ...variant, ...patch } : variant,
       ),
     );
+  }
+
+  function moveVariant(id: string, direction: -1 | 1) {
+    const current = volumeVariants();
+    const index = current.findIndex((v) => v.id === id);
+    if (index < 0) return;
+    const target = index + direction;
+    if (target < 0 || target >= current.length) return;
+    const next = current.slice();
+    [next[index], next[target]] = [next[target], next[index]];
+    setVolumeVariants(next);
   }
 
   return (
@@ -149,11 +160,33 @@ export function PriceEditor({
 
       {value.kind === "volume" && (
         <div className="space-y-2">
-          {volumeVariants().map((variant, index) => (
+          {volumeVariants().map((variant, index) => {
+            const variants = volumeVariants();
+            return (
             <div
               key={variant.id}
-              className="grid gap-2 rounded-xl border border-pork-ink/10 bg-white p-3 sm:grid-cols-[1fr_130px_auto]"
+              className="grid gap-2 rounded-xl border border-pork-ink/10 bg-white p-3 sm:grid-cols-[auto_1fr_130px_auto]"
             >
+              <div className="flex flex-col gap-1 self-end pb-2">
+                <button
+                  type="button"
+                  onClick={() => moveVariant(variant.id, -1)}
+                  disabled={index === 0}
+                  className="rounded-md p-1 text-pork-ink/40 hover:bg-pork-ink/5 hover:text-pork-ink disabled:opacity-20"
+                  aria-label={`Sposta su variante ${index + 1}`}
+                >
+                  <ArrowUp size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveVariant(variant.id, 1)}
+                  disabled={index === variants.length - 1}
+                  className="rounded-md p-1 text-pork-ink/40 hover:bg-pork-ink/5 hover:text-pork-ink disabled:opacity-20"
+                  aria-label={`Sposta giù variante ${index + 1}`}
+                >
+                  <ArrowDown size={12} />
+                </button>
+              </div>
               <label className="block">
                 <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-pork-ink/60">
                   Etichetta
@@ -182,12 +215,13 @@ export function PriceEditor({
                 }
                 disabled={volumeVariants().length <= 1}
                 className="self-end rounded-xl border border-pork-ink/10 p-2 text-pork-ink/45 hover:border-pork-red hover:text-pork-red disabled:opacity-30"
-                aria-label={`Rimuovi volume ${index + 1}`}
+                aria-label={`Rimuovi variante ${index + 1}`}
               >
                 <Trash2 size={16} />
               </button>
             </div>
-          ))}
+            );
+          })}
           <datalist id="volume-label-presets">
             {volumeLabelPresets.map((label) => (
               <option key={label} value={label} />
@@ -198,12 +232,12 @@ export function PriceEditor({
             onClick={() =>
               setVolumeVariants([
                 ...volumeVariants(),
-                { id: genVolumeId(), label: volumeLabelPresets[0] ?? "", price: 0.5 },
+                { id: genVolumeId(), label: volumeLabelPresets[0] ?? `Variante ${volumeVariants().length + 1}`, price: 0.5 },
               ])
             }
             className="inline-flex items-center gap-1 rounded-full bg-pork-ink/5 px-3 py-1.5 text-xs font-bold text-pork-ink/70 hover:bg-pork-ink hover:text-pork-cream"
           >
-            <Plus size={13} /> Aggiungi volume
+            <Plus size={13} /> Aggiungi variante
           </button>
         </div>
       )}
@@ -226,27 +260,48 @@ function NumberField({
         {label}
       </span>
       <input
-        type="number"
-        step="0.5"
-        min={0.5}
-        value={value}
-        onChange={(e) => onChange(normalizePrice(Number(e.target.value)))}
+        type="text"
+        inputMode="decimal"
+        value={value.toString().replace(".", ",")}
+        onChange={(e) => {
+          const parsed = Number(e.target.value.replace(",", "."));
+          if (!Number.isFinite(parsed)) return;
+          onChange(normalizePrice(parsed));
+        }}
         className="w-full rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-center outline-none transition-colors focus:border-pork-red"
       />
-      <div className="mt-1 grid grid-cols-2 gap-1">
+      <div className="mt-1 grid grid-cols-4 gap-1">
+        <button
+          type="button"
+          onClick={() => onChange(normalizePrice(value - 1))}
+          className="rounded-lg bg-pork-ink/5 px-1 py-1 text-[10px] font-black text-pork-ink/60 hover:bg-pork-ink/10"
+          aria-label="Diminuisci di 1 euro"
+        >
+          «&nbsp;-1
+        </button>
         <button
           type="button"
           onClick={() => onChange(normalizePrice(value - 0.5))}
-          className="rounded-lg bg-pork-ink/5 px-2 py-1 text-xs font-black text-pork-ink/60 hover:bg-pork-ink/10"
+          className="rounded-lg bg-pork-ink/5 px-1 py-1 text-[10px] font-black text-pork-ink/60 hover:bg-pork-ink/10"
+          aria-label="Diminuisci di 50 centesimi"
         >
-          -0,50
+          ‹&nbsp;-0,50
         </button>
         <button
           type="button"
           onClick={() => onChange(normalizePrice(value + 0.5))}
-          className="rounded-lg bg-pork-ink/5 px-2 py-1 text-xs font-black text-pork-ink/60 hover:bg-pork-ink/10"
+          className="rounded-lg bg-pork-ink/5 px-1 py-1 text-[10px] font-black text-pork-ink/60 hover:bg-pork-ink/10"
+          aria-label="Aumenta di 50 centesimi"
         >
-          +0,50
+          +0,50&nbsp;›
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange(normalizePrice(value + 1))}
+          className="rounded-lg bg-pork-ink/5 px-1 py-1 text-[10px] font-black text-pork-ink/60 hover:bg-pork-ink/10"
+          aria-label="Aumenta di 1 euro"
+        >
+          +1&nbsp;»
         </button>
       </div>
     </label>

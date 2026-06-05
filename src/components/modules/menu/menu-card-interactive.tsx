@@ -54,7 +54,12 @@ const tagMeta: Record<string, { label: string; icon: React.ReactNode; className:
     className: "bg-pork-mustard text-pork-ink",
   },
   veg: {
-    label: "Veg",
+    label: "Vegetariano",
+    icon: <Leaf size={12} />,
+    className: "bg-pork-green text-white",
+  },
+  vegano: {
+    label: "Vegano",
     icon: <Leaf size={12} />,
     className: "bg-pork-green text-white",
   },
@@ -436,6 +441,7 @@ function MenuItemDetailModal({
   onClose: () => void;
   onOrder: () => void;
 }) {
+  const tenant = useTenant();
   const [mounted, setMounted] = useState(false);
   const { closing, requestClose, panelRef } = useModalAnimation(onClose);
   const variants = priceVariants(item.price);
@@ -465,9 +471,10 @@ function MenuItemDetailModal({
   return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center",
+        "tenant-preview-surface fixed inset-0 z-[80] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center",
         closing ? "motion-safe:animate-modal-overlay-out" : "motion-safe:animate-modal-overlay-in",
       )}
+      data-tenant-surface={tenant.id}
       onClick={(e) => {
         e.stopPropagation();
         requestClose();
@@ -477,9 +484,7 @@ function MenuItemDetailModal({
         ref={panelRef}
         className={cn(
           "flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-pork-cream shadow-2xl sm:max-h-[88dvh] sm:rounded-3xl",
-          closing
-            ? "motion-safe:animate-modal-sheet-out motion-safe:sm:animate-modal-scale-out"
-            : "motion-safe:animate-modal-sheet-in motion-safe:sm:animate-modal-scale-in",
+          closing ? "motion-safe:animate-modal-out" : "motion-safe:animate-modal-in",
         )}
         onClick={(e) => e.stopPropagation()}
       >

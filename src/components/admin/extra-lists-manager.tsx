@@ -22,6 +22,7 @@ export function ExtraListsManager() {
   const [nameInput, setNameInput] = useState("");
   const [exName, setExName] = useState("");
   const [exPrice, setExPrice] = useState("");
+  const [createdEmptyId, setCreatedEmptyId] = useState<string | null>(null);
 
   const editing = editingId
     ? extraLists.find((l) => l.id === editingId) ?? null
@@ -33,6 +34,29 @@ export function ExtraListsManager() {
     const id = addExtraList("Nuova lista");
     setEditingId(id);
     setNameInput("Nuova lista");
+    setCreatedEmptyId(id);
+  }
+
+  function closeEditor() {
+    const id = editingId;
+    if (!id) {
+      setEditingId(null);
+      return;
+    }
+    const current = extraLists.find((l) => l.id === id);
+    const isJustCreated = createdEmptyId === id;
+    const trimmedName = nameInput.trim();
+    if (
+      isJustCreated &&
+      (current?.extras?.length ?? 0) === 0 &&
+      (trimmedName === "" || trimmedName === "Nuova lista")
+    ) {
+      removeExtraList(id);
+    } else {
+      saveEditing();
+    }
+    setEditingId(null);
+    setCreatedEmptyId(null);
   }
 
   function startEdit(l: ExtraList) {
@@ -101,14 +125,28 @@ export function ExtraListsManager() {
                       {l.extras.length} voci · in uso su {usage(l.id)} piatti
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => startEdit(l)}
-                    className="shrink-0 rounded-lg p-2 text-pork-ink hover:bg-pork-mustard/30"
-                    title="Modifica"
-                  >
-                    <Pencil size={16} />
-                  </button>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(l)}
+                      className="rounded-lg p-2 text-pork-ink hover:bg-pork-mustard/30"
+                      title="Modifica"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const used = usage(l.id);
+                        if (used > 0 && !confirm(`In uso su ${used} piatti. Rimuovo la lista da tutti?`)) return;
+                        removeExtraList(l.id);
+                      }}
+                      className="rounded-lg p-2 text-pork-ink/40 hover:bg-pork-red/10 hover:text-pork-red"
+                      title="Elimina lista"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -127,14 +165,11 @@ export function ExtraListsManager() {
 
       {editing && (
         <div
-          className="fixed inset-0 z-[60] flex items-stretch justify-end bg-pork-ink/60 backdrop-blur-sm"
-          onClick={() => {
-            saveEditing();
-            setEditingId(null);
-          }}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-pork-ink/60 p-4 backdrop-blur-sm"
+          onClick={closeEditor}
         >
           <div
-            className="flex h-full w-full max-w-lg flex-col overflow-hidden bg-pork-cream shadow-2xl"
+            className="flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-pork-cream shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="border-b border-pork-ink/10 px-4 py-3">
@@ -221,10 +256,7 @@ export function ExtraListsManager() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  saveEditing();
-                  setEditingId(null);
-                }}
+                onClick={closeEditor}
                 className="ml-auto btn-primary text-sm"
               >
                 Fine

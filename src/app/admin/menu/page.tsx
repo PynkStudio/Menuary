@@ -32,6 +32,8 @@ import { getModuleLabel } from "@/lib/vertical";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useSettingsStore } from "@/store/settings-store";
 import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
+import { HelpHint } from "@/components/gestione/help-hint";
+import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 
 const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 1, label: "Lun" },
@@ -48,6 +50,7 @@ const CHANNEL_OPTIONS: Array<{ value: MenuOrderChannel; label: string }> = [
   { value: "whatsapp", label: "Ordini WhatsApp" },
   { value: "online", label: "Ordini online" },
   { value: "table", label: "Ordini al tavolo" },
+  { value: "reservation", label: "Prenotazioni" },
 ];
 
 function formatMenuRules(menu: AdminMenuList): string {
@@ -87,8 +90,26 @@ export default function AdminMenuPage() {
   const vertical = tenant?.vertical ?? "food";
   const isServices = vertical === "services";
   const listinoLabel = getModuleLabel("onlineMenu", vertical);
-  const { allowTakeaway, allowTableOrders, orderKioskEnabled } = useEffectiveFeatures();
+  const { allowTakeaway, allowTableOrders, orderKioskEnabled, modules: tenantModules } = useEffectiveFeatures();
   const onlineOrderingActive = allowTakeaway || allowTableOrders || orderKioskEnabled;
+  const availableChannelOptions = useMemo(() => {
+    return CHANNEL_OPTIONS.filter((channel) => {
+      switch (channel.value) {
+        case "phone":
+          return tenantModules.aiPhone;
+        case "whatsapp":
+          return tenantModules.aiWhatsapp;
+        case "online":
+          return allowTakeaway || orderKioskEnabled;
+        case "table":
+          return allowTableOrders;
+        case "reservation":
+          return tenantModules.reservations ?? false;
+        default:
+          return true;
+      }
+    });
+  }, [allowTakeaway, allowTableOrders, orderKioskEnabled, tenantModules.aiPhone, tenantModules.aiWhatsapp]);
   const showMenuPrices = useSettingsStore((s) => s.showMenuPrices);
   const setSettings = useSettingsStore((s) => s.set);
   const categoriesRaw = useMenuStore((s) => s.categories);
@@ -97,6 +118,8 @@ export default function AdminMenuPage() {
   const tables = useMenuStore((s) => s.tables);
   const setAvailable = useMenuStore((s) => s.setAvailable);
   const updateCategory = useMenuStore((s) => s.updateCategory);
+  const addCategory = useMenuStore((s) => s.addCategory);
+  const removeCategory = useMenuStore((s) => s.removeCategory);
   const addItem = useMenuStore((s) => s.addItem);
   const addMenuList = useMenuStore((s) => s.addMenuList);
   const updateMenuList = useMenuStore((s) => s.updateMenuList);
@@ -118,6 +141,9 @@ export default function AdminMenuPage() {
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [bulkListId, setBulkListId] = useState("");
   const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
+  const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
+  const [itemPickerQuery, setItemPickerQuery] = useState("");
+  const [importFromMenuId, setImportFromMenuId] = useState("");
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -481,6 +507,7 @@ export default function AdminMenuPage() {
                   <div className="mb-3 flex items-center gap-2 font-bold text-pork-ink">
                     <Clock size={16} className="text-pork-red" />
                     Automazioni visibilità
+                    <HelpHint text="Imposta quando il menu è visibile. Se lasci i campi vuoti, il menu è sempre disponibile durante l'apertura." />
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     <label>
@@ -524,6 +551,7 @@ export default function AdminMenuPage() {
                   <div className="mt-4">
                     <span className="mb-2 block text-xs font-bold uppercase text-pork-ink/50">
                       Giorni
+                      <HelpHint className="ml-1" text="Seleziona i giorni della settimana in cui il menu è attivo. Nessuna selezione = tutti i giorni." />
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {DAY_OPTIONS.map((day) => {
@@ -558,48 +586,58 @@ export default function AdminMenuPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <span className="mb-2 block text-xs font-bold uppercase text-pork-ink/50">
-                      Canali ordine
-                    </span>
-                    <div className="grid gap-2 md:grid-cols-2">
-                      {CHANNEL_OPTIONS.map((channel) => {
-                        const current = editingMenu.visibility.channels ?? CHANNEL_OPTIONS.map((option) => option.value);
-                        const active = current.includes(channel.value);
-                        return (
-                          <label
-                            key={channel.value}
-                            className="flex cursor-pointer items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm ring-1 ring-pork-ink/10"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={active}
-                              onChange={() => {
-                                const next = active
-                                  ? current.filter((value) => value !== channel.value)
-                                  : [...current, channel.value];
-                                updateMenuList(editingMenu.id, {
-                                  visibility: {
-                                    ...editingMenu.visibility,
-                                    channels: next.length === CHANNEL_OPTIONS.length ? undefined : next,
-                                  },
-                                });
-                              }}
-                              className="h-4 w-4 accent-pork-red"
-                            />
-                            <span className={active ? "font-bold" : ""}>{channel.label}</span>
-                          </label>
-                        );
-                      })}
+                  {availableChannelOptions.length > 0 && (
+                    <div className="mt-4">
+                      <span className="mb-2 block text-xs font-bold uppercase text-pork-ink/50">
+                        Canali ordine
+                        <HelpHint className="ml-1" text="Su quali canali questo menu è disponibile. Esempio: solo al tavolo, solo asporto, o tutti i canali insieme." />
+                      </span>
+                      <div className="grid gap-2 md:grid-cols-2">
+                        {availableChannelOptions.map((channel) => {
+                          const current = editingMenu.visibility.channels ?? availableChannelOptions.map((option) => option.value);
+                          const active = current.includes(channel.value);
+                          return (
+                            <label
+                              key={channel.value}
+                              className="flex cursor-pointer items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm ring-1 ring-pork-ink/10"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={active}
+                                onChange={() => {
+                                  const next = active
+                                    ? current.filter((value) => value !== channel.value)
+                                    : [...current, channel.value];
+                                  updateMenuList(editingMenu.id, {
+                                    visibility: {
+                                      ...editingMenu.visibility,
+                                      channels: next.length === availableChannelOptions.length ? undefined : next,
+                                    },
+                                  });
+                                }}
+                                className="h-4 w-4 accent-pork-red"
+                              />
+                              <span className={active ? "font-bold" : ""}>{channel.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <span className="mt-2 block text-xs text-pork-ink/45">
+                        I menu esistenti senza configurazione esplicita restano abilitati su tutti i canali.
+                      </span>
+                      {editingMenu.visibility.channels?.includes("reservation") && (
+                        <span className="mt-2 block rounded-xl bg-pork-mustard/20 px-3 py-2 text-xs text-pork-ink/70">
+                          I prodotti nel canale prenotazioni sono sempre visibili e prenotabili, indipendentemente da orari e giorni impostati sopra.
+                        </span>
+                      )}
                     </div>
-                    <span className="mt-2 block text-xs text-pork-ink/45">
-                      I menu esistenti senza configurazione esplicita restano abilitati su tutti i canali.
-                    </span>
-                  </div>
+                  )}
 
+                  {allowTableOrders && (
                   <label className="mt-4 block">
                     <span className="mb-1 block text-xs font-bold uppercase text-pork-ink/50">
                       Tavoli specifici
+                      <HelpHint className="ml-1" text="Limita il menu a uno o più tavoli (es. un menu speciale per il privé). Nessuna selezione = visibile da tutte le postazioni." />
                     </span>
                     <select
                       multiple
@@ -631,6 +669,7 @@ export default function AdminMenuPage() {
                       Nessuna selezione = tutte le postazioni. Usa Cmd/Ctrl per selezioni multiple.
                     </span>
                   </label>
+                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -643,40 +682,153 @@ export default function AdminMenuPage() {
                     </span>
                   </div>
 
-                  {categories.map((cat) => {
-                    const catItems = filtered(selectItemsByCategory(items, cat.id));
-                    if (catItems.length === 0) return null;
-                    return (
-                      <div key={cat.id} className="space-y-2">
-                        <p className="text-xs font-black uppercase text-pork-ink/45">
-                          {cat.title}
-                        </p>
-                        <div className="grid gap-2 md:grid-cols-2">
-                          {catItems.map((item) => {
-                            const included = editingMenu.itemIds.includes(item.id);
-                            return (
-                              <label
-                                key={item.id}
-                                className="flex cursor-pointer items-center gap-2 rounded-xl border border-pork-ink/10 bg-pork-cream/70 px-3 py-2 text-sm"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={included}
-                                  onChange={() =>
-                                    toggleMenuListItem(editingMenu.id, item.id)
-                                  }
-                                  className="h-4 w-4 accent-pork-red"
-                                />
-                                <span className={included ? "font-bold" : ""}>
-                                  {item.name}
-                                </span>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
+                  {(() => {
+                    const includedSet = new Set(editingMenu.itemIds);
+                    const q = itemPickerQuery.trim().toLowerCase();
+                    const suggestions = items
+                      .filter((it) => !includedSet.has(it.id))
+                      .filter((it) =>
+                        q.length === 0
+                          ? false
+                          : it.name.toLowerCase().includes(q) ||
+                            (it.description ?? "").toLowerCase().includes(q),
+                      )
+                      .slice(0, 8);
+                    const importableMenus = menuLists.filter(
+                      (m) => m.id !== editingMenu.id && m.itemIds.length > 0,
                     );
-                  })}
+                    return (
+                      <>
+                        <div className="space-y-2 rounded-xl border-2 border-pork-ink/10 bg-white p-3">
+                          <div className="relative">
+                            <Search
+                              size={14}
+                              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-pork-ink/40"
+                            />
+                            <input
+                              type="text"
+                              value={itemPickerQuery}
+                              onChange={(e) => setItemPickerQuery(e.target.value)}
+                              placeholder={
+                                isServices
+                                  ? "Cerca un servizio da aggiungere…"
+                                  : "Cerca un piatto da aggiungere…"
+                              }
+                              className="w-full rounded-xl border-2 border-pork-ink/10 bg-pork-cream/40 py-2 pl-8 pr-3 text-sm outline-none focus:border-pork-red"
+                            />
+                          </div>
+                          {q.length > 0 && (
+                            <ul className="max-h-60 overflow-y-auto rounded-xl border border-pork-ink/10 bg-pork-cream/50">
+                              {suggestions.length === 0 ? (
+                                <li className="px-3 py-2 text-xs text-pork-ink/40">
+                                  Nessun risultato.
+                                </li>
+                              ) : (
+                                suggestions.map((it) => {
+                                  const cat = categories.find((c) => c.id === it.categoryId);
+                                  return (
+                                    <li key={it.id}>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          toggleMenuListItem(editingMenu.id, it.id);
+                                          setItemPickerQuery("");
+                                        }}
+                                        className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-pork-red/5"
+                                      >
+                                        <span className="truncate font-semibold">{it.name}</span>
+                                        <span className="shrink-0 text-[10px] uppercase text-pork-ink/40">
+                                          {cat?.title ?? "—"}
+                                        </span>
+                                      </button>
+                                    </li>
+                                  );
+                                })
+                              )}
+                            </ul>
+                          )}
+                        </div>
+
+                        {importableMenus.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-pork-ink/[0.03] px-3 py-2">
+                            <span className="text-xs font-bold uppercase text-pork-ink/50">
+                              Importa da un altro menu
+                            </span>
+                            <select
+                              value={importFromMenuId}
+                              onChange={(e) => setImportFromMenuId(e.target.value)}
+                              className="rounded-lg border border-pork-ink/10 bg-white px-2 py-1 text-xs"
+                            >
+                              <option value="">— scegli —</option>
+                              {importableMenus.map((m) => (
+                                <option key={m.id} value={m.id}>
+                                  {m.name} ({m.itemIds.length})
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              disabled={!importFromMenuId}
+                              onClick={() => {
+                                const src = menuLists.find((m) => m.id === importFromMenuId);
+                                if (!src) return;
+                                const merged = Array.from(
+                                  new Set([...editingMenu.itemIds, ...src.itemIds]),
+                                );
+                                updateMenuList(editingMenu.id, { itemIds: merged });
+                                setImportFromMenuId("");
+                              }}
+                              className="rounded-lg bg-pork-ink px-3 py-1 text-xs font-bold text-pork-cream disabled:opacity-30"
+                            >
+                              Importa
+                            </button>
+                          </div>
+                        )}
+
+                        {editingMenu.itemIds.length === 0 ? (
+                          <div className="rounded-xl border-2 border-dashed border-pork-ink/15 px-4 py-8 text-center text-sm text-pork-ink/45">
+                            Nessun {isServices ? "servizio" : "piatto"} ancora aggiunto. Usa
+                            il campo di ricerca qui sopra per cercarli e aggiungerli.
+                          </div>
+                        ) : (
+                          categories.map((cat) => {
+                            const inCat = selectItemsByCategory(items, cat.id).filter((it) =>
+                              includedSet.has(it.id),
+                            );
+                            if (inCat.length === 0) return null;
+                            return (
+                              <div key={cat.id} className="space-y-2">
+                                <p className="text-xs font-black uppercase text-pork-ink/45">
+                                  {cat.title}{" "}
+                                  <span className="ml-1 font-normal text-pork-ink/30">
+                                    · {inCat.length}
+                                  </span>
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {inCat.map((it) => (
+                                    <span
+                                      key={it.id}
+                                      className="inline-flex items-center gap-1.5 rounded-full border border-pork-ink/10 bg-pork-cream/70 px-3 py-1 text-xs font-semibold"
+                                    >
+                                      {it.name}
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleMenuListItem(editingMenu.id, it.id)}
+                                        className="rounded-full p-0.5 text-pork-ink/40 hover:bg-pork-red/10 hover:text-pork-red"
+                                        aria-label={`Rimuovi ${it.name}`}
+                                      >
+                                        <XCircle size={13} />
+                                      </button>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -690,18 +842,27 @@ export default function AdminMenuPage() {
           if (catItems.length === 0 && (query || filter !== "all")) return null;
           return (
             <section key={cat.id} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="impact-title text-xl text-pork-ink">
-                  {cat.title}{" "}
-                  <span className="ml-2 text-xs text-pork-ink/40">
-                    {catItems.length}
-                  </span>
-                </h2>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <input
+                    type="text"
+                    value={cat.title}
+                    onChange={(e) => updateCategory(cat.id, { title: e.target.value })}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim();
+                      if (!v) updateCategory(cat.id, { title: "Senza nome" });
+                    }}
+                    className="impact-title min-w-0 flex-1 truncate border-b border-transparent bg-transparent text-xl text-pork-ink outline-none focus:border-pork-red"
+                    aria-label="Nome categoria"
+                  />
+                  <span className="text-xs text-pork-ink/40">{catItems.length}</span>
+                </div>
                 <div className="flex items-center gap-2">
                   {catItems.length > 0 && (
                     <button
                       type="button"
                       onClick={() => selectAllInList(catItems)}
+                      title="Aggiungi tutti i piatti della categoria alla selezione per agire in blocco (es. cambia disponibilità o assegna lista aggiunte)"
                       className="rounded-full border border-pork-ink/15 bg-white px-2 py-1 text-[10px] font-bold uppercase text-pork-ink/60 hover:border-pork-red/40"
                     >
                       Seleziona categoria
@@ -720,6 +881,24 @@ export default function AdminMenuPage() {
                   >
                     <Plus size={12} /> Aggiungi
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const count = catItems.length;
+                      if (
+                        count > 0 &&
+                        !confirm(`La categoria "${cat.title}" contiene ${count} ${isServices ? "servizi" : "piatti"}. Eliminare anche tutti i piatti?`)
+                      ) {
+                        return;
+                      }
+                      if (count === 0 && !confirm(`Eliminare la categoria "${cat.title}"?`)) return;
+                      removeCategory(cat.id);
+                    }}
+                    className="rounded-full p-1.5 text-pork-ink/30 hover:bg-pork-red/10 hover:text-pork-red"
+                    title="Elimina categoria"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
               <CategoryAvailabilityEditor
@@ -733,7 +912,26 @@ export default function AdminMenuPage() {
                     {isServices ? "Nessun servizio." : "Nessun piatto."}
                   </li>
                 ) : (
-                  catItems.map((it) => (
+                  catItems.flatMap((it) => {
+                    const isDragging = draggingItemId === it.id;
+                    const showPlaceholder =
+                      dragOverItemId === it.id && draggingItemId !== null && draggingItemId !== it.id;
+                    const nodes: React.ReactNode[] = [];
+                    if (showPlaceholder) {
+                      nodes.push(
+                        <li
+                          key={`ph-${it.id}`}
+                          aria-hidden
+                          className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-pork-red/40 bg-pork-red/5 p-3 transition-all duration-200"
+                          style={{ minHeight: 70 }}
+                        >
+                          <span className="text-xs font-bold uppercase tracking-wide text-pork-red/70">
+                            Rilascia qui
+                          </span>
+                        </li>,
+                      );
+                    }
+                    nodes.push(
                     <li
                       key={it.id}
                       draggable
@@ -743,16 +941,29 @@ export default function AdminMenuPage() {
                         event.dataTransfer.setData("text/plain", it.id);
                       }}
                       onDragOver={(event) => {
-                        if (draggingItemId) event.preventDefault();
+                        if (draggingItemId && draggingItemId !== it.id) {
+                          event.preventDefault();
+                          if (dragOverItemId !== it.id) setDragOverItemId(it.id);
+                        }
+                      }}
+                      onDragLeave={() => {
+                        if (dragOverItemId === it.id) setDragOverItemId(null);
                       }}
                       onDrop={(event) => {
                         event.preventDefault();
                         const draggedId = event.dataTransfer.getData("text/plain") || draggingItemId;
                         if (draggedId) moveItemWithinCategory(cat.id, draggedId, it.id);
                         setDraggingItemId(null);
+                        setDragOverItemId(null);
                       }}
-                      onDragEnd={() => setDraggingItemId(null)}
-                      className="group flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-pork-ink/5"
+                      onDragEnd={() => {
+                        setDraggingItemId(null);
+                        setDragOverItemId(null);
+                      }}
+                      className={
+                        "group flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-pork-ink/5 transition-all duration-200 " +
+                        (isDragging ? "scale-[0.97] opacity-40 ring-pork-red/30" : "")
+                      }
                     >
                       <span
                         className="cursor-grab touch-none text-pork-ink/30 active:cursor-grabbing"
@@ -837,19 +1048,40 @@ export default function AdminMenuPage() {
                       >
                         Modifica
                       </button>
-                    </li>
-                  ))
+                    </li>,
+                    );
+                    return nodes;
+                  })
                 )}
               </ul>
             </section>
           );
         })}
 
+      {hydrated && view === "items" && (
+        <button
+          type="button"
+          onClick={() => {
+            const id = addCategory(isServices ? "Nuova categoria servizi" : "Nuova categoria");
+            window.setTimeout(() => {
+              const target = document.querySelector<HTMLInputElement>(`section input[aria-label="Nome categoria"][value*="Nuova categoria"]`);
+              target?.focus();
+              target?.select();
+            }, 50);
+            return id;
+          }}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-pork-ink/15 py-4 text-sm font-bold text-pork-ink/60 hover:border-pork-red/40 hover:text-pork-red"
+        >
+          <Plus size={16} /> Aggiungi categoria
+        </button>
+      )}
+
       {editing && (
         <ItemEditor
           item={editing}
           customTags={customTags}
           volumeLabelPresets={volumeLabels}
+          locales={getTenantLocaleConfig(tenantId)?.locales ?? ["it"]}
           onClose={() => setEditingId(null)}
         />
       )}
@@ -883,6 +1115,7 @@ function CategoryAvailabilityEditor({
           className="h-3.5 w-3.5 accent-pork-red"
         />
         Fascia oraria
+        <HelpHint className="ml-1" text="Limita questa categoria a una fascia oraria (es. solo a pranzo). Fuori dall'orario non compare nel menu pubblico." />
         {enabled && (
           <span className="ml-2 font-normal normal-case text-pork-ink/55">
             ({av.label || "—"} {av.from}–{av.to})

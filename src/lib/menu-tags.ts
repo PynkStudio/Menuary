@@ -1,11 +1,12 @@
 import type { MenuItem, MenuTag } from "@/lib/menu-data";
 
-export const BUILT_IN_MENU_TAGS = ["firma", "piccante", "veg", "novita"] as const;
+export const BUILT_IN_MENU_TAGS = ["firma", "piccante", "veg", "vegano", "novita"] as const;
 
 export const BUILT_IN_TAG_LABELS: Record<(typeof BUILT_IN_MENU_TAGS)[number], string> = {
   firma: "Firma",
   piccante: "Piccante",
-  veg: "Veg",
+  veg: "Vegetariano",
+  vegano: "Vegano",
   novita: "Novità",
 };
 

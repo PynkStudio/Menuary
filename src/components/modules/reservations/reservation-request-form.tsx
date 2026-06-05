@@ -1,11 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CalendarCheck } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useRestaurantServicesStore } from "@/store/restaurant-services-store";
 import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
+import { useSettingsStore } from "@/store/settings-store";
+import { scheduleDayForDate, generateTimeSlots, parseSlotBounds } from "@/lib/venue-hours";
+
+function computeReservationSlots(
+  hoursWeek: ReturnType<typeof import("@/lib/venue-hours").defaultHoursWeek>,
+  settings: import("@/store/settings-store").ReservationTimeSettings,
+  date: string,
+): string[] {
+  if (!date) return [];
+  const d = new Date(`${date}T12:00:00`);
+  if (settings.mode === "fixed") {
+    if (!settings.fixedStartTime || !settings.fixedEndTime) return [];
+    return generateTimeSlots([`${settings.fixedStartTime} – ${settings.fixedEndTime}`], 30);
+  }
+  const day = scheduleDayForDate(hoursWeek, d);
+  if (day.closed || !day.slots.length) return [];
+  const adjustedSlots = day.slots.map((slot) => {
+    const bounds = parseSlotBounds(slot);
+    if (!bounds) return slot;
+    const [oh, om] = bounds.open.split(":").map(Number);
+    const [ch, cm] = bounds.close.split(":").map(Number);
+    const openMin = oh * 60 + om + (settings.startOffsetMinutes ?? 0);
+    const closeMin = ch * 60 + cm - (settings.endOffsetMinutes ?? 0);
+    if (openMin >= closeMin) return null;
+    const fmtOpen = `${Math.floor(openMin / 60).toString().padStart(2, "0")}:${(openMin % 60).toString().padStart(2, "0")}`;
+    const fmtClose = `${Math.floor(closeMin / 60).toString().padStart(2, "0")}:${(closeMin % 60).toString().padStart(2, "0")}`;
+    return `${fmtOpen} – ${fmtClose}`;
+  }).filter((s): s is string => s !== null);
+  return generateTimeSlots(adjustedSlots, 30);
+}
 
 export function ReservationRequestForm() {
   const tenant = useTenant();
@@ -13,6 +43,8 @@ export function ReservationRequestForm() {
   const addReservation = useRestaurantServicesStore((state) => state.addReservation);
   const setTenantSeed = useRestaurantServicesStore((state) => state.setTenantSeed);
   const currentTenantId = useRestaurantServicesStore((state) => state.currentTenantId);
+  const hoursWeek = useSettingsStore((s) => s.hoursWeek);
+  const reservationTimeSettings = useSettingsStore((s) => s.reservationTimeSettings);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -24,6 +56,11 @@ export function ReservationRequestForm() {
     time: "",
     notes: "",
   });
+
+  const timeSlots = useMemo(
+    () => computeReservationSlots(hoursWeek, reservationTimeSettings, draft.date),
+    [hoursWeek, reservationTimeSettings, draft.date],
+  );
 
   if (!modules.reservations) return null;
 
@@ -140,12 +177,26 @@ export function ReservationRequestForm() {
           className="rounded-xl border-2 border-pork-ink/10 px-3 py-2 outline-none focus:border-pork-red"
         />
         <div className="grid grid-cols-[1fr_0.7fr] gap-3">
-          <input
-            type="time"
-            value={draft.time}
-            onChange={(event) => setDraft((prev) => ({ ...prev, time: event.target.value }))}
-            className="rounded-xl border-2 border-pork-ink/10 px-3 py-2 outline-none focus:border-pork-red"
-          />
+          {timeSlots.length > 0 ? (
+            <select
+              value={draft.time}
+              onChange={(event) => setDraft((prev) => ({ ...prev, time: event.target.value }))}
+              className="rounded-xl border-2 border-pork-ink/10 px-3 py-2 outline-none focus:border-pork-red"
+            >
+              <option value="">Orario…</option>
+              {timeSlots.map((slot) => (
+                <option key={slot} value={slot}>{slot}</option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="time"
+              value={draft.time}
+              onChange={(event) => setDraft((prev) => ({ ...prev, time: event.target.value }))}
+              placeholder={!draft.date ? "Seleziona prima una data" : "Orario"}
+              className="rounded-xl border-2 border-pork-ink/10 px-3 py-2 outline-none focus:border-pork-red"
+            />
+          )}
           <input
             type="number"
             min={1}

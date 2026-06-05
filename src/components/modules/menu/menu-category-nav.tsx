@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -48,6 +48,13 @@ export function MenuCategoryNav({
     return () => observer.disconnect();
   }, [categoryIds]);
 
+  // Scrolla alla sezione senza aggiungere entry alla history (replaceState invece di pushState).
+  // Così il tasto Indietro del browser/app torna alla pagina precedente, non ripercore le categorie.
+  const scrollToCategory = useCallback((id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    history.replaceState(null, "", `#${id}`);
+  }, []);
+
   return (
     <div
       className={cn(
@@ -74,9 +81,10 @@ export function MenuCategoryNav({
           className="touch-pan-x flex min-w-0 flex-1 gap-2 overflow-x-auto overscroll-x-contain py-4 pl-0.5 pr-1 [-webkit-overflow-scrolling:touch] md:py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {categories.map((c) => (
-            <a
+            <button
               key={c.id}
-              href={`#${c.id}`}
+              type="button"
+              onClick={() => scrollToCategory(c.id)}
               className={cn(
                 "shrink-0 snap-start rounded-full px-4 py-2.5 text-sm font-bold transition-all sm:py-2",
                 active === c.id
@@ -85,7 +93,7 @@ export function MenuCategoryNav({
               )}
             >
               {c.title}
-            </a>
+            </button>
           ))}
         </nav>
         {isDoca && (

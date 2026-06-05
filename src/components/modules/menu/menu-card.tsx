@@ -20,7 +20,12 @@ const tagMeta: Record<string, { label: string; icon: React.ReactNode; className:
     className: "bg-pork-mustard text-pork-ink",
   },
   veg: {
-    label: "Veg",
+    label: "Vegetariano",
+    icon: <Leaf size={12} />,
+    className: "bg-pork-green text-white",
+  },
+  vegano: {
+    label: "Vegano",
     icon: <Leaf size={12} />,
     className: "bg-pork-green text-white",
   },
