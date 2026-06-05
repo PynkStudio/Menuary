@@ -2,6 +2,7 @@
 
 import type { PriceFormat } from "@/lib/types";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type VolumeVariant = { id: string; label: string; price: number };
 
@@ -254,6 +255,25 @@ function NumberField({
   value: number;
   onChange: (n: number) => void;
 }) {
+  const [draft, setDraft] = useState(() => formatPriceInput(value));
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) setDraft(formatPriceInput(value));
+  }, [focused, value]);
+
+  function commit(next: string) {
+    const parsed = parsePriceInput(next);
+    if (parsed == null) return;
+    onChange(normalizePrice(parsed));
+  }
+
+  function setFromButton(next: number) {
+    const normalized = normalizePrice(next);
+    setDraft(formatPriceInput(normalized));
+    onChange(normalized);
+  }
+
   return (
     <label className="block">
       <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-pork-ink/60">
@@ -262,18 +282,24 @@ function NumberField({
       <input
         type="text"
         inputMode="decimal"
-        value={value.toString().replace(".", ",")}
+        value={draft}
         onChange={(e) => {
-          const parsed = Number(e.target.value.replace(",", "."));
-          if (!Number.isFinite(parsed)) return;
-          onChange(normalizePrice(parsed));
+          const next = sanitizePriceInput(e.target.value);
+          setDraft(next);
+          commit(next);
+        }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false);
+          const parsed = parsePriceInput(draft);
+          setDraft(formatPriceInput(parsed == null ? value : normalizePrice(parsed)));
         }}
         className="w-full rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-center outline-none transition-colors focus:border-pork-red"
       />
       <div className="mt-1 grid grid-cols-4 gap-1">
         <button
           type="button"
-          onClick={() => onChange(normalizePrice(value - 1))}
+          onClick={() => setFromButton(value - 1)}
           className="rounded-lg bg-pork-ink/5 px-1 py-1 text-[10px] font-black text-pork-ink/60 hover:bg-pork-ink/10"
           aria-label="Diminuisci di 1 euro"
         >
@@ -281,7 +307,7 @@ function NumberField({
         </button>
         <button
           type="button"
-          onClick={() => onChange(normalizePrice(value - 0.5))}
+          onClick={() => setFromButton(value - 0.5)}
           className="rounded-lg bg-pork-ink/5 px-1 py-1 text-[10px] font-black text-pork-ink/60 hover:bg-pork-ink/10"
           aria-label="Diminuisci di 50 centesimi"
         >
@@ -289,7 +315,7 @@ function NumberField({
         </button>
         <button
           type="button"
-          onClick={() => onChange(normalizePrice(value + 0.5))}
+          onClick={() => setFromButton(value + 0.5)}
           className="rounded-lg bg-pork-ink/5 px-1 py-1 text-[10px] font-black text-pork-ink/60 hover:bg-pork-ink/10"
           aria-label="Aumenta di 50 centesimi"
         >
@@ -297,7 +323,7 @@ function NumberField({
         </button>
         <button
           type="button"
-          onClick={() => onChange(normalizePrice(value + 1))}
+          onClick={() => setFromButton(value + 1)}
           className="rounded-lg bg-pork-ink/5 px-1 py-1 text-[10px] font-black text-pork-ink/60 hover:bg-pork-ink/10"
           aria-label="Aumenta di 1 euro"
         >
@@ -308,9 +334,27 @@ function NumberField({
   );
 }
 
+function sanitizePriceInput(value: string): string {
+  const normalized = value.replace(/\./g, ",").replace(/[^\d,]/g, "");
+  const [euros, ...centsParts] = normalized.split(",");
+  if (centsParts.length === 0) return euros;
+  return `${euros},${centsParts.join("").slice(0, 2)}`;
+}
+
+function parsePriceInput(value: string): number | null {
+  const normalized = value.trim().replace(",", ".");
+  if (!normalized || normalized === ".") return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatPriceInput(value: number): string {
+  return normalizePrice(value).toFixed(2).replace(".", ",");
+}
+
 function normalizePrice(value: number): number {
-  if (!Number.isFinite(value)) return 0.5;
-  return Math.max(0.5, Math.round(value * 2) / 2);
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.round(value * 100) / 100);
 }
 
 function genVolumeId(): string {

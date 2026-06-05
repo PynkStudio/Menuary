@@ -85,7 +85,7 @@ function isVisible(list: MenuListRow, channel: MenuOrderChannel, tableId: string
   if (!list.enabled) return false;
   const visibility = normalizeVisibility(list.visibility);
   if (visibility.channels && !visibility.channels.includes(channel)) return false;
-  // Le prenotazioni ignorano vincoli di orario, giorno e tavolo: prodotti/servizi sono sempre prenotabili.
+  // Le prenotazioni ignorano vincoli di orario, giorno e tavolo: servizi e richieste tavolo restano prenotabili.
   if (menuChannelIgnoresTimeRules(channel)) return true;
   const local = localMenuTime(now);
   if (visibility.days?.length && !visibility.days.includes(local.day)) return false;

@@ -86,7 +86,6 @@ async function loadCheckoutUpsellSuggestions(
 }
 
 function checkoutOrderChannel(order: NonNullable<Awaited<ReturnType<typeof getPublicCheckoutOrder>>>): MenuOrderChannel {
-  if (order.source === "product_reservation") return "product_reservation";
   if (order.source === "retell") return "phone";
   if (order.source === "whatsapp") return "whatsapp";
   if (order.type === "tavolo") return "table";

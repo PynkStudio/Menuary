@@ -419,14 +419,14 @@ function DineOptionToggle({
           active={value === "dine_in"}
           onClick={() => onChange("dine_in")}
           icon={<UtensilsCrossed size={18} />}
-          label="Mangia qui"
+          label="Mangio al locale"
           hint="su vassoio"
         />
         <DineOptionButton
           active={value === "takeaway"}
           onClick={() => onChange("takeaway")}
           icon={<ShoppingBag size={18} />}
-          label="Asporto"
+          label="Porto via"
           hint="nel sacchetto"
         />
         {showDelivery && (

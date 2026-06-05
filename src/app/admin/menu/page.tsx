@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import {
@@ -611,7 +611,7 @@ export default function AdminMenuPage() {
                     <div className="mt-4">
                       <span className="mb-2 block text-xs font-bold uppercase text-pork-ink/50">
                         Dove mostrarlo
-                        <HelpHint className="ml-1" text="Scegli dove questo menu è disponibile: pagina menu, ordini, tavoli, chiamate, WhatsApp, prenotazioni o prenotazioni prodotti. La lista si aggiorna in base ai moduli attivi." />
+                        <HelpHint className="ml-1" text="Scegli dove questo menu è disponibile: pagina menu, ordini, tavoli, chiamate, WhatsApp o prenotazioni. La lista si aggiorna in base ai moduli attivi." />
                       </span>
                       <div className="grid gap-2 md:grid-cols-2">
                         {availableChannelOptions.map((channel) => {
@@ -646,10 +646,9 @@ export default function AdminMenuPage() {
                       <span className="mt-2 block text-xs text-pork-ink/45">
                         I menu esistenti senza configurazione esplicita restano visibili ovunque sia previsto dai moduli attivi.
                       </span>
-                      {(editingMenu.visibility.channels?.includes("reservation") ||
-                        editingMenu.visibility.channels?.includes("product_reservation")) && (
+                      {editingMenu.visibility.channels?.includes("reservation") && (
                         <span className="mt-2 block rounded-xl bg-pork-mustard/20 px-3 py-2 text-xs text-pork-ink/70">
-                          I prodotti nei canali prenotazione sono sempre visibili e prenotabili, indipendentemente da orari e giorni impostati sopra.
+                          I contenuti nel canale prenotazioni sono sempre visibili e prenotabili, indipendentemente da orari e giorni impostati sopra.
                         </span>
                       )}
                     </div>
@@ -929,7 +928,14 @@ export default function AdminMenuPage() {
                 onChange={(next) => updateCategory(cat.id, { availability: next })}
               />
 
-              <ul className="grid gap-2 md:grid-cols-2">
+              <ul
+                className="grid gap-2 md:grid-flow-col md:grid-cols-2 md:[grid-template-rows:repeat(var(--category-item-rows),minmax(0,auto))]"
+                style={
+                  {
+                    "--category-item-rows": Math.max(1, Math.ceil(catItems.length / 2)).toString(),
+                  } as CSSProperties
+                }
+              >
                 {catItems.length === 0 ? (
                   <li className="col-span-full rounded-xl bg-white p-4 text-sm text-pork-ink/40">
                     {isServices ? "Nessun servizio." : "Nessun piatto."}

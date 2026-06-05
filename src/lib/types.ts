@@ -63,8 +63,7 @@ export type MenuOrderChannel =
   | "whatsapp"
   | "online"
   | "table"
-  | "reservation"
-  | "product_reservation";
+  | "reservation";
 
 export type AdminMenuListVisibility = {
   /** Giorni locali: 0 domenica, 1 lunedi, ... 6 sabato. Vuoto = tutti i giorni. */

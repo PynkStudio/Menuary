@@ -137,21 +137,6 @@ function formatTime(t: string): string {
   return t.slice(0, 5);
 }
 
-function isProductReservation(row: ReservationRow): boolean {
-  const tags = row.special_request_tags?.map((tag) => tag.toLowerCase()) ?? [];
-  return (
-    tags.some((tag) => tag.includes("ritiro_prodotti") || tag.includes("product")) ||
-    row.channel === "product_reservation"
-  );
-}
-
-function productDetailLines(notes: string | null): string[] {
-  return (notes ?? "")
-    .split(/\r?\n| - /)
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
 export default async function PrenotazioniPage({
   params,
   searchParams,
@@ -211,11 +196,9 @@ export default async function PrenotazioniPage({
             const badge = statusBadge(r.status);
             const isPending = r.status === "pending_manual" || r.status === "auto_proposed";
             const isConfirmed = r.status === "confirmed";
-            const productReservation = isProductReservation(r);
-            const detailLines = productDetailLines(r.notes);
 
             return (
-              <article key={r.id} className="ga-reservation" data-kind={productReservation ? "product" : "table"}>
+              <article key={r.id} className="ga-reservation">
                 <div className="ga-reservation-when">
                   <span className="ga-reservation-date">{formatDate(r.reservation_date)}</span>
                   <span className="ga-reservation-time">{formatTime(r.reservation_time)}</span>
@@ -233,7 +216,7 @@ export default async function PrenotazioniPage({
                     {(r.duration_minutes ?? r.service?.duration_minutes) && (
                       <span><Clock size={12} strokeWidth={2.2} /> {r.duration_minutes ?? r.service?.duration_minutes} min</span>
                     )}
-                    {!isServicesVertical && !productReservation && (
+                    {!isServicesVertical && (
                       <span><Users size={12} strokeWidth={2.2} /> {r.covers} {r.covers === 1 ? "persona" : "persone"}</span>
                     )}
                     <ReservationPhoneActions phone={r.customer_phone} />
@@ -241,17 +224,7 @@ export default async function PrenotazioniPage({
                       <span><Tag size={12} strokeWidth={2.2} /> {r.assigned_area ?? (isServicesVertical ? "Postazione assegnata" : "Tavolo assegnato")}</span>
                     )}
                   </div>
-                  {productReservation && detailLines.length > 0 && (
-                    <div className="ga-reservation-product-details">
-                      <span className="ga-reservation-product-label">Prodotti prenotati</span>
-                      <ul>
-                        {detailLines.map((line) => (
-                          <li key={line}>{line}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {!productReservation && (r.notes || r.special_request_tags?.length > 0) && (
+                  {(r.notes || r.special_request_tags?.length > 0) && (
                     <p className="ga-reservation-notes">
                       {r.special_request_tags?.length > 0 && (
                         <span className="ga-reservation-tags">
