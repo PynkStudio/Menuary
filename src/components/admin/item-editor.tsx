@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Globe, ImageIcon, Plus, Save, Sparkles, X } from "lucide-react";
 import { resolveExtrasForItem } from "@/lib/extra-lists";
 import type {
@@ -18,6 +19,7 @@ import { useMenuStore } from "@/store/menu-store";
 import { formatEuro } from "@/lib/price-utils";
 import { normalizeMenuIngredients, type MenuIngredient } from "@/lib/ingredients";
 import { defaultExpiryDate, isBuiltInMenuTag } from "@/lib/menu-tags";
+import { HelpHint } from "@/components/gestione/help-hint";
 
 const TAGS: { key: MenuTag; label: string }[] = [
   { key: "firma", label: "Firma" },
@@ -370,7 +372,7 @@ export function ItemEditor({
     });
   }
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-pork-ink/70 p-4 backdrop-blur-sm"
       onClick={tryClose}
@@ -627,11 +629,10 @@ export function ItemEditor({
                 )}
               </Field>
 
-              <Field label="Etichette">
-                <p className="mb-2 text-[11px] text-pork-ink/50">
-                  Piccante: tocchi ripetuti sul tasto per i livelli 1–3 (🌶) e il quarto
-                  (piccantissimo); un altro tocco disattiva.
-                </p>
+              <Field
+                label="Etichette"
+                help="Usale per evidenziare caratteristiche utili nel menu pubblico. Piccante: clic ripetuti aumentano il livello fino a piccantissimo, poi disattivano. Veg: primo clic vegetariano, secondo vegano, terzo disattiva."
+              >
                 <div className="flex flex-wrap gap-2">
                   {TAGS.map((t) => {
                     if (t.key === "piccante") {
@@ -671,7 +672,7 @@ export function ItemEditor({
                     if (t.key === "veg") {
                       const isVeg = draft.tags?.includes("veg");
                       const isVegano = draft.tags?.includes("vegano");
-                      const label = isVegano ? "Vegano" : "Vegetariano";
+                      const label = isVegano ? "Vegano" : isVeg ? "Vegetariano" : "Veg";
                       const vegClass = isVegano
                         ? "bg-green-700 text-white ring-2 ring-green-500/40"
                         : isVeg
@@ -1091,21 +1092,25 @@ export function ItemEditor({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
 function Field({
   label,
+  help,
   children,
 }: {
   label: string;
+  help?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-pork-ink/60">
+      <p className="mb-1.5 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-pork-ink/60">
         {label}
+        {help && <HelpHint text={help} size={12} />}
       </p>
       {children}
     </div>

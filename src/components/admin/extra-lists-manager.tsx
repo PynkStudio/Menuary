@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { ExtraList, Extra } from "@/lib/types";
 import { useMenuStore } from "@/store/menu-store";
@@ -163,7 +164,7 @@ export function ExtraListsManager() {
         )}
       </div>
 
-      {editing && (
+      {editing && createPortal(
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-pork-ink/60 p-4 backdrop-blur-sm"
           onClick={closeEditor}
@@ -263,7 +264,8 @@ export function ExtraListsManager() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

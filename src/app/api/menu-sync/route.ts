@@ -364,6 +364,7 @@ async function deleteMissing(supabase: SupabaseAdmin, tenantId: string, bundle: 
   if (keepItems.length > 0) await supabase.from("menu_items").delete().eq("tenant_id", tenantId).not("code", "in", `(${keepItems.map(sqlQuote).join(",")})`);
   if (keepCategories.length > 0) await supabase.from("menu_categories").delete().eq("tenant_id", tenantId).not("code", "in", `(${keepCategories.map(sqlQuote).join(",")})`);
   if (keepExtraLists.length > 0) await supabase.from("extra_lists").delete().eq("tenant_id", tenantId).not("code", "in", `(${keepExtraLists.map(sqlQuote).join(",")})`);
+  else await supabase.from("extra_lists").delete().eq("tenant_id", tenantId);
   if (keepMenuLists.length > 0) await supabase.from("menu_lists" as never).delete().eq("tenant_id", tenantId).not("code", "in", `(${keepMenuLists.map(sqlQuote).join(",")})`);
 }
 
