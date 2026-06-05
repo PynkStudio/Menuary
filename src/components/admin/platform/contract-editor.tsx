@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -69,8 +70,15 @@ export function ContractEditor({ contractId }: Props) {
   const contractDraft = useDraftPersistence<ContractDraft>(draftKey, {
     serverUpdatedAt: stored?.updatedAt,
   });
-  // Segnala che il caricamento iniziale da contracts-store è avvenuto
   const loadedRef = useRef(false);
+
+  const isDirty = useMemo(() => {
+    if (!loadedRef.current) return false;
+    if (stored) return JSON.stringify(data) !== JSON.stringify(stored.data) || JSON.stringify(overrides) !== JSON.stringify(stored.clauseOverrides);
+    // Nuovo contratto: dirty se almeno un campo cliente è stato compilato
+    return !!(data.cliente.ragioneSociale || data.cliente.email || data.cliente.piva);
+  }, [data, overrides, stored]);
+  useUnsavedChangesWarning(isDirty);
 
   useEffect(() => {
     if (contractId) {

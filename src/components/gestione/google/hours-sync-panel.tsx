@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { RefreshCw, CheckCircle, AlertCircle, RotateCcw } from "lucide-react";
 import { HoursWeekEditor } from "@/components/admin/hours-week-editor";
 import type { DaySchedule } from "@/lib/venue-hours";
+import { hoursWeekEquals } from "@/lib/venue-hours";
 import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
+import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 
 interface Props {
   tenantId: string;
@@ -19,11 +21,10 @@ export function HoursSyncPanel({ tenantId, locationId, initialHours, googleConne
   const draftKey = `draft:${tenantId}:${locationId ?? "global"}:orari-settimana`;
   const draft = useDraftPersistence<DaySchedule[]>(draftKey);
 
-  const [hours, setHours] = useState<DaySchedule[]>(() => {
-    // Ripristina bozza silenziosamente solo al primo mount;
-    // il banner chiede conferma all'utente dopo.
-    return initialHours;
-  });
+  const [hours, setHours] = useState<DaySchedule[]>(initialHours);
+
+  const isDirty = useMemo(() => !hoursWeekEquals(hours, initialHours), [hours, initialHours]);
+  useUnsavedChangesWarning(isDirty);
   const [saving, setSaving] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
   const [syncError, setSyncError] = useState<string | null>(null);

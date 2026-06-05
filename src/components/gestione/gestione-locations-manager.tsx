@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MapPin, Plus, Pencil, Trash2, Star, Check, X } from "lucide-react";
 import type { TenantLocation, LocationRoutingMode } from "@/lib/tenant";
 import { isGestioneFixtureMode, readDemoLocations } from "@/lib/demo-mode";
+import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 
 interface Props {
   tenantId: string;
@@ -55,6 +56,9 @@ export function GestioneLocationsManager({ tenantId, initialLocations, multiLoca
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isFormDirty = (creating || editingId !== null) && (form.name !== "" || form.slug !== "");
+  useUnsavedChangesWarning(isFormDirty);
 
   function openCreate() {
     setEditingId(null);

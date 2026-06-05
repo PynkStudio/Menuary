@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Save } from "lucide-react";
+import { RotateCcw, Save } from "lucide-react";
+import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
+import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 
 type Initial = {
   email:     string;
@@ -11,6 +13,8 @@ type Initial = {
   phone:     string;
   workHours: string;
 };
+
+type FormDraft = Pick<Initial, "firstName" | "lastName" | "phone" | "workHours">;
 
 const ROLE_LABEL_IT: Record<string, string> = {
   superadmin:      "Amministratore di sistema",
@@ -28,6 +32,14 @@ export function AdminProfileForm({ initial }: { initial: Initial }) {
   const [error,     setError]     = useState<string | null>(null);
   const [saved,     setSaved]     = useState(false);
   const [isPending, start]        = useTransition();
+
+  const draft = useDraftPersistence<FormDraft>("draft:admin-profile");
+  const isDirty =
+    firstName !== initial.firstName ||
+    lastName  !== initial.lastName  ||
+    phone     !== initial.phone     ||
+    workHours !== initial.workHours;
+  useUnsavedChangesWarning(isDirty);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +63,7 @@ export function AdminProfileForm({ initial }: { initial: Initial }) {
           return;
         }
         setSaved(true);
+        draft.clearDraft();
       } catch {
         setError("Errore di rete.");
       }
@@ -61,6 +74,38 @@ export function AdminProfileForm({ initial }: { initial: Initial }) {
 
   return (
     <form onSubmit={handleSubmit} className="menuary-admin-card space-y-6 p-6">
+      {draft.draftDate && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-50 px-4 py-3">
+          <p className="text-sm font-semibold text-amber-800">
+            Modifiche non salvate del{" "}
+            {draft.draftDate.toLocaleDateString("it-IT", {
+              day: "2-digit", month: "long", year: "numeric",
+              hour: "2-digit", minute: "2-digit",
+            })}
+          </p>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => draft.clearDraft()}
+              className="text-xs font-bold text-amber-700 hover:underline">
+              Ignora
+            </button>
+            <button type="button"
+              onClick={() => {
+                const d = draft.readDraft();
+                if (d) {
+                  setFirstName(d.firstName);
+                  setLastName(d.lastName);
+                  setPhone(d.phone);
+                  setWorkHours(d.workHours);
+                  draft.clearDraft();
+                }
+              }}
+              className="inline-flex items-center gap-1 rounded-full bg-amber-700 px-3 py-1.5 text-xs font-bold text-white hover:opacity-90">
+              <RotateCcw size={12} /> Recupera
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Identità non modificabile */}
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Email">
@@ -85,7 +130,7 @@ export function AdminProfileForm({ initial }: { initial: Initial }) {
         <Field label="Nome">
           <input
             value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={(e) => { setFirstName(e.target.value); draft.saveDraft({ firstName: e.target.value, lastName, phone, workHours }); }}
             placeholder="Mario"
             className="menuary-admin-input"
             required
@@ -94,7 +139,7 @@ export function AdminProfileForm({ initial }: { initial: Initial }) {
         <Field label="Cognome">
           <input
             value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={(e) => { setLastName(e.target.value); draft.saveDraft({ firstName, lastName: e.target.value, phone, workHours }); }}
             placeholder="Rossi"
             className="menuary-admin-input"
             required
@@ -107,7 +152,7 @@ export function AdminProfileForm({ initial }: { initial: Initial }) {
           <input
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => { setPhone(e.target.value); draft.saveDraft({ firstName, lastName, phone: e.target.value, workHours }); }}
             placeholder="+39 02 1234567"
             className="menuary-admin-input"
           />
@@ -115,7 +160,7 @@ export function AdminProfileForm({ initial }: { initial: Initial }) {
         <Field label="Orari di lavoro">
           <input
             value={workHours}
-            onChange={(e) => setWorkHours(e.target.value)}
+            onChange={(e) => { setWorkHours(e.target.value); draft.saveDraft({ firstName, lastName, phone, workHours: e.target.value }); }}
             placeholder="Lun-Ven 9:00-18:00"
             className="menuary-admin-input"
           />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Globe, ImageIcon, Plus, Save, Sparkles, X } from "lucide-react";
 import { resolveExtrasForItem } from "@/lib/extra-lists";
@@ -20,6 +20,7 @@ import { formatEuro } from "@/lib/price-utils";
 import { normalizeMenuIngredients, type MenuIngredient } from "@/lib/ingredients";
 import { defaultExpiryDate, isBuiltInMenuTag } from "@/lib/menu-tags";
 import { HelpHint } from "@/components/gestione/help-hint";
+import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 
 const TAGS: { key: MenuTag; label: string }[] = [
   { key: "firma", label: "Firma" },
@@ -71,6 +72,8 @@ export function ItemEditor({
   const [extraPrice, setExtraPrice] = useState("");
   const [newTagName, setNewTagName] = useState("");
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [showMissingTransDialog, setShowMissingTransDialog] = useState(false);
+  const [missingTransLangs, setMissingTransLangs] = useState<string[]>([]);
 
   // AI state
   const [aiIngLoading, setAiIngLoading] = useState(false);
@@ -81,6 +84,36 @@ export function ItemEditor({
   const [translations, setTranslations] = useState<Record<string, TranslationDraft>>({});
   const [aiTranslating, setAiTranslating] = useState(false);
   const [aiTranslateError, setAiTranslateError] = useState("");
+  const translationsSavedRef = useRef<Record<string, TranslationDraft>>({});
+
+  // Carica traduzioni esistenti dal DB al mount (solo se multilingua)
+  const loadTranslations = useCallback(async () => {
+    if (locales.length <= 1) return;
+    try {
+      const res = await fetch(
+        `/api/gestione/menu-item-translations?tenantId=${encodeURIComponent(tenantId)}&itemId=${encodeURIComponent(item.id)}`,
+      );
+      if (!res.ok) return;
+      const rows: Array<{ locale: string; name?: string; description?: string; ingredients?: string[] }> =
+        await res.json();
+      const loaded: Record<string, TranslationDraft> = {};
+      for (const row of rows) {
+        if (row.locale !== "it") {
+          loaded[row.locale] = {
+            name: row.name ?? "",
+            description: row.description ?? "",
+            ingredients: row.ingredients ?? [],
+          };
+        }
+      }
+      setTranslations(loaded);
+      translationsSavedRef.current = loaded;
+    } catch {
+      // fail silently
+    }
+  }, [item.id, locales.length, tenantId]);
+
+  useEffect(() => { loadTranslations(); }, [loadTranslations]);
 
   const SUPPORTED_LANGS = useMemo(
     () => locales.map((code) => ({ code, label: code.toUpperCase() })),
@@ -97,6 +130,7 @@ export function ItemEditor({
   const isDirty = useMemo(() => {
     return JSON.stringify(draft) !== JSON.stringify(item);
   }, [draft, item]);
+  useUnsavedChangesWarning(isDirty);
 
   function persist(patch: Partial<AdminMenuItem> = {}) {
     if (extrasMode === "list") {
@@ -113,13 +147,98 @@ export function ItemEditor({
     }
   }
 
+  function persistTranslations() {
+    if (locales.length <= 1) return;
+    for (const lang of locales) {
+      if (lang === "it") continue;
+      const draft_ = translations[lang];
+      const saved = translationsSavedRef.current[lang];
+      // Skip if nothing changed and nothing new
+      if (!draft_ && !saved) continue;
+      if (
+        draft_?.name === saved?.name &&
+        draft_?.description === saved?.description &&
+        JSON.stringify(draft_?.ingredients) === JSON.stringify(saved?.ingredients)
+      ) continue;
+      // Fire and forget
+      fetch("/api/gestione/menu-item-translations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          tenantId,
+          itemId: item.id,
+          locale: lang,
+          name: draft_?.name ?? "",
+          description: draft_?.description ?? "",
+          ingredients: draft_?.ingredients ?? [],
+        }),
+      }).then(() => {
+        translationsSavedRef.current = { ...translationsSavedRef.current, [lang]: draft_ ?? {} };
+      }).catch(() => {/* fail silently */});
+    }
+  }
+
   function save() {
+    // Se il piatto è visibile e mancano traduzioni per lingue secondarie, prompt
+    if (draft.available && locales.length > 1) {
+      const missing = locales.filter(
+        (lang) => lang !== "it" && isTranslationTargetEmpty(lang),
+      );
+      if (missing.length > 0) {
+        setMissingTransLangs(missing);
+        setShowMissingTransDialog(true);
+        return;
+      }
+    }
     persist();
+    persistTranslations();
+    onClose();
+  }
+
+  async function saveWithAutoTranslate() {
+    setShowMissingTransDialog(false);
+    // Avvia traduzione in background per le lingue mancanti
+    const source = readTranslationSource("it");
+    if (source) {
+      for (const toLang of missingTransLangs) {
+        try {
+          const res = await fetch("/api/ai/menu-item", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              action: "translate",
+              tenantId,
+              name: source.name,
+              description: source.description,
+              ingredients: source.ingredients,
+              fromLang: source.lang,
+              toLang,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setTranslations((t) => ({
+              ...t,
+              [toLang]: {
+                name: data.name ?? "",
+                description: data.description ?? "",
+                ingredients: data.ingredients ?? [],
+              },
+            }));
+          }
+        } catch {
+          // fail silently — salviamo comunque
+        }
+      }
+    }
+    persist();
+    persistTranslations();
     onClose();
   }
 
   function saveAsDraft() {
     persist({ available: false });
+    persistTranslations();
     onClose();
   }
 
@@ -1135,6 +1254,51 @@ export function ItemEditor({
             </button>
           </div>
         </footer>
+
+        {showMissingTransDialog && (
+          <div
+            className="absolute inset-0 z-20 flex items-center justify-center bg-pork-ink/40 p-4 backdrop-blur-sm"
+            onClick={() => setShowMissingTransDialog(false)}
+          >
+            <div
+              className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="impact-title text-lg text-pork-ink">
+                Traduzioni mancanti
+              </h3>
+              <p className="mt-2 text-sm text-pork-ink/70">
+                Il piatto è visibile ma mancano le traduzioni per:{" "}
+                <strong>{missingTransLangs.map((l) => l.toUpperCase()).join(", ")}</strong>.
+              </p>
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  onClick={saveWithAutoTranslate}
+                  className="btn-primary text-sm"
+                >
+                  <Sparkles size={15} /> Completa con AI e salva
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMissingTransDialog(false);
+                    persist();
+                    persistTranslations();
+                    onClose();
+                  }}
+                  className="rounded-xl border-2 border-pork-ink/20 bg-white px-3 py-2 text-sm font-bold text-pork-ink hover:border-pork-ink"
+                >
+                  Salva senza tradurre
+                </button>
+                <button
+                  onClick={() => setShowMissingTransDialog(false)}
+                  className="mt-1 text-xs text-pork-ink/50 hover:text-pork-ink"
+                >
+                  Annulla
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showUnsavedDialog && (
           <div

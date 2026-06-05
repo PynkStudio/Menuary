@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Bike, Bot, CheckCircle2, Clock, QrCode, RotateCcw, Save, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import type { TenantOrderSettings } from "@/lib/types";
 import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
+import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 
 type FormState = Omit<TenantOrderSettings, "id" | "tenantId" | "locationId">;
 
@@ -42,6 +43,12 @@ export function OrderSettingsPanel() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const draft = useDraftPersistence<FormState>(`draft:${tenant.id}:order-settings`);
+  const savedFormRef = useRef<FormState | null>(null);
+  const isDirty = useMemo(
+    () => loaded && savedFormRef.current !== null && JSON.stringify(form) !== JSON.stringify(savedFormRef.current),
+    [form, loaded],
+  );
+  useUnsavedChangesWarning(isDirty);
   const [waSession, setWaSession] = useState<WhatsappSession | null>(null);
 
   useEffect(() => {
@@ -59,6 +66,7 @@ export function OrderSettingsPanel() {
       const { id, tenantId, locationId, ...rest } = settings;
       void id; void tenantId; void locationId;
       setForm(rest);
+      savedFormRef.current = rest;
       setLoaded(true);
     })();
     return () => {
@@ -104,6 +112,7 @@ export function OrderSettingsPanel() {
         setMsg(err.error ?? "Errore salvataggio");
       } else {
         setMsg("Impostazioni salvate.");
+        savedFormRef.current = form;
         draft.clearDraft();
       }
     } finally {

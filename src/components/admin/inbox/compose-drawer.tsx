@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useTransition, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useTransition, useRef, useCallback } from "react";
 import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
+import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 import { Bold, IndentDecrease, IndentIncrease, Italic, Link2, List, ListOrdered, Paperclip, Quote, Send, Trash2, Underline, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
@@ -124,6 +125,9 @@ export function ComposeDrawer({
   const [error, setError]       = useState<string | null>(null);
   const [isPending, start]      = useTransition();
   const toRef = useRef<HTMLInputElement>(null);
+
+  const isDirty = useMemo(() => open && (to.trim() !== "" || subject.trim() !== ""), [open, to, subject]);
+  useUnsavedChangesWarning(isDirty);
 
   // Autosave bozza solo per composizione fresh (non reply/forward con prefill)
   const isFreshCompose = !initialTo && !initialSubject && !initialBody;
