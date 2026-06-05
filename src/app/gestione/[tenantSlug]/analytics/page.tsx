@@ -3,6 +3,7 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { demoAnalytics } from "@/lib/demo-fixtures";
+import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 
 type OrderRow = {
   total: number;
@@ -22,13 +23,13 @@ const PLATFORM_LABELS: Record<string, string> = {
   glovo: "Glovo",
 };
 
-function channelLabel(source: string | null, platform: string | null): string {
-  if (source !== "hubrise") return "Diretto";
-  if (!platform) return "Piattaforma";
+function channelLabel(source: string | null, platform: string | null, t: GestioneMessages["analytics"]): string {
+  if (source !== "hubrise") return t.direct;
+  if (!platform) return t.platform;
   return PLATFORM_LABELS[platform] ?? platform.charAt(0).toUpperCase() + platform.slice(1);
 }
 
-async function fetchAnalytics(tenantSlug: string) {
+async function fetchAnalytics(tenantSlug: string, t: GestioneMessages["analytics"]) {
   const svc = createSupabaseServiceClient();
   if (!svc) return null;
 
@@ -94,7 +95,7 @@ async function fetchAnalytics(tenantSlug: string) {
   // Breakdown per canale (ultimi 30gg)
   const channelMap = new Map<string, { count: number; total: number }>();
   for (const o of orders) {
-    const key = channelLabel(o.source, o.external_platform);
+    const key = channelLabel(o.source, o.external_platform, t);
     const entry = channelMap.get(key) ?? { count: 0, total: 0 };
     entry.count += 1;
     entry.total += Number(o.total);
@@ -129,47 +130,49 @@ export default async function AnalyticsPage({
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) return null;
+  const gt = await getGestioneTranslations();
+  const t = gt.analytics;
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 
-  const data = auth.isDemo ? demoAnalytics(tenant.vertical) : await fetchAnalytics(tenantSlug);
+  const data = auth.isDemo ? demoAnalytics(tenant.vertical) : await fetchAnalytics(tenantSlug, t);
   const isServices = tenant.vertical === "services";
 
   return (
     <div className="ga-dashboard">
       <header>
-        <span className="ga-eyebrow">Crescita</span>
+        <span className="ga-eyebrow">{t.eyebrow}</span>
         <h1 className="ga-heading">Analytics</h1>
-        <p className="ga-lead">Numeri di {isServices ? "richieste e servizi" : "ordini e sala"} degli ultimi 30 giorni.</p>
+        <p className="ga-lead">{isServices ? t.leadServices : t.leadFood}</p>
       </header>
 
       {!data ? (
         <div className="ga-empty">
-          {auth.isDemo ? "In modalità demo gli analytics non vengono mostrati." : "Nessun dato disponibile."}
+          {auth.isDemo ? t.demoEmpty : t.empty}
         </div>
       ) : (
         <>
           <section className="ga-kpi-grid">
             <div className="ga-kpi">
-              <span className="ga-kpi-label">Incasso 30gg</span>
+              <span className="ga-kpi-label">{t.revenue30}</span>
               <span className="ga-kpi-value">{formatCurrency(data.total30)}</span>
-              <span className="ga-kpi-hint">{data.ordersCount30} ordini</span>
+              <span className="ga-kpi-hint">{data.ordersCount30} {t.orders}</span>
             </div>
             <div className="ga-kpi">
-              <span className="ga-kpi-label">Incasso 7gg</span>
+              <span className="ga-kpi-label">{t.revenue7}</span>
               <span className="ga-kpi-value">{formatCurrency(data.total7)}</span>
-              <span className="ga-kpi-hint">{data.ordersCount7} ordini</span>
+              <span className="ga-kpi-hint">{data.ordersCount7} {t.orders}</span>
             </div>
             <div className="ga-kpi">
-              <span className="ga-kpi-label">Scontrino medio</span>
+              <span className="ga-kpi-label">{t.averageTicket}</span>
               <span className="ga-kpi-value">{formatCurrency(data.avg30)}</span>
             </div>
             <div className="ga-kpi">
-              <span className="ga-kpi-label">{isServices ? "Appuntamenti 30gg" : "Prenotazioni 30gg"}</span>
+              <span className="ga-kpi-label">{isServices ? t.appointments30 : t.bookings30}</span>
               <span className="ga-kpi-value">{data.reservationsCount30}</span>
             </div>
             <div className="ga-kpi">
-              <span className="ga-kpi-label">Recensioni 30gg</span>
+              <span className="ga-kpi-label">{t.reviews30}</span>
               <span className="ga-kpi-value">{data.reviewsCount}</span>
               {data.avgRating != null && (
                 <span className="ga-kpi-hint">★ {data.avgRating.toFixed(1)}</span>
@@ -179,8 +182,8 @@ export default async function AnalyticsPage({
 
           <section className="ga-card">
             <div className="ga-section-head">
-              <h2 className="ga-section-title">Ordini ultimi 7 giorni</h2>
-              <span className="ga-section-hint">Totale giornaliero</span>
+              <h2 className="ga-section-title">{t.orders7Title}</h2>
+              <span className="ga-section-hint">{t.dailyTotal}</span>
             </div>
             <div className="ga-chart">
               {(() => {
@@ -207,8 +210,8 @@ export default async function AnalyticsPage({
           {"channels" in data && Array.isArray(data.channels) && data.channels.length >= 2 && (
             <section className="ga-card">
               <div className="ga-section-head">
-                <h2 className="ga-section-title">Canali di vendita 30gg</h2>
-                <span className="ga-section-hint">Incasso per canale</span>
+                <h2 className="ga-section-title">{t.channels30}</h2>
+                <span className="ga-section-hint">{t.channelRevenue}</span>
               </div>
               <ul className="ga-channel-list">
                 {(() => {
@@ -219,7 +222,7 @@ export default async function AnalyticsPage({
                       <li key={c.label} className="ga-channel-row">
                         <div className="ga-channel-meta">
                           <span className="ga-channel-name">{c.label}</span>
-                          <span className="ga-channel-hint">{c.count} ordini · {formatCurrency(c.total)}</span>
+                          <span className="ga-channel-hint">{c.count} {t.orders} · {formatCurrency(c.total)}</span>
                         </div>
                         <div className="ga-channel-bar">
                           <div className="ga-channel-bar-fill" style={{ width: `${pct}%` }} />
@@ -235,7 +238,7 @@ export default async function AnalyticsPage({
           {data.top.length > 0 && (
             <section className="ga-card">
               <div className="ga-section-head">
-                <h2 className="ga-section-title">Top {isServices ? "servizi" : "piatti"} ultimi 7gg</h2>
+                <h2 className="ga-section-title">{interpolate(t.top7, { kind: isServices ? t.services : t.dishes })}</h2>
               </div>
               <ol className="ga-top-list">
                 {data.top.map(([name, qty], i) => (

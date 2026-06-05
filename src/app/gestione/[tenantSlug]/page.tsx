@@ -20,6 +20,7 @@ import { getTenantDemoControl } from "@/lib/demo-controls";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { TENANT_MODULES } from "@/lib/tenant-modules";
 import { demoDashboardKpis } from "@/lib/demo-fixtures";
+import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 
 type Kpi = {
   label: string;
@@ -27,15 +28,15 @@ type Kpi = {
   hint?: string;
 };
 
-async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services"): Promise<Kpi[]> {
+async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services", t: GestioneMessages["dashboard"]): Promise<Kpi[]> {
   if (isDemo) {
     const k = demoDashboardKpis(vertical);
     const out: Kpi[] = [
-      { label: vertical === "services" ? "Appuntamenti oggi" : "Prenotazioni oggi", value: String(k.reservationsToday) },
-      { label: "Recensioni 7gg", value: String(k.reviews7d), hint: "★ 4.7 di media" },
+      { label: vertical === "services" ? t.kpi.appointmentsToday : t.kpi.reservationsToday, value: String(k.reservationsToday) },
+      { label: t.kpi.reviews7d, value: String(k.reviews7d), hint: t.kpi.reviewsAvg },
     ];
     if (features.canManageStaff) {
-      out.push({ label: "Staff attivo", value: String(k.staffActive) });
+      out.push({ label: t.kpi.staffActive, value: String(k.staffActive) });
     }
     return out;
   }
@@ -71,21 +72,21 @@ async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnTyp
 
   return [
     {
-      label: "Prenotazioni oggi",
+      label: t.kpi.reservationsToday,
       value: features.canManageReservations ? String(reservations.count ?? 0) : null,
-      hint: features.canManageReservations ? undefined : "Modulo non attivo",
+      hint: features.canManageReservations ? undefined : t.kpi.inactiveModule,
     },
     {
-      label: "Recensioni 7gg",
+      label: t.kpi.reviews7d,
       value: features.hasGoogleBusiness ? String(reviews.count ?? 0) : null,
-      hint: features.hasGoogleBusiness ? undefined : "Modulo non attivo",
+      hint: features.hasGoogleBusiness ? undefined : t.kpi.inactiveModule,
     },
     {
-      label: "Staff attivo",
+      label: t.kpi.staffActive,
       value: String(staff.count ?? 0),
     },
     {
-      label: "Moduli attivi",
+      label: t.kpi.activeModules,
       value: String(enabledCount),
     },
   ];
@@ -99,6 +100,8 @@ export default async function GestioneDashboardPage({
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) return null;
+  const gt = await getGestioneTranslations();
+  const t = gt.dashboard;
 
   const host = (await headers()).get("host") ?? "";
   const isDemoHostname = isDemoHost(host);
@@ -113,65 +116,69 @@ export default async function GestioneDashboardPage({
 
   const dashboardCopy =
     tenant.vertical === "services"
-      ? `Da qui gestisci sito, ${menuLabel.toLowerCase()}, ${reservationsLabel.toLowerCase()}, clienti, dati attività e fatturazione della tua ${vertical.businessNoun}.`
-      : "Da qui gestisci ordini, menu, prenotazioni, staff e fatturazione del tuo locale.";
+      ? interpolate(t.copyServices, {
+          menuLabel: menuLabel.toLowerCase(),
+          reservationsLabel: reservationsLabel.toLowerCase(),
+          businessNoun: vertical.businessNoun,
+        })
+      : t.copyFood;
 
-  const kpis = await loadKpis(tenantSlug, isDemo, access, tenant.vertical);
+  const kpis = await loadKpis(tenantSlug, isDemo, access, tenant.vertical, t);
 
   const quickActions: { href: string; label: string; hint: string; icon: React.ReactNode; show: boolean }[] = [
     {
       href: `${base}/info`,
-      label: "Dati attività",
-      hint: "Sito, contatti, orari",
+      label: t.actions.activity.label,
+      hint: t.actions.activity.hint,
       icon: <Settings size={16} strokeWidth={2} />,
       show: access.canManageActivity,
     },
     {
       href: `${base}/prenotazioni`,
       label: reservationsLabel,
-      hint: "Calendario e richieste",
+      hint: t.actions.reservations.hint,
       icon: <CalendarDays size={16} strokeWidth={2} />,
       show: access.canManageReservations,
     },
     {
       href: `${base}/listino`,
       label: menuLabel,
-      hint: "Voci, categorie, prezzi",
+      hint: t.actions.menu.hint,
       icon: <UtensilsCrossed size={16} strokeWidth={2} />,
       show: access.canManageMenu,
     },
     {
       href: `${base}/ordini`,
-      label: "Ordini",
-      hint: "Sala e asporto",
+      label: t.actions.orders.label,
+      hint: t.actions.orders.hint,
       icon: <ClipboardList size={16} strokeWidth={2} />,
       show: access.hasOrders,
     },
     {
       href: `${base}/staff`,
-      label: "Staff",
-      hint: "Inviti e permessi",
+      label: t.actions.staff.label,
+      hint: t.actions.staff.hint,
       icon: <Users size={16} strokeWidth={2} />,
       show: access.canManageStaff,
     },
     {
       href: `${base}/google`,
-      label: "Google business",
-      hint: "Recensioni e profilo",
+      label: t.actions.google.label,
+      hint: t.actions.google.hint,
       icon: <Star size={16} strokeWidth={2} />,
       show: access.hasGoogleBusiness,
     },
     {
       href: `${base}/analytics`,
-      label: "Analytics",
-      hint: "Numeri del locale",
+      label: t.actions.analytics.label,
+      hint: t.actions.analytics.hint,
       icon: <BarChart3 size={16} strokeWidth={2} />,
       show: access.canViewAnalytics,
     },
     {
       href: `${base}/sedi`,
-      label: "Sedi",
-      hint: "Multi-location",
+      label: t.actions.locations.label,
+      hint: t.actions.locations.hint,
       icon: <MapPin size={16} strokeWidth={2} />,
       show: access.canManageLocations,
     },
@@ -192,15 +199,15 @@ export default async function GestioneDashboardPage({
   return (
     <div className="ga-dashboard">
       <header>
-        <span className="ga-eyebrow">Pannello di controllo</span>
-        <h1 className="ga-heading">Benvenuto su {tenant.name}</h1>
+        <span className="ga-eyebrow">{t.eyebrow}</span>
+        <h1 className="ga-heading">{interpolate(t.welcome, { tenantName: tenant.name })}</h1>
         <p className="ga-lead">{dashboardCopy}</p>
       </header>
 
       <section className="ga-section" aria-labelledby="ga-kpi-title">
         <div className="ga-section-head">
-          <h2 id="ga-kpi-title" className="ga-section-title">Oggi a colpo d&apos;occhio</h2>
-          {isDemo && <span className="ga-section-hint">Demo: dati di esempio</span>}
+          <h2 id="ga-kpi-title" className="ga-section-title">{t.todayTitle}</h2>
+          {isDemo && <span className="ga-section-hint">{t.demoHint}</span>}
         </div>
         <div className="ga-kpi-grid">
           {kpis.map((k) => (
@@ -218,8 +225,8 @@ export default async function GestioneDashboardPage({
       {quickActions.length > 0 && (
         <section className="ga-section" aria-labelledby="ga-quick-title">
           <div className="ga-section-head">
-            <h2 id="ga-quick-title" className="ga-section-title">Scorciatoie</h2>
-            <span className="ga-section-hint">{quickActions.length} aree disponibili</span>
+            <h2 id="ga-quick-title" className="ga-section-title">{t.shortcuts}</h2>
+            <span className="ga-section-hint">{interpolate(t.availableAreas, { count: quickActions.length })}</span>
           </div>
           <div className="ga-quick-grid">
             {quickActions.map((a) => (
@@ -238,12 +245,12 @@ export default async function GestioneDashboardPage({
 
       <section className="ga-section" aria-labelledby="ga-modules-title">
         <div className="ga-section-head">
-          <h2 id="ga-modules-title" className="ga-section-title">Diagnostica moduli</h2>
-          <span className="ga-section-hint">{enabledModules.length} attivi</span>
+          <h2 id="ga-modules-title" className="ga-section-title">{t.modulesDiagnostic}</h2>
+          <span className="ga-section-hint">{interpolate(t.activeModules, { count: enabledModules.length })}</span>
         </div>
         {enabledModules.length === 0 ? (
           <div className="ga-empty">
-            Nessun modulo attivato per questo tenant. Abilitali da admin.menuary.it.
+            {t.noModules}
           </div>
         ) : (
           <div className="ga-modules-grid">
@@ -251,7 +258,7 @@ export default async function GestioneDashboardPage({
               <div key={m.key} className="ga-module">
                 <span className="ga-module-name">{m.name}</span>
                 <span className="ga-module-status" data-status={m.status}>
-                  {m.status === "ok" ? "online" : m.status === "warn" ? "verifica" : "problema"}
+                  {m.status === "ok" ? t.moduleStatus.online : m.status === "warn" ? t.moduleStatus.check : t.moduleStatus.issue}
                 </span>
               </div>
             ))}

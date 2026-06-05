@@ -7,6 +7,7 @@ import { Clock, MessageSquare, BarChart2 } from "lucide-react";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { headers } from "next/headers";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { getGestioneTranslations, interpolate } from "@/i18n/gestione";
 
 interface Props {
   params: Promise<{ tenantSlug: string }>;
@@ -19,6 +20,8 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
 
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant || !getGestioneModuleAccess(tenant.features).hasGoogleBusiness) notFound();
+  const gt = await getGestioneTranslations();
+  const t = gt.google;
 
   const [location, lastSync] = await Promise.all([
     getPrimaryLocation(tenantSlug),
@@ -42,16 +45,16 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
     {
       href: `${base}/recensioni`,
       icon: MessageSquare,
-      label: "Recensioni",
-      description: "Leggi e rispondi alle recensioni su Google Maps",
-      badge: unanswered ? `${unanswered} da rispondere` : null,
+      label: t.reviews,
+      description: t.reviewsDesc,
+      badge: unanswered ? interpolate(t.toReply, { count: unanswered }) : null,
       badgeColor: "bg-pork-red text-white",
     },
     {
       href: `${base}/orari`,
       icon: Clock,
-      label: "Orari",
-      description: "Gestisci orari settimanali e straordinari, sincronizza su Maps",
+      label: t.hours,
+      description: t.hoursDesc,
       badge: null,
       badgeColor: "",
     },
@@ -59,8 +62,8 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
       href: `${base}/insights`,
       icon: BarChart2,
       label: "Insights",
-      description: "Visualizzazioni, ricerche, click e chiamate dalla scheda Google",
-      badge: location ? null : "Richiede collegamento",
+      description: t.insightsDesc,
+      badge: location ? null : t.requiresConnection,
       badgeColor: "bg-pork-ink/10 text-pork-ink/50",
     },
   ];
@@ -69,18 +72,18 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
     <div className="space-y-8">
       <div>
         <p className="impact-title text-xs text-pork-red">Google Business</p>
-        <h1 className="headline text-3xl">Gestione Google</h1>
+        <h1 className="headline text-3xl">{t.title}</h1>
       </div>
 
       {/* Feedback OAuth */}
       {google_auth === "ok" && step === "select-location" && (
         <div className="rounded-2xl bg-green-50 border-2 border-green-200 p-4 text-sm font-semibold text-green-800">
-          Account Google collegato. Ora seleziona la sede da associare a questo tenant nelle impostazioni.
+          {t.connected}
         </div>
       )}
       {google_auth === "error" && (
         <div className="rounded-2xl bg-red-50 border-2 border-red-200 p-4 text-sm font-semibold text-red-800">
-          Errore durante il collegamento Google. Riprova.
+          {t.error}
         </div>
       )}
 

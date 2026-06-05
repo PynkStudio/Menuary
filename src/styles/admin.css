@@ -331,6 +331,7 @@
   }
   .ga-support-link:hover { color: var(--ga-ink); }
 
+  .ga-profile-link,
   .ga-logout {
     display: inline-flex;
     align-items: center;
@@ -345,6 +346,8 @@
     cursor: pointer;
     transition: border-color 160ms ease, background 160ms ease;
   }
+  .ga-profile-link { text-decoration: none; }
+  .ga-profile-link:hover,
   .ga-logout:hover { border-color: var(--ga-accent-ring); background: var(--ga-surface); }
 
   .ga-location-select {

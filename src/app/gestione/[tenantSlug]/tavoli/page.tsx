@@ -5,6 +5,7 @@ import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { openTableSession, closeTableSession } from "./actions";
 import { demoTavoli } from "@/lib/demo-fixtures";
+import { getGestioneTranslations } from "@/i18n/gestione";
 
 type Table = { id: string; label: string; area: string; seats: number | null };
 type Session = { id: string; table_id: string; opened_at: string; declared_covers: number | null; code: string };
@@ -44,6 +45,8 @@ export default async function TavoliPage({
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) return null;
+  const gt = await getGestioneTranslations();
+  const tt = gt.tables;
 
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
@@ -68,26 +71,24 @@ export default async function TavoliPage({
   return (
     <div className="ga-dashboard">
       <header>
-        <span className="ga-eyebrow">Operatività</span>
-        <h1 className="ga-heading">{isServices ? "Agenda e postazioni" : "Gestione sala"}</h1>
+        <span className="ga-eyebrow">{tt.eyebrow}</span>
+        <h1 className="ga-heading">{isServices ? tt.titleServices : tt.titleFood}</h1>
         <p className="ga-lead">
-          {isServices
-            ? "Stato in tempo reale delle postazioni: libere, in lavorazione, e tempo trascorso."
-            : "Stato in tempo reale dei tavoli: liberi, occupati, sessione aperta e tempo trascorso."}
+          {isServices ? tt.leadServices : tt.leadFood}
         </p>
       </header>
 
       <section className="ga-kpi-grid">
         <div className="ga-kpi">
-          <span className="ga-kpi-label">{isServices ? "Postazioni" : "Tavoli"}</span>
+          <span className="ga-kpi-label">{isServices ? tt.stations : tt.tables}</span>
           <span className="ga-kpi-value">{totals.total}</span>
         </div>
         <div className="ga-kpi">
-          <span className="ga-kpi-label">{isServices ? "In lavorazione" : "Occupati"}</span>
+          <span className="ga-kpi-label">{isServices ? tt.working : tt.occupied}</span>
           <span className="ga-kpi-value">{totals.open}</span>
         </div>
         <div className="ga-kpi">
-          <span className="ga-kpi-label">Liberi</span>
+          <span className="ga-kpi-label">{tt.free}</span>
           <span className="ga-kpi-value">{totals.free}</span>
         </div>
       </section>
@@ -95,8 +96,8 @@ export default async function TavoliPage({
       {planner.tables.length === 0 ? (
         <div className="ga-empty">
           {auth.isDemo
-            ? "In modalità demo non vengono mostrati i dati reali."
-            : `Nessun${isServices ? "a postazione" : " tavolo"} configurato. Aggiungili dalla sezione Sedi.`}
+            ? tt.demoEmpty
+            : isServices ? tt.emptyServices : tt.emptyFood}
         </div>
       ) : (
         areas.map((area) => (
@@ -104,7 +105,7 @@ export default async function TavoliPage({
             <div className="ga-section-head">
               <h2 className="ga-section-title">{area}</h2>
               <span className="ga-section-hint">
-                {byArea.get(area)!.length} {isServices ? "postazioni" : "tavoli"}
+                {byArea.get(area)!.length} {isServices ? tt.stationCount : tt.tableCount}
               </span>
             </div>
             <div className="ga-tables-grid">
@@ -116,18 +117,18 @@ export default async function TavoliPage({
                     <header>
                       <span className="ga-table-label">{t.label}</span>
                       <span className="ga-module-status" data-status={isOpen ? "warn" : "ok"}>
-                        {isOpen ? (isServices ? "In lavorazione" : "Occupato") : "Libero"}
+                        {isOpen ? (isServices ? tt.workingOne : tt.occupiedOne) : tt.freeOne}
                       </span>
                     </header>
                     <div className="ga-table-meta">
                       {t.seats != null && (
-                        <span><Users size={12} strokeWidth={2.2} /> {t.seats} posti</span>
+                        <span><Users size={12} strokeWidth={2.2} /> {t.seats} {tt.seats}</span>
                       )}
                       {session && (
                         <span><Clock size={12} strokeWidth={2.2} /> {durationSince(session.opened_at)}</span>
                       )}
                       {session?.declared_covers && (
-                        <span><Users size={12} strokeWidth={2.2} /> {session.declared_covers} pers.</span>
+                        <span><Users size={12} strokeWidth={2.2} /> {session.declared_covers} {tt.peopleShort}</span>
                       )}
                     </div>
                     <div className="ga-table-actions">
@@ -136,7 +137,7 @@ export default async function TavoliPage({
                           <input type="hidden" name="tenantSlug" value={tenantSlug} />
                           <input type="hidden" name="sessionId" value={session.id} />
                           <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                            <Power size={14} strokeWidth={2.4} /> Chiudi
+                            <Power size={14} strokeWidth={2.4} /> {tt.close}
                           </button>
                         </form>
                       ) : (
@@ -148,11 +149,11 @@ export default async function TavoliPage({
                             name="covers"
                             min={1}
                             max={t.seats ?? 99}
-                            placeholder={isServices ? "Clienti" : "Coperti"}
+                            placeholder={isServices ? tt.clients : tt.covers}
                             className="ga-input ga-table-input"
                           />
                           <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                            <Power size={14} strokeWidth={2.4} /> Apri
+                            <Power size={14} strokeWidth={2.4} /> {tt.open}
                           </button>
                         </form>
                       )}

@@ -46,9 +46,12 @@ export type Database = {
           display_name: string | null
           email: string
           enabled: boolean
+          first_name: string | null
           id: string
           invited_by: string | null
+          last_name: string | null
           permissions: Json
+          preferred_language: string
           role: Database["public"]["Enums"]["admin_role"]
           tenant_id: string | null
         }
@@ -58,9 +61,12 @@ export type Database = {
           display_name?: string | null
           email: string
           enabled?: boolean
+          first_name?: string | null
           id?: string
           invited_by?: string | null
+          last_name?: string | null
           permissions?: Json
+          preferred_language?: string
           role?: Database["public"]["Enums"]["admin_role"]
           tenant_id?: string | null
         }
@@ -70,9 +76,12 @@ export type Database = {
           display_name?: string | null
           email?: string
           enabled?: boolean
+          first_name?: string | null
           id?: string
           invited_by?: string | null
+          last_name?: string | null
           permissions?: Json
+          preferred_language?: string
           role?: Database["public"]["Enums"]["admin_role"]
           tenant_id?: string | null
         }
@@ -570,9 +579,12 @@ export type Database = {
           display_name: string | null
           email: string
           enabled: boolean
+          first_name: string | null
           id: string
           invited_by: string | null
+          last_name: string | null
           permissions: Json
+          preferred_language: string
           role: Database["public"]["Enums"]["employee_role"]
           tenant_id: string
           user_id: string
@@ -582,9 +594,12 @@ export type Database = {
           display_name?: string | null
           email: string
           enabled?: boolean
+          first_name?: string | null
           id?: string
           invited_by?: string | null
+          last_name?: string | null
           permissions?: Json
+          preferred_language?: string
           role?: Database["public"]["Enums"]["employee_role"]
           tenant_id: string
           user_id: string
@@ -594,9 +609,12 @@ export type Database = {
           display_name?: string | null
           email?: string
           enabled?: boolean
+          first_name?: string | null
           id?: string
           invited_by?: string | null
+          last_name?: string | null
           permissions?: Json
+          preferred_language?: string
           role?: Database["public"]["Enums"]["employee_role"]
           tenant_id?: string
           user_id?: string
@@ -4458,8 +4476,11 @@ export type Database = {
           display_name: string | null
           email: string
           enabled: boolean
+          first_name: string | null
           id: string
           invited_by: string | null
+          last_name: string | null
+          preferred_language: string
           tenant_id: string
           user_id: string
         }
@@ -4468,8 +4489,11 @@ export type Database = {
           display_name?: string | null
           email: string
           enabled?: boolean
+          first_name?: string | null
           id?: string
           invited_by?: string | null
+          last_name?: string | null
+          preferred_language?: string
           tenant_id: string
           user_id: string
         }
@@ -4478,8 +4502,11 @@ export type Database = {
           display_name?: string | null
           email?: string
           enabled?: boolean
+          first_name?: string | null
           id?: string
           invited_by?: string | null
+          last_name?: string | null
+          preferred_language?: string
           tenant_id?: string
           user_id?: string
         }

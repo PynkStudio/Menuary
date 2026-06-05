@@ -9,11 +9,13 @@ import {
   CheckCircle2,
   Clock,
   Eye,
+  Globe,
   GripVertical,
   ListChecks,
   ListPlus,
   Plus,
   Search,
+  Save,
   Trash2,
   XCircle,
 } from "lucide-react";
@@ -24,7 +26,7 @@ import {
   selectMenuListsOrdered,
 } from "@/store/menu-store";
 import { activeMenuTags, menuTagLabel } from "@/lib/menu-tags";
-import type { AdminMenuItem, AdminMenuList, MenuAvailability, MenuDay } from "@/lib/types";
+import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, MenuAvailability, MenuDay } from "@/lib/types";
 import { formatEuro, minPrice } from "@/lib/price-utils";
 import { ItemEditor } from "@/components/admin/item-editor";
 import { ExtraListsManager } from "@/components/admin/extra-lists-manager";
@@ -925,9 +927,32 @@ export default function AdminMenuPage() {
                   </button>
                 </div>
               </div>
+              <div className="grid gap-2 md:grid-cols-2">
+                <input
+                  type="text"
+                  value={cat.subtitle ?? ""}
+                  onChange={(e) => updateCategory(cat.id, { subtitle: e.target.value })}
+                  placeholder="Sottotitolo categoria"
+                  className="rounded-xl border border-pork-ink/10 bg-white px-3 py-2 text-sm font-semibold text-pork-ink/75 outline-none focus:border-pork-red"
+                  aria-label="Sottotitolo categoria"
+                />
+                <input
+                  type="text"
+                  value={cat.description ?? ""}
+                  onChange={(e) => updateCategory(cat.id, { description: e.target.value })}
+                  placeholder="Descrizione categoria"
+                  className="rounded-xl border border-pork-ink/10 bg-white px-3 py-2 text-sm font-semibold text-pork-ink/75 outline-none focus:border-pork-red"
+                  aria-label="Descrizione categoria"
+                />
+              </div>
               <CategoryAvailabilityEditor
                 value={cat.availability}
                 onChange={(next) => updateCategory(cat.id, { availability: next })}
+              />
+              <CategoryTranslationsEditor
+                category={cat}
+                tenantId={tenantId}
+                locales={getTenantLocaleConfig(tenantId)?.locales ?? ["it"]}
               />
 
               <ul
@@ -1130,6 +1155,189 @@ export default function AdminMenuPage() {
           onClose={() => setEditingId(null)}
         />
       )}
+    </div>
+  );
+}
+
+type CategoryTranslationDraft = {
+  title?: string;
+  subtitle?: string;
+  description?: string;
+};
+
+function CategoryTranslationsEditor({
+  category,
+  tenantId,
+  locales,
+}: {
+  category: AdminMenuCategory;
+  tenantId: string;
+  locales: readonly string[];
+}) {
+  const translatedLocales = useMemo(() => locales.filter((locale) => locale !== "it"), [locales]);
+  const [activeLang, setActiveLang] = useState(translatedLocales[0] ?? "");
+  const [translations, setTranslations] = useState<Record<string, CategoryTranslationDraft>>({});
+  const [status, setStatus] = useState<"idle" | "loading" | "saving" | "saved" | "error">("idle");
+
+  useEffect(() => {
+    setActiveLang((current) =>
+      current && translatedLocales.includes(current) ? current : translatedLocales[0] ?? "",
+    );
+  }, [translatedLocales]);
+
+  useEffect(() => {
+    if (translatedLocales.length === 0) return;
+    let cancelled = false;
+    setStatus("loading");
+    fetch(
+      `/api/gestione/menu-category-translations?tenantId=${encodeURIComponent(tenantId)}&categoryId=${encodeURIComponent(category.id)}`,
+      { cache: "no-store" },
+    )
+      .then(async (res) => {
+        if (!res.ok) throw new Error("load_failed");
+        return (await res.json()) as Array<{
+          locale: string;
+          title?: string | null;
+          subtitle?: string | null;
+          description?: string | null;
+        }>;
+      })
+      .then((rows) => {
+        if (cancelled) return;
+        const next: Record<string, CategoryTranslationDraft> = {};
+        for (const row of rows) {
+          if (row.locale === "it") continue;
+          next[row.locale] = {
+            title: row.title ?? "",
+            subtitle: row.subtitle ?? "",
+            description: row.description ?? "",
+          };
+        }
+        setTranslations(next);
+        setStatus("idle");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [category.id, tenantId, translatedLocales.length]);
+
+  if (translatedLocales.length === 0 || !activeLang) return null;
+
+  const draft = translations[activeLang] ?? {};
+
+  function updateDraft(patch: CategoryTranslationDraft) {
+    setTranslations((current) => ({
+      ...current,
+      [activeLang]: { ...current[activeLang], ...patch },
+    }));
+    setStatus("idle");
+  }
+
+  async function saveTranslation() {
+    setStatus("saving");
+    try {
+      const res = await fetch("/api/gestione/menu-category-translations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          tenantId,
+          categoryId: category.id,
+          locale: activeLang,
+          title: draft.title ?? "",
+          subtitle: draft.subtitle ?? "",
+          description: draft.description ?? "",
+        }),
+      });
+      if (!res.ok) throw new Error("save_failed");
+      setStatus("saved");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-pork-ink/10 bg-white px-3 py-3 text-xs text-pork-ink/80">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <Globe size={14} className="text-pork-red" />
+        <span className="font-black uppercase tracking-wider text-pork-ink/70">
+          Traduzioni categoria
+        </span>
+        <div className="ml-auto flex flex-wrap gap-1">
+          {translatedLocales.map((locale) => (
+            <button
+              key={locale}
+              type="button"
+              onClick={() => setActiveLang(locale)}
+              className={
+                "rounded-full px-2.5 py-1 text-[10px] font-black transition " +
+                (activeLang === locale
+                  ? "bg-pork-ink text-pork-cream"
+                  : "bg-pork-ink/5 text-pork-ink/60 hover:bg-pork-ink/10")
+              }
+            >
+              {locale.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid gap-2 md:grid-cols-3">
+        <label className="block">
+          <span className="mb-1 block font-bold uppercase tracking-wide text-pork-ink/55">
+            Nome
+          </span>
+          <input
+            type="text"
+            value={draft.title ?? ""}
+            onChange={(event) => updateDraft({ title: event.target.value })}
+            placeholder={category.title}
+            className="w-full rounded-lg border border-pork-ink/10 bg-pork-cream/40 px-2.5 py-2 text-sm outline-none focus:border-pork-red"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-bold uppercase tracking-wide text-pork-ink/55">
+            Sottotitolo
+          </span>
+          <input
+            type="text"
+            value={draft.subtitle ?? ""}
+            onChange={(event) => updateDraft({ subtitle: event.target.value })}
+            placeholder={category.subtitle ?? ""}
+            className="w-full rounded-lg border border-pork-ink/10 bg-pork-cream/40 px-2.5 py-2 text-sm outline-none focus:border-pork-red"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-bold uppercase tracking-wide text-pork-ink/55">
+            Descrizione
+          </span>
+          <input
+            type="text"
+            value={draft.description ?? ""}
+            onChange={(event) => updateDraft({ description: event.target.value })}
+            placeholder={category.description ?? ""}
+            className="w-full rounded-lg border border-pork-ink/10 bg-pork-cream/40 px-2.5 py-2 text-sm outline-none focus:border-pork-red"
+          />
+        </label>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={saveTranslation}
+          disabled={status === "saving" || status === "loading"}
+          className="inline-flex items-center gap-1 rounded-full bg-pork-ink px-3 py-1.5 text-[11px] font-black text-pork-cream hover:bg-pork-red disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          <Save size={12} />
+          {status === "saving" ? "Salvando..." : "Salva traduzione"}
+        </button>
+        {status === "saved" && <span className="font-semibold text-emerald-700">Salvata</span>}
+        {status === "error" && (
+          <span className="font-semibold text-pork-red">
+            Non salvata. Riprova dopo il sync del menu.
+          </span>
+        )}
+      </div>
     </div>
   );
 }

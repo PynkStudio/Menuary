@@ -18,6 +18,7 @@ import {
   type KioskConfig,
 } from "./actions";
 import { demoKiosks } from "@/lib/demo-fixtures";
+import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 
 type DeviceRow = {
   id: string;
@@ -59,15 +60,15 @@ function isOnline(lastSeen: string | null): boolean {
   return Date.now() - new Date(lastSeen).getTime() < 90_000;
 }
 
-function lastSeenLabel(lastSeen: string | null): string {
-  if (!lastSeen) return "Mai connesso";
+function lastSeenLabel(lastSeen: string | null, t: GestioneMessages["kiosk"]): string {
+  if (!lastSeen) return t.neverConnected;
   const ms = Date.now() - new Date(lastSeen).getTime();
   const mins = Math.floor(ms / 60_000);
-  if (mins < 1) return "ora";
-  if (mins < 60) return `${mins} min fa`;
+  if (mins < 1) return t.now;
+  if (mins < 60) return interpolate(t.minutesAgo, { count: mins });
   const h = Math.floor(mins / 60);
-  if (h < 24) return `${h}h fa`;
-  return `${Math.floor(h / 24)}g fa`;
+  if (h < 24) return interpolate(t.hoursAgo, { count: h });
+  return interpolate(t.daysAgo, { count: Math.floor(h / 24) });
 }
 
 export default async function KioskGestionePage({
@@ -78,6 +79,8 @@ export default async function KioskGestionePage({
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) return null;
+  const gt = await getGestioneTranslations();
+  const t = gt.kiosk;
 
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
@@ -89,31 +92,31 @@ export default async function KioskGestionePage({
   return (
     <div className="ga-dashboard">
       <header>
-        <span className="ga-eyebrow">Operatività</span>
-        <h1 className="ga-heading">Kiosk self-service</h1>
+        <span className="ga-eyebrow">{t.eyebrow}</span>
+        <h1 className="ga-heading">{t.title}</h1>
         <p className="ga-lead">
-          Registra ogni postazione kiosk, attivala/disattivala e configura i passaggi della UX e i metodi di pagamento disponibili al cliente.
+          {t.lead}
         </p>
       </header>
 
       <section className="ga-card">
         <div className="ga-section-head">
-          <h2 className="ga-section-title">Aggiungi kiosk</h2>
-          <span className="ga-section-hint">Dopo la creazione, sul dispositivo apri il link kiosk e inserisci il codice di pairing.</span>
+          <h2 className="ga-section-title">{t.addTitle}</h2>
+          <span className="ga-section-hint">{t.addHint}</span>
         </div>
         <form action={createKioskDevice} className="ga-form-inline">
           <input type="hidden" name="tenantSlug" value={tenantSlug} />
-          <input type="text" name="name" placeholder="Es. Kiosk ingresso" required className="ga-input" />
+          <input type="text" name="name" placeholder={t.namePlaceholder} required className="ga-input" />
           {locations.length > 1 && (
             <select name="locationId" className="ga-select" defaultValue="">
-              <option value="">Tutte le sedi</option>
+              <option value="">{t.allLocations}</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>{l.name}</option>
               ))}
             </select>
           )}
           <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-            <Plus size={14} strokeWidth={2.4} /> Crea kiosk
+            <Plus size={14} strokeWidth={2.4} /> {t.create}
           </button>
         </form>
       </section>
@@ -121,13 +124,13 @@ export default async function KioskGestionePage({
       {devices.length === 0 ? (
         <div className="ga-empty">
           {auth.isDemo
-            ? "In modalità demo i dispositivi reali non vengono mostrati."
-            : "Nessun kiosk registrato. Aggiungi il primo qui sopra."}
+            ? t.demoEmpty
+            : t.empty}
         </div>
       ) : (
         devices.map((d) => {
           const online = isOnline(d.last_seen_at);
-          const locationName = locations.find((l) => l.id === d.location_id)?.name ?? "Tutte le sedi";
+          const locationName = locations.find((l) => l.id === d.location_id)?.name ?? t.allLocations;
           return (
             <section key={d.id} className="ga-card ga-kiosk">
               <div className="ga-kiosk-head">
@@ -141,19 +144,19 @@ export default async function KioskGestionePage({
                 <div className="ga-kiosk-status">
                   <span className="ga-module-status" data-status={d.enabled ? (online ? "ok" : "warn") : "muted"}>
                     {online ? <Wifi size={11} strokeWidth={2.4} /> : <WifiOff size={11} strokeWidth={2.4} />}
-                    {!d.enabled ? "Disattivato" : online ? "Online" : "Offline"}
+                    {!d.enabled ? t.disabled : online ? t.online : t.offline}
                   </span>
-                  <span className="ga-section-hint">Ultimo contatto: {lastSeenLabel(d.last_seen_at)}</span>
+                  <span className="ga-section-hint">{interpolate(t.lastContact, { value: lastSeenLabel(d.last_seen_at, t) })}</span>
                 </div>
               </div>
 
               <div className="ga-kiosk-pairing">
                 <div>
-                  <div className="ga-label-text">Codice di pairing</div>
+                  <div className="ga-label-text">{t.pairingCode}</div>
                   {d.paired_at ? (
                     <div className="ga-kiosk-paired">
-                      <span className="ga-module-status" data-status="ok">Accoppiato</span>
-                      <span className="ga-section-hint">il {new Date(d.paired_at).toLocaleString("it-IT")}</span>
+                      <span className="ga-module-status" data-status="ok">{t.paired}</span>
+                      <span className="ga-section-hint">{interpolate(t.pairedAt, { value: new Date(d.paired_at).toLocaleString("it-IT") })}</span>
                     </div>
                   ) : (
                     <code className="ga-kiosk-code">{d.pairing_code}</code>
@@ -163,7 +166,7 @@ export default async function KioskGestionePage({
                   <input type="hidden" name="tenantSlug" value={tenantSlug} />
                   <input type="hidden" name="id" value={d.id} />
                   <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                    <RefreshCw size={14} strokeWidth={2.4} /> Rigenera codice
+                    <RefreshCw size={14} strokeWidth={2.4} /> {t.regenerate}
                   </button>
                 </form>
                 <form action={toggleKioskDevice}>
@@ -172,13 +175,13 @@ export default async function KioskGestionePage({
                   <input type="hidden" name="enable" value={d.enabled ? "false" : "true"} />
                   <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
                     {d.enabled ? <PowerOff size={14} strokeWidth={2.4} /> : <Power size={14} strokeWidth={2.4} />}
-                    {d.enabled ? "Disattiva" : "Attiva"}
+                    {d.enabled ? t.disable : t.enable}
                   </button>
                 </form>
                 <form action={deleteKioskDevice}>
                   <input type="hidden" name="tenantSlug" value={tenantSlug} />
                   <input type="hidden" name="id" value={d.id} />
-                  <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo} aria-label="Elimina">
+                  <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo} aria-label={t.delete}>
                     <Trash2 size={14} strokeWidth={2.4} />
                   </button>
                 </form>
@@ -189,48 +192,48 @@ export default async function KioskGestionePage({
                 <input type="hidden" name="id" value={d.id} />
 
                 <div className="ga-kiosk-group">
-                  <div className="ga-label-text">Passaggi della UX</div>
+                  <div className="ga-label-text">{t.steps}</div>
                   <label className="ga-kiosk-toggle">
                     <input type="checkbox" name="step_language" defaultChecked={d.config.steps?.language_picker} />
-                    <span>Selezione lingua all&apos;avvio</span>
+                    <span>{t.language}</span>
                   </label>
                   <label className="ga-kiosk-toggle">
                     <input type="checkbox" name="step_dine_in_takeaway" defaultChecked={d.config.steps?.dine_in_takeaway} />
-                    <span>Chiedi mangia qui / asporto</span>
+                    <span>{t.dine}</span>
                   </label>
                   <label className="ga-kiosk-toggle">
                     <input type="checkbox" name="step_table_number" defaultChecked={d.config.steps?.table_number} />
-                    <span>Chiedi numero tavolo (solo se mangia qui)</span>
+                    <span>{t.table}</span>
                   </label>
                   <label className="ga-kiosk-toggle">
                     <input type="checkbox" name="step_customer_name" defaultChecked={d.config.steps?.customer_name} />
-                    <span>Chiedi nome cliente</span>
+                    <span>{t.customerName}</span>
                   </label>
                 </div>
 
                 <div className="ga-kiosk-group">
-                  <div className="ga-label-text">Metodi di pagamento</div>
+                  <div className="ga-label-text">{t.payments}</div>
                   <label className="ga-kiosk-toggle">
                     <input type="checkbox" name="pay_cash" defaultChecked={d.config.payments?.cash} />
-                    <span>Paga in cassa (contanti / carta al banco)</span>
+                    <span>{t.cash}</span>
                   </label>
                   <label className="ga-kiosk-toggle">
                     <input type="checkbox" name="pay_stripe_qr" defaultChecked={d.config.payments?.stripe_qr} />
-                    <span>Stripe QR (paga col telefono)</span>
+                    <span>{t.stripe}</span>
                   </label>
                   <label className="ga-kiosk-toggle" data-disabled="true">
                     <input type="checkbox" name="pay_satispay" defaultChecked={d.config.payments?.satispay} disabled />
-                    <span>Satispay <em>(in arrivo)</em></span>
+                    <span>Satispay <em>({t.comingSoon})</em></span>
                   </label>
                   <label className="ga-kiosk-toggle" data-disabled="true">
                     <input type="checkbox" name="pay_pos" defaultChecked={d.config.payments?.pos} disabled />
-                    <span>POS fisico <em>(in arrivo)</em></span>
+                    <span>POS <em>({t.comingSoon})</em></span>
                   </label>
                 </div>
 
                 <div className="ga-kiosk-actions">
                   <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                    <Copy size={14} strokeWidth={2.4} /> Salva configurazione
+                    <Copy size={14} strokeWidth={2.4} /> {t.save}
                   </button>
                 </div>
               </form>

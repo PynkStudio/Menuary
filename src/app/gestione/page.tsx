@@ -1,8 +1,10 @@
 import { Lock } from "lucide-react";
+import { getGestioneTranslations } from "@/i18n/gestione";
 
 const LOGIN_BASE = "https://login.menuary.it";
 
-export default function GestioneRootPage() {
+export default async function GestioneRootPage() {
+  const t = await getGestioneTranslations();
   const loginUrl = new URL(LOGIN_BASE);
   loginUrl.searchParams.set("from", "gestione");
 
@@ -13,16 +15,16 @@ export default function GestioneRootPage() {
           <Lock size={22} />
         </div>
         <p className="impact-title text-xs text-pork-red">Menuary</p>
-        <h1 className="headline mt-1 text-3xl">Pannello gestione</h1>
-        <p className="mt-1 text-sm text-pork-ink/60">Area riservata ai gestori</p>
+        <h1 className="headline mt-1 text-3xl">{t.root.title}</h1>
+        <p className="mt-1 text-sm text-pork-ink/60">{t.root.subtitle}</p>
         <p className="mt-5 text-sm text-pork-ink/70">
-          Accedi con il tuo account per gestire il tuo locale.
+          {t.root.body}
         </p>
         <a
           href={loginUrl.toString()}
           className="btn-primary mt-6 block w-full text-center"
         >
-          Accedi
+          {t.root.cta}
         </a>
       </div>
     </div>

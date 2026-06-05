@@ -144,6 +144,19 @@ Endpoint `/api/gestione/device-auth`:
 Nei siti pubblici dei ristoranti (bepork.it, faak.it), aggiungere link a:
 `https://gestione.menuary.it/[tenantSlug]`
 
+### 8. Multilingua menu e gestione
+
+- Il menu online deve usare le traduzioni disponibili per pagine menu, piatti,
+  categorie, sottotitoli categoria e descrizioni categoria.
+- Il gestionale deve permettere di gestire le traduzioni delle categorie insieme
+  alle traduzioni dei piatti.
+- Tutta la parte di gestione deve essere predisposta alla traduzione UI, senza
+  stringhe hardcoded quando viene introdotto il dizionario del tenant.
+- La scelta lingua del tenant deve persistere anche in gestione: menu pubblico e
+  `gestione.menuary.it/[tenantSlug]` devono leggere/scrivere la stessa preferenza
+  lingua (localStorage/cookie tenant), cosi' cambiando area non si perde la lingua
+  scelta.
+
 ---
 
 ## Configurazione Supabase da completare

@@ -73,7 +73,6 @@ const tagMeta: Record<string, { label: string; icon: React.ReactNode; className:
 const priceVariantColors: Array<"mustard" | "red" | "green" | "pink"> = ["mustard", "red", "green", "pink"];
 
 export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
-  const tenant = useTenant();
   const pathname = usePathname();
   const { allowTakeaway, allowTableOrders, orderKioskEnabled, favoritesEnabled } = useEffectiveFeatures();
   const showMenuPricesSetting = useSettingsStore((state) => state.showMenuPrices);
@@ -187,7 +186,7 @@ export function MenuCardInteractive({ item }: { item: AdminMenuItem }) {
         </div>
       )}
 
-      {favoritesEnabled && tenant.features.favorites && (
+      {favoritesEnabled && (
         <button
           type="button"
           aria-label={isFav ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"}

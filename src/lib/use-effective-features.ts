@@ -9,7 +9,6 @@ import {
 } from "@/store/settings-store";
 import type { TenantFeatureKey } from "@/lib/tenant";
 import {
-  isTenantFeatureEffective,
   resolveTenantFeatures,
   TENANT_MODULES,
 } from "@/lib/tenant-modules";
@@ -61,10 +60,11 @@ export function useEffectiveFeatures() {
     ...tenant.features,
     ...localFeatures,
   });
+  const resolvedTenantFeatures = resolveTenantFeatures(tenant.features);
 
   const enabled = (module: TenantFeatureKey) =>
     tenant.enabled &&
-    isTenantFeatureEffective(tenant.features, module) &&
+    resolvedTenantFeatures[module] &&
     resolvedLocalFeatures[module];
 
   return {

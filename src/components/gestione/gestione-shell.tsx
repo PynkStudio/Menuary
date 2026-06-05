@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { LogOut, MapPin } from "lucide-react";
+import { LogOut, MapPin, UserRound } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
 import {
@@ -15,6 +15,7 @@ import type { TenantVertical } from "@/lib/tenant";
 import { isMultiLocation } from "@/lib/location";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
+import type { GestioneMessages } from "@/i18n/gestione";
 
 interface Tenant {
   id: string;
@@ -46,6 +47,7 @@ export function GestioneShell({
   loginFrom,
   isDemo = false,
   children,
+  messages,
 }: {
   tenant: Tenant;
   currentUser: CurrentUser;
@@ -54,7 +56,9 @@ export function GestioneShell({
   loginFrom?: LoginFrom;
   isDemo?: boolean;
   children: React.ReactNode;
+  messages: GestioneMessages;
 }) {
+  const t = messages.shell;
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -78,28 +82,29 @@ export function GestioneShell({
   const base = navBaseHref ?? `/gestione/${tenant.id}`;
   const dashboardHref = base || "/";
   const sectionHref = (section: string) => `${base}/${section}`;
+  const profileHref = sectionHref("profilo");
 
   const isAdmin = currentUser.isTenantAdmin;
   const verticalMeta = getVerticalMeta(tenant.vertical);
   const supportEmail = `support@${verticalMeta.marketingDomain}`;
 
   const items: NavItem[] = [
-    { label: "Dashboard", href: dashboardHref, visible: () => true },
-    { label: "Dati attività", href: sectionHref("info"), visible: () => access.canManageActivity },
-    { label: "Ordini", href: sectionHref("ordini"), visible: () => access.hasOrders },
+    { label: t.nav.dashboard, href: dashboardHref, visible: () => true },
+    { label: t.nav.activity, href: sectionHref("info"), visible: () => access.canManageActivity },
+    { label: t.nav.orders, href: sectionHref("ordini"), visible: () => access.hasOrders },
     { label: getModuleLabel("onlineMenu", tenant.vertical), href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
     { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
     { label: getModuleLabel("reservations", tenant.vertical), href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations },
-    { label: "Cassa", href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
-    { label: "Turni", href: sectionHref("turni"), visible: () => access.canManageShifts },
-    { label: "Staff", href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
-    { label: "Kiosk", href: sectionHref("kiosk"), visible: () => isAdmin && tenant.features.orderKiosk },
-    { label: "Assistente AI", href: sectionHref("assistente-ai"), visible: () => isAdmin && (tenant.features.aiPhone || tenant.features.aiWhatsapp) },
-    { label: "Google", href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },
-    { label: "Analytics", href: sectionHref("analytics"), visible: (c) => access.canViewAnalytics && c.can_view_analytics },
-    { label: "Fedeltà", href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
-    { label: "Fatturazione", href: sectionHref("fatturazione"), visible: () => isAdmin },
-    { label: "Sedi", href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
+    { label: t.nav.checkout, href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
+    { label: t.nav.shifts, href: sectionHref("turni"), visible: () => access.canManageShifts },
+    { label: t.nav.staff, href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
+    { label: t.nav.kiosk, href: sectionHref("kiosk"), visible: () => isAdmin && tenant.features.orderKiosk },
+    { label: t.nav.aiAssistant, href: sectionHref("assistente-ai"), visible: () => isAdmin && (tenant.features.aiPhone || tenant.features.aiWhatsapp) },
+    { label: t.nav.google, href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },
+    { label: t.nav.analytics, href: sectionHref("analytics"), visible: (c) => access.canViewAnalytics && c.can_view_analytics },
+    { label: t.nav.loyalty, href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
+    { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
+    { label: t.nav.locations, href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
   ];
 
   const visibleItems = items.filter((i) => i.visible(cap));
@@ -119,18 +124,22 @@ export function GestioneShell({
       <header className="ga-header">
         <div className="ga-header-row">
           <div className="ga-brand">
-            <span className="ga-brand-tag">Gestione</span>
+            <span className="ga-brand-tag">{t.brand}</span>
             <span className="ga-brand-name">{tenant.name}</span>
           </div>
 
           <div className="ga-user">
             <a href={`mailto:${supportEmail}`} className="ga-support-link">
-              Problemi tecnici? {supportEmail}
+              {t.support} {supportEmail}
             </a>
             <span>{currentUser.displayName ?? currentUser.email}</span>
+            <Link href={profileHref} className="ga-profile-link">
+              <UserRound size={12} strokeWidth={2} />
+              {t.profile}
+            </Link>
             <button type="button" onClick={handleLogout} className="ga-logout">
               <LogOut size={12} strokeWidth={2} />
-              Esci
+              {t.logout}
             </button>
           </div>
         </div>
@@ -143,7 +152,7 @@ export function GestioneShell({
                 value={activeLocation?.slug ?? ""}
                 onChange={(e) => handleLocationChange(e.target.value)}
                 className="ga-location-select"
-                aria-label="Sede attiva"
+                aria-label={t.activeLocation}
               >
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.slug}>

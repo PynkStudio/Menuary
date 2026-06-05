@@ -182,3 +182,36 @@ export function createTenantI18n<
     useLanguage,
   };
 }
+
+export function useTenantLanguagePreference<TLanguage extends string>({
+  tenantId,
+  defaultLanguage,
+  supportedLanguages,
+}: {
+  tenantId: string;
+  defaultLanguage: TLanguage;
+  supportedLanguages: readonly TLanguage[];
+}) {
+  const initialLanguage = useContext(TenantInitialLanguageContext);
+  const store = getStore({
+    tenantId,
+    defaultLanguage,
+    supportedLanguages,
+  });
+
+  function subscribe(listener: () => void) {
+    store.listeners.add(listener);
+    return () => store.listeners.delete(listener);
+  }
+
+  function getSnapshot() {
+    hydrateStore(store);
+    return store.currentLanguage as TLanguage;
+  }
+
+  return useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => matchSupportedLanguage(initialLanguage, supportedLanguages) ?? defaultLanguage,
+  );
+}

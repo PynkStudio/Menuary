@@ -5,6 +5,7 @@ import { libritechCatalog } from "@/lib/libritech-catalog";
 import { getTenantDefaultExtraLists } from "@/lib/extra-lists";
 import { pushMenuToHubrise } from "@/lib/hubrise/push-menu";
 import { ensureTenantUpsellIndexes } from "@/lib/upselling-engine";
+import { getTenantLocaleConfig, matchTenantLocale } from "@/lib/tenant-locales";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, MenuDay, MenuOrderChannel, PriceFormat } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
@@ -24,12 +25,14 @@ type MenuListItemRow = { list_id: string; item_id: string; position: number };
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const tenantId = new URL(req.url).searchParams.get("tenantId")?.trim();
+  const url = new URL(req.url);
+  const tenantId = url.searchParams.get("tenantId")?.trim();
   if (!tenantId) return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
+  const locale = resolveMenuLocale(tenantId, url.searchParams.get("locale") ?? url.searchParams.get("language"));
 
   const supabase = createSupabaseAdminClient();
   await ensureSeeded(supabase, tenantId);
-  const bundle = await readBundle(supabase, tenantId);
+  const bundle = await readBundle(supabase, tenantId, locale);
   return NextResponse.json(bundle);
 }
 
@@ -58,7 +61,7 @@ export async function PUT(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
-async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<MenuSyncBundle> {
+async function readBundle(supabase: SupabaseAdmin, tenantId: string, locale?: string | null): Promise<MenuSyncBundle> {
   const [
     { data: categories, error: catErr },
     { data: items, error: itemErr },
@@ -113,6 +116,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<Me
   const categoriesByDbId = new Map((categories ?? []).map((c) => [c.id, c.code]));
   const itemsByDbId = new Map((items ?? []).map((item) => [item.id, item.code]));
   const extraListsByDbId = new Map((extraLists ?? []).map((list) => [list.id, list.code]));
+  const { categoryTranslations, itemTranslations } = await readMenuTranslations(supabase, tenantId, locale);
   const ingByItem = groupBy(ingredients ?? [], (row) => row.item_id);
   const extrasByItem = groupBy(itemExtras ?? [], (row) => row.item_id);
   const extraItemsByList = groupBy(extraListItems ?? [], (row) => row.list_id);
@@ -125,32 +129,36 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<Me
   return {
     categories: (categories ?? []).map<AdminMenuCategory>((cat) => ({
       id: cat.code,
-      title: cat.title,
-      subtitle: cat.subtitle ?? undefined,
-      description: cat.description ?? undefined,
+      title: categoryTranslations.get(cat.id)?.title || cat.title,
+      subtitle: categoryTranslations.get(cat.id)?.subtitle || (cat.subtitle ?? undefined),
+      description: categoryTranslations.get(cat.id)?.description || (cat.description ?? undefined),
       availability: (cat.availability ?? undefined) as AdminMenuCategory["availability"],
       order: cat.position,
     })),
-    items: (items ?? []).map<AdminMenuItem>((item) => ({
-      id: item.code,
-      categoryId: categoriesByDbId.get(item.category_id) ?? item.category_id,
-      name: item.name,
-      description: item.description ?? undefined,
-      price: item.price as PriceFormat,
-      tags: item.tags as AdminMenuItem["tags"],
-      tagMeta: item.tag_meta as AdminMenuItem["tagMeta"],
-      piccanteLevel: item.piccante_level as AdminMenuItem["piccanteLevel"],
-      allergens: item.allergens as AdminMenuItem["allergens"],
-      abv: item.abv ?? undefined,
-      image: item.image ?? undefined,
-      serviceNotes: item.service_notes as AdminMenuItem["serviceNotes"],
-      bundleSlots: item.bundle_slots as AdminMenuItem["bundleSlots"],
-      extraListId: item.extra_list_id ? extraListsByDbId.get(item.extra_list_id) : undefined,
-      ingredients: (ingByItem.get(item.id) ?? []).map((row) => ({ id: row.code, name: row.name })),
-      extras: (extrasByItem.get(item.id) ?? []).map((row) => ({ id: row.code, name: row.name, price: Number(row.price) })),
-      order: item.position,
-      available: item.available,
-    })),
+    items: (items ?? []).map<AdminMenuItem>((item) => {
+      const translatedItem = itemTranslations.get(item.id);
+      const translatedIngredients = normalizeTranslatedIngredients(item.code, translatedItem?.ingredients);
+      return {
+        id: item.code,
+        categoryId: categoriesByDbId.get(item.category_id) ?? item.category_id,
+        name: translatedItem?.name || item.name,
+        description: translatedItem?.description || (item.description ?? undefined),
+        price: item.price as PriceFormat,
+        tags: item.tags as AdminMenuItem["tags"],
+        tagMeta: item.tag_meta as AdminMenuItem["tagMeta"],
+        piccanteLevel: item.piccante_level as AdminMenuItem["piccanteLevel"],
+        allergens: item.allergens as AdminMenuItem["allergens"],
+        abv: item.abv ?? undefined,
+        image: item.image ?? undefined,
+        serviceNotes: item.service_notes as AdminMenuItem["serviceNotes"],
+        bundleSlots: item.bundle_slots as AdminMenuItem["bundleSlots"],
+        extraListId: item.extra_list_id ? extraListsByDbId.get(item.extra_list_id) : undefined,
+        ingredients: translatedIngredients ?? (ingByItem.get(item.id) ?? []).map((row) => ({ id: row.code, name: row.name })),
+        extras: (extrasByItem.get(item.id) ?? []).map((row) => ({ id: row.code, name: row.name, price: Number(row.price) })),
+        order: item.position,
+        available: item.available,
+      };
+    }),
     menuLists:
       menuListRows.length > 0
         ? menuListRows.map<AdminMenuList>((list) => ({
@@ -183,6 +191,78 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<Me
       })),
     })),
   };
+}
+
+function resolveMenuLocale(tenantId: string, requestedLocale: string | null) {
+  const config = getTenantLocaleConfig(tenantId);
+  if (!config) return null;
+  const locale = matchTenantLocale(requestedLocale, config.locales);
+  if (!locale || locale === config.defaultLocale) return null;
+  return locale;
+}
+
+async function readMenuTranslations(
+  supabase: SupabaseAdmin,
+  tenantId: string,
+  locale?: string | null,
+) {
+  const categoryTranslations = new Map<string, { title?: string; subtitle?: string; description?: string }>();
+  const itemTranslations = new Map<string, { name?: string; description?: string; ingredients?: unknown }>();
+  if (!locale) return { categoryTranslations, itemTranslations };
+
+  const [categoryResult, itemResult] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("menu_category_translations")
+      .select("menu_category_id,title,subtitle,description")
+      .eq("tenant_id", tenantId)
+      .eq("locale", locale),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("menu_item_translations")
+      .select("menu_item_id,name,description,ingredients")
+      .eq("tenant_id", tenantId)
+      .eq("locale", locale),
+  ]);
+
+  if (!categoryResult.error) {
+    for (const row of categoryResult.data ?? []) {
+      categoryTranslations.set(row.menu_category_id, {
+        title: row.title ?? undefined,
+        subtitle: row.subtitle ?? undefined,
+        description: row.description ?? undefined,
+      });
+    }
+  }
+
+  if (!itemResult.error) {
+    for (const row of itemResult.data ?? []) {
+      itemTranslations.set(row.menu_item_id, {
+        name: row.name ?? undefined,
+        description: row.description ?? undefined,
+        ingredients: row.ingredients,
+      });
+    }
+  }
+
+  return { categoryTranslations, itemTranslations };
+}
+
+function normalizeTranslatedIngredients(itemCode: string, value: unknown) {
+  if (!Array.isArray(value) || value.length === 0) return undefined;
+  return value
+    .map((ingredient, index) => {
+      if (typeof ingredient === "string") {
+        const name = ingredient.trim();
+        return name ? { id: `${itemCode}-tr-${index}`, name } : null;
+      }
+      if (ingredient && typeof ingredient === "object" && "name" in ingredient) {
+        const name = String((ingredient as { name?: unknown }).name ?? "").trim();
+        return name ? { id: `${itemCode}-tr-${index}`, name } : null;
+      }
+      return null;
+    })
+    .filter((ingredient): ingredient is { id: string; name: string } => Boolean(ingredient));
 }
 
 async function writeBundle(supabase: SupabaseAdmin, tenantId: string, bundle: MenuSyncBundle) {

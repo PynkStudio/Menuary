@@ -19,6 +19,8 @@ import { useHydrated } from "@/components/core/providers";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 import { MenuSkeleton } from "@/components/modules/menu/menu-skeleton";
+import { getTenantLocaleConfig } from "@/lib/tenant-locales";
+import { useTenantLanguagePreference } from "@/lib/tenant-i18n";
 
 const DOCA_CATEGORY_TITLES: Record<string, string> = {
   pane: "Salati",
@@ -35,7 +37,13 @@ export function InteractiveMenu({
 }) {
   const hydrated = useHydrated();
   const tenant = useTenant();
-  const syncStatus = useSupabaseMenuSync(tenant.id);
+  const localeConfig = getTenantLocaleConfig(tenant.id);
+  const menuLanguage = useTenantLanguagePreference({
+    tenantId: tenant.id,
+    defaultLanguage: localeConfig?.defaultLocale ?? "it",
+    supportedLanguages: localeConfig?.locales ?? ["it"],
+  });
+  const syncStatus = useSupabaseMenuSync(tenant.id, true, false, menuLanguage);
   const searchParams = useSearchParams();
   const tableParam = searchParams.get("t");
   const setContext = useCartStore((s) => s.setContext);

@@ -20,6 +20,7 @@ export function useSupabaseMenuSync(
   tenantId: string | undefined,
   enabled = true,
   writeEnabled = false,
+  locale?: string | null,
 ) {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "saving" | "error">("idle");
   const replaceMenuData = useMenuStore((s) => s.replaceMenuData);
@@ -37,7 +38,10 @@ export function useSupabaseMenuSync(
     let cancelled = false;
     setStatus("loading");
 
-    fetch(`/api/menu-sync?tenantId=${encodeURIComponent(tenantId)}`, {
+    const params = new URLSearchParams({ tenantId });
+    if (locale) params.set("locale", locale);
+
+    fetch(`/api/menu-sync?${params.toString()}`, {
       cache: "no-store",
     })
       .then(async (res) => {
@@ -59,7 +63,7 @@ export function useSupabaseMenuSync(
     return () => {
       cancelled = true;
     };
-  }, [enabled, replaceMenuData, tenantId]);
+  }, [enabled, locale, replaceMenuData, tenantId]);
 
   const snapshot = useMemo(
     () => JSON.stringify({ categories, items, menuLists, extraLists, customTags, volumeLabels }),

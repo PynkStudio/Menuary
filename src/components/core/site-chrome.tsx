@@ -5,10 +5,7 @@ import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/tenant-shell/navbar";
 import { Footer } from "@/components/tenant-shell/footer";
 import { WhatsappFloat } from "@/components/modules/reservations/whatsapp-float";
-import { ShopFabs } from "@/components/modules/shop/shop-fabs";
-import { CartDrawer } from "@/components/modules/shop/cart-drawer";
-import { CartFlyOverlay } from "@/components/modules/shop/cart-fly-overlay";
-import { FavoritesDrawer } from "@/components/modules/favorites/favorites-drawer";
+import { MenuActionOverlays } from "@/components/modules/menu/menu-action-overlays";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
 import { useTenantOrNull } from "@/components/core/tenant-provider";
 import { resolveTenantFeatures } from "@/lib/tenant-modules";
@@ -71,21 +68,12 @@ export function SiteChrome() {
     return null;
   }
 
-  // I moduli ordini portano sempre con sé carrello, varianti e overlay animazione.
-  const hasOrderModule =
-    features.takeaway || features.tableOrders || features.orderKiosk;
-
   return (
     <>
       <Navbar />
       {/* Modulo: reservations / contatti */}
       {features.reservations && <WhatsappFloat />}
-      {/* Modulo: ordini (takeaway · tavolo · kiosk) — carrello sempre bundled */}
-      {hasOrderModule && <ShopFabs />}
-      {hasOrderModule && <CartFlyOverlay />}
-      {hasOrderModule && <CartDrawer />}
-      {/* Modulo: favorites — sempre attivo con onlineMenu (vedi implies in tenant-modules) */}
-      {features.favorites && <FavoritesDrawer />}
+      <MenuActionOverlays />
     </>
   );
 }

@@ -14,15 +14,16 @@ import {
 import { demoReservations } from "@/lib/demo-fixtures";
 import { ReservationSettingsPanel } from "@/components/gestione/reservation-settings-panel";
 import { ReservationPhoneActions } from "@/components/gestione/reservation-phone-actions";
+import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 
 type Filter = "today" | "upcoming" | "pending" | "confirmed" | "history" | "all";
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "today", label: "Oggi" },
-  { id: "upcoming", label: "Prossime" },
-  { id: "pending", label: "Da gestire" },
-  { id: "confirmed", label: "Confermate" },
-  { id: "history", label: "Storico" },
-  { id: "all", label: "Tutte" },
+const FILTERS: { id: Filter; labelKey: keyof GestioneMessages["reservations"]["filters"] }[] = [
+  { id: "today", labelKey: "today" },
+  { id: "upcoming", labelKey: "upcoming" },
+  { id: "pending", labelKey: "pending" },
+  { id: "confirmed", labelKey: "confirmed" },
+  { id: "history", labelKey: "history" },
+  { id: "all", labelKey: "all" },
 ];
 
 type ReservationRow = {
@@ -109,20 +110,20 @@ function filterDemoReservations(rows: ReservationRow[], filter: Filter): Reserva
   }
 }
 
-function statusBadge(status: string): { label: string; tone: "pending" | "ok" | "warn" | "error" | "muted" } {
+function statusBadge(status: string, t: GestioneMessages["reservations"]): { label: string; tone: "pending" | "ok" | "warn" | "error" | "muted" } {
   switch (status) {
     case "confirmed":
-      return { label: "Confermata", tone: "ok" };
+      return { label: t.status.confirmed, tone: "ok" };
     case "seated":
-      return { label: "Seduta", tone: "ok" };
+      return { label: t.status.seated, tone: "ok" };
     case "pending_manual":
-      return { label: "Da gestire", tone: "warn" };
+      return { label: t.status.pending, tone: "warn" };
     case "auto_proposed":
-      return { label: "Auto-proposta", tone: "warn" };
+      return { label: t.status.autoProposed, tone: "warn" };
     case "rejected":
-      return { label: "Rifiutata", tone: "error" };
+      return { label: t.status.rejected, tone: "error" };
     case "no_show":
-      return { label: "No show", tone: "muted" };
+      return { label: t.status.noShow, tone: "muted" };
     default:
       return { label: status, tone: "muted" };
   }
@@ -148,6 +149,8 @@ export default async function PrenotazioniPage({
   const { f } = await searchParams;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) return null;
+  const gt = await getGestioneTranslations();
+  const t = gt.reservations;
 
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
@@ -160,20 +163,20 @@ export default async function PrenotazioniPage({
   const isServices = tenant.vertical === "services";
   const title = getModuleLabel("reservations", tenant.vertical);
   const lead = isServices
-    ? `Gestisci le richieste di appuntamento della tua ${vertical.businessNoun}: conferma, sposta o rifiuta.`
-    : "Gestisci le prenotazioni della sala: conferma, sposta o rifiuta le richieste.";
+    ? interpolate(t.leadServices, { businessNoun: vertical.businessNoun })
+    : t.leadFood;
 
   return (
     <div className="ga-dashboard">
       <header>
-        <span className="ga-eyebrow">Clienti</span>
+        <span className="ga-eyebrow">{t.eyebrow}</span>
         <h1 className="ga-heading">{title}</h1>
         <p className="ga-lead">{lead}</p>
       </header>
 
       <ReservationSettingsPanel />
 
-      <nav className="ga-pills" aria-label="Filtra prenotazioni">
+      <nav className="ga-pills" aria-label={t.filterLabel}>
         {FILTERS.map((opt) => (
           <Link
             key={opt.id}
@@ -181,19 +184,19 @@ export default async function PrenotazioniPage({
             className="ga-pill"
             data-active={opt.id === filter}
           >
-            {opt.label}
+            {t.filters[opt.labelKey]}
           </Link>
         ))}
       </nav>
 
       {reservations.length === 0 ? (
         <div className="ga-empty">
-          Nessuna prenotazione in questo intervallo.
+          {t.empty}
         </div>
       ) : (
         <div className="ga-reservation-list">
           {reservations.map((r) => {
-            const badge = statusBadge(r.status);
+            const badge = statusBadge(r.status, t);
             const isPending = r.status === "pending_manual" || r.status === "auto_proposed";
             const isConfirmed = r.status === "confirmed";
 
@@ -217,11 +220,11 @@ export default async function PrenotazioniPage({
                       <span><Clock size={12} strokeWidth={2.2} /> {r.duration_minutes ?? r.service?.duration_minutes} min</span>
                     )}
                     {!isServicesVertical && (
-                      <span><Users size={12} strokeWidth={2.2} /> {r.covers} {r.covers === 1 ? "persona" : "persone"}</span>
+                      <span><Users size={12} strokeWidth={2.2} /> {r.covers} {r.covers === 1 ? t.peopleOne : t.peopleMany}</span>
                     )}
                     <ReservationPhoneActions phone={r.customer_phone} />
                     {(r.table_id || r.assigned_area) && (
-                      <span><Tag size={12} strokeWidth={2.2} /> {r.assigned_area ?? (isServicesVertical ? "Postazione assegnata" : "Tavolo assegnato")}</span>
+                      <span><Tag size={12} strokeWidth={2.2} /> {r.assigned_area ?? (isServicesVertical ? t.assignedSeat : t.assignedTable)}</span>
                     )}
                   </div>
                   {(r.notes || r.special_request_tags?.length > 0) && (
@@ -245,14 +248,14 @@ export default async function PrenotazioniPage({
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={r.id} />
                         <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                          <Check size={14} strokeWidth={2.4} /> Conferma
+                          <Check size={14} strokeWidth={2.4} /> {t.actions.confirm}
                         </button>
                       </form>
                       <form action={rejectReservation}>
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={r.id} />
                         <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                          <X size={14} strokeWidth={2.4} /> Rifiuta
+                          <X size={14} strokeWidth={2.4} /> {t.actions.reject}
                         </button>
                       </form>
                     </>
@@ -263,14 +266,14 @@ export default async function PrenotazioniPage({
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={r.id} />
                         <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                          <UserCheck size={14} strokeWidth={2.4} /> Arrivato
+                          <UserCheck size={14} strokeWidth={2.4} /> {t.actions.arrived}
                         </button>
                       </form>
                       <form action={markNoShowReservation}>
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={r.id} />
                         <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                          <UserX size={14} strokeWidth={2.4} /> No show
+                          <UserX size={14} strokeWidth={2.4} /> {t.actions.noShow}
                         </button>
                       </form>
                     </>

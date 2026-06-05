@@ -700,7 +700,7 @@ export function ItemEditor({
                 )}
               </div>
               <p className="mt-3 rounded-xl bg-pork-mustard/20 px-3 py-2 text-sm font-semibold leading-snug text-pork-ink/75">
-                Le traduzioni sono salvate localmente. Il collegamento al DB per le lingue è in arrivo.
+                Le traduzioni vengono salvate nel DB e usate dal menu online quando il cliente cambia lingua.
               </p>
             </div>
           )}

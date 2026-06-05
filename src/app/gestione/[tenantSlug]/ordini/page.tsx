@@ -8,18 +8,19 @@ import type { Database } from "@/lib/database.types";
 import { startOrder, markReady, markDelivered, cancelOrder, confirmPendingOrder, rejectPendingOrder } from "./actions";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 import { demoOrders, type DemoOrder } from "@/lib/demo-fixtures";
+import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 
 type Filter = "live" | "pending" | "nuovi" | "preparazione" | "pronti" | "asporto" | "tavolo" | "storico" | "tutti";
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "live", label: "Coda live" },
-  { id: "pending", label: "Da confermare" },
-  { id: "nuovi", label: "Nuovi" },
-  { id: "preparazione", label: "In preparazione" },
-  { id: "pronti", label: "Pronti" },
-  { id: "asporto", label: "Asporto" },
-  { id: "tavolo", label: "Sala" },
-  { id: "storico", label: "Storico" },
-  { id: "tutti", label: "Tutti" },
+const FILTERS: { id: Filter; labelKey: keyof GestioneMessages["orders"]["filters"] }[] = [
+  { id: "live", labelKey: "live" },
+  { id: "pending", labelKey: "pending" },
+  { id: "nuovi", labelKey: "new" },
+  { id: "preparazione", labelKey: "preparing" },
+  { id: "pronti", labelKey: "ready" },
+  { id: "asporto", labelKey: "takeaway" },
+  { id: "tavolo", labelKey: "table" },
+  { id: "storico", labelKey: "history" },
+  { id: "tutti", labelKey: "all" },
 ];
 
 type OrderRow = {
@@ -120,15 +121,15 @@ function filterDemoOrders(
   return { orders: kept as OrderRow[], lines: source.lines as Map<string, OrderLine[]> };
 }
 
-function statusBadge(status: OrderRow["status"]): { label: string; tone: "ok" | "warn" | "error" | "muted" | "pending" } {
+function statusBadge(status: OrderRow["status"], t: GestioneMessages["orders"]): { label: string; tone: "ok" | "warn" | "error" | "muted" | "pending" } {
   switch (status) {
-    case "pending_confirmation": return { label: "Da confermare", tone: "warn" };
-    case "nuovo": return { label: "Nuovo", tone: "warn" };
-    case "in_preparazione": return { label: "In preparazione", tone: "pending" };
-    case "pronto": return { label: "Pronto", tone: "ok" };
-    case "consegnato": return { label: "Consegnato", tone: "muted" };
-    case "annullato": return { label: "Annullato", tone: "error" };
-    case "expired": return { label: "Scaduto", tone: "error" };
+    case "pending_confirmation": return { label: t.status.pending, tone: "warn" };
+    case "nuovo": return { label: t.status.new, tone: "warn" };
+    case "in_preparazione": return { label: t.status.preparing, tone: "pending" };
+    case "pronto": return { label: t.status.ready, tone: "ok" };
+    case "consegnato": return { label: t.status.delivered, tone: "muted" };
+    case "annullato": return { label: t.status.cancelled, tone: "error" };
+    case "expired": return { label: t.status.expired, tone: "error" };
   }
 }
 
@@ -151,6 +152,8 @@ export default async function OrdiniPage({
   const { f } = await searchParams;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) return null;
+  const gt = await getGestioneTranslations();
+  const t = gt.orders;
 
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
@@ -165,35 +168,35 @@ export default async function OrdiniPage({
       <OrdersLiveRefresh tenantId={tenantSlug} />
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
         <div>
-          <span className="ga-eyebrow">Operatività</span>
-          <h1 className="ga-heading">Ordini</h1>
-          <p className="ga-lead">Coda live di sala, asporto e kiosk. Cambia stato con un click — il cliente vede la conferma.</p>
+          <span className="ga-eyebrow">{t.eyebrow}</span>
+          <h1 className="ga-heading">{t.title}</h1>
+          <p className="ga-lead">{t.lead}</p>
         </div>
         <Link
           href={`/gestione/${tenantSlug}/ordini/impostazioni`}
           className="ga-btn ga-btn-ghost"
           style={{ alignSelf: "center" }}
         >
-          <Settings size={14} strokeWidth={2.4} /> Impostazioni
+          <Settings size={14} strokeWidth={2.4} /> {t.settings}
         </Link>
       </header>
 
-      <nav className="ga-pills" aria-label="Filtra ordini">
+      <nav className="ga-pills" aria-label={t.filterLabel}>
         {FILTERS.map((opt) => (
           <Link key={opt.id} href={`?f=${opt.id}`} className="ga-pill" data-active={opt.id === filter}>
-            {opt.label}
+            {t.filters[opt.labelKey]}
           </Link>
         ))}
       </nav>
 
       {orders.length === 0 ? (
         <div className="ga-empty">
-          Nessun ordine in questo intervallo.
+          {t.empty}
         </div>
       ) : (
         <div className="ga-reservation-list">
           {orders.map((o) => {
-            const badge = statusBadge(o.status);
+            const badge = statusBadge(o.status, t);
             const items = lines.get(o.id) ?? [];
             const isPending = o.status === "pending_confirmation";
             const isNuovo = o.status === "nuovo";
@@ -207,13 +210,13 @@ export default async function OrdiniPage({
             return (
               <article key={o.id} className="ga-reservation">
                 <div className="ga-reservation-when">
-                  <span className="ga-reservation-date">{o.type === "asporto" ? "Asporto" : "Sala"}</span>
+                  <span className="ga-reservation-date">{o.type === "asporto" ? t.type.takeaway : t.type.table}</span>
                   <span className="ga-reservation-time">{o.code}</span>
                 </div>
 
                 <div className="ga-reservation-body">
                   <div className="ga-reservation-head">
-                    <span className="ga-reservation-name">{o.customer_name ?? "Cliente"}</span>
+                    <span className="ga-reservation-name">{o.customer_name ?? t.customer}</span>
                     <span className="ga-module-status" data-status={badge.tone}>{badge.label}</span>
                     {o.auto_accepted && (
                       <span className="ga-reservation-tag" style={{ background: "var(--ga-ink-faint, #eef)", color: "var(--ga-ink)" }}>
@@ -227,23 +230,23 @@ export default async function OrdiniPage({
                   <div className="ga-reservation-meta">
                     <span><Clock size={12} strokeWidth={2.2} /> {formatTime(o.created_at)}</span>
                     {o.dine_option === "dine_in" && (
-                      <span><UtensilsCrossed size={12} strokeWidth={2.2} /> Mangia qui</span>
+                      <span><UtensilsCrossed size={12} strokeWidth={2.2} /> {t.type.dineIn}</span>
                     )}
                     {o.dine_option === "takeaway" && (
-                      <span><ShoppingBag size={12} strokeWidth={2.2} /> Asporto</span>
+                      <span><ShoppingBag size={12} strokeWidth={2.2} /> {t.type.takeaway}</span>
                     )}
                     {o.dine_option === "delivery" && (
-                      <span><Bike size={12} strokeWidth={2.2} /> Delivery</span>
+                      <span><Bike size={12} strokeWidth={2.2} /> {t.type.delivery}</span>
                     )}
                     {o.table_label && (
                       <span><MapPin size={12} strokeWidth={2.2} /> {o.table_label}</span>
                     )}
                     {o.pickup_time && (
-                      <span><Bell size={12} strokeWidth={2.2} /> Ritiro {o.pickup_time}</span>
+                      <span><Bell size={12} strokeWidth={2.2} /> {interpolate(t.pickup, { time: o.pickup_time })}</span>
                     )}
                     {isPending && pendingSecondsLeft !== null && (
                       <span style={{ color: "var(--ga-warn, #B8332E)", fontWeight: 600 }}>
-                        <AlarmClock size={12} strokeWidth={2.2} /> {pendingSecondsLeft}s al timeout
+                        <AlarmClock size={12} strokeWidth={2.2} /> {interpolate(t.timeout, { seconds: pendingSecondsLeft })}
                       </span>
                     )}
                   </div>
@@ -272,14 +275,14 @@ export default async function OrdiniPage({
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={o.id} />
                         <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                          <Check size={14} strokeWidth={2.4} /> Conferma
+                          <Check size={14} strokeWidth={2.4} /> {t.actions.confirm}
                         </button>
                       </form>
                       <form action={rejectPendingOrder}>
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={o.id} />
                         <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                          <X size={14} strokeWidth={2.4} /> Rifiuta
+                          <X size={14} strokeWidth={2.4} /> {t.actions.reject}
                         </button>
                       </form>
                     </>
@@ -290,14 +293,14 @@ export default async function OrdiniPage({
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={o.id} />
                         <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                          <ChefHat size={14} strokeWidth={2.4} /> In preparazione
+                          <ChefHat size={14} strokeWidth={2.4} /> {t.actions.start}
                         </button>
                       </form>
                       <form action={cancelOrder}>
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={o.id} />
                         <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                          <X size={14} strokeWidth={2.4} /> Annulla
+                          <X size={14} strokeWidth={2.4} /> {t.actions.cancel}
                         </button>
                       </form>
                     </>
@@ -307,7 +310,7 @@ export default async function OrdiniPage({
                       <input type="hidden" name="tenantSlug" value={tenantSlug} />
                       <input type="hidden" name="id" value={o.id} />
                       <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                        <Bell size={14} strokeWidth={2.4} /> Segna pronto
+                        <Bell size={14} strokeWidth={2.4} /> {t.actions.markReady}
                       </button>
                     </form>
                   )}
@@ -317,14 +320,14 @@ export default async function OrdiniPage({
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={o.id} />
                         <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                          <Check size={14} strokeWidth={2.4} /> Consegnato
+                          <Check size={14} strokeWidth={2.4} /> {t.actions.delivered}
                         </button>
                       </form>
                       <form action={cancelOrder}>
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={o.id} />
                         <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                          <X size={14} strokeWidth={2.4} /> Annulla
+                          <X size={14} strokeWidth={2.4} /> {t.actions.cancel}
                         </button>
                       </form>
                     </>

@@ -17,6 +17,7 @@ import type { LoginFrom } from "@/lib/login-url";
 import { getGestioneBaseHref } from "@/lib/gestione-routing";
 import { buildTenantIconSet } from "@/lib/favicon";
 import { TenantProvider } from "@/components/core/tenant-provider";
+import { getGestioneTranslations } from "@/i18n/gestione";
 
 interface Props {
   children: React.ReactNode;
@@ -39,6 +40,7 @@ export default async function GestioneLayout({ children, params }: Props) {
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) notFound();
+  const messages = await getGestioneTranslations();
 
   const host = (await headers()).get("host") ?? "";
   const mode = getPlatformModeFromHost(host);
@@ -107,8 +109,8 @@ export default async function GestioneLayout({ children, params }: Props) {
       ]
     : await Promise.all([
         supabase.from("siteadmin").select("role").eq("user_id", user!.id).eq("enabled", true).maybeSingle(),
-        supabase.from("tenantadmin").select("email, display_name").eq("user_id", user!.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
-        supabase.from("employee").select("email, display_name, role, permissions").eq("user_id", user!.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
+        supabase.from("tenantadmin").select("email, display_name, first_name, last_name").eq("user_id", user!.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
+        supabase.from("employee").select("email, display_name, first_name, last_name, role, permissions").eq("user_id", user!.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
         supabase.from("admin_users").select("id").eq("auth_user_id", user!.id).eq("tenant_id", tenantSlug).maybeSingle(),
       ]);
 
@@ -192,8 +194,12 @@ export default async function GestioneLayout({ children, params }: Props) {
             ?? user?.email
             ?? (isDemo ? "demo@menuary.it" : backendLive ? "backend-live@menuary.it" : ""),
           displayName:
-            ta?.display_name
-            ?? emp?.display_name
+            (
+              [ta?.first_name, ta?.last_name].filter(Boolean).join(" ").trim()
+              || [emp?.first_name, emp?.last_name].filter(Boolean).join(" ").trim()
+              || ta?.display_name
+              || emp?.display_name
+            )
             ?? (isDemo ? "Demo" : backendLive ? "Backend live" : null),
           role: (emp?.role as EmployeeRole | null) ?? null,
           permissions: (emp?.permissions as Record<string, boolean>) ?? {},
@@ -203,6 +209,7 @@ export default async function GestioneLayout({ children, params }: Props) {
         navBaseHref={navBaseHref}
         loginFrom={loginFrom}
         isDemo={isDemo}
+        messages={messages}
       >
         <TenantProvider tenant={tenant}>{children}</TenantProvider>
       </GestioneShell>

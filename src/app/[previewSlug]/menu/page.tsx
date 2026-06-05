@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { TenantProvider } from "@/components/core/tenant-provider";
+import { MenuActionOverlays } from "@/components/modules/menu/menu-action-overlays";
 import { MenuPageShell } from "@/components/modules/menu/menu-page-shell";
 import { Footer } from "@/components/tenant-shell/footer";
 import { getPlatformModeFromHost } from "@/lib/platform";
@@ -30,6 +31,7 @@ export default async function PreviewTenantMenu({
         data-tenant-surface={tenant.id}
         style={themeVars as React.CSSProperties}
       >
+        <MenuActionOverlays />
         <MenuPageShell hasGlobalHeader={false} />
         <Footer />
       </div>
