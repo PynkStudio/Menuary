@@ -125,6 +125,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string, locale?: st
     (row) => row.list_id,
   );
   const menuListRows = (menuListsMissing ? [] : (menuListsResult.data ?? [])) as unknown as MenuListRow[];
+  const fallbackMenuList = localizedMenuListFallback(tenantId, locale);
 
   return {
     categories: (categories ?? []).map<AdminMenuCategory>((cat) => ({
@@ -174,8 +175,8 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string, locale?: st
           }))
         : [{
             id: "menu-completo",
-            name: "Menu completo",
-            description: "Tutte le voci pubblicate.",
+            name: fallbackMenuList.name,
+            description: fallbackMenuList.description,
             order: 0,
             enabled: true,
             visibility: {},
@@ -199,6 +200,42 @@ function resolveMenuLocale(tenantId: string, requestedLocale: string | null) {
   const locale = matchTenantLocale(requestedLocale, config.locales);
   if (!locale || locale === config.defaultLocale) return null;
   return locale;
+}
+
+function localizedMenuListFallback(tenantId: string, locale?: string | null) {
+  const isCatalog = tenantId === "libritech";
+  switch (locale) {
+    case "pt":
+      return {
+        name: isCatalog ? "Catálogo completo" : "Menu completo",
+        description: "Todos os itens publicados.",
+      };
+    case "en":
+      return {
+        name: isCatalog ? "Full catalog" : "Full menu",
+        description: "All published items.",
+      };
+    case "fr":
+      return {
+        name: isCatalog ? "Catalogue complet" : "Menu complet",
+        description: "Tous les éléments publiés.",
+      };
+    case "es":
+      return {
+        name: isCatalog ? "Catálogo completo" : "Menú completo",
+        description: "Todas las entradas publicadas.",
+      };
+    case "de":
+      return {
+        name: isCatalog ? "Vollständiger Katalog" : "Vollständiges Menü",
+        description: "Alle veröffentlichten Einträge.",
+      };
+    default:
+      return {
+        name: isCatalog ? "Catalogo completo" : "Menu completo",
+        description: "Tutte le voci pubblicate.",
+      };
+  }
 }
 
 async function readMenuTranslations(

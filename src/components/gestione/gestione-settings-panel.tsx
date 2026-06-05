@@ -134,7 +134,7 @@ export function GestioneSettingsPanel({
 
   return (
     <div className="ga-settings-grid">
-      <section className="ga-card">
+      <section id="abbonamento" className="ga-card">
         <div className="ga-section-head">
           <div>
             <h2 className="ga-section-title">
@@ -169,7 +169,7 @@ export function GestioneSettingsPanel({
         </dl>
       </section>
 
-      <section className="ga-card">
+      <section id="valuta-lingue" className="ga-card">
         <div className="ga-section-head">
           <div>
             <h2 className="ga-section-title">
@@ -262,7 +262,7 @@ export function GestioneSettingsPanel({
         </div>
       </section>
 
-      <section className="ga-card">
+      <section id="password" className="ga-card">
         <div className="ga-section-head">
           <div>
             <h2 className="ga-section-title">

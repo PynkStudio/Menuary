@@ -184,7 +184,7 @@ function FooterColumn({
 
 export function OfficinaKamHomePage() {
   const tenant = useTenant();
-  const syncStatus = useSupabaseMenuSync(tenant.id);
+  const syncStatus = useSupabaseMenuSync(tenant.id).status;
   const content = getTenantContent(tenant.id);
   const staffHref = getTenantGestioneExternalHref(tenant.id);
   const { display: phoneDisplay, waHref } = useVenueContactPhone();

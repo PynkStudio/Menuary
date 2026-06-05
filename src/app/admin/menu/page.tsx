@@ -87,7 +87,11 @@ export default function AdminMenuPage() {
   const hydrated = useHydrated();
   const tenant = useTenantOrNull();
   const tenantId = tenant?.id ?? "bepork";
-  const syncStatus = useSupabaseMenuSync(tenantId, true, true);
+  const {
+    status: syncStatus,
+    hasUnpublishedChanges,
+    publishMenu,
+  } = useSupabaseMenuSync(tenantId, true, null, true);
   const vertical = tenant?.vertical ?? "food";
   const isServices = vertical === "services";
   const listinoLabel = getModuleLabel("onlineMenu", vertical);
@@ -277,20 +281,35 @@ export default function AdminMenuPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="headline text-4xl">{listinoLabel}</h1>
-        <p className="text-pork-ink/60">
-          {isServices
-            ? "Gestisci servizi, prezzi, disponibilità, foto e listini pubblici con regole di visibilità."
-            : "Lista completa dei piatti e menu pubblici composti con regole di visibilità."}
-        </p>
-        <p className="mt-2 text-xs font-bold uppercase tracking-wide text-pork-ink/45">
-          {syncStatus === "saving"
-            ? "Sincronizzazione Supabase..."
-            : syncStatus === "error"
-              ? "Errore sincronizzazione Supabase"
-              : "Dati sincronizzati su Supabase"}
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="headline text-4xl">{listinoLabel}</h1>
+          <p className="text-pork-ink/60">
+            {isServices
+              ? "Gestisci servizi, prezzi, disponibilità, foto e listini pubblici con regole di visibilità."
+              : "Lista completa dei piatti e menu pubblici composti con regole di visibilità."}
+          </p>
+          <p className="mt-2 text-xs font-bold uppercase tracking-wide text-pork-ink/45">
+            {syncStatus === "loading"
+              ? "Caricamento dati pubblicati..."
+              : syncStatus === "saving"
+                ? "Pubblicazione modifiche..."
+                : syncStatus === "error"
+                  ? "Errore pubblicazione Supabase"
+                  : hasUnpublishedChanges
+                    ? "Modifiche in bozza non ancora online"
+                    : "Menu online aggiornato"}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={publishMenu}
+          disabled={syncStatus === "loading" || syncStatus === "saving" || !hasUnpublishedChanges}
+          className="btn-primary shrink-0 text-sm disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          <Save size={16} />
+          {syncStatus === "saving" ? "Pubblicazione..." : "Pubblica"}
+        </button>
       </header>
 
       <div className="inline-flex rounded-2xl bg-white p-1 ring-1 ring-pork-ink/10">

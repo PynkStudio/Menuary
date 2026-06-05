@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMenuStore } from "@/store/menu-store";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 
@@ -19,10 +19,11 @@ function toBundle(): MenuSyncBundle {
 export function useSupabaseMenuSync(
   tenantId: string | undefined,
   enabled = true,
-  writeEnabled = false,
   locale?: string | null,
+  preserveLocalDraft = false,
 ) {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "saving" | "error">("idle");
+  const [publishedSnapshot, setPublishedSnapshot] = useState("");
   const replaceMenuData = useMenuStore((s) => s.replaceMenuData);
   const categories = useMenuStore((s) => s.categories);
   const items = useMenuStore((s) => s.items);
@@ -30,7 +31,6 @@ export function useSupabaseMenuSync(
   const extraLists = useMenuStore((s) => s.extraLists);
   const customTags = useMenuStore((s) => s.customTags);
   const volumeLabels = useMenuStore((s) => s.volumeLabels);
-  const lastSavedRef = useRef("");
   const loadedTenantRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -50,9 +50,27 @@ export function useSupabaseMenuSync(
       })
       .then((bundle) => {
         if (cancelled) return;
+        const draftSnapshot = JSON.stringify(toBundle());
+        const publishedKey = `menu-sync:last-published:${tenantId}`;
+        const lastPublishedSnapshot = window.localStorage.getItem(publishedKey);
+        const currentTenantId = useMenuStore.getState().currentTenantId;
+
         useMenuStore.setState({ currentTenantId: tenantId });
-        replaceMenuData(bundle);
-        lastSavedRef.current = JSON.stringify(bundle);
+
+        if (
+          preserveLocalDraft &&
+          currentTenantId === tenantId &&
+          lastPublishedSnapshot &&
+          draftSnapshot !== lastPublishedSnapshot
+        ) {
+          setPublishedSnapshot(lastPublishedSnapshot);
+        } else {
+          replaceMenuData(bundle);
+          const nextPublishedSnapshot = JSON.stringify(toBundle());
+          setPublishedSnapshot(nextPublishedSnapshot);
+          window.localStorage.setItem(publishedKey, nextPublishedSnapshot);
+        }
+
         loadedTenantRef.current = tenantId;
         setStatus("ready");
       })
@@ -63,36 +81,39 @@ export function useSupabaseMenuSync(
     return () => {
       cancelled = true;
     };
-  }, [enabled, locale, replaceMenuData, tenantId]);
+  }, [enabled, locale, preserveLocalDraft, replaceMenuData, tenantId]);
 
   const snapshot = useMemo(
     () => JSON.stringify({ categories, items, menuLists, extraLists, customTags, volumeLabels }),
     [categories, customTags, extraLists, items, menuLists, volumeLabels],
   );
 
-  useEffect(() => {
-    if (!enabled || !writeEnabled || !tenantId || loadedTenantRef.current !== tenantId) return;
-    if (snapshot === lastSavedRef.current) return;
+  const hasUnpublishedChanges =
+    Boolean(tenantId && loadedTenantRef.current === tenantId && publishedSnapshot) &&
+    snapshot !== publishedSnapshot;
 
-    const handle = window.setTimeout(() => {
-      const bundle = toBundle();
-      const body = JSON.stringify(bundle);
-      setStatus("saving");
-      fetch(`/api/menu-sync?tenantId=${encodeURIComponent(tenantId)}`, {
+  const publishMenu = useCallback(async () => {
+    if (!enabled || !tenantId || loadedTenantRef.current !== tenantId) return false;
+    const bundle = toBundle();
+    const body = JSON.stringify(bundle);
+    setStatus("saving");
+
+    try {
+      const res = await fetch(`/api/menu-sync?tenantId=${encodeURIComponent(tenantId)}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body,
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Menu sync failed");
-          lastSavedRef.current = body;
-          setStatus("ready");
-        })
-        .catch(() => setStatus("error"));
-    }, 700);
+      });
+      if (!res.ok) throw new Error("Menu sync failed");
+      setPublishedSnapshot(body);
+      window.localStorage.setItem(`menu-sync:last-published:${tenantId}`, body);
+      setStatus("ready");
+      return true;
+    } catch {
+      setStatus("error");
+      return false;
+    }
+  }, [enabled, tenantId]);
 
-    return () => window.clearTimeout(handle);
-  }, [enabled, snapshot, tenantId, writeEnabled]);
-
-  return status;
+  return { status, hasUnpublishedChanges, publishMenu };
 }

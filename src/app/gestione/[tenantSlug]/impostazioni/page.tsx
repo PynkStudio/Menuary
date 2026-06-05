@@ -141,7 +141,11 @@ export default async function GestioneSettingsPage({
         isDemo={isDemo}
       />
 
-      {access.canManageActivity && <ActivitySettingsPanel />}
+      {access.canManageActivity && (
+        <div id="dati-attivita">
+          <ActivitySettingsPanel />
+        </div>
+      )}
     </div>
   );
 }

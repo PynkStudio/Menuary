@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MapPin, Settings, UserRound } from "lucide-react";
-import type { LoginFrom } from "@/lib/login-url";
+import { Building2, CreditCard, Globe2, KeyRound, LogOut, MapPin, Settings, UserRound } from "lucide-react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
 import {
   getEffectiveCapabilities,
   type StoreCapabilities,
@@ -43,6 +45,8 @@ export function GestioneShell({
   currentUser,
   locations = [],
   navBaseHref,
+  loginFrom,
+  isDemo = false,
   children,
   messages,
 }: {
@@ -59,6 +63,7 @@ export function GestioneShell({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const isMulti = isMultiLocation(locations);
   const activeLocationSlug = searchParams.get("loc") ?? locations.find((l) => l.isDefault)?.slug ?? locations[0]?.slug;
@@ -102,10 +107,19 @@ export function GestioneShell({
     { label: t.nav.loyalty, href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
     { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: t.nav.locations, href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
-    { label: t.nav.settings, href: settingsHref, visible: () => true },
   ];
 
   const visibleItems = items.filter((i) => i.visible(cap));
+
+  async function handleLogout() {
+    if (isDemo) {
+      router.push("/");
+      return;
+    }
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    router.push(buildLoginUrl({ from: loginFrom ?? `gestione.${tenant.id}` }));
+  }
 
   return (
     <>
@@ -125,10 +139,45 @@ export function GestioneShell({
               <UserRound size={12} strokeWidth={2} />
               {t.profile}
             </Link>
-            <Link href={settingsHref} className="ga-profile-link" aria-label={t.settings}>
-              <Settings size={13} strokeWidth={2} />
-              {t.settings}
-            </Link>
+            <div className="ga-settings-menu-wrap">
+              <button
+                type="button"
+                className="ga-icon-button"
+                aria-label={t.settings}
+                aria-expanded={settingsOpen}
+                onClick={() => setSettingsOpen((open) => !open)}
+              >
+                <Settings size={15} strokeWidth={2} />
+              </button>
+              {settingsOpen && (
+                <div className="ga-settings-popover" role="menu" aria-label={t.settings}>
+                  <Link href={settingsHref} role="menuitem" onClick={() => setSettingsOpen(false)}>
+                    <Settings size={14} />
+                    <span>Impostazioni generali</span>
+                  </Link>
+                  <Link href={`${settingsHref}#abbonamento`} role="menuitem" onClick={() => setSettingsOpen(false)}>
+                    <CreditCard size={14} />
+                    <span>Abbonamento Menuary</span>
+                  </Link>
+                  <Link href={`${settingsHref}#valuta-lingue`} role="menuitem" onClick={() => setSettingsOpen(false)}>
+                    <Globe2 size={14} />
+                    <span>Valuta e lingue</span>
+                  </Link>
+                  <Link href={`${settingsHref}#password`} role="menuitem" onClick={() => setSettingsOpen(false)}>
+                    <KeyRound size={14} />
+                    <span>Password</span>
+                  </Link>
+                  <Link href={`${settingsHref}#dati-attivita`} role="menuitem" onClick={() => setSettingsOpen(false)}>
+                    <Building2 size={14} />
+                    <span>Dati attività</span>
+                  </Link>
+                  <button type="button" role="menuitem" onClick={handleLogout} className="ga-settings-popover-danger">
+                    <LogOut size={14} />
+                    <span>{t.logout}</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

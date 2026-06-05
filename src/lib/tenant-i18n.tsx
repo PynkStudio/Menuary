@@ -62,6 +62,16 @@ function setDocumentLanguage(language: string) {
   if (typeof document !== "undefined") document.documentElement.lang = language;
 }
 
+function readCookie(name: string) {
+  if (typeof document === "undefined") return null;
+  const encodedName = `${encodeURIComponent(name)}=`;
+  const match = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(encodedName));
+  return match ? decodeURIComponent(match.slice(encodedName.length)) : null;
+}
+
 function hydrateStore<TLanguage extends string>(store: TenantLanguageStore<TLanguage>) {
   if (store.hydrated || typeof window === "undefined") return;
   const routeLanguage = tenantLocaleFromPath(
@@ -75,9 +85,11 @@ function hydrateStore<TLanguage extends string>(store: TenantLanguageStore<TLang
   } catch {
     // Storage can be unavailable in privacy-restricted browsers.
   }
+  const cookieLanguage = readCookie(tenantLocaleCookieName(store.config.tenantId));
   store.currentLanguage =
     routeLanguage ??
     matchSupportedLanguage(stored, store.config.supportedLanguages) ??
+    matchSupportedLanguage(cookieLanguage, store.config.supportedLanguages) ??
     detectBrowserLanguage(store.config.supportedLanguages, store.config.defaultLanguage);
   store.hydrated = true;
   setDocumentLanguage(store.currentLanguage);

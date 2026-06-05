@@ -35,7 +35,7 @@ function matchesCategory(book: LibritechBook, cat: Category): boolean {
 
 export function LibritechHomePage() {
   const tenant = useTenant();
-  const syncStatus = useSupabaseMenuSync(tenant.id);
+  const syncStatus = useSupabaseMenuSync(tenant.id).status;
   const staffHref = getTenantGestioneExternalHref(tenant.id);
   const lines     = useShopCartStore((s) => s.lines);
   const setOpen   = useShopCartStore((s) => s.setOpen);

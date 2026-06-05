@@ -22,10 +22,28 @@ import { MenuSkeleton } from "@/components/modules/menu/menu-skeleton";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 import { useTenantLanguagePreference } from "@/lib/tenant-i18n";
 
-const DOCA_CATEGORY_TITLES: Record<string, string> = {
-  pane: "Salati",
-  dolci: "Dolci",
-  caffe: "Bevande",
+const DOCA_CATEGORY_TITLES: Record<string, Record<string, string>> = {
+  it: {
+    pane: "Salati",
+    dolci: "Dolci",
+    caffe: "Bevande",
+  },
+  pt: {
+    pane: "Salgados",
+    dolci: "Doces",
+    caffe: "Bebidas",
+  },
+  en: {
+    pane: "Savoury",
+    dolci: "Sweets",
+    caffe: "Drinks",
+  },
+};
+
+const MENU_LISTS_LABEL: Record<string, string> = {
+  it: "Menu disponibili",
+  pt: "Menus disponíveis",
+  en: "Available menus",
 };
 
 export function InteractiveMenu({
@@ -43,7 +61,7 @@ export function InteractiveMenu({
     defaultLanguage: localeConfig?.defaultLocale ?? "it",
     supportedLanguages: localeConfig?.locales ?? ["it"],
   });
-  const syncStatus = useSupabaseMenuSync(tenant.id, true, false, menuLanguage);
+  const syncStatus = useSupabaseMenuSync(tenant.id, true, menuLanguage).status;
   const searchParams = useSearchParams();
   const tableParam = searchParams.get("t");
   const setContext = useCartStore((s) => s.setContext);
@@ -84,11 +102,11 @@ export function InteractiveMenu({
   const categories = useMemo(
     () =>
       selectCategoriesOrdered({ categories: categoriesRaw } as never).map((category) =>
-        tenant.id === "doca" && DOCA_CATEGORY_TITLES[category.id]
-          ? { ...category, title: DOCA_CATEGORY_TITLES[category.id] }
+        tenant.id === "doca" && DOCA_CATEGORY_TITLES[menuLanguage]?.[category.id]
+          ? { ...category, title: DOCA_CATEGORY_TITLES[menuLanguage][category.id] }
           : category,
       ),
-    [categoriesRaw, tenant.id],
+    [categoriesRaw, menuLanguage, tenant.id],
   );
 
   const tableIdForMenus = cartContext.type === "tavolo" ? cartContext.tableId ?? null : null;
@@ -169,7 +187,9 @@ export function InteractiveMenu({
           <DiningFormulasShowcase formulas={getDiningFormulasForTenant(tenant.id)} />
           {visibleMenuLists.length > 1 && (
             <section className="space-y-3">
-              <p className="impact-title text-xs text-pork-red">Menu disponibili</p>
+              <p className="impact-title text-xs text-pork-red">
+                {MENU_LISTS_LABEL[menuLanguage] ?? MENU_LISTS_LABEL.it}
+              </p>
               <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {visibleMenuLists.map((list) => (
                   <button
@@ -212,14 +232,16 @@ export function InteractiveMenu({
                 </h2>
                 {category.availability && (
                   <span className="menu-availability-pill nom-availability-pill mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-pork-ink/10 px-3 py-1 text-xs font-medium text-pork-ink/70">
-                    <span aria-hidden>\u25CF</span>
+                    <span aria-hidden>{"\u25CF"}</span>
                     {category.availability.label}
                     {" \u00B7 "}
-                    {category.availability.from}\u2013{category.availability.to}
+                    {category.availability.from}
+                    {"\u2013"}
+                    {category.availability.to}
                   </span>
                 )}
                 {category.description && (
-                  <p className="max-w-2xl text-base leading-7 text-pork-ink/65 sm:text-lg">
+                  <p className="mt-3 max-w-4xl rounded-lg bg-white/70 px-4 py-3 text-base leading-7 text-pork-ink/70 ring-1 ring-pork-ink/10 sm:px-5 sm:text-lg">
                     {category.description}
                   </p>
                 )}
