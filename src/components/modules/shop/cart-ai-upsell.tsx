@@ -3,9 +3,17 @@
 import { useEffect, useState } from "react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
-import type { CartLine } from "@/lib/types";
+import type { CartLine, MenuOrderChannel } from "@/lib/types";
 
-export function CartAiUpsell({ lines }: { lines: CartLine[] }) {
+export function CartAiUpsell({
+  lines,
+  channel = "site",
+  tableId,
+}: {
+  lines: CartLine[];
+  channel?: MenuOrderChannel;
+  tableId?: string | null;
+}) {
   const tenant = useTenant();
   const { modules } = useEffectiveFeatures();
   const [hints, setHints] = useState<string[]>([]);
@@ -24,6 +32,8 @@ export function CartAiUpsell({ lines }: { lines: CartLine[] }) {
           body: JSON.stringify({
             tenantId: tenant.id,
             itemIds: lines.map((l) => l.itemId),
+            channel,
+            tableId: tableId ?? null,
           }),
         });
         if (!res.ok) return;
@@ -37,7 +47,7 @@ export function CartAiUpsell({ lines }: { lines: CartLine[] }) {
     return () => {
       cancelled = true;
     };
-  }, [lines, modules.upselling, tenant.id]);
+  }, [channel, lines, modules.upselling, tableId, tenant.id]);
 
   if (!modules.upselling || hints.length === 0) return null;
 

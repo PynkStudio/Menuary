@@ -21,6 +21,7 @@ type SettingsPatch = {
   autoAcceptMaxItems?: number | null;
   autoAcceptOnlyReturning?: boolean;
   autoAcceptNoNotes?: boolean;
+  autoAcceptMinNoticeMinutes?: number | null;
   pendingTimeoutSeconds?: number;
 };
 
@@ -64,6 +65,13 @@ export async function PUT(req: NextRequest) {
   if (pendingTimeout != null && (pendingTimeout < 30 || pendingTimeout > 600)) {
     return NextResponse.json(
       { error: "pendingTimeoutSeconds deve essere tra 30 e 600" },
+      { status: 422 },
+    );
+  }
+  const minNotice = body.autoAcceptMinNoticeMinutes;
+  if (minNotice != null && (minNotice < 0 || minNotice > 10080)) {
+    return NextResponse.json(
+      { error: "autoAcceptMinNoticeMinutes deve essere tra 0 e 10080" },
       { status: 422 },
     );
   }
@@ -112,6 +120,10 @@ export async function PUT(req: NextRequest) {
     autoAcceptOnlyReturning:
       body.autoAcceptOnlyReturning ?? existing.autoAcceptOnlyReturning,
     autoAcceptNoNotes: body.autoAcceptNoNotes ?? existing.autoAcceptNoNotes,
+    autoAcceptMinNoticeMinutes:
+      body.autoAcceptMinNoticeMinutes !== undefined
+        ? body.autoAcceptMinNoticeMinutes
+        : existing.autoAcceptMinNoticeMinutes,
     pendingTimeoutSeconds: body.pendingTimeoutSeconds ?? existing.pendingTimeoutSeconds,
   };
 
@@ -136,6 +148,7 @@ export async function PUT(req: NextRequest) {
         auto_accept_max_items: merged.autoAcceptMaxItems,
         auto_accept_only_returning: merged.autoAcceptOnlyReturning,
         auto_accept_no_notes: merged.autoAcceptNoNotes,
+        auto_accept_min_notice_minutes: merged.autoAcceptMinNoticeMinutes,
         pending_timeout_seconds: merged.pendingTimeoutSeconds,
       })
       .eq("id", existing.id);
@@ -158,6 +171,7 @@ export async function PUT(req: NextRequest) {
       auto_accept_max_items: merged.autoAcceptMaxItems,
       auto_accept_only_returning: merged.autoAcceptOnlyReturning,
       auto_accept_no_notes: merged.autoAcceptNoNotes,
+      auto_accept_min_notice_minutes: merged.autoAcceptMinNoticeMinutes,
       pending_timeout_seconds: merged.pendingTimeoutSeconds,
     });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

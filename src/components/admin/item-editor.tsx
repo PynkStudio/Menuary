@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Globe, ImageIcon, Plus, Save, Sparkles, X } from "lucide-react";
+import { GestionePortalSurface } from "@/components/gestione/gestione-portal-surface";
 import { resolveExtrasForItem } from "@/lib/extra-lists";
 import type {
   AdminMenuItem,
@@ -586,7 +587,7 @@ export function ItemEditor({
   }
 
   return createPortal(
-    <div
+    <GestionePortalSurface
       className="fixed inset-0 z-50 flex items-center justify-center bg-pork-ink/70 p-4 backdrop-blur-sm"
       onClick={tryClose}
     >
@@ -1352,7 +1353,7 @@ export function ItemEditor({
           </div>
         )}
       </div>
-    </div>,
+    </GestionePortalSurface>,
     document.body,
   );
 }

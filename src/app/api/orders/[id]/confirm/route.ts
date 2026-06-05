@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
+import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -13,7 +14,7 @@ type Params = { params: Promise<{ id: string }> };
  *
  * Non tocca ordini già in altro stato (idempotente solo se status === "nuovo").
  */
-export async function POST(_req: NextRequest, { params }: Params) {
+export async function POST(req: NextRequest, { params }: Params) {
   const supabase = createSupabaseServiceClient();
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
 
@@ -21,7 +22,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
   const { data: order, error: loadErr } = await supabase
     .from("orders")
-    .select("id, status, confirmation_expires_at")
+    .select("id, tenant_id, code, status, confirmation_expires_at, public_token, customer_phone")
     .eq("id", id)
     .maybeSingle();
 
@@ -63,6 +64,15 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
   // Email di conferma — best-effort, non blocca la response.
   void sendOrderConfirmationEmail(supabase, id).catch(() => {});
+  void notifyCustomerOrderStatus({
+    tenantId: order.tenant_id,
+    orderId: order.id,
+    code: order.code,
+    publicToken: order.public_token,
+    customerPhone: order.customer_phone,
+    kind: "confirmed",
+    req,
+  });
 
   return NextResponse.json({ ok: true, status: "nuovo" });
 }

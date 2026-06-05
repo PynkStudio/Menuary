@@ -392,7 +392,13 @@ export function CartDrawer() {
           />
         )}
 
-        {lines.length > 0 && <CartAiUpsell lines={lines} />}
+        {lines.length > 0 && (
+          <CartAiUpsell
+            lines={lines}
+            channel={context.type === "tavolo" ? "table" : "site"}
+            tableId={context.type === "tavolo" ? context.tableId ?? null : null}
+          />
+        )}
 
         {lines.length > 0 && (
           <footer className="shrink-0 border-t border-pork-ink/10 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">

@@ -22,7 +22,11 @@ export type PublicCheckoutOrder = {
   notes: string | null;
   createdAt: string;
   source: string | null;
+  type: string;
+  tableId: string | null;
+  menuaryUserId: string | null;
   lines: Array<{
+    itemId: string;
     name: string;
     qty: number;
     unitPrice: number;
@@ -50,7 +54,7 @@ export async function getPublicCheckoutOrder(input: {
   const { data, error } = await db
     .from("orders")
     .select(
-      "id, tenant_id, code, status, total, dine_option, customer_name, customer_phone, pickup_time, notes, created_at, source, public_token, payment_status, payment_provider, order_lines(name, qty, unit_price, line_total, notes)",
+      "id, tenant_id, code, status, type, table_id, total, dine_option, customer_name, customer_phone, pickup_time, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(item_id, name, qty, unit_price, line_total, notes)",
     )
     .eq("tenant_id", input.tenantId)
     .eq("code", input.code)
@@ -64,6 +68,8 @@ export async function getPublicCheckoutOrder(input: {
     tenant_id: string;
     code: string;
     status: string;
+    type: string;
+    table_id: string | null;
     total: number | string;
     dine_option: string | null;
     customer_name: string | null;
@@ -72,10 +78,12 @@ export async function getPublicCheckoutOrder(input: {
     notes: string | null;
     created_at: string;
     source: string | null;
+    menuary_user_id: string | null;
     public_token: string;
     payment_status: string;
     payment_provider: string | null;
     order_lines: Array<{
+      item_id: string;
       name: string;
       qty: number;
       unit_price: number | string;
@@ -91,6 +99,8 @@ export async function getPublicCheckoutOrder(input: {
     tenantId: row.tenant_id,
     code: row.code,
     status: row.status,
+    type: row.type,
+    tableId: row.table_id,
     paymentStatus: row.payment_status,
     paymentProvider: row.payment_provider,
     total: Number(row.total),
@@ -102,7 +112,9 @@ export async function getPublicCheckoutOrder(input: {
     notes: row.notes,
     createdAt: row.created_at,
     source: row.source,
+    menuaryUserId: row.menuary_user_id,
     lines: (row.order_lines ?? []).map((l) => ({
+      itemId: l.item_id,
       name: l.name,
       qty: Number(l.qty),
       unitPrice: Number(l.unit_price),

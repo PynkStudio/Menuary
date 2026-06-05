@@ -31,6 +31,7 @@ import type {
 } from "@/lib/types";
 import type { MenuIngredient } from "@/lib/ingredients";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
+import { menuChannelIgnoresTimeRules } from "@/lib/menu-channels";
 
 const STORAGE_KEY = "bepork-menu-v3";
 const DEFAULT_MENU_TENANT_ID = "bepork";
@@ -896,6 +897,7 @@ export function isMenuListVisible(
   const visibility = menuList.visibility ?? {};
   const channels = visibility.channels;
   if (options?.channel && channels && channels.length > 0 && !channels.includes(options.channel)) return false;
+  if (options?.channel && menuChannelIgnoresTimeRules(options.channel)) return true;
   const days = visibility.days ?? [];
   if (days.length > 0 && !days.includes(now.getDay() as MenuDay)) return false;
   if (!isTimeInWindow(now, visibility.startTime, visibility.endTime)) return false;

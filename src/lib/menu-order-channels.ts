@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/database.types";
 import type { MenuOrderChannel } from "@/lib/types";
+import { isMenuOrderChannel, menuChannelIgnoresTimeRules } from "@/lib/menu-channels";
 
 type Db = SupabaseClient<Database>;
 
@@ -69,16 +70,13 @@ function isTimeInWindow(current: number, start: unknown, end: unknown): boolean 
 
 function normalizeVisibility(value: unknown): MenuListVisibility {
   const raw = asObject(value);
-  const validChannels = new Set<MenuOrderChannel>(["site", "phone", "whatsapp", "online", "table", "reservation"]);
   return {
     days: Array.isArray(raw.days) ? raw.days.filter((day): day is number => typeof day === "number") : undefined,
     startTime: typeof raw.startTime === "string" ? raw.startTime : undefined,
     endTime: typeof raw.endTime === "string" ? raw.endTime : undefined,
     tableIds: Array.isArray(raw.tableIds) ? raw.tableIds.filter((id): id is string => typeof id === "string") : undefined,
     channels: Array.isArray(raw.channels)
-      ? raw.channels.filter((channel): channel is MenuOrderChannel =>
-          typeof channel === "string" && validChannels.has(channel as MenuOrderChannel),
-        )
+      ? raw.channels.filter(isMenuOrderChannel)
       : undefined,
   };
 }
@@ -87,8 +85,8 @@ function isVisible(list: MenuListRow, channel: MenuOrderChannel, tableId: string
   if (!list.enabled) return false;
   const visibility = normalizeVisibility(list.visibility);
   if (visibility.channels && !visibility.channels.includes(channel)) return false;
-  // Le prenotazioni ignorano vincoli di orario, giorno e tavolo: i prodotti sono sempre prenotabili.
-  if (channel === "reservation") return true;
+  // Le prenotazioni ignorano vincoli di orario, giorno e tavolo: prodotti/servizi sono sempre prenotabili.
+  if (menuChannelIgnoresTimeRules(channel)) return true;
   const local = localMenuTime(now);
   if (visibility.days?.length && !visibility.days.includes(local.day)) return false;
   if (!isTimeInWindow(local.minutes, visibility.startTime, visibility.endTime)) return false;

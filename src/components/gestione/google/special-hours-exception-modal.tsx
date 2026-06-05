@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Plus, Trash2, X } from "lucide-react";
+import { GestionePortalSurface } from "@/components/gestione/gestione-portal-surface";
 import type { SpecialHourKind, SpecialHourRow } from "@/lib/data/special-hours";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 
@@ -144,7 +145,7 @@ export function SpecialHoursExceptionModal({ tenantId, locationId, onClose, onSa
   };
 
   return createPortal(
-    <div
+    <GestionePortalSurface
       ref={overlayRef}
       className="fixed inset-0 z-[90] flex items-end justify-center bg-pork-ink/70 backdrop-blur-sm sm:items-center"
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
@@ -324,7 +325,7 @@ export function SpecialHoursExceptionModal({ tenantId, locationId, onClose, onSa
           </button>
         </div>
       </div>
-    </div>,
+    </GestionePortalSurface>,
     document.body,
   );
 }

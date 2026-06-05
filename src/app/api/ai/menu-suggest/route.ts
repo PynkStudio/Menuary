@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findTenantById } from "@/lib/tenant-registry";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { suggestUpsellsForOrder } from "@/lib/upselling-engine";
+import type { MenuOrderChannel } from "@/lib/types";
+import { isMenuOrderChannel } from "@/lib/menu-channels";
 
-type Body = { tenantId: string; itemIds?: string[]; message?: string };
+type Body = {
+  tenantId: string;
+  itemIds?: string[];
+  channel?: MenuOrderChannel;
+  tableId?: string | null;
+  message?: string;
+};
 
 /**
- * Suggerimenti oculati senza LLM: abbina tag / abv del menu (modulo upselling).
+ * Upselling AI: legge l'indice menu/canale e usa una fallback LLM per ordini ambigui.
  */
 export async function POST(req: NextRequest) {
   let body: Body;
@@ -28,29 +38,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ suggestions: [] });
   }
 
-  const { data: items } = await svc
-    .from("menu_items")
-    .select("id,name,tags,abv")
-    .eq("tenant_id", body.tenantId)
-    .in("id", ids);
-
-  const suggestions: { itemId: string; text: string }[] = [];
-  for (const it of items ?? []) {
-    const tags = (it.tags ?? []).map((t) => t.toLowerCase()).join(" ");
-    if (tags.includes("pizza") || tags.includes("burger")) {
-      if (it.abv) {
-        suggestions.push({
-          itemId: it.id,
-          text: `Con ${it.name} sta bene una birra selezionata (${it.abv}).`,
-        });
-      } else {
-        suggestions.push({
-          itemId: it.id,
-          text: `Completa con contorno o birra artigianale in lista.`,
-        });
-      }
-    }
-  }
+  const channel = normalizeChannel(body.channel);
+  const auth = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await auth.auth.getUser();
+  const suggestions = await suggestUpsellsForOrder(svc, {
+    tenantId: body.tenantId,
+    itemCodes: [...new Set(ids)],
+    channel,
+    tableId: body.tableId ?? null,
+    userId: user?.id ?? null,
+  });
 
   return NextResponse.json({ suggestions });
+}
+
+function normalizeChannel(channel: unknown): MenuOrderChannel {
+  return isMenuOrderChannel(channel) ? channel : "site";
 }

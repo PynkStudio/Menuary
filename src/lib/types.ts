@@ -57,7 +57,14 @@ export type AdminMenuCategory = Omit<MenuCategory, "items"> & {
 };
 
 export type MenuDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-export type MenuOrderChannel = "site" | "phone" | "whatsapp" | "online" | "table" | "reservation";
+export type MenuOrderChannel =
+  | "site"
+  | "phone"
+  | "whatsapp"
+  | "online"
+  | "table"
+  | "reservation"
+  | "product_reservation";
 
 export type AdminMenuListVisibility = {
   /** Giorni locali: 0 domenica, 1 lunedi, ... 6 sabato. Vuoto = tutti i giorni. */
@@ -159,6 +166,7 @@ export type TenantOrderSettings = {
   autoAcceptMaxItems: number | null;
   autoAcceptOnlyReturning: boolean;
   autoAcceptNoNotes: boolean;
+  autoAcceptMinNoticeMinutes: number | null;
   pendingTimeoutSeconds: number;
 };
 

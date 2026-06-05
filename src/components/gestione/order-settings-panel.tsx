@@ -33,6 +33,7 @@ const EMPTY: FormState = {
   autoAcceptMaxItems: null,
   autoAcceptOnlyReturning: false,
   autoAcceptNoNotes: false,
+  autoAcceptMinNoticeMinutes: null,
   pendingTimeoutSeconds: 120,
 };
 
@@ -307,12 +308,20 @@ export function OrderSettingsPanel() {
                 value={form.autoAcceptMaxItems}
                 onChange={(v) => patch("autoAcceptMaxItems", v)}
               />
+              <NumberField
+                label="Preavviso minimo (minuti)"
+                placeholder="es. 720 per domani"
+                value={form.autoAcceptMinNoticeMinutes}
+                onChange={(v) => patch("autoAcceptMinNoticeMinutes", v)}
+                min={0}
+                max={10080}
+              />
             </div>
 
             <div className="mt-4 space-y-3">
               <Toggle
                 label="Solo clienti già conosciuti"
-                description="Auto-accetta solo se il cliente ha già ordinato in passato."
+                description="Auto-accetta solo se il cliente ha già ordinato in passato e il CRM del tenant è attivo."
                 checked={form.autoAcceptOnlyReturning}
                 onChange={(v) => patch("autoAcceptOnlyReturning", v)}
               />

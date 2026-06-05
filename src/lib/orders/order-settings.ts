@@ -20,6 +20,7 @@ type DbOrderSettings = {
   auto_accept_max_items: number | null;
   auto_accept_only_returning: boolean;
   auto_accept_no_notes: boolean;
+  auto_accept_min_notice_minutes: number | null;
   pending_timeout_seconds: number;
 };
 
@@ -39,6 +40,7 @@ export const DEFAULT_ORDER_SETTINGS: Omit<TenantOrderSettings, "id" | "tenantId"
   autoAcceptMaxItems: null,
   autoAcceptOnlyReturning: false,
   autoAcceptNoNotes: false,
+  autoAcceptMinNoticeMinutes: null,
   pendingTimeoutSeconds: 120,
 };
 
@@ -61,6 +63,7 @@ function dbRowToSettings(row: DbOrderSettings): TenantOrderSettings {
     autoAcceptMaxItems: row.auto_accept_max_items,
     autoAcceptOnlyReturning: row.auto_accept_only_returning,
     autoAcceptNoNotes: row.auto_accept_no_notes,
+    autoAcceptMinNoticeMinutes: row.auto_accept_min_notice_minutes,
     pendingTimeoutSeconds: row.pending_timeout_seconds,
   };
 }
@@ -98,6 +101,8 @@ export type AutoAcceptCandidate = {
   itemsCount: number; // somma qty di tutte le righe
   hasNotes: boolean;  // true se note di testata o di linea presenti
   isReturningCustomer: boolean; // true se identity.registered o customer_id riconosciuto
+  crmEnabled: boolean;
+  noticeMinutes: number | null;
 };
 
 /**
@@ -113,8 +118,47 @@ export function evaluateAutoAccept(
 
   if (s.autoAcceptMaxTotal != null && c.total > s.autoAcceptMaxTotal) return false;
   if (s.autoAcceptMaxItems != null && c.itemsCount > s.autoAcceptMaxItems) return false;
-  if (s.autoAcceptOnlyReturning && !c.isReturningCustomer) return false;
+  if (s.autoAcceptOnlyReturning && (!c.crmEnabled || !c.isReturningCustomer)) return false;
   if (s.autoAcceptNoNotes && c.hasNotes) return false;
+  if (
+    s.autoAcceptMinNoticeMinutes != null &&
+    (c.noticeMinutes == null || c.noticeMinutes < s.autoAcceptMinNoticeMinutes)
+  ) {
+    return false;
+  }
 
   return true;
+}
+
+export function resolveOrderNoticeMinutes(input: {
+  pickupTime?: string | null;
+  desiredTime?: string | null;
+  pickupDate?: string | null;
+  now?: Date;
+}): number | null {
+  const raw = (input.desiredTime ?? input.pickupTime ?? "").trim();
+  const now = input.now ?? new Date();
+  const pickupDate = input.pickupDate?.trim();
+
+  if (raw) {
+    const isoCandidate = /^\d{4}-\d{2}-\d{2}/.test(raw) ? new Date(raw) : null;
+    if (isoCandidate && !Number.isNaN(isoCandidate.getTime())) {
+      return Math.floor((isoCandidate.getTime() - now.getTime()) / 60000);
+    }
+  }
+
+  const time = raw.match(/^(\d{1,2}):(\d{2})$/);
+  const date = pickupDate && /^\d{4}-\d{2}-\d{2}$/.test(pickupDate) ? pickupDate : null;
+  if (!time) return null;
+
+  const target = date
+    ? new Date(`${date}T${time[1]!.padStart(2, "0")}:${time[2]}:00`)
+    : new Date(now);
+  if (!date) {
+    target.setHours(Number(time[1]), Number(time[2]), 0, 0);
+    if (target.getTime() < now.getTime()) target.setDate(target.getDate() + 1);
+  }
+
+  if (Number.isNaN(target.getTime())) return null;
+  return Math.floor((target.getTime() - now.getTime()) / 60000);
 }

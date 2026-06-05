@@ -1,6 +1,7 @@
 import { after, NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { pushOrderStatusToHubrise } from "@/lib/hubrise/push-status";
+import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 import type { OrderStatus } from "@/lib/types";
 
 type Params = { params: Promise<{ id: string }> };
@@ -31,6 +32,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "invalid status" }, { status: 400 });
   }
 
+  const { data: order, error: loadError } = await supabase
+    .from("orders")
+    .select("id, tenant_id, code, public_token, customer_phone")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (loadError) return NextResponse.json({ error: loadError.message }, { status: 500 });
+
   const { error } = await supabase
     .from("orders")
     .update({ status })
@@ -41,6 +50,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   // Propaga lo status alla piattaforma HubRise di origine (no-op per ordini diretti).
   after(async () => {
     await pushOrderStatusToHubrise({ orderId: id, newStatus: status });
+    if (order) {
+      await notifyCustomerOrderStatus({
+        tenantId: order.tenant_id,
+        orderId: order.id,
+        code: order.code,
+        publicToken: order.public_token,
+        customerPhone: order.customer_phone,
+        kind: status === "annullato" ? "rejected" : status === "nuovo" ? "confirmed" : "updated",
+        req,
+      });
+    }
   });
 
   return NextResponse.json({ ok: true });

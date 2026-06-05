@@ -4,6 +4,7 @@ import { getSeedMenuForTenant } from "@/lib/tenant-menu-data";
 import { libritechCatalog } from "@/lib/libritech-catalog";
 import { getTenantDefaultExtraLists } from "@/lib/extra-lists";
 import { pushMenuToHubrise } from "@/lib/hubrise/push-menu";
+import { ensureTenantUpsellIndexes } from "@/lib/upselling-engine";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, PriceFormat } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
@@ -46,6 +47,11 @@ export async function PUT(req: Request) {
       await pushMenuToHubrise({ tenantId, bundle });
     } catch {
       // gli errori per-location sono già loggati in hubrise_menu_sync_log
+    }
+    try {
+      await ensureTenantUpsellIndexes(supabase, tenantId);
+    } catch (error) {
+      console.error("[menu-sync] upsell index generation failed", error instanceof Error ? error.message : String(error));
     }
   });
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Clock, User, StickyNote, Package, Mail, ShoppingBag, UtensilsCrossed, Bike } from "lucide-react";
 import { useCartStore, cartTotal } from "@/store/cart-store";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
@@ -36,6 +36,7 @@ function nextSlots(count = 8, stepMin = 15): string[] {
 export default function OrdinaPage() {
   const hydrated = useHydrated();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const tenant = useTenant();
   const { allowTakeaway: takeawayOk, allowTableOrders } = useEffectiveFeatures();
 
@@ -96,11 +97,47 @@ export default function OrdinaPage() {
 
   const total = cartTotal(lines);
   const empty = hydrated && lines.length === 0;
+  const backParam = searchParams.get("back");
+  const checkoutBack = (() => {
+    if (!backParam) return null;
+    try {
+      const parsed = new URL(backParam, "https://menuary.local");
+      const match = parsed.pathname.match(/^\/checkout\/([^/]+)$/);
+      const token = parsed.searchParams.get("t");
+      if (!match?.[1] || !token) return null;
+      return { href: `${parsed.pathname}${parsed.search}`, code: decodeURIComponent(match[1]), token };
+    } catch {
+      return null;
+    }
+  })();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!takeawayOk || !name.trim() || !pickupTime || lines.length === 0) return;
     setSubmitting(true);
+
+    if (checkoutBack) {
+      try {
+        const res = await fetch(`/api/checkout/${encodeURIComponent(checkoutBack.code)}/append`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tenantId: tenant.id,
+            token: checkoutBack.token,
+            lines,
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error ?? "upsell_failed");
+        }
+        clear();
+        router.replace(checkoutBack.href);
+      } catch {
+        setSubmitting(false);
+      }
+      return;
+    }
 
     // Mirror locale (UX/demo) — utile a /ordina/conferma quando l'API è offline.
     const local = addOrder({

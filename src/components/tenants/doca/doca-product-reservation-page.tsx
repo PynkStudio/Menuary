@@ -349,6 +349,7 @@ export function DocaProductReservationPage() {
           reservationTime: draft.time,
           notes,
           specialRequestTags: ["ritiro_prodotti"],
+          channel: "product_reservation",
         }),
       });
       if (!response.ok && response.status !== 503) throw new Error("reservation_failed");

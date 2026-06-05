@@ -615,6 +615,11 @@
     border: 1px solid var(--ga-border);
     background: var(--ga-surface-2);
   }
+  .ga-reservation[data-kind="product"] {
+    grid-template-columns: 84px minmax(0, 1fr) auto;
+    gap: 22px;
+    padding-block: 18px;
+  }
   @media (max-width: 640px) {
     .ga-reservation {
       grid-template-columns: 1fr;
@@ -664,6 +669,38 @@
     align-items: center;
     gap: 4px;
   }
+  .ga-phone-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ga-phone-link,
+  .ga-phone-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font: inherit;
+    color: var(--ga-ink-muted);
+  }
+  .ga-phone-link {
+    padding: 2px 0;
+    text-decoration: none;
+  }
+  .ga-phone-link:hover {
+    color: var(--ga-ink);
+  }
+  .ga-phone-copy {
+    padding: 2px 7px;
+    background: var(--ga-surface);
+    border-color: var(--ga-border-soft);
+    cursor: pointer;
+  }
+  .ga-phone-copy:hover {
+    color: var(--ga-ink);
+    border-color: var(--ga-accent-ring);
+  }
   .ga-reservation-notes {
     margin: 4px 0 0;
     color: var(--ga-ink-muted);
@@ -683,6 +720,38 @@
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+  }
+  .ga-reservation-product-details {
+    margin-top: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--ga-border-soft);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--ga-surface) 78%, white);
+    color: var(--ga-ink);
+  }
+  .ga-reservation-product-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--ga-accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .ga-reservation-product-details ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 5px;
+  }
+  .ga-reservation-product-details li {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--ga-ink);
+  }
+  .ga-reservation-product-details li:not(:first-child) {
+    color: var(--ga-ink-muted);
   }
   .ga-reservation-actions {
     display: flex;

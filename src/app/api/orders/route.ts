@@ -8,11 +8,13 @@ import {
   type DbOrderLine,
 } from "@/lib/api/orders";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
-import { evaluateAutoAccept, loadOrderSettings } from "@/lib/orders/order-settings";
+import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes } from "@/lib/orders/order-settings";
+import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 import { checkOrderingWindow, type OrderChannel } from "@/lib/orders/ordering-window";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
 import { validateMenuItemsForOrderChannel } from "@/lib/menu-order-channels";
 import { COPERTO_ITEM_ID } from "@/lib/coperto";
+import { findTenantById } from "@/lib/tenant-registry";
 import type { CartLine, OrderDineOption } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
 
@@ -28,6 +30,8 @@ export type CreateOrderBody = {
   customerPhone?: string;
   menuaryUserId?: string | null;
   pickupTime?: string;
+  pickupDate?: string;
+  desiredTime?: string;
   notes?: string;
   tableId?: string;
   tableLabel?: string;
@@ -115,12 +119,20 @@ export async function POST(req: NextRequest) {
     Boolean(rest.notes && rest.notes.trim().length > 0) ||
     lines.some((l) => Boolean(l.note && l.note.trim().length > 0));
   const isReturningCustomer = Boolean(identity?.registered) || Boolean(identity?.customerId);
+  const crmEnabled = Boolean(findTenantById(tenantId)?.features.crm);
+  const noticeMinutes = resolveOrderNoticeMinutes({
+    pickupTime: rest.pickupTime,
+    pickupDate: rest.pickupDate,
+    desiredTime: rest.desiredTime,
+  });
 
   const autoAccepted = evaluateAutoAccept(settings, {
     total,
     itemsCount,
     hasNotes,
     isReturningCustomer,
+    crmEnabled,
+    noticeMinutes,
   });
 
   const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
@@ -150,6 +162,7 @@ export async function POST(req: NextRequest) {
       customer_id: identity?.customerId ?? null,
       menuary_user_id: rest.menuaryUserId ?? identity?.menuaryUserId ?? null,
       pickup_time: rest.pickupTime ?? null,
+      desired_time: rest.desiredTime ?? rest.pickupTime ?? null,
       notes: rest.notes ?? null,
       location_id: locationId ?? null,
       dine_option: rest.dineOption ?? null,
@@ -157,7 +170,7 @@ export async function POST(req: NextRequest) {
       confirmed_at: confirmedAt,
       auto_accepted: autoAccepted,
     } as never)
-    .select("id, code")
+    .select("id, code, public_token, customer_phone")
     .single();
 
   if (orderErr || !order) return NextResponse.json({ error: orderErr?.message }, { status: 500 });
@@ -190,11 +203,21 @@ export async function POST(req: NextRequest) {
   if (autoAccepted) {
     void sendOrderConfirmationEmail(supabase, order.id).catch(() => {});
   }
+  void notifyCustomerOrderStatus({
+    tenantId,
+    orderId: order.id,
+    code: order.code,
+    publicToken: (order as { public_token?: string }).public_token ?? "",
+    customerPhone: (order as { customer_phone?: string | null }).customer_phone,
+    kind: autoAccepted ? "confirmed" : "created",
+    req,
+  });
 
   return NextResponse.json(
     {
       id: order.id,
       code: order.code,
+      publicToken: (order as { public_token?: string }).public_token ?? null,
       status: initialStatus,
       autoAccepted,
       confirmationExpiresAt,

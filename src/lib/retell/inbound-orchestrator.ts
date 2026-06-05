@@ -12,7 +12,9 @@ import { createChannelPaymentRequest, type ChannelPaymentRequest, type PaymentLi
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
+import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes } from "@/lib/orders/order-settings";
 import type { MenuOrderChannel } from "@/lib/types";
+import { isMenuOrderChannel } from "@/lib/menu-channels";
 
 type Db = SupabaseClient<Database>;
 
@@ -428,16 +430,13 @@ function isTimeInWindow(current: number, start: unknown, end: unknown): boolean 
 
 function normalizeVisibility(value: unknown): MenuListVisibility {
   const raw = asObject(value);
-  const validChannels = new Set<MenuOrderChannel>(["site", "phone", "whatsapp", "online", "table", "reservation"]);
   return {
     days: Array.isArray(raw.days) ? raw.days.filter((day): day is number => typeof day === "number") : undefined,
     startTime: typeof raw.startTime === "string" ? raw.startTime : undefined,
     endTime: typeof raw.endTime === "string" ? raw.endTime : undefined,
     tableIds: Array.isArray(raw.tableIds) ? raw.tableIds.filter((id): id is string => typeof id === "string") : undefined,
     channels: Array.isArray(raw.channels)
-      ? raw.channels.filter((channel): channel is MenuOrderChannel =>
-          typeof channel === "string" && validChannels.has(channel as MenuOrderChannel),
-        )
+      ? raw.channels.filter(isMenuOrderChannel)
       : undefined,
   };
 }
@@ -1011,6 +1010,31 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     };
   });
   const total = rows.reduce((sum, row) => sum + row.row.line_total, 0);
+  const orderSettings = await loadOrderSettings(db, input.tenantId, input.locationId ?? null);
+  const hasNotes =
+    Boolean(input.notes?.trim()) ||
+    Boolean(input.delivery?.notes?.trim()) ||
+    input.lines.some((line) => Boolean(line.note?.trim()));
+  const itemsCount = input.lines.reduce((sum, line) => sum + Math.max(1, Math.floor(line.quantity)), 0);
+  const crmEnabled = Boolean(tenantProfile?.features.crm);
+  const isReturningCustomer = Boolean(identity?.registered) || Boolean(identity?.customerId);
+  const noticeMinutes = resolveOrderNoticeMinutes({
+    pickupTime: input.pickupTime,
+    desiredTime: input.desiredTime,
+  });
+  const autoAccepted = evaluateAutoAccept(orderSettings, {
+    total,
+    itemsCount,
+    hasNotes,
+    isReturningCustomer,
+    crmEnabled,
+    noticeMinutes,
+  });
+  const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
+  const confirmationExpiresAt = autoAccepted
+    ? null
+    : new Date(Date.now() + orderSettings.pendingTimeoutSeconds * 1000).toISOString();
+  const confirmedAt = autoAccepted ? new Date().toISOString() : null;
 
   const { data: codeRow, error: codeErr } = await db.rpc("next_order_code", {
     p_tenant_id: input.tenantId,
@@ -1025,6 +1049,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       code: codeRow as string,
       type: "asporto",
       total,
+      source: input.source ?? "retell",
       customer_name: input.customerName ?? null,
       customer_id: identity?.customerId ?? null,
       menuary_user_id: identity?.menuaryUserId ?? null,
@@ -1033,7 +1058,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
         .filter(Boolean)
         .join("\n") || null,
       location_id: input.locationId ?? null,
-      status: "nuovo",
+      status: initialStatus,
       customer_phone: identity?.phone ?? input.customerPhone ?? null,
       fulfillment_type: fulfillmentType,
       delivery_address: input.delivery?.address ?? null,
@@ -1042,6 +1067,9 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       delivery_notes: input.delivery?.notes ?? null,
       desired_time: input.desiredTime ?? input.pickupTime ?? null,
       payment_status: shouldRequestPayment ? "pending" : "not_required",
+      confirmation_expires_at: confirmationExpiresAt,
+      confirmed_at: confirmedAt,
+      auto_accepted: autoAccepted,
     } as never)
     .select("id,code,total,status")
     .single();
@@ -1088,7 +1116,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       description: `Ordine ${order.code}`,
       paymentRequired: effectivePaymentMethod === "online",
       metadata: {
-        source: "retell",
+        source: input.source ?? "retell",
         fulfillmentType,
         paymentMethod: effectivePaymentMethod,
         fallbackChannel: settings.paymentControls.fallbackChannel,

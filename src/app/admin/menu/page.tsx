@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
   ChevronDown,
   ChevronUp,
@@ -23,7 +24,7 @@ import {
   selectMenuListsOrdered,
 } from "@/store/menu-store";
 import { activeMenuTags, menuTagLabel } from "@/lib/menu-tags";
-import type { AdminMenuItem, AdminMenuList, MenuAvailability, MenuDay, MenuOrderChannel } from "@/lib/types";
+import type { AdminMenuItem, AdminMenuList, MenuAvailability, MenuDay } from "@/lib/types";
 import { formatEuro, minPrice } from "@/lib/price-utils";
 import { ItemEditor } from "@/components/admin/item-editor";
 import { ExtraListsManager } from "@/components/admin/extra-lists-manager";
@@ -36,6 +37,7 @@ import { useSettingsStore } from "@/store/settings-store";
 import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 import { HelpHint } from "@/components/gestione/help-hint";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
+import { MENU_ORDER_CHANNELS, availableMenuOrderChannels } from "@/lib/menu-channels";
 
 const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 1, label: "Lun" },
@@ -45,15 +47,6 @@ const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 5, label: "Ven" },
   { value: 6, label: "Sab" },
   { value: 0, label: "Dom" },
-];
-
-const CHANNEL_OPTIONS: Array<{ value: MenuOrderChannel; label: string }> = [
-  { value: "site", label: "Pagina menu del sito" },
-  { value: "phone", label: "Ordini in chiamata" },
-  { value: "whatsapp", label: "Ordini WhatsApp" },
-  { value: "online", label: "Ordini online" },
-  { value: "table", label: "Ordini al tavolo" },
-  { value: "reservation", label: "Prenotazioni" },
 ];
 
 function formatMenuRules(menu: AdminMenuList): string {
@@ -75,7 +68,7 @@ function formatMenuRules(menu: AdminMenuList): string {
   if (menu.visibility.channels) {
     rules.push(
       menu.visibility.channels.length > 0
-        ? CHANNEL_OPTIONS
+        ? MENU_ORDER_CHANNELS
             .filter((channel) => menu.visibility.channels?.includes(channel.value))
             .map((channel) => channel.label)
             .join(", ")
@@ -86,6 +79,7 @@ function formatMenuRules(menu: AdminMenuList): string {
 }
 
 export default function AdminMenuPage() {
+  const searchParams = useSearchParams();
   const hydrated = useHydrated();
   const tenant = useTenantOrNull();
   const tenantId = tenant?.id ?? "bepork";
@@ -95,35 +89,13 @@ export default function AdminMenuPage() {
   const listinoLabel = getModuleLabel("onlineMenu", vertical);
   const { allowTakeaway, allowTableOrders, orderKioskEnabled, modules: tenantModules } = useEffectiveFeatures();
   const onlineOrderingActive = allowTakeaway || allowTableOrders || orderKioskEnabled;
-  const menuSiteStandalone = tenantModules.onlineMenu && !onlineOrderingActive && !tenantModules.reservations && !tenantModules.tablePlanner;
   const availableChannelOptions = useMemo(() => {
-    return CHANNEL_OPTIONS.filter((channel) => {
-      switch (channel.value) {
-        case "site":
-          return menuSiteStandalone;
-        case "phone":
-          return tenantModules.aiPhone;
-        case "whatsapp":
-          return tenantModules.aiWhatsapp;
-        case "online":
-          return allowTakeaway || orderKioskEnabled;
-        case "table":
-          return allowTableOrders;
-        case "reservation":
-          return tenantModules.reservations ?? false;
-        default:
-          return true;
-      }
+    return availableMenuOrderChannels({
+      ...tenantModules,
+      takeaway: allowTakeaway || orderKioskEnabled,
+      tableOrders: allowTableOrders,
     });
-  }, [
-    allowTakeaway,
-    allowTableOrders,
-    menuSiteStandalone,
-    orderKioskEnabled,
-    tenantModules.aiPhone,
-    tenantModules.aiWhatsapp,
-    tenantModules.reservations,
-  ]);
+  }, [allowTakeaway, allowTableOrders, orderKioskEnabled, tenantModules]);
   const showMenuPrices = useSettingsStore((s) => s.showMenuPrices);
   const setSettings = useSettingsStore((s) => s.set);
   const categoriesRaw = useMenuStore((s) => s.categories);
@@ -204,6 +176,22 @@ export default function AdminMenuPage() {
     : null;
 
   const editing = editingId ? items.find((i) => i.id === editingId) ?? null : null;
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const requestedView = searchParams.get("view");
+    const requestedItem = searchParams.get("edit");
+    const requestedMenu = searchParams.get("menu");
+
+    if (requestedView === "menus" || requestedMenu) setView("menus");
+    if (requestedItem && items.some((item) => item.id === requestedItem)) {
+      setView("items");
+      setEditingId(requestedItem);
+    }
+    if (requestedMenu && menuLists.some((menu) => menu.id === requestedMenu)) {
+      setEditingMenuId(requestedMenu);
+    }
+  }, [hydrated, items, menuLists, searchParams]);
 
   function filtered(all: AdminMenuItem[]): AdminMenuItem[] {
     let out = all;
@@ -623,7 +611,7 @@ export default function AdminMenuPage() {
                     <div className="mt-4">
                       <span className="mb-2 block text-xs font-bold uppercase text-pork-ink/50">
                         Dove mostrarlo
-                        <HelpHint className="ml-1" text="Scegli dove questo menu è disponibile: pagina menu, ordini, tavoli, chiamate, WhatsApp o prenotazioni in base ai moduli attivi." />
+                        <HelpHint className="ml-1" text="Scegli dove questo menu è disponibile: pagina menu, ordini, tavoli, chiamate, WhatsApp, prenotazioni o prenotazioni prodotti. La lista si aggiorna in base ai moduli attivi." />
                       </span>
                       <div className="grid gap-2 md:grid-cols-2">
                         {availableChannelOptions.map((channel) => {
@@ -658,9 +646,10 @@ export default function AdminMenuPage() {
                       <span className="mt-2 block text-xs text-pork-ink/45">
                         I menu esistenti senza configurazione esplicita restano visibili ovunque sia previsto dai moduli attivi.
                       </span>
-                      {editingMenu.visibility.channels?.includes("reservation") && (
+                      {(editingMenu.visibility.channels?.includes("reservation") ||
+                        editingMenu.visibility.channels?.includes("product_reservation")) && (
                         <span className="mt-2 block rounded-xl bg-pork-mustard/20 px-3 py-2 text-xs text-pork-ink/70">
-                          I prodotti nel canale prenotazioni sono sempre visibili e prenotabili, indipendentemente da orari e giorni impostati sopra.
+                          I prodotti nei canali prenotazione sono sempre visibili e prenotabili, indipendentemente da orari e giorni impostati sopra.
                         </span>
                       )}
                     </div>

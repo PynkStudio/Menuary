@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const { data: order, error: loadErr } = await supabase
     .from("orders")
-    .select("id, status, notes")
+    .select("id, tenant_id, code, status, notes, public_token, customer_phone")
     .eq("id", id)
     .maybeSingle();
 
@@ -49,6 +50,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     .eq("status", "pending_confirmation");
 
   if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
+  void notifyCustomerOrderStatus({
+    tenantId: order.tenant_id,
+    orderId: order.id,
+    code: order.code,
+    publicToken: order.public_token,
+    customerPhone: order.customer_phone,
+    kind: "rejected",
+    req,
+    reason,
+  });
 
   return NextResponse.json({ ok: true, status: "annullato" });
 }

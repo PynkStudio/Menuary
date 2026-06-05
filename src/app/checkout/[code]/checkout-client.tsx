@@ -35,6 +35,7 @@ export function CheckoutClient({
   token,
   paymentStatus,
   isAiSource,
+  upsellSuggestions,
 }: {
   tenantId: string;
   tenantName: string;
@@ -43,6 +44,7 @@ export function CheckoutClient({
   token: string;
   paymentStatus: string | null;
   isAiSource: boolean;
+  upsellSuggestions: string[];
 }) {
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -161,6 +163,35 @@ export function CheckoutClient({
                 </p>
               </div>
             )}
+            <section className="mb-4 rounded-2xl bg-white p-4 ring-1 ring-pork-ink/5">
+              <div className="flex items-start gap-3">
+                <ShieldCheck size={18} className="mt-0.5 text-pork-red" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-bold text-pork-ink">Vuoi pagare online?</div>
+                  <p className="mt-1 text-xs leading-relaxed text-pork-ink/60">
+                    Se il locale ha Stripe attivo puoi saldare subito l&apos;ordine e mantenere lo stesso riepilogo.
+                  </p>
+                  <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-xl bg-pork-cream/60 p-3 text-xs text-pork-ink hover:bg-pork-cream">
+                    <input
+                      type="checkbox"
+                      checked={accepted}
+                      onChange={(e) => setAccepted(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-pork-red"
+                    />
+                    <span>Accetto privacy e condizioni per procedere al pagamento online.</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={startPayment}
+                    disabled={!accepted || loading}
+                    className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-pork-red px-4 py-2.5 text-sm font-black text-white transition hover:bg-pork-red/90 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {loading ? "Apertura pagamento…" : `Paga online ${eur(order.total)}`}
+                    {!loading && <ArrowRight size={15} />}
+                  </button>
+                </div>
+              </div>
+            </section>
           </>
         )}
 
@@ -205,6 +236,28 @@ export function CheckoutClient({
               </a>
             )}
           </div>
+        )}
+
+        {!alreadyPaid && !orderCancelled && canUpsell && upsellSuggestions.length > 0 && (
+          <section className="mb-4 rounded-2xl border border-pork-mustard/40 bg-pork-mustard/10 p-4 text-sm text-pork-ink">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase text-pork-red">Suggerimenti per completare</p>
+                <ul className="mt-2 list-disc space-y-1 pl-4">
+                  {upsellSuggestions.map((suggestion) => (
+                    <li key={suggestion}>{suggestion}</li>
+                  ))}
+                </ul>
+              </div>
+              <a
+                href={`/menu?back=${encodeURIComponent(`/checkout/${order.code}?t=${token}`)}`}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-pork-ink px-3 py-2 text-xs font-bold text-white hover:bg-pork-red"
+              >
+                <Plus size={13} />
+                Aggiungi
+              </a>
+            </div>
+          </section>
         )}
 
         <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-pork-ink/5">
@@ -310,6 +363,14 @@ export function CheckoutClient({
               </p>
             )}
           </>
+        )}
+
+        {error && payOnSite && !alreadyPaid && !orderCancelled && (
+          <p className="mt-3 rounded-lg bg-rose-50 p-3 text-center text-xs text-rose-700">
+            {error === "tenant_stripe_not_connected" || error === "tenant_stripe_charges_disabled"
+              ? "Il locale non ha ancora attivato i pagamenti online. Puoi comunque pagare al ritiro o alla consegna."
+              : error}
+          </p>
         )}
 
         <footer className="mt-8 text-center text-[10px] text-pork-ink/40">

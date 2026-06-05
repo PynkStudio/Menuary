@@ -1511,6 +1511,7 @@ export type Database = {
           location_id: string | null
           menuary_user_id: string | null
           notes: string | null
+          public_token: string
           pickup_time: string | null
           session_code: string | null
           session_id: string | null
@@ -1543,6 +1544,7 @@ export type Database = {
           location_id?: string | null
           menuary_user_id?: string | null
           notes?: string | null
+          public_token?: string
           pickup_time?: string | null
           session_code?: string | null
           session_id?: string | null
@@ -1575,6 +1577,7 @@ export type Database = {
           location_id?: string | null
           menuary_user_id?: string | null
           notes?: string | null
+          public_token?: string
           pickup_time?: string | null
           session_code?: string | null
           session_id?: string | null
@@ -2625,6 +2628,7 @@ export type Database = {
           auto_accept_enabled: boolean
           auto_accept_max_items: number | null
           auto_accept_max_total: number | null
+          auto_accept_min_notice_minutes: number | null
           auto_accept_no_notes: boolean
           auto_accept_only_returning: boolean
           created_at: string
@@ -2647,6 +2651,7 @@ export type Database = {
           auto_accept_enabled?: boolean
           auto_accept_max_items?: number | null
           auto_accept_max_total?: number | null
+          auto_accept_min_notice_minutes?: number | null
           auto_accept_no_notes?: boolean
           auto_accept_only_returning?: boolean
           created_at?: string
@@ -2669,6 +2674,7 @@ export type Database = {
           auto_accept_enabled?: boolean
           auto_accept_max_items?: number | null
           auto_accept_max_total?: number | null
+          auto_accept_min_notice_minutes?: number | null
           auto_accept_no_notes?: boolean
           auto_accept_only_returning?: boolean
           created_at?: string

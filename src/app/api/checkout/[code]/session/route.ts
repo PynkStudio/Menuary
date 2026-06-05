@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { PaymentSource } from "@/lib/payments/stripe/fees";
 
 export const dynamic = "force-dynamic";
@@ -59,6 +60,22 @@ export async function POST(
       cancelUrl: `${origin}${returnPath}&status=cancel`,
       expiresInMinutes: 60,
     });
+    const db = createSupabaseServiceClient();
+    if (db) {
+      await db
+        .from("orders")
+        .update({
+          payment_status: "pending",
+          payment_provider: "stripe",
+          stripe_account_id: session.stripeAccountId,
+          stripe_checkout_session_id: session.id,
+          stripe_payment_intent_id: session.paymentIntentId,
+          application_fee_amount_cents: session.applicationFeeCents,
+          updated_at: new Date().toISOString(),
+        } as never)
+        .eq("id", order.id)
+        .eq("tenant_id", order.tenantId);
+    }
     return NextResponse.json({ url: session.url, sessionId: session.id });
   } catch (err) {
     const message = err instanceof Error ? err.message : "checkout_failed";

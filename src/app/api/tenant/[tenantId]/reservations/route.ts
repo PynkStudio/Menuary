@@ -25,6 +25,7 @@ type CreateBody = {
   /** Override durata in minuti. Se omesso e serviceId è valorizzato, viene
    *  popolato dalla durata del servizio. */
   durationMinutes?: number | null;
+  channel?: "web" | "reservation" | "product_reservation" | null;
 };
 
 function normalizeDate(raw: string): string | null {
@@ -68,6 +69,7 @@ export async function POST(
 
   const covers = Math.max(1, Math.min(99, Number(body.covers) || 1));
   const tags = Array.isArray(body.specialRequestTags) ? body.specialRequestTags : [];
+  const channel = body.channel === "product_reservation" || tags.includes("ritiro_prodotti") ? "product_reservation" : "web";
   const notes = body.notes?.trim() ?? "";
   const manual = reservationNeedsManualApproval(notes, tags);
 
@@ -155,7 +157,7 @@ export async function POST(
       // TODO(google-reserve): quando la prenotazione arriva da Google Actions Center,
       // impostare channel: "google_reserve" e popolare `location_id` dalla location collegata.
       // Il campo `location_id` è già nella tabella `reservation_requests` (FK → tenant_google_locations).
-      channel: "web",
+      channel,
     } as never)
     .select("id")
     .single();
@@ -170,7 +172,7 @@ export async function POST(
       eventKind: "reservation_created",
       refId: row.id,
       meta: {
-        source: "web",
+        source: channel,
         registered: identity.registered,
         date: reservationDate,
         time: body.reservationTime.trim(),
