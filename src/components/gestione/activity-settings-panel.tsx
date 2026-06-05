@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ComponentType } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import {
   AlertCircle,
   BriefcaseBusiness,
@@ -41,6 +41,7 @@ import {
   type SocialLinkKey,
   type SocialLinks,
 } from "@/store/settings-store";
+import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 
 const SOCIAL_FIELDS: Array<{
   key: SocialLinkKey;
@@ -90,6 +91,9 @@ function normalizeSocialLinks(links: SocialLinks): SocialLinks {
   );
 }
 
+type VoiceState = { tone: string; audience: string; keywords: string; do_examples: string; dont_examples: string };
+const EMPTY_VOICE: VoiceState = { tone: "", audience: "", keywords: "", do_examples: "", dont_examples: "" };
+
 export function ActivitySettingsPanel() {
   const hydrated = useHydrated();
   const tenant = useTenant();
@@ -97,6 +101,7 @@ export function ActivitySettingsPanel() {
   const settings = useSettingsStore();
   const setSettings = useSettingsStore((state) => state.set);
   const tenantDefaultHours = useMemo(() => defaultHoursWeekForTenant(tenant.id), [tenant.id]);
+
   const [addressDraft, setAddressDraft] = useState(settings.addressOverride);
   const [phoneDraft, setPhoneDraft] = useState(settings.phoneOverride);
   const [mainEmailDraft, setMainEmailDraft] = useState(settings.mainEmailOverride);
@@ -113,22 +118,33 @@ export function ActivitySettingsPanel() {
   const [showAllSocials, setShowAllSocials] = useState(() =>
     SOCIAL_FIELDS.some((f) => !f.primary && !f.desktopPrimary && (settings.socialLinks?.[f.key] ?? "").trim().length > 0),
   );
-  const [activitySaving, setActivitySaving] = useState(false);
-  const [activitySaveMessage, setActivitySaveMessage] = useState<string | null>(null);
-  const [activitySaveError, setActivitySaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Voce del ristorante
-  const [voice, setVoice] = useState({ tone: "", audience: "", keywords: "", do_examples: "", dont_examples: "" });
+  const [voice, setVoice] = useState<VoiceState>(EMPTY_VOICE);
   const [voiceLoaded, setVoiceLoaded] = useState(false);
-  const [voiceSaving, setVoiceSaving] = useState(false);
-  const [voiceSaved, setVoiceSaved] = useState(false);
+  const savedVoiceRef = useRef<VoiceState | null>(null);
 
   const loadVoice = useCallback(async () => {
     try {
       const res = await fetch(`/api/gestione/ai-voice?tenantId=${tenant.id}`);
       if (res.ok) {
-        const data = await res.json();
-        if (data) setVoice({ tone: data.tone ?? "", audience: data.audience ?? "", keywords: data.keywords ?? "", do_examples: data.do_examples ?? "", dont_examples: data.dont_examples ?? "" });
+        const data = await res.json() as Partial<VoiceState> | null;
+        if (data) {
+          const loaded: VoiceState = {
+            tone: data.tone ?? "",
+            audience: data.audience ?? "",
+            keywords: data.keywords ?? "",
+            do_examples: data.do_examples ?? "",
+            dont_examples: data.dont_examples ?? "",
+          };
+          setVoice(loaded);
+          savedVoiceRef.current = loaded;
+        } else {
+          savedVoiceRef.current = EMPTY_VOICE;
+        }
       }
     } finally {
       setVoiceLoaded(true);
@@ -136,21 +152,6 @@ export function ActivitySettingsPanel() {
   }, [tenant.id]);
 
   useEffect(() => { if (hydrated) loadVoice(); }, [hydrated, loadVoice]);
-
-  async function saveVoice() {
-    setVoiceSaving(true);
-    try {
-      await fetch("/api/gestione/ai-voice", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ tenantId: tenant.id, ...voice }),
-      });
-      setVoiceSaved(true);
-      setTimeout(() => setVoiceSaved(false), 2500);
-    } finally {
-      setVoiceSaving(false);
-    }
-  }
 
   useEffect(() => {
     if (!hydrated) return;
@@ -182,7 +183,7 @@ export function ActivitySettingsPanel() {
     tenantDefaultHours,
   ]);
 
-  const dirty = useMemo(
+  const settingsDirty = useMemo(
     () =>
       addressDraft !== settings.addressOverride ||
       phoneDraft !== settings.phoneOverride ||
@@ -215,15 +216,25 @@ export function ActivitySettingsPanel() {
       workWithUsEnabled,
     ],
   );
+
+  const voiceDirty = useMemo(
+    () => voiceLoaded && savedVoiceRef.current !== null && JSON.stringify(voice) !== JSON.stringify(savedVoiceRef.current),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [voice, voiceLoaded],
+  );
+
+  const anyDirty = settingsDirty || voiceDirty;
+  useUnsavedChangesWarning(anyDirty);
+
   const effectiveMainEmail = mainEmailDraft.trim() || content.contact.email || "";
 
-  async function save() {
+  async function saveAll() {
     const nextHours = sanitizeHoursWeek(hoursDraft);
     const hoursChanged = !hoursWeekEquals(nextHours, settings.hoursWeek);
 
-    setActivitySaving(true);
-    setActivitySaveMessage(null);
-    setActivitySaveError(null);
+    setSaving(true);
+    setSaveMessage(null);
+    setSaveError(null);
 
     try {
       if (hoursChanged) {
@@ -251,12 +262,22 @@ export function ActivitySettingsPanel() {
         hoursWeek: nextHours,
       });
       setHoursDraft(cloneHoursWeek(nextHours));
-      setActivitySaveMessage(hoursChanged ? "Dati salvati. Sync Google avviata." : "Dati salvati.");
-      setTimeout(() => setActivitySaveMessage(null), 3000);
+
+      if (voiceDirty) {
+        await fetch("/api/gestione/ai-voice", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ tenantId: tenant.id, ...voice }),
+        });
+        savedVoiceRef.current = { ...voice };
+      }
+
+      setSaveMessage("Tutto salvato.");
+      setTimeout(() => setSaveMessage(null), 3000);
     } catch (e) {
-      setActivitySaveError((e as Error).message);
+      setSaveError((e as Error).message);
     } finally {
-      setActivitySaving(false);
+      setSaving(false);
     }
   }
 
@@ -265,306 +286,316 @@ export function ActivitySettingsPanel() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      <header>
-        <span className="ga-eyebrow">Dati attività</span>
-        <h1 className="ga-heading">Indirizzo, contatti e orari</h1>
-        <p className="ga-lead">
-          Questi dati alimentano la pagina pubblica, i blocchi contatto e le informazioni operative del tenant.
-        </p>
-      </header>
-
-      <section className="grid gap-4 lg:grid-cols-3">
-        <label className="ga-card">
-          <span className="ga-card-title">
-            <MapPin size={16} /> Indirizzo pubblico
-          </span>
-          <input
-            value={addressDraft}
-            onChange={(event) => setAddressDraft(event.target.value)}
-            placeholder={content.address.full}
-            className="ga-input mt-3"
-          />
-          <small className="ga-card-hint">
-            Lascia vuoto per usare il dato tenant: {content.address.full}
-          </small>
-        </label>
-
-        <label className="ga-card">
-          <span className="ga-card-title">
-            <Phone size={16} /> Telefono / WhatsApp
-          </span>
-          <input
-            value={phoneDraft}
-            onChange={(event) => setPhoneDraft(event.target.value)}
-            placeholder={content.contact.phone}
-            className="ga-input mt-3"
-          />
-          <small className="ga-card-hint">
-            Lascia vuoto per usare il dato tenant: {content.contact.phone}
-          </small>
-        </label>
-
-        <label className="ga-card">
-          <span className="ga-card-title">
-            <Mail size={16} /> Email principale
-          </span>
-          <input
-            type="email"
-            value={mainEmailDraft}
-            onChange={(event) => setMainEmailDraft(event.target.value)}
-            placeholder={content.contact.email || "info@esempio.it"}
-            className="ga-input mt-3"
-          />
-          <small className="ga-card-hint">
-            Usata come destinatario predefinito per i link email del footer.
-          </small>
-        </label>
-      </section>
-
-      <section className="space-y-4">
-        <div>
-          <h2 className="ga-card-title" style={{ fontSize: 16 }}>
-            <Instagram size={17} /> Social
-          </h2>
-          <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
-            Compila solo i profili da mostrare nel footer pubblico.
+    <>
+      <div className="mx-auto max-w-5xl space-y-8" style={{ paddingBottom: 80 }}>
+        <header>
+          <span className="ga-eyebrow">Dati attività</span>
+          <h1 className="ga-heading">Indirizzo, contatti e orari</h1>
+          <p className="ga-lead">
+            Questi dati alimentano la pagina pubblica, i blocchi contatto e le informazioni operative del tenant.
           </p>
-        </div>
+        </header>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          {SOCIAL_FIELDS.filter((f) => f.primary || f.desktopPrimary || showAllSocials).map((field) => {
-            const Icon = field.icon;
-            const visibleOnMobile = field.primary || showAllSocials;
-            return (
-              <label
-                key={field.key}
-                className={`ga-card ${visibleOnMobile ? "" : "hidden lg:block"}`}
-              >
+        <section className="grid gap-4 lg:grid-cols-3">
+          <label className="ga-card">
+            <span className="ga-card-title">
+              <MapPin size={16} /> Indirizzo pubblico
+            </span>
+            <input
+              value={addressDraft}
+              onChange={(event) => setAddressDraft(event.target.value)}
+              placeholder={content.address.full}
+              className="ga-input mt-3"
+            />
+            <small className="ga-card-hint">
+              Lascia vuoto per usare il dato tenant: {content.address.full}
+            </small>
+          </label>
+
+          <label className="ga-card">
+            <span className="ga-card-title">
+              <Phone size={16} /> Telefono / WhatsApp
+            </span>
+            <input
+              value={phoneDraft}
+              onChange={(event) => setPhoneDraft(event.target.value)}
+              placeholder={content.contact.phone}
+              className="ga-input mt-3"
+            />
+            <small className="ga-card-hint">
+              Lascia vuoto per usare il dato tenant: {content.contact.phone}
+            </small>
+          </label>
+
+          <label className="ga-card">
+            <span className="ga-card-title">
+              <Mail size={16} /> Email principale
+            </span>
+            <input
+              type="email"
+              value={mainEmailDraft}
+              onChange={(event) => setMainEmailDraft(event.target.value)}
+              placeholder={content.contact.email || "info@esempio.it"}
+              className="ga-input mt-3"
+            />
+            <small className="ga-card-hint">
+              Usata come destinatario predefinito per i link email del footer.
+            </small>
+          </label>
+        </section>
+
+        <section className="space-y-4">
+          <div>
+            <h2 className="ga-card-title" style={{ fontSize: 16 }}>
+              <Instagram size={17} /> Social
+            </h2>
+            <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
+              Compila solo i profili da mostrare nel footer pubblico.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            {SOCIAL_FIELDS.filter((f) => f.primary || f.desktopPrimary || showAllSocials).map((field) => {
+              const Icon = field.icon;
+              const visibleOnMobile = field.primary || showAllSocials;
+              return (
+                <label
+                  key={field.key}
+                  className={`ga-card ${visibleOnMobile ? "" : "hidden lg:block"}`}
+                >
+                  <span className="ga-card-title">
+                    <Icon size={16} /> {field.label}
+                  </span>
+                  <input
+                    type={field.key === "instagram" || field.key === "tiktok" ? "text" : "url"}
+                    value={socialLinksDraft[field.key]}
+                    onChange={(event) =>
+                      setSocialLinksDraft((current) => ({
+                        ...current,
+                        [field.key]: event.target.value,
+                      }))
+                    }
+                    placeholder={field.placeholder}
+                    className="ga-input mt-3"
+                  />
+                </label>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAllSocials((v) => !v)}
+            className="ga-btn-link"
+            style={{ marginTop: 12, fontSize: 13 }}
+          >
+            {showAllSocials ? "Mostra solo i principali" : "Mostra tutti i social"}
+          </button>
+        </section>
+
+        <section className="space-y-4">
+          <div>
+            <h2 className="ga-card-title" style={{ fontSize: 16 }}>
+              <Mail size={17} /> Link email nel footer
+            </h2>
+            <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
+              Se il destinatario dedicato è vuoto, il link usa l&apos;email principale.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="ga-card">
+              <div className="flex items-center justify-between gap-3">
                 <span className="ga-card-title">
-                  <Icon size={16} /> {field.label}
+                  <BriefcaseBusiness size={16} /> Lavora con noi
+                </span>
+                <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ga-ink-muted)" }}>
+                  <input
+                    type="checkbox"
+                    className="ga-checkbox"
+                    checked={workWithUsEnabled}
+                    onChange={(event) => setWorkWithUsEnabled(event.target.checked)}
+                  />
+                  Attivo
+                </label>
+              </div>
+              <label className="mt-4 block text-sm">
+                Destinatario
+                <input
+                  type="email"
+                  value={workWithUsEmailDraft}
+                  onChange={(event) => setWorkWithUsEmailDraft(event.target.value)}
+                  placeholder={effectiveMainEmail || "Email principale tenant"}
+                  className="ga-input mt-2"
+                />
+              </label>
+            </div>
+
+            <div className="ga-card">
+              <div className="flex items-center justify-between gap-3">
+                <span className="ga-card-title">
+                  <Handshake size={16} /> Collaborazioni
+                </span>
+                <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ga-ink-muted)" }}>
+                  <input
+                    type="checkbox"
+                    className="ga-checkbox"
+                    checked={collaborationsEnabled}
+                    onChange={(event) => setCollaborationsEnabled(event.target.checked)}
+                  />
+                  Attivo
+                </label>
+              </div>
+              <label className="mt-4 block text-sm">
+                Destinatario
+                <input
+                  type="email"
+                  value={collaborationsEmailDraft}
+                  onChange={(event) => setCollaborationsEmailDraft(event.target.value)}
+                  placeholder={effectiveMainEmail || "Email principale tenant"}
+                  className="ga-input mt-2"
+                />
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="impact-title text-xs text-pork-red">Orario tipo</p>
+              <h2 className="headline text-xl">Settimana standard</h2>
+              <p className="mt-1 text-sm text-pork-ink/50">
+                Questi orari compaiono sulla tua scheda Google Maps ogni settimana.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSpecialHoursModal(true)}
+              className="ga-pill-link gap-1.5"
+            >
+              <CalendarClock size={14} /> Orari straordinari
+            </button>
+          </div>
+
+          <HoursWeekEditor value={hoursDraft} onChange={setHoursDraft} />
+        </section>
+
+        {/* Voce del ristorante */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="ga-card-title" style={{ fontSize: 16 }}>
+              <Mic2 size={17} /> Voce del ristorante
+              <HelpHint className="ml-1" text="Questi campi alimentano le funzioni AI dell'editor piatti (riscrivi descrizione, genera ingredienti, traduzioni). Più informazioni dai, più risultati accurati." />
+            </h2>
+            <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
+              Descrivi lo stile comunicativo del tuo locale per guidare le funzioni AI.
+            </p>
+          </div>
+
+          {voiceLoaded ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="ga-card">
+                <span className="ga-card-title">
+                  Tono di voce
+                  <HelpHint className="ml-1" text="Es: informale e caldo, elegante e formale, ironico e giocoso, semplice e diretto." />
                 </span>
                 <input
-                  type={field.key === "instagram" || field.key === "tiktok" ? "text" : "url"}
-                  value={socialLinksDraft[field.key]}
-                  onChange={(event) =>
-                    setSocialLinksDraft((current) => ({
-                      ...current,
-                      [field.key]: event.target.value,
-                    }))
-                  }
-                  placeholder={field.placeholder}
+                  type="text"
+                  value={voice.tone}
+                  onChange={(e) => setVoice((v) => ({ ...v, tone: e.target.value }))}
+                  placeholder="Es: informale, caldo, familiare"
                   className="ga-input mt-3"
                 />
               </label>
-            );
-          })}
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowAllSocials((v) => !v)}
-          className="ga-btn-link"
-          style={{ marginTop: 12, fontSize: 13 }}
-        >
-          {showAllSocials ? "Mostra solo i principali" : "Mostra tutti i social"}
-        </button>
-      </section>
-
-      <section className="space-y-4">
-        <div>
-          <h2 className="ga-card-title" style={{ fontSize: 16 }}>
-            <Mail size={17} /> Link email nel footer
-          </h2>
-          <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
-            Se il destinatario dedicato è vuoto, il link usa l&apos;email principale.
-          </p>
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="ga-card">
-            <div className="flex items-center justify-between gap-3">
-              <span className="ga-card-title">
-                <BriefcaseBusiness size={16} /> Lavora con noi
-              </span>
-              <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ga-ink-muted)" }}>
+              <label className="ga-card">
+                <span className="ga-card-title">
+                  Pubblico target
+                  <HelpHint className="ml-1" text="Chi sono i tuoi clienti? Es: famiglie, coppie giovani, turisti, business lunch." />
+                </span>
                 <input
-                  type="checkbox"
-                  className="ga-checkbox"
-                  checked={workWithUsEnabled}
-                  onChange={(event) => setWorkWithUsEnabled(event.target.checked)}
+                  type="text"
+                  value={voice.audience}
+                  onChange={(e) => setVoice((v) => ({ ...v, audience: e.target.value }))}
+                  placeholder="Es: famiglie e turisti, millennials foodies"
+                  className="ga-input mt-3"
                 />
-                Attivo
               </label>
-            </div>
-            <label className="mt-4 block text-sm">
-              Destinatario
-              <input
-                type="email"
-                value={workWithUsEmailDraft}
-                onChange={(event) => setWorkWithUsEmailDraft(event.target.value)}
-                placeholder={effectiveMainEmail || "Email principale tenant"}
-                className="ga-input mt-2"
-              />
-            </label>
-          </div>
-
-          <div className="ga-card">
-            <div className="flex items-center justify-between gap-3">
-              <span className="ga-card-title">
-                <Handshake size={16} /> Collaborazioni
-              </span>
-              <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ga-ink-muted)" }}>
+              <label className="ga-card">
+                <span className="ga-card-title">
+                  Parole chiave del brand
+                  <HelpHint className="ml-1" text="Termini o concetti che usi spesso e vuoi ritrovare nelle descrizioni AI." />
+                </span>
                 <input
-                  type="checkbox"
-                  className="ga-checkbox"
-                  checked={collaborationsEnabled}
-                  onChange={(event) => setCollaborationsEnabled(event.target.checked)}
+                  type="text"
+                  value={voice.keywords}
+                  onChange={(e) => setVoice((v) => ({ ...v, keywords: e.target.value }))}
+                  placeholder="Es: artigianale, tradizione, brace, km0"
+                  className="ga-input mt-3"
                 />
-                Attivo
               </label>
+              <div className="ga-card">
+                <span className="ga-card-title">Esempi di stile (do / don&apos;t)</span>
+                <textarea
+                  rows={2}
+                  value={voice.do_examples}
+                  onChange={(e) => setVoice((v) => ({ ...v, do_examples: e.target.value }))}
+                  placeholder="✓ Es: «Frollatura lenta di 40 giorni, crosta croccante e cuore rosa»"
+                  className="ga-input mt-3 resize-none"
+                />
+                <textarea
+                  rows={2}
+                  value={voice.dont_examples}
+                  onChange={(e) => setVoice((v) => ({ ...v, dont_examples: e.target.value }))}
+                  placeholder="✗ Evita: «Gustosissimo piatto squisito e delizioso»"
+                  className="ga-input mt-2 resize-none"
+                />
+              </div>
             </div>
-            <label className="mt-4 block text-sm">
-              Destinatario
-              <input
-                type="email"
-                value={collaborationsEmailDraft}
-                onChange={(event) => setCollaborationsEmailDraft(event.target.value)}
-                placeholder={effectiveMainEmail || "Email principale tenant"}
-                className="ga-input mt-2"
-              />
-            </label>
-          </div>
-        </div>
-      </section>
+          ) : (
+            <p className="text-sm text-pork-ink/40">Caricamento...</p>
+          )}
+        </section>
+      </div>
 
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="impact-title text-xs text-pork-red">Orario tipo</p>
-            <h2 className="headline text-xl">Settimana standard</h2>
-            <p className="mt-1 text-sm text-pork-ink/50">
-              Questi orari compaiono sulla tua scheda Google Maps ogni settimana.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowSpecialHoursModal(true)}
-            className="ga-pill-link gap-1.5"
-          >
-            <CalendarClock size={14} /> Orari straordinari
-          </button>
-        </div>
-
-        <HoursWeekEditor value={hoursDraft} onChange={setHoursDraft} />
-      </section>
-
-      {/* Voce del ristorante */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="ga-card-title" style={{ fontSize: 16 }}>
-            <Mic2 size={17} /> Voce del ristorante
-            <HelpHint className="ml-1" text="Questi campi alimentano le funzioni AI dell'editor piatti (riscrivi descrizione, genera ingredienti, traduzioni). Più informazioni dai, più risultati accurati." />
-          </h2>
-          <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
-            Descrivi lo stile comunicativo del tuo locale per guidare le funzioni AI.
-          </p>
-        </div>
-
-        {voiceLoaded ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="ga-card">
-              <span className="ga-card-title">
-                Tono di voce
-                <HelpHint className="ml-1" text="Es: informale e caldo, elegante e formale, ironico e giocoso, semplice e diretto." />
+      {/* Sticky save bar */}
+      <div
+        className="sticky bottom-0 z-20"
+        style={{
+          background: "var(--ga-bg, #f8f8f7)",
+          borderTop: "1px solid var(--ga-line, #e5e2db)",
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.06)",
+        }}
+      >
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 py-3">
+          <div className="flex items-center gap-2" style={{ color: "var(--ga-ink-muted)", fontSize: 13 }}>
+            {anyDirty && !saving && (
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+                Modifiche non salvate
               </span>
-              <input
-                type="text"
-                value={voice.tone}
-                onChange={(e) => setVoice((v) => ({ ...v, tone: e.target.value }))}
-                placeholder="Es: informale, caldo, familiare"
-                className="ga-input mt-3"
-              />
-            </label>
-            <label className="ga-card">
-              <span className="ga-card-title">
-                Pubblico target
-                <HelpHint className="ml-1" text="Chi sono i tuoi clienti? Es: famiglie, coppie giovani, turisti, business lunch." />
-              </span>
-              <input
-                type="text"
-                value={voice.audience}
-                onChange={(e) => setVoice((v) => ({ ...v, audience: e.target.value }))}
-                placeholder="Es: famiglie e turisti, millennials foodies"
-                className="ga-input mt-3"
-              />
-            </label>
-            <label className="ga-card">
-              <span className="ga-card-title">
-                Parole chiave del brand
-                <HelpHint className="ml-1" text="Termini o concetti che usi spesso e vuoi ritrovare nelle descrizioni AI." />
-              </span>
-              <input
-                type="text"
-                value={voice.keywords}
-                onChange={(e) => setVoice((v) => ({ ...v, keywords: e.target.value }))}
-                placeholder="Es: artigianale, tradizione, brace, km0"
-                className="ga-input mt-3"
-              />
-            </label>
-            <div className="ga-card">
-              <span className="ga-card-title">Esempi di stile (do / don&apos;t)</span>
-              <textarea
-                rows={2}
-                value={voice.do_examples}
-                onChange={(e) => setVoice((v) => ({ ...v, do_examples: e.target.value }))}
-                placeholder="✓ Es: «Frollatura lenta di 40 giorni, crosta croccante e cuore rosa»"
-                className="ga-input mt-3 resize-none"
-              />
-              <textarea
-                rows={2}
-                value={voice.dont_examples}
-                onChange={(e) => setVoice((v) => ({ ...v, dont_examples: e.target.value }))}
-                placeholder="✗ Evita: «Gustosissimo piatto squisito e delizioso»"
-                className="ga-input mt-2 resize-none"
-              />
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm text-pork-ink/40">Caricamento...</p>
-        )}
-
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={saveVoice}
-            disabled={voiceSaving}
-            className="ga-btn ga-btn-primary"
-          >
-            {voiceSaving ? (
-              "Salvataggio..."
-            ) : voiceSaved ? (
-              "✓ Salvato"
-            ) : (
-              <><Save size={15} /> Salva voce</>
             )}
-          </button>
+          </div>
+          <div className="flex items-center gap-3">
+            {saveMessage && (
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700">
+                <CheckCircle size={15} /> {saveMessage}
+              </span>
+            )}
+            {saveError && (
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-700">
+                <AlertCircle size={15} /> {saveError}
+              </span>
+            )}
+            <button
+              type="button"
+              disabled={!anyDirty || saving}
+              onClick={saveAll}
+              className="ga-btn ga-btn-primary"
+            >
+              <Save size={15} /> {saving ? "Salvataggio..." : "Salva"}
+            </button>
+          </div>
         </div>
-      </section>
-
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        {activitySaveMessage && (
-          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700">
-            <CheckCircle size={15} /> {activitySaveMessage}
-          </span>
-        )}
-        {activitySaveError && (
-          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-700">
-            <AlertCircle size={15} /> {activitySaveError}
-          </span>
-        )}
-        <button type="button" disabled={!dirty || activitySaving} onClick={save} className="ga-btn ga-btn-primary">
-          <Save size={15} /> {activitySaving ? "Salvataggio..." : "Salva dati attività"}
-        </button>
       </div>
 
       {showSpecialHoursModal && (
@@ -572,11 +603,11 @@ export function ActivitySettingsPanel() {
           tenantId={tenant.id}
           onClose={() => setShowSpecialHoursModal(false)}
           onSaved={() => {
-            setActivitySaveMessage("Orario straordinario salvato. Sync Google avviata.");
-            setTimeout(() => setActivitySaveMessage(null), 3000);
+            setSaveMessage("Orario straordinario salvato.");
+            setTimeout(() => setSaveMessage(null), 3000);
           }}
         />
       )}
-    </div>
+    </>
   );
 }
