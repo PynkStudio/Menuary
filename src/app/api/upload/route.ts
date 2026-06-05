@@ -10,49 +10,80 @@ const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const MAX_SIZE = 6 * 1024 * 1024;
 const BUCKET = "menu-images";
 
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Errore upload";
+}
+
+function storageStatus(error: unknown) {
+  if (error && typeof error === "object" && "statusCode" in error) {
+    return String((error as { statusCode?: unknown }).statusCode ?? "");
+  }
+  return "";
+}
+
+function isMissingBucket(error: unknown) {
+  const message = errorMessage(error).toLowerCase();
+  return storageStatus(error) === "404" || message.includes("bucket not found");
+}
+
 export async function POST(req: NextRequest) {
-  const token = req.headers.get(ADMIN_TOKEN_HEADER);
+  try {
+    const token = req.headers.get(ADMIN_TOKEN_HEADER);
 
-  const form = await req.formData();
-  const tenantId = form.get("tenantId");
-  if (token !== getAdminPassword()) {
-    if (typeof tenantId !== "string" || !(await authorizeGestione(tenantId)).ok) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    const form = await req.formData();
+    const tenantId = form.get("tenantId");
+    if (token !== getAdminPassword()) {
+      if (typeof tenantId !== "string" || !(await authorizeGestione(tenantId)).ok) {
+        return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      }
     }
-  }
-  const file = form.get("file");
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "no-file" }, { status: 400 });
-  }
-  if (!ALLOWED.includes(file.type)) {
-    return NextResponse.json({ error: "invalid-type" }, { status: 400 });
-  }
-  if (file.size > MAX_SIZE) {
-    return NextResponse.json({ error: "too-large" }, { status: 413 });
-  }
+    const file = form.get("file");
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: "no-file" }, { status: 400 });
+    }
+    if (!ALLOWED.includes(file.type)) {
+      return NextResponse.json({ error: "invalid-type" }, { status: 400 });
+    }
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: "too-large" }, { status: 413 });
+    }
 
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const webp = await sharp(bytes)
-    .rotate()
-    .resize({ width: 1800, height: 1800, fit: "inside", withoutEnlargement: true })
-    .webp({ quality: 84 })
-    .toBuffer();
-  const safeTenant = typeof tenantId === "string" && tenantId.trim()
-    ? tenantId.trim().replace(/[^a-z0-9-]/gi, "-").toLowerCase()
-    : "shared";
-  const name = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.webp`;
-  const objectPath = `${safeTenant}/${name}`;
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const webp = await sharp(bytes)
+      .rotate()
+      .resize({ width: 1800, height: 1800, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 84 })
+      .toBuffer();
+    const safeTenant = typeof tenantId === "string" && tenantId.trim()
+      ? tenantId.trim().replace(/[^a-z0-9-]/gi, "-").toLowerCase()
+      : "shared";
+    const name = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.webp`;
+    const objectPath = `${safeTenant}/${name}`;
 
-  const supabase = createSupabaseAdminClient();
-  const { error: uploadError } = await supabase.storage.from(BUCKET).upload(objectPath, webp, {
-    contentType: "image/webp",
-    cacheControl: "31536000, immutable",
-    upsert: false,
-  });
-  if (uploadError) {
-    return NextResponse.json({ error: "upload-failed", detail: uploadError.message }, { status: 500 });
+    const supabase = createSupabaseAdminClient();
+    const { error: bucketError } = await supabase.storage.getBucket(BUCKET);
+    if (bucketError) {
+      if (!isMissingBucket(bucketError)) {
+        return NextResponse.json({ error: "bucket-check-failed", detail: bucketError.message }, { status: 500 });
+      }
+      const { error: createBucketError } = await supabase.storage.createBucket(BUCKET, { public: true });
+      if (createBucketError && !errorMessage(createBucketError).toLowerCase().includes("already exists")) {
+        return NextResponse.json({ error: "bucket-create-failed", detail: createBucketError.message }, { status: 500 });
+      }
+    }
+
+    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(objectPath, webp, {
+      contentType: "image/webp",
+      cacheControl: "31536000, immutable",
+      upsert: false,
+    });
+    if (uploadError) {
+      return NextResponse.json({ error: "upload-failed", detail: uploadError.message }, { status: 500 });
+    }
+
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
+    return NextResponse.json({ path: data.publicUrl, format: "webp" });
+  } catch (error) {
+    return NextResponse.json({ error: "upload-error", detail: errorMessage(error) }, { status: 500 });
   }
-
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
-  return NextResponse.json({ path: data.publicUrl, format: "webp" });
 }

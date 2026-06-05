@@ -9,6 +9,27 @@ import { cn } from "@/lib/utils";
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const MAX_FILE_SIZE = 6 * 1024 * 1024;
 
+function uploadErrorLabel(error?: string, detail?: string) {
+  if (detail) return detail;
+  switch (error) {
+    case "unauthorized":
+      return "Non hai i permessi per caricare immagini.";
+    case "invalid-type":
+      return "Formato non supportato. Usa JPG, PNG, WebP o AVIF.";
+    case "too-large":
+      return "Il file supera 6 MB.";
+    case "no-file":
+      return "Nessun file ricevuto.";
+    case "bucket-create-failed":
+    case "bucket-check-failed":
+    case "upload-failed":
+    case "upload-error":
+      return "Upload non riuscito. Riprova o controlla la configurazione Storage.";
+    default:
+      return "Errore upload";
+  }
+}
+
 export function ImageUpload({
   value,
   tenantId,
@@ -53,8 +74,8 @@ export function ImageUpload({
         body: fd,
       });
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error ?? "Errore upload");
+        const j = await res.json().catch(() => ({})) as { error?: string; detail?: string };
+        throw new Error(uploadErrorLabel(j.error, j.detail));
       }
       const j = (await res.json()) as { path: string };
       onChange(j.path);
