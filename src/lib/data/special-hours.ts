@@ -76,13 +76,19 @@ export async function getSpecialHours(
 export async function upsertSpecialHour(
   tenantId: string,
   entry: Omit<SpecialHourRow, "id" | "synced_to_google">,
-): Promise<void> {
+): Promise<SpecialHourRow> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (db().from("tenant_special_hours" as never) as any).insert({
-    tenant_id: tenantId,
-    ...entry,
-    synced_to_google: false,
-  });
+  const { data, error } = await (db().from("tenant_special_hours" as never) as any)
+    .insert({
+      tenant_id: tenantId,
+      ...entry,
+      synced_to_google: false,
+    })
+    .select(SELECT)
+    .single();
+
+  if (error) throw error;
+  return normalize(data as RawRow);
 }
 
 export async function deleteSpecialHour(tenantId: string, id: string): Promise<void> {

@@ -107,13 +107,17 @@ export function SpecialHoursExceptionModal({ tenantId, locationId, onClose, onSa
         body: JSON.stringify(body),
       });
 
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        item?: SpecialHourRow;
+      };
+
       if (!res.ok) {
-        const json = (await res.json().catch(() => ({}))) as { error?: string };
         setError(json.error ?? "Errore nel salvataggio");
         return;
       }
 
-      const newItem: SpecialHourRow = {
+      onSaved(json.item ?? {
         id: crypto.randomUUID(),
         date: body.date,
         end_date: body.end_date,
@@ -124,8 +128,7 @@ export function SpecialHoursExceptionModal({ tenantId, locationId, onClose, onSa
         label: body.label,
         location_id: body.locationId,
         synced_to_google: false,
-      };
-      onSaved(newItem);
+      });
       onClose();
     } finally {
       setSaving(false);

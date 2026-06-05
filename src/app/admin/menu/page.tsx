@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import {
+  ChevronDown,
+  ChevronUp,
   CheckCircle2,
   Clock,
   Eye,
@@ -46,6 +48,7 @@ const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
 ];
 
 const CHANNEL_OPTIONS: Array<{ value: MenuOrderChannel; label: string }> = [
+  { value: "site", label: "Pagina menu del sito" },
   { value: "phone", label: "Ordini in chiamata" },
   { value: "whatsapp", label: "Ordini WhatsApp" },
   { value: "online", label: "Ordini online" },
@@ -92,9 +95,12 @@ export default function AdminMenuPage() {
   const listinoLabel = getModuleLabel("onlineMenu", vertical);
   const { allowTakeaway, allowTableOrders, orderKioskEnabled, modules: tenantModules } = useEffectiveFeatures();
   const onlineOrderingActive = allowTakeaway || allowTableOrders || orderKioskEnabled;
+  const menuSiteStandalone = tenantModules.onlineMenu && !onlineOrderingActive && !tenantModules.reservations && !tenantModules.tablePlanner;
   const availableChannelOptions = useMemo(() => {
     return CHANNEL_OPTIONS.filter((channel) => {
       switch (channel.value) {
+        case "site":
+          return menuSiteStandalone;
         case "phone":
           return tenantModules.aiPhone;
         case "whatsapp":
@@ -109,7 +115,15 @@ export default function AdminMenuPage() {
           return true;
       }
     });
-  }, [allowTakeaway, allowTableOrders, orderKioskEnabled, tenantModules.aiPhone, tenantModules.aiWhatsapp]);
+  }, [
+    allowTakeaway,
+    allowTableOrders,
+    menuSiteStandalone,
+    orderKioskEnabled,
+    tenantModules.aiPhone,
+    tenantModules.aiWhatsapp,
+    tenantModules.reservations,
+  ]);
   const showMenuPrices = useSettingsStore((s) => s.showMenuPrices);
   const setSettings = useSettingsStore((s) => s.set);
   const categoriesRaw = useMenuStore((s) => s.categories);
@@ -142,8 +156,17 @@ export default function AdminMenuPage() {
   const [bulkListId, setBulkListId] = useState("");
   const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
   const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
+  const [canDragItems, setCanDragItems] = useState(false);
   const [itemPickerQuery, setItemPickerQuery] = useState("");
   const [importFromMenuId, setImportFromMenuId] = useState("");
+
+  useEffect(() => {
+    const media = window.matchMedia("(pointer: fine)");
+    const update = () => setCanDragItems(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -203,6 +226,16 @@ export default function AdminMenuPage() {
     const from = ordered.indexOf(draggedId);
     const to = ordered.indexOf(targetId);
     if (from < 0 || to < 0) return;
+    const [moved] = ordered.splice(from, 1);
+    ordered.splice(to, 0, moved);
+    reorderCategoryItems(categoryId, ordered);
+  }
+
+  function moveItemByStep(categoryId: string, itemId: string, step: -1 | 1) {
+    const ordered = selectItemsByCategory(items, categoryId).map((item) => item.id);
+    const from = ordered.indexOf(itemId);
+    const to = from + step;
+    if (from < 0 || to < 0 || to >= ordered.length) return;
     const [moved] = ordered.splice(from, 1);
     ordered.splice(to, 0, moved);
     reorderCategoryItems(categoryId, ordered);
@@ -589,8 +622,8 @@ export default function AdminMenuPage() {
                   {availableChannelOptions.length > 0 && (
                     <div className="mt-4">
                       <span className="mb-2 block text-xs font-bold uppercase text-pork-ink/50">
-                        Canali ordine
-                        <HelpHint className="ml-1" text="Su quali canali questo menu è disponibile. Esempio: solo al tavolo, solo asporto, o tutti i canali insieme." />
+                        Dove mostrarlo
+                        <HelpHint className="ml-1" text="Scegli dove questo menu è disponibile: pagina menu, ordini, tavoli, chiamate, WhatsApp o prenotazioni in base ai moduli attivi." />
                       </span>
                       <div className="grid gap-2 md:grid-cols-2">
                         {availableChannelOptions.map((channel) => {
@@ -623,7 +656,7 @@ export default function AdminMenuPage() {
                         })}
                       </div>
                       <span className="mt-2 block text-xs text-pork-ink/45">
-                        I menu esistenti senza configurazione esplicita restano abilitati su tutti i canali.
+                        I menu esistenti senza configurazione esplicita restano visibili ovunque sia previsto dai moduli attivi.
                       </span>
                       {editingMenu.visibility.channels?.includes("reservation") && (
                         <span className="mt-2 block rounded-xl bg-pork-mustard/20 px-3 py-2 text-xs text-pork-ink/70">
@@ -838,7 +871,8 @@ export default function AdminMenuPage() {
 
       {hydrated && view === "items" &&
         categories.map((cat) => {
-          const catItems = filtered(selectItemsByCategory(items, cat.id));
+          const orderedCategoryItems = selectItemsByCategory(items, cat.id);
+          const catItems = filtered(orderedCategoryItems);
           if (catItems.length === 0 && (query || filter !== "all")) return null;
           return (
             <section key={cat.id} className="space-y-3">
@@ -912,45 +946,32 @@ export default function AdminMenuPage() {
                     {isServices ? "Nessun servizio." : "Nessun piatto."}
                   </li>
                 ) : (
-                  catItems.flatMap((it) => {
+                  catItems.map((it) => {
                     const isDragging = draggingItemId === it.id;
-                    const showPlaceholder =
-                      dragOverItemId === it.id && draggingItemId !== null && draggingItemId !== it.id;
-                    const nodes: React.ReactNode[] = [];
-                    if (showPlaceholder) {
-                      nodes.push(
-                        <li
-                          key={`ph-${it.id}`}
-                          aria-hidden
-                          className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-pork-red/40 bg-pork-red/5 p-3 transition-all duration-200"
-                          style={{ minHeight: 70 }}
-                        >
-                          <span className="text-xs font-bold uppercase tracking-wide text-pork-red/70">
-                            Rilascia qui
-                          </span>
-                        </li>,
-                      );
-                    }
-                    nodes.push(
+                    const isDropTarget = dragOverItemId === it.id && draggingItemId !== null && draggingItemId !== it.id;
+                    const orderIndex = orderedCategoryItems.findIndex((item) => item.id === it.id);
+                    const canMoveUp = orderIndex > 0;
+                    const canMoveDown = orderIndex >= 0 && orderIndex < orderedCategoryItems.length - 1;
+                    return (
                     <li
                       key={it.id}
-                      draggable
+                      draggable={canDragItems}
                       onDragStart={(event) => {
+                        if (!canDragItems) return;
                         setDraggingItemId(it.id);
                         event.dataTransfer.effectAllowed = "move";
                         event.dataTransfer.setData("text/plain", it.id);
                       }}
                       onDragOver={(event) => {
-                        if (draggingItemId && draggingItemId !== it.id) {
+                        if (canDragItems && draggingItemId && draggingItemId !== it.id) {
                           event.preventDefault();
+                          event.dataTransfer.dropEffect = "move";
                           if (dragOverItemId !== it.id) setDragOverItemId(it.id);
                         }
                       }}
-                      onDragLeave={() => {
-                        if (dragOverItemId === it.id) setDragOverItemId(null);
-                      }}
                       onDrop={(event) => {
                         event.preventDefault();
+                        if (!canDragItems) return;
                         const draggedId = event.dataTransfer.getData("text/plain") || draggingItemId;
                         if (draggedId) moveItemWithinCategory(cat.id, draggedId, it.id);
                         setDraggingItemId(null);
@@ -961,17 +982,45 @@ export default function AdminMenuPage() {
                         setDragOverItemId(null);
                       }}
                       className={
-                        "group flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-pork-ink/5 transition-all duration-200 " +
-                        (isDragging ? "scale-[0.97] opacity-40 ring-pork-red/30" : "")
+                        "group flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-pork-ink/5 transition-all duration-150 " +
+                        (isDragging ? "scale-[0.99] opacity-50 ring-pork-red/30 " : "") +
+                        (isDropTarget ? "ring-2 ring-pork-red/50 bg-pork-red/5" : "")
                       }
                     >
-                      <span
-                        className="cursor-grab touch-none text-pork-ink/30 active:cursor-grabbing"
-                        aria-label="Sposta"
-                        title="Trascina per ordinare"
-                      >
-                        <GripVertical size={18} />
-                      </span>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <span
+                          className={
+                            "hidden text-pork-ink/30 md:inline-flex " +
+                            (canDragItems ? "cursor-grab touch-none active:cursor-grabbing" : "")
+                          }
+                          aria-label="Sposta trascinando"
+                          title="Trascina per ordinare"
+                        >
+                          <GripVertical size={18} />
+                        </span>
+                        <div className="flex w-7 flex-col overflow-hidden rounded-lg border border-pork-ink/10 bg-pork-cream/70">
+                          <button
+                            type="button"
+                            onClick={() => moveItemByStep(cat.id, it.id, -1)}
+                            disabled={!canMoveUp}
+                            className="flex h-6 items-center justify-center text-pork-ink/60 transition hover:bg-white hover:text-pork-red disabled:cursor-not-allowed disabled:text-pork-ink/20 disabled:hover:bg-transparent"
+                            aria-label={`Sposta ${it.name} sopra`}
+                            title="Sposta sopra"
+                          >
+                            <ChevronUp size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveItemByStep(cat.id, it.id, 1)}
+                            disabled={!canMoveDown}
+                            className="flex h-6 items-center justify-center border-t border-pork-ink/10 text-pork-ink/60 transition hover:bg-white hover:text-pork-red disabled:cursor-not-allowed disabled:text-pork-ink/20 disabled:hover:bg-transparent"
+                            aria-label={`Sposta ${it.name} sotto`}
+                            title="Sposta sotto"
+                          >
+                            <ChevronDown size={15} />
+                          </button>
+                        </div>
+                      </div>
                       <input
                         type="checkbox"
                         className="h-4 w-4 shrink-0 accent-pork-red"
@@ -1048,9 +1097,8 @@ export default function AdminMenuPage() {
                       >
                         Modifica
                       </button>
-                    </li>,
+                    </li>
                     );
-                    return nodes;
                   })
                 )}
               </ul>

@@ -114,8 +114,11 @@ export default async function FatturazionePage({
     isDemo = !demoControl?.backendLive;
   }
 
-  const plan = isDemo ? demoBillingPlan(tenant.vertical) : null;
-  const invoices = isDemo ? demoBillingInvoices() : [];
+  // Questa pagina non legge ancora la fatturazione reale dal backend: in demo
+  // mostriamo sempre la struttura completa con dati esempio.
+  const showDemoBilling = isDemoHostname;
+  const plan = showDemoBilling ? demoBillingPlan(tenant.vertical) : null;
+  const invoices = showDemoBilling ? demoBillingInvoices() : [];
 
   return (
     <div className="ga-dashboard">
@@ -125,7 +128,7 @@ export default async function FatturazionePage({
         <p className="ga-lead">
           Piano attivo, metodo di pagamento e storico fatture per {tenant.name}.
         </p>
-        {isDemo && (
+        {showDemoBilling && (
           <span className="ga-section-hint mt-2 inline-block rounded-full bg-pork-mustard/30 px-3 py-1 text-xs font-bold text-pork-ink/70">
             Demo: dati di esempio
           </span>
@@ -359,6 +362,19 @@ export default async function FatturazionePage({
                   </div>
                 </div>
               )}
+            </section>
+
+            <section className="ga-card">
+              <p className="ga-card-hint">
+                Per richieste su fatture, pagamenti o dati fiscali contatta{" "}
+                <a
+                  href={`mailto:billing@${vertical.marketingDomain}`}
+                  className="font-bold text-pork-red underline"
+                >
+                  billing@{vertical.marketingDomain}
+                </a>
+                .
+              </p>
             </section>
           </>
         )

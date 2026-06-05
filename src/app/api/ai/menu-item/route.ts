@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 type Body = {
   action: "suggest-ingredients" | "rewrite-description" | "translate";
   tenantId: string;
-  name: string;
+  name?: string;
   description?: string;
   ingredients?: string[];
   fromLang?: string;
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { action, tenantId, name } = body;
-  if (!action || !tenantId || !name) {
+  if (!action || !tenantId) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
@@ -54,6 +54,9 @@ export async function POST(req: NextRequest) {
   try {
     switch (action) {
       case "suggest-ingredients": {
+        if (!name) {
+          return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+        }
         const result = await suggestIngredients({
           name,
           description: body.description,
@@ -63,6 +66,9 @@ export async function POST(req: NextRequest) {
       }
 
       case "rewrite-description": {
+        if (!name) {
+          return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+        }
         const result = await rewriteDescription({
           name,
           currentDescription: body.description,
@@ -74,6 +80,9 @@ export async function POST(req: NextRequest) {
       case "translate": {
         if (!body.fromLang || !body.toLang) {
           return NextResponse.json({ error: "missing_lang" }, { status: 400 });
+        }
+        if (!name && !body.description && !body.ingredients?.length) {
+          return NextResponse.json({ error: "missing_source_text" }, { status: 400 });
         }
         const result = await translateItem({
           name,

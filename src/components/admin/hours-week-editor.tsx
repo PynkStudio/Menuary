@@ -62,7 +62,7 @@ export function HoursWeekEditor({
         return (
           <div
             key={`${day.label}-${di}`}
-            className="rounded-2xl border-2 border-pork-ink/10 bg-white p-4"
+            className="rounded-[18px] border-2 border-[#ead8bd] bg-[#fff8e7] p-4 shadow-[10px_10px_0_rgba(52,28,22,0.07)] sm:p-5"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="font-bold">{day.label}</span>
@@ -94,14 +94,14 @@ export function HoursWeekEditor({
                       type="time"
                       value={slot.open}
                       onChange={(e) => updateSlot(di, si, { open: e.target.value })}
-                      className="rounded-lg border border-pork-ink/15 px-2 py-1.5 text-sm outline-none focus:border-pork-red"
+                      className="rounded-lg border border-pork-ink/15 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
                     />
                     <span className="text-pork-ink/40">–</span>
                     <input
                       type="time"
                       value={slot.close}
                       onChange={(e) => updateSlot(di, si, { close: e.target.value })}
-                      className="rounded-lg border border-pork-ink/15 px-2 py-1.5 text-sm outline-none focus:border-pork-red"
+                      className="rounded-lg border border-pork-ink/15 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
                     />
                     <button
                       type="button"

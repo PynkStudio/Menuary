@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { after } from "next/server";
 import { getSpecialHours, upsertSpecialHour, deleteSpecialHour } from "@/lib/data/special-hours";
+import { triggerGoogleHoursSync } from "@/lib/google/hours-sync";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -34,7 +36,7 @@ export async function POST(request: Request) {
       label?: string | null;
     };
 
-  await upsertSpecialHour(tenantId, {
+  const item = await upsertSpecialHour(tenantId, {
     date,
     end_date: end_date ?? null,
     weekday: weekday ?? null,
@@ -44,7 +46,8 @@ export async function POST(request: Request) {
     label: label ?? null,
     location_id: locationId ?? null,
   });
-  return NextResponse.json({ ok: true });
+  after(() => triggerGoogleHoursSync(tenantId, "special"));
+  return NextResponse.json({ ok: true, item });
 }
 
 export async function DELETE(request: Request) {
@@ -54,5 +57,6 @@ export async function DELETE(request: Request) {
 
   const { tenantId, id } = (await request.json()) as { tenantId: string; id: string };
   await deleteSpecialHour(tenantId, id);
+  after(() => triggerGoogleHoursSync(tenantId, "special"));
   return NextResponse.json({ ok: true });
 }

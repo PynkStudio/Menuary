@@ -69,7 +69,7 @@ function isTimeInWindow(current: number, start: unknown, end: unknown): boolean 
 
 function normalizeVisibility(value: unknown): MenuListVisibility {
   const raw = asObject(value);
-  const validChannels = new Set<MenuOrderChannel>(["phone", "whatsapp", "online", "table", "reservation"]);
+  const validChannels = new Set<MenuOrderChannel>(["site", "phone", "whatsapp", "online", "table", "reservation"]);
   return {
     days: Array.isArray(raw.days) ? raw.days.filter((day): day is number => typeof day === "number") : undefined,
     startTime: typeof raw.startTime === "string" ? raw.startTime : undefined,

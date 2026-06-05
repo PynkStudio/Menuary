@@ -176,12 +176,24 @@ const LANG_LABELS: Record<string, string> = {
   de: "tedesco",
   fr: "francese",
   es: "spagnolo",
+  pt: "portoghese",
+  nl: "olandese",
+  da: "danese",
+  sv: "svedese",
+  nb: "norvegese",
+  fi: "finlandese",
+  pl: "polacco",
+  cs: "ceco",
+  sl: "sloveno",
+  hr: "croato",
+  sq: "albanese",
+  el: "greco",
   zh: "cinese semplificato",
   ja: "giapponese",
 };
 
 export async function translateItem(params: {
-  name: string;
+  name?: string;
   description?: string;
   ingredients?: string[];
   fromLang: string;
@@ -204,7 +216,7 @@ export async function translateItem(params: {
     .join("\n");
 
   const user = [
-    `Nome: ${params.name}`,
+    params.name ? `Nome: ${params.name}` : "",
     params.description ? `Descrizione: ${params.description}` : "",
     params.ingredients?.length
       ? `Ingredienti: ${params.ingredients.join(", ")}`
@@ -223,7 +235,7 @@ export async function translateItem(params: {
   }
 
   return {
-    name: typeof parsed.name === "string" ? parsed.name.trim() : params.name,
+    name: typeof parsed.name === "string" ? parsed.name.trim() : params.name ?? "",
     description:
       typeof parsed.description === "string" ? parsed.description.trim() : "",
     ingredients: Array.isArray(parsed.ingredients)

@@ -19,6 +19,7 @@ import { useHydrated } from "@/components/core/providers";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 import { MenuSkeleton } from "@/components/modules/menu/menu-skeleton";
+import { useEffectiveFeatures } from "@/lib/use-effective-features";
 
 const DOCA_CATEGORY_TITLES: Record<string, string> = {
   pane: "Salati",
@@ -35,6 +36,7 @@ export function InteractiveMenu({
 }) {
   const hydrated = useHydrated();
   const tenant = useTenant();
+  const { allowTakeaway, allowTableOrders, orderKioskEnabled, modules: tenantModules } = useEffectiveFeatures();
   const syncStatus = useSupabaseMenuSync(tenant.id);
   const searchParams = useSearchParams();
   const tableParam = searchParams.get("t");
@@ -84,7 +86,9 @@ export function InteractiveMenu({
   );
 
   const tableIdForMenus = cartContext.type === "tavolo" ? cartContext.tableId ?? null : null;
-  const menuChannel = cartContext.type === "tavolo" ? "table" : "online";
+  const onlineOrderingActive = allowTakeaway || allowTableOrders || orderKioskEnabled;
+  const menuSiteStandalone = tenantModules.onlineMenu && !onlineOrderingActive && !tenantModules.reservations && !tenantModules.tablePlanner;
+  const menuChannel = cartContext.type === "tavolo" ? "table" : menuSiteStandalone ? "site" : "online";
 
   const visibleMenuLists = useMemo(
     () => selectVisibleMenuLists(menuLists, { tableId: tableIdForMenus, channel: menuChannel }),

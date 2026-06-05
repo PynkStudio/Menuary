@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type ComponentType } from "react";
 import {
+  AlertCircle,
   BriefcaseBusiness,
   CalendarClock,
+  CheckCircle,
   Facebook,
   Globe2,
   Handshake,
@@ -21,8 +22,10 @@ import {
   Youtube,
 } from "lucide-react";
 import { HelpHint } from "@/components/gestione/help-hint";
+import { HoursWeekEditor } from "@/components/admin/hours-week-editor";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useHydrated } from "@/components/core/providers";
+import { SpecialHoursExceptionModal } from "@/components/gestione/google/special-hours-exception-modal";
 import { getTenantContent } from "@/lib/tenant-content";
 import {
   cloneHoursWeek,
@@ -45,10 +48,11 @@ const SOCIAL_FIELDS: Array<{
   placeholder: string;
   icon: ComponentType<{ size?: number }>;
   primary?: boolean;
+  desktopPrimary?: boolean;
 }> = [
-  { key: "instagram", label: "Instagram", placeholder: "https://www.instagram.com/...", icon: Instagram, primary: true },
-  { key: "facebook", label: "Facebook", placeholder: "https://www.facebook.com/...", icon: Facebook, primary: true },
-  { key: "tiktok", label: "TikTok", placeholder: "https://www.tiktok.com/@...", icon: Music2, primary: true },
+  { key: "instagram", label: "Instagram", placeholder: "Link o @username", icon: Instagram, primary: true },
+  { key: "facebook", label: "Facebook", placeholder: "https://www.facebook.com/...", icon: Facebook, desktopPrimary: true },
+  { key: "tiktok", label: "TikTok", placeholder: "Link o @username", icon: Music2, desktopPrimary: true },
   { key: "youtube", label: "YouTube", placeholder: "https://www.youtube.com/...", icon: Youtube },
   { key: "linkedin", label: "LinkedIn", placeholder: "https://www.linkedin.com/company/...", icon: Linkedin },
   { key: "x", label: "X", placeholder: "https://x.com/...", icon: Twitter },
@@ -58,11 +62,29 @@ const SOCIAL_FIELDS: Array<{
   { key: "whatsapp", label: "WhatsApp", placeholder: "https://wa.me/39...", icon: MessageCircle },
 ];
 
+function normalizeHandleSocialLink(key: SocialLinkKey, value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (key !== "instagram" && key !== "tiktok") return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+  const withoutProtocol = trimmed.replace(/^www\./i, "");
+  if (/^(instagram\.com|tiktok\.com)\//i.test(withoutProtocol)) {
+    return `https://${withoutProtocol}`;
+  }
+
+  const handle = withoutProtocol.replace(/^@+/, "").replace(/^\/+|\/+$/g, "");
+  if (!handle) return "";
+  return key === "instagram"
+    ? `https://www.instagram.com/${handle}/`
+    : `https://www.tiktok.com/@${handle}`;
+}
+
 function normalizeSocialLinks(links: SocialLinks): SocialLinks {
   return SOCIAL_FIELDS.reduce<SocialLinks>(
     (acc, field) => ({
       ...acc,
-      [field.key]: links[field.key].trim(),
+      [field.key]: normalizeHandleSocialLink(field.key, links[field.key]),
     }),
     { ...EMPTY_SOCIAL_LINKS },
   );
@@ -87,9 +109,13 @@ export function ActivitySettingsPanel() {
     ...settings.socialLinks,
   }));
   const [hoursDraft, setHoursDraft] = useState<DaySchedule[]>(() => defaultHoursWeekForTenant(tenant.id));
+  const [showSpecialHoursModal, setShowSpecialHoursModal] = useState(false);
   const [showAllSocials, setShowAllSocials] = useState(() =>
-    SOCIAL_FIELDS.some((f) => !f.primary && (settings.socialLinks?.[f.key] ?? "").trim().length > 0),
+    SOCIAL_FIELDS.some((f) => !f.primary && !f.desktopPrimary && (settings.socialLinks?.[f.key] ?? "").trim().length > 0),
   );
+  const [activitySaving, setActivitySaving] = useState(false);
+  const [activitySaveMessage, setActivitySaveMessage] = useState<string | null>(null);
+  const [activitySaveError, setActivitySaveError] = useState<string | null>(null);
 
   // Voce del ristorante
   const [voice, setVoice] = useState({ tone: "", audience: "", keywords: "", do_examples: "", dont_examples: "" });
@@ -191,27 +217,47 @@ export function ActivitySettingsPanel() {
   );
   const effectiveMainEmail = mainEmailDraft.trim() || content.contact.email || "";
 
-  function updateDay(index: number, patch: Partial<DaySchedule>) {
-    setHoursDraft((current) =>
-      current.map((day, dayIndex) => (dayIndex === index ? { ...day, ...patch } : day)),
-    );
-  }
-
-  function save() {
+  async function save() {
     const nextHours = sanitizeHoursWeek(hoursDraft);
-    setSettings({
-      addressOverride: addressDraft,
-      phoneOverride: phoneDraft,
-      mainEmailOverride: mainEmailDraft,
-      workWithUsEnabled,
-      workWithUsEmailOverride: workWithUsEmailDraft,
-      collaborationsEnabled,
-      collaborationsEmailOverride: collaborationsEmailDraft,
-      socialLinks: normalizeSocialLinks(socialLinksDraft),
-      socialLinksConfigured: true,
-      hoursWeek: nextHours,
-    });
-    setHoursDraft(cloneHoursWeek(nextHours));
+    const hoursChanged = !hoursWeekEquals(nextHours, settings.hoursWeek);
+
+    setActivitySaving(true);
+    setActivitySaveMessage(null);
+    setActivitySaveError(null);
+
+    try {
+      if (hoursChanged) {
+        const res = await fetch("/api/gestione/hours", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenantId: tenant.id, hours: nextHours }),
+        });
+        if (!res.ok) {
+          const json = (await res.json().catch(() => ({}))) as { error?: string };
+          throw new Error(json.error ?? "Errore nel salvataggio degli orari");
+        }
+      }
+
+      setSettings({
+        addressOverride: addressDraft,
+        phoneOverride: phoneDraft,
+        mainEmailOverride: mainEmailDraft,
+        workWithUsEnabled,
+        workWithUsEmailOverride: workWithUsEmailDraft,
+        collaborationsEnabled,
+        collaborationsEmailOverride: collaborationsEmailDraft,
+        socialLinks: normalizeSocialLinks(socialLinksDraft),
+        socialLinksConfigured: true,
+        hoursWeek: nextHours,
+      });
+      setHoursDraft(cloneHoursWeek(nextHours));
+      setActivitySaveMessage(hoursChanged ? "Dati salvati. Sync Google avviata." : "Dati salvati.");
+      setTimeout(() => setActivitySaveMessage(null), 3000);
+    } catch (e) {
+      setActivitySaveError((e as Error).message);
+    } finally {
+      setActivitySaving(false);
+    }
   }
 
   if (!hydrated) {
@@ -286,16 +332,20 @@ export function ActivitySettingsPanel() {
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {SOCIAL_FIELDS.filter((f) => f.primary || showAllSocials).map((field) => {
+        <div className="grid gap-4 lg:grid-cols-3">
+          {SOCIAL_FIELDS.filter((f) => f.primary || f.desktopPrimary || showAllSocials).map((field) => {
             const Icon = field.icon;
+            const visibleOnMobile = field.primary || showAllSocials;
             return (
-              <label key={field.key} className="ga-card">
+              <label
+                key={field.key}
+                className={`ga-card ${visibleOnMobile ? "" : "hidden lg:block"}`}
+              >
                 <span className="ga-card-title">
                   <Icon size={16} /> {field.label}
                 </span>
                 <input
-                  type="url"
+                  type={field.key === "instagram" || field.key === "tiktok" ? "text" : "url"}
                   value={socialLinksDraft[field.key]}
                   onChange={(event) =>
                     setSocialLinksDraft((current) => ({
@@ -387,63 +437,25 @@ export function ActivitySettingsPanel() {
         </div>
       </section>
 
-      <section className="ga-card">
+      <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="ga-card-title" style={{ fontSize: 16 }}>
-              <CalendarClock size={17} /> Orari tipici
-            </h2>
-            <p className="ga-card-hint" style={{ marginTop: 4, fontSize: 12 }}>
-              Una o più fasce per giorno, separate da virgola.
+            <p className="impact-title text-xs text-pork-red">Orario tipo</p>
+            <h2 className="headline text-xl">Settimana standard</h2>
+            <p className="mt-1 text-sm text-pork-ink/50">
+              Questi orari compaiono sulla tua scheda Google Maps ogni settimana.
             </p>
           </div>
-          <Link href={`/gestione/${tenant.id}/google/orari`} className="ga-pill-link">
-            Date straordinarie
-          </Link>
+          <button
+            type="button"
+            onClick={() => setShowSpecialHoursModal(true)}
+            className="ga-pill-link gap-1.5"
+          >
+            <CalendarClock size={14} /> Orari straordinari
+          </button>
         </div>
 
-        <div className="mt-5 grid gap-3">
-          {hoursDraft.map((day, index) => (
-            <div
-              key={day.label}
-              className="grid gap-3 rounded-xl p-3 sm:grid-cols-[120px_120px_1fr]"
-              style={{
-                background: "var(--ga-surface)",
-                border: "1px solid var(--ga-border-soft)",
-              }}
-            >
-              <strong className="self-center text-sm">{day.label}</strong>
-              <label
-                className="flex items-center gap-2 text-sm"
-                style={{ color: "var(--ga-ink-muted)" }}
-              >
-                <input
-                  type="checkbox"
-                  className="ga-checkbox"
-                  checked={day.closed}
-                  onChange={(event) =>
-                    updateDay(index, {
-                      closed: event.target.checked,
-                      slots: event.target.checked ? [] : day.slots.length ? day.slots : [""],
-                    })
-                  }
-                />
-                Chiuso
-              </label>
-              <input
-                disabled={day.closed}
-                value={day.slots.join(", ")}
-                onChange={(event) =>
-                  updateDay(index, {
-                    slots: event.target.value.split(",").map((slot) => slot.trimStart()),
-                  })
-                }
-                placeholder="09:00-13:00, 14:30-18:30"
-                className="ga-input"
-              />
-            </div>
-          ))}
-        </div>
+        <HoursWeekEditor value={hoursDraft} onChange={setHoursDraft} />
       </section>
 
       {/* Voce del ristorante */}
@@ -539,11 +551,32 @@ export function ActivitySettingsPanel() {
         </div>
       </section>
 
-      <div className="flex justify-end">
-        <button type="button" disabled={!dirty} onClick={save} className="ga-btn ga-btn-primary">
-          <Save size={15} /> Salva dati attività
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        {activitySaveMessage && (
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-700">
+            <CheckCircle size={15} /> {activitySaveMessage}
+          </span>
+        )}
+        {activitySaveError && (
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-700">
+            <AlertCircle size={15} /> {activitySaveError}
+          </span>
+        )}
+        <button type="button" disabled={!dirty || activitySaving} onClick={save} className="ga-btn ga-btn-primary">
+          <Save size={15} /> {activitySaving ? "Salvataggio..." : "Salva dati attività"}
         </button>
       </div>
+
+      {showSpecialHoursModal && (
+        <SpecialHoursExceptionModal
+          tenantId={tenant.id}
+          onClose={() => setShowSpecialHoursModal(false)}
+          onSaved={() => {
+            setActivitySaveMessage("Orario straordinario salvato. Sync Google avviata.");
+            setTimeout(() => setActivitySaveMessage(null), 3000);
+          }}
+        />
+      )}
     </div>
   );
 }

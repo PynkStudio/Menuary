@@ -30,6 +30,12 @@ const TAGS: { key: MenuTag; label: string }[] = [
 
 const VEG_TAGS: MenuTag[] = ["veg", "vegano"];
 
+type TranslationDraft = {
+  name?: string;
+  description?: string;
+  ingredients?: string[];
+};
+
 export function ItemEditor({
   item,
   customTags = [],
@@ -72,11 +78,21 @@ export function ItemEditor({
   const [aiDescLoading, setAiDescLoading] = useState(false);
   const [aiDescError, setAiDescError] = useState("");
   const [activeLang, setActiveLang] = useState("it");
-  const [translations, setTranslations] = useState<Record<string, { name?: string; description?: string; ingredients?: string[] }>>({});
+  const [translations, setTranslations] = useState<Record<string, TranslationDraft>>({});
   const [aiTranslating, setAiTranslating] = useState(false);
   const [aiTranslateError, setAiTranslateError] = useState("");
 
-  const SUPPORTED_LANGS = locales.map((code) => ({ code, label: code.toUpperCase() }));
+  const SUPPORTED_LANGS = useMemo(
+    () => locales.map((code) => ({ code, label: code.toUpperCase() })),
+    [locales],
+  );
+  const hasSourceText = useMemo(
+    () => SUPPORTED_LANGS.some((lang) => {
+      const value = lang.code === "it" ? { name: draft.name, description: draft.description } : translations[lang.code];
+      return Boolean(value?.name?.trim() || value?.description?.trim());
+    }),
+    [SUPPORTED_LANGS, draft.description, draft.name, translations],
+  );
 
   const isDirty = useMemo(() => {
     return JSON.stringify(draft) !== JSON.stringify(item);
@@ -334,26 +350,104 @@ export function ItemEditor({
     }
   }
 
-  async function aiTranslate(toLang: string) {
+  function readTranslationSource(preferredLang: string) {
+    const orderedLangs = [
+      preferredLang,
+      "it",
+      ...SUPPORTED_LANGS.map((lang) => lang.code),
+    ].filter((code, index, all) => code && all.indexOf(code) === index);
+
+    for (const lang of orderedLangs) {
+      if (!SUPPORTED_LANGS.some((option) => option.code === lang)) continue;
+      const value =
+        lang === "it"
+          ? {
+              name: draft.name.trim(),
+              description: (draft.description ?? "").trim(),
+              ingredients: (draft.ingredients ?? []).map((ingredient) => ingredient.name).filter(Boolean),
+            }
+          : {
+              name: translations[lang]?.name?.trim() ?? "",
+              description: translations[lang]?.description?.trim() ?? "",
+              ingredients: translations[lang]?.ingredients ?? [],
+            };
+      if (value.name || value.description || value.ingredients.length > 0) {
+        return { lang, ...value };
+      }
+    }
+
+    return null;
+  }
+
+  function isTranslationTargetEmpty(lang: string) {
+    if (lang === "it") {
+      return !draft.name.trim() || !(draft.description ?? "").trim();
+    }
+    const value = translations[lang];
+    return !value?.name?.trim() || !value?.description?.trim();
+  }
+
+  async function aiTranslateAll() {
+    const source = readTranslationSource(activeLang);
+    if (!source) {
+      setAiTranslateError("Inserisci almeno un nome o una descrizione in una lingua.");
+      return;
+    }
+
     setAiTranslating(true);
     setAiTranslateError("");
     try {
-      const res = await fetch("/api/ai/menu-item", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          action: "translate",
-          tenantId,
-          name: draft.name,
-          description: draft.description,
-          ingredients: (draft.ingredients ?? []).map((i) => i.name),
-          fromLang: "it",
-          toLang,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "ai_error");
-      setTranslations((t) => ({ ...t, [toLang]: data }));
+      const targets = SUPPORTED_LANGS
+        .map((lang) => lang.code)
+        .filter((lang) => lang !== source.lang && isTranslationTargetEmpty(lang));
+
+      if (targets.length === 0) {
+        setAiTranslateError("Tutti i campi disponibili sono già compilati.");
+        return;
+      }
+
+      for (const toLang of targets) {
+        const res = await fetch("/api/ai/menu-item", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            action: "translate",
+            tenantId,
+            name: source.name,
+            description: source.description,
+            ingredients: source.ingredients,
+            fromLang: source.lang,
+            toLang,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "ai_error");
+
+        if (toLang === "it") {
+          setDraft((current) => ({
+            ...current,
+            name: current.name.trim() ? current.name : data.name ?? "",
+            description: (current.description ?? "").trim()
+              ? current.description
+              : data.description ?? "",
+          }));
+        } else {
+          setTranslations((current) => {
+            const existing = current[toLang] ?? {};
+            return {
+              ...current,
+              [toLang]: {
+                ...existing,
+                name: existing.name?.trim() ? existing.name : data.name ?? "",
+                description: existing.description?.trim()
+                  ? existing.description
+                  : data.description ?? "",
+                ingredients: existing.ingredients?.length ? existing.ingredients : data.ingredients ?? [],
+              },
+            };
+          });
+        }
+      }
     } catch (e) {
       setAiTranslateError(e instanceof Error ? e.message : "Errore AI");
     } finally {
@@ -398,6 +492,99 @@ export function ItemEditor({
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
+          {/* Traduzioni — solo se il tenant ha più di una lingua */}
+          {SUPPORTED_LANGS.length > 1 && (
+            <div className="mb-6 rounded-2xl bg-white p-4 ring-1 ring-pork-ink/10">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <Globe size={17} className="text-pork-red" />
+                <span className="text-base font-black text-pork-ink">Traduzioni</span>
+                <div className="ml-auto flex flex-wrap gap-1">
+                  {SUPPORTED_LANGS.map((lang) => (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => setActiveLang(lang.code)}
+                      className={
+                        "rounded-full px-3 py-1 text-xs font-black transition-colors " +
+                        (activeLang === lang.code
+                          ? "bg-pork-ink text-pork-cream"
+                          : "bg-pork-ink/5 text-pork-ink/60 hover:bg-pork-ink/10")
+                      }
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {activeLang === "it" ? (
+                <p className="rounded-xl bg-pork-cream px-3 py-2 text-sm font-semibold leading-snug text-pork-ink/70">
+                  I campi in italiano sono quelli principali nell&apos;editor qui sotto. Puoi anche lasciarli vuoti, compilare un&apos;altra lingua e usare l&apos;AI per riempire l&apos;italiano.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-pork-ink/60">
+                        Nome ({activeLang.toUpperCase()})
+                      </span>
+                      <input
+                        type="text"
+                        value={translations[activeLang]?.name ?? ""}
+                        onChange={(e) =>
+                          setTranslations((t) => ({
+                            ...t,
+                            [activeLang]: { ...t[activeLang], name: e.target.value },
+                          }))
+                        }
+                        placeholder={draft.name}
+                        className="w-full rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-pork-ink/60">
+                        Descrizione ({activeLang.toUpperCase()})
+                      </span>
+                      <textarea
+                        rows={2}
+                        value={translations[activeLang]?.description ?? ""}
+                        onChange={(e) =>
+                          setTranslations((t) => ({
+                            ...t,
+                            [activeLang]: { ...t[activeLang], description: e.target.value },
+                          }))
+                        }
+                        placeholder={draft.description ?? ""}
+                        className="w-full resize-none rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={aiTranslateAll}
+                  disabled={aiTranslating || !hasSourceText}
+                  className="inline-flex items-center gap-1 rounded-full bg-pork-ink px-3 py-1.5 text-xs font-black text-pork-cream hover:bg-pork-red disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Sparkles size={13} />
+                  {aiTranslating ? "Traducendo…" : "Traduci con AI i campi vuoti"}
+                </button>
+                <span className="text-sm font-semibold text-pork-ink/65">
+                  Verifica sempre prima di pubblicare.
+                </span>
+                {aiTranslateError && (
+                  <span className="text-sm font-semibold text-pork-red">{aiTranslateError}</span>
+                )}
+              </div>
+              <p className="mt-3 rounded-xl bg-pork-mustard/20 px-3 py-2 text-sm font-semibold leading-snug text-pork-ink/75">
+                Le traduzioni sono salvate localmente. Il collegamento al DB per le lingue è in arrivo.
+              </p>
+            </div>
+          )}
+
           <div className="grid gap-5 sm:grid-cols-[1fr_1fr]">
             <div className="space-y-4">
               <Field label="Nome">
@@ -917,97 +1104,6 @@ export function ItemEditor({
             </div>
           </div>
 
-          {/* Traduzioni — solo se il tenant ha più di una lingua */}
-          {SUPPORTED_LANGS.length > 1 && <div className="mt-6 border-t border-pork-ink/10 pt-5">
-            <div className="mb-3 flex items-center gap-2">
-              <Globe size={15} className="text-pork-red" />
-              <span className="text-sm font-bold text-pork-ink">Traduzioni</span>
-              <div className="ml-auto flex gap-1">
-                {SUPPORTED_LANGS.map((lang) => (
-                  <button
-                    key={lang.code}
-                    type="button"
-                    onClick={() => setActiveLang(lang.code)}
-                    className={
-                      "rounded-full px-2.5 py-0.5 text-[11px] font-black transition-colors " +
-                      (activeLang === lang.code
-                        ? "bg-pork-ink text-pork-cream"
-                        : "bg-pork-ink/5 text-pork-ink/50 hover:bg-pork-ink/10")
-                    }
-                  >
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {activeLang === "it" ? (
-              <p className="text-xs text-pork-ink/45">
-                I campi in italiano sono quelli principali nell&apos;editor qui sopra.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-pork-ink/50">
-                      Nome ({activeLang.toUpperCase()})
-                    </span>
-                    <input
-                      type="text"
-                      value={translations[activeLang]?.name ?? ""}
-                      onChange={(e) =>
-                        setTranslations((t) => ({
-                          ...t,
-                          [activeLang]: { ...t[activeLang], name: e.target.value },
-                        }))
-                      }
-                      placeholder={draft.name}
-                      className="w-full rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-pork-ink/50">
-                      Descrizione ({activeLang.toUpperCase()})
-                    </span>
-                    <textarea
-                      rows={2}
-                      value={translations[activeLang]?.description ?? ""}
-                      onChange={(e) =>
-                        setTranslations((t) => ({
-                          ...t,
-                          [activeLang]: { ...t[activeLang], description: e.target.value },
-                        }))
-                      }
-                      placeholder={draft.description ?? ""}
-                      className="w-full resize-none rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
-                    />
-                  </label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => aiTranslate(activeLang)}
-                    disabled={aiTranslating || !draft.name}
-                    className="inline-flex items-center gap-1 rounded-full bg-pork-ink/5 px-3 py-1 text-[11px] font-bold text-pork-ink/60 hover:bg-pork-mustard/30 hover:text-pork-ink disabled:opacity-40"
-                  >
-                    <Sparkles size={11} />
-                    {aiTranslating ? "Traducendo…" : `Traduci con AI → ${activeLang.toUpperCase()}`}
-                  </button>
-                  <span className="text-[10px] text-pork-ink/40">
-                    Verifica sempre prima di pubblicare
-                  </span>
-                  {aiTranslateError && (
-                    <span className="text-[10px] text-pork-red">{aiTranslateError}</span>
-                  )}
-                </div>
-                {translations[activeLang] && (
-                  <p className="text-[10px] text-pork-ink/40">
-                    ⚠️ Le traduzioni sono salvate localmente. Il collegamento al DB per le lingue è in arrivo.
-                  </p>
-                )}
-              </div>
-            )}
-          </div>}
         </div>
 
         <footer className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-pork-ink/10 bg-white px-5 py-4 shadow-[0_-8px_20px_-12px_rgba(0,0,0,0.15)]">

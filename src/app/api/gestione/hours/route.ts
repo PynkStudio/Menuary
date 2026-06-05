@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { after } from "next/server";
+import { triggerGoogleHoursSync } from "@/lib/google/hours-sync";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sanitizeHoursWeek, type DaySchedule } from "@/lib/venue-hours";
@@ -90,5 +92,8 @@ export async function POST(request: Request) {
     .eq("id", locationId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  after(() => triggerGoogleHoursSync(body.tenantId!, "regular"));
+
   return NextResponse.json({ ok: true, locationId });
 }
