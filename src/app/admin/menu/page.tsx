@@ -611,11 +611,13 @@ export default function AdminMenuPage() {
                     <div className="mt-4">
                       <span className="mb-2 block text-xs font-bold uppercase text-pork-ink/50">
                         Dove mostrarlo
-                        <HelpHint className="ml-1" text="Scegli dove questo menu è disponibile: pagina menu, ordini, tavoli, chiamate, WhatsApp o prenotazioni. La lista si aggiorna in base ai moduli attivi." />
+                        <HelpHint className="ml-1" text="Scegli dove questo menu è disponibile: pagina menu, ordini, tavoli, chiamate, WhatsApp o prenotazioni prodotti. La lista si aggiorna in base ai moduli attivi." />
                       </span>
                       <div className="grid gap-2 md:grid-cols-2">
                         {availableChannelOptions.map((channel) => {
-                          const current = editingMenu.visibility.channels ?? availableChannelOptions.map((option) => option.value);
+                          const current = editingMenu.visibility.channels?.filter((value) =>
+                            availableChannelOptions.some((option) => option.value === value),
+                          ) ?? availableChannelOptions.map((option) => option.value);
                           const active = current.includes(channel.value);
                           return (
                             <label
@@ -646,9 +648,9 @@ export default function AdminMenuPage() {
                       <span className="mt-2 block text-xs text-pork-ink/45">
                         I menu esistenti senza configurazione esplicita restano visibili ovunque sia previsto dai moduli attivi.
                       </span>
-                      {editingMenu.visibility.channels?.includes("reservation") && (
+                      {editingMenu.visibility.channels?.includes("product_reservation") && (
                         <span className="mt-2 block rounded-xl bg-pork-mustard/20 px-3 py-2 text-xs text-pork-ink/70">
-                          I contenuti nel canale prenotazioni sono sempre visibili e prenotabili, indipendentemente da orari e giorni impostati sopra.
+                          I prodotti nel canale prenotazione prodotti sono sempre visibili e prenotabili, indipendentemente da orari e giorni impostati sopra.
                         </span>
                       )}
                     </div>

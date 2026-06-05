@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { CalendarDays, ChevronDown, MessageCircle, UtensilsCrossed } from "lucide-react";
+import { ChevronDown, MessageCircle, ShoppingBag, UtensilsCrossed } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { VenueWhatsappLink } from "@/components/modules/reservations/venue-display";
@@ -39,7 +39,6 @@ export function Hero() {
       ? `/${tenant.previewSlug}/menu`
       : "/menu";
   const menuHref = tenantHref(baseMenuHref);
-  const reservationHref = tenantHref("/prenota");
 
   const scrollToNext = () => {
     document.getElementById("tre-anime")?.scrollIntoView({
@@ -75,8 +74,8 @@ export function Hero() {
                 {renderRichText(docaCopy.heroBodyParts)}
               </p>
               <div className="doca-hero-actions">
-                <Link href={reservationHref} className="doca-button doca-button-primary">
-                  <CalendarDays size={20} />
+                <Link href={menuHref} className="doca-button doca-button-primary">
+                  <ShoppingBag size={20} />
                   {docaCopy.reserve}
                 </Link>
                 <Link href={menuHref} className="doca-button doca-button-secondary">

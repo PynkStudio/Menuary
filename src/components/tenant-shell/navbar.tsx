@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Menu, X, MessageCircle } from "lucide-react";
+import { Menu, MessageCircle, ShoppingBag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { useFavoritesStore } from "@/store/favorites-store";
@@ -123,9 +123,9 @@ export function Navbar() {
           <div className="hidden items-center gap-3 lg:flex">
             <LocationPicker />
             {isDoca ? (
-              <Link href={tenantHref("/prenota")} className="btn-primary text-sm">
-                <CalendarDays size={18} />
-                Prenota
+              <Link href={tenantHref("/menu")} className="btn-primary text-sm">
+                <ShoppingBag size={18} />
+                Ordina
               </Link>
             ) : (
               <VenueWhatsappLink className="btn-primary text-sm">
@@ -185,12 +185,12 @@ export function Navbar() {
             <LocationPicker />
             {isDoca ? (
               <Link
-                href={tenantHref("/prenota")}
+                href={tenantHref("/menu")}
                 className="btn-mustard w-full text-lg"
                 onClick={() => setOpen(false)}
               >
-                <CalendarDays size={22} />
-                Prenota
+                <ShoppingBag size={22} />
+                Ordina
               </Link>
             ) : (
               <VenueWhatsappLink

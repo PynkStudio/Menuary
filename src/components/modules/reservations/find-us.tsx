@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, MapPin, Phone, Clock, MessageCircle } from "lucide-react";
+import { Clock, MapPin, MessageCircle, Phone, ShoppingBag } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import {
@@ -83,8 +83,8 @@ export function FindUs() {
 
             <div className="mt-8 flex flex-wrap gap-3">
               {isDoca ? (
-                <Link href={tenantHref("/prenota")} className="btn-primary text-base">
-                  <CalendarDays size={20} />
+                <Link href={tenantHref("/menu")} className="btn-primary text-base">
+                  <ShoppingBag size={20} />
                   {docaCopy.reserveHere}
                 </Link>
               ) : (

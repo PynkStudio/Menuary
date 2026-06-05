@@ -25,7 +25,7 @@ type CreateBody = {
   /** Override durata in minuti. Se omesso e serviceId è valorizzato, viene
    *  popolato dalla durata del servizio. */
   durationMinutes?: number | null;
-  channel?: "web" | "reservation" | null;
+  channel?: "web" | "reservation" | "product_reservation" | null;
 };
 
 function normalizeDate(raw: string): string | null {
@@ -69,7 +69,12 @@ export async function POST(
 
   const covers = Math.max(1, Math.min(99, Number(body.covers) || 1));
   const tags = Array.isArray(body.specialRequestTags) ? body.specialRequestTags : [];
-  const channel = body.channel === "reservation" ? "reservation" : "web";
+  const channel =
+    body.channel === "product_reservation"
+      ? "product_reservation"
+      : body.channel === "reservation"
+        ? "reservation"
+        : "web";
   const notes = body.notes?.trim() ?? "";
   const manual = reservationNeedsManualApproval(notes, tags);
 

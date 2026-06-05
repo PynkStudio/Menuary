@@ -6,7 +6,7 @@ import { getTenantDefaultExtraLists } from "@/lib/extra-lists";
 import { pushMenuToHubrise } from "@/lib/hubrise/push-menu";
 import { ensureTenantUpsellIndexes } from "@/lib/upselling-engine";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
-import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, PriceFormat } from "@/lib/types";
+import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, MenuDay, MenuOrderChannel, PriceFormat } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
 
 type SupabaseAdmin = ReturnType<typeof createSupabaseAdminClient>;
@@ -159,7 +159,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string): Promise<Me
             description: list.description ?? undefined,
             order: list.position,
             enabled: list.enabled,
-            visibility: (list.visibility ?? {}) as AdminMenuList["visibility"],
+            visibility: normalizeMenuListVisibility(list.visibility),
             itemIds: (listItemsByList.get(list.id) ?? [])
               .map((row) => itemsByDbId.get(row.item_id))
               .filter((id): id is string => Boolean(id)),
@@ -327,7 +327,7 @@ async function replaceMenuLists(
     description: list.description ?? null,
     position: list.order,
     enabled: list.enabled,
-    visibility: list.visibility,
+    visibility: normalizeMenuListVisibility(list.visibility),
     updated_at: new Date().toISOString(),
   }));
   if (listRows.length > 0) {
@@ -451,6 +451,24 @@ function seedBundle(tenantId: string): MenuSyncBundle {
       ...list,
       extras: [...list.extras],
     })),
+  };
+}
+
+function normalizeMenuListVisibility(value: unknown): AdminMenuList["visibility"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const raw = value as Record<string, unknown>;
+  const validChannels: MenuOrderChannel[] = ["site", "phone", "whatsapp", "online", "table", "product_reservation"];
+  const channels = Array.isArray(raw.channels)
+    ? raw.channels.filter((channel): channel is MenuOrderChannel =>
+        typeof channel === "string" && validChannels.includes(channel as MenuOrderChannel),
+      )
+    : undefined;
+  return {
+    ...(Array.isArray(raw.days) ? { days: raw.days.filter((day): day is MenuDay => typeof day === "number" && day >= 0 && day <= 6) } : {}),
+    ...(typeof raw.startTime === "string" ? { startTime: raw.startTime } : {}),
+    ...(typeof raw.endTime === "string" ? { endTime: raw.endTime } : {}),
+    ...(Array.isArray(raw.tableIds) ? { tableIds: raw.tableIds.filter((id): id is string => typeof id === "string") } : {}),
+    ...(channels && channels.length > 0 ? { channels } : {}),
   };
 }
 

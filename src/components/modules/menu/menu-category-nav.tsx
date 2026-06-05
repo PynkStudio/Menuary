@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CalendarDays } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
@@ -97,9 +97,9 @@ export function MenuCategoryNav({
           ))}
         </nav>
         {isDoca && (
-          <Link href={tenantHref("/prenota")} className="btn-primary shrink-0 text-sm">
-            <CalendarDays size={18} />
-            Prenota ora
+          <Link href={tenantHref("/ordina")} className="btn-primary shrink-0 text-sm">
+            <ShoppingBag size={18} />
+            Ordina
           </Link>
         )}
       </div>

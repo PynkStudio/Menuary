@@ -95,7 +95,7 @@ export const DOCA_MODULE_FLAGS: TenantFeatureFlags = {
   orderKiosk: false,
   kitchenDisplay: true,
   dinerSeparation: false,
-  reservations: true,
+  reservations: false,
   tablePlanner: false,
   productAvailability: true,
   upselling: false,

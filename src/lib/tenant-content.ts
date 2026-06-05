@@ -810,7 +810,7 @@ const docaContent: TenantContent = {
     email: "info@doca.milano",
     whatsappDigits: "393520672840",
     whatsappMessage:
-      "Olá Doca! Vorrei prenotare.",
+      "Olá Doca! Vorrei ordinare.",
   },
   address: {
     street: "Via Breno, 2",
@@ -832,7 +832,7 @@ const docaContent: TenantContent = {
     body:
       "Una piccola bakery di quartiere a sud di Milano. Lievitazione naturale con farine del Mulino Viva, caffè filtro da singola piantagione, ricette brasiliane di Queren — non il Brasile da cartolina, quello dell'infanzia.",
     backdrop: "/doca/brigadeiros.jpg",
-    ctaLabel: "Prenota ora",
+    ctaLabel: "Ordina ora",
   },
   soulsIntro: {
     eyebrow: "Padoca — la panetteria di quartiere",
@@ -927,7 +927,7 @@ const docaContent: TenantContent = {
     titleLead: "Via Breno 2,",
     titleAccent: "Milano Corvetto.",
     body:
-      "Ci trovi in zona Corvetto, in Via Breno 2. Passa per il pane, fermati per un caffè o prenota qui.",
+      "Ci trovi in zona Corvetto, in Via Breno 2. Passa per il pane, fermati per un caffè o ordina dal menu.",
     mapTitle: "Mappa Doca — Via Breno 2, Milano",
   },
   footer: {

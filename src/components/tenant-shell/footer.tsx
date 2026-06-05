@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Music2,
   Phone,
+  ShoppingBag,
   Twitter,
   X,
   Youtube,
@@ -303,9 +304,10 @@ export function Footer() {
           )}
           {isDoca ? (
             <Link
-              href={tenantHref("/prenota")}
+              href={tenantHref("/menu")}
               className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-pork-mustard hover:underline"
             >
+              <ShoppingBag size={15} />
               {docaCopy.whatsappFooter}
             </Link>
           ) : (
