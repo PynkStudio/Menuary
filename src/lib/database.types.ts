@@ -2681,7 +2681,9 @@ export type Database = {
           google_review_id: string | null
           id: string
           is_local_guide: boolean
+          language_code: string | null
           location_id: string | null
+          original_language_code: string | null
           photos_count: number | null
           position: number
           published: boolean
@@ -2692,6 +2694,7 @@ export type Database = {
           source: string
           tenant_id: string
           text: string
+          translated: boolean | null
         }
         Insert: {
           author: string
@@ -2700,7 +2703,9 @@ export type Database = {
           google_review_id?: string | null
           id?: string
           is_local_guide?: boolean
+          language_code?: string | null
           location_id?: string | null
+          original_language_code?: string | null
           photos_count?: number | null
           position?: number
           published?: boolean
@@ -2711,6 +2716,7 @@ export type Database = {
           source?: string
           tenant_id: string
           text: string
+          translated?: boolean | null
         }
         Update: {
           author?: string
@@ -2719,7 +2725,9 @@ export type Database = {
           google_review_id?: string | null
           id?: string
           is_local_guide?: boolean
+          language_code?: string | null
           location_id?: string | null
+          original_language_code?: string | null
           photos_count?: number | null
           position?: number
           published?: boolean
@@ -2730,6 +2738,7 @@ export type Database = {
           source?: string
           tenant_id?: string
           text?: string
+          translated?: boolean | null
         }
         Relationships: [
           {
@@ -4207,6 +4216,9 @@ export type Database = {
           auto_accept_no_notes: boolean
           auto_accept_only_returning: boolean
           created_at: string
+          delivery_enabled: boolean | null
+          delivery_window_before_close_min: number | null
+          delivery_window_before_open_min: number | null
           dine_in_enabled: boolean
           dine_in_window_before_close_min: number | null
           dine_in_window_before_open_min: number | null
@@ -4226,6 +4238,9 @@ export type Database = {
           auto_accept_no_notes?: boolean
           auto_accept_only_returning?: boolean
           created_at?: string
+          delivery_enabled?: boolean | null
+          delivery_window_before_close_min?: number | null
+          delivery_window_before_open_min?: number | null
           dine_in_enabled?: boolean
           dine_in_window_before_close_min?: number | null
           dine_in_window_before_open_min?: number | null
@@ -4245,6 +4260,9 @@ export type Database = {
           auto_accept_no_notes?: boolean
           auto_accept_only_returning?: boolean
           created_at?: string
+          delivery_enabled?: boolean | null
+          delivery_window_before_close_min?: number | null
+          delivery_window_before_open_min?: number | null
           dine_in_enabled?: boolean
           dine_in_window_before_close_min?: number | null
           dine_in_window_before_open_min?: number | null
@@ -4718,6 +4736,9 @@ export type Database = {
           auto_accept_no_notes: boolean
           auto_accept_only_returning: boolean
           created_at: string
+          delivery_enabled: boolean | null
+          delivery_window_before_close_min: number | null
+          delivery_window_before_open_min: number | null
           dine_in_enabled: boolean
           dine_in_window_before_close_min: number | null
           dine_in_window_before_open_min: number | null
@@ -4804,6 +4825,7 @@ export type Database = {
         | "consegnato"
         | "annullato"
         | "pending_confirmation"
+        | "expired"
       order_type: "tavolo" | "asporto"
       price_kind: "single" | "sized" | "persone" | "volume"
       session_status: "aperta" | "chiusa"
@@ -5012,6 +5034,7 @@ export const Constants = {
         "consegnato",
         "annullato",
         "pending_confirmation",
+        "expired",
       ],
       order_type: ["tavolo", "asporto"],
       price_kind: ["single", "sized", "persone", "volume"],

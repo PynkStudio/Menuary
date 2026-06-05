@@ -1,5 +1,5 @@
 import type { CartLine, Order, OrderDineOption, OrderLine, OrderStatus } from "@/lib/types";
-import type { Database, Json } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/database.types";
 
 type OrderLineInsert = Database["public"]["Tables"]["order_lines"]["Insert"];
 

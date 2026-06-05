@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, Json } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/database.types";
 import type { MenuOrderChannel } from "@/lib/types";
 
 type Db = SupabaseClient<Database>;

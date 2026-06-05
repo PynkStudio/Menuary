@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Json } from "@/lib/supabase/types";
+import type { Json } from "@/lib/database.types";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { applicationFeeCents, type PaymentSource } from "@/lib/payments/stripe/fees";

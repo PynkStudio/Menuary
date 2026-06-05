@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
-import type { Json } from "@/lib/supabase/types";
+import type { Json } from "@/lib/database.types";
 
 export type KioskConfig = {
   languages: string[];

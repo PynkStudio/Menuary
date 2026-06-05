@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Json } from "@/lib/supabase/types";
+import type { Json } from "@/lib/database.types";
 import { isAuthorizedWhatsappWebBridgeRequest } from "@/lib/whatsapp/web-bridge-auth";
 
 /** Riceve callback WhatsApp Business / Meta (payload generico). */

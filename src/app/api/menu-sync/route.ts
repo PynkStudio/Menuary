@@ -6,7 +6,7 @@ import { getTenantDefaultExtraLists } from "@/lib/extra-lists";
 import { pushMenuToHubrise } from "@/lib/hubrise/push-menu";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, PriceFormat } from "@/lib/types";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/database.types";
 
 type SupabaseAdmin = ReturnType<typeof createSupabaseAdminClient>;
 type MenuListRow = {

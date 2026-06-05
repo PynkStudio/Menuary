@@ -3,7 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email/sender";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Database, Json } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/database.types";
 
 type Db = SupabaseClient<Database>;
 

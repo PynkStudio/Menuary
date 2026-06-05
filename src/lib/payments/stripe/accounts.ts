@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Json } from "@/lib/supabase/types";
+import type { Json } from "@/lib/database.types";
 
 export type TenantPaymentAccountStatus =
   | "pending"

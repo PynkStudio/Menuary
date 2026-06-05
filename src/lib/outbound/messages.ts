@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Json } from "@/lib/supabase/types";
+import type { Json } from "@/lib/database.types";
 import { findTenantById } from "@/lib/tenant-registry";
 import { isTwilioOutboundReady, sendTwilioTextMessage } from "@/lib/twilio/messages";
 

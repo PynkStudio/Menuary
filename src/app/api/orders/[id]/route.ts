@@ -20,7 +20,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   if (error || !data) return NextResponse.json({ error: error?.message ?? "not found" }, { status: 404 });
 
-  const { order_lines: dbLines, ...orderRow } = data as DbOrder & { order_lines: DbOrderLine[] };
+  const { order_lines: dbLines, ...orderRow } =
+  data as unknown as DbOrder & { order_lines: DbOrderLine[] };
   const lines = dbLinesToOrderLines(
     (dbLines ?? []).sort((a, b) => a.position - b.position),
   );

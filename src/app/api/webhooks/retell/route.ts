@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Json } from "@/lib/supabase/types";
+import type { Json } from "@/lib/database.types";
 import { buildRetellInboundContext, isAuthorizedRetellRequest } from "@/lib/retell/inbound-orchestrator";
 import { getAiPhoneSettings, listAiPhoneSettings } from "@/lib/retell/settings";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";

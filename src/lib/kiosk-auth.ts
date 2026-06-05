@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, Json } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/database.types";
 
 export type KioskDeviceContext = {
   id: string;

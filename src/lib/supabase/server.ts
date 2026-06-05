@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { Database } from "./types";
+import type { Database } from "@/lib/database.types";
 
 /**
  * @param cookieDomain — domain da impostare sul cookie Supabase.

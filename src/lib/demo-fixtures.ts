@@ -3,7 +3,7 @@
 // la demo non sembra mai stantia. I dati di scrittura restano gestiti da
 // demo-mode.ts (localStorage); qui produciamo solo letture deterministiche.
 
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/database.types";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 type OrderType = Database["public"]["Enums"]["order_type"];

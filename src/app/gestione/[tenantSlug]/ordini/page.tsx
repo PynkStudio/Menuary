@@ -4,7 +4,7 @@ import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, Utensi
 import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/database.types";
 import { startOrder, markReady, markDelivered, cancelOrder, confirmPendingOrder, rejectPendingOrder } from "./actions";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 import { demoOrders, type DemoOrder } from "@/lib/demo-fixtures";

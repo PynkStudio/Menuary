@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildAuthCallbackUrl } from "@/lib/login-url";
 import { sendEmail } from "@/lib/email/sender";
 import { DEFAULT_COMMISSION_BY_SITEADMIN_ROLE, SITEADMIN_ROLES } from "@/lib/admin-permissions";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/database.types";
 
 type SiteadminRole = Database["public"]["Enums"]["siteadmin_role"];
 type AdminUserStatus = "active" | "invited" | "revoked";

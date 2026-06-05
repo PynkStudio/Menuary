@@ -6,7 +6,7 @@ import { findTenantById } from "@/lib/tenant-registry";
 import { defaultHoursWeekForTenant, type DaySchedule } from "@/lib/venue-hours";
 import { formatEuro } from "@/lib/price-utils";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Database, Json } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/database.types";
 import { getAiPhoneSettings, isAiPhoneControlAccepting, type AiPhoneSettings } from "@/lib/retell/settings";
 import { createChannelPaymentRequest, type ChannelPaymentRequest, type PaymentLinkChannel } from "@/lib/payments/channel-payment-links";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";

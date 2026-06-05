@@ -14,7 +14,7 @@ import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email
 import { validateMenuItemsForOrderChannel } from "@/lib/menu-order-channels";
 import { COPERTO_ITEM_ID } from "@/lib/coperto";
 import type { CartLine, OrderDineOption } from "@/lib/types";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/database.types";
 
 // ─── POST /api/orders — crea ordine ──────────────────────────────────────────
 
@@ -230,7 +230,8 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const orders = (data ?? []).map((row) => {
-    const { order_lines: dbLines, ...orderRow } = row as DbOrder & { order_lines: DbOrderLine[] };
+ const { order_lines: dbLines, ...orderRow } =
+  row as unknown as DbOrder & { order_lines: DbOrderLine[] };
     const lines = dbLinesToOrderLines(
       (dbLines ?? []).sort((a, b) => a.position - b.position),
     );

@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildPauseUntil, upsertAiPhoneSettings } from "@/lib/retell/settings";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { normalizeWhatsappPhone } from "@/lib/tenant-support/admin-contacts";
-import type { Database, Json } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/database.types";
 import {
   extractMenuItemsFromImage,
   normalizeExtractedMenuPhotoResult,

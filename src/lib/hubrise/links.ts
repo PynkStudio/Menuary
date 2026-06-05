@@ -2,7 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/database.types";
 
 type Db = SupabaseClient<Database>;
 

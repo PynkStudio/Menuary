@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/database.types";
 
 type LocationUpdate = Database["public"]["Tables"]["locations"]["Update"];
 

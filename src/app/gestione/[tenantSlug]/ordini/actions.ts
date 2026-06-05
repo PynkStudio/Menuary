@@ -6,7 +6,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { pushOrderStatusToHubrise } from "@/lib/hubrise/push-status";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
-import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/database.types";
 
 type Status = Database["public"]["Enums"]["order_status"];
 

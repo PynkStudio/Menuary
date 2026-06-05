@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "./supabase/types";
+import type { Database } from "@/lib/database.types";
 import type { TenantLocation, LocationRoutingMode } from "./tenant";
 
 type LocationRow = Database["public"]["Tables"]["locations"]["Row"] & {
