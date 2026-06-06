@@ -489,6 +489,89 @@ const libritechContent: TenantContent = {
   },
 };
 
+const valentinaOrciuoliContent: TenantContent = {
+  logoSrc: "/favicon.svg",
+  logoAlt: "Valentina Orciuoli",
+  showcaseLogoSrc: "https://www.selfcreation.it/wp-content/uploads/2025/02/Anxiety-Valentina-Orciuoli.png",
+  showcaseLogoAlt: "Anxiety di Valentina Orciuoli",
+  description:
+    "Valentina Orciuoli scrive fantasy orientale: emozioni antiche, draghi cinesi e mondi in cui la luce combatte dentro l'ombra.",
+  url: "https://linktr.ee/valentina.orciuoli",
+  social: {
+    instagram: "https://www.instagram.com/di.vale_in.peggio/",
+    facebook: "https://www.facebook.com/",
+    instagramLabel: "Instagram Valentina Orciuoli",
+    facebookLabel: "Facebook Valentina Orciuoli",
+  },
+  contact: {
+    phone: "",
+    whatsappDigits: "",
+    whatsappMessage: "Ciao Valentina! Vorrei informazioni sui tuoi libri.",
+  },
+  address: {
+    street: "",
+    zip: "",
+    city: "",
+    province: "",
+    full: "Italia",
+  },
+  maps: {
+    searchUrl: "https://www.google.com/maps/search/?api=1&query=Italia",
+    embedUrl: "https://www.google.com/maps?q=Italia&output=embed",
+  },
+  hero: {
+    eyebrow: "Author site fantasy · Bizery",
+    titleLead: "Valentina",
+    titleAccent: "Orciuoli.",
+    body:
+      "Fantasy orientale, emozioni antiche e draghi che respirano luce. Il primo capitolo della saga e Anxiety.",
+    backdrop: "https://www.selfcreation.it/wp-content/uploads/2025/02/Anxiety-Valentina-Orciuoli.png",
+    ctaLabel: "Scopri Anxiety",
+  },
+  soulsIntro: {
+    eyebrow: "The Emotion Dragons Trilogy",
+    titleLead: "Ogni emozione",
+    titleAccent: "ha il suo drago.",
+    body:
+      "Una saga fantasy dove il mondo interiore dei personaggi prende forma in creature imperiali, cieli notturni e prove di coraggio.",
+  },
+  souls: [],
+  dishesIntro: {
+    eyebrow: "Libri",
+    title: "The Emotion Dragons Trilogy.",
+    subtitle: "Il percorso comincia con Anxiety, primo volume della trilogia.",
+  },
+  dishes: [],
+  findUs: {
+    eyebrow: "Link",
+    titleLead: "Segui",
+    titleAccent: "Valentina Orciuoli.",
+    body: "Tutti i link ufficiali dell'autrice sono raccolti nel suo Linktree.",
+    mapTitle: "Link Valentina Orciuoli",
+  },
+  footer: {
+    tagline: "Fantasy orientale, draghi ed emozioni.",
+    body:
+      "Author site demo per Valentina Orciuoli su piattaforma Bizery. Struttura editoriale ispirata agli author website moderni.",
+  },
+  delivery: {
+    title: "Acquista Anxiety",
+    body: "Disponibile su Amazon Kindle.",
+    partners: [
+      {
+        name: "Amazon · Anxiety",
+        url: "https://www.amazon.it/Anxiety-Valentina-Orciuoli-ebook/dp/B0F1KVZKFC",
+        active: true,
+      },
+      {
+        name: "Amazon · Fury",
+        url: "https://www.amazon.it/Fury-Emotion-Dragons-Trilogy-Vol-ebook/dp/B0GKWCS774",
+        active: true,
+      },
+    ],
+  },
+};
+
 const officinakamContent: TenantContent = {
   logoSrc: "/officinakam/logo.svg",
   logoAlt: "Officina KAM",
@@ -1396,6 +1479,7 @@ import { findTenantById } from "./tenant-registry";
 export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "faak") return faakContent;
   if (tenantId === "libritech") return libritechContent;
+  if (tenantId === "valentina-orciuoli") return valentinaOrciuoliContent;
   if (tenantId === "officinakam") return officinakamContent;
   if (tenantId === "studioaranzulla") return studioaranzullaContent;
   if (tenantId === "doca") return docaContent;

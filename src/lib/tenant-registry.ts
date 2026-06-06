@@ -55,6 +55,39 @@ export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
   payments: false,
 };
 
+/** Valentina Orciuoli: author site fantasy su verticale services/Bizery. */
+export const VALENTINA_ORCIUOLI_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: false,
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: false,
+  tablePlanner: false,
+  productAvailability: false,
+  upselling: false,
+  crm: false,
+  analytics: true,
+  takeawaySlots: false,
+  deliveryHub: false,
+  cashRegister: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: false,
+  multiLocation: false,
+  favorites: false,
+  reviews: false,
+  gallery: true,
+  shop: false,
+  slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
+  hubriseSync: false,
+  payments: false,
+};
+
 /** Studio Legale Aranzulla: studio legale su verticale services. */
 export const STUDIOARANZULLA_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
@@ -423,6 +456,29 @@ export const TENANTS: TenantProfile[] = [
       pink: "#e63946",
     },
     features: LIBRITECH_MODULE_FLAGS,
+  },
+  {
+    id: "valentina-orciuoli",
+    name: "Valentina Orciuoli",
+    label: "Lead · Valentina Orciuoli",
+    vertical: "services",
+    domains: [],
+    previewSlug: "valentina-orciuoli",
+    enabled: true,
+    status: "trattativa",
+    theme: {
+      red: "#A12B24",
+      redDark: "#671713",
+      peach: "#E8D7B2",
+      cream: "#050506",
+      ink: "#F7EEDC",
+      brick: "#15100D",
+      mustard: "#D7A944",
+      mustardSoft: "#F1D17C",
+      green: "#6E8B69",
+      pink: "#B77968",
+    },
+    features: VALENTINA_ORCIUOLI_MODULE_FLAGS,
   },
 
   // ── Tenant Bizery reali ──────────────────────────────────────────────────────

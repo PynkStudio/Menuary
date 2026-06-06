@@ -14,6 +14,7 @@ import { ServicesCategories } from "@/components/tenants/_shared/services-catego
 import { ServicesContact } from "@/components/tenants/_shared/services-contact";
 import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home";
 import { LibritechHomePage } from "@/components/tenants/libritech/pages/home";
+import { ValentinaOrciuoliHomePage } from "@/components/tenants/valentina-orciuoli/pages/home";
 import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pages/home";
 import { JuniorFoodHomePage } from "@/components/tenants/junior-food/pages/home";
 import { KimosHomePage } from "@/components/tenants/kimos/pages/home";
@@ -49,6 +50,8 @@ export async function generateMetadata({
       ? "Officina KAM - Meccanica di precisione"
       : tenant.id === "libritech"
         ? "LibriTech - Tech & Startup Books"
+        : tenant.id === "valentina-orciuoli"
+          ? "Valentina Orciuoli - Fantasy orientale e The Emotion Dragons Trilogy"
         : tenant.id === "studioaranzulla"
           ? "Studio Legale Aranzulla - Avv. Lara Aranzulla"
           : isServices
@@ -138,6 +141,8 @@ export default async function PreviewTenantHome({
             <OfficinaKamHomePage />
           ) : tenant.id === "libritech" ? (
             <LibritechHomePage />
+          ) : tenant.id === "valentina-orciuoli" ? (
+            <ValentinaOrciuoliHomePage />
           ) : tenant.id === "studioaranzulla" ? (
             <StudioAranzullaHomePage />
           ) : (
