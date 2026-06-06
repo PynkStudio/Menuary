@@ -6,7 +6,7 @@ import { resolveTenantFeatures } from "@/lib/tenant-modules";
 export function getGestioneBaseHref(host: string | null | undefined, tenant: TenantProfile): string {
   const mode = getPlatformModeFromHost(host);
   if (mode === "gestione-custom") return "";
-  if (mode === "preview" || mode === "preview-bizery") return `/${tenant.id}/gestione`;
+  if (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") return `/${tenant.id}/gestione`;
   return `/gestione/${tenant.id}`;
 }
 

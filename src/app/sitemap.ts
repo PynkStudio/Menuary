@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (mode === "marketing") return marketingSitemap(MENUARY_ORIGIN);
   if (mode === "marketing-bizery") return marketingSitemap(BIZERY_ORIGIN);
   if (mode === "marketing-orpheo") return marketingSitemap(ORPHEO_ORIGIN);
-  if (mode === "preview" || mode === "preview-bizery") return [];
+  if (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") return [];
 
   const host = h.get("host");
   const tenant = resolveTenantFromHost(host);

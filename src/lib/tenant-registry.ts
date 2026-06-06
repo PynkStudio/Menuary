@@ -64,7 +64,7 @@ export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
   payments: false,
 };
 
-/** Valentina Orciuoli: author site fantasy su verticale services/Bizery. */
+/** Valentina Orciuoli: author site fantasy su verticale creative/Orpheo. */
 export const VALENTINA_ORCIUOLI_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
   onlineMenu: false,
@@ -95,6 +95,12 @@ export const VALENTINA_ORCIUOLI_MODULE_FLAGS: TenantFeatureFlags = {
   aiWhatsapp: false,
   hubriseSync: false,
   payments: false,
+  pressKit: true,
+  worksCatalog: true,
+  creativeBooking: true,
+  rightsRoyalties: false,
+  reputationReviews: true,
+  fanbaseCommunity: true,
 };
 
 /** Studio Legale Aranzulla: studio legale su verticale services. */
@@ -523,7 +529,7 @@ export const TENANTS: TenantProfile[] = [
     id: "valentina-orciuoli",
     name: "Valentina Orciuoli",
     label: "Lead · Valentina Orciuoli",
-    vertical: "services",
+    vertical: "creative",
     domains: [],
     previewSlug: "valentina-orciuoli",
     enabled: true,

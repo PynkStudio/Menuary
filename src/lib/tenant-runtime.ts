@@ -8,7 +8,7 @@ import { getPlatformModeFromHost } from "./platform";
 import type { TenantProfile } from "./tenant";
 
 function verticalFromMode(mode: ReturnType<typeof getPlatformModeFromHost>): TenantProfile["vertical"] {
-  if (mode === "marketing-orpheo") return "creative";
+  if (mode === "marketing-orpheo" || mode === "preview-orpheo") return "creative";
   if (mode === "marketing-bizery" || mode === "preview-bizery" || mode === "gestione-bizery") {
     return "services";
   }

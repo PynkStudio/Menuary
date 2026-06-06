@@ -6,6 +6,7 @@
 // "platform-admin"    → admin.menuary.it        back-office piattaforma
 // "preview"           → demo.menuary.it         anteprima tenant food via previewSlug
 // "preview-bizery"    → demo.bizery.it          anteprima tenant bizery via previewSlug
+// "preview-orpheo"    → demo.weuseorpheo.com    anteprima tenant creative via previewSlug
 // "clients"           → clienti.menuary.it      area personale clienti
 // "studio"            → studio.menuary.it       fatturazione e abbonamenti B2B (food)
 // "studio-bizery"     → studio.bizery.it        fatturazione e abbonamenti B2B (services)
@@ -21,6 +22,7 @@ export type PlatformMode =
   | "platform-admin"
   | "preview"
   | "preview-bizery"
+  | "preview-orpheo"
   | "clients"
   | "studio"
   | "studio-bizery"
@@ -38,6 +40,7 @@ export const PLATFORM_HOSTS = {
   admin:              ["admin.menuary.it", "admin.menuary.localhost"],
   preview:            ["demo.menuary.it", "demo.menuary.localhost"],
   "preview-bizery":   ["demo.bizery.it", "demo.bizery.localhost"],
+  "preview-orpheo":   ["demo.weuseorpheo.com", "demo.weuseorpheo.localhost"],
   clients:            ["clienti.menuary.it", "clienti.menuary.localhost"],
   studio:             ["studio.menuary.it", "studio.menuary.localhost"],
   "studio-bizery":    ["studio.bizery.it", "studio.bizery.localhost"],
@@ -54,6 +57,7 @@ const PLATFORM_MODES: PlatformMode[] = [
   "platform-admin",
   "preview",
   "preview-bizery",
+  "preview-orpheo",
   "clients",
   "studio",
   "studio-bizery",
@@ -81,6 +85,7 @@ export function getPlatformModeFromHost(
   if (PLATFORM_HOSTS.admin.includes(normalized as never))              return "platform-admin";
   if (PLATFORM_HOSTS.preview.includes(normalized as never))            return "preview";
   if (PLATFORM_HOSTS["preview-bizery"].includes(normalized as never))  return "preview-bizery";
+  if (PLATFORM_HOSTS["preview-orpheo"].includes(normalized as never))  return "preview-orpheo";
   if (PLATFORM_HOSTS.clients.includes(normalized as never))            return "clients";
   if (PLATFORM_HOSTS.studio.includes(normalized as never))             return "studio";
   if (PLATFORM_HOSTS["studio-bizery"].includes(normalized as never))   return "studio-bizery";
@@ -103,13 +108,14 @@ export function isMarketingMode(mode: PlatformMode): boolean {
   return mode === "marketing" || mode === "marketing-bizery" || mode === "marketing-orpheo";
 }
 
-// demo.menuary.it / demo.bizery.it: ambiente vetrina senza auth e con scritture
+// demo.menuary.it / demo.bizery.it / demo.weuseorpheo.com: ambiente vetrina senza auth e con scritture
 // solo-locali (localStorage). Vale anche sui loro alias .localhost.
 export function isDemoHost(host: string | null | undefined): boolean {
   const normalized = normalizeHost(host);
   return (
     PLATFORM_HOSTS.preview.includes(normalized as never) ||
-    PLATFORM_HOSTS["preview-bizery"].includes(normalized as never)
+    PLATFORM_HOSTS["preview-bizery"].includes(normalized as never) ||
+    PLATFORM_HOSTS["preview-orpheo"].includes(normalized as never)
   );
 }
 

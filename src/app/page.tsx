@@ -18,6 +18,7 @@ export default async function HomePage() {
   // marketing-bizery → gestito dal middleware con rewrite su /bizery
   if (mode === "preview") return <PreviewNoSlug mode="preview" />;
   if (mode === "preview-bizery") return <PreviewNoSlug mode="preview-bizery" />;
+  if (mode === "preview-orpheo") return <PreviewNoSlug mode="preview-orpheo" />;
   if (mode === "clients") {
     return (
       <ClientsShell>

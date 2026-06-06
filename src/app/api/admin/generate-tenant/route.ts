@@ -347,9 +347,12 @@ export async function POST(req: NextRequest) {
 
   const branch = `demo/${tenantSlug}`;
   const pascal = toPascal(tenantSlug);
-  const demoUrl = vertical === "services" || vertical === "creative"
-    ? `https://demo.bizery.it/${tenantSlug}`
-    : `https://demo.menuary.it/${tenantSlug}`;
+  const demoUrl =
+    vertical === "creative"
+      ? `https://demo.weuseorpheo.com/${tenantSlug}`
+      : vertical === "services"
+        ? `https://demo.bizery.it/${tenantSlug}`
+        : `https://demo.menuary.it/${tenantSlug}`;
 
   try {
     // 1. SHA del main → crea branch
@@ -417,9 +420,11 @@ export async function POST(req: NextRequest) {
     }
 
     const figmaUrl = animaFileCount > 0
-      ? (vertical === "services" || vertical === "creative"
-          ? `https://demo.bizery.it/${tenantSlug}/figma`
-          : `https://demo.menuary.it/${tenantSlug}/figma`)
+      ? (vertical === "creative"
+          ? `https://demo.weuseorpheo.com/${tenantSlug}/figma`
+          : vertical === "services"
+            ? `https://demo.bizery.it/${tenantSlug}/figma`
+            : `https://demo.menuary.it/${tenantSlug}/figma`)
       : null;
 
     // 7. Apri PR

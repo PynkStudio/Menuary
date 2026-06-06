@@ -63,9 +63,11 @@ export function useEffectiveFeatures() {
   const resolvedTenantFeatures = resolveTenantFeatures(tenant.features);
 
   const enabled = (module: TenantFeatureKey) =>
-    tenant.enabled &&
-    resolvedTenantFeatures[module] &&
-    resolvedLocalFeatures[module];
+    Boolean(
+      tenant.enabled &&
+        resolvedTenantFeatures[module] &&
+        resolvedLocalFeatures[module],
+    );
 
   return {
     tenantEnabled: tenant.enabled,

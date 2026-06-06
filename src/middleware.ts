@@ -204,7 +204,7 @@ async function getDisabledDemoAccess(
   // non deve tornare pubblico per un problema transitorio di lettura.
   if (!controls) {
     return {
-      vertical: mode === "preview-bizery" ? "services" : "food",
+      vertical: mode === "preview-orpheo" ? "creative" : mode === "preview-bizery" ? "services" : "food",
       officialUrl: null,
     };
   }
@@ -243,7 +243,7 @@ async function getDisabledDemoAccess(
 }
 
 function getDemoPreviewSlug(mode: PlatformMode, pathname: string): string | null {
-  if (mode !== "preview" && mode !== "preview-bizery") return null;
+  if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo") return null;
   const slug = pathname.split("/").filter(Boolean)[0];
   return slug && slug !== "demo-offline" && slug !== "k" ? slug : null;
 }
@@ -646,7 +646,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Demo gestione (demo.menuary.it/[tenant]/gestione) ────────────────────
-  if (mode === "preview" || mode === "preview-bizery") {
+  if (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") {
     const match = pathname.match(/^\/([a-z0-9-]+)\/gestione(\/.*)?$/);
     if (match) {
       const tenant = findTenantById(match[1]) ?? resolveTenantFromPreviewSlug(match[1], host);

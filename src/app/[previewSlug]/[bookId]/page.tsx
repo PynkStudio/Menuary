@@ -15,7 +15,7 @@ export default async function BookDetailRoute({
   const host = (await headers()).get("host");
   const mode = getPlatformModeFromHost(host);
 
-  if (mode !== "preview" && mode !== "preview-bizery") notFound();
+  if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo") notFound();
 
   const { previewSlug, bookId } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);

@@ -206,7 +206,7 @@ export function Footer() {
   const collaborationsEmail = useSettingsStore((state) => state.collaborationsEmailOverride.trim());
   const socialLinks = useSettingsStore((state) => state.socialLinks);
   const socialLinksConfigured = useSettingsStore((state) => state.socialLinksConfigured);
-  const isDemo = mode === "preview" || mode === "preview-bizery";
+  const isDemo = mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo";
   const isDoca = tenant.id === "doca";
   const hideVenueDetails = isTenantHomePath(pathname, tenant.id, tenant.previewSlug);
   const docaCopy = useDocaCopy();

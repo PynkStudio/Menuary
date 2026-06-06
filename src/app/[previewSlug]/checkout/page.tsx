@@ -14,7 +14,7 @@ export default async function CheckoutRoute({
   const host = (await headers()).get("host");
   const mode = getPlatformModeFromHost(host);
 
-  if (mode !== "preview" && mode !== "preview-bizery") notFound();
+  if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo") notFound();
 
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);

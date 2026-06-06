@@ -15,7 +15,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         : mode === "marketing-orpheo"
           ? ORPHEO_ORIGIN
           : siteConfig.url;
-  const isPreview = mode === "preview" || mode === "preview-bizery";
+  const isPreview = mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo";
 
   return {
     rules: {

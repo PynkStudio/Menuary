@@ -51,7 +51,7 @@ const MARKETING_EXCLUDE_IDS: Record<Vertical, Set<string>> = {
 const PREVIEW_HOST: Record<Vertical, string> = {
   food: "https://demo.menuary.it",
   services: "https://demo.bizery.it",
-  creative: "https://demo.bizery.it",
+  creative: "https://demo.weuseorpheo.com",
 };
 
 function toMarketingTenant(profile: TenantProfile): MarketingTenant {

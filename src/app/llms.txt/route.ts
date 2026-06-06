@@ -72,7 +72,7 @@ Orpheo è il verticale creative della piattaforma Menuary. I verticali gemelli s
 ## Prodotto
 
 - [Admin piattaforma](https://admin.menuary.it): controllo tenant, lead, pacchetti e pricing
-- [Demo tenant creative](https://demo.bizery.it/orpheo-demo): anteprima tecnica del vertical creativo
+- [Demo tenant creative](https://demo.weuseorpheo.com/orpheo-demo): anteprima tecnica del vertical creativo
 
 ## Moduli
 

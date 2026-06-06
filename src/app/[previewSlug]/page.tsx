@@ -18,6 +18,7 @@ import { ValentinaOrciuoliHomePage } from "@/components/tenants/valentina-orciuo
 import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pages/home";
 import { JuniorFoodHomePage } from "@/components/tenants/junior-food/pages/home";
 import { KimosHomePage } from "@/components/tenants/kimos/pages/home";
+import { OrpheoShell } from "@/components/orpheo/orpheo-shell";
 import { Footer } from "@/components/tenant-shell/footer";
 import { DocaAbout } from "@/components/tenants/doca/doca-about";
 import { getPlatformModeFromHost } from "@/lib/platform";
@@ -42,7 +43,12 @@ export async function generateMetadata({
   const content = getTenantContent(tenant.id);
   const localeConfig = getTenantLocaleConfig(tenant.id);
   const locale = requestHeaders.get(LOCALE_HEADER) ?? localeConfig?.defaultLocale;
-  const metadataOrigin = mode === "preview-bizery" ? "https://demo.bizery.it" : "https://demo.menuary.it";
+  const metadataOrigin =
+    mode === "preview-orpheo"
+      ? "https://demo.weuseorpheo.com"
+      : mode === "preview-bizery"
+        ? "https://demo.bizery.it"
+        : "https://demo.menuary.it";
   const localizedPath = localeConfig && locale ? `/${previewSlug}/${locale}` : `/${previewSlug}`;
   const isServices = tenant.vertical === "services";
   const title =
@@ -120,13 +126,45 @@ export default async function PreviewTenantHome({
   const isLocalPreviewDev =
     host?.includes("localhost") || host?.includes("127.0.0.1");
 
-  if (mode !== "preview" && mode !== "preview-bizery" && !isLocalPreviewDev) notFound();
+  if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo" && !isLocalPreviewDev) notFound();
 
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
   if (tenant.previewSlug !== previewSlug) notFound();
 
   const themeVars = tenantThemeCssVars(tenant.theme);
+
+  // ── Verticale creative (Orpheo) ─────────────────────────────────────────────
+  if (tenant.vertical === "creative") {
+    return (
+      <TenantProvider tenant={tenant}>
+        <div
+          className="min-h-screen"
+          data-tenant-surface={tenant.id}
+          style={themeVars as React.CSSProperties}
+        >
+          {tenant.id === "valentina-orciuoli" ? (
+            <ValentinaOrciuoliHomePage />
+          ) : (
+            <OrpheoShell>
+              <div className="menuary-container py-24">
+                <p className="menuary-section-label">Demo Orpheo</p>
+                <h1
+                  className="mt-6 max-w-3xl text-[clamp(3rem,7vw,6rem)] font-medium leading-[1.02] tracking-[-0.02em]"
+                  style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
+                >
+                  {tenant.name}
+                </h1>
+                <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[var(--menuary-muted)]">
+                  Profilo creativo, catalogo opere, booking e fanbase su piattaforma Orpheo.
+                </p>
+              </div>
+            </OrpheoShell>
+          )}
+        </div>
+      </TenantProvider>
+    );
+  }
 
   // ── Verticale services (Bizery) ──────────────────────────────────────────────
   if (tenant.vertical === "services") {
@@ -141,8 +179,6 @@ export default async function PreviewTenantHome({
             <OfficinaKamHomePage />
           ) : tenant.id === "libritech" ? (
             <LibritechHomePage />
-          ) : tenant.id === "valentina-orciuoli" ? (
-            <ValentinaOrciuoliHomePage />
           ) : tenant.id === "studioaranzulla" ? (
             <StudioAranzullaHomePage />
           ) : (

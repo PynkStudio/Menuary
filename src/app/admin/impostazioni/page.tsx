@@ -444,8 +444,9 @@ export default function AdminImpostazioniPage() {
                     },
                     module.key,
                   );
-                  const checked =
-                    availableInPlan && resolvedLocalFeatureFlags[module.key];
+                  const checked = Boolean(
+                    availableInPlan && resolvedLocalFeatureFlags[module.key],
+                  );
                   const dependencyNote = formatFeatureDependencies(module.key);
                   const suspension = settings.moduleSuspensions[module.key];
                   const activeSuspension = isModuleSuspensionActive(

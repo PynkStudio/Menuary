@@ -1,11 +1,12 @@
 interface PreviewNoSlugProps {
-  mode: "preview" | "preview-bizery";
+  mode: "preview" | "preview-bizery" | "preview-orpheo";
 }
 
 export function PreviewNoSlug({ mode }: PreviewNoSlugProps) {
   const isBizery = mode === "preview-bizery";
-  const domain = isBizery ? "demo.bizery.it" : "demo.menuary.it";
-  const placeholder = isBizery ? "la-tua-azienda" : "il-tuo-locale";
+  const isOrpheo = mode === "preview-orpheo";
+  const domain = isOrpheo ? "demo.weuseorpheo.com" : isBizery ? "demo.bizery.it" : "demo.menuary.it";
+  const placeholder = isOrpheo ? "il-tuo-profilo" : isBizery ? "la-tua-azienda" : "il-tuo-locale";
 
   return (
     <div

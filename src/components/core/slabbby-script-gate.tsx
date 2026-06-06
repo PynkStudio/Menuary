@@ -28,7 +28,7 @@ export function SlabbbyScriptGate({ skipInPreview = false }: { skipInPreview?: b
   const isPathPreview =
     !!tenant.previewSlug &&
     (pathname === `/${tenant.previewSlug}` || pathname?.startsWith(`/${tenant.previewSlug}/`));
-  if (skipInPreview && (mode === "preview" || mode === "preview-bizery" || isPathPreview)) return null;
+  if (skipInPreview && (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo" || isPathPreview)) return null;
 
   // Prima della reidratazione usiamo il valore statico del registry per coerenza con l'SSR.
   // Dopo la reidratazione applichiamo le override dell'admin.

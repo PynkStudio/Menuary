@@ -1,4 +1,4 @@
-// Demo mode (demo.menuary.it / demo.bizery.it).
+// Demo mode (demo.menuary.it / demo.bizery.it / demo.weuseorpheo.com).
 // Su demo, /gestione è accessibile senza login e qualsiasi mutazione su
 // /api/gestione/* viene intercettata lato client: nessuna chiamata reale al
 // server, lo stato vive solo in localStorage (scoped per tenant). I dati
@@ -11,7 +11,8 @@ export function isDemoHostname(hostname: string): boolean {
   const h = hostname.toLowerCase();
   return (
     (PLATFORM_HOSTS.preview as readonly string[]).includes(h) ||
-    (PLATFORM_HOSTS["preview-bizery"] as readonly string[]).includes(h)
+    (PLATFORM_HOSTS["preview-bizery"] as readonly string[]).includes(h) ||
+    (PLATFORM_HOSTS["preview-orpheo"] as readonly string[]).includes(h)
   );
 }
 

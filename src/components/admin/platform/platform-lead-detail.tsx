@@ -600,7 +600,7 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
             lead.demo_url
               ? `${lead.demo_url}/figma`
               : lead.business_vertical === "creative"
-                ? `https://demo.bizery.it/${lead.business_slug}/figma`
+                ? `https://demo.weuseorpheo.com/${lead.business_slug}/figma`
               : lead.business_vertical === "services"
                 ? `https://demo.bizery.it/${lead.business_slug}/figma`
                 : `https://demo.menuary.it/${lead.business_slug}/figma`

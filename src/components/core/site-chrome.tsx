@@ -20,6 +20,7 @@ const EXCLUDED_MODES = new Set([
   "platform-admin",
   "preview",
   "preview-bizery",
+  "preview-orpheo",
   "login",
   "gestione",
   "gestione-bizery",

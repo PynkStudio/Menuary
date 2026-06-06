@@ -97,6 +97,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const isTenantPreview =
     mode === "preview" ||
     mode === "preview-bizery" ||
+    mode === "preview-orpheo" ||
     Boolean(previewTenantId);
 
   if (mode === "platform-admin") {
@@ -501,7 +502,7 @@ export default async function RootLayout({
   const mode = getPlatformModeFromHeaderValue(reqHeaders.get(PLATFORM_MODE_HEADER), host);
   const themeVars = tenantThemeCssVars(tenant.theme);
   const tenantSiteDisabled =
-    (mode === "tenant" || mode === "preview" || mode === "preview-bizery") &&
+    (mode === "tenant" || mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") &&
     (!tenant.enabled || tenant.status === "offline");
 
   // Fetch sedi solo per tenant con multiLocation abilitato in modalità tenant site.
@@ -518,7 +519,7 @@ export default async function RootLayout({
   // Per i mode Bizery il contenuto tenant non è rilevante (shell propria, nessun JSON-LD).
   const isBizeryMode =
     mode === "marketing-bizery" || mode === "gestione-bizery" || mode === "preview-bizery";
-  const isOrpheoMode = mode === "marketing-orpheo";
+  const isOrpheoMode = mode === "marketing-orpheo" || mode === "preview-orpheo";
   const content = isBizeryMode || isOrpheoMode ? null : getTenantContent(tenant.id);
   const showRestaurantJsonLd = mode === "tenant" && tenant.id === "bepork" && content !== null;
   const marketingBrand =

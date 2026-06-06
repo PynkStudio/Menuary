@@ -11,7 +11,7 @@ export default async function NotFound() {
   const mode = getPlatformModeFromHost(host);
 
   // ── Stile per portali Menuary (admin, login, clienti, studio, gestione, marketing) ──
-  if (mode !== "tenant" && mode !== "preview" && mode !== "preview-bizery") {
+  if (mode !== "tenant" && mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo") {
     const labelByMode: Record<string, string> = {
       marketing: "Menuary",
       "marketing-bizery": "Bizery",

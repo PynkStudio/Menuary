@@ -28,6 +28,7 @@ import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 const PREVIEW_HOST: Record<string, string> = {
   food: "https://demo.menuary.it",
   services: "https://demo.bizery.it",
+  creative: "https://demo.weuseorpheo.com",
 };
 
 const STATUS_BADGE: Record<TenantStatus, { label: string; className: string }> = {

@@ -120,10 +120,11 @@ export function buildTenantManagementUrl(tenantId: string, next: string | null =
 export function buildTenantDemoManagementUrl(tenantId: string, next: string | null = null): string {
   const tenant = findTenantById(tenantId);
   const isServices = tenant?.vertical === "services";
+  const isCreative = tenant?.vertical === "creative";
   const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
   const host = process.env.NODE_ENV === "production"
-    ? isServices ? "demo.bizery.it" : "demo.menuary.it"
-    : isServices ? "demo.bizery.localhost" : "demo.menuary.localhost";
+    ? isCreative ? "demo.weuseorpheo.com" : isServices ? "demo.bizery.it" : "demo.menuary.it"
+    : isCreative ? "demo.weuseorpheo.localhost" : isServices ? "demo.bizery.localhost" : "demo.menuary.localhost";
   const port = process.env.NODE_ENV === "production" ? "" : ":3000";
   return `${protocol}://${host}${port}/${tenantId}/gestione${next ?? ""}`;
 }
