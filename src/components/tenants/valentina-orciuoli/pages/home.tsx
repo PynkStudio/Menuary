@@ -1,9 +1,8 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, BookOpen, ExternalLink, Instagram, Moon, Sparkles } from "lucide-react";
-import type { CSSProperties } from "react";
+import { motion } from "framer-motion";
+import { ArrowRight, ExternalLink, Instagram } from "lucide-react";
 
 const amazonHref = "https://www.amazon.it/Anxiety-Valentina-Orciuoli-ebook/dp/B0F1KVZKFC";
 const furyHref = "https://www.amazon.it/Fury-Emotion-Dragons-Trilogy-Vol-ebook/dp/B0GKWCS774";
@@ -43,93 +42,48 @@ const trilogy = [
   },
 ];
 
-function ImperialDragon() {
-  const shouldReduceMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, -8]);
-
-  return (
-    <motion.div
-      className="vo-dragon-field"
-      style={{ y, rotate }}
-      aria-hidden="true"
-      animate={shouldReduceMotion ? undefined : { x: [0, 18, -10, 0] }}
-      transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <div className="vo-dragon-spine">
-        {Array.from({ length: 18 }).map((_, index) => {
-          const scale = 1 + Math.sin(index / 2) * 0.08;
-          return (
-            <span
-              key={index}
-              style={
-                {
-                  "--left": `${index * 4.8}%`,
-                  "--offset": `${(index - 8) * 0.18}rem`,
-                  "--rot": `${-20 + index * 3}deg`,
-                  "--scale": scale.toFixed(3),
-                } as CSSProperties
-              }
-            />
-          );
-        })}
-      </div>
-      <div className="vo-dragon-head">
-        <span className="vo-dragon-eye" />
-        <span className="vo-dragon-horn vo-dragon-horn-a" />
-        <span className="vo-dragon-horn vo-dragon-horn-b" />
-      </div>
-    </motion.div>
-  );
-}
-
 export function ValentinaOrciuoliHomePage() {
   return (
     <main className="vo-site">
-      <div className="vo-atmosphere" aria-hidden="true">
-        <div className="vo-moon" />
-        <div className="vo-cloud vo-cloud-a" />
-        <div className="vo-cloud vo-cloud-b" />
-        <div className="vo-particles" />
-        <ImperialDragon />
-      </div>
-
-      <header className="vo-header">
-        <a className="vo-brand" href="#top" aria-label="Valentina Orciuoli">
-          <span className="vo-brand-mark">VO</span>
-          <span>Valentina Orciuoli</span>
-        </a>
-        <nav className="vo-nav" aria-label="Menu principale">
-          <a href="#libri">Libri</a>
-          <a href="#trilogia">Trilogia</a>
-          <a href="#autrice">Autrice</a>
-          <a href="#contatti">Contatti</a>
-        </nav>
-      </header>
-
       <section id="top" className="vo-hero">
-        <motion.div
-          className="vo-hero-copy"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <h1>Valentina Orciuoli</h1>
-          <p>
-            Fantasy orientale, emozioni antiche e draghi che respirano luce. Una saga in cui
-            il mondo interiore diventa mitologia.
-          </p>
-          <div className="vo-hero-actions">
-            <a className="vo-btn vo-btn-primary" href={amazonHref} target="_blank" rel="noopener noreferrer">
-              Scopri Anxiety <ArrowRight size={16} />
-            </a>
-            <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
-              Segui l&apos;autrice <ExternalLink size={15} />
-            </a>
-          </div>
-        </motion.div>
+        <div className="vo-hero-art" aria-hidden="true" />
+        <div className="vo-hero-shade" aria-hidden="true" />
+        <header className="vo-header">
+          <a className="vo-brand" href="#top" aria-label="Valentina Orciuoli">
+            <span className="vo-brand-mark">VO</span>
+          </a>
+          <nav className="vo-nav" aria-label="Menu principale">
+            <a href="#top">Home</a>
+            <a href="#libri">Libri</a>
+            <a href="#autrice">Autrice</a>
+            <a href="#contatti">Contatti</a>
+          </nav>
+        </header>
 
+        <div className="vo-hero-inner">
+          <motion.div
+            className="vo-hero-copy"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <h1>Valentina Orciuoli</h1>
+            <div className="vo-title-rule" aria-hidden="true" />
+            <p>Fantasy orientale, emozioni antiche e draghi che respirano luce.</p>
+            <div className="vo-hero-actions">
+              <a className="vo-btn vo-btn-primary" href={amazonHref} target="_blank" rel="noopener noreferrer">
+                Scopri Anxiety <ArrowRight size={16} />
+              </a>
+              <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
+                Segui l&apos;autrice <ArrowRight size={16} />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="libri" className="vo-book-showcase">
+        <div className="vo-ink-bg" aria-hidden="true" />
         <motion.a
           className="vo-book-feature"
           href={amazonHref}
@@ -146,37 +100,28 @@ export function ValentinaOrciuoliHomePage() {
               alt="Anxiety di Valentina Orciuoli"
             />
           </div>
-          <div className="vo-book-meta">
-            <BookOpen size={16} />
-            <span>The Emotion Dragons Trilogy · Volume I</span>
-          </div>
         </motion.a>
-      </section>
-
-      <section id="libri" className="vo-section vo-book-section">
-        <div className="vo-section-copy">
-          <Moon size={22} />
+        <div className="vo-book-copy">
+          <span className="vo-dragon-mark">龍</span>
           <h2>Anxiety</h2>
+          <small>The Emotion Dragons Trilogy · Volume I</small>
           <p>
             Il primo libro della trilogia porta Neirè dentro le mura del palazzo imperiale
             di Errethera e trasforma l&apos;ansia in potere, drago e percorso di liberazione.
             Romantic fantasy dai tratti orientali, pubblicato il 17 marzo 2025.
           </p>
-        </div>
-        <div className="vo-book-panel">
-          <span>Primo volume</span>
-          <strong>The Emotion Dragons Trilogy</strong>
-          <p>Disponibile in formato Kindle su Amazon Italia.</p>
           <a href={amazonHref} target="_blank" rel="noopener noreferrer">
-            Acquista su Amazon <ArrowRight size={14} />
+            Scopri di più <ArrowRight size={15} />
           </a>
         </div>
       </section>
 
       <section id="trilogia" className="vo-section vo-trilogy-section">
-        <div className="vo-section-title">
-          <Sparkles size={22} />
-          <h2>Ogni emozione ha il suo drago.</h2>
+        <div className="vo-trilogy-bg" aria-hidden="true" />
+        <div className="vo-trilogy-intro">
+          <span className="vo-dragon-mark">The Emotion Dragons Trilogy</span>
+          <h2>I libri</h2>
+          <p>Storie che uniscono l&apos;oriente e il cuore.</p>
         </div>
         <div className="vo-trilogy-grid">
           {trilogy.map((book) => (
@@ -204,8 +149,9 @@ export function ValentinaOrciuoliHomePage() {
       </section>
 
       <section id="autrice" className="vo-section vo-author-section">
-        <div>
-          <h2>Un&apos;autrice per chi ama il fantastico quando parla di cose vere.</h2>
+        <div className="vo-author-copy">
+          <span className="vo-dragon-mark">Chi è</span>
+          <h2>Valentina</h2>
           <p>
             Valentina Orciuoli studia comunicazione e marketing dopo una laurea in
             relazioni internazionali. Scrive fantasy, storie di draghi, magia e romance:

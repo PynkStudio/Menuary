@@ -1,22 +1,18 @@
 @layer components {
   .vo-site {
-    --vo-bg: #050506;
-    --vo-ink: #f7eedc;
-    --vo-muted: rgba(247, 238, 220, 0.72);
-    --vo-dim: rgba(247, 238, 220, 0.48);
-    --vo-gold: #d7a944;
-    --vo-gold-soft: #f1d17c;
-    --vo-cinnabar: #a12b24;
-    --vo-cinnabar-dark: #671713;
-    --vo-jade: #6e8b69;
-    --vo-line: rgba(241, 209, 124, 0.22);
-    position: relative;
+    --vo-black: #050505;
+    --vo-ink: #080706;
+    --vo-paper: #d9c29a;
+    --vo-gold: #d8ad5a;
+    --vo-gold-soft: #f2d894;
+    --vo-muted: rgba(242, 216, 148, 0.72);
+    --vo-cinnabar: #971f18;
+    --vo-cinnabar-dark: #5e100c;
+    --vo-line: rgba(216, 173, 90, 0.34);
     min-height: 100vh;
     overflow: clip;
-    background:
-      radial-gradient(circle at 78% 10%, rgba(215, 169, 68, 0.16), transparent 22rem),
-      linear-gradient(180deg, #050506 0%, #080605 46%, #120b08 100%);
-    color: var(--vo-ink);
+    background: var(--vo-black);
+    color: var(--vo-gold-soft);
     font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   }
 
@@ -25,413 +21,390 @@
     text-decoration: none;
   }
 
-  .vo-atmosphere {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  .vo-moon {
-    position: absolute;
-    top: clamp(4rem, 8vw, 7rem);
-    right: clamp(-5rem, 5vw, 5rem);
-    width: clamp(18rem, 34vw, 34rem);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.9), transparent 0.35rem),
-      radial-gradient(circle at 64% 58%, rgba(35, 31, 28, 0.16), transparent 4rem),
-      radial-gradient(circle at 50% 50%, #fff8dc 0%, #e9d18b 46%, #a9732d 72%, rgba(169, 115, 45, 0) 73%);
-    box-shadow: 0 0 5rem rgba(241, 209, 124, 0.35), 0 0 11rem rgba(215, 169, 68, 0.2);
-    opacity: 0.92;
-  }
-
-  .vo-cloud {
-    position: absolute;
-    border-radius: 999px;
-    background: radial-gradient(ellipse at center, rgba(223, 212, 187, 0.22), rgba(223, 212, 187, 0));
-    filter: blur(22px);
-    opacity: 0.85;
-    animation: vo-cloud-drift 18s ease-in-out infinite;
-  }
-
-  .vo-cloud-a {
-    top: 18%;
-    left: -8%;
-    width: 48vw;
-    height: 14rem;
-  }
-
-  .vo-cloud-b {
-    right: -10%;
-    bottom: 20%;
-    width: 56vw;
-    height: 16rem;
-    animation-delay: -7s;
-  }
-
-  .vo-particles {
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(circle, rgba(241, 209, 124, 0.88) 0 1px, transparent 1.5px),
-      radial-gradient(circle, rgba(110, 139, 105, 0.46) 0 1px, transparent 1.5px);
-    background-position: 0 0, 28px 44px;
-    background-size: 92px 92px, 138px 138px;
-    mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 76%, transparent 100%);
-    opacity: 0.24;
-    animation: vo-sparkle 10s linear infinite;
-  }
-
-  .vo-dragon-field {
-    position: absolute;
-    top: 19vh;
-    left: 18vw;
-    width: min(72rem, 88vw);
-    height: 28rem;
-    opacity: 0.88;
-    transform-origin: 70% 50%;
-  }
-
-  .vo-dragon-spine {
-    position: absolute;
-    inset: 0;
-  }
-
-  .vo-dragon-spine span {
-    --left: 0%;
-    --offset: 0rem;
-    --rot: -20deg;
-    --scale: 1;
-    position: absolute;
-    left: var(--left);
-    top: 42%;
-    width: clamp(2.1rem, 4vw, 4.7rem);
-    aspect-ratio: 1.45;
-    border-radius: 55% 45% 48% 52%;
-    background:
-      linear-gradient(145deg, rgba(255, 239, 178, 0.95), rgba(151, 33, 25, 0.7) 45%, rgba(9, 8, 6, 0.88) 78%),
-      radial-gradient(circle at 35% 26%, rgba(255, 255, 255, 0.64), transparent 24%);
-    border: 1px solid rgba(241, 209, 124, 0.28);
-    box-shadow: 0 0 1rem rgba(215, 169, 68, 0.18);
-    transform: translateY(var(--offset)) rotate(var(--rot)) scale(var(--scale));
-  }
-
-  .vo-dragon-spine span:nth-child(2n) {
-    margin-top: 1.6rem;
-  }
-
-  .vo-dragon-spine span:nth-child(3n) {
-    margin-top: -1.2rem;
-  }
-
-  .vo-dragon-head {
-    position: absolute;
-    right: 0;
-    top: 30%;
-    width: clamp(5rem, 10vw, 9rem);
-    aspect-ratio: 1.2;
-    border-radius: 42% 58% 48% 52%;
-    background:
-      radial-gradient(circle at 72% 38%, #fff4b8 0 0.28rem, transparent 0.32rem),
-      linear-gradient(135deg, #e0b758, #9f2d21 48%, #11100d 86%);
-    border: 1px solid rgba(241, 209, 124, 0.38);
-    box-shadow: 0 0 2.6rem rgba(215, 169, 68, 0.26);
-  }
-
-  .vo-dragon-eye {
-    position: absolute;
-    top: 35%;
-    right: 24%;
-    width: 0.55rem;
-    height: 0.55rem;
-    border-radius: 50%;
-    background: #f9e98e;
-    box-shadow: 0 0 1.2rem #f9e98e;
-  }
-
-  .vo-dragon-horn {
-    position: absolute;
-    width: 1.8rem;
-    height: 0.7rem;
-    border-radius: 100% 0 100% 0;
-    background: #f2d891;
-  }
-
-  .vo-dragon-horn-a {
-    top: -0.35rem;
-    right: 2.1rem;
-    rotate: -28deg;
-  }
-
-  .vo-dragon-horn-b {
-    top: 0.15rem;
-    right: 3.7rem;
-    rotate: -48deg;
-    opacity: 0.75;
-  }
-
-  .vo-header,
-  .vo-hero,
-  .vo-section,
-  .vo-footer {
+  .vo-hero {
     position: relative;
-    z-index: 1;
-    width: min(100% - 2rem, 1180px);
-    margin-inline: auto;
+    min-height: 100svh;
+    overflow: hidden;
+    isolation: isolate;
+    background: #050505;
+  }
+
+  .vo-hero-art,
+  .vo-hero-shade {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+
+  .vo-hero-art {
+    background-image: url("/valentina-orciuoli/hero-dragon-moon.png");
+    background-position: center;
+    background-size: cover;
+    transform: scale(1.02);
+  }
+
+  .vo-hero-shade {
+    z-index: -1;
+    background:
+      radial-gradient(circle at 30% 37%, rgba(216, 173, 90, 0.14), transparent 18rem),
+      linear-gradient(90deg, rgba(5, 5, 5, 0.42) 0%, rgba(5, 5, 5, 0.22) 42%, rgba(5, 5, 5, 0.04) 70%),
+      linear-gradient(180deg, rgba(5, 5, 5, 0.08) 0%, rgba(5, 5, 5, 0) 58%, #050505 100%);
+  }
+
+  .vo-hero::after,
+  .vo-book-showcase::after,
+  .vo-trilogy-section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle, rgba(242, 216, 148, 0.52) 0 1px, transparent 1.5px),
+      radial-gradient(circle, rgba(242, 216, 148, 0.2) 0 1px, transparent 1.5px);
+    background-position: 0 0, 36px 58px;
+    background-size: 120px 120px, 180px 180px;
+    opacity: 0.22;
+    mix-blend-mode: screen;
   }
 
   .vo-header {
-    position: sticky;
-    top: 0;
-    z-index: 20;
+    position: relative;
+    z-index: 3;
     display: flex;
+    width: min(100% - 6rem, 1220px);
+    margin-inline: auto;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1.1rem 0;
-    backdrop-filter: blur(18px);
-  }
-
-  .vo-brand,
-  .vo-nav {
-    display: flex;
-    align-items: center;
-  }
-
-  .vo-brand {
-    gap: 0.75rem;
-    font-weight: 700;
+    gap: 2rem;
+    padding: 2rem 0 0;
   }
 
   .vo-brand-mark {
     display: grid;
-    width: 2.45rem;
-    height: 2.45rem;
+    width: 4.7rem;
+    height: 4.7rem;
     place-items: center;
-    border: 1px solid var(--vo-line);
-    background: rgba(5, 5, 6, 0.72);
+    border-bottom: 2px solid var(--vo-gold);
     color: var(--vo-gold-soft);
-    font-family: Georgia, serif;
-    font-size: 0.86rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 2.15rem;
+    line-height: 1;
+    text-shadow: 0 0 1.5rem rgba(216, 173, 90, 0.34);
   }
 
   .vo-nav {
-    gap: clamp(0.7rem, 2vw, 1.5rem);
-    color: var(--vo-muted);
-    font-size: 0.88rem;
-  }
-
-  .vo-nav a:hover {
-    color: var(--vo-gold-soft);
-  }
-
-  .vo-hero {
-    display: grid;
-    min-height: calc(100vh - 5rem);
-    grid-template-columns: minmax(0, 1.06fr) minmax(18rem, 0.62fr);
+    display: flex;
     align-items: center;
-    gap: clamp(2rem, 6vw, 5rem);
-    padding: clamp(3rem, 7vw, 7rem) 0 clamp(5rem, 8vw, 8rem);
+    gap: clamp(1.5rem, 4vw, 4.6rem);
+    color: var(--vo-gold-soft);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  .vo-nav a {
+    position: relative;
+    opacity: 0.9;
+  }
+
+  .vo-nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.8rem;
+    width: 0;
+    height: 1px;
+    background: var(--vo-gold);
+    transition: width 180ms ease;
+  }
+
+  .vo-nav a:hover::after {
+    width: 100%;
+  }
+
+  .vo-hero-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    width: min(100% - 6rem, 1220px);
+    min-height: calc(100svh - 7rem);
+    margin-inline: auto;
+    align-items: center;
+    padding: 3rem 0 8rem;
+  }
+
+  .vo-hero-copy {
+    max-width: min(54rem, 58vw);
+    padding-top: clamp(2rem, 8vw, 8rem);
   }
 
   .vo-hero-copy h1 {
-    max-width: 10ch;
     margin: 0;
+    color: #e5c77d;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(4.5rem, 13vw, 12rem);
-    font-weight: 500;
-    line-height: 0.82;
+    font-size: clamp(5.4rem, 11.8vw, 12.8rem);
+    font-weight: 400;
+    letter-spacing: -0.05em;
+    line-height: 0.78;
+    text-shadow:
+      0 0 1rem rgba(216, 173, 90, 0.2),
+      0 1px 0 rgba(255, 246, 206, 0.26);
     text-wrap: balance;
   }
 
+  .vo-title-rule {
+    width: min(26rem, 68%);
+    height: 1px;
+    margin: 1.6rem 0 1.45rem;
+    background:
+      linear-gradient(90deg, transparent, var(--vo-gold), transparent);
+    box-shadow: 0 0 1rem rgba(216, 173, 90, 0.4);
+  }
+
   .vo-hero-copy p {
-    max-width: 42rem;
-    margin: 1.5rem 0 0;
-    color: var(--vo-muted);
-    font-size: clamp(1.08rem, 1.8vw, 1.45rem);
-    line-height: 1.65;
+    max-width: 35rem;
+    margin: 0;
+    color: #f3dfaf;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.25rem, 1.8vw, 1.8rem);
+    line-height: 1.45;
+    text-align: center;
+    text-shadow: 0 0 1rem rgba(0, 0, 0, 0.82);
   }
 
   .vo-hero-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.85rem;
-    margin-top: 2rem;
+    gap: 1.1rem;
+    margin-top: 2.2rem;
   }
 
   .vo-btn {
     display: inline-flex;
-    min-height: 3.05rem;
+    min-height: 3.5rem;
+    min-width: 13.8rem;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    border: 1px solid transparent;
-    padding: 0.85rem 1.15rem;
-    font-size: 0.94rem;
-    font-weight: 750;
+    gap: 0.65rem;
+    border: 1px solid var(--vo-line);
+    padding: 0.9rem 1.35rem;
+    color: #f5d995;
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+  }
+
+  .vo-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(242, 216, 148, 0.64);
   }
 
   .vo-btn-primary {
-    background: linear-gradient(135deg, var(--vo-cinnabar), var(--vo-cinnabar-dark));
-    color: #fff8ea;
-    box-shadow: 0 1rem 3rem rgba(161, 43, 36, 0.28);
+    background: linear-gradient(180deg, #a42a22, #701711);
+    box-shadow: 0 1.2rem 3.4rem rgba(151, 31, 24, 0.38);
   }
 
   .vo-btn-secondary {
-    border-color: var(--vo-line);
-    background: rgba(5, 5, 6, 0.48);
-    color: var(--vo-gold-soft);
+    background: rgba(5, 5, 5, 0.42);
+  }
+
+  .vo-book-showcase {
+    position: relative;
+    display: grid;
+    min-height: 58rem;
+    grid-template-columns: minmax(17rem, 0.82fr) minmax(20rem, 1fr);
+    gap: clamp(3rem, 7vw, 7rem);
+    align-items: center;
+    overflow: hidden;
+    padding: clamp(5rem, 8vw, 8rem) max(2rem, calc((100vw - 1180px) / 2));
+    background:
+      radial-gradient(circle at 72% 48%, rgba(216, 173, 90, 0.14), transparent 22rem),
+      linear-gradient(180deg, #050505 0%, #070605 42%, #0a0806 100%);
+  }
+
+  .vo-ink-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, #050505 0%, rgba(5, 5, 5, 0.18) 18%, rgba(5, 5, 5, 0.26) 72%, #050505 100%),
+      url("/valentina-orciuoli/ink-trilogy-bg.png") center / cover no-repeat;
+    opacity: 0.78;
+  }
+
+  .vo-book-feature,
+  .vo-book-copy {
+    position: relative;
+    z-index: 1;
   }
 
   .vo-book-feature {
-    justify-self: end;
-    width: min(100%, 22rem);
+    display: block;
+    justify-self: center;
+    width: min(100%, 24rem);
+    transform: rotate(-1.5deg);
   }
 
   .vo-book-cover {
     position: relative;
-    aspect-ratio: 2 / 3;
     overflow: hidden;
-    border: 1px solid rgba(241, 209, 124, 0.34);
-    background: #120b08;
-    box-shadow: -1.2rem 1.6rem 4rem rgba(0, 0, 0, 0.55), 0 0 4rem rgba(215, 169, 68, 0.18);
+    aspect-ratio: 691 / 1024;
+    border: 1px solid rgba(216, 173, 90, 0.46);
+    background: #15110d;
+    box-shadow:
+      -1rem 1.4rem 3rem rgba(0, 0, 0, 0.72),
+      0 0 0 0.55rem rgba(216, 173, 90, 0.08),
+      0 0 4rem rgba(216, 173, 90, 0.18);
   }
 
-  .vo-book-cover img {
+  .vo-book-cover img,
+  .vo-trilogy-cover img,
+  .vo-author-seal img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
   }
 
-  .vo-book-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    margin-top: 1rem;
+  .vo-book-copy {
+    max-width: 40rem;
+  }
+
+  .vo-dragon-mark {
+    display: block;
+    color: var(--vo-gold);
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .vo-book-copy .vo-dragon-mark {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 2rem;
+    letter-spacing: 0;
+  }
+
+  .vo-book-copy h2,
+  .vo-trilogy-intro h2,
+  .vo-author-copy h2 {
+    margin: 0.4rem 0 0;
+    color: var(--vo-gold);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(4.2rem, 8vw, 8.2rem);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 0.9;
+    text-transform: uppercase;
+  }
+
+  .vo-book-copy small {
+    display: block;
+    margin-top: 0.8rem;
     color: var(--vo-gold-soft);
-    font-size: 0.86rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .vo-book-copy p,
+  .vo-author-copy p {
+    max-width: 31rem;
+    margin: 2rem 0 0;
+    color: rgba(248, 226, 175, 0.86);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.07rem;
+    line-height: 1.72;
+  }
+
+  .vo-book-copy a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-top: 1.6rem;
+    color: var(--vo-gold);
+    font-size: 0.8rem;
+    font-weight: 850;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .vo-section {
-    padding: clamp(4rem, 8vw, 7rem) 0;
-    border-top: 1px solid var(--vo-line);
+    position: relative;
+    overflow: hidden;
+    padding: clamp(5rem, 8vw, 8rem) max(2rem, calc((100vw - 1180px) / 2));
   }
 
-  .vo-book-section,
-  .vo-author-section {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.7fr);
-    gap: clamp(2rem, 6vw, 5rem);
-    align-items: center;
+  .vo-trilogy-section {
+    min-height: 54rem;
+    background: #050505;
   }
 
-  .vo-section-copy svg,
-  .vo-section-title svg {
-    color: var(--vo-gold);
-  }
-
-  .vo-section h2,
-  .vo-section-title h2 {
-    margin: 0.65rem 0 0;
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(2.5rem, 6vw, 5.7rem);
-    font-weight: 500;
-    line-height: 0.96;
-  }
-
-  .vo-section p {
-    max-width: 46rem;
-    color: var(--vo-muted);
-    font-size: 1.04rem;
-    line-height: 1.8;
-  }
-
-  .vo-book-panel,
-  .vo-author-seal,
-  .vo-trilogy-card {
-    border: 1px solid var(--vo-line);
+  .vo-trilogy-bg {
+    position: absolute;
+    inset: 0;
     background:
-      linear-gradient(180deg, rgba(241, 209, 124, 0.08), rgba(5, 5, 6, 0.52)),
-      rgba(10, 8, 7, 0.72);
+      linear-gradient(180deg, #050505 0%, rgba(5, 5, 5, 0.1) 16%, rgba(5, 5, 5, 0.04) 70%, #050505 100%),
+      url("/valentina-orciuoli/ink-trilogy-bg.png") center / cover no-repeat;
+    opacity: 0.95;
   }
 
-  .vo-book-panel {
-    padding: clamp(1.4rem, 3vw, 2.2rem);
+  .vo-trilogy-intro,
+  .vo-trilogy-grid {
+    position: relative;
+    z-index: 1;
   }
 
-  .vo-book-panel span,
-  .vo-trilogy-card small {
-    color: var(--vo-gold-soft);
-    font-size: 0.8rem;
+  .vo-trilogy-intro {
+    max-width: 33rem;
+    color: #1b120a;
+  }
+
+  .vo-trilogy-intro .vo-dragon-mark {
+    color: #6b3e16;
+  }
+
+  .vo-trilogy-intro h2 {
+    color: #18100a;
+    font-size: clamp(3.2rem, 6vw, 5.8rem);
+  }
+
+  .vo-trilogy-intro p {
+    margin: 0.8rem 0 0;
+    color: #2a1a0e;
+    font-size: 0.9rem;
     font-weight: 800;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-  }
-
-  .vo-book-panel strong {
-    display: block;
-    margin-top: 0.55rem;
-    font-family: Georgia, serif;
-    font-size: clamp(1.7rem, 3vw, 2.4rem);
-    font-weight: 500;
-  }
-
-  .vo-book-panel a,
-  .vo-trilogy-card a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    color: var(--vo-gold-soft);
-    font-weight: 800;
-  }
-
-  .vo-book-panel a {
-    margin-top: 1rem;
-  }
-
-  .vo-trilogy-card a {
-    margin-top: 0.75rem;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-  }
-
-  .vo-section-title {
-    display: grid;
-    gap: 0.6rem;
-    max-width: 58rem;
   }
 
   .vo-trilogy-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: clamp(1.3rem, 4vw, 4rem);
+    margin-top: clamp(3rem, 6vw, 5.5rem);
+    margin-left: clamp(0rem, 14vw, 15rem);
   }
 
   .vo-trilogy-card {
-    min-height: 28rem;
-    padding: 1.35rem;
+    color: var(--vo-gold-soft);
   }
 
   .vo-trilogy-cover {
     position: relative;
     overflow: hidden;
-    width: min(100%, 13.5rem);
+    width: min(100%, 15rem);
     aspect-ratio: 691 / 1024;
-    border: 1px solid rgba(241, 209, 124, 0.32);
+    border: 1px solid rgba(216, 173, 90, 0.56);
     background:
-      radial-gradient(circle at 50% 20%, rgba(241, 209, 124, 0.16), transparent 38%),
-      linear-gradient(180deg, rgba(6, 5, 5, 0.82), rgba(18, 11, 8, 0.96));
-    box-shadow: 0 1.4rem 3rem rgba(0, 0, 0, 0.36);
-  }
-
-  .vo-trilogy-cover img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+      radial-gradient(circle at 50% 20%, rgba(216, 173, 90, 0.18), transparent 38%),
+      linear-gradient(180deg, rgba(6, 5, 5, 0.86), rgba(18, 11, 8, 0.98));
+    box-shadow:
+      0 1.4rem 3rem rgba(0, 0, 0, 0.44),
+      0 0 0 0.35rem rgba(216, 173, 90, 0.08);
   }
 
   .vo-trilogy-cover[data-empty="true"] {
@@ -440,8 +413,8 @@
   }
 
   .vo-trilogy-cover[data-empty="true"] span {
-    color: var(--vo-gold-soft);
-    font-family: Georgia, serif;
+    color: rgba(242, 216, 148, 0.42);
+    font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(3rem, 6vw, 5.4rem);
     line-height: 1;
   }
@@ -450,114 +423,227 @@
     display: block;
     margin-top: 1.1rem;
     color: var(--vo-gold-soft);
-    font-size: 0.78rem;
+    font-size: 0.74rem;
     font-weight: 800;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
   }
 
   .vo-trilogy-card h3 {
-    margin: 0.45rem 0 0.75rem;
-    font-family: Georgia, serif;
-    font-size: 2rem;
-    font-weight: 500;
+    margin: 0.45rem 0 0.6rem;
+    color: var(--vo-gold);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    font-weight: 400;
+    letter-spacing: 0.03em;
   }
 
   .vo-trilogy-card p {
-    font-size: 0.95rem;
-    line-height: 1.65;
+    max-width: 17rem;
+    margin: 0;
+    color: rgba(242, 216, 148, 0.75);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .vo-trilogy-card a,
+  .vo-trilogy-card small {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.85rem;
+    color: var(--vo-gold);
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .vo-author-section {
+    display: grid;
+    min-height: 44rem;
+    grid-template-columns: minmax(0, 0.78fr) minmax(18rem, 0.72fr);
+    gap: clamp(2rem, 7vw, 7rem);
+    align-items: center;
+    background:
+      radial-gradient(circle at 75% 44%, rgba(216, 173, 90, 0.16), transparent 20rem),
+      linear-gradient(180deg, #050505, #090706);
+  }
+
+  .vo-author-copy h2 {
+    font-size: clamp(3.4rem, 7vw, 7rem);
   }
 
   .vo-author-seal {
-    display: grid;
-    min-height: 18rem;
-    place-items: center;
-    padding: 2rem;
-    text-align: center;
+    position: relative;
+    justify-self: center;
+    width: min(100%, 25rem);
+  }
+
+  .vo-author-seal::before {
+    content: "";
+    position: absolute;
+    inset: -3rem -5rem;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse at center, rgba(216, 173, 90, 0.18), transparent 58%),
+      conic-gradient(from 30deg, transparent, rgba(216, 173, 90, 0.42), transparent 34%, transparent);
+    filter: blur(4px);
+    opacity: 0.78;
   }
 
   .vo-author-seal img {
-    width: min(100%, 18rem);
+    position: relative;
+    z-index: 1;
     aspect-ratio: 4 / 5;
-    object-fit: cover;
-    border: 1px solid rgba(241, 209, 124, 0.3);
-    filter: saturate(0.9) contrast(1.02);
+    border: 1px solid rgba(216, 173, 90, 0.42);
+    filter: saturate(0.86) contrast(1.02);
+    box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.5);
   }
 
   .vo-author-seal p {
+    position: relative;
+    z-index: 1;
     margin: 1rem 0 0;
-    color: var(--vo-dim);
+    color: rgba(242, 216, 148, 0.66);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-align: center;
+    text-transform: uppercase;
   }
 
   .vo-footer {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2rem;
     align-items: center;
-    justify-content: space-between;
-    gap: 1.25rem;
-    padding: 2rem 0 3rem;
-    border-top: 1px solid var(--vo-line);
-    color: var(--vo-muted);
+    padding: 2.4rem max(2rem, calc((100vw - 1180px) / 2)) 2.6rem;
+    border-top: 1px solid rgba(216, 173, 90, 0.22);
+    background: #050505;
+    color: rgba(242, 216, 148, 0.68);
   }
 
   .vo-footer strong {
-    color: var(--vo-ink);
+    display: block;
+    color: var(--vo-gold);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .vo-footer p {
-    margin: 0.3rem 0 0;
+    margin: 0.45rem 0 0;
   }
 
   .vo-footer-links {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    gap: 0.85rem;
+    gap: 1.1rem;
   }
 
   .vo-footer-links a {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.42rem;
     color: var(--vo-gold-soft);
-    font-weight: 750;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
-  @keyframes vo-cloud-drift {
-    0%, 100% { transform: translate3d(0, 0, 0); }
-    50% { transform: translate3d(2rem, -1rem, 0); }
-  }
-
-  @keyframes vo-sparkle {
-    from { transform: translateY(0); }
-    to { transform: translateY(-92px); }
-  }
-
-  @media (max-width: 860px) {
-    .vo-nav {
-      display: none;
+  @media (max-width: 980px) {
+    .vo-header,
+    .vo-hero-inner {
+      width: min(100% - 2rem, 1220px);
     }
 
-    .vo-hero,
-    .vo-book-section,
+    .vo-hero-art {
+      background-position: 58% center;
+    }
+
+    .vo-hero-shade {
+      background:
+        linear-gradient(90deg, rgba(5, 5, 5, 0.72), rgba(5, 5, 5, 0.28)),
+        linear-gradient(180deg, rgba(5, 5, 5, 0.08) 0%, rgba(5, 5, 5, 0) 58%, #050505 100%);
+    }
+
+    .vo-hero-copy {
+      max-width: 42rem;
+    }
+
+    .vo-book-showcase,
     .vo-author-section {
       grid-template-columns: 1fr;
     }
 
-    .vo-hero {
-      padding-top: 5rem;
+    .vo-trilogy-grid {
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .vo-header {
+      padding-top: 1rem;
     }
 
-    .vo-book-feature {
-      justify-self: start;
-      width: min(75vw, 19rem);
+    .vo-brand-mark {
+      width: 3.5rem;
+      height: 3.5rem;
+      font-size: 1.55rem;
+    }
+
+    .vo-nav {
+      gap: 1rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+    }
+
+    .vo-hero-inner {
+      min-height: calc(100svh - 4rem);
+      padding-bottom: 5rem;
+    }
+
+    .vo-hero-copy h1 {
+      font-size: clamp(4.4rem, 18vw, 7rem);
+    }
+
+    .vo-hero-copy p {
+      max-width: 28rem;
+      text-align: left;
+    }
+
+    .vo-hero-actions {
+      align-items: stretch;
+      flex-direction: column;
+      max-width: 18rem;
+    }
+
+    .vo-btn {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .vo-book-showcase,
+    .vo-section {
+      padding-inline: 1.25rem;
     }
 
     .vo-trilogy-grid {
       grid-template-columns: 1fr;
     }
 
+    .vo-trilogy-cover {
+      width: min(100%, 16rem);
+    }
+
     .vo-footer {
-      align-items: flex-start;
-      flex-direction: column;
+      grid-template-columns: 1fr;
+      padding-inline: 1.25rem;
     }
 
     .vo-footer-links {
@@ -565,34 +651,18 @@
     }
   }
 
-  @media (max-width: 560px) {
-    .vo-header,
-    .vo-hero,
-    .vo-section,
-    .vo-footer {
-      width: min(100% - 1.25rem, 1180px);
+  @media (max-width: 520px) {
+    .vo-nav a:nth-child(2),
+    .vo-nav a:nth-child(3) {
+      display: none;
     }
 
-    .vo-hero-copy h1 {
-      font-size: clamp(3.5rem, 19vw, 5.2rem);
+    .vo-hero-art {
+      background-position: 63% center;
     }
 
-    .vo-btn {
-      width: 100%;
-    }
-
-    .vo-dragon-field {
-      left: -22vw;
-      top: 26vh;
-      width: 112vw;
-      opacity: 0.5;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .vo-cloud,
-    .vo-particles {
-      animation: none;
+    .vo-hero-copy {
+      padding-top: 6rem;
     }
   }
 }
