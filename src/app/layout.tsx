@@ -36,6 +36,9 @@ import {
   MENUARY_MARKETING_DESCRIPTION,
   MENUARY_ORIGIN,
   MENUARY_KEYWORDS,
+  ORPHEO_MARKETING_DESCRIPTION,
+  ORPHEO_ORIGIN,
+  ORPHEO_KEYWORDS,
   marketingFaqSchema,
   marketingLanguageAlternates,
   marketingOrganizationSchema,
@@ -183,6 +186,39 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
+  if (mode === "marketing-orpheo") {
+    return {
+      metadataBase: new URL(ORPHEO_ORIGIN),
+      title: {
+        default: "Orpheo - piattaforma per artisti e professionisti creativi",
+        template: "%s · Orpheo",
+      },
+      description: ORPHEO_MARKETING_DESCRIPTION,
+      keywords: ORPHEO_KEYWORDS,
+      openGraph: {
+        title: "Orpheo - piattaforma per artisti e professionisti creativi",
+        description: ORPHEO_MARKETING_DESCRIPTION,
+        url: ORPHEO_ORIGIN,
+        siteName: "Orpheo",
+        locale: "it_IT",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "Orpheo - artisti, autori e creativi",
+        description: ORPHEO_MARKETING_DESCRIPTION,
+      },
+      alternates: {
+        canonical: ORPHEO_ORIGIN,
+        languages: {
+          ...marketingLanguageAlternates(ORPHEO_ORIGIN),
+          "x-default": ORPHEO_ORIGIN,
+        },
+      },
+      icons: buildIconSet(mode, tenant),
+    };
+  }
+
   if (mode === "studio") {
     return {
       metadataBase: new URL(STUDIO_PUBLIC_ORIGIN),
@@ -237,6 +273,8 @@ export async function generateMetadata(): Promise<Metadata> {
         ? "Doca - Pane, Caffè, Saudade · Milano"
       : tenant.id === "junior-food"
         ? "Junior Food - Cucina sudamericana a Bergamo"
+      : tenant.vertical === "creative"
+        ? `${tenant.name} - press kit, opere e booking creativo`
       : tenant.vertical === "services"
         ? tenant.id === "officinakam"
           ? "Officina KAM - Meccanica di precisione"
@@ -480,10 +518,11 @@ export default async function RootLayout({
   // Per i mode Bizery il contenuto tenant non è rilevante (shell propria, nessun JSON-LD).
   const isBizeryMode =
     mode === "marketing-bizery" || mode === "gestione-bizery" || mode === "preview-bizery";
-  const content = isBizeryMode ? null : getTenantContent(tenant.id);
+  const isOrpheoMode = mode === "marketing-orpheo";
+  const content = isBizeryMode || isOrpheoMode ? null : getTenantContent(tenant.id);
   const showRestaurantJsonLd = mode === "tenant" && tenant.id === "bepork" && content !== null;
   const marketingBrand =
-    mode === "marketing" ? "menuary" : mode === "marketing-bizery" ? "bizery" : null;
+    mode === "marketing" ? "menuary" : mode === "marketing-bizery" ? "bizery" : mode === "marketing-orpheo" ? "orpheo" : null;
   const marketingSchemas = marketingBrand
     ? [
         marketingOrganizationSchema(marketingBrand),
@@ -566,10 +605,11 @@ export default async function RootLayout({
   );
 }
 
-function TenantUnavailable({ vertical }: { vertical: "food" | "services" }) {
+function TenantUnavailable({ vertical }: { vertical: "food" | "services" | "creative" }) {
+  const isCreative = vertical === "creative";
   const isServices = vertical === "services";
-  const support = isServices ? "support@bizery.it" : "support@menuary.it";
-  const brand = isServices ? "Bizery" : "Menuary";
+  const support = isCreative ? "support@weuseorpheo.com" : isServices ? "support@bizery.it" : "support@menuary.it";
+  const brand = isCreative ? "Orpheo" : isServices ? "Bizery" : "Menuary";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-pork-cream px-5 py-16 text-pork-ink">

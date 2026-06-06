@@ -4,7 +4,8 @@
  * Helper per gestire i due rami verticali della piattaforma.
  *
  * "food"     → ristoranti, bar, pizzerie, trattorie  (marketing: menuary.it)
- * "services" → studi, saloni, centri benessere, ecc. (marketing: TODO dominio)
+ * "services" → studi, saloni, centri benessere, ecc. (marketing: bizery.it)
+ * "creative" → artisti, autori, musicisti, attori, registi (marketing: weuseorpheo.com)
  *
  * Aggiungere un nuovo vertical:
  *   1. Aggiungere il valore a TenantVertical in tenant.ts
@@ -52,6 +53,15 @@ export const VERTICAL_REGISTRY: Record<TenantVertical, VerticalMeta> = {
     businessNounPlural: "aziende e studi",
     reservationCTA: "Prenota un appuntamento",
     menuLabel: "Listino prezzi",
+  },
+  creative: {
+    id: "creative",
+    productName: "Orpheo",
+    marketingDomain: "weuseorpheo.com",
+    businessNoun: "artista",
+    businessNounPlural: "artisti e professionisti creativi",
+    reservationCTA: "Richiedi disponibilità",
+    menuLabel: "Opere e progetti",
   },
 };
 

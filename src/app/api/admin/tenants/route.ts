@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         tenantId?: string;
         name?: string;
         label?: string;
-        vertical?: "food" | "services";
+        vertical?: "food" | "services" | "creative";
         status?: string;
         domains?: string[];
         previewSlug?: string;
@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
   if (!name || !label) {
     return NextResponse.json({ error: "name e label sono obbligatori." }, { status: 400 });
   }
-  if (!vertical || (vertical !== "food" && vertical !== "services")) {
-    return NextResponse.json({ error: "vertical deve essere 'food' o 'services'." }, { status: 400 });
+  if (!vertical || (vertical !== "food" && vertical !== "services" && vertical !== "creative")) {
+    return NextResponse.json({ error: "vertical deve essere 'food', 'services' o 'creative'." }, { status: 400 });
   }
   if (!address || !address.trim()) {
     return NextResponse.json(

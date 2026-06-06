@@ -156,11 +156,12 @@ export default async function PrenotazioniPage({
   if (!auth.ok) notFound();
 
   const filter: Filter = FILTERS.some((x) => x.id === f) ? (f as Filter) : "today";
-  const reservations = auth.isDemo ? filterDemoReservations(demoReservations(tenant.vertical), filter) : await fetchReservations(tenantSlug, filter);
-  const isServicesVertical = tenant.vertical === "services";
+  const demoVertical = tenant.vertical === "food" ? "food" : "services";
+  const reservations = auth.isDemo ? filterDemoReservations(demoReservations(demoVertical), filter) : await fetchReservations(tenantSlug, filter);
+  const isServicesVertical = tenant.vertical === "services" || tenant.vertical === "creative";
 
   const vertical = getVerticalMeta(tenant.vertical);
-  const isServices = tenant.vertical === "services";
+  const isServices = tenant.vertical === "services" || tenant.vertical === "creative";
   const title = getModuleLabel("reservations", tenant.vertical);
   const lead = isServices
     ? interpolate(t.leadServices, { businessNoun: vertical.businessNoun })

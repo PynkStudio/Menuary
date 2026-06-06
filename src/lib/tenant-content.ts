@@ -1487,8 +1487,9 @@ export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "nom-sushi") return nomSushiContent;
   if (tenantId === "kimos") return kimosContent;
   // Ogni tenant deve avere il proprio blocco content sopra.
-  // Fallback per verticale: non restituire mai contenuto BePork per tenant services.
+  // Fallback per verticale: non restituire mai contenuto BePork per tenant non-food.
   const profile = findTenantById(tenantId);
+  if (profile?.vertical === "creative") return valentinaOrciuoliContent;
   if (profile?.vertical === "services") return officinakamContent;
   return beporkContent;
 }

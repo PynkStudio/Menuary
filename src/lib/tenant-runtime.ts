@@ -8,9 +8,11 @@ import { getPlatformModeFromHost } from "./platform";
 import type { TenantProfile } from "./tenant";
 
 function verticalFromMode(mode: ReturnType<typeof getPlatformModeFromHost>): TenantProfile["vertical"] {
-  return mode === "marketing-bizery" || mode === "preview-bizery" || mode === "gestione-bizery"
-    ? "services"
-    : "food";
+  if (mode === "marketing-orpheo") return "creative";
+  if (mode === "marketing-bizery" || mode === "preview-bizery" || mode === "gestione-bizery") {
+    return "services";
+  }
+  return "food";
 }
 
 export function resolveTenantFromHost(host: string | null | undefined): TenantProfile {

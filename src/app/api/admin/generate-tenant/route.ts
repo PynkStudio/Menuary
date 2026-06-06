@@ -16,7 +16,9 @@ function buildTheme(primary: string) {
   };
 }
 
-function buildFeatures(vertical: "food" | "services") {
+type GeneratedTenantVertical = "food" | "services" | "creative";
+
+function buildFeatures(vertical: GeneratedTenantVertical) {
   const base = {
     website: true, onlineMenu: true, takeaway: false, tableOrders: false,
     orderKiosk: false, kitchenDisplay: false, dinerSeparation: false,
@@ -25,6 +27,24 @@ function buildFeatures(vertical: "food" | "services") {
     inventoryFoodCost: false, printStations: false, staffRoles: false,
     multiLocation: false, favorites: false, reviews: true, gallery: true,
   };
+  if (vertical === "creative") {
+    return {
+      ...base,
+      onlineMenu: false,
+      reservations: false,
+      productAvailability: false,
+      crm: true,
+      analytics: true,
+      staffRoles: true,
+      pressKit: true,
+      worksCatalog: true,
+      creativeBooking: true,
+      rightsRoyalties: true,
+      reputationReviews: true,
+      fanbaseCommunity: true,
+      tablePlanner: false,
+    };
+  }
   return vertical === "services" ? { ...base, tablePlanner: true } : { ...base, tablePlanner: false };
 }
 
@@ -71,11 +91,49 @@ export function ${pascal}Page() {
 `;
 }
 
-function generateFlagsConst(slug: string, vertical: "food" | "services"): string {
+function generateFlagsConst(slug: string, vertical: GeneratedTenantVertical): string {
   const name = `${slug.toUpperCase().replace(/-/g, "_")}_MODULE_FLAGS`;
   const flags =
-    vertical === "food"
+    vertical === "creative"
       ? `{
+  website: true,
+  onlineMenu: false,
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: false,
+  tablePlanner: false,
+  productAvailability: false,
+  upselling: false,
+  crm: true,
+  analytics: true,
+  takeawaySlots: false,
+  deliveryHub: false,
+  cashRegister: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: true,
+  multiLocation: false,
+  favorites: false,
+  reviews: true,
+  gallery: true,
+  shop: false,
+  slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
+  hubriseSync: false,
+  payments: false,
+  pressKit: true,
+  worksCatalog: true,
+  creativeBooking: true,
+  rightsRoyalties: true,
+  reputationReviews: true,
+  fanbaseCommunity: true,
+}`
+      : vertical === "food"
+        ? `{
   website: true,
   onlineMenu: true,
   takeaway: false,
@@ -100,7 +158,7 @@ function generateFlagsConst(slug: string, vertical: "food" | "services"): string
   reviews: true,
   gallery: true,
 }`
-      : `{
+        : `{
   website: true,
   onlineMenu: true,
   takeaway: false,
@@ -133,7 +191,7 @@ function patchRegistry(
   src: string,
   slug: string,
   officialDomain: string,
-  vertical: "food" | "services",
+  vertical: GeneratedTenantVertical,
   businessName: string,
   primary: string,
 ): string {
@@ -246,7 +304,7 @@ export async function POST(req: NextRequest) {
 
   // Supporta sia multipart/form-data (con file) che application/json (senza)
   const ct = req.headers.get("content-type") ?? "";
-  let tenantSlug: string, domain: string, vertical: "food" | "services",
+  let tenantSlug: string, domain: string, vertical: GeneratedTenantVertical,
     businessName: string, primaryColor: string, leadId: string,
     address: string, city: string, ownerPhone: string;
   let animaFile: File | null = null;
@@ -255,7 +313,7 @@ export async function POST(req: NextRequest) {
     const fd = await req.formData();
     tenantSlug    = fd.get("tenantSlug") as string;
     domain        = fd.get("domain") as string;
-    vertical      = fd.get("vertical") as "food" | "services";
+    vertical      = fd.get("vertical") as GeneratedTenantVertical;
     businessName  = fd.get("businessName") as string;
     primaryColor  = fd.get("primaryColor") as string;
     leadId        = fd.get("leadId") as string;
@@ -267,7 +325,7 @@ export async function POST(req: NextRequest) {
     if (animaFile && animaFile.size === 0) animaFile = null;
   } else {
     const body = (await req.json()) as {
-      tenantSlug: string; domain: string; vertical: "food" | "services";
+      tenantSlug: string; domain: string; vertical: GeneratedTenantVertical;
       businessName: string; primaryColor: string; leadId: string;
       address?: string; city?: string; ownerPhone?: string;
     };
@@ -289,7 +347,7 @@ export async function POST(req: NextRequest) {
 
   const branch = `demo/${tenantSlug}`;
   const pascal = toPascal(tenantSlug);
-  const demoUrl = vertical === "services"
+  const demoUrl = vertical === "services" || vertical === "creative"
     ? `https://demo.bizery.it/${tenantSlug}`
     : `https://demo.menuary.it/${tenantSlug}`;
 
@@ -359,7 +417,7 @@ export async function POST(req: NextRequest) {
     }
 
     const figmaUrl = animaFileCount > 0
-      ? (vertical === "services"
+      ? (vertical === "services" || vertical === "creative"
           ? `https://demo.bizery.it/${tenantSlug}/figma`
           : `https://demo.menuary.it/${tenantSlug}/figma`)
       : null;

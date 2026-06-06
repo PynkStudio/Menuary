@@ -136,7 +136,7 @@ function allowStaticAssets(pathname: string) {
 }
 
 type DisabledDemoAccess = {
-  vertical: "food" | "services";
+  vertical: "food" | "services" | "creative";
   officialUrl: string | null;
 };
 
@@ -232,7 +232,12 @@ async function getDisabledDemoAccess(
       : null;
 
   return {
-    vertical: control.vertical === "services" ? "services" : "food",
+    vertical:
+      control.vertical === "creative"
+        ? "creative"
+        : control.vertical === "services"
+          ? "services"
+          : "food",
     officialUrl,
   };
 }
@@ -675,6 +680,17 @@ export async function middleware(request: NextRequest) {
     if (locale) {
       const bizeryPath = "/bizery" + (rest === "/" ? "" : rest);
       return rewriteWithLocale(request, bizeryPath, locale, mode);
+    }
+    const detected = detectLocaleFromRequest(request);
+    return localeRedirect(request, detected, pathname);
+  }
+
+  // ── Marketing Orpheo (weuseorpheo.com) ───────────────────────────────────
+  if (mode === "marketing-orpheo") {
+    const { locale, rest } = extractLocaleFromPath(pathname);
+    if (locale) {
+      const orpheoPath = "/orpheo" + (rest === "/" ? "" : rest);
+      return rewriteWithLocale(request, orpheoPath, locale, mode);
     }
     const detected = detectLocaleFromRequest(request);
     return localeRedirect(request, detected, pathname);

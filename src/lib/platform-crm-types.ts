@@ -40,7 +40,7 @@ export type PlatformLead = {
   // Attività
   business_name: string;
   business_slug: string | null;
-  business_vertical: "food" | "services";
+  business_vertical: "food" | "services" | "creative";
   // Responsabile
   contact_name: string | null;
   contact_email: string | null;
@@ -86,7 +86,7 @@ export type PlatformPackage = {
   id: string;
   name: string;
   slug: string;
-  vertical: "food" | "services" | "both";
+  vertical: "food" | "services" | "creative" | "both";
   adapted_name?: string | null;
   description: string | null;
   price_monthly: number;
@@ -174,27 +174,31 @@ export type PlatformCommission = {
 
 // ─── Vertical ─────────────────────────────────────────────────────────────────
 
-export type LeadVertical = "food" | "services";
+export type LeadVertical = "food" | "services" | "creative";
 
 export const VERTICAL_LABELS: Record<LeadVertical, string> = {
   food: "Menuary · Food",
   services: "Bizery · Services",
+  creative: "Orpheo · Creative",
 };
 
 export const VERTICAL_SHORT_LABELS: Record<LeadVertical, string> = {
   food: "Menuary",
   services: "Bizery",
+  creative: "Orpheo",
 };
 
 /** Classi Tailwind per badge verticale — usa colori brand hardcoded (contesto admin). */
 export const VERTICAL_BADGE_CLASSES: Record<LeadVertical, string> = {
   food:     "bg-amber-100 text-amber-800",
   services: "bg-blue-100 text-blue-700",
+  creative: "bg-fuchsia-100 text-fuchsia-700",
 };
 
 export const VERTICAL_DOT_CLASSES: Record<LeadVertical, string> = {
   food:     "bg-amber-500",
   services: "bg-blue-500",
+  creative: "bg-fuchsia-500",
 };
 
 // ─── Labels UI ─────────────────────────────────────────────────────────────────

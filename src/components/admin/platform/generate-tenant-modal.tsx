@@ -22,6 +22,8 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
   const defaultDomain =
     lead.business_vertical === "food"
       ? `${defaultSlug}.menuary.it`
+      : lead.business_vertical === "creative"
+        ? `${defaultSlug}.weuseorpheo.com`
       : `${defaultSlug}.bizery.it`;
 
   const [slug, setSlug] = useState(defaultSlug);
@@ -221,7 +223,9 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
               </FormField>
 
               <div className="rounded-2xl bg-pork-cream p-4 text-xs text-pork-ink/60">
-                <p className="font-bold text-pork-ink">Link demo: {lead.business_vertical === "services" ? "demo.bizery.it" : "demo.menuary.it"}/{slug || "…"}</p>
+                <p className="font-bold text-pork-ink">
+                  Link demo: {lead.business_vertical === "services" || lead.business_vertical === "creative" ? "demo.bizery.it" : "demo.menuary.it"}/{slug || "…"}
+                </p>
                 <p className="mt-1">
                   Il piano sottoscritto e i moduli definitivi si scelgono dopo, quando il lead diventa venduto.
                 </p>

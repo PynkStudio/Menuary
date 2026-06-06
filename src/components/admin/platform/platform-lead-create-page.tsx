@@ -28,7 +28,7 @@ type Location = {
 
 type WizardData = {
   business_name: string;
-  business_vertical: "food" | "services";
+  business_vertical: "food" | "services" | "creative";
   business_type: string;
   has_website: boolean | null;
   website_url: string;
@@ -383,13 +383,26 @@ function StepIdentity({ data, set, step, total }: StepProps) {
                 set("business_type", "");
               }}
             />
+            <BigToggle
+              label="Artisti / Creativi"
+              description="Autori, musicisti, attori, registi, creator…"
+              selected={data.business_vertical === "creative"}
+              onClick={() => {
+                set("business_vertical", "creative");
+                set("business_type", "");
+              }}
+            />
           </div>
         </div>
 
-        {data.business_vertical === "services" ? (
+        {data.business_vertical === "services" || data.business_vertical === "creative" ? (
           <Field
             label="Che tipo di attività è?"
-            hint="Es. Studio dentistico · Salone parrucchieri · Officina auto…"
+            hint={
+              data.business_vertical === "creative"
+                ? "Es. Autrice · Musicista · Attore · Regista · Collettivo creativo…"
+                : "Es. Studio dentistico · Salone parrucchieri · Officina auto…"
+            }
           >
             <input
               value={data.business_type}
@@ -803,6 +816,10 @@ function StepReview({ data, set, step, total }: StepProps) {
             {data.business_vertical === "food" ? (
               <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-black text-orange-700">
                 Menuary · Food
+              </span>
+            ) : data.business_vertical === "creative" ? (
+              <span className="rounded-full bg-fuchsia-100 px-2 py-0.5 text-xs font-black text-fuchsia-700">
+                Orpheo · Creative
               </span>
             ) : (
               <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-black text-blue-700">

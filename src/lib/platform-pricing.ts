@@ -234,6 +234,72 @@ export const BIZERY_PRICING_PLANS: PricingPlan[] = [
   },
 ];
 
+// ─── Piani Orpheo (verticale creative) ──────────────────────────────────────
+// Slug dedicati per poterli gestire da admin.menuary.it senza confliggere con
+// i piani Menuary/Bizery già presenti nella tabella platform_packages.
+
+export const ORPHEO_PRICING_PLANS: PricingPlan[] = [
+  {
+    slug: "orpheo-presenza",
+    marketing_name: "Presenza",
+    tagline: "Profilo e press kit",
+    description:
+      "Per artisti e professionisti creativi che vogliono una presenza ufficiale curata: sito, bio, press kit, opere principali e contatti media/booking.",
+    price_annual: 49,
+    price_monthly: 59,
+    setup_from: "da €790",
+    ai_addon: false,
+    marketing_items: [
+      "Sito ufficiale su misura, dominio personalizzato",
+      "Bio breve/lunga, foto ufficiali e press kit",
+      "Catalogo opere essenziale",
+      "Link social, streaming, vendita e provider",
+      "Recensioni e citazioni selezionate",
+      "Hosting, SSL, backup inclusi",
+    ],
+  },
+  {
+    slug: "orpheo-pro",
+    marketing_name: "Pro",
+    tagline: "Presenza + opportunità",
+    description:
+      "Per gestire opportunità, richieste professionali, eventi e materiali promozionali in un unico pannello condiviso con manager, ufficio stampa o agente.",
+    price_annual: 119,
+    price_monthly: 139,
+    setup_from: "da €1.490",
+    ai_addon: true,
+    is_featured: true,
+    cta_label: "Inizia con Pro",
+    marketing_items: [
+      "Tutto di Presenza",
+      "CRM contatti professionali e media",
+      "Pipeline opportunità, booking ed eventi",
+      "Asset manager per foto, video e documenti",
+      "Reputation & reviews da provider rilevanti",
+      "Permessi per collaboratori",
+    ],
+  },
+  {
+    slug: "orpheo-management",
+    marketing_name: "Management",
+    tagline: "Operatività creativa completa",
+    description:
+      "Per artisti strutturati, autori, musicisti, attori, registi, collettivi e team che devono coordinare opere, contratti, diritti, fanbase e analytics.",
+    price_annual: 219,
+    price_monthly: 249,
+    setup_from: "da €2.490",
+    ai_addon: true,
+    marketing_items: [
+      "Tutto di Pro",
+      "Diritti, licenze, territori e scadenze",
+      "Royalty e rendicontazioni per opera/canale",
+      "Fanbase, newsletter e segmenti audience",
+      "Dashboard performance opere, eventi e campagne",
+      "Multi-identità, team e ruoli avanzati",
+    ],
+  },
+];
+
 /**
  * Sovrappone la copy Bizery sui dati di prezzo provenienti dal DB.
  * I prezzi vengono sempre dal DB; nomi, descrizioni e feature list
@@ -241,6 +307,21 @@ export const BIZERY_PRICING_PLANS: PricingPlan[] = [
  */
 export function mergeBizeryPlans(dbPlans: PricingPlan[]): PricingPlan[] {
   return BIZERY_PRICING_PLANS.map((base) => {
+    const fromDb = dbPlans.find((p) => p.slug === base.slug);
+    if (!fromDb) return base;
+    return {
+      ...base,
+      price_annual: fromDb.price_annual,
+      price_monthly: fromDb.price_monthly,
+      currency: fromDb.currency,
+      setup_from: fromDb.setup_from,
+      is_featured: fromDb.is_featured ?? base.is_featured,
+    };
+  });
+}
+
+export function mergeOrpheoPlans(dbPlans: PricingPlan[]): PricingPlan[] {
+  return ORPHEO_PRICING_PLANS.map((base) => {
     const fromDb = dbPlans.find((p) => p.slug === base.slug);
     if (!fromDb) return base;
     return {

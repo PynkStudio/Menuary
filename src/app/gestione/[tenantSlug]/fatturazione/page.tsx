@@ -117,7 +117,8 @@ export default async function FatturazionePage({
   // Questa pagina non legge ancora la fatturazione reale dal backend: in demo
   // mostriamo sempre la struttura completa con dati esempio.
   const showDemoBilling = isDemoHostname;
-  const plan = showDemoBilling ? demoBillingPlan(tenant.vertical) : null;
+  const demoVertical = tenant.vertical === "food" ? "food" : "services";
+  const plan = showDemoBilling ? demoBillingPlan(demoVertical) : null;
   const invoices = showDemoBilling ? demoBillingInvoices() : [];
 
   return (

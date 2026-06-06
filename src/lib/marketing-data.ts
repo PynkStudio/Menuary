@@ -5,7 +5,9 @@ import type { TenantProfile } from "./tenant";
 import {
   AI_ADDON,
   PRICING_PLANS,
+  ORPHEO_PRICING_PLANS,
   mergeBizeryPlans,
+  mergeOrpheoPlans,
   type PricingAddon,
   type PricingPlan,
 } from "./platform-pricing";
@@ -43,11 +45,13 @@ type Vertical = TenantProfile["vertical"];
 const MARKETING_EXCLUDE_IDS: Record<Vertical, Set<string>> = {
   food: new Set(["bepork", "faak"]),
   services: new Set(),
+  creative: new Set(["orpheo-demo"]),
 };
 
 const PREVIEW_HOST: Record<Vertical, string> = {
   food: "https://demo.menuary.it",
   services: "https://demo.bizery.it",
+  creative: "https://demo.bizery.it",
 };
 
 function toMarketingTenant(profile: TenantProfile): MarketingTenant {
@@ -133,6 +137,13 @@ export async function fetchBizeryPricingPlans(marketCode: MarketCode = DEFAULT_M
   return mergeBizeryPlans(dbPlans);
 }
 
+export async function fetchOrpheoPricingPlans(marketCode: MarketCode = DEFAULT_MARKET): Promise<PricingPlan[]> {
+  const dbPlans = await fetchPricingPlans(marketCode, {
+    slugs: ORPHEO_PRICING_PLANS.map((plan) => plan.slug),
+  });
+  return mergeOrpheoPlans(dbPlans);
+}
+
 export async function fetchPricingAddons(marketCode: MarketCode = DEFAULT_MARKET): Promise<PricingAddon[]> {
   const supabase = createSupabaseServiceClient();
   if (!supabase) return [AI_ADDON];
@@ -203,9 +214,18 @@ export async function fetchPricingAddons(marketCode: MarketCode = DEFAULT_MARKET
  *   price_monthly          → price_annual  (canone mensile equiv. pagamento annuale)
  *   price_monthly_billing  → price_monthly (canone mensile con fatturazione mensile)
  */
-export async function fetchPricingPlans(marketCode: MarketCode = DEFAULT_MARKET): Promise<PricingPlan[]> {
+export async function fetchPricingPlans(
+  marketCode: MarketCode = DEFAULT_MARKET,
+  options: { slugs?: string[] } = {},
+): Promise<PricingPlan[]> {
   const supabase = createSupabaseServiceClient();
-  if (!supabase) return PRICING_PLANS;
+  if (!supabase) {
+    if (options.slugs?.length) {
+      const allowed = new Set(options.slugs);
+      return [...PRICING_PLANS, ...ORPHEO_PRICING_PLANS].filter((plan) => allowed.has(plan.slug));
+    }
+    return PRICING_PLANS;
+  }
 
   const { data, error } = await (supabase as unknown as {
     from: (table: string) => {
@@ -226,9 +246,26 @@ export async function fetchPricingPlans(marketCode: MarketCode = DEFAULT_MARKET)
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
 
-  if (error || !data || data.length === 0) return PRICING_PLANS;
+  if (error || !data || data.length === 0) {
+    if (options.slugs?.length) {
+      return ORPHEO_PRICING_PLANS.filter((plan) => options.slugs?.includes(plan.slug));
+    }
+    return PRICING_PLANS;
+  }
 
-  const packageIds = data.map((row) => String(row.slug));
+  const allowedSlugs = options.slugs ? new Set(options.slugs) : null;
+  const planRows = data.filter((row) => {
+    const slug = String(row.slug);
+    return allowedSlugs ? allowedSlugs.has(slug) : !slug.startsWith("orpheo-");
+  });
+
+  if (planRows.length === 0) {
+    return options.slugs?.length
+      ? ORPHEO_PRICING_PLANS.filter((plan) => options.slugs?.includes(plan.slug))
+      : PRICING_PLANS;
+  }
+
+  const packageIds = planRows.map((row) => String(row.slug));
   const { data: marketRows } = await (supabase as unknown as {
     from: (table: string) => {
       select: (columns: string) => {
@@ -245,7 +282,7 @@ export async function fetchPricingPlans(marketCode: MarketCode = DEFAULT_MARKET)
 
   const marketBySlug = new Map((marketRows ?? []).map((row) => [String(row.package_slug), row]));
 
-  return data.map((row) => {
+  return planRows.map((row) => {
     const market = marketBySlug.get(String(row.slug));
     const fallbackMarket = getMarket(marketCode);
     return {

@@ -37,7 +37,7 @@ function mapControl(row: TenantDemoControlRow): TenantDemoControl {
   return {
     tenantId: row.tenant_id,
     previewSlug: row.preview_slug,
-    vertical: row.vertical === "services" ? "services" : "food",
+    vertical: row.vertical === "creative" ? "creative" : row.vertical === "services" ? "services" : "food",
     enabled: row.enabled,
     backendLive: Boolean(row.backend_live),
     disabledAt: row.disabled_at,

@@ -1,6 +1,7 @@
 // ─── PlatformMode ─────────────────────────────────────────────────────────────
 // "marketing"         → menuary.it             sito marketing verticale food
 // "marketing-bizery"  → bizery.it              sito marketing verticale services (Bizery)
+// "marketing-orpheo"  → weuseorpheo.com        sito marketing verticale creative (Orpheo)
 // "tenant"            → bepork.it / ecc.        sito del singolo locale
 // "platform-admin"    → admin.menuary.it        back-office piattaforma
 // "preview"           → demo.menuary.it         anteprima tenant food via previewSlug
@@ -16,6 +17,7 @@ export type PlatformMode =
   | "tenant"
   | "marketing"
   | "marketing-bizery"
+  | "marketing-orpheo"
   | "platform-admin"
   | "preview"
   | "preview-bizery"
@@ -32,6 +34,7 @@ export const PLATFORM_MODE_HEADER = "x-platform-mode";
 export const PLATFORM_HOSTS = {
   marketing:          ["menuary.it", "www.menuary.it", "menuary.localhost"],
   "marketing-bizery": ["bizery.it", "www.bizery.it", "bizery.localhost"],
+  "marketing-orpheo": ["weuseorpheo.com", "www.weuseorpheo.com", "orpheo.localhost"],
   admin:              ["admin.menuary.it", "admin.menuary.localhost"],
   preview:            ["demo.menuary.it", "demo.menuary.localhost"],
   "preview-bizery":   ["demo.bizery.it", "demo.bizery.localhost"],
@@ -47,6 +50,7 @@ const PLATFORM_MODES: PlatformMode[] = [
   "tenant",
   "marketing",
   "marketing-bizery",
+  "marketing-orpheo",
   "platform-admin",
   "preview",
   "preview-bizery",
@@ -73,6 +77,7 @@ export function getPlatformModeFromHost(
   const normalized = normalizeHost(host);
   if (PLATFORM_HOSTS.marketing.includes(normalized as never))          return "marketing";
   if (PLATFORM_HOSTS["marketing-bizery"].includes(normalized as never)) return "marketing-bizery";
+  if (PLATFORM_HOSTS["marketing-orpheo"].includes(normalized as never)) return "marketing-orpheo";
   if (PLATFORM_HOSTS.admin.includes(normalized as never))              return "platform-admin";
   if (PLATFORM_HOSTS.preview.includes(normalized as never))            return "preview";
   if (PLATFORM_HOSTS["preview-bizery"].includes(normalized as never))  return "preview-bizery";
@@ -95,7 +100,7 @@ export function getPlatformModeFromHeaderValue(
 
 // Utility: i marketing mode
 export function isMarketingMode(mode: PlatformMode): boolean {
-  return mode === "marketing" || mode === "marketing-bizery";
+  return mode === "marketing" || mode === "marketing-bizery" || mode === "marketing-orpheo";
 }
 
 // demo.menuary.it / demo.bizery.it: ambiente vetrina senza auth e con scritture

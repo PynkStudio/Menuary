@@ -57,11 +57,38 @@ Listino servizi, prenotazione appuntamenti, galleria, recensioni, multi-sede.
 - [Menuary (verticale food)](https://menuary.it)
 `;
 
+const ORPHEO = `# Orpheo
+
+> Piattaforma SaaS multi-tenant per artisti, autori, musicisti, cantanti, attori, registi, collettivi e professionisti creativi. Ogni cliente può avere sito ufficiale, press kit, catalogo opere, booking, diritti, recensioni provider e fanbase.
+
+Orpheo è il verticale creative della piattaforma Menuary. I verticali gemelli sono Menuary per HORECA (https://menuary.it) e Bizery per servizi (https://bizery.it).
+
+## Sito marketing
+
+- [Home](https://weuseorpheo.com/): cos'è Orpheo, moduli disponibili, demo
+- [Pricing](https://weuseorpheo.com/pricing): piani e abbonamenti
+- [Contatti](https://weuseorpheo.com/contatti): contatti e demo
+
+## Prodotto
+
+- [Admin piattaforma](https://admin.menuary.it): controllo tenant, lead, pacchetti e pricing
+- [Demo tenant creative](https://demo.bizery.it/orpheo-demo): anteprima tecnica del vertical creativo
+
+## Moduli
+
+Press kit, catalogo opere, booking eventi, diritti e royalty, reputation & reviews, fanbase e community.
+
+## Optional
+
+- [Menuary (verticale food)](https://menuary.it)
+- [Bizery (verticale services)](https://bizery.it)
+`;
+
 export async function GET() {
   const hdrs = await headers();
   const host = hdrs.get("host");
   const mode = getPlatformModeFromHost(host);
-  const body = mode === "marketing-bizery" ? BIZERY : MENUARY;
+  const body = mode === "marketing-orpheo" ? ORPHEO : mode === "marketing-bizery" ? BIZERY : MENUARY;
   return new Response(body, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",

@@ -159,8 +159,9 @@ export default async function OrdiniPage({
   if (!auth.ok) notFound();
 
   const filter: Filter = FILTERS.some((x) => x.id === f) ? (f as Filter) : "live";
+  const demoVertical = tenant.vertical === "food" ? "food" : "services";
   const { orders, lines } = auth.isDemo
-    ? filterDemoOrders(demoOrders(tenant.vertical), filter)
+    ? filterDemoOrders(demoOrders(demoVertical), filter)
     : await fetchOrders(tenantSlug, filter);
 
   return (

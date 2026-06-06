@@ -44,6 +44,20 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     },
   },
   {
+    key: "pressKit",
+    label: "Press kit",
+    description: "Pubblica bio, foto ufficiali, contatti media/booking, schede tecniche e materiali scaricabili.",
+    category: "Presenza digitale",
+    requires: ["website"],
+  },
+  {
+    key: "worksCatalog",
+    label: "Catalogo opere",
+    description: "Gestisce libri, brani, album, film, spettacoli, crediti, release, asset e link provider.",
+    category: "Presenza digitale",
+    requires: ["website"],
+  },
+  {
     key: "onlineMenu",
     label: "Menu online",
     description: "Rende disponibile il menu digitale consultabile da sito, QR e preview.",
@@ -202,6 +216,20 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     },
   },
   {
+    key: "creativeBooking",
+    label: "Booking eventi",
+    description: "Gestisce concerti, firmacopie, festival, shooting, casting, tournée, cachet, rider e disponibilità.",
+    category: "Operatività",
+    requires: ["website"],
+  },
+  {
+    key: "rightsRoyalties",
+    label: "Diritti e royalty",
+    description: "Traccia contratti, licenze, territori, esclusività, rendicontazioni royalty e scadenze.",
+    category: "Operatività",
+    requires: ["worksCatalog"],
+  },
+  {
     key: "tablePlanner",
     label: "Gestione sala",
     description: "Mappa tavoli e stati operativi: libero, occupato, ordinato, pagamento, pulizia.",
@@ -278,6 +306,20 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
         description: "Consente la pubblicazione e la gestione delle recensioni dell'attività.",
       },
     },
+  },
+  {
+    key: "reputationReviews",
+    label: "Reputation & reviews",
+    description: "Aggrega recensioni Amazon, Goodreads, IMDb, Letterboxd, Spotify, YouTube e altri provider con trend e sentiment.",
+    category: "Crescita",
+    requiresAny: ["website", "worksCatalog"],
+  },
+  {
+    key: "fanbaseCommunity",
+    label: "Fanbase e community",
+    description: "Segmenta pubblico, newsletter, contenuti esclusivi, campagne e audience analytics.",
+    category: "Crescita",
+    requires: ["website"],
   },
   {
     key: "gallery",

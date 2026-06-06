@@ -14,6 +14,7 @@ import { findTenantByPreviewSlug } from "@/lib/tenant-registry";
 const EXCLUDED_MODES = new Set([
   "marketing",
   "marketing-bizery",
+  "marketing-orpheo",
   "clients",
   "studio",
   "platform-admin",

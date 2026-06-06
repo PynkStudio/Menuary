@@ -32,6 +32,15 @@ export const PLATFORM_BRANDS: Record<TenantVertical, EmailBrand> = {
     text: "#0F172A",
     muted: "#64748B",
   },
+  creative: {
+    name: "Orpheo",
+    domain: "weuseorpheo.com",
+    fromEmail: "noreply@weuseorpheo.com",
+    primary: "#7C3AED",
+    bg: "#FBFAF7",
+    text: "#17111F",
+    muted: "#6B5E75",
+  },
 };
 
 // ─── Sender resolution ────────────────────────────────────────────────────────

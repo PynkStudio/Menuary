@@ -4,12 +4,13 @@
 // e le pagine di default.
 //
 // "food"     → ristoranti, pizzerie, bar, trattorie  (menuary.it)
-// "services" → studi professionali, saloni, centri benessere, ecc. (TODO: dominio da definire)
+// "services" → studi professionali, saloni, centri benessere, ecc. (bizery.it)
+// "creative" → artisti, autori, musicisti, attori, registi, professionisti creativi (weuseorpheo.com)
 //
 // Aggiungere nuovi vertical: estendere questo tipo + aggiungere entry in
 // VERTICAL_REGISTRY (src/lib/vertical.ts) + creare marketing pages in
 // src/components/[nome-vertical]/pages/.
-export type TenantVertical = "food" | "services";
+export type TenantVertical = "food" | "services" | "creative";
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 // Governa il ciclo di vita del tenant sulla piattaforma e determina
@@ -66,6 +67,18 @@ export type TenantFeatureFlags = {
   hubriseSync: boolean;
   /** Pagamenti Stripe Connect (Standard): ogni tenant collega il proprio account Stripe per incassare autonomamente. Application fee piattaforma 0% per dine-in/online, 3% per ordini AI (Retell/WhatsApp). */
   payments: boolean;
+  /** Press kit pubblico: bio, foto ufficiali, contatti media/booking e materiali scaricabili. */
+  pressKit?: boolean;
+  /** Catalogo opere: libri, brani, album, filmografia, spettacoli, crediti e asset collegati. */
+  worksCatalog?: boolean;
+  /** Booking creativo: eventi, concerti, firmacopie, casting, festival, shooting e tournée. */
+  creativeBooking?: boolean;
+  /** Diritti e royalty: licenze, territori, contratti, rendicontazioni e scadenze. */
+  rightsRoyalties?: boolean;
+  /** Reputation creativa: recensioni Amazon/Goodreads/IMDb/Letterboxd/provider e sentiment. */
+  reputationReviews?: boolean;
+  /** Fanbase e community: newsletter, segmenti, contenuti esclusivi e campagne audience. */
+  fanbaseCommunity?: boolean;
   // TODO(google-reserve): aggiungere flag `googleReserve: boolean` una volta approvati come partner Actions Center.
   // Abilita il pulsante "Prenota" direttamente su Google Maps/Search per il tenant.
   // Prerequisito: tenant deve avere `reservations: true` e una location Google collegata.

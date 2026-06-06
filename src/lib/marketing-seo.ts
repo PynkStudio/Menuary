@@ -3,12 +3,16 @@ import { SUPPORTED_LOCALES, type AppLocale } from "@/i18n/locales";
 
 export const MENUARY_ORIGIN = "https://menuary.it";
 export const BIZERY_ORIGIN = "https://bizery.it";
+export const ORPHEO_ORIGIN = "https://weuseorpheo.com";
 
 export const MENUARY_MARKETING_DESCRIPTION =
   "Menuary crea siti web per ristoranti, bar, pizzerie, trattorie e locali: menu digitale, prenotazioni online, ordini, recensioni Google e gestione semplice.";
 
 export const BIZERY_MARKETING_DESCRIPTION =
   "Bizery crea siti web per studi medici, saloni di bellezza, barbieri, studi legali, commercialisti e aziende di servizi: appuntamenti online, listino digitale, CRM e Google Maps.";
+
+export const ORPHEO_MARKETING_DESCRIPTION =
+  "Orpheo crea siti e strumenti gestionali per artisti, autori, musicisti, attori, registi e professionisti creativi: press kit, catalogo opere, booking, diritti, recensioni e fanbase.";
 
 export const MENUARY_KEYWORDS = [
   "siti web per ristoranti",
@@ -39,11 +43,26 @@ export const BIZERY_KEYWORDS = [
   "Bizery",
 ];
 
+export const ORPHEO_KEYWORDS = [
+  "siti web per artisti",
+  "sito per autore",
+  "sito per musicista",
+  "sito per attore",
+  "sito per regista",
+  "press kit artista",
+  "catalogo opere artista",
+  "booking artisti",
+  "gestione diritti royalty",
+  "recensioni Amazon Goodreads IMDb",
+  "Orpheo",
+];
+
 export const MARKETING_ROUTES = ["", "/chi-siamo", "/pricing", "/contatti"] as const;
 
-type Brand = "menuary" | "bizery";
+type Brand = "menuary" | "bizery" | "orpheo";
 
 export function brandOrigin(brand: Brand): string {
+  if (brand === "orpheo") return ORPHEO_ORIGIN;
   return brand === "bizery" ? BIZERY_ORIGIN : MENUARY_ORIGIN;
 }
 
@@ -84,11 +103,13 @@ export function marketingSitemap(origin: string): MetadataRoute.Sitemap {
 
 export function marketingOrganizationSchema(brand: Brand) {
   const isBizery = brand === "bizery";
+  const isOrpheo = brand === "orpheo";
   const origin = brandOrigin(brand);
+  const name = isOrpheo ? "Orpheo" : isBizery ? "Bizery" : "Menuary";
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: isBizery ? "Bizery" : "Menuary",
+    name,
     url: origin,
     logo: `${origin}/logo-payoff.png`,
     contactPoint: {
@@ -97,39 +118,52 @@ export function marketingOrganizationSchema(brand: Brand) {
       areaServed: ["IT", "FR", "DE", "ES", "PT", "NL", "BE", "AT", "CH", "IE"],
       availableLanguage: ["it", "en", "fr", "de", "es", "pt"],
     },
-    sameAs: isBizery ? [MENUARY_ORIGIN] : [BIZERY_ORIGIN],
+    sameAs: isOrpheo ? [MENUARY_ORIGIN, BIZERY_ORIGIN] : isBizery ? [MENUARY_ORIGIN] : [BIZERY_ORIGIN],
   };
 }
 
 export function marketingWebsiteSchema(brand: Brand) {
   const isBizery = brand === "bizery";
+  const isOrpheo = brand === "orpheo";
   const origin = brandOrigin(brand);
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: isBizery ? "Bizery" : "Menuary",
+    name: isOrpheo ? "Orpheo" : isBizery ? "Bizery" : "Menuary",
     url: origin,
     inLanguage: ["it", "en", "fr", "de", "es"],
-    description: isBizery ? BIZERY_MARKETING_DESCRIPTION : MENUARY_MARKETING_DESCRIPTION,
+    description: isOrpheo ? ORPHEO_MARKETING_DESCRIPTION : isBizery ? BIZERY_MARKETING_DESCRIPTION : MENUARY_MARKETING_DESCRIPTION,
   };
 }
 
 export function marketingServiceSchema(brand: Brand) {
   const isBizery = brand === "bizery";
+  const isOrpheo = brand === "orpheo";
   const origin = brandOrigin(brand);
   return {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: isBizery
+    name: isOrpheo
+      ? "Siti web e piattaforma digitale per artisti e professionisti creativi"
+      : isBizery
       ? "Siti web e piattaforma digitale per aziende di servizi"
       : "Siti web e piattaforma digitale per ristoranti",
     provider: {
       "@type": "Organization",
-      name: isBizery ? "Bizery" : "Menuary",
+      name: isOrpheo ? "Orpheo" : isBizery ? "Bizery" : "Menuary",
       url: origin,
     },
     areaServed: ["Italia", "Francia", "Germania", "Spagna", "Portogallo", "Svizzera", "Belgio"],
-    serviceType: isBizery
+    serviceType: isOrpheo
+      ? [
+          "Siti web per artisti",
+          "Press kit per autori e musicisti",
+          "Catalogo opere creativo",
+          "Booking artisti",
+          "Gestione diritti e royalty",
+          "Reputation e recensioni provider",
+        ]
+      : isBizery
       ? [
           "Siti web per studi medici",
           "Siti web per saloni di bellezza",
@@ -148,7 +182,9 @@ export function marketingServiceSchema(brand: Brand) {
         ],
     audience: {
       "@type": "BusinessAudience",
-      audienceType: isBizery
+      audienceType: isOrpheo
+        ? "Artisti, autori, musicisti, cantanti, attori, registi, collettivi e professionisti creativi"
+        : isBizery
         ? "Studi professionali, saloni, barbieri, studi medici, studi legali, commercialisti e aziende di servizi"
         : "Ristoranti, bar, pizzerie, trattorie, bistrot e locali food",
     },
@@ -158,7 +194,23 @@ export function marketingServiceSchema(brand: Brand) {
 
 export function marketingFaqSchema(brand: Brand) {
   const isBizery = brand === "bizery";
-  const questions = isBizery
+  const isOrpheo = brand === "orpheo";
+  const questions = isOrpheo
+    ? [
+        [
+          "Orpheo è pensato per artisti, autori e professionisti creativi?",
+          "Sì. Orpheo è il vertical creativo per artisti, autori, musicisti, attori, registi, collettivi e team che devono gestire presenza, opere, booking, diritti, recensioni e fanbase.",
+        ],
+        [
+          "Orpheo include recensioni Amazon, Goodreads, IMDb o altri provider?",
+          "Sì. Il modulo Reputation & Reviews è progettato per aggregare provider rilevanti, usando integrazioni ufficiali, import controllati e metriche aggregate quando necessario.",
+        ],
+        [
+          "Orpheo usa lo stesso backend di Menuary e Bizery?",
+          "Sì. Orpheo è collegato allo stesso backend e alla pagina di controllo admin.menuary.it, con tenant, moduli e pricing dedicati.",
+        ],
+      ]
+    : isBizery
     ? [
         [
           "Bizery realizza siti web per studi medici, saloni, barbieri e professionisti?",
@@ -201,4 +253,3 @@ export function marketingFaqSchema(brand: Brand) {
     })),
   };
 }
-

@@ -36,6 +36,7 @@ function normalizePhone(raw: string): string {
 
 function platformLabelForTenant(tenantId: string): string {
   const tenant = findTenantById(tenantId);
+  if (tenant?.vertical === "creative") return "Orpheo";
   return tenant?.vertical === "services" ? "Bizery" : "Menuary";
 }
 

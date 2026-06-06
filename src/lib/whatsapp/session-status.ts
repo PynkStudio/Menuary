@@ -50,6 +50,7 @@ function db(): Db {
 }
 
 function supportEmailForVertical(vertical: string | null | undefined) {
+  if (vertical === "creative") return "support@weuseorpheo.com";
   return vertical === "services" ? "support@bizery.it" : "support@menuary.it";
 }
 

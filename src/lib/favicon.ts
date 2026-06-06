@@ -35,6 +35,9 @@ function faviconBase(mode: PlatformMode, tenant: TenantProfile): string {
   if (mode === "preview-bizery")   return "/favicons/bizery";
   if (mode === "studio-bizery")    return "/favicons/bizery";
 
+  // Piattaforma Orpheo — finché non esiste una cartella dedicata, usa favicon Bizery.
+  if (mode === "marketing-orpheo") return "/favicons/bizery";
+
   // Sito del singolo tenant — unico caso in cui usiamo l'identità del tenant.
   return `/favicons/${tenant.id}`;
 }
@@ -92,6 +95,9 @@ export function themeColor(mode: PlatformMode, tenant: TenantProfile): string {
   if (mode === "gestione-bizery")  return "#0F172A";
   if (mode === "preview-bizery")   return "#0F172A";
   if (mode === "studio-bizery")    return "#0F172A";
+
+  // Piattaforma Orpheo
+  if (mode === "marketing-orpheo") return "#17111F";
 
   // Sito del singolo tenant
   return tenant.theme.ink;

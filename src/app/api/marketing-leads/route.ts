@@ -34,7 +34,7 @@ async function sendConfirmationEmail(
   to: string,
   contactName: string,
   businessName: string,
-  vertical: "food" | "services",
+  vertical: "food" | "services" | "creative",
 ): Promise<void> {
   const { from, brand } = resolveSenderForVertical(vertical);
   const firstName = contactName.split(/\s+/)[0] ?? "";
@@ -63,9 +63,14 @@ export async function POST(request: Request) {
   const message = clean(body.message, 1600);
   const website = clean(body.website, 160);
   const verticalRaw = clean(body.vertical, 16).toLowerCase();
-  const vertical: "food" | "services" = verticalRaw === "services" ? "services" : "food";
+  const vertical: "food" | "services" | "creative" =
+    verticalRaw === "creative" ? "creative" : verticalRaw === "services" ? "services" : "food";
   const source = clean(body.source, 60)
-    || (vertical === "services" ? "bizery-marketing-site" : "menuary-marketing-site");
+    || (vertical === "creative"
+      ? "orpheo-marketing-site"
+      : vertical === "services"
+        ? "bizery-marketing-site"
+        : "menuary-marketing-site");
 
   if (website) {
     return NextResponse.json({ ok: true });
@@ -76,7 +81,9 @@ export async function POST(request: Request) {
       {
         ok: false,
         error:
-          vertical === "services"
+          vertical === "creative"
+            ? "Compila nome, progetto/attività ed email."
+            : vertical === "services"
             ? "Compila nome, azienda ed email."
             : "Compila nome, ristorante ed email.",
       },

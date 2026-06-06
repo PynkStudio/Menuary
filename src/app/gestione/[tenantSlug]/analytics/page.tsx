@@ -135,8 +135,9 @@ export default async function AnalyticsPage({
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 
-  const data = auth.isDemo ? demoAnalytics(tenant.vertical) : await fetchAnalytics(tenantSlug, t);
-  const isServices = tenant.vertical === "services";
+  const demoVertical = tenant.vertical === "food" ? "food" : "services";
+  const data = auth.isDemo ? demoAnalytics(demoVertical) : await fetchAnalytics(tenantSlug, t);
+  const isServices = tenant.vertical === "services" || tenant.vertical === "creative";
 
   return (
     <div className="ga-dashboard">

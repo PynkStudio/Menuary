@@ -28,6 +28,7 @@ import {
   MonitorUp,
   BadgeEuro,
   Figma,
+  Palette,
 } from "lucide-react";
 import { GenerateTenantModal } from "./generate-tenant-modal";
 import { UpdateAnimaModal } from "./update-anima-modal";
@@ -598,6 +599,8 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
           figmaUrl={
             lead.demo_url
               ? `${lead.demo_url}/figma`
+              : lead.business_vertical === "creative"
+                ? `https://demo.bizery.it/${lead.business_slug}/figma`
               : lead.business_vertical === "services"
                 ? `https://demo.bizery.it/${lead.business_slug}/figma`
                 : `https://demo.menuary.it/${lead.business_slug}/figma`
@@ -924,7 +927,7 @@ function TabAnagrafica({
           value={contactEmail}
           onClick={contactEmail ? () => mailLauncher.open({
             to:      contactEmail,
-            brand:   lead.business_vertical === "services" ? "bizery" : "menuary",
+            brand:   lead.business_vertical === "services" || lead.business_vertical === "creative" ? "bizery" : "menuary",
             subject: lead.business_name ? `${lead.business_name} · contatto da Menuary` : undefined,
           }) : undefined}
           icon={Mail}
@@ -1320,10 +1323,11 @@ function VerticalIcon({
   vertical,
   size = 16,
 }: {
-  vertical: "food" | "services";
+  vertical: "food" | "services" | "creative";
   size?: number;
 }) {
   if (vertical === "food") return <UtensilsCrossed size={size} />;
+  if (vertical === "creative") return <Palette size={size} />;
   return <Briefcase size={size} />;
 }
 

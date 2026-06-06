@@ -18,6 +18,7 @@ import {
   Flame,
   MonitorUp,
   UserCheck,
+  Palette,
 } from "lucide-react";
 import type { PlatformLead, LeadStatus, LeadVertical } from "@/lib/platform-crm-types";
 import { getMarket, normalizeMarketCode } from "@/lib/markets";
@@ -49,6 +50,7 @@ const VERTICAL_FILTERS: { value: LeadVertical | "all"; label: string; icon: Reac
   { value: "all", label: "Tutti i vertical", icon: Users },
   { value: "food", label: "Menuary · Food", icon: UtensilsCrossed },
   { value: "services", label: "Bizery · Services", icon: Briefcase },
+  { value: "creative", label: "Orpheo · Creative", icon: Palette },
 ];
 
 function fmt(iso: string) {
@@ -94,6 +96,7 @@ export function PlatformCrmPage() {
 
   const foodLeads = leads.filter((l) => l.business_vertical === "food");
   const servicesLeads = leads.filter((l) => l.business_vertical === "services");
+  const creativeLeads = leads.filter((l) => l.business_vertical === "creative");
 
   const counts = {
     all: leads.length,
@@ -150,7 +153,7 @@ export function PlatformCrmPage() {
       </div>
 
       {/* Split verticali */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <VerticalSplitCard
           icon={UtensilsCrossed}
           label="Menuary · Food"
@@ -170,6 +173,16 @@ export function PlatformCrmPage() {
           dotClass="bg-blue-500"
           onClick={() => setVerticalFilter(verticalFilter === "services" ? "all" : "services")}
           selected={verticalFilter === "services"}
+        />
+        <VerticalSplitCard
+          icon={Palette}
+          label="Orpheo · Creative"
+          total={creativeLeads.length}
+          active={creativeLeads.filter((l) => l.status === "active").length}
+          badgeClass="bg-fuchsia-100 text-fuchsia-700"
+          dotClass="bg-fuchsia-500"
+          onClick={() => setVerticalFilter(verticalFilter === "creative" ? "all" : "creative")}
+          selected={verticalFilter === "creative"}
         />
       </div>
 
@@ -209,6 +222,8 @@ export function PlatformCrmPage() {
                       ? "bg-amber-500 text-white"
                       : vf.value === "services"
                         ? "bg-blue-600 text-white"
+                        : vf.value === "creative"
+                          ? "bg-fuchsia-600 text-white"
                         : "bg-pork-ink text-pork-cream"
                     : "text-pork-ink/60 hover:text-pork-ink",
                 )}
@@ -357,7 +372,11 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
       <div
         className={cn(
           "w-1 self-stretch rounded-full shrink-0",
-          lead.business_vertical === "food" ? "bg-amber-400" : "bg-blue-500",
+          lead.business_vertical === "food"
+            ? "bg-amber-400"
+            : lead.business_vertical === "creative"
+              ? "bg-fuchsia-500"
+              : "bg-blue-500",
         )}
       />
 
@@ -416,7 +435,7 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
           {lead.contact_email && (
             <MailLink
               to={lead.contact_email}
-              brand={lead.business_vertical === "services" ? "bizery" : "menuary"}
+              brand={lead.business_vertical === "services" || lead.business_vertical === "creative" ? "bizery" : "menuary"}
               subject={lead.business_name ? `${lead.business_name} · contatto da Menuary` : undefined}
               className="inline-flex items-center gap-1 font-semibold hover:text-pork-red"
             >

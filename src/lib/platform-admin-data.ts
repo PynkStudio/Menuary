@@ -9,13 +9,23 @@ import type {
   TenantLocationPlan,
 } from "@/lib/platform-crm-types";
 import type { TenantFeatureKey } from "@/lib/tenant";
-import { BIZERY_PRICING_PLANS, PRICING_PLANS } from "@/lib/platform-pricing";
+import { BIZERY_PRICING_PLANS, ORPHEO_PRICING_PLANS, PRICING_PLANS } from "@/lib/platform-pricing";
 import { allTenantFeatures } from "@/lib/tenant-modules";
 
 const presenceModules: TenantFeatureKey[] = ["website", "onlineMenu", "reviews", "gallery"];
 const bookingModules: TenantFeatureKey[] = [...presenceModules, "reservations", "tablePlanner", "favorites"];
 const operationsModules = Object.entries(allTenantFeatures(true))
-  .filter(([key, enabled]) => enabled && key !== "aiPhone" && key !== "aiWhatsapp")
+  .filter(([key, enabled]) =>
+    enabled &&
+    key !== "aiPhone" &&
+    key !== "aiWhatsapp" &&
+    key !== "pressKit" &&
+    key !== "worksCatalog" &&
+    key !== "creativeBooking" &&
+    key !== "rightsRoyalties" &&
+    key !== "reputationReviews" &&
+    key !== "fanbaseCommunity"
+  )
   .map(([key]) => key as TenantFeatureKey);
 const aiAddonModules: TenantFeatureKey[] = ["aiPhone"];
 const aiWhatsappAddonModules: TenantFeatureKey[] = ["aiWhatsapp"];
@@ -44,6 +54,30 @@ export const PLATFORM_PACKAGES: PlatformPackage[] = PRICING_PLANS.map((plan, ind
     updated_at: "2026-01-01T00:00:00Z",
   };
 });
+
+export const ORPHEO_PLATFORM_PACKAGES: PlatformPackage[] = ORPHEO_PRICING_PLANS.map((plan, index) => ({
+  id: `pkg-${plan.slug}`,
+  name: plan.marketing_name,
+  slug: plan.slug,
+  vertical: "creative",
+  adapted_name: null,
+  description: plan.description,
+  price_monthly: plan.price_annual,
+  price_yearly: plan.price_annual * 12,
+  currency: "EUR",
+  modules:
+    plan.slug === "orpheo-presenza"
+      ? ["website", "pressKit", "worksCatalog", "reviews", "gallery"]
+      : plan.slug === "orpheo-pro"
+        ? ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "reputationReviews", "gallery", "staffRoles"]
+        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation"],
+  is_active: true,
+  sort_order: 201 + index,
+  created_at: "2026-01-01T00:00:00Z",
+  updated_at: "2026-01-01T00:00:00Z",
+}));
+
+PLATFORM_PACKAGES.push(...ORPHEO_PLATFORM_PACKAGES);
 
 export const PLATFORM_ADDON_PACKAGES: PlatformPackage[] = [
   {

@@ -8,6 +8,9 @@ export const DEFAULT_FOOD_TENANT_ID = "bepork";
 /** Tenant services usato come fallback tecnico per host Bizery non riconosciuti. */
 export const DEFAULT_SERVICES_TENANT_ID = "officinakam";
 
+/** Tenant creative usato come fallback tecnico per host Orpheo non riconosciuti. */
+export const DEFAULT_CREATIVE_TENANT_ID = "orpheo-demo";
+
 /** @deprecated Usa getDefaultTenantForVertical(). Mantenuto per compatibilità con import esistenti. */
 export const DEFAULT_TENANT_ID = DEFAULT_FOOD_TENANT_ID;
 
@@ -20,6 +23,12 @@ export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = {
   aiWhatsapp: true,
   hubriseSync: false,
   payments: false,
+  pressKit: false,
+  worksCatalog: false,
+  creativeBooking: false,
+  rightsRoyalties: false,
+  reputationReviews: false,
+  fanbaseCommunity: false,
 };
 
 /** LibriTech: libreria tech/startup demo su verticale services. */
@@ -286,6 +295,45 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   payments: false,
 };
 
+/** Orpheo: tenant tecnico/demo per il verticale creative. */
+export const ORPHEO_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: false,
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: false,
+  tablePlanner: false,
+  productAvailability: false,
+  upselling: false,
+  crm: true,
+  analytics: true,
+  takeawaySlots: false,
+  deliveryHub: false,
+  cashRegister: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: true,
+  multiLocation: false,
+  favorites: false,
+  reviews: true,
+  gallery: true,
+  shop: false,
+  slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
+  hubriseSync: false,
+  payments: false,
+  pressKit: true,
+  worksCatalog: true,
+  creativeBooking: true,
+  rightsRoyalties: true,
+  reputationReviews: true,
+  fanbaseCommunity: true,
+};
+
 export const TENANTS: TenantProfile[] = [
   // ── Verticale food (menuary.it) ──────────────────────────────────────────
   {
@@ -332,7 +380,21 @@ export const TENANTS: TenantProfile[] = [
       green: "#2E4560",
       pink: "#CD562F",
     },
-    features: { ...allTenantFeatures(true), shop: false, slabbby: false, aiPhone: false, aiWhatsapp: false, hubriseSync: false, payments: false },
+    features: {
+      ...allTenantFeatures(true),
+      shop: false,
+      slabbby: false,
+      aiPhone: false,
+      aiWhatsapp: false,
+      hubriseSync: false,
+      payments: false,
+      pressKit: false,
+      worksCatalog: false,
+      creativeBooking: false,
+      rightsRoyalties: false,
+      reputationReviews: false,
+      fanbaseCommunity: false,
+    },
   },
 
   {
@@ -528,6 +590,31 @@ export const TENANTS: TenantProfile[] = [
     },
     features: OFFICINAKAM_MODULE_FLAGS,
   },
+
+  // ── Verticale creative (Orpheo — weuseorpheo.com) ─────────────────────────
+  {
+    id: "orpheo-demo",
+    name: "Orpheo Demo",
+    label: "Demo · Orpheo",
+    vertical: "creative",
+    domains: [],
+    previewSlug: "orpheo-demo",
+    enabled: true,
+    status: "trial",
+    theme: {
+      red: "#7C3AED",
+      redDark: "#4C1D95",
+      peach: "#F5D0FE",
+      cream: "#FBFAF7",
+      ink: "#17111F",
+      brick: "#24162F",
+      mustard: "#D6A84F",
+      mustardSoft: "#F4DF9A",
+      green: "#0F9F6E",
+      pink: "#D9468F",
+    },
+    features: ORPHEO_MODULE_FLAGS,
+  },
 ];
 
 export function findTenantById(id: string): TenantProfile | undefined {
@@ -559,7 +646,12 @@ export function findTenantsByVertical(vertical: TenantProfile["vertical"]): Tena
 
 /** Restituisce il tenant demo appropriato per il verticale. Usare sempre questo come fallback al posto di getDefaultTenant(). */
 export function getDefaultTenantForVertical(vertical: TenantProfile["vertical"]): TenantProfile {
-  const id = vertical === "services" ? DEFAULT_SERVICES_TENANT_ID : DEFAULT_FOOD_TENANT_ID;
+  const id =
+    vertical === "creative"
+      ? DEFAULT_CREATIVE_TENANT_ID
+      : vertical === "services"
+        ? DEFAULT_SERVICES_TENANT_ID
+        : DEFAULT_FOOD_TENANT_ID;
   return findTenantById(id) ?? findTenantsByVertical(vertical)[0] ?? TENANTS[0];
 }
 

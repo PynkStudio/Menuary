@@ -28,7 +28,7 @@ type LeadCreateBody = {
   // Required
   business_name?: string;
   // Vertical & type
-  business_vertical?: "food" | "services";
+  business_vertical?: "food" | "services" | "creative";
   business_type?: string | null;
   // Contacts (all optional)
   contact_name?: string | null;
@@ -176,7 +176,12 @@ function mapLead(row: PlatformLeadRow, locations: PlatformLeadLocationRow[]): Pl
     id: row.id,
     business_name: row.business_name,
     business_slug: row.business_slug,
-    business_vertical: row.business_vertical === "services" ? "services" : "food",
+    business_vertical:
+      row.business_vertical === "creative"
+        ? "creative"
+        : row.business_vertical === "services"
+          ? "services"
+          : "food",
     contact_name: row.contact_name,
     contact_email: row.contact_email,
     contact_phone: row.contact_phone,
@@ -306,7 +311,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Il nome dell'attività è obbligatorio." }, { status: 400 });
   }
 
-  const vertical = body.business_vertical === "services" ? "services" : "food";
+  const vertical =
+    body.business_vertical === "creative"
+      ? "creative"
+      : body.business_vertical === "services"
+        ? "services"
+        : "food";
   const businessSlug = `${slugify(businessName) || "lead"}-${Date.now().toString(36)}`;
 
   // Resolve contact_name from explicit field or first+last name

@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import type { PlatformPackage } from "@/lib/platform-crm-types";
 import { TENANT_MODULES, TENANT_MODULE_CATEGORIES } from "@/lib/tenant-modules";
 import type { TenantFeatureKey } from "@/lib/tenant";
-import { AI_ADDON, PRICING_PLANS } from "@/lib/platform-pricing";
+import { AI_ADDON, ORPHEO_PRICING_PLANS, PRICING_PLANS } from "@/lib/platform-pricing";
 import { MARKETS, type MarketCode } from "@/lib/markets";
 import { sanitizeAmountInput } from "@/lib/pricing-format";
 
@@ -69,7 +69,14 @@ const MOCK_BASE_PACKAGES: PlatformPackageExtended[] = PRICING_PLANS.map((p, i) =
        "reviews", "gallery", "favorites", "crm", "analytics", "upselling",
        "kitchenDisplay", "printStations", "productAvailability", "takeawaySlots",
        "deliveryHub", "inventoryFoodCost", "staffRoles", "tablePlanner"] as TenantFeatureKey[]
-    : TENANT_MODULES.map((m) => m.key),
+    : TENANT_MODULES.map((m) => m.key).filter((key) =>
+        key !== "pressKit" &&
+        key !== "worksCatalog" &&
+        key !== "creativeBooking" &&
+        key !== "rightsRoyalties" &&
+        key !== "reputationReviews" &&
+        key !== "fanbaseCommunity"
+      ),
   is_active: true,
   sort_order: i + 1,
   created_at: "2026-01-01T00:00:00Z",
@@ -85,8 +92,39 @@ const MOCK_BASE_PACKAGES: PlatformPackageExtended[] = PRICING_PLANS.map((p, i) =
   cta_label: p.cta_label ?? null,
 }));
 
+const MOCK_ORPHEO_PACKAGES: PlatformPackageExtended[] = ORPHEO_PRICING_PLANS.map((p, i) => ({
+  id: `pkg-${p.slug}`,
+  name: p.slug,
+  slug: p.slug,
+  description: p.description,
+  vertical: "creative",
+  adapted_name: null,
+  price_monthly: p.price_annual,
+  price_yearly: p.price_annual * 12,
+  currency: p.currency ?? "EUR",
+  modules:
+    p.slug === "orpheo-presenza"
+      ? ["website", "pressKit", "worksCatalog", "reviews", "gallery"] as TenantFeatureKey[]
+      : p.slug === "orpheo-pro"
+        ? ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "reputationReviews", "gallery", "staffRoles"] as TenantFeatureKey[]
+        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation"] as TenantFeatureKey[],
+  is_active: true,
+  sort_order: 201 + i,
+  created_at: "2026-01-01T00:00:00Z",
+  updated_at: "2026-01-01T00:00:00Z",
+  marketing_name: p.marketing_name,
+  tagline: p.tagline,
+  marketing_description: p.description,
+  price_monthly_billing: p.price_monthly,
+  setup_from: p.setup_from,
+  marketing_items: p.marketing_items,
+  is_featured: p.is_featured ?? false,
+  cta_label: p.cta_label ?? null,
+}));
+
 const MOCK_PACKAGES: PlatformPackageExtended[] = [
   ...MOCK_BASE_PACKAGES,
+  ...MOCK_ORPHEO_PACKAGES,
   {
     id: `pkg-${AI_ADDON.slug}`,
     name: AI_ADDON.slug,

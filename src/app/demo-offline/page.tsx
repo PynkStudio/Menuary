@@ -13,7 +13,12 @@ export default async function DemoOfflinePage({
   searchParams: Promise<{ vertical?: string }>;
 }) {
   const { vertical } = await searchParams;
-  const email = vertical === "services" ? "hello@bizery.it" : "hello@menuary.it";
+  const email =
+    vertical === "creative"
+      ? "hello@weuseorpheo.com"
+      : vertical === "services"
+        ? "hello@bizery.it"
+        : "hello@menuary.it";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f8f5ef] px-6 py-16 text-[#211d19]">

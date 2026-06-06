@@ -15,6 +15,7 @@ export default async function NotFound() {
     const labelByMode: Record<string, string> = {
       marketing: "Menuary",
       "marketing-bizery": "Bizery",
+      "marketing-orpheo": "Orpheo",
       "platform-admin": "Menuary · Back-office",
       clients: "Menuary · Area personale",
       studio: "Menuary · Studio",

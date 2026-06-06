@@ -28,11 +28,12 @@ type Kpi = {
   hint?: string;
 };
 
-async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services", t: GestioneMessages["dashboard"]): Promise<Kpi[]> {
+async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services" | "creative", t: GestioneMessages["dashboard"]): Promise<Kpi[]> {
+  const operationalVertical = vertical === "food" ? "food" : "services";
   if (isDemo) {
-    const k = demoDashboardKpis(vertical);
+    const k = demoDashboardKpis(operationalVertical);
     const out: Kpi[] = [
-      { label: vertical === "services" ? t.kpi.appointmentsToday : t.kpi.reservationsToday, value: String(k.reservationsToday) },
+      { label: operationalVertical === "services" ? t.kpi.appointmentsToday : t.kpi.reservationsToday, value: String(k.reservationsToday) },
       { label: t.kpi.reviews7d, value: String(k.reviews7d), hint: t.kpi.reviewsAvg },
     ];
     if (features.canManageStaff) {
@@ -115,7 +116,7 @@ export default async function GestioneDashboardPage({
   const reservationsLabel = getModuleLabel("reservations", tenant.vertical);
 
   const dashboardCopy =
-    tenant.vertical === "services"
+    tenant.vertical === "services" || tenant.vertical === "creative"
       ? interpolate(t.copyServices, {
           menuLabel: menuLabel.toLowerCase(),
           reservationsLabel: reservationsLabel.toLowerCase(),

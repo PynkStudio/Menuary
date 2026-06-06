@@ -51,8 +51,9 @@ export default async function TavoliPage({
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 
-  const isServices = tenant.vertical === "services";
-  const planner = auth.isDemo ? demoTavoli(tenant.vertical) : await fetchPlanner(tenantSlug);
+  const isServices = tenant.vertical === "services" || tenant.vertical === "creative";
+  const demoVertical = tenant.vertical === "food" ? "food" : "services";
+  const planner = auth.isDemo ? demoTavoli(demoVertical) : await fetchPlanner(tenantSlug);
 
   const byArea = new Map<string, Table[]>();
   for (const t of planner.tables) {
