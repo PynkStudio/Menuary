@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, BookOpen, ExternalLink, Instagram, Moon, Sparkles } from "lucide-react";
 import type { CSSProperties } from "react";
@@ -124,7 +125,7 @@ export function ValentinaOrciuoliHomePage() {
               Scopri Anxiety <ArrowRight size={16} />
             </a>
             <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
-              Segui l'autrice <ExternalLink size={15} />
+              Segui l&apos;autrice <ExternalLink size={15} />
             </a>
           </div>
         </motion.div>
@@ -158,7 +159,7 @@ export function ValentinaOrciuoliHomePage() {
           <h2>Anxiety</h2>
           <p>
             Il primo libro della trilogia porta Neirè dentro le mura del palazzo imperiale
-            di Errethera e trasforma l'ansia in potere, drago e percorso di liberazione.
+            di Errethera e trasforma l&apos;ansia in potere, drago e percorso di liberazione.
             Romantic fantasy dai tratti orientali, pubblicato il 17 marzo 2025.
           </p>
         </div>
@@ -204,7 +205,7 @@ export function ValentinaOrciuoliHomePage() {
 
       <section id="autrice" className="vo-section vo-author-section">
         <div>
-          <h2>Un'autrice per chi ama il fantastico quando parla di cose vere.</h2>
+          <h2>Un&apos;autrice per chi ama il fantastico quando parla di cose vere.</h2>
           <p>
             Valentina Orciuoli studia comunicazione e marketing dopo una laurea in
             relazioni internazionali. Scrive fantasy, storie di draghi, magia e romance:
