@@ -78,7 +78,7 @@ export function ValentinaOrciuoliHomePage() {
                 Segui l&apos;autrice <ArrowRight size={16} />
               </a>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
