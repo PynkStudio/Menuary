@@ -3,44 +3,16 @@
 /* eslint-disable @next/next/no-img-element */
 import { motion } from "framer-motion";
 import { ArrowRight, ExternalLink, Instagram } from "lucide-react";
-
-const amazonHref = "https://www.amazon.it/Anxiety-Valentina-Orciuoli-ebook/dp/B0F1KVZKFC";
-const furyHref = "https://www.amazon.it/Fury-Emotion-Dragons-Trilogy-Vol-ebook/dp/B0GKWCS774";
-const linktreeHref = "https://linktr.ee/valentina.orciuoli";
-const instagramHref = "https://www.instagram.com/di.vale_in.peggio/";
-const anxietyCoverSrc = "https://www.selfcreation.it/wp-content/uploads/2025/02/Anxiety-Valentina-Orciuoli.png";
-const furyCoverSrc = "https://www.sakuraribooks.it/wp-content/uploads/2026/02/71z2LZ6a8XL._SL1406_.jpg";
-const authorPortraitSrc = "https://www.selfcreation.it/wp-content/uploads/2024/11/Valentina-Orciuoli.jpg";
-
-const trilogy = [
-  {
-    n: "I",
-    title: "Anxiety",
-    desc: "Il primo drago nasce dove la paura sembra piu forte della voce.",
-    state: "Disponibile su Kindle",
-    href: amazonHref,
-    coverSrc: anxietyCoverSrc,
-    coverAlt: "Copertina di Anxiety di Valentina Orciuoli",
-  },
-  {
-    n: "II",
-    title: "Fury",
-    desc: "Un secolo prima del Dragone Nero dell'ansia, il Primo Long incarna la rabbia.",
-    state: "Disponibile su Kindle",
-    href: furyHref,
-    coverSrc: furyCoverSrc,
-    coverAlt: "Copertina di Fury di Valentina Orciuoli",
-  },
-  {
-    n: "III",
-    title: "Volume III",
-    desc: "La chiusura della saga portera ogni emozione davanti alla sua forma piu antica.",
-    state: "Cover reveal in arrivo",
-    href: null,
-    coverSrc: null,
-    coverAlt: "",
-  },
-];
+import { ValentinaOrciuoliHeader } from "@/components/tenants/valentina-orciuoli/vo-header";
+import {
+  amazonHref,
+  anxietyCoverSrc,
+  authorPortraitSrc,
+  instagramHref,
+  linktreeHref,
+  trilogy,
+  trilogyHref,
+} from "@/components/tenants/valentina-orciuoli/content";
 
 export function ValentinaOrciuoliHomePage() {
   return (
@@ -48,17 +20,7 @@ export function ValentinaOrciuoliHomePage() {
       <section id="top" className="vo-hero">
         <div className="vo-hero-art" aria-hidden="true" />
         <div className="vo-hero-shade" aria-hidden="true" />
-        <header className="vo-header">
-          <a className="vo-brand" href="#top" aria-label="Valentina Orciuoli">
-            <span className="vo-brand-mark">VO</span>
-          </a>
-          <nav className="vo-nav" aria-label="Menu principale">
-            <a href="#top">Home</a>
-            <a href="#libri">Libri</a>
-            <a href="#autrice">Autrice</a>
-            <a href="#contatti">Contatti</a>
-          </nav>
-        </header>
+        <ValentinaOrciuoliHeader />
 
         <div className="vo-hero-inner">
           <motion.div
@@ -71,12 +33,17 @@ export function ValentinaOrciuoliHomePage() {
             <div className="vo-title-rule" aria-hidden="true" />
             <p>Fantasy orientale, emozioni antiche e draghi che respirano luce.</p>
             <div className="vo-hero-actions">
-              <a className="vo-btn vo-btn-primary" href={amazonHref} target="_blank" rel="noopener noreferrer">
-                Scopri Anxiety <ArrowRight size={16} />
+              <a className="vo-btn vo-btn-primary vo-btn-trilogy" href={trilogyHref} target="_blank" rel="noopener noreferrer">
+                Scopri la Trilogia dei Draghi delle Emozioni <ArrowRight size={16} />
               </a>
-              <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
-                Segui l&apos;autrice <ArrowRight size={16} />
-              </a>
+              <div className="vo-hero-actions-row">
+                <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
+                  Scopri l&apos;autrice <ArrowRight size={16} />
+                </a>
+                <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
+                  Iscriviti alla newsletter <ArrowRight size={16} />
+                </a>
+              </div>
             </div>
           </motion.div>
         </div>

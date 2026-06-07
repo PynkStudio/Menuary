@@ -492,7 +492,7 @@ const libritechContent: TenantContent = {
 const valentinaOrciuoliContent: TenantContent = {
   logoSrc: "/favicon.svg",
   logoAlt: "Valentina Orciuoli",
-  showcaseLogoSrc: "https://www.selfcreation.it/wp-content/uploads/2025/02/Anxiety-Valentina-Orciuoli.png",
+  showcaseLogoSrc: "https://m.media-amazon.com/images/I/81TAV1LIfBL._UF1000,1000_QL80_.jpg",
   showcaseLogoAlt: "Anxiety di Valentina Orciuoli",
   description:
     "Valentina Orciuoli scrive fantasy orientale: emozioni antiche, draghi cinesi e mondi in cui la luce combatte dentro l'ombra.",
@@ -525,7 +525,7 @@ const valentinaOrciuoliContent: TenantContent = {
     titleAccent: "Orciuoli.",
     body:
       "Fantasy orientale, emozioni antiche e draghi che respirano luce. Il primo capitolo della saga e Anxiety.",
-    backdrop: "https://www.selfcreation.it/wp-content/uploads/2025/02/Anxiety-Valentina-Orciuoli.png",
+    backdrop: "https://m.media-amazon.com/images/I/81TAV1LIfBL._UF1000,1000_QL80_.jpg",
     ctaLabel: "Scopri Anxiety",
   },
   soulsIntro: {
