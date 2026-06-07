@@ -2,19 +2,28 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { motion } from "framer-motion";
-import { ArrowRight, ExternalLink, Instagram } from "lucide-react";
+import { ArrowRight, BookOpen, Instagram, Music2 } from "lucide-react";
+import {
+  useValentinaNewsletter,
+  ValentinaNewsletterPanel,
+  ValentinaNewsletterPopup,
+} from "@/components/tenants/valentina-orciuoli/newsletter";
 import { ValentinaOrciuoliHeader } from "@/components/tenants/valentina-orciuoli/vo-header";
 import {
   amazonHref,
+  amazonStoreHref,
   anxietyCoverSrc,
   authorPortraitSrc,
   instagramHref,
   linktreeHref,
+  tiktokHref,
   trilogy,
   trilogyHref,
 } from "@/components/tenants/valentina-orciuoli/content";
 
 export function ValentinaOrciuoliHomePage() {
+  const newsletter = useValentinaNewsletter();
+
   return (
     <main className="vo-site">
       <section id="top" className="vo-hero">
@@ -40,7 +49,7 @@ export function ValentinaOrciuoliHomePage() {
                 <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
                   Scopri l&apos;autrice <ArrowRight size={16} />
                 </a>
-                <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
+                <a className="vo-btn vo-btn-secondary" href="#newsletter">
                   Iscriviti alla newsletter <ArrowRight size={16} />
                 </a>
               </div>
@@ -124,6 +133,10 @@ export function ValentinaOrciuoliHomePage() {
             relazioni internazionali. Scrive fantasy, storie di draghi, magia e romance:
             mondi in cui le emozioni non restano astratte, ma prendono corpo, squame e destino.
           </p>
+          <ValentinaNewsletterPanel
+            sent={newsletter.newsletterSent}
+            onSubmit={newsletter.handleNewsletterSubmit}
+          />
         </div>
         <div className="vo-author-seal">
           <img src={authorPortraitSrc} alt="Valentina Orciuoli" />
@@ -140,14 +153,21 @@ export function ValentinaOrciuoliHomePage() {
           <a href={instagramHref} target="_blank" rel="noopener noreferrer">
             <Instagram size={15} /> Instagram
           </a>
-          <a href={linktreeHref} target="_blank" rel="noopener noreferrer">
-            Linktree <ExternalLink size={14} />
+          <a href={tiktokHref} target="_blank" rel="noopener noreferrer">
+            <Music2 size={15} /> TikTok
           </a>
-          <a href={amazonHref} target="_blank" rel="noopener noreferrer">
-            Amazon <ExternalLink size={14} />
+          <a href={amazonStoreHref} target="_blank" rel="noopener noreferrer">
+            <BookOpen size={15} /> Amazon
           </a>
         </div>
       </footer>
+
+      <ValentinaNewsletterPopup
+        open={newsletter.showNewsletterPopup}
+        sent={newsletter.newsletterSent}
+        onClose={newsletter.closeNewsletterPopup}
+        onSubmit={newsletter.handleNewsletterSubmit}
+      />
     </main>
   );
 }

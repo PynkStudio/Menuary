@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import { ArrowRight, ExternalLink, Instagram } from "lucide-react";
 import { ValentinaOrciuoliHeader } from "@/components/tenants/valentina-orciuoli/vo-header";
 import {
@@ -21,9 +22,12 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
         <div className="vo-subpage-bg" aria-hidden="true" />
         <ValentinaOrciuoliHeader />
         <div className="vo-subpage-intro">
-          <span className="vo-dragon-mark">Valentina Orciuoli</span>
+          <span className="vo-dragon-mark">{pageEyebrows[page]}</span>
           <h1>{pageTitles[page]}</h1>
-          <p>{pageLeads[page]}</p>
+          {pageLeads[page] &&
+            pageLeads[page].split("\n\n").map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
         </div>
       </section>
 
@@ -60,42 +64,27 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
       {page === "autrice" && (
         <section className="vo-section vo-author-section vo-subpage-section">
           <div className="vo-author-copy">
-            <span className="vo-dragon-mark">Chi è</span>
-            <h2>Valentina</h2>
-            <p>
-              Valentina Orciuoli studia comunicazione e marketing dopo una laurea in relazioni internazionali.
-              Scrive fantasy, storie di draghi, magia e romance: mondi in cui le emozioni non restano astratte,
-              ma prendono corpo, squame e destino.
-            </p>
             <a className="vo-text-link" href={linktreeHref} target="_blank" rel="noopener noreferrer">
               Segui l&apos;autrice <ArrowRight size={15} />
             </a>
           </div>
           <div className="vo-author-seal">
             <img src={authorPortraitSrc} alt="Valentina Orciuoli" />
-            <p>Ink, moonlight, dragons.</p>
           </div>
         </section>
       )}
 
       {page === "eventi" && (
         <section className="vo-section vo-events-section vo-subpage-section">
-          <div className="vo-event-panel">
-            <span className="vo-dragon-mark">Calendario</span>
-            <h2>Eventi</h2>
-            <p>
-              Presentazioni, firmacopie e incontri con i lettori verranno pubblicati qui appena confermati.
-              Per inviti, festival e collaborazioni editoriali puoi contattare Valentina dai suoi canali ufficiali.
-            </p>
-            <a className="vo-text-link" href={linktreeHref} target="_blank" rel="noopener noreferrer">
-              Apri Linktree <ExternalLink size={14} />
-            </a>
-          </div>
           <div className="vo-event-list" aria-label="Eventi in programma">
             <article>
               <span>In aggiornamento</span>
               <h3>Nuove date in arrivo</h3>
-              <p>Il calendario pubblico sara aggiornato con luogo, orario e modalita di partecipazione.</p>
+              <p>
+                Presentazioni, firmacopie e incontri con i lettori verranno pubblicati qui appena confermati.
+                Per inviti, festival e collaborazioni editoriali puoi contattare Valentina{" "}
+                <Link href="/contatti">qui</Link>.
+              </p>
             </article>
           </div>
         </section>
@@ -124,20 +113,46 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
           </div>
         </section>
       )}
+
+      <footer id="contatti" className="vo-footer">
+        <div>
+          <strong>Valentina Orciuoli</strong>
+          <p>Author site demo su piattaforma Bizery.</p>
+        </div>
+        <div className="vo-footer-links">
+          <a href={instagramHref} target="_blank" rel="noopener noreferrer">
+            <Instagram size={15} /> Instagram
+          </a>
+          <a href={linktreeHref} target="_blank" rel="noopener noreferrer">
+            Linktree <ExternalLink size={14} />
+          </a>
+          <a href={amazonHref} target="_blank" rel="noopener noreferrer">
+            Amazon <ExternalLink size={14} />
+          </a>
+        </div>
+      </footer>
     </main>
   );
 }
 
 const pageTitles: Record<ValentinaPageKind, string> = {
-  libri: "Libri",
+  libri: "Valentina Orciuoli",
+  autrice: "Scopri chi è",
+  eventi: "Date speciali, incontri e presentazioni di",
+  contatti: "Contatti",
+};
+
+const pageEyebrows: Record<ValentinaPageKind, string> = {
+  libri: "Scopri i libri di",
   autrice: "Autrice",
   eventi: "Eventi",
-  contatti: "Contatti",
+  contatti: "Valentina Orciuoli",
 };
 
 const pageLeads: Record<ValentinaPageKind, string> = {
   libri: "La trilogia fantasy orientale dove ogni emozione ha il suo drago.",
-  autrice: "Una voce fantasy tra romance, magia e immaginario orientale.",
-  eventi: "Date, incontri e presentazioni dell'autrice.",
+  autrice:
+    "Valentina Orciuoli è un’autrice italiana di fantasy romance e romantasy. Laureata in Relazioni Internazionali e studentessa di Comunicazione e Marketing, coltiva da sempre una grande passione per le storie fantastiche, i mondi popolati da draghi e magia, e le trame romance capaci di intrecciare emozioni intense e avventura.\n\nCon Anxiety, primo volume della saga The Emotion Dragons Trilogy, dà vita a un universo narrativo in cui sentimenti, potere e destino si incontrano. Fury, secondo capitolo della trilogia, amplia questo mondo raccontandone nuove sfumature e radici.\n\nAttraverso la sua scrittura, Valentina unisce immaginazione, introspezione e romanticismo, accompagnando i lettori in viaggi dove le emozioni diventano forza, conflitto e magia.",
+  eventi: "",
   contatti: "Link ufficiali, social e canali per seguire Valentina.",
 };
