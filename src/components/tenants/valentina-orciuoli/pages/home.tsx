@@ -101,7 +101,7 @@ export function ValentinaOrciuoliHomePage() {
         </div>
         <div className="vo-trilogy-grid">
           {trilogy.map((book) => (
-            <article className="vo-trilogy-card" key={book.n}>
+            <article className="vo-trilogy-card" data-volume={book.n} key={book.n}>
               <div className="vo-trilogy-cover" data-empty={!book.coverSrc || undefined}>
                 {book.coverSrc ? (
                   <img src={book.coverSrc} alt={book.coverAlt} loading="lazy" />
@@ -109,7 +109,7 @@ export function ValentinaOrciuoliHomePage() {
                   <span>{book.n}</span>
                 )}
               </div>
-              <span className="vo-trilogy-volume">Volume {book.n}</span>
+              <span className="vo-trilogy-volume">{book.volumeLabel ?? `Volume ${book.n}`}</span>
               <h3>{book.title}</h3>
               <p>{book.desc}</p>
               {book.href ? (

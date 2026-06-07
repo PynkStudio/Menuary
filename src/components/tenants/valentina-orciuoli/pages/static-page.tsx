@@ -10,7 +10,6 @@ import {
   furyHref,
   instagramHref,
   linktreeHref,
-  trilogy,
 } from "@/components/tenants/valentina-orciuoli/content";
 
 type ValentinaPageKind = "libri" | "autrice" | "eventi" | "contatti";
@@ -23,7 +22,7 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
         <ValentinaOrciuoliHeader />
         <div className="vo-subpage-intro">
           <span className="vo-dragon-mark">{pageEyebrows[page]}</span>
-          <h1>{pageTitles[page]}</h1>
+          <h1 className={page === "libri" ? "vo-subpage-title-compact" : undefined}>{pageTitles[page]}</h1>
           {pageLeads[page] &&
             pageLeads[page].split("\n\n").map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
@@ -32,31 +31,18 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
       </section>
 
       {page === "libri" && (
-        <section className="vo-section vo-trilogy-section vo-subpage-section">
-          <div className="vo-trilogy-bg" aria-hidden="true" />
-          <div className="vo-trilogy-intro">
-            <span className="vo-dragon-mark">The Emotion Dragons Trilogy</span>
-            <h2>I libri</h2>
-            <p>Fantasy orientale, draghi ed emozioni.</p>
-          </div>
-          <div className="vo-trilogy-grid">
-            {trilogy.map((book) => (
-              <article className="vo-trilogy-card" key={book.n}>
-                <div className="vo-trilogy-cover" data-empty={!book.coverSrc || undefined}>
-                  {book.coverSrc ? <img src={book.coverSrc} alt={book.coverAlt} loading="lazy" /> : <span>{book.n}</span>}
-                </div>
-                <span className="vo-trilogy-volume">Volume {book.n}</span>
-                <h3>{book.title}</h3>
-                <p>{book.desc}</p>
-                {book.href ? (
-                  <a href={book.href} target="_blank" rel="noopener noreferrer">
-                    {book.state} <ArrowRight size={13} />
-                  </a>
-                ) : (
-                  <small>{book.state}</small>
-                )}
-              </article>
-            ))}
+        <section className="vo-anxiety-section vo-subpage-section">
+          <div className="vo-anxiety-panel">
+            <h2>anxiety</h2>
+            <p>
+              E se l&apos;ansia fosse un potere?
+              <br />
+              E se questo potere si manifestasse nella forma di un dragone?
+            </p>
+            <p>
+              Quando non è più possibile mentire a sé stessi, quando il vero lo combatte per uscire allo
+              scoperto il potere dell&apos;ansia si sprigiona, più feroce che mai.
+            </p>
           </div>
         </section>
       )}
@@ -150,7 +136,8 @@ const pageEyebrows: Record<ValentinaPageKind, string> = {
 };
 
 const pageLeads: Record<ValentinaPageKind, string> = {
-  libri: "La trilogia fantasy orientale dove ogni emozione ha il suo drago.",
+  libri:
+    "sei più da fantasy orientale, dove ogni emozione ha il suo drago oppure sei più da noir meneghino, dove il mistero ed il thriller ne dettano il ritmo?",
   autrice:
     "Valentina Orciuoli è un’autrice italiana di fantasy romance e romantasy. Laureata in Relazioni Internazionali e studentessa di Comunicazione e Marketing, coltiva da sempre una grande passione per le storie fantastiche, i mondi popolati da draghi e magia, e le trame romance capaci di intrecciare emozioni intense e avventura.\n\nCon Anxiety, primo volume della saga The Emotion Dragons Trilogy, dà vita a un universo narrativo in cui sentimenti, potere e destino si incontrano. Fury, secondo capitolo della trilogia, amplia questo mondo raccontandone nuove sfumature e radici.\n\nAttraverso la sua scrittura, Valentina unisce immaginazione, introspezione e romanticismo, accompagnando i lettori in viaggi dove le emozioni diventano forza, conflitto e magia.",
   eventi: "",

@@ -379,21 +379,22 @@
 
   .vo-trilogy-intro {
     max-width: 33rem;
-    color: #1b120a;
+    color: var(--vo-gold-soft);
   }
 
   .vo-trilogy-intro .vo-dragon-mark {
-    color: #6b3e16;
+    color: var(--vo-gold-soft);
   }
 
   .vo-trilogy-intro h2 {
-    color: #18100a;
+    color: var(--vo-gold-soft);
     font-size: clamp(3.2rem, 6vw, 5.8rem);
+    text-shadow: 0 0 1rem rgba(242, 216, 148, 0.18);
   }
 
   .vo-trilogy-intro p {
     margin: 0.8rem 0 0;
-    color: #2a1a0e;
+    color: var(--vo-gold-soft);
     font-size: 0.9rem;
     font-weight: 800;
     letter-spacing: 0.14em;
@@ -431,7 +432,39 @@
     place-items: center;
   }
 
+  .vo-trilogy-card[data-volume="III"] .vo-trilogy-cover[data-empty="true"] {
+    background:
+      radial-gradient(ellipse at 28% 22%, rgba(242, 216, 148, 0.34), transparent 28%),
+      radial-gradient(ellipse at 78% 18%, rgba(232, 238, 226, 0.2), transparent 26%),
+      radial-gradient(ellipse at 52% 70%, rgba(242, 216, 148, 0.16), transparent 42%),
+      linear-gradient(180deg, rgba(20, 22, 22, 0.76), rgba(7, 6, 6, 0.96));
+  }
+
+  .vo-trilogy-card[data-volume="III"] .vo-trilogy-cover[data-empty="true"]::before,
+  .vo-trilogy-card[data-volume="III"] .vo-trilogy-cover[data-empty="true"]::after {
+    content: "";
+    position: absolute;
+    inset: auto -18% 12% -18%;
+    height: 42%;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 18% 48%, rgba(248, 226, 175, 0.28), transparent 40%),
+      radial-gradient(ellipse at 48% 42%, rgba(255, 245, 210, 0.34), transparent 42%),
+      radial-gradient(ellipse at 78% 52%, rgba(242, 216, 148, 0.22), transparent 38%);
+    filter: blur(14px);
+    opacity: 0.78;
+  }
+
+  .vo-trilogy-card[data-volume="III"] .vo-trilogy-cover[data-empty="true"]::after {
+    inset: 8% -20% auto -20%;
+    height: 36%;
+    filter: blur(18px);
+    opacity: 0.48;
+  }
+
   .vo-trilogy-cover[data-empty="true"] span {
+    position: relative;
+    z-index: 1;
     color: rgba(242, 216, 148, 0.42);
     font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(3rem, 6vw, 5.4rem);
@@ -477,6 +510,48 @@
     font-weight: 850;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+
+  .vo-anxiety-section {
+    position: relative;
+    display: flex;
+    min-height: clamp(34rem, 72vw, 56rem);
+    align-items: center;
+    overflow: hidden;
+    padding: clamp(4rem, 8vw, 8rem) max(1.5rem, calc((100vw - 1180px) / 2));
+    background:
+      linear-gradient(90deg, rgba(5, 5, 5, 0.28), rgba(5, 5, 5, 0.02) 52%),
+      url("/valentina-orciuoli/sfondo-anxiety.webp") center / cover no-repeat;
+  }
+
+  .vo-anxiety-panel {
+    width: min(100%, 33rem);
+    border: 1px solid rgba(255, 218, 212, 0.42);
+    background: rgba(196, 93, 108, 0.46);
+    padding: clamp(1.45rem, 4vw, 2.6rem);
+    color: #fff4e8;
+    box-shadow: 0 1.5rem 4rem rgba(42, 12, 10, 0.32);
+    backdrop-filter: blur(10px);
+  }
+
+  .vo-anxiety-panel h2 {
+    margin: 0;
+    color: #fff4e8;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(3.2rem, 7vw, 6.2rem);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 0.9;
+    text-shadow: 0 0 1.2rem rgba(80, 12, 10, 0.24);
+  }
+
+  .vo-anxiety-panel p {
+    margin: 1.15rem 0 0;
+    color: rgba(255, 248, 236, 0.96);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.02rem, 1.7vw, 1.28rem);
+    line-height: 1.58;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.16);
   }
 
   .vo-subpage-hero {
@@ -525,6 +600,10 @@
     letter-spacing: -0.03em;
     line-height: 0.86;
     text-shadow: 0 0 1rem rgba(216, 173, 90, 0.18);
+  }
+
+  .vo-subpage-intro h1.vo-subpage-title-compact {
+    font-size: clamp(2.3rem, 5.5vw, 5rem);
   }
 
   .vo-subpage-intro p {
@@ -621,8 +700,9 @@
     display: grid;
     width: 100vw;
     min-height: 100dvh;
-    place-items: center;
-    padding: 1.25rem;
+    align-items: start;
+    justify-items: center;
+    padding: clamp(3rem, 11dvh, 6.5rem) 1.25rem 1.25rem;
     background: rgba(5, 5, 5, 0.68);
     backdrop-filter: blur(6px);
     overflow: hidden;
@@ -632,7 +712,7 @@
   .vo-newsletter-dialog {
     position: relative;
     width: min(100%, 34rem);
-    max-height: calc(100dvh - 2.5rem);
+    max-height: calc(100dvh - clamp(4.25rem, 13dvh, 7.75rem));
     overflow-y: auto;
     border: 1px solid rgba(216, 173, 90, 0.42);
     background:
@@ -660,7 +740,7 @@
 
   .vo-newsletter-dialog h2 {
     max-width: 26rem;
-    margin: 0.45rem 0 0;
+    margin: 0;
     color: var(--vo-gold);
     font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(2.4rem, 7vw, 4rem);
@@ -671,7 +751,7 @@
 
   .vo-newsletter-dialog p {
     max-width: 28rem;
-    margin: 1rem 0 0;
+    margin: 0.85rem 0 0;
     color: rgba(248, 226, 175, 0.84);
     font-family: Georgia, "Times New Roman", serif;
     font-size: 1rem;
@@ -977,6 +1057,15 @@
 
     .vo-newsletter-form button {
       width: 100%;
+    }
+
+    .vo-newsletter-modal {
+      padding-top: max(1.5rem, env(safe-area-inset-top));
+    }
+
+    .vo-newsletter-dialog {
+      max-height: calc(100dvh - max(2.75rem, env(safe-area-inset-top)));
+      padding-top: 3.2rem;
     }
 
     .vo-book-showcase,
