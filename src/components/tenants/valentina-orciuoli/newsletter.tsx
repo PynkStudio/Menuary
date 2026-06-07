@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState, type FormEvent } from "react";
-import { Mail, X } from "lucide-react";
+import { X } from "lucide-react";
 
 const newsletterStorageKey = "valentina-orciuoli-newsletter-popup-seen";
 
@@ -15,13 +15,26 @@ export function useValentinaNewsletter() {
       if (window.localStorage.getItem(newsletterStorageKey)) return;
 
       window.localStorage.setItem(newsletterStorageKey, "true");
-      const popupTimer = window.setTimeout(() => setShowNewsletterPopup(true), 700);
-
-      return () => window.clearTimeout(popupTimer);
+      setShowNewsletterPopup(true);
     } catch {
       setShowNewsletterPopup(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!showNewsletterPopup) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [showNewsletterPopup]);
 
   function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -70,15 +83,21 @@ export function ValentinaNewsletterPopup({
   if (!open) return null;
 
   return (
-    <div className="vo-newsletter-modal" role="presentation">
+    <motion.div
+      className="vo-newsletter-modal"
+      role="presentation"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.28, ease: "easeOut" }}
+    >
       <motion.div
         className="vo-newsletter-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="vo-newsletter-title"
-        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        initial={{ opacity: 0, y: 34, scale: 0.92 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.24, ease: "easeOut" }}
+        transition={{ duration: 0.44, ease: [0.16, 1, 0.3, 1] }}
       >
         <button
           className="vo-newsletter-close"
@@ -88,8 +107,6 @@ export function ValentinaNewsletterPopup({
         >
           <X size={18} />
         </button>
-        <Mail className="vo-newsletter-icon" size={24} aria-hidden="true" />
-        <span className="vo-dragon-mark">Newsletter</span>
         <h2 id="vo-newsletter-title">Vuoi saperne di più su Valentina?</h2>
         <p>
           Iscriviti con il tuo indirizzo email per ricevere notizie, aggiornamenti
@@ -97,7 +114,7 @@ export function ValentinaNewsletterPopup({
         </p>
         <ValentinaNewsletterForm sent={sent} onSubmit={onSubmit} compact />
       </motion.div>
-    </div>
+    </motion.div>
   );
 }
 

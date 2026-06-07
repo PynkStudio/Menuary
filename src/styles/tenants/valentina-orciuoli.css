@@ -619,15 +619,21 @@
     inset: 0;
     z-index: 100;
     display: grid;
+    width: 100vw;
+    min-height: 100dvh;
     place-items: center;
     padding: 1.25rem;
     background: rgba(5, 5, 5, 0.68);
     backdrop-filter: blur(6px);
+    overflow: hidden;
+    overscroll-behavior: contain;
   }
 
   .vo-newsletter-dialog {
     position: relative;
     width: min(100%, 34rem);
+    max-height: calc(100dvh - 2.5rem);
+    overflow-y: auto;
     border: 1px solid rgba(216, 173, 90, 0.42);
     background:
       radial-gradient(circle at 88% 0%, rgba(151, 31, 24, 0.32), transparent 14rem),
@@ -650,11 +656,6 @@
     background: rgba(5, 5, 5, 0.56);
     color: var(--vo-gold-soft);
     cursor: pointer;
-  }
-
-  .vo-newsletter-icon {
-    color: var(--vo-gold);
-    margin-bottom: 1rem;
   }
 
   .vo-newsletter-dialog h2 {
