@@ -263,28 +263,39 @@
     display: block;
     justify-self: center;
     width: min(100%, 24rem);
-    transform: rotate(-1.5deg);
+    animation: vo-cover-float 5.6s ease-in-out infinite;
   }
 
   .vo-book-cover {
     position: relative;
-    overflow: hidden;
-    aspect-ratio: 691 / 1024;
-    border: 1px solid rgba(216, 173, 90, 0.46);
-    background: #15110d;
-    box-shadow:
-      -1rem 1.4rem 3rem rgba(0, 0, 0, 0.72),
-      0 0 0 0.55rem rgba(216, 173, 90, 0.08),
-      0 0 4rem rgba(216, 173, 90, 0.18);
+    border: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
-  .vo-book-cover img,
+  @keyframes vo-cover-float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) rotate(-1.5deg);
+    }
+
+    50% {
+      transform: translate3d(0, -1rem, 0) rotate(1deg);
+    }
+  }
+
   .vo-trilogy-cover img,
   .vo-author-seal img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .vo-book-cover img {
+    display: block;
+    width: 100%;
+    height: auto;
   }
 
   .vo-book-copy {
@@ -432,36 +443,6 @@
     place-items: center;
   }
 
-  .vo-trilogy-card[data-volume="III"] .vo-trilogy-cover[data-empty="true"] {
-    background:
-      radial-gradient(ellipse at 28% 22%, rgba(242, 216, 148, 0.34), transparent 28%),
-      radial-gradient(ellipse at 78% 18%, rgba(232, 238, 226, 0.2), transparent 26%),
-      radial-gradient(ellipse at 52% 70%, rgba(242, 216, 148, 0.16), transparent 42%),
-      linear-gradient(180deg, rgba(20, 22, 22, 0.76), rgba(7, 6, 6, 0.96));
-  }
-
-  .vo-trilogy-card[data-volume="III"] .vo-trilogy-cover[data-empty="true"]::before,
-  .vo-trilogy-card[data-volume="III"] .vo-trilogy-cover[data-empty="true"]::after {
-    content: "";
-    position: absolute;
-    inset: auto -18% 12% -18%;
-    height: 42%;
-    pointer-events: none;
-    background:
-      radial-gradient(ellipse at 18% 48%, rgba(248, 226, 175, 0.28), transparent 40%),
-      radial-gradient(ellipse at 48% 42%, rgba(255, 245, 210, 0.34), transparent 42%),
-      radial-gradient(ellipse at 78% 52%, rgba(242, 216, 148, 0.22), transparent 38%);
-    filter: blur(14px);
-    opacity: 0.78;
-  }
-
-  .vo-trilogy-card[data-volume="III"] .vo-trilogy-cover[data-empty="true"]::after {
-    inset: 8% -20% auto -20%;
-    height: 36%;
-    filter: blur(18px);
-    opacity: 0.48;
-  }
-
   .vo-trilogy-cover[data-empty="true"] span {
     position: relative;
     z-index: 1;
@@ -490,6 +471,10 @@
     letter-spacing: 0.03em;
   }
 
+  .vo-trilogy-card[data-book="tra-fumo-e-ombre"] h3 {
+    white-space: nowrap;
+  }
+
   .vo-trilogy-card p {
     max-width: 17rem;
     margin: 0;
@@ -512,29 +497,58 @@
     text-transform: uppercase;
   }
 
-  .vo-anxiety-section {
+  .vo-book-feature-section {
     position: relative;
     display: flex;
     min-height: clamp(34rem, 72vw, 56rem);
     align-items: center;
     overflow: hidden;
     padding: clamp(4rem, 8vw, 8rem) max(1.5rem, calc((100vw - 1180px) / 2));
+  }
+
+  .vo-book-feature-section-anxiety {
     background:
       linear-gradient(90deg, rgba(5, 5, 5, 0.28), rgba(5, 5, 5, 0.02) 52%),
       url("/valentina-orciuoli/sfondo-anxiety.webp") center / cover no-repeat;
   }
 
-  .vo-anxiety-panel {
+  .vo-book-feature-section-fury {
+    justify-content: flex-end;
+    background:
+      linear-gradient(270deg, rgba(5, 5, 5, 0.3), rgba(5, 5, 5, 0.02) 54%),
+      url("/valentina-orciuoli/sfondo-fury-girato.webp") center / cover no-repeat;
+  }
+
+  .vo-book-feature-section-dark {
+    background:
+      linear-gradient(90deg, rgba(5, 5, 5, 0.46), rgba(5, 5, 5, 0.04) 58%),
+      url("/valentina-orciuoli/sfondo-dark.webp") center / cover no-repeat;
+  }
+
+  .vo-book-feature-panel {
     width: min(100%, 33rem);
     border: 1px solid rgba(255, 218, 212, 0.42);
-    background: rgba(196, 93, 108, 0.46);
     padding: clamp(1.45rem, 4vw, 2.6rem);
     color: #fff4e8;
     box-shadow: 0 1.5rem 4rem rgba(42, 12, 10, 0.32);
     backdrop-filter: blur(10px);
   }
 
-  .vo-anxiety-panel h2 {
+  .vo-book-feature-panel-anxiety {
+    background: rgba(196, 93, 108, 0.46);
+  }
+
+  .vo-book-feature-panel-fury {
+    background: rgba(151, 28, 22, 0.48);
+  }
+
+  .vo-book-feature-panel-dark {
+    border-color: rgba(219, 173, 83, 0.46);
+    background: rgba(117, 88, 31, 0.48);
+    box-shadow: 0 1.5rem 4rem rgba(8, 7, 4, 0.48);
+  }
+
+  .vo-book-feature-panel h2 {
     margin: 0;
     color: #fff4e8;
     font-family: Georgia, "Times New Roman", serif;
@@ -545,13 +559,38 @@
     text-shadow: 0 0 1.2rem rgba(80, 12, 10, 0.24);
   }
 
-  .vo-anxiety-panel p {
+  .vo-book-feature-panel p {
     margin: 1.15rem 0 0;
     color: rgba(255, 248, 236, 0.96);
     font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(1.02rem, 1.7vw, 1.28rem);
     line-height: 1.58;
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.16);
+  }
+
+  .vo-book-feature-cta {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-top: 1.7rem;
+    border: 1px solid rgba(255, 248, 236, 0.58);
+    background: rgba(255, 244, 232, 0.18);
+    padding: 0.85rem 1.15rem;
+    color: #fff8ec;
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+
+  .vo-book-feature-cta:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 248, 236, 0.86);
+    background: rgba(255, 244, 232, 0.28);
   }
 
   .vo-subpage-hero {

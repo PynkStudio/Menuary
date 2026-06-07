@@ -6,10 +6,10 @@ import { ArrowRight, ExternalLink, Instagram } from "lucide-react";
 import { ValentinaOrciuoliHeader } from "@/components/tenants/valentina-orciuoli/vo-header";
 import {
   amazonHref,
-  authorPortraitSrc,
   furyHref,
   instagramHref,
   linktreeHref,
+  valentinaBasePath,
 } from "@/components/tenants/valentina-orciuoli/content";
 
 type ValentinaPageKind = "libri" | "autrice" | "eventi" | "contatti";
@@ -22,7 +22,9 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
         <ValentinaOrciuoliHeader />
         <div className="vo-subpage-intro">
           <span className="vo-dragon-mark">{pageEyebrows[page]}</span>
-          <h1 className={page === "libri" ? "vo-subpage-title-compact" : undefined}>{pageTitles[page]}</h1>
+          {pageTitles[page] && (
+            <h1 className={page === "libri" ? "vo-subpage-title-compact" : undefined}>{pageTitles[page]}</h1>
+          )}
           {pageLeads[page] &&
             pageLeads[page].split("\n\n").map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
@@ -31,20 +33,71 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
       </section>
 
       {page === "libri" && (
-        <section className="vo-anxiety-section vo-subpage-section">
-          <div className="vo-anxiety-panel">
-            <h2>anxiety</h2>
-            <p>
-              E se l&apos;ansia fosse un potere?
-              <br />
-              E se questo potere si manifestasse nella forma di un dragone?
-            </p>
-            <p>
-              Quando non è più possibile mentire a sé stessi, quando il vero lo combatte per uscire allo
-              scoperto il potere dell&apos;ansia si sprigiona, più feroce che mai.
-            </p>
-          </div>
-        </section>
+        <>
+          <section className="vo-book-feature-section vo-book-feature-section-anxiety vo-subpage-section">
+            <div className="vo-book-feature-panel vo-book-feature-panel-anxiety">
+              <h2>anxiety</h2>
+              <p>
+                E se l&apos;ansia fosse un potere?
+                <br />
+                E se questo potere si manifestasse nella forma di un dragone?
+              </p>
+              <p>
+                Quando non è più possibile mentire a sé stessi, quando il vero lo combatte per uscire allo
+                scoperto il potere dell&apos;ansia si sprigiona, più feroce che mai.
+              </p>
+              <a
+                className="vo-book-feature-cta"
+                href="https://www.amazon.it/Anxiety-Valentina-Orciuoli-ebook/dp/B0F1KVZKFC"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Leggilo qui <ArrowRight size={15} />
+              </a>
+            </div>
+          </section>
+          <section className="vo-book-feature-section vo-book-feature-section-fury vo-subpage-section">
+            <div className="vo-book-feature-panel vo-book-feature-panel-fury">
+              <h2>Fury</h2>
+              <p>
+                E se perdere se stessi fosse l&apos;unico modo per salvare chi ami?
+                <br />
+                Quando la rabbia prende il sopravvento, cosa resta del proprio lo?
+              </p>
+              <p>
+                Un secolo prima dell&apos;apparizione del Dragone Nero dell&apos;ansia, il Primo Long era
+                l&apos;incarnazione della rabbia.
+              </p>
+              <a
+                className="vo-book-feature-cta"
+                href="https://www.amazon.it/Fury-Emotion-Dragons-Trilogy-Vol-ebook/dp/B0GKWCS774/?_encoding=UTF8&pd_rd_w=CzMXZ&content-id=amzn1.sym.1eec5ee4-65c7-4941-9685-3f18adf58c9a&pf_rd_p=1eec5ee4-65c7-4941-9685-3f18adf58c9a&pf_rd_r=259-4433171-8421603&pd_rd_wg=5vSf0&pd_rd_r=e0723301-afcb-4ed3-9d1a-a5a3f8f5343e"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Leggilo qui <ArrowRight size={15} />
+              </a>
+            </div>
+          </section>
+          <section id="tra-fumo-e-ombre" className="vo-book-feature-section vo-book-feature-section-dark vo-subpage-section">
+            <div className="vo-book-feature-panel vo-book-feature-panel-dark">
+              <h2>Tra fumo e ombre</h2>
+              <p>E se il fumo fosse l&apos;unico posto dove poter nascondere la verità?</p>
+              <p>
+                Nella Milano cupa degli anni &apos;70, tra nebbia, silenzi e ombre che sembrano respirare,
+                una donna cerca di dimenticare ciò che ha perduto. Ma ogni sigaretta accesa riporta a galla un
+                ricordo, ogni strada bagnata riflette un volto che non vuole più vedere.
+              </p>
+              <a
+                className="vo-book-feature-cta"
+                href="https://linktr.ee/valentina.orciuoli"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Preordina qui <ArrowRight size={15} />
+              </a>
+            </div>
+          </section>
+        </>
       )}
 
       {page === "autrice" && (
@@ -55,7 +108,7 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
             </a>
           </div>
           <div className="vo-author-seal">
-            <img src={authorPortraitSrc} alt="Valentina Orciuoli" />
+            <img src="/valentina-orciuoli/valentina-autrice.webp" alt="Valentina Orciuoli" />
           </div>
         </section>
       )}
@@ -69,7 +122,7 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
               <p>
                 Presentazioni, firmacopie e incontri con i lettori verranno pubblicati qui appena confermati.
                 Per inviti, festival e collaborazioni editoriali puoi contattare Valentina{" "}
-                <Link href="/contatti">qui</Link>.
+                <Link href={`${valentinaBasePath}/contatti`}>qui</Link>.
               </p>
             </article>
           </div>
@@ -124,7 +177,7 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
 const pageTitles: Record<ValentinaPageKind, string> = {
   libri: "Valentina Orciuoli",
   autrice: "Scopri chi è",
-  eventi: "Date speciali, incontri e presentazioni di",
+  eventi: "",
   contatti: "Contatti",
 };
 
