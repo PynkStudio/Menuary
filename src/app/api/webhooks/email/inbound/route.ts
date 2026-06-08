@@ -135,6 +135,29 @@ async function resolveEmailAssignment(
   return activeUser?.id ?? null;
 }
 
+async function resolveTenantIdFromRecipients(
+  toAddresses: string[],
+  svc: NonNullable<ReturnType<typeof createSupabaseServiceClient>>,
+): Promise<string | null> {
+  const recipientDomains = new Set(
+    toAddresses
+      .map((address) => parseEmailAddress(address).address.toLowerCase().split("@")[1])
+      .filter(Boolean),
+  );
+  if (recipientDomains.size === 0) return null;
+
+  const { data } = await svc
+    .from("tenants")
+    .select("id, domains")
+    .eq("enabled", true);
+
+  const match = (data ?? []).find((tenant) =>
+    (tenant.domains ?? []).some((domain) => recipientDomains.has(domain.toLowerCase())),
+  );
+
+  return match?.id ?? null;
+}
+
 // ─── Handler inbound email ────────────────────────────────────────────────────
 
 type ResendReceivedEmail = {
@@ -232,6 +255,7 @@ async function handleInbound(
   }
 
   const brand      = detectBrandFromRecipients(toAddresses);
+  const tenantId = await resolveTenantIdFromRecipients(toAddresses, svc);
   const assignedToUserId = await resolveEmailAssignment(toAddresses, svc);
   const { name: fromName, address: fromAddress } = parseEmailAddress(from);
   const headers    = normalizeHeaders(source.headers);
@@ -253,6 +277,7 @@ async function handleInbound(
     headers:              headers as unknown as never,
     attachments:          attachments as unknown as never,
     brand,
+    tenant_id:            tenantId,
     assigned_to_user_id:  assignedToUserId,
   }).select("id").single();
 

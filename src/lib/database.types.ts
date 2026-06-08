@@ -963,6 +963,7 @@ export type Database = {
           read: boolean
           starred: boolean
           subject: string
+          tenant_id: string | null
           text_body: string | null
           to_addresses: string[]
         }
@@ -982,6 +983,7 @@ export type Database = {
           read?: boolean
           starred?: boolean
           subject?: string
+          tenant_id?: string | null
           text_body?: string | null
           to_addresses: string[]
         }
@@ -1001,6 +1003,7 @@ export type Database = {
           read?: boolean
           starred?: boolean
           subject?: string
+          tenant_id?: string | null
           text_body?: string | null
           to_addresses?: string[]
         }
@@ -1017,6 +1020,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbound_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -2792,6 +2802,7 @@ export type Database = {
           sent_by_user_id: string | null
           status: string
           subject: string
+          tenant_id: string | null
           to_addresses: string[]
         }
         Insert: {
@@ -2807,6 +2818,7 @@ export type Database = {
           sent_by_user_id?: string | null
           status?: string
           subject?: string
+          tenant_id?: string | null
           to_addresses: string[]
         }
         Update: {
@@ -2822,6 +2834,7 @@ export type Database = {
           sent_by_user_id?: string | null
           status?: string
           subject?: string
+          tenant_id?: string | null
           to_addresses?: string[]
         }
         Relationships: [
@@ -2830,6 +2843,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sent_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

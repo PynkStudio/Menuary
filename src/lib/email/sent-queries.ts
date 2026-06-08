@@ -2,6 +2,7 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { InboundEmailBrand } from "./inbound-types";
+import type { TenantEmailScope } from "./tenant-email-scope";
 
 const PAGE_SIZE = 30;
 
@@ -15,6 +16,7 @@ export type SentEmail = {
   subject: string;
   html_body: string | null;
   brand: InboundEmailBrand;
+  tenant_id?: string | null;
   sent_by_user_id: string | null;
   sent_by_name: string | null;
   status: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained";
@@ -31,6 +33,7 @@ export type SentPage = {
 export async function getSentEmails(
   brand?: InboundEmailBrand | "all" | "support",
   page = 1,
+  scope?: TenantEmailScope,
 ): Promise<SentPage> {
   const admin = createSupabaseAdminClient();
   const from = (page - 1) * PAGE_SIZE;
@@ -42,7 +45,9 @@ export async function getSentEmails(
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (brand === "support") {
+  if (scope) {
+    query = query.eq("tenant_id", scope.tenantId);
+  } else if (brand === "support") {
     query = query.in("from_address", ["support@menuary.it", "support@bizery.it", "support@weuseorpheo.com"]);
   } else if (brand && brand !== "all") {
     query = query.eq("brand", brand);

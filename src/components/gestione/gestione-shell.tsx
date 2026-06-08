@@ -100,6 +100,7 @@ export function GestioneShell({
     { label: t.nav.checkout, href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
     { label: t.nav.shifts, href: sectionHref("turni"), visible: () => access.canManageShifts },
     { label: t.nav.staff, href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
+    { label: t.nav.mail, href: sectionHref("mail"), visible: () => isAdmin && access.canManageMail },
     { label: t.nav.kiosk, href: sectionHref("kiosk"), visible: () => isAdmin && tenant.features.orderKiosk },
     { label: t.nav.aiAssistant, href: sectionHref("assistente-ai"), visible: () => isAdmin && (tenant.features.aiPhone || tenant.features.aiWhatsapp) },
     { label: t.nav.google, href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },

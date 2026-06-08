@@ -52,6 +52,7 @@ export type InboundEmail = {
   headers: ResendInboundHeader[];
   attachments: ResendInboundAttachment[];
   brand: InboundEmailBrand;
+  tenant_id?: string | null;
   read: boolean;
   starred: boolean;
   archived: boolean;

@@ -15,6 +15,7 @@ import { buildEmailSrcDoc } from "@/lib/email/render-html";
 import type { InboundEmail } from "@/lib/email/inbound-types";
 import type { ResendInboundAttachment } from "@/lib/email/inbound-types";
 import type { LeadMatch } from "@/lib/email/lead-link-queries";
+import type { TenantEmailScope } from "@/lib/email/tenant-email-scope";
 
 type Props = {
   email: InboundEmail;
@@ -22,6 +23,8 @@ type Props = {
   onMutated: () => void;
   onReply?: (email: InboundEmail) => void;
   onAssigned?: (emailId: string, siteadminId: string | null) => void;
+  mode?: "platform" | "tenant";
+  scope?: TenantEmailScope;
 };
 
 function fmtDate(iso: string) {
@@ -370,7 +373,7 @@ function AssignPanel({ emailId, assignedToUserId, onAssigned }: AssignPanelProps
 
 // ─── EmailDetail ──────────────────────────────────────────────────────────────
 
-export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned }: Props) {
+export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned, mode = "platform", scope }: Props) {
   const [isPending, startTransition] = useTransition();
   const [starred, setStarred]           = useState(email.starred);
   const [assignedUserId, setAssignedUserId] = useState(email.assigned_to_user_id);
@@ -380,10 +383,11 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned }: 
 
   // Auto-match lead dal mittente
   useEffect(() => {
+    if (mode !== "platform") return;
     findLeadsByEmails([email.from_address])
       .then(setAutoMatches)
       .catch(() => {});
-  }, [email.from_address]);
+  }, [email.from_address, mode]);
 
   // Adatta l'altezza dell'iframe al suo contenuto
   useEffect(() => {
@@ -403,14 +407,14 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned }: 
     const next = !starred;
     setStarred(next);
     startTransition(async () => {
-      await starEmail(email.id, next);
+      await starEmail(email.id, next, scope);
       onMutated();
     });
   }
 
   function handleArchive() {
     startTransition(async () => {
-      await archiveEmail(email.id);
+      await archiveEmail(email.id, scope);
       onClose();
       onMutated();
     });
@@ -419,7 +423,7 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned }: 
   function handleDelete() {
     if (!confirm("Eliminare definitivamente questa email?")) return;
     startTransition(async () => {
-      await deleteEmail(email.id);
+      await deleteEmail(email.id, scope);
       onClose();
       onMutated();
     });
@@ -427,7 +431,7 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned }: 
 
   function handleMarkUnread() {
     startTransition(async () => {
-      await markEmailRead(email.id, false);
+      await markEmailRead(email.id, false, scope);
       onMutated();
     });
   }
@@ -580,22 +584,26 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned }: 
       </div>
 
       {/* Pannello assegnazione */}
-      <AssignPanel
-        emailId={email.id}
-        assignedToUserId={assignedUserId}
-        onAssigned={(id, sid) => {
-          setAssignedUserId(sid);
-          onAssigned?.(id, sid);
-        }}
-      />
+      {mode === "platform" && (
+        <AssignPanel
+          emailId={email.id}
+          assignedToUserId={assignedUserId}
+          onAssigned={(id, sid) => {
+            setAssignedUserId(sid);
+            onAssigned?.(id, sid);
+          }}
+        />
+      )}
 
       {/* Lead panel */}
-      <LeadPanel
-        emailId={email.id}
-        linkedLeadId={linkedLeadId}
-        autoMatches={autoMatches}
-        onLinked={setLinkedLeadId}
-      />
+      {mode === "platform" && (
+        <LeadPanel
+          emailId={email.id}
+          linkedLeadId={linkedLeadId}
+          autoMatches={autoMatches}
+          onLinked={setLinkedLeadId}
+        />
+      )}
 
       {/* Corpo email */}
       <div className="flex-1 overflow-y-auto p-5">
