@@ -1,15 +1,17 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowRight, ExternalLink, Instagram } from "lucide-react";
+import { ArrowRight, ExternalLink, Instagram, Mail, Music2, Send } from "lucide-react";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import { ValentinaOrciuoliHeader } from "@/components/tenants/valentina-orciuoli/vo-header";
+import { TenantLinktreeView, type TenantLinktreeItem } from "@/components/modules/linktree/linktree-view";
 import {
   amazonHref,
-  furyHref,
   instagramHref,
   tiktokHref,
+  valentinaEmail,
   valentinaLinks,
   linktreeHref,
   valentinaBasePath,
@@ -19,13 +21,35 @@ type ValentinaPageKind = "libri" | "autrice" | "eventi" | "contatti" | "link";
 
 export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind }) {
   const staffHref = getTenantGestioneExternalHref("valentina-orciuoli");
+  const [linktreeItems, setLinktreeItems] = useState<TenantLinktreeItem[]>(
+    () => valentinaLinks.map((item) => ({
+      label: item.label,
+      href: item.href,
+      description: item.desc,
+      kind: item.kind,
+    })),
+  );
+
+  useEffect(() => {
+    if (page !== "link") return;
+    let alive = true;
+    fetch("/api/tenant/valentina-orciuoli/linktree")
+      .then((res) => res.json())
+      .then((data) => {
+        if (alive && Array.isArray(data.links) && data.links.length) setLinktreeItems(data.links);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [page]);
 
   return (
     <main className="vo-site">
-      <section className="vo-subpage-hero">
-        <div className="vo-subpage-bg" aria-hidden="true" />
+      {page !== "link" && (
+        <>
         <ValentinaOrciuoliHeader />
-        <div className="vo-subpage-intro">
+        <section className="vo-subpage-intro vo-subpage-intro-plain">
           <span className="vo-dragon-mark">{pageEyebrows[page]}</span>
           {pageTitles[page] && (
             <h1 className={page === "libri" ? "vo-subpage-title-compact" : undefined}>{pageTitles[page]}</h1>
@@ -34,8 +58,9 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
             pageLeads[page].split("\n\n").map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
-        </div>
-      </section>
+        </section>
+        </>
+      )}
 
       {page === "libri" && (
         <>
@@ -113,14 +138,43 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
       )}
 
       {page === "autrice" && (
-        <section className="vo-section vo-author-section vo-subpage-section">
-          <div className="vo-author-copy">
-            <a className="vo-text-link" href={linktreeHref} target="_blank" rel="noopener noreferrer">
-              Segui l&apos;autrice <ArrowRight size={15} />
-            </a>
+        <section className="vo-section vo-author-section vo-author-section-full vo-subpage-section">
+          <div className="vo-author-copy vo-author-copy-long">
+            <span className="vo-dragon-mark">Profilo</span>
+            <h2>Tra magia e sentimento</h2>
+            <p>
+              Valentina costruisce mondi in cui l&apos;emozione non resta sottotraccia: diventa creatura,
+              scelta, ferita e potere. Il suo immaginario parte dal fantasy orientale e incontra il romance,
+              con protagonisti chiamati a dare un nome a cio che li attraversa.
+            </p>
+            <p>
+              Dopo la laurea in Relazioni Internazionali e gli studi in Comunicazione e Marketing, porta nella
+              scrittura uno sguardo attento ai legami, ai conflitti interiori e alla forza simbolica delle storie.
+            </p>
+            <div className="vo-author-pillars">
+              <article>
+                <span>01</span>
+                <strong>Fantasy orientale</strong>
+                <p>Draghi, corti imperiali, magia e atmosfere luminose ma taglienti.</p>
+              </article>
+              <article>
+                <span>02</span>
+                <strong>Romantasy emotivo</strong>
+                <p>Relazioni intense, introspezione e sentimenti che diventano destino narrativo.</p>
+              </article>
+              <article>
+                <span>03</span>
+                <strong>Nuove ombre</strong>
+                <p>Con Tra fumo e ombre apre anche una venatura dark-noir, piu urbana e psicologica.</p>
+              </article>
+            </div>
+            <Link className="vo-text-link" href={`${valentinaBasePath}/libri`}>
+              Scopri i libri <ArrowRight size={15} />
+            </Link>
           </div>
           <div className="vo-author-seal">
             <img src="/valentina-orciuoli/valentina-autrice.webp" alt="Valentina Orciuoli" />
+            <p>Author · Romantasy · Dark-noir</p>
           </div>
         </section>
       )}
@@ -145,23 +199,21 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
         <section className="vo-section vo-contact-section vo-subpage-section">
           <div>
             <span className="vo-dragon-mark">Contatti</span>
-            <h2>Canali ufficiali</h2>
-            <p>Per seguire aggiornamenti sui libri, eventi e nuove uscite, trovi tutti i link ufficiali qui.</p>
+            <h2>Scrivi a Valentina</h2>
+            <p>Per richieste editoriali, presentazioni, collaborazioni o messaggi legati ai libri puoi usare il form oppure i canali ufficiali.</p>
+            <div className="vo-contact-visible">
+              <a href={instagramHref} target="_blank" rel="noopener noreferrer">
+                <Instagram size={17} /> Instagram
+              </a>
+              <a href={tiktokHref} target="_blank" rel="noopener noreferrer">
+                <Music2 size={17} /> TikTok
+              </a>
+              <a href={`mailto:${valentinaEmail}`}>
+                <Mail size={17} /> {valentinaEmail}
+              </a>
+            </div>
           </div>
-          <div className="vo-contact-links">
-            <a href={instagramHref} target="_blank" rel="noopener noreferrer">
-              <Instagram size={17} /> Instagram
-            </a>
-            <a href={linktreeHref}>
-              Link <ArrowRight size={16} />
-            </a>
-            <a href={amazonHref} target="_blank" rel="noopener noreferrer">
-              Anxiety su Amazon <ExternalLink size={16} />
-            </a>
-            <a href={furyHref} target="_blank" rel="noopener noreferrer">
-              Fury su Amazon <ExternalLink size={16} />
-            </a>
-          </div>
+          <ValentinaContactForm />
         </section>
       )}
 
@@ -171,36 +223,13 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
             <img src="/valentina-orciuoli/logo.png" alt="" aria-hidden="true" />
             <span className="vo-dragon-mark">Link ufficiali</span>
             <h2>Valentina Orciuoli</h2>
-            <p>Libri, social, novita editoriali e canali ufficiali dell&apos;autrice.</p>
-            <div className="vo-linktree-list">
-              {valentinaLinks.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-kind={item.kind}
-                >
-                  <span>
-                    <strong>{item.label}</strong>
-                    <small>{item.desc}</small>
-                  </span>
-                  <ExternalLink size={16} />
-                </a>
-              ))}
-            </div>
-            <div className="vo-linktree-socials" aria-label="Social">
-              <a href={instagramHref} target="_blank" rel="noopener noreferrer">
-                Instagram
-              </a>
-              <a href={tiktokHref} target="_blank" rel="noopener noreferrer">
-                TikTok
-              </a>
-            </div>
+            <p>Libri, social, contatti ed eventi dell&apos;autrice.</p>
+            <TenantLinktreeView items={linktreeItems} className="vo-linktree-list" />
           </div>
         </section>
       )}
 
+      {page !== "link" && (
       <footer id="contatti" className="vo-footer">
         <div>
           <strong>Valentina Orciuoli</strong>
@@ -210,20 +239,75 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
           <a href={instagramHref} target="_blank" rel="noopener noreferrer">
             <Instagram size={15} /> Instagram
           </a>
-          <a href={linktreeHref}>
-            Link <ArrowRight size={14} />
-          </a>
           <a href={amazonHref} target="_blank" rel="noopener noreferrer">
             Amazon <ExternalLink size={14} />
           </a>
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/cookie">Cookie Policy</Link>
-          <a href={staffHref} target="_blank" rel="noopener noreferrer">
+          <a className="vo-footer-staff-link" href={staffHref} target="_blank" rel="noopener noreferrer">
             Staff
           </a>
         </div>
       </footer>
+      )}
     </main>
+  );
+}
+
+function ValentinaContactForm() {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    setStatus("sending");
+    setError(null);
+    const res = await fetch("/api/tenant/valentina-orciuoli/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: formData.get("name"),
+        email: formData.get("email"),
+        subject: formData.get("subject"),
+        message: formData.get("message"),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setStatus("error");
+      setError(data.error ?? "Non sono riuscito a inviare il messaggio.");
+      return;
+    }
+    form.reset();
+    setStatus("sent");
+  }
+
+  return (
+    <form className="vo-contact-form" onSubmit={handleSubmit}>
+      <label>
+        Nome
+        <input name="name" required autoComplete="name" />
+      </label>
+      <label>
+        Email
+        <input name="email" type="email" required autoComplete="email" />
+      </label>
+      <label>
+        Oggetto
+        <input name="subject" />
+      </label>
+      <label>
+        Messaggio
+        <textarea name="message" required rows={6} />
+      </label>
+      <button type="submit" disabled={status === "sending"}>
+        <Send size={16} /> {status === "sending" ? "Invio..." : "Invia messaggio"}
+      </button>
+      {status === "sent" && <small>Messaggio inviato. Ti risponderemo via email.</small>}
+      {status === "error" && <small>{error}</small>}
+    </form>
   );
 }
 
@@ -249,6 +333,6 @@ const pageLeads: Record<ValentinaPageKind, string> = {
   autrice:
     "Valentina Orciuoli è un’autrice italiana di fantasy romance e romantasy. Laureata in Relazioni Internazionali e studentessa di Comunicazione e Marketing, coltiva da sempre una grande passione per le storie fantastiche, i mondi popolati da draghi e magia, e le trame romance capaci di intrecciare emozioni intense e avventura.\n\nCon Anxiety, primo volume della saga The Emotion Dragons Trilogy, dà vita a un universo narrativo in cui sentimenti, potere e destino si incontrano. Fury, secondo capitolo della trilogia, amplia questo mondo raccontandone nuove sfumature e radici.\n\nAttraverso la sua scrittura, Valentina unisce immaginazione, introspezione e romanticismo, accompagnando i lettori in viaggi dove le emozioni diventano forza, conflitto e magia.",
   eventi: "",
-  contatti: "Link ufficiali, social e canali per seguire Valentina.",
+  contatti: "Form diretto, Instagram e email ufficiale.",
   link: "Un unico posto, brandizzato Valentina Orciuoli, per raggiungere libri, social e aggiornamenti.",
 };

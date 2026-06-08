@@ -7,7 +7,8 @@ export const furyHref = "https://www.amazon.it/Fury-Emotion-Dragons-Trilogy-Vol-
 export const externalLinktreeHref = "https://linktr.ee/valentina.orciuoli";
 export const linktreeHref = `${valentinaBasePath}/link`;
 export const instagramHref = "https://www.instagram.com/di.vale_in.peggio/";
-export const tiktokHref = "https://www.tiktok.com/login?redirect_url=https%3A%2F%2Fwww.tiktok.com%2F%40valentina.orciuoli&lang=en&enter_method=mandatory";
+export const tiktokHref = "https://www.tiktok.com/@valentina.orciuoli";
+export const valentinaEmail = "valentina.orciuoli@weuseorpheo.com";
 export const anxietyCoverSrc = "/valentina-orciuoli/anxiety-mockup-standup.png";
 export const furyCoverSrc = "https://m.media-amazon.com/images/I/71z2LZ6a8XL.jpg";
 export const darkNoirCoverSrc = "/valentina-orciuoli/tra-fumo-e-ombre.webp";
@@ -15,22 +16,10 @@ export const authorPortraitSrc = "https://www.selfcreation.it/wp-content/uploads
 
 export const valentinaLinks = [
   {
-    label: "The Emotion Dragons Trilogy",
-    desc: "Tutti i libri della saga su Amazon.",
-    href: trilogyHref,
-    kind: "books",
-  },
-  {
-    label: "Anxiety",
-    desc: "Volume I della trilogia.",
-    href: amazonHref,
-    kind: "book",
-  },
-  {
-    label: "Fury",
-    desc: "Volume II della trilogia.",
-    href: furyHref,
-    kind: "book",
+    label: "Sito",
+    desc: "Home ufficiale di Valentina Orciuoli.",
+    href: valentinaBasePath,
+    kind: "site",
   },
   {
     label: "Instagram",
@@ -45,16 +34,22 @@ export const valentinaLinks = [
     kind: "social",
   },
   {
-    label: "Amazon Author Store",
-    desc: "La pagina autore ufficiale.",
-    href: amazonStoreHref,
-    kind: "store",
+    label: "Contatti",
+    desc: "Form, email e canali ufficiali.",
+    href: `${valentinaBasePath}/contatti`,
+    kind: "contact",
   },
   {
-    label: "Linktree originale",
-    desc: "Archivio esterno dei link gia pubblicati.",
-    href: externalLinktreeHref,
-    kind: "archive",
+    label: "Libri",
+    desc: "Catalogo libri e pagine d'acquisto.",
+    href: `${valentinaBasePath}/libri`,
+    kind: "books",
+  },
+  {
+    label: "Eventi",
+    desc: "Presentazioni, firmacopie e nuove date.",
+    href: `${valentinaBasePath}/eventi`,
+    kind: "events",
   },
 ];
 

@@ -146,6 +146,7 @@ function GestioneShellInner({
     { label: t.nav.google, href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },
     { label: t.nav.analytics, href: sectionHref("analytics"), visible: (c) => access.canViewAnalytics && c.can_view_analytics },
     { label: audienceNavLabel, href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
+    { label: "Linktree", href: sectionHref("linktree"), visible: () => isAdmin && access.canManageLinktree },
     { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: t.nav.locations, href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
   ];

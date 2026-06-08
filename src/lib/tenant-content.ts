@@ -505,6 +505,7 @@ const valentinaOrciuoliContent: TenantContent = {
   },
   contact: {
     phone: "",
+    email: "valentina.orciuoli@weuseorpheo.com",
     whatsappDigits: "",
     whatsappMessage: "Ciao Valentina! Vorrei informazioni sui tuoi libri.",
   },

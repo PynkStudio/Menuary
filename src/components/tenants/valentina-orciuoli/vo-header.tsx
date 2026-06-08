@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 import { valentinaBasePath } from "./content";
 
-export function ValentinaOrciuoliHeader({ sticky = false }: { sticky?: boolean }) {
+export function ValentinaOrciuoliHeader() {
   return (
-    <header className={`vo-header${sticky ? " vo-header-sticky" : ""}`}>
+    <header className="vo-header">
       <a className="vo-brand" href={valentinaBasePath} aria-label="Valentina Orciuoli">
         <span className="vo-brand-mark">
           <img src="/valentina-orciuoli/logo.png" alt="" aria-hidden="true" />
@@ -13,7 +14,6 @@ export function ValentinaOrciuoliHeader({ sticky = false }: { sticky?: boolean }
         <a href={`${valentinaBasePath}/libri`}>Libri</a>
         <a href={`${valentinaBasePath}/autrice`}>Autrice</a>
         <a href={`${valentinaBasePath}/eventi`}>Eventi</a>
-        <a href={`${valentinaBasePath}/link`}>Link</a>
         <a href={`${valentinaBasePath}/contatti`}>Contatti</a>
       </nav>
     </header>

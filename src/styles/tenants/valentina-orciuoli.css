@@ -87,11 +87,10 @@
     position: relative;
   }
 
-  .vo-header-sticky {
-    position: sticky;
-    top: 0.85rem;
-    margin-top: 0;
-    margin-bottom: -5.85rem;
+  .vo-header-reveal {
+    position: relative;
+    z-index: 4;
+    padding-top: 1.15rem;
   }
 
   .vo-brand-mark {
@@ -212,6 +211,53 @@
   .vo-hero-actions-row {
     display: contents;
     gap: 1.1rem;
+  }
+
+  .vo-scroll-cue {
+    display: inline-grid;
+    justify-items: center;
+    gap: 0.55rem;
+    margin-top: 1.5rem;
+    color: rgba(242, 216, 148, 0.78);
+    font-size: 0.7rem;
+    font-weight: 850;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .vo-scroll-cue span {
+    position: relative;
+    display: block;
+    width: 1.25rem;
+    height: 2.1rem;
+    border: 1px solid rgba(242, 216, 148, 0.5);
+    border-radius: 999px;
+  }
+
+  .vo-scroll-cue span::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0.42rem;
+    width: 0.28rem;
+    height: 0.28rem;
+    border-radius: 999px;
+    background: var(--vo-gold);
+    transform: translateX(-50%);
+    animation: vo-scroll-dot 1.55s ease-in-out infinite;
+  }
+
+  @keyframes vo-scroll-dot {
+    0%,
+    100% {
+      opacity: 0.28;
+      transform: translate(-50%, 0);
+    }
+
+    45% {
+      opacity: 1;
+      transform: translate(-50%, 0.72rem);
+    }
   }
 
   .vo-btn {
@@ -671,6 +717,11 @@
     padding: clamp(5rem, 10vw, 8rem) 0 clamp(4rem, 8vw, 7rem);
   }
 
+  .vo-subpage-intro-plain {
+    padding-top: clamp(4.5rem, 8vw, 7rem);
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+  }
+
   .vo-subpage-intro h1 {
     margin: 0.35rem 0 0;
     color: #e5c77d;
@@ -940,6 +991,97 @@
     border-color: rgba(242, 216, 148, 0.62);
   }
 
+  .vo-contact-visible {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.7rem;
+  }
+
+  .vo-contact-visible a {
+    display: inline-flex;
+    min-height: 2.8rem;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(216, 173, 90, 0.28);
+    background: rgba(5, 5, 5, 0.44);
+    padding: 0.72rem 0.9rem;
+    color: var(--vo-gold-soft);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .vo-contact-form {
+    display: grid;
+    gap: 0.9rem;
+    border: 1px solid rgba(216, 173, 90, 0.3);
+    background:
+      radial-gradient(circle at 95% 8%, rgba(151, 31, 24, 0.24), transparent 13rem),
+      rgba(5, 5, 5, 0.56);
+    padding: clamp(1.2rem, 4vw, 2rem);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.28);
+  }
+
+  .vo-contact-form label {
+    display: grid;
+    gap: 0.42rem;
+    color: rgba(242, 216, 148, 0.7);
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .vo-contact-form input,
+  .vo-contact-form textarea {
+    width: 100%;
+    border: 1px solid rgba(216, 173, 90, 0.28);
+    background: rgba(3, 3, 3, 0.74);
+    padding: 0.88rem 0.95rem;
+    color: var(--vo-gold-soft);
+    font: inherit;
+    outline: none;
+  }
+
+  .vo-contact-form textarea {
+    resize: vertical;
+  }
+
+  .vo-contact-form input:focus,
+  .vo-contact-form textarea:focus {
+    border-color: rgba(242, 216, 148, 0.72);
+    box-shadow: 0 0 0 3px rgba(216, 173, 90, 0.14);
+  }
+
+  .vo-contact-form button {
+    display: inline-flex;
+    min-height: 3.2rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border: 1px solid rgba(242, 216, 148, 0.42);
+    background: linear-gradient(180deg, #a42a22, #701711);
+    color: #f8e2af;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .vo-contact-form button:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
+  .vo-contact-form small {
+    color: rgba(242, 216, 148, 0.72);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
   .vo-linktree-section {
     display: grid;
     place-items: center;
@@ -1062,6 +1204,51 @@
     font-size: clamp(3.4rem, 7vw, 7rem);
   }
 
+  .vo-author-section-full {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.52fr);
+    align-items: start;
+  }
+
+  .vo-author-copy-long p {
+    max-width: 43rem;
+  }
+
+  .vo-author-pillars {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 2rem;
+  }
+
+  .vo-author-pillars article {
+    border: 1px solid rgba(216, 173, 90, 0.24);
+    background: rgba(5, 5, 5, 0.46);
+    padding: 1rem;
+  }
+
+  .vo-author-pillars span {
+    color: var(--vo-gold);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.55rem;
+  }
+
+  .vo-author-pillars strong {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--vo-gold-soft);
+    font-size: 0.82rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .vo-author-pillars p {
+    margin-top: 0.65rem;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
   .vo-author-seal {
     position: relative;
     justify-self: center;
@@ -1142,6 +1329,15 @@
     font-weight: 800;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+  }
+
+  .vo-footer-links .vo-footer-staff-link {
+    border: 1px solid rgba(242, 216, 148, 0.2);
+    background: rgba(242, 216, 148, 0.06);
+    padding: 0.42rem 0.62rem;
+    color: rgba(242, 216, 148, 0.56);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] {
@@ -1388,6 +1584,59 @@
     transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
   }
 
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-row {
+    display: grid;
+    grid-template-columns: auto repeat(4, minmax(0, 1fr)) auto auto;
+    gap: 0.8rem;
+    align-items: end;
+    border: 1px solid rgba(216, 173, 90, 0.22);
+    background: rgba(5, 5, 6, 0.52);
+    padding: 0.9rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-row label {
+    display: grid;
+    gap: 0.35rem;
+    color: rgba(247, 238, 220, 0.66);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-order {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: rgba(247, 238, 220, 0.5);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-toggle {
+    align-self: center;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-toggle input {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card > a {
     width: 2.7rem;
     height: 2.7rem;
@@ -1447,6 +1696,7 @@
     .vo-author-section,
     .vo-events-section,
     .vo-contact-section,
+    .vo-author-section-full,
     .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-hero,
     .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-grid {
       grid-template-columns: 1fr;
@@ -1459,6 +1709,14 @@
     .vo-trilogy-grid {
       margin-left: 0;
     }
+
+    .vo-author-pillars {
+      grid-template-columns: 1fr;
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-row {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 760px) {
@@ -1467,12 +1725,6 @@
       gap: 0.8rem;
       margin-top: 0.8rem;
       padding: 0.34rem 0.62rem;
-    }
-
-    .vo-header-sticky {
-      top: 0.55rem;
-      margin-top: 0;
-      margin-bottom: -4.6rem;
     }
 
     .vo-brand-mark {

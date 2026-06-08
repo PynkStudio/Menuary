@@ -162,6 +162,19 @@ export default function AdminTenantPage() {
     });
   }
 
+  function persistFeatureEnabled(
+    tenantId: string,
+    feature: TenantFeatureKey,
+    enabled: boolean,
+  ) {
+    setFeatureEnabled(tenantId, feature, enabled);
+    void fetch("/api/admin/tenant-features", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tenantId, feature, enabled }),
+    });
+  }
+
   async function patchDemoControl(tenantId: string, patch: { enabled?: boolean; backendLive?: boolean }) {
     setDemoSaving((previous) => ({ ...previous, [tenantId]: true }));
     setDemoError(null);
@@ -391,7 +404,7 @@ export default function AdminTenantPage() {
           onToggleShowAllModules={() => setShowAllModules((value) => !value)}
           onClose={() => setAdvancedOpenFor(null)}
           onResetTenant={() => resetTenant(advancedTenant.id)}
-          onSetFeatureEnabled={setFeatureEnabled}
+          onSetFeatureEnabled={persistFeatureEnabled}
           onOpenHubrise={() => setHubriseOpenFor(advancedTenant.id)}
           onOpenStripe={() => setStripeOpenFor(advancedTenant.id)}
         />

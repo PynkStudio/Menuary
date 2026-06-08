@@ -356,6 +356,20 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     requires: ["website"],
   },
   {
+    key: "linktree",
+    label: "Linktree",
+    description: "Gestisce una pagina link pubblica con collegamenti ordinabili e aggiornabili dal pannello gestione.",
+    category: "Crescita",
+    verticals: ["food", "services", "creative"],
+    requires: ["website"],
+    verticalCopy: {
+      creative: {
+        label: "Linktree",
+        description: "Gestisce una pagina link pubblica per sito, social, contatti, opere ed eventi.",
+      },
+    },
+  },
+  {
     key: "favorites",
     label: "Preferiti",
     description: "Mantiene attivo il layer di salvataggio piatti preferiti.",

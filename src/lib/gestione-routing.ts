@@ -39,7 +39,7 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
   const hasCreativeBookings = Boolean(modules.creativeBooking);
   const hasCreativeAudience = Boolean(modules.reputationReviews || modules.fanbaseCommunity);
   const hasGoogleBusiness =
-    modules.website || modules.reservations || modules.reviews || modules.analytics || hasCreativeAudience;
+    modules.reservations || modules.reviews || modules.analytics || Boolean(modules.reputationReviews);
 
   return {
     modules,
@@ -59,5 +59,6 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     canViewAnalytics: modules.analytics || hasCreativeAudience,
     canManageLocations: modules.multiLocation,
     canManageFidelity: modules.crm || Boolean(modules.fanbaseCommunity),
+    canManageLinktree: Boolean(modules.linktree),
   };
 }

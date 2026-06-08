@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { getPrimaryLocation, getLastSuccessfulSync } from "@/lib/data/google-sync";
 import { GoogleConnectCard } from "@/components/gestione/google/google-connect-card";
 import Link from "next/link";
@@ -18,7 +18,7 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
   const { tenantSlug } = await params;
   const { google_auth, step } = await searchParams;
 
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant || !getGestioneModuleAccess(tenant.features).hasGoogleBusiness) notFound();
   const gt = await getGestioneTranslations();
   const t = gt.google;

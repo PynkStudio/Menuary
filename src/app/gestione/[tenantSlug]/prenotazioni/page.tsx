@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check, X, UserCheck, UserX, Tag, Users, Briefcase, Clock } from "lucide-react";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
+import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
@@ -147,8 +148,9 @@ export default async function PrenotazioniPage({
 }) {
   const { tenantSlug } = await params;
   const { f } = await searchParams;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant) return null;
+  if (!getGestioneModuleAccess(tenant.features).canManageReservations) notFound();
   const gt = await getGestioneTranslations();
   const t = gt.reservations;
 

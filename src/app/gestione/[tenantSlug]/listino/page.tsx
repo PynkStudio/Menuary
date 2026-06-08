@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { ValentinaWorksCatalogAdmin } from "@/components/tenants/valentina-orciuoli/admin/works-catalog";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 export default async function GestioneListinoPage({
@@ -9,7 +9,7 @@ export default async function GestioneListinoPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant) notFound();
 
   const access = getGestioneModuleAccess(tenant.features);

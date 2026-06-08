@@ -81,6 +81,8 @@ export type TenantFeatureFlags = {
   reputationReviews?: boolean;
   /** Fanbase e community: newsletter, segmenti, contenuti esclusivi e campagne audience. */
   fanbaseCommunity?: boolean;
+  /** Linktree proprietario: pagina link pubblica e gestione autonoma dei link. */
+  linktree?: boolean;
   // TODO(google-reserve): aggiungere flag `googleReserve: boolean` una volta approvati come partner Actions Center.
   // Abilita il pulsante "Prenota" direttamente su Google Maps/Search per il tenant.
   // Prerequisito: tenant deve avere `reservations: true` e una location Google collegata.

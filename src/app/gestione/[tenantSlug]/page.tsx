@@ -11,7 +11,7 @@ import {
   MapPin,
   ArrowRight,
 } from "lucide-react";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -99,7 +99,7 @@ export default async function GestioneDashboardPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant) return null;
   const gt = await getGestioneTranslations();
   const t = gt.dashboard;

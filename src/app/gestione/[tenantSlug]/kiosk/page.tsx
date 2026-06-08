@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import {
   MonitorSmartphone, RefreshCw, Trash2, Power, PowerOff, Copy, Wifi, WifiOff, Plus,
 } from "lucide-react";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { fetchLocations } from "@/lib/location";
@@ -77,7 +77,7 @@ export default async function KioskGestionePage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant) return null;
   const gt = await getGestioneTranslations();
   const t = gt.kiosk;

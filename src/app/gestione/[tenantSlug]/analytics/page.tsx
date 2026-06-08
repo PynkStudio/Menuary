@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
+import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { demoAnalytics } from "@/lib/demo-fixtures";
@@ -128,8 +129,9 @@ export default async function AnalyticsPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant) return null;
+  if (!getGestioneModuleAccess(tenant.features).canViewAnalytics) notFound();
   const gt = await getGestioneTranslations();
   const t = gt.analytics;
   const auth = await authorizeGestione(tenantSlug);
