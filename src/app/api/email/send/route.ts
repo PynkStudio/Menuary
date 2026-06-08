@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
@@ -7,6 +8,8 @@ import { buildMarketingEmail } from "@/lib/email/templates/marketing";
 import { resolveSender } from "@/lib/email/sender";
 import { parseEmailAddress } from "@/lib/email/inbound-types";
 import { detectBrandFromSender } from "@/lib/email/tracking-types";
+import { findTenantById } from "@/lib/tenant-registry";
+import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 
 /**
  * POST /api/email/send
@@ -53,7 +56,8 @@ const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024; // 8 MB per file (limite Resend ~1
 const MAX_TOTAL_ATTACHMENT_BYTES = 20 * 1024 * 1024; // 20 MB totali (margine per multi-allegati)
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient(".menuary.it");
+  const host = (await headers()).get("host");
+  const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -134,9 +138,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Non autorizzato." }, { status: 403 });
   }
 
-  // fromOverride riservato ai siteadmin
-  if (fromOverride && !isSiteAdmin) {
-    return NextResponse.json({ error: "fromOverride riservato ai siteadmin." }, { status: 403 });
+  const tenant = tenantId ? findTenantById(tenantId) : null;
+  const fromOverrideAddress = fromOverride ? parseEmailAddress(fromOverride).address.toLowerCase() : null;
+  const fromOverrideDomain = fromOverrideAddress?.split("@")[1] ?? null;
+  const tenantCanUseFromOverride = Boolean(
+    isTenantAdmin &&
+      tenant &&
+      fromOverrideDomain &&
+      tenant.domains.some((domain) => domain.toLowerCase() === fromOverrideDomain),
+  );
+
+  if (fromOverride && !isSiteAdmin && !tenantCanUseFromOverride) {
+    return NextResponse.json({ error: "Mittente non autorizzato per questo tenant." }, { status: 403 });
   }
 
   // ── Costruzione HTML ────────────────────────────────────────────────────────
@@ -151,7 +164,7 @@ export async function POST(request: Request) {
 
   // ── Invio ───────────────────────────────────────────────────────────────────
   const resolvedSender = resolveSender(tenantId);
-  const effectiveFrom = (isSiteAdmin ? fromOverride : undefined) ?? resolvedSender.from;
+  const effectiveFrom = (isSiteAdmin || tenantCanUseFromOverride ? fromOverride : undefined) ?? resolvedSender.from;
 
   const result = await sendEmail({
     to,
@@ -159,7 +172,7 @@ export async function POST(request: Request) {
     html: emailHtml,
     tenantId,
     replyTo,
-    fromOverride: isSiteAdmin ? fromOverride : undefined,
+    fromOverride: isSiteAdmin || tenantCanUseFromOverride ? fromOverride : undefined,
     attachments: safeAttachments,
   });
 
@@ -182,6 +195,7 @@ export async function POST(request: Request) {
       subject,
       html_body:         emailHtml,
       brand,
+      tenant_id:         tenantId ?? null,
       sent_by_user_id:   user.id,
     });
   }

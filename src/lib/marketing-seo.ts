@@ -118,7 +118,7 @@ export function marketingOrganizationSchema(brand: Brand) {
       areaServed: ["IT", "FR", "DE", "ES", "PT", "NL", "BE", "AT", "CH", "IE"],
       availableLanguage: ["it", "en", "fr", "de", "es", "pt"],
     },
-    sameAs: isOrpheo ? [MENUARY_ORIGIN, BIZERY_ORIGIN] : isBizery ? [MENUARY_ORIGIN] : [BIZERY_ORIGIN],
+    sameAs: isOrpheo ? [] : isBizery ? [MENUARY_ORIGIN] : [BIZERY_ORIGIN],
   };
 }
 
@@ -206,8 +206,8 @@ export function marketingFaqSchema(brand: Brand) {
           "Sì. Il modulo Reputation & Reviews è progettato per aggregare provider rilevanti, usando integrazioni ufficiali, import controllati e metriche aggregate quando necessario.",
         ],
         [
-          "Orpheo usa lo stesso backend di Menuary e Bizery?",
-          "Sì. Orpheo è collegato allo stesso backend e alla pagina di controllo admin.menuary.it, con tenant, moduli e pricing dedicati.",
+          "Orpheo è un servizio dedicato o un sito generico adattato?",
+          "Orpheo è un servizio dedicato ai professionisti creativi: struttura, moduli e flussi sono pensati per presenza pubblica, opere, booking, materiali, diritti e fanbase.",
         ],
       ]
     : isBizery

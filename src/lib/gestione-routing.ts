@@ -49,6 +49,7 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     canManageCheckout: modules.cashRegister,
     canManageShifts: modules.staffRoles,
     canManageStaff: modules.staffRoles,
+    canManageMail: Boolean(modules.mail),
     canViewAnalytics: modules.analytics,
     canManageLocations: modules.multiLocation,
     canManageFidelity: modules.crm,

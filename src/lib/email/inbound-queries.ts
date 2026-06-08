@@ -2,11 +2,13 @@
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { parseEmailAddress, type InboundEmail, type InboundEmailBrand, type ResendInboundAttachment, type ResendInboundHeader } from "./inbound-types";
+import type { TenantEmailScope } from "./tenant-email-scope";
 
 const PAGE_SIZE = 30;
 
 export type InboxFilter = {
   brand?: InboundEmailBrand | "all" | "support";
+  scope?: TenantEmailScope;
   onlyUnread?: boolean;
   onlyStarred?: boolean;
   archived?: boolean;
@@ -36,9 +38,13 @@ export async function getInboundEmails(filter: InboxFilter = {}): Promise<InboxP
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (filter.brand === "support") {
+  if (filter.scope) {
+    query = query.eq("tenant_id", filter.scope.tenantId);
+  }
+
+  if (!filter.scope && filter.brand === "support") {
     query = query.or("to_addresses.cs.{support@menuary.it},to_addresses.cs.{support@bizery.it},to_addresses.cs.{support@weuseorpheo.com}");
-  } else if (filter.brand && filter.brand !== "all") {
+  } else if (!filter.scope && filter.brand && filter.brand !== "all") {
     query = query.eq("brand", filter.brand);
   }
   if (filter.onlyUnread) query = query.eq("read", false);
@@ -87,14 +93,28 @@ export async function getInboxUnreadCounts(): Promise<InboxCounts> {
   return { unread_menuary, unread_bizery, unread_orpheo, unread_total: unread_menuary + unread_bizery + unread_orpheo };
 }
 
+export async function getTenantInboxUnreadCount(scope: TenantEmailScope): Promise<number> {
+  const admin = createSupabaseAdminClient();
+  const { count, error } = await admin
+    .from("inbound_emails")
+    .select("*", { count: "exact", head: true })
+    .eq("tenant_id", scope.tenantId)
+    .eq("read", false)
+    .eq("archived", false);
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
 // ─── Single email ─────────────────────────────────────────────────────────────
 
-export async function getInboundEmailById(id: string): Promise<InboundEmail | null> {
+export async function getInboundEmailById(id: string, scope?: TenantEmailScope): Promise<InboundEmail | null> {
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  let query = admin
     .from("inbound_emails")
     .select("*")
-    .eq("id", id)
+    .eq("id", id);
+  if (scope) query = query.eq("tenant_id", scope.tenantId);
+  const { data, error } = await query
     .maybeSingle();
 
   if (error) throw new Error(error.message);
@@ -190,8 +210,8 @@ async function fetchReceivedAttachments(emailId: string): Promise<ResendInboundA
   );
 }
 
-export async function hydrateInboundEmailContent(id: string): Promise<InboundEmail | null> {
-  const email = await getInboundEmailById(id);
+export async function hydrateInboundEmailContent(id: string, scope?: TenantEmailScope): Promise<InboundEmail | null> {
+  const email = await getInboundEmailById(id, scope);
   if (!email) return null;
 
   const needsBody = !email.html_body && !email.text_body;
@@ -218,11 +238,12 @@ export async function hydrateInboundEmailContent(id: string): Promise<InboundEma
   };
 
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  let query = admin
     .from("inbound_emails")
     .update(update)
-    .eq("id", id)
-    .select("*")
+    .eq("id", id);
+  if (scope) query = query.eq("tenant_id", scope.tenantId);
+  const { data, error } = await query.select("*")
     .maybeSingle();
 
   if (error) throw new Error(error.message);
@@ -231,39 +252,47 @@ export async function hydrateInboundEmailContent(id: string): Promise<InboundEma
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
 
-export async function markEmailRead(id: string, read: boolean): Promise<void> {
+export async function markEmailRead(id: string, read: boolean, scope?: TenantEmailScope): Promise<void> {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  let query = admin
     .from("inbound_emails")
     .update({ read })
     .eq("id", id);
+  if (scope) query = query.eq("tenant_id", scope.tenantId);
+  const { error } = await query;
   if (error) throw new Error(error.message);
 }
 
-export async function starEmail(id: string, starred: boolean): Promise<void> {
+export async function starEmail(id: string, starred: boolean, scope?: TenantEmailScope): Promise<void> {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  let query = admin
     .from("inbound_emails")
     .update({ starred })
     .eq("id", id);
+  if (scope) query = query.eq("tenant_id", scope.tenantId);
+  const { error } = await query;
   if (error) throw new Error(error.message);
 }
 
-export async function archiveEmail(id: string): Promise<void> {
+export async function archiveEmail(id: string, scope?: TenantEmailScope): Promise<void> {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  let query = admin
     .from("inbound_emails")
     .update({ archived: true, read: true })
     .eq("id", id);
+  if (scope) query = query.eq("tenant_id", scope.tenantId);
+  const { error } = await query;
   if (error) throw new Error(error.message);
 }
 
-export async function deleteEmail(id: string): Promise<void> {
+export async function deleteEmail(id: string, scope?: TenantEmailScope): Promise<void> {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  let query = admin
     .from("inbound_emails")
     .delete()
     .eq("id", id);
+  if (scope) query = query.eq("tenant_id", scope.tenantId);
+  const { error } = await query;
   if (error) throw new Error(error.message);
 }
 

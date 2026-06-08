@@ -412,6 +412,24 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     },
   },
   {
+    key: "mail",
+    label: "Mail",
+    description: "Abilita la casella email interna del tenant nel pannello gestione.",
+    category: "Gestione",
+    verticals: ["food", "services", "creative"],
+    requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Mail",
+        description: "Abilita la casella email interna dell'attività nel pannello gestione.",
+      },
+      creative: {
+        label: "Mail",
+        description: "Abilita la casella email interna del progetto creativo nel pannello gestione.",
+      },
+    },
+  },
+  {
     key: "slabbby",
     label: "Slabbby",
     description: "Wishlist multisito: permette ai clienti di salvare prodotti del catalogo su una lista desideri personale.",

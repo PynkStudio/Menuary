@@ -203,6 +203,7 @@ export type Database = {
           sent_by_name: string | null
           status: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
           lead_id: string | null
+          tenant_id: string | null
         }
         Insert: {
           id?: string
@@ -218,6 +219,7 @@ export type Database = {
           sent_by_name?: string | null
           status?: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
           lead_id?: string | null
+          tenant_id?: string | null
         }
         Update: {
           id?: string
@@ -233,6 +235,7 @@ export type Database = {
           sent_by_name?: string | null
           status?: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
           lead_id?: string | null
+          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -240,6 +243,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sent_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -473,6 +483,7 @@ export type Database = {
           archived: boolean
           lead_id: string | null
           assigned_to_user_id: string | null
+          tenant_id: string | null
         }
         Insert: {
           id?: string
@@ -492,6 +503,7 @@ export type Database = {
           archived?: boolean
           lead_id?: string | null
           assigned_to_user_id?: string | null
+          tenant_id?: string | null
         }
         Update: {
           id?: string
@@ -511,6 +523,7 @@ export type Database = {
           archived?: boolean
           lead_id?: string | null
           assigned_to_user_id?: string | null
+          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -525,6 +538,13 @@ export type Database = {
             columns: ["assigned_to_user_id"]
             isOneToOne: false
             referencedRelation: "siteadmin"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbound_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
