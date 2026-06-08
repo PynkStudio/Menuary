@@ -43,7 +43,7 @@ async function OrpheoHeader() {
   const currentMarket = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;
   const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70">
+    <header className="sticky top-0 z-40 border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)] shadow-[0_1rem_2.5rem_rgba(23,17,31,0.08)]">
       <div className="menuary-container flex items-center justify-between py-5">
         <Link href="/" className="flex items-baseline gap-0.5" aria-label="Orpheo home">
           <span className="text-2xl font-medium tracking-[-0.02em]" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
@@ -54,7 +54,6 @@ async function OrpheoHeader() {
         <nav className="hidden items-center gap-9 md:flex">
           <Link href={pricingHref} className="menuary-nav-link">Prezzi</Link>
           <Link href="/contatti" className="menuary-nav-link">Contatti</Link>
-          <a href="https://admin.menuary.it" className="menuary-nav-link">Admin</a>
         </nav>
         <div className="flex items-center gap-2">
           <div className="hidden sm:block">
@@ -78,7 +77,7 @@ async function OrpheoFooter() {
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-16">
-        <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+        <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr_1fr]">
           <div>
             <p className="text-2xl font-medium tracking-[-0.02em]" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
               orpheo<span aria-hidden className="ml-[0.1em] text-[var(--menuary-copper)]">.</span>
@@ -95,11 +94,6 @@ async function OrpheoFooter() {
           <FooterCol title="Contatti" links={[
             { href: "mailto:hello@weuseorpheo.com", label: "hello@weuseorpheo.com" },
             { href: "tel:+393513768607", label: "+39 351 3768607" },
-          ]} />
-          <FooterCol title="Piattaforma" links={[
-            { href: "https://admin.menuary.it", label: "Admin Menuary", external: true },
-            { href: "https://bizery.it", label: "Bizery", external: true },
-            { href: "https://menuary.it", label: "Menuary", external: true },
           ]} />
         </div>
         <div className="menuary-rule mt-14" />
