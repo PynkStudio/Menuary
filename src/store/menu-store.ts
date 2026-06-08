@@ -299,6 +299,7 @@ export interface MenuState {
 
   addOrder: (o: Omit<Order, "id" | "createdAt" | "status" | "code">) => Order;
   updateOrderStatus: (id: string, status: OrderStatus) => void;
+  toggleOrderLinePrepared: (orderId: string, lineIndex: number) => void;
   removeOrder: (id: string) => void;
   clearCompletedOrders: () => void;
 
@@ -795,6 +796,17 @@ export const useMenuStore = create<MenuState>()(
         });
         return created;
       },
+
+      toggleOrderLinePrepared: (orderId, lineIndex) =>
+        set((s) => ({
+          orders: s.orders.map((o) => {
+            if (o.id !== orderId) return o;
+            const lines = o.lines.map((l, i) =>
+              i === lineIndex ? { ...l, prepared: !l.prepared } : l,
+            );
+            return { ...o, lines };
+          }),
+        })),
 
       updateOrderStatus: (id, status) =>
         set((s) => ({

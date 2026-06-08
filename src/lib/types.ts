@@ -118,6 +118,8 @@ export type OrderLine = {
   addedExtras?: Array<{ id: string; name: string; price: number }>;
   note?: string;
   bundlePicks?: BundlePick[];
+  /** Todo cucina: la riga è stata preparata. Toggle dal KDS. */
+  prepared?: boolean;
 };
 
 export type Order = {

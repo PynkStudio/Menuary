@@ -17,6 +17,15 @@ import { isMultiLocation } from "@/lib/location";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 import type { GestioneMessages } from "@/i18n/gestione";
+import {
+  ArrivalAlertsProvider,
+  useArrivalAlerts,
+  type ArrivalKind,
+} from "@/lib/notifications/arrival-context";
+import {
+  ArrivalBadge,
+  NotificationMuteToggle,
+} from "@/components/gestione/notification-controls";
 
 interface Tenant {
   id: string;
@@ -38,9 +47,28 @@ interface NavItem {
   label: string;
   href: string;
   visible: (cap: StoreCapabilities) => boolean;
+  /** Canale di arrivo associato: badge contatore + ack al click. */
+  arrivalKind?: ArrivalKind;
 }
 
-export function GestioneShell({
+export function GestioneShell(props: {
+  tenant: Tenant;
+  currentUser: CurrentUser;
+  locations?: TenantLocation[];
+  navBaseHref?: string;
+  loginFrom?: LoginFrom;
+  isDemo?: boolean;
+  children: React.ReactNode;
+  messages: GestioneMessages;
+}) {
+  return (
+    <ArrivalAlertsProvider tenantId={props.tenant.id} refreshOnChange>
+      <GestioneShellInner {...props} />
+    </ArrivalAlertsProvider>
+  );
+}
+
+function GestioneShellInner({
   tenant,
   currentUser,
   locations = [],
@@ -93,10 +121,10 @@ export function GestioneShell({
 
   const items: NavItem[] = [
     { label: t.nav.dashboard, href: dashboardHref, visible: () => true },
-    { label: t.nav.orders, href: sectionHref("ordini"), visible: () => access.hasOrders },
+    { label: t.nav.orders, href: sectionHref("ordini"), visible: () => access.hasOrders, arrivalKind: "orders" },
     { label: getModuleLabel("onlineMenu", tenant.vertical), href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
     { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
-    { label: getModuleLabel("reservations", tenant.vertical), href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations },
+    { label: getModuleLabel("reservations", tenant.vertical), href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations, arrivalKind: "reservations" },
     { label: t.nav.checkout, href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
     { label: t.nav.shifts, href: sectionHref("turni"), visible: () => access.canManageShifts },
     { label: t.nav.staff, href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
@@ -139,6 +167,7 @@ export function GestioneShell({
               <UserRound size={12} strokeWidth={2} />
               {t.profile}
             </Link>
+            <NotificationMuteToggle />
             <div className="ga-settings-menu-wrap">
               <button
                 type="button"
@@ -208,14 +237,11 @@ export function GestioneShell({
                 ? (pathname || "/") === dashboardHref
                 : pathname === item.href || pathname?.startsWith(`${item.href}/`);
             return (
-              <Link
+              <NavLinkWithBadge
                 key={item.href}
-                href={item.href}
-                className="ga-nav-link"
-                data-active={active}
-              >
-                {item.label}
-              </Link>
+                item={item}
+                active={!!active}
+              />
             );
           })}
         </nav>
@@ -223,5 +249,35 @@ export function GestioneShell({
 
       <main className="ga-main">{children}</main>
     </>
+  );
+}
+
+function NavLinkWithBadge({ item, active }: { item: NavItem; active: boolean }) {
+  const { counters, acknowledge } = useArrivalAlerts();
+  // Sull'item "Ordini" sommo anche i "pronti" (status changes) per dare
+  // segnale anche al cameriere che gestisce la coda dalla dashboard ordini.
+  const count =
+    item.arrivalKind === "orders"
+      ? counters.orders + counters.ready
+      : item.arrivalKind === "reservations"
+        ? counters.reservations
+        : 0;
+
+  function handleClick() {
+    if (!item.arrivalKind) return;
+    acknowledge(item.arrivalKind);
+    if (item.arrivalKind === "orders") acknowledge("ready");
+  }
+
+  return (
+    <Link
+      href={item.href}
+      className="ga-nav-link"
+      data-active={active}
+      onClick={handleClick}
+    >
+      {item.label}
+      <ArrivalBadge count={count} />
+    </Link>
   );
 }

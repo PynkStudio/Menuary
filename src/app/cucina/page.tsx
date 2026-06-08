@@ -22,6 +22,11 @@ import {
 } from "@/lib/kitchen-merge";
 import { selectItemById } from "@/store/menu-store";
 import { formatRemovedForLine } from "@/lib/ingredients";
+import {
+  ArrivalAlertsProvider,
+  useArrivalAlerts,
+} from "@/lib/notifications/arrival-context";
+import { NotificationMuteToggle } from "@/components/gestione/notification-controls";
 
 const COLUMNS: Array<{ key: OrderStatus; title: string; accent: string }> = [
   { key: "nuovo", title: "Nuovi", accent: "bg-pork-red text-white" },
@@ -35,9 +40,20 @@ const COLUMNS: Array<{ key: OrderStatus; title: string; accent: string }> = [
 
 export default function KitchenDisplay() {
   const tenant = useTenant();
+  return (
+    <ArrivalAlertsProvider tenantId={tenant.id} enableReadyChannel={false}>
+      <KitchenDisplayInner />
+    </ArrivalAlertsProvider>
+  );
+}
+
+function KitchenDisplayInner() {
+  const tenant = useTenant();
   const hydrated = useHydrated();
   const orders = useMenuStore((s) => s.orders);
   const updateStatus = useMenuStore((s) => s.updateOrderStatus);
+  const togglePrepared = useMenuStore((s) => s.toggleOrderLinePrepared);
+  const { counters, acknowledge } = useArrivalAlerts();
   const {
     kitchenDisplayEnabled: kitchenOn,
     dinerSeparationAtTables: dinerSeparation,
@@ -117,11 +133,16 @@ export default function KitchenDisplay() {
             <h1 className="headline text-2xl">Schermo cucina</h1>
           </div>
         </div>
-        <div className="text-right">
-          <p className="impact-title text-xs text-pork-cream/50">
-            Ordini in lavorazione
-          </p>
-          <p className="headline text-4xl text-pork-mustard">{activeCount}</p>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="impact-title text-xs text-pork-cream/50">
+              Ordini in lavorazione
+            </p>
+            <p className="headline text-4xl text-pork-mustard">{activeCount}</p>
+          </div>
+          <NotificationMuteToggle
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-pork-cream/10 text-pork-cream hover:bg-pork-cream/20"
+          />
         </div>
       </header>
 
@@ -156,8 +177,16 @@ export default function KitchenDisplay() {
                       <KitchenCard
                         key={g.ids.join("-")}
                         order={g.display}
-                        onAdvance={(next) =>
-                          advanceKitchenGroup(g.ids, next, updateStatus)
+                        highlight={
+                          col.key === "nuovo" && counters.orders > 0
+                        }
+                        onAdvance={(next) => {
+                          // L'ack su "Prendi in carico" toglie il badge "nuovo"
+                          if (col.key === "nuovo") acknowledge("orders");
+                          advanceKitchenGroup(g.ids, next, updateStatus);
+                        }}
+                        onTogglePrepared={(lineIndex) =>
+                          togglePrepared(g.display.id, lineIndex)
                         }
                       />
                     ))}
@@ -174,31 +203,42 @@ export default function KitchenDisplay() {
 
 function KitchenCard({
   order,
+  highlight,
   onAdvance,
+  onTogglePrepared,
 }: {
   order: Order;
+  highlight?: boolean;
   onAdvance: (s: OrderStatus) => void;
+  onTogglePrepared: (lineIndex: number) => void;
 }) {
   const categories = useMenuStore((s) => s.categories);
   const items = useMenuStore((s) => s.items);
+  const nonCoperto = order.lines.filter((l) => l.itemId !== COPERTO_ITEM_ID);
   const lineSections = useMemo(
-    () =>
-      groupKitchenOrderLines(
-        order.lines.filter((l) => l.itemId !== COPERTO_ITEM_ID),
-        categories,
-        items,
-      ),
-    [order.lines, categories, items],
+    () => groupKitchenOrderLines(nonCoperto, categories, items),
+    [nonCoperto, categories, items],
   );
 
   const minutes = elapsedMinutes(order.createdAt);
   const hot = minutes >= 15;
+  const inPrep = order.status === "in_preparazione";
+  const allPrepared =
+    inPrep &&
+    nonCoperto.length > 0 &&
+    nonCoperto.every((l) => l.prepared === true);
+
+  // Mappa stabile da (categoryId,itemId,variantLabel,...) a indice originale
+  // per chiamare togglePrepared con l'indice della riga nello store.
+  const indexOf = (l: (typeof nonCoperto)[number]) =>
+    order.lines.indexOf(l);
 
   return (
     <li
       className={cn(
         "rounded-2xl bg-pork-cream p-4 text-pork-ink shadow-lg transition-transform",
         hot && order.status !== "pronto" && "ring-4 ring-pork-red",
+        highlight && "ring-4 ring-pork-mustard animate-pulse",
       )}
     >
       <div className="flex items-start justify-between gap-2">
@@ -259,12 +299,38 @@ function KitchenCard({
               {sec.title}
             </p>
             <ul className="mt-1.5 space-y-2">
-              {sec.lines.map((l, i) => (
+              {sec.lines.map((l, i) => {
+                const origIdx = indexOf(l);
+                const prepared = !!l.prepared;
+                return (
                 <li
                   key={`${sec.title}-${i}-${l.name}`}
-                  className="rounded-lg bg-pork-cream/60 px-2 py-1.5"
+                  className={cn(
+                    "rounded-lg bg-pork-cream/60 px-2 py-1.5 transition-opacity",
+                    prepared && "opacity-50 line-through",
+                  )}
                 >
                   <div className="flex items-start justify-between gap-2">
+                    {inPrep && origIdx >= 0 && (
+                      <button
+                        type="button"
+                        onClick={() => onTogglePrepared(origIdx)}
+                        aria-pressed={prepared}
+                        aria-label={
+                          prepared
+                            ? "Segna come da preparare"
+                            : "Segna come preparato"
+                        }
+                        className={cn(
+                          "mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 no-underline",
+                          prepared
+                            ? "border-pork-green bg-pork-green text-white"
+                            : "border-pork-ink/40 bg-white text-transparent hover:border-pork-ink/80",
+                        )}
+                      >
+                        <CheckCircle2 size={12} strokeWidth={3} />
+                      </button>
+                    )}
                     <span className="flex-1 text-base">
                       <span className="font-bold">{l.qty}×</span> {l.name}
                     </span>
@@ -292,7 +358,8 @@ function KitchenCard({
                     </p>
                   )}
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </li>
         ))}
@@ -317,10 +384,18 @@ function KitchenCard({
         {order.status === "in_preparazione" && (
           <button
             onClick={() => onAdvance("pronto")}
-            className="flex-1 rounded-full bg-pork-green py-2 text-sm font-bold text-white hover:opacity-90"
+            className={cn(
+              "flex-1 rounded-full bg-pork-green py-2 text-sm font-bold text-white hover:opacity-90",
+              allPrepared && "ring-4 ring-pork-green/40 animate-pulse",
+            )}
+            aria-label={
+              allPrepared
+                ? "Tutte le righe preparate — segna come pronto"
+                : "Segna come pronto"
+            }
           >
             <CheckCircle2 size={14} className="mr-1 inline" />
-            Pronto
+            Pronto{allPrepared ? " ✓" : ""}
           </button>
         )}
         {order.status === "pronto" && (
