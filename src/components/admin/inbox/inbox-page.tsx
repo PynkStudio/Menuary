@@ -3,6 +3,7 @@
 import { useState, useTransition, useCallback } from "react";
 import {
   Archive,
+  Clapperboard,
   Inbox,
   RefreshCw,
   Star,
@@ -28,6 +29,7 @@ const BRAND_TABS: { value: BrandFilter; label: string; icon: React.ElementType }
   { value: "all",     label: "Tutte",   icon: Mail },
   { value: "menuary", label: "Menuary", icon: UtensilsCrossed },
   { value: "bizery",  label: "Bizery",  icon: Briefcase },
+  { value: "orpheo",  label: "Orpheo",  icon: Clapperboard },
 ];
 
 const VIEW_TABS: { value: ViewFilter; label: string; icon: React.ElementType }[] = [

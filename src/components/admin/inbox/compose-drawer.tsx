@@ -78,6 +78,10 @@ type Props = {
   onClose: () => void;
   onSent: () => void;
   defaultBrand?: InboundEmailBrand;
+  tenantId?: string;
+  fromAddress?: string;
+  fromName?: string;
+  lockBrand?: boolean;
   initialTo?: string;
   initialSubject?: string;
   initialBody?: string;
@@ -87,18 +91,21 @@ type Props = {
 const BRAND_FROM: Record<InboundEmailBrand, string> = {
   menuary: "hello@menuary.it",
   bizery:  "hello@bizery.it",
+  orpheo:  "hello@weuseorpheo.com",
 };
 
 const BRAND_LABELS: Record<InboundEmailBrand, string> = {
   menuary: "Menuary",
   bizery:  "Bizery",
+  orpheo:  "Orpheo",
 };
 
-const BRAND_ORDER: InboundEmailBrand[] = ["menuary", "bizery"];
+const BRAND_ORDER: InboundEmailBrand[] = ["menuary", "bizery", "orpheo"];
 
 const BRAND_PILL_ACTIVE: Record<InboundEmailBrand, string> = {
   menuary: "bg-[#a95f45] text-white shadow-sm",
   bizery:  "bg-[#3b6cb5] text-white shadow-sm",
+  orpheo:  "bg-[#7c3aed] text-white shadow-sm",
 };
 
 export function ComposeDrawer({
@@ -107,6 +114,10 @@ export function ComposeDrawer({
   onClose,
   onSent,
   defaultBrand = "menuary",
+  tenantId,
+  fromAddress,
+  fromName,
+  lockBrand = false,
   initialTo,
   initialSubject,
   initialBody,
@@ -278,9 +289,10 @@ export function ComposeDrawer({
     const editorText = editorRef.current?.textContent?.trim() ?? "";
     if (!editorText) { setError("Scrivi il corpo del messaggio."); return; }
 
-    const fromName = signatureFromName || BRAND_LABELS[brand];
-    const fromOverride = `${fromName} <${BRAND_FROM[brand]}>`;
-    const replyTo = BRAND_FROM[brand];
+    const effectiveFromAddress = fromAddress ?? BRAND_FROM[brand];
+    const effectiveFromName = fromName || signatureFromName || BRAND_LABELS[brand];
+    const fromOverride = `${effectiveFromName} <${effectiveFromAddress}>`;
+    const replyTo = effectiveFromAddress;
 
     start(async () => {
       try {
@@ -293,6 +305,7 @@ export function ComposeDrawer({
             html: buildHtml(),
             fromOverride,
             replyTo,
+            tenantId,
             ...(attachments.length
               ? {
                   attachments: attachments.map((a) => ({
@@ -363,35 +376,41 @@ export function ComposeDrawer({
           {/* Da: picker brand sempre visibile, preselezionato in base al contesto. */}
           <div className="flex items-center gap-3 px-5 py-3">
             <span className="w-14 shrink-0 text-sm text-[var(--ma-muted)]">Da</span>
-            <div
-              role="radiogroup"
-              aria-label="Casella di invio"
-              className="inline-flex rounded-full bg-[var(--ma-surface)] p-1"
-            >
-              {BRAND_ORDER.map((b) => {
-                const active = brand === b;
-                return (
-                  <button
-                    key={b}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => setBrand(b)}
-                    className={cn(
-                      "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
-                      active
-                        ? BRAND_PILL_ACTIVE[b]
-                        : "text-[var(--ma-muted)] hover:text-[var(--ma-ink)]",
-                    )}
-                  >
-                    {BRAND_LABELS[b]}{" "}
-                    <span className={cn("font-normal", active ? "opacity-80" : "opacity-60")}>
-                      · {BRAND_FROM[b]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            {lockBrand ? (
+              <span className="rounded-full bg-[var(--ma-surface)] px-3 py-1 text-xs font-semibold text-[var(--ma-ink)]">
+                {fromName || BRAND_LABELS[brand]} · {fromAddress ?? BRAND_FROM[brand]}
+              </span>
+            ) : (
+              <div
+                role="radiogroup"
+                aria-label="Casella di invio"
+                className="inline-flex rounded-full bg-[var(--ma-surface)] p-1"
+              >
+                {BRAND_ORDER.map((b) => {
+                  const active = brand === b;
+                  return (
+                    <button
+                      key={b}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => setBrand(b)}
+                      className={cn(
+                        "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                        active
+                          ? BRAND_PILL_ACTIVE[b]
+                          : "text-[var(--ma-muted)] hover:text-[var(--ma-ink)]",
+                      )}
+                    >
+                      {BRAND_LABELS[b]}{" "}
+                      <span className={cn("font-normal", active ? "opacity-80" : "opacity-60")}>
+                        · {BRAND_FROM[b]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center px-5 py-2.5">

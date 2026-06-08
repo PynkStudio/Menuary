@@ -1,6 +1,6 @@
 // ─── Payload Resend Inbound ───────────────────────────────────────────────────
 // Resend invia questo payload via POST al webhook quando riceve un'email
-// sul dominio configurato (menuary.it o bizery.it).
+// sui domini configurati (menuary.it, bizery.it, weuseorpheo.com).
 
 export type ResendInboundHeader = {
   name: string;
@@ -37,7 +37,7 @@ export type ResendInboundPayload = {
 
 // ─── Riga DB ──────────────────────────────────────────────────────────────────
 
-export type InboundEmailBrand = "menuary" | "bizery";
+export type InboundEmailBrand = "menuary" | "bizery" | "orpheo";
 
 export type InboundEmail = {
   id: string;
@@ -52,6 +52,7 @@ export type InboundEmail = {
   headers: ResendInboundHeader[];
   attachments: ResendInboundAttachment[];
   brand: InboundEmailBrand;
+  tenant_id?: string | null;
   read: boolean;
   starred: boolean;
   archived: boolean;
@@ -72,10 +73,11 @@ export function parseEmailAddress(raw: string): { name: string | null; address: 
 
 /**
  * Determina il brand dalla lista di destinatari.
- * Priorità: bizery.it > menuary.it > fallback menuary.
+ * Priorità: orpheo > bizery > menuary > fallback menuary.
  */
 export function detectBrandFromRecipients(toAddresses: string[]): InboundEmailBrand {
   const addresses = toAddresses.join(" ").toLowerCase();
+  if (addresses.includes("@weuseorpheo.com")) return "orpheo";
   if (addresses.includes("@bizery.it")) return "bizery";
   return "menuary";
 }

@@ -14,6 +14,24 @@ export function getTenantGestioneExternalHref(tenantId: string): string {
   return buildTenantManagementUrl(tenantId) ?? buildTenantDemoManagementUrl(tenantId);
 }
 
+function hasActivePublicDomain(tenant: TenantProfile): boolean {
+  return tenant.domains.some(
+    (domain) =>
+      !domain.includes("localhost") &&
+      !domain.endsWith(".local") &&
+      domain !== "127.0.0.1",
+  );
+}
+
+export function getTenantAdminGestioneExternalHref(tenant: TenantProfile): string {
+  const demoOnly =
+    !hasActivePublicDomain(tenant) &&
+    Boolean(tenant.previewSlug || tenant.status === "trial" || tenant.status === "trattativa");
+
+  if (demoOnly) return buildTenantDemoManagementUrl(tenant.id);
+  return buildTenantManagementUrl(tenant.id) ?? buildTenantDemoManagementUrl(tenant.id);
+}
+
 export function getGestioneModuleAccess(features: TenantFeatureFlags) {
   const modules = resolveTenantFeatures(features);
   const hasOrders = modules.takeaway || modules.tableOrders || modules.orderKiosk;
@@ -31,6 +49,7 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     canManageCheckout: modules.cashRegister,
     canManageShifts: modules.staffRoles,
     canManageStaff: modules.staffRoles,
+    canManageMail: Boolean(modules.mail),
     canViewAnalytics: modules.analytics,
     canManageLocations: modules.multiLocation,
     canManageFidelity: modules.crm,

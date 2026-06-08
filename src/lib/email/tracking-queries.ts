@@ -10,7 +10,7 @@ export type TrackingEvent = {
   from_address: string | null;
   to_address: string | null;
   subject: string | null;
-  brand: "menuary" | "bizery" | null;
+  brand: "menuary" | "bizery" | "orpheo" | null;
   metadata: Record<string, unknown>;
 };
 

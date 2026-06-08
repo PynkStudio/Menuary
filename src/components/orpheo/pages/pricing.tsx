@@ -55,8 +55,8 @@ const PRICING_FAQ = [
     a: "Sì. Il modello è pensato per libri, album, brani, filmografia, spettacoli, crediti, premi, collaborazioni, asset e link esterni.",
   },
   {
-    q: "Orpheo usa lo stesso backend di Menuary e Bizery?",
-    a: "Sì. Il vertical Orpheo è collegato allo stesso backend e alla pagina di controllo admin.menuary.it, con moduli, tenant e pricing dedicati.",
+    q: "Orpheo è un servizio dedicato o un sito generico adattato?",
+    a: "Orpheo è un servizio dedicato ai professionisti creativi: struttura, moduli e flussi sono pensati per presenza pubblica, opere, booking, materiali, diritti e fanbase.",
   },
 ];
 
@@ -111,7 +111,7 @@ export function OrpheoPricingPage({
             )}
           </div>
 
-          <div className="grid gap-px sm:gap-6 lg:grid-cols-3">
+          <div className="grid items-stretch gap-6 lg:grid-cols-3">
             {plans.map((plan) => (
               <PlanCard key={plan.slug} plan={plan} billing={billing} priceLocale={priceLocale} />
             ))}
@@ -254,20 +254,23 @@ function PlanCard({
 }) {
   const price = billing === "annual" ? plan.price_annual : plan.price_monthly;
   return (
-    <article data-featured={plan.is_featured ? "true" : "false"} className="menuary-pricing-row">
+    <article
+      data-featured={plan.is_featured ? "true" : "false"}
+      className="flex h-full flex-col border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7 shadow-[0_1.4rem_4rem_rgba(23,17,31,0.05)] data-[featured=true]:border-[var(--menuary-copper)] data-[featured=true]:bg-[var(--menuary-porcelain)] md:p-8"
+    >
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
+        <p className="min-h-10 text-xs font-bold uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
           {plan.tagline}
         </p>
-        <h3 className="mt-4 text-3xl font-medium tracking-[-0.02em]" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
+        <h3 className="mt-5 text-3xl font-medium tracking-[-0.02em]" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
           {plan.marketing_name}
         </h3>
-        <p className="mt-4 min-h-[5.25rem] text-[15px] leading-7 text-[var(--menuary-muted)]">
+        <p className="mt-4 text-[15px] leading-7 text-[var(--menuary-muted)]">
           {plan.description}
         </p>
       </div>
-      <div className="mt-8 flex items-end gap-2">
-        <span className="text-5xl font-medium tracking-[-0.04em]" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
+      <div className="mt-8 flex flex-wrap items-end gap-x-2 gap-y-1">
+        <span className="text-5xl font-medium leading-none tracking-[-0.04em]" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
           {formatPlanPrice(price, plan.currency ?? "EUR", priceLocale)}
         </span>
         <span className="pb-1 text-sm text-[var(--menuary-muted)]">/mese</span>
@@ -275,18 +278,20 @@ function PlanCard({
       <p className="mt-3 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
         Setup {formatSetupFrom(plan.setup_from, plan.currency ?? "EUR", priceLocale)}
       </p>
-      <ul className="mt-8 space-y-4">
+      <ul className="mt-8 space-y-4 border-t border-[var(--menuary-line)] pt-8">
         {plan.marketing_items.map((item) => (
-          <li key={item} className="flex items-start gap-3 text-[15px] leading-[1.5]">
+          <li key={item} className="flex items-start gap-3 text-[15px] leading-6">
             <Check size={16} strokeWidth={2} className="mt-0.5 shrink-0 text-[var(--menuary-sage)]" />
-            {item}
+            <span>{item}</span>
           </li>
         ))}
       </ul>
-      <Link href="/contatti" className={plan.is_featured ? "menuary-button menuary-button-dark mt-9 w-full justify-center" : "menuary-button menuary-button-light mt-9 w-full justify-center"}>
-        {plan.cta_label ?? "Richiedi una demo"}
-        <ArrowRight size={15} strokeWidth={1.8} className="ml-1" />
-      </Link>
+      <div className="mt-auto pt-9">
+        <Link href="/contatti" className={plan.is_featured ? "menuary-button menuary-button-dark w-full justify-center" : "menuary-button menuary-button-light w-full justify-center"}>
+          {plan.cta_label ?? "Richiedi una demo"}
+          <ArrowRight size={15} strokeWidth={1.8} className="ml-1" />
+        </Link>
+      </div>
     </article>
   );
 }

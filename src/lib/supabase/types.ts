@@ -198,11 +198,12 @@ export type Database = {
           to_addresses: string[]
           subject: string
           html_body: string | null
-          brand: "menuary" | "bizery"
+          brand: "menuary" | "bizery" | "orpheo"
           sent_by_user_id: string | null
           sent_by_name: string | null
           status: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
           lead_id: string | null
+          tenant_id: string | null
         }
         Insert: {
           id?: string
@@ -213,11 +214,12 @@ export type Database = {
           to_addresses: string[]
           subject?: string
           html_body?: string | null
-          brand: "menuary" | "bizery"
+          brand: "menuary" | "bizery" | "orpheo"
           sent_by_user_id?: string | null
           sent_by_name?: string | null
           status?: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
           lead_id?: string | null
+          tenant_id?: string | null
         }
         Update: {
           id?: string
@@ -228,11 +230,12 @@ export type Database = {
           to_addresses?: string[]
           subject?: string
           html_body?: string | null
-          brand?: "menuary" | "bizery"
+          brand?: "menuary" | "bizery" | "orpheo"
           sent_by_user_id?: string | null
           sent_by_name?: string | null
           status?: "sent" | "delivered" | "delivery_delayed" | "bounced" | "complained"
           lead_id?: string | null
+          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -240,6 +243,13 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sent_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -253,7 +263,7 @@ export type Database = {
           from_address: string | null
           to_address: string | null
           subject: string | null
-          brand: "menuary" | "bizery" | null
+          brand: "menuary" | "bizery" | "orpheo" | null
           metadata: Json
         }
         Insert: {
@@ -264,7 +274,7 @@ export type Database = {
           from_address?: string | null
           to_address?: string | null
           subject?: string | null
-          brand?: "menuary" | "bizery" | null
+          brand?: "menuary" | "bizery" | "orpheo" | null
           metadata?: Json
         }
         Update: {
@@ -275,7 +285,7 @@ export type Database = {
           from_address?: string | null
           to_address?: string | null
           subject?: string | null
-          brand?: "menuary" | "bizery" | null
+          brand?: "menuary" | "bizery" | "orpheo" | null
           metadata?: Json
         }
         Relationships: []
@@ -286,7 +296,7 @@ export type Database = {
           created_at: string
           updated_at: string
           user_id: string
-          brand: "menuary" | "bizery"
+          brand: "menuary" | "bizery" | "orpheo"
           name: string
           title: string
           phone: string
@@ -299,7 +309,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
           user_id: string
-          brand: "menuary" | "bizery"
+          brand: "menuary" | "bizery" | "orpheo"
           name?: string
           title?: string
           phone?: string
@@ -312,7 +322,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
           user_id?: string
-          brand?: "menuary" | "bizery"
+          brand?: "menuary" | "bizery" | "orpheo"
           name?: string
           title?: string
           phone?: string
@@ -467,12 +477,13 @@ export type Database = {
           html_body: string | null
           headers: Json
           attachments: Json
-          brand: "menuary" | "bizery"
+          brand: "menuary" | "bizery" | "orpheo"
           read: boolean
           starred: boolean
           archived: boolean
           lead_id: string | null
           assigned_to_user_id: string | null
+          tenant_id: string | null
         }
         Insert: {
           id?: string
@@ -486,12 +497,13 @@ export type Database = {
           html_body?: string | null
           headers?: Json
           attachments?: Json
-          brand: "menuary" | "bizery"
+          brand: "menuary" | "bizery" | "orpheo"
           read?: boolean
           starred?: boolean
           archived?: boolean
           lead_id?: string | null
           assigned_to_user_id?: string | null
+          tenant_id?: string | null
         }
         Update: {
           id?: string
@@ -505,12 +517,13 @@ export type Database = {
           html_body?: string | null
           headers?: Json
           attachments?: Json
-          brand?: "menuary" | "bizery"
+          brand?: "menuary" | "bizery" | "orpheo"
           read?: boolean
           starred?: boolean
           archived?: boolean
           lead_id?: string | null
           assigned_to_user_id?: string | null
+          tenant_id?: string | null
         }
         Relationships: [
           {
@@ -525,6 +538,13 @@ export type Database = {
             columns: ["assigned_to_user_id"]
             isOneToOne: false
             referencedRelation: "siteadmin"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbound_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

@@ -20,6 +20,7 @@ export type TenantModuleDefinition = {
   label: string;
   description: string;
   category: TenantModuleCategory;
+  verticals?: TenantVertical[];
   requires?: TenantFeatureKey[];
   requiresAny?: TenantFeatureKey[];
   // Sub-sistemi garantiti: quando questo modulo è attivo, i moduli in `implies`
@@ -36,6 +37,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Sito del locale",
     description: "Pubblica pagine, contatti, orari, brand e contenuti base del ristorante.",
     category: "Presenza digitale",
+    verticals: ["food", "services", "creative"],
     verticalCopy: {
       services: {
         label: "Sito dell'attività",
@@ -48,6 +50,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Press kit",
     description: "Pubblica bio, foto ufficiali, contatti media/booking, schede tecniche e materiali scaricabili.",
     category: "Presenza digitale",
+    verticals: ["creative"],
     requires: ["website"],
   },
   {
@@ -55,6 +58,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Catalogo opere",
     description: "Gestisce libri, brani, album, film, spettacoli, crediti, release, asset e link provider.",
     category: "Presenza digitale",
+    verticals: ["creative"],
     requires: ["website"],
   },
   {
@@ -62,6 +66,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Menu online",
     description: "Rende disponibile il menu digitale consultabile da sito, QR e preview.",
     category: "Presenza digitale",
+    verticals: ["food", "services"],
     requires: ["website"],
     // favorites è parte integrante del pacchetto menu: sempre incluso quando onlineMenu è attivo.
     implies: ["favorites"],
@@ -77,6 +82,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Shop online",
     description: "Abilita carrello, checkout e pagamento online sul catalogo prodotti.",
     category: "Ordini",
+    verticals: ["food", "services"],
     requires: ["onlineMenu"],
     verticalCopy: {
       services: {
@@ -90,6 +96,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Ordini da asporto",
     description: "Abilita percorso ordine e checkout da ritiro.",
     category: "Ordini",
+    verticals: ["food", "services"],
     requires: ["onlineMenu"],
     verticalCopy: {
       services: {
@@ -103,6 +110,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Ordini al tavolo",
     description: "Abilita QR, sessioni tavolo e checkout condiviso.",
     category: "Ordini",
+    verticals: ["food", "services"],
     requires: ["onlineMenu"],
     verticalCopy: {
       services: {
@@ -116,6 +124,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Kiosk ordini",
     description: "Abilita postazioni self-order per consultare il menu e inviare ordini dal locale.",
     category: "Ordini",
+    verticals: ["food", "services"],
     requires: ["onlineMenu"],
     verticalCopy: {
       services: {
@@ -129,6 +138,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Slot e carico asporto",
     description: "Gestisce fasce di ritiro, capacità per slot e avvisi di cucina satura.",
     category: "Ordini",
+    verticals: ["food", "services"],
     requires: ["takeaway"],
     verticalCopy: {
       services: {
@@ -142,6 +152,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Delivery proprietario",
     description: "Prepara il locale a ricevere ordini diretti e centralizzare i canali delivery.",
     category: "Ordini",
+    verticals: ["food", "services"],
     requires: ["takeaway"],
     verticalCopy: {
       services: {
@@ -155,6 +166,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Cassa",
     description: "Abilita apertura, chiusura e movimenti del registro di cassa nel pannello gestione.",
     category: "Operatività",
+    verticals: ["food", "services"],
     requiresAny: ["takeaway", "tableOrders", "orderKiosk"],
     verticalCopy: {
       services: {
@@ -168,6 +180,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Schermo cucina",
     description: "Rende disponibile la vista operativa per la brigata.",
     category: "Operatività",
+    verticals: ["food", "services"],
     requiresAny: ["takeaway", "tableOrders", "orderKiosk"],
     verticalCopy: {
       services: {
@@ -181,6 +194,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Stampanti e reparti",
     description: "Divide le comande per cucina, bar, pizzeria e banco con stampa o ristampa.",
     category: "Operatività",
+    verticals: ["food", "services"],
     requiresAny: ["takeaway", "tableOrders", "orderKiosk"],
     verticalCopy: {
       services: {
@@ -194,6 +208,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Commensali distinti",
     description: "Separa gli ordini dei clienti all'interno della sessione tavolo.",
     category: "Operatività",
+    verticals: ["food", "services"],
     requires: ["tableOrders"],
     verticalCopy: {
       services: {
@@ -207,6 +222,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Prenotazioni",
     description: "Raccoglie prenotazioni online con recapiti, note, allergie e preferenze.",
     category: "Operatività",
+    verticals: ["food", "services"],
     requires: ["website"],
     verticalCopy: {
       services: {
@@ -220,6 +236,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Booking eventi",
     description: "Gestisce concerti, firmacopie, festival, shooting, casting, tournée, cachet, rider e disponibilità.",
     category: "Operatività",
+    verticals: ["creative"],
     requires: ["website"],
   },
   {
@@ -227,6 +244,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Diritti e royalty",
     description: "Traccia contratti, licenze, territori, esclusività, rendicontazioni royalty e scadenze.",
     category: "Operatività",
+    verticals: ["creative"],
     requires: ["worksCatalog"],
   },
   {
@@ -234,6 +252,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Gestione sala",
     description: "Mappa tavoli e stati operativi: libero, occupato, ordinato, pagamento, pulizia.",
     category: "Operatività",
+    verticals: ["food", "services"],
     requires: ["reservations"],
     verticalCopy: {
       services: {
@@ -247,6 +266,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Disponibilità piatti",
     description: "Nasconde esauriti, quantità limitate e piatti legati a ingredienti mancanti.",
     category: "Operatività",
+    verticals: ["food", "services"],
     requires: ["onlineMenu"],
     verticalCopy: {
       services: {
@@ -260,6 +280,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Upselling menu",
     description: "Propone extra, abbinamenti, menu completi e suggerimenti in carrello.",
     category: "Crescita",
+    verticals: ["food", "services"],
     requires: ["onlineMenu"],
     verticalCopy: {
       services: {
@@ -273,6 +294,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "CRM e fidelity",
     description: "Gestisce contatti, coupon, ritorno cliente, compleanni e storico preferenze.",
     category: "Crescita",
+    verticals: ["food", "services", "creative"],
     requires: ["website"],
     verticalCopy: {
       services: {
@@ -286,7 +308,8 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Analytics locale",
     description: "Mostra vendite, fasce orarie, piatti forti, scontrino medio e tempi cucina.",
     category: "Crescita",
-    requiresAny: ["onlineMenu", "takeaway", "tableOrders", "orderKiosk"],
+    verticals: ["food", "services", "creative"],
+    requiresAny: ["onlineMenu", "takeaway", "tableOrders", "orderKiosk", "worksCatalog", "creativeBooking"],
     verticalCopy: {
       services: {
         label: "Analytics attività",
@@ -299,6 +322,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Recensioni",
     description: "Consente la pubblicazione del modulo recensioni.",
     category: "Crescita",
+    verticals: ["food", "services"],
     requires: ["website"],
     verticalCopy: {
       services: {
@@ -312,6 +336,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Reputation & reviews",
     description: "Aggrega recensioni Amazon, Goodreads, IMDb, Letterboxd, Spotify, YouTube e altri provider con trend e sentiment.",
     category: "Crescita",
+    verticals: ["creative"],
     requiresAny: ["website", "worksCatalog"],
   },
   {
@@ -319,6 +344,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Fanbase e community",
     description: "Segmenta pubblico, newsletter, contenuti esclusivi, campagne e audience analytics.",
     category: "Crescita",
+    verticals: ["creative"],
     requires: ["website"],
   },
   {
@@ -326,6 +352,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Galleria",
     description: "Consente la pubblicazione del modulo gallery.",
     category: "Crescita",
+    verticals: ["food", "services", "creative"],
     requires: ["website"],
   },
   {
@@ -333,6 +360,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Preferiti",
     description: "Mantiene attivo il layer di salvataggio piatti preferiti.",
     category: "Crescita",
+    verticals: ["food", "services"],
     requires: ["onlineMenu"],
     verticalCopy: {
       services: {
@@ -346,6 +374,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Magazzino e food cost",
     description: "Collega ingredienti, costi, soglie e margine stimato ai piatti del menu.",
     category: "Gestione",
+    verticals: ["food", "services"],
     requires: ["onlineMenu"],
     verticalCopy: {
       services: {
@@ -359,6 +388,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Ruoli staff",
     description: "Abilita permessi per cameriere, cucina, manager e admin con log modifiche.",
     category: "Gestione",
+    verticals: ["food", "services", "creative"],
     requires: ["website"],
     verticalCopy: {
       services: {
@@ -372,6 +402,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Multi-sede",
     description: "Gestisce menu centralizzato, prezzi per sede, report comparativi e permessi.",
     category: "Gestione",
+    verticals: ["food", "services", "creative"],
     requires: ["website"],
     verticalCopy: {
       services: {
@@ -381,10 +412,29 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     },
   },
   {
+    key: "mail",
+    label: "Mail",
+    description: "Abilita la casella email interna del tenant nel pannello gestione.",
+    category: "Gestione",
+    verticals: ["food", "services", "creative"],
+    requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Mail",
+        description: "Abilita la casella email interna dell'attività nel pannello gestione.",
+      },
+      creative: {
+        label: "Mail",
+        description: "Abilita la casella email interna del progetto creativo nel pannello gestione.",
+      },
+    },
+  },
+  {
     key: "slabbby",
     label: "Slabbby",
     description: "Wishlist multisito: permette ai clienti di salvare prodotti del catalogo su una lista desideri personale.",
     category: "Integrazioni",
+    verticals: ["food", "services"],
     requires: ["shop"],
   },
   {
@@ -392,8 +442,9 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Assistente vocale AI",
     description: "Orchestra chiamate inbound con Retell AI usando menu, modifiche, prezzi, ordini, prenotazioni, orari e dati del locale.",
     category: "Integrazioni",
+    verticals: ["food", "services", "creative"],
     requires: ["website"],
-    requiresAny: ["onlineMenu", "reservations", "takeaway"],
+    requiresAny: ["onlineMenu", "reservations", "takeaway", "worksCatalog", "creativeBooking"],
     verticalCopy: {
       services: {
         label: "Assistente vocale AI",
@@ -406,8 +457,9 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Assistente WhatsApp AI",
     description: "Orchestra conversazioni inbound WhatsApp per ordini, delivery, pagamenti, prenotazioni e appuntamenti.",
     category: "Integrazioni",
+    verticals: ["food", "services", "creative"],
     requires: ["website"],
-    requiresAny: ["onlineMenu", "reservations", "takeaway"],
+    requiresAny: ["onlineMenu", "reservations", "takeaway", "worksCatalog", "creativeBooking"],
     verticalCopy: {
       services: {
         label: "Assistente WhatsApp AI",
@@ -420,6 +472,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Integrazione HubRise",
     description: "Sincronizza il menu verso le piattaforme di order-taking (Deliveroo, JustEat, Glovo, Uber Eats) e riceve i loro ordini sul kitchen display e nelle analytics.",
     category: "Integrazioni",
+    verticals: ["food"],
     requires: ["onlineMenu"],
   },
   {
@@ -427,6 +480,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Pagamenti Stripe",
     description: "Collega l'account Stripe del locale per incassare i pagamenti di ordini online, al tavolo, WhatsApp e voce AI. Ogni tenant resta indipendente con la propria dashboard Stripe.",
     category: "Integrazioni",
+    verticals: ["food", "services", "creative"],
     verticalCopy: {
       services: {
         label: "Pagamenti Stripe",
@@ -448,6 +502,28 @@ export const TENANT_MODULE_CATEGORIES: TenantModuleCategory[] = [
 export const TENANT_MODULE_BY_KEY = Object.fromEntries(
   TENANT_MODULES.map((module) => [module.key, module]),
 ) as Record<TenantFeatureKey, TenantModuleDefinition>;
+
+export function isTenantModuleVerticalAware(
+  module: TenantModuleDefinition,
+  vertical: TenantVertical,
+): boolean {
+  return (module.verticals ?? ["food"]).includes(vertical);
+}
+
+export function getTenantModulesForVertical(
+  vertical: TenantVertical,
+  options: { includeOtherVerticals?: boolean } = {},
+): TenantModuleDefinition[] {
+  const matching = TENANT_MODULES.filter((module) =>
+    isTenantModuleVerticalAware(module, vertical),
+  );
+  if (!options.includeOtherVerticals) return matching;
+
+  const otherVerticals = TENANT_MODULES.filter(
+    (module) => !isTenantModuleVerticalAware(module, vertical),
+  );
+  return [...matching, ...otherVerticals];
+}
 
 export function allTenantFeatures(enabled = true): TenantFeatureFlags {
   return Object.fromEntries(

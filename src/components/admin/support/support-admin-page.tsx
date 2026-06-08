@@ -138,7 +138,7 @@ export function SupportAdminPage({
         <div>
           <h1 className="menuary-admin-page-title">Supporto</h1>
           <p className="menuary-admin-page-subtitle">
-            Ticket generati da support@menuary.it, support@bizery.it e dal flusso WhatsApp operativo.
+            Ticket generati da support@menuary.it, support@bizery.it, support@weuseorpheo.com e dal flusso WhatsApp operativo.
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-3 xl:min-w-[32rem]">

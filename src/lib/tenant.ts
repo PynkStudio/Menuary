@@ -67,6 +67,8 @@ export type TenantFeatureFlags = {
   hubriseSync: boolean;
   /** Pagamenti Stripe Connect (Standard): ogni tenant collega il proprio account Stripe per incassare autonomamente. Application fee piattaforma 0% per dine-in/online, 3% per ordini AI (Retell/WhatsApp). */
   payments: boolean;
+  /** Casella mail interna tenant nel pannello gestione. */
+  mail?: boolean;
   /** Press kit pubblico: bio, foto ufficiali, contatti media/booking e materiali scaricabili. */
   pressKit?: boolean;
   /** Catalogo opere: libri, brani, album, filmografia, spettacoli, crediti e asset collegati. */

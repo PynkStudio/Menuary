@@ -1,9 +1,66 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import type React from "react";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { findTenantById, findTenantByPreviewSlug } from "@/lib/tenant-registry";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
+import type { TenantProfile, TenantVertical } from "@/lib/tenant";
+
+const tenantSurfaceClassById: Partial<Record<TenantProfile["id"], string>> = {
+  "junior-food": "jf-site",
+  kimos: "km-site",
+  officinakam: "kam-site",
+  libritech: "lt-site",
+  studioaranzulla: "ara-site",
+  "valentina-orciuoli": "vo-site",
+};
+
+const tenantNotFoundCopyByVertical: Record<TenantVertical, {
+  title: React.ReactNode;
+  description: string;
+}> = {
+  food: {
+    title: (
+      <>
+        Qui non c&apos;è nulla
+        <br />
+        <span>da mangiare.</span>
+      </>
+    ),
+    description: "La pagina che cerchi non esiste. Forse è il caso di tornare al menu.",
+  },
+  services: {
+    title: (
+      <>
+        Qui non c&apos;è il servizio
+        <br />
+        <span>che cercavi.</span>
+      </>
+    ),
+    description: "La pagina che cerchi non esiste, è stata spostata o non è più disponibile.",
+  },
+  creative: {
+    title: (
+      <>
+        Qui non c&apos;è nessun progetto
+        <br />
+        <span>in scena.</span>
+      </>
+    ),
+    description: "La pagina che cerchi non esiste. Puoi tornare al profilo principale.",
+  },
+};
+
+function tenantHomeHref(tenant: TenantProfile, mode: string, isPreviewRequest: boolean): string {
+  if (
+    (isPreviewRequest || mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") &&
+    tenant.previewSlug
+  ) {
+    return `/${tenant.previewSlug}`;
+  }
+  return "/";
+}
 
 export default async function NotFound() {
   const h = await headers();
@@ -56,35 +113,44 @@ export default async function NotFound() {
     findTenantByPreviewSlug(previewSlug) ??
     resolveTenantFromHost(host);
   const cssVars = tenantThemeCssVars(tenant.theme);
+  const copy = tenantNotFoundCopyByVertical[tenant.vertical];
+  const tenantSurfaceClass = tenantSurfaceClassById[tenant.id];
+  const homeHref = tenantHomeHref(tenant, mode, Boolean(previewTenantId || previewSlug));
+  const accentColor = tenant.vertical === "services" ? tenant.theme.mustard : tenant.theme.red;
 
   return (
     <section
-      className="tenant-preview-surface flex min-h-[70vh] flex-col items-center justify-center px-5 py-32 text-center"
+      className={[
+        "tenant-preview-surface flex min-h-[70vh] flex-col items-center justify-center px-5 py-32 text-center",
+        tenantSurfaceClass,
+      ].filter(Boolean).join(" ")}
       data-tenant-surface={tenant.id}
       style={{
         ...cssVars,
-        backgroundColor: tenant.theme.cream,
-        color: tenant.theme.ink,
+        ...(tenantSurfaceClass
+          ? {}
+          : {
+              backgroundColor: tenant.theme.cream,
+              color: tenant.theme.ink,
+            }),
       } as React.CSSProperties}
     >
       <span
         className="impact-title text-xl"
-        style={{ color: tenant.theme.red }}
+        style={{ color: accentColor }}
       >
         Errore 404
       </span>
       <h1 className="headline mt-3 text-6xl sm:text-7xl lg:text-8xl text-balance">
-        Qui non c&apos;è nulla
-        <br />
-        <span style={{ color: tenant.theme.red }}>da mangiare.</span>
+        {copy.title}
       </h1>
       <p className="mt-6 max-w-md opacity-70">
-        La pagina che cerchi non esiste. Forse è il caso di tornare al menu.
+        {copy.description}
       </p>
       <Link
-        href="/"
+        href={homeHref}
         className="mt-8 inline-flex items-center rounded-full px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-80"
-        style={{ backgroundColor: tenant.theme.red }}
+        style={{ backgroundColor: accentColor }}
       >
         Torna alla home
       </Link>

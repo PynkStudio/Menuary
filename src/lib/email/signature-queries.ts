@@ -1,7 +1,7 @@
 import type { InboundEmailBrand } from "./inbound-types";
 
 // ── Firme automatiche standard ───────────────────────────────────────────────
-// Due template fissi (Menuary / Bizery) compilati con i dati del profilo
+// Template fissi per brand compilati con i dati del profilo
 // siteadmin di chi invia la mail. NON sono modificabili dal singolo utente:
 // l'unica personalizzazione passa dalla pagina /admin/profilo.
 
@@ -33,6 +33,16 @@ const BRAND_TEMPLATE = {
     accentInk:"#234A85",
     paper:    "#F5F7FB",
     rule:     "#DFE5F0",
+  },
+  orpheo: {
+    label:    "Orpheo",
+    tagline:  "La piattaforma per artisti e professionisti creativi",
+    email:    "hello@weuseorpheo.com",
+    website:  "weuseorpheo.com",
+    accent:   "#7C3AED",
+    accentInk:"#4C1D95",
+    paper:    "#FBFAF7",
+    rule:     "#E7E0F0",
   },
 } as const;
 
