@@ -7,7 +7,7 @@ export const furyHref = "https://www.amazon.it/Fury-Emotion-Dragons-Trilogy-Vol-
 export const linktreeHref = "https://linktr.ee/valentina.orciuoli";
 export const instagramHref = "https://www.instagram.com/di.vale_in.peggio/";
 export const tiktokHref = "https://www.tiktok.com/login?redirect_url=https%3A%2F%2Fwww.tiktok.com%2F%40valentina.orciuoli&lang=en&enter_method=mandatory";
-export const anxietyCoverSrc = "/valentina-orciuoli/anxiety-mockup-standup.webp";
+export const anxietyCoverSrc = "/valentina-orciuoli/anxiety-mockup-standup.png";
 export const furyCoverSrc = "https://m.media-amazon.com/images/I/71z2LZ6a8XL.jpg";
 export const darkNoirCoverSrc = "/valentina-orciuoli/tra-fumo-e-ombre.webp";
 export const authorPortraitSrc = "https://www.selfcreation.it/wp-content/uploads/2024/11/Valentina-Orciuoli.jpg";

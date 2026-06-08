@@ -35,8 +35,17 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
       {page === "libri" && (
         <>
           <section className="vo-book-feature-section vo-book-feature-section-anxiety vo-subpage-section">
+            <video
+              className="vo-book-feature-video"
+              src="/valentina-orciuoli/video-anxiety.webm"
+              autoPlay
+              muted
+              loop
+              playsInline
+              aria-hidden="true"
+            />
             <div className="vo-book-feature-panel vo-book-feature-panel-anxiety">
-              <h2>anxiety</h2>
+              <h2>Anxiety</h2>
               <p>
                 E se l&apos;ansia fosse un potere?
                 <br />

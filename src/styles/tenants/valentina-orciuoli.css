@@ -83,10 +83,33 @@
     backdrop-filter: blur(14px);
   }
 
+  .vo-sticky-header-region {
+    position: relative;
+  }
+
+  .vo-header-sticky {
+    position: sticky;
+    top: 0.85rem;
+    margin-top: 0;
+    margin-bottom: -5.85rem;
+  }
+
   .vo-brand-mark {
+    display: block;
+    width: 4.9rem;
+    height: 4.9rem;
+    overflow: hidden;
+  }
+
+  .vo-brand-mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .vo-brand:not(:has(img)) .vo-brand-mark {
     display: grid;
-    width: 4.7rem;
-    height: 4.7rem;
     place-items: center;
     border-bottom: 2px solid var(--vo-gold);
     color: var(--vo-gold-soft);
@@ -507,9 +530,25 @@
   }
 
   .vo-book-feature-section-anxiety {
-    background:
-      linear-gradient(90deg, rgba(5, 5, 5, 0.28), rgba(5, 5, 5, 0.02) 52%),
-      url("/valentina-orciuoli/sfondo-anxiety.webp") center / cover no-repeat;
+    background: #050505;
+  }
+
+  .vo-book-feature-section-anxiety::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(5, 5, 5, 0.28), rgba(5, 5, 5, 0.02) 52%);
+  }
+
+  .vo-book-feature-video {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .vo-book-feature-section-fury {
@@ -526,6 +565,8 @@
   }
 
   .vo-book-feature-panel {
+    position: relative;
+    z-index: 2;
     width: min(100%, 33rem);
     border: 1px solid rgba(255, 218, 212, 0.42);
     padding: clamp(1.45rem, 4vw, 2.6rem);
@@ -1041,10 +1082,15 @@
       padding: 0.34rem 0.62rem;
     }
 
+    .vo-header-sticky {
+      top: 0.55rem;
+      margin-top: 0;
+      margin-bottom: -4.6rem;
+    }
+
     .vo-brand-mark {
-      width: 3.5rem;
-      height: 3.5rem;
-      font-size: 1.55rem;
+      width: 3.7rem;
+      height: 3.7rem;
     }
 
     .vo-nav {
