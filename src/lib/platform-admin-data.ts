@@ -70,7 +70,7 @@ export const ORPHEO_PLATFORM_PACKAGES: PlatformPackage[] = ORPHEO_PRICING_PLANS.
       ? ["website", "pressKit", "worksCatalog", "reviews", "gallery"]
       : plan.slug === "orpheo-pro"
         ? ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "reputationReviews", "gallery", "staffRoles"]
-        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation"],
+        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation", "mail"],
   is_active: true,
   sort_order: 201 + index,
   created_at: "2026-01-01T00:00:00Z",

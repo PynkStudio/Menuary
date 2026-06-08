@@ -370,6 +370,24 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     },
   },
   {
+    key: "blog",
+    label: "Blog",
+    description: "Gestisce articoli, immagini, blocchi editoriali e commenti semplici con moderazione.",
+    category: "Crescita",
+    verticals: ["food", "services", "creative"],
+    requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Blog",
+        description: "Gestisce articoli, aggiornamenti, immagini, blocchi editoriali e commenti semplici.",
+      },
+      creative: {
+        label: "Journal",
+        description: "Gestisce news, diario creativo, media, blocchi editoriali e commenti semplici.",
+      },
+    },
+  },
+  {
     key: "favorites",
     label: "Preferiti",
     description: "Mantiene attivo il layer di salvataggio piatti preferiti.",

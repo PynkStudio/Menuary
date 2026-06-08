@@ -69,6 +69,8 @@ export type TenantFeatureFlags = {
   payments: boolean;
   /** Casella mail interna tenant nel pannello gestione. */
   mail?: boolean;
+  /** Blog editoriale: articoli, media, blocchi contenuto e commenti semplici moderati. */
+  blog?: boolean;
   /** Press kit pubblico: bio, foto ufficiali, contatti media/booking e materiali scaricabili. */
   pressKit?: boolean;
   /** Catalogo opere: libri, brani, album, filmografia, spettacoli, crediti e asset collegati. */

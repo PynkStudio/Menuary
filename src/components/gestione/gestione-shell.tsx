@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Building2, CreditCard, Globe2, KeyRound, LogOut, MapPin, Settings, UserRound } from "lucide-react";
+import { Building2, CreditCard, Globe2, KeyRound, LogOut, MapPin, Newspaper, Settings, UserRound } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
 import {
@@ -146,6 +146,7 @@ function GestioneShellInner({
     { label: t.nav.google, href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },
     { label: t.nav.analytics, href: sectionHref("analytics"), visible: (c) => access.canViewAnalytics && c.can_view_analytics },
     { label: audienceNavLabel, href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
+    { label: t.nav.blog, href: sectionHref("blog"), visible: () => isAdmin && access.canManageBlog },
     { label: "Linktree", href: sectionHref("linktree"), visible: () => isAdmin && access.canManageLinktree },
     { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: t.nav.locations, href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
@@ -194,6 +195,12 @@ function GestioneShellInner({
               </button>
               {settingsOpen && (
                 <div className="ga-settings-popover" role="menu" aria-label={t.settings}>
+                  {access.canManageBlog && (
+                    <Link href={sectionHref("blog")} role="menuitem" onClick={() => setSettingsOpen(false)}>
+                      <Newspaper size={14} />
+                      <span>Blog</span>
+                    </Link>
+                  )}
                   <Link href={settingsHref} role="menuitem" onClick={() => setSettingsOpen(false)}>
                     <Settings size={14} />
                     <span>Impostazioni generali</span>
