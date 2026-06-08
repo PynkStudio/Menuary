@@ -35,23 +35,29 @@ export function getTenantAdminGestioneExternalHref(tenant: TenantProfile): strin
 export function getGestioneModuleAccess(features: TenantFeatureFlags) {
   const modules = resolveTenantFeatures(features);
   const hasOrders = modules.takeaway || modules.tableOrders || modules.orderKiosk;
+  const hasCreativeWorks = Boolean(modules.worksCatalog || modules.pressKit);
+  const hasCreativeBookings = Boolean(modules.creativeBooking);
+  const hasCreativeAudience = Boolean(modules.reputationReviews || modules.fanbaseCommunity);
   const hasGoogleBusiness =
-    modules.website || modules.reservations || modules.reviews || modules.analytics;
+    modules.website || modules.reservations || modules.reviews || modules.analytics || hasCreativeAudience;
 
   return {
     modules,
     hasOrders,
+    hasCreativeWorks,
+    hasCreativeBookings,
+    hasCreativeAudience,
     hasGoogleBusiness,
     canManageActivity: modules.website,
-    canManageMenu: modules.onlineMenu,
+    canManageMenu: modules.onlineMenu || hasCreativeWorks,
     canManageTables: modules.tablePlanner,
-    canManageReservations: modules.reservations,
+    canManageReservations: modules.reservations || hasCreativeBookings,
     canManageCheckout: modules.cashRegister,
     canManageShifts: modules.staffRoles,
     canManageStaff: modules.staffRoles,
     canManageMail: Boolean(modules.mail),
-    canViewAnalytics: modules.analytics,
+    canViewAnalytics: modules.analytics || hasCreativeAudience,
     canManageLocations: modules.multiLocation,
-    canManageFidelity: modules.crm,
+    canManageFidelity: modules.crm || Boolean(modules.fanbaseCommunity),
   };
 }

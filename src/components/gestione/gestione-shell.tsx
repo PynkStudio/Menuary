@@ -118,13 +118,25 @@ function GestioneShellInner({
   const isAdmin = currentUser.isTenantAdmin;
   const verticalMeta = getVerticalMeta(tenant.vertical);
   const supportEmail = `support@${verticalMeta.marketingDomain}`;
+  const menuNavLabel =
+    tenant.vertical === "creative"
+      ? getModuleLabel("worksCatalog", tenant.vertical)
+      : getModuleLabel("onlineMenu", tenant.vertical);
+  const bookingNavLabel =
+    tenant.vertical === "creative"
+      ? getModuleLabel("creativeBooking", tenant.vertical)
+      : getModuleLabel("reservations", tenant.vertical);
+  const audienceNavLabel =
+    tenant.vertical === "creative"
+      ? getModuleLabel("fanbaseCommunity", tenant.vertical)
+      : t.nav.loyalty;
 
   const items: NavItem[] = [
     { label: t.nav.dashboard, href: dashboardHref, visible: () => true },
     { label: t.nav.orders, href: sectionHref("ordini"), visible: () => access.hasOrders, arrivalKind: "orders" },
-    { label: getModuleLabel("onlineMenu", tenant.vertical), href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
+    { label: menuNavLabel, href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
     { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
-    { label: getModuleLabel("reservations", tenant.vertical), href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations, arrivalKind: "reservations" },
+    { label: bookingNavLabel, href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations, arrivalKind: "reservations" },
     { label: t.nav.checkout, href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
     { label: t.nav.shifts, href: sectionHref("turni"), visible: () => access.canManageShifts },
     { label: t.nav.staff, href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
@@ -133,7 +145,7 @@ function GestioneShellInner({
     { label: t.nav.aiAssistant, href: sectionHref("assistente-ai"), visible: () => isAdmin && (tenant.features.aiPhone || tenant.features.aiWhatsapp) },
     { label: t.nav.google, href: sectionHref("google"), visible: () => isAdmin && access.hasGoogleBusiness },
     { label: t.nav.analytics, href: sectionHref("analytics"), visible: (c) => access.canViewAnalytics && c.can_view_analytics },
-    { label: t.nav.loyalty, href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
+    { label: audienceNavLabel, href: sectionHref("fidelity"), visible: () => isAdmin && access.canManageFidelity },
     { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: t.nav.locations, href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
   ];

@@ -114,12 +114,18 @@ export default async function GestioneDashboardPage({
 
   const menuLabel = getModuleLabel("onlineMenu", tenant.vertical);
   const reservationsLabel = getModuleLabel("reservations", tenant.vertical);
+  const worksLabel =
+    tenant.vertical === "creative" ? getModuleLabel("worksCatalog", tenant.vertical) : menuLabel;
+  const bookingLabel =
+    tenant.vertical === "creative" ? getModuleLabel("creativeBooking", tenant.vertical) : reservationsLabel;
+  const audienceLabel =
+    tenant.vertical === "creative" ? getModuleLabel("fanbaseCommunity", tenant.vertical) : t.actions.analytics.label;
 
   const dashboardCopy =
     tenant.vertical === "services" || tenant.vertical === "creative"
       ? interpolate(t.copyServices, {
-          menuLabel: menuLabel.toLowerCase(),
-          reservationsLabel: reservationsLabel.toLowerCase(),
+          menuLabel: worksLabel.toLowerCase(),
+          reservationsLabel: bookingLabel.toLowerCase(),
           businessNoun: vertical.businessNoun,
         })
       : t.copyFood;
@@ -136,14 +142,14 @@ export default async function GestioneDashboardPage({
     },
     {
       href: `${base}/prenotazioni`,
-      label: reservationsLabel,
+      label: bookingLabel,
       hint: t.actions.reservations.hint,
       icon: <CalendarDays size={16} strokeWidth={2} />,
       show: access.canManageReservations,
     },
     {
       href: `${base}/listino`,
-      label: menuLabel,
+      label: worksLabel,
       hint: t.actions.menu.hint,
       icon: <UtensilsCrossed size={16} strokeWidth={2} />,
       show: access.canManageMenu,
@@ -171,7 +177,7 @@ export default async function GestioneDashboardPage({
     },
     {
       href: `${base}/analytics`,
-      label: t.actions.analytics.label,
+      label: audienceLabel,
       hint: t.actions.analytics.hint,
       icon: <BarChart3 size={16} strokeWidth={2} />,
       show: access.canViewAnalytics,

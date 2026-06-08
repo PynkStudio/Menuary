@@ -162,7 +162,10 @@ export default async function PrenotazioniPage({
 
   const vertical = getVerticalMeta(tenant.vertical);
   const isServices = tenant.vertical === "services" || tenant.vertical === "creative";
-  const title = getModuleLabel("reservations", tenant.vertical);
+  const title =
+    tenant.vertical === "creative"
+      ? getModuleLabel("creativeBooking", tenant.vertical)
+      : getModuleLabel("reservations", tenant.vertical);
   const lead = isServices
     ? interpolate(t.leadServices, { businessNoun: vertical.businessNoun })
     : t.leadFood;

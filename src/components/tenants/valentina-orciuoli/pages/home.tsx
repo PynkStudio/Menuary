@@ -3,6 +3,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Instagram, Music2 } from "lucide-react";
+import Link from "next/link";
+import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import {
   useValentinaNewsletter,
   ValentinaNewsletterPanel,
@@ -23,6 +25,7 @@ import {
 
 export function ValentinaOrciuoliHomePage() {
   const newsletter = useValentinaNewsletter();
+  const staffHref = getTenantGestioneExternalHref("valentina-orciuoli");
 
   return (
     <main className="vo-site">
@@ -45,7 +48,7 @@ export function ValentinaOrciuoliHomePage() {
                 Scopri la Trilogia dei Draghi delle Emozioni <ArrowRight size={16} />
               </a>
               <div className="vo-hero-actions-row">
-                <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
+                <a className="vo-btn vo-btn-secondary" href={linktreeHref}>
                   Scopri l&apos;autrice <ArrowRight size={16} />
                 </a>
                 <a className="vo-btn vo-btn-secondary" href="#newsletter">
@@ -149,7 +152,7 @@ export function ValentinaOrciuoliHomePage() {
         <footer id="contatti" className="vo-footer">
           <div>
             <strong>Valentina Orciuoli</strong>
-            <p>Author site demo su piattaforma Bizery.</p>
+            <p>Author site ufficiale · fantasy, draghi ed emozioni.</p>
           </div>
           <div className="vo-footer-links">
             <a href={instagramHref} target="_blank" rel="noopener noreferrer">
@@ -160,6 +163,14 @@ export function ValentinaOrciuoliHomePage() {
             </a>
             <a href={amazonStoreHref} target="_blank" rel="noopener noreferrer">
               <BookOpen size={15} /> Amazon
+            </a>
+            <a href={linktreeHref}>
+              Link
+            </a>
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/cookie">Cookie Policy</Link>
+            <a href={staffHref} target="_blank" rel="noopener noreferrer">
+              Staff
             </a>
           </div>
         </footer>

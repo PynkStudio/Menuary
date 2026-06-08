@@ -3,18 +3,23 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { ArrowRight, ExternalLink, Instagram } from "lucide-react";
+import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import { ValentinaOrciuoliHeader } from "@/components/tenants/valentina-orciuoli/vo-header";
 import {
   amazonHref,
   furyHref,
   instagramHref,
+  tiktokHref,
+  valentinaLinks,
   linktreeHref,
   valentinaBasePath,
 } from "@/components/tenants/valentina-orciuoli/content";
 
-type ValentinaPageKind = "libri" | "autrice" | "eventi" | "contatti";
+type ValentinaPageKind = "libri" | "autrice" | "eventi" | "contatti" | "link";
 
 export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind }) {
+  const staffHref = getTenantGestioneExternalHref("valentina-orciuoli");
+
   return (
     <main className="vo-site">
       <section className="vo-subpage-hero">
@@ -98,9 +103,7 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
               </p>
               <a
                 className="vo-book-feature-cta"
-                href="https://linktr.ee/valentina.orciuoli"
-                target="_blank"
-                rel="noopener noreferrer"
+                href={linktreeHref}
               >
                 Preordina qui <ArrowRight size={15} />
               </a>
@@ -149,8 +152,8 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
             <a href={instagramHref} target="_blank" rel="noopener noreferrer">
               <Instagram size={17} /> Instagram
             </a>
-            <a href={linktreeHref} target="_blank" rel="noopener noreferrer">
-              Linktree <ExternalLink size={16} />
+            <a href={linktreeHref}>
+              Link <ArrowRight size={16} />
             </a>
             <a href={amazonHref} target="_blank" rel="noopener noreferrer">
               Anxiety su Amazon <ExternalLink size={16} />
@@ -162,20 +165,61 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
         </section>
       )}
 
+      {page === "link" && (
+        <section className="vo-linktree-section vo-subpage-section">
+          <div className="vo-linktree-card">
+            <img src="/valentina-orciuoli/logo.png" alt="" aria-hidden="true" />
+            <span className="vo-dragon-mark">Link ufficiali</span>
+            <h2>Valentina Orciuoli</h2>
+            <p>Libri, social, novita editoriali e canali ufficiali dell&apos;autrice.</p>
+            <div className="vo-linktree-list">
+              {valentinaLinks.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-kind={item.kind}
+                >
+                  <span>
+                    <strong>{item.label}</strong>
+                    <small>{item.desc}</small>
+                  </span>
+                  <ExternalLink size={16} />
+                </a>
+              ))}
+            </div>
+            <div className="vo-linktree-socials" aria-label="Social">
+              <a href={instagramHref} target="_blank" rel="noopener noreferrer">
+                Instagram
+              </a>
+              <a href={tiktokHref} target="_blank" rel="noopener noreferrer">
+                TikTok
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+
       <footer id="contatti" className="vo-footer">
         <div>
           <strong>Valentina Orciuoli</strong>
-          <p>Author site demo su piattaforma Bizery.</p>
+          <p>Author site ufficiale · fantasy, draghi ed emozioni.</p>
         </div>
         <div className="vo-footer-links">
           <a href={instagramHref} target="_blank" rel="noopener noreferrer">
             <Instagram size={15} /> Instagram
           </a>
-          <a href={linktreeHref} target="_blank" rel="noopener noreferrer">
-            Linktree <ExternalLink size={14} />
+          <a href={linktreeHref}>
+            Link <ArrowRight size={14} />
           </a>
           <a href={amazonHref} target="_blank" rel="noopener noreferrer">
             Amazon <ExternalLink size={14} />
+          </a>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/cookie">Cookie Policy</Link>
+          <a href={staffHref} target="_blank" rel="noopener noreferrer">
+            Staff
           </a>
         </div>
       </footer>
@@ -188,6 +232,7 @@ const pageTitles: Record<ValentinaPageKind, string> = {
   autrice: "Scopri chi è",
   eventi: "",
   contatti: "Contatti",
+  link: "Link",
 };
 
 const pageEyebrows: Record<ValentinaPageKind, string> = {
@@ -195,6 +240,7 @@ const pageEyebrows: Record<ValentinaPageKind, string> = {
   autrice: "Autrice",
   eventi: "Eventi",
   contatti: "Valentina Orciuoli",
+  link: "Valentina Orciuoli",
 };
 
 const pageLeads: Record<ValentinaPageKind, string> = {
@@ -204,4 +250,5 @@ const pageLeads: Record<ValentinaPageKind, string> = {
     "Valentina Orciuoli è un’autrice italiana di fantasy romance e romantasy. Laureata in Relazioni Internazionali e studentessa di Comunicazione e Marketing, coltiva da sempre una grande passione per le storie fantastiche, i mondi popolati da draghi e magia, e le trame romance capaci di intrecciare emozioni intense e avventura.\n\nCon Anxiety, primo volume della saga The Emotion Dragons Trilogy, dà vita a un universo narrativo in cui sentimenti, potere e destino si incontrano. Fury, secondo capitolo della trilogia, amplia questo mondo raccontandone nuove sfumature e radici.\n\nAttraverso la sua scrittura, Valentina unisce immaginazione, introspezione e romanticismo, accompagnando i lettori in viaggi dove le emozioni diventano forza, conflitto e magia.",
   eventi: "",
   contatti: "Link ufficiali, social e canali per seguire Valentina.",
+  link: "Un unico posto, brandizzato Valentina Orciuoli, per raggiungere libri, social e aggiornamenti.",
 };

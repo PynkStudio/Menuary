@@ -8,7 +8,7 @@ import { resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { libritechCatalog } from "@/lib/libritech-catalog";
 
-const valentinaPages = new Set(["libri", "autrice", "eventi", "contatti"]);
+const valentinaPages = new Set(["libri", "autrice", "eventi", "contatti", "link"]);
 
 export default async function BookDetailRoute({
   params,
@@ -37,7 +37,7 @@ export default async function BookDetailRoute({
           data-tenant-surface={tenant.id}
           style={themeVars as React.CSSProperties}
         >
-          <ValentinaOrciuoliStaticPage page={bookId as "libri" | "autrice" | "eventi" | "contatti"} />
+          <ValentinaOrciuoliStaticPage page={bookId as "libri" | "autrice" | "eventi" | "contatti" | "link"} />
         </div>
       </TenantProvider>
     );

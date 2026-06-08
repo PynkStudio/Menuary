@@ -496,7 +496,7 @@ const valentinaOrciuoliContent: TenantContent = {
   showcaseLogoAlt: "Anxiety di Valentina Orciuoli",
   description:
     "Valentina Orciuoli scrive fantasy orientale: emozioni antiche, draghi cinesi e mondi in cui la luce combatte dentro l'ombra.",
-  url: "https://linktr.ee/valentina.orciuoli",
+  url: "https://demo.weuseorpheo.com/valentina-orciuoli/link",
   social: {
     instagram: "https://www.instagram.com/di.vale_in.peggio/",
     facebook: "https://www.facebook.com/",
@@ -520,7 +520,7 @@ const valentinaOrciuoliContent: TenantContent = {
     embedUrl: "https://www.google.com/maps?q=Italia&output=embed",
   },
   hero: {
-    eyebrow: "Author site fantasy · Bizery",
+    eyebrow: "Author site fantasy · Orpheo",
     titleLead: "Valentina",
     titleAccent: "Orciuoli.",
     body:
@@ -546,13 +546,13 @@ const valentinaOrciuoliContent: TenantContent = {
     eyebrow: "Link",
     titleLead: "Segui",
     titleAccent: "Valentina Orciuoli.",
-    body: "Tutti i link ufficiali dell'autrice sono raccolti nel suo Linktree.",
+    body: "Tutti i link ufficiali dell'autrice sono raccolti nella pagina link del sito.",
     mapTitle: "Link Valentina Orciuoli",
   },
   footer: {
     tagline: "Fantasy orientale, draghi ed emozioni.",
     body:
-      "Author site demo per Valentina Orciuoli su piattaforma Bizery. Struttura editoriale ispirata agli author website moderni.",
+      "Author site per Valentina Orciuoli: libri, social, eventi e contenuti editoriali in un'unica esperienza.",
   },
   delivery: {
     title: "Acquista Anxiety",
