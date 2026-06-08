@@ -38,7 +38,7 @@ import {
   type TenantModuleDefinition,
 } from "@/lib/tenant-modules";
 import { getModuleCopy, getVerticalMeta } from "@/lib/vertical";
-import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
+import { getTenantAdminGestioneExternalHref } from "@/lib/gestione-routing";
 import { PLATFORM_LEADS, PLATFORM_SUBSCRIPTIONS } from "@/lib/platform-admin-data";
 import {
   mergeTenantOverrides,
@@ -64,6 +64,21 @@ const VERTICAL_FILTERS: Array<{ value: "all" | TenantVertical; label: string }> 
   { value: "services", label: "Bizery" },
   { value: "creative", label: "Orpheo" },
 ];
+
+const ADMIN_HIDDEN_TENANT_IDS = new Set(["orpheo-demo"]);
+const ADMIN_TENANTS = TENANTS.filter((tenant) => !ADMIN_HIDDEN_TENANT_IDS.has(tenant.id));
+
+function getTenantPublicSiteHref(tenant: TenantProfile): string | null {
+  const publicDomains = tenant.domains.filter(
+    (item) =>
+      !item.includes("localhost") &&
+      !item.endsWith(".local") &&
+      item !== "127.0.0.1",
+  );
+  const domain = publicDomains.find((item) => !item.startsWith("www.")) ?? publicDomains[0];
+  if (!domain) return null;
+  return `https://${domain}`;
+}
 
 type DemoControl = {
   tenantId: string;
@@ -121,12 +136,12 @@ export default function AdminTenantPage() {
 
   const filteredTenants = useMemo(
     () =>
-      TENANTS.filter((tenant) => verticalFilter === "all" || tenant.vertical === verticalFilter),
+      ADMIN_TENANTS.filter((tenant) => verticalFilter === "all" || tenant.vertical === verticalFilter),
     [verticalFilter],
   );
 
   const advancedTenant = advancedOpenFor
-    ? TENANTS.find((tenant) => tenant.id === advancedOpenFor)
+    ? ADMIN_TENANTS.find((tenant) => tenant.id === advancedOpenFor)
     : undefined;
   const advancedEffective = advancedTenant
     ? mergeTenantOverrides(advancedTenant, overrides[advancedTenant.id])
@@ -213,7 +228,7 @@ export default function AdminTenantPage() {
               Filtro vertical
             </div>
             <p className="mt-1 text-xs text-pork-ink/50">
-              {filteredTenants.length} tenant visibili su {TENANTS.length}.
+              {filteredTenants.length} tenant visibili su {ADMIN_TENANTS.length}.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -244,6 +259,7 @@ export default function AdminTenantPage() {
             const isDemoSaving = demoSaving[tenant.id] ?? false;
             const enabledModules = Object.values(effective.features).filter(Boolean).length;
             const verticalMeta = getVerticalMeta(tenant.vertical);
+            const publicSiteHref = getTenantPublicSiteHref(tenant);
 
             return (
               <article key={tenant.id} className="grid gap-4 py-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)_auto] xl:items-center">
@@ -273,6 +289,16 @@ export default function AdminTenantPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  {publicSiteHref && (
+                    <a
+                      href={publicSiteHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-3 py-2 text-sm font-bold text-pork-ink/70 hover:border-pork-red/30 hover:text-pork-red"
+                    >
+                      Sito <ExternalLink size={13} />
+                    </a>
+                  )}
                   {tenant.previewSlug && (
                     <>
                       <a
@@ -317,7 +343,9 @@ export default function AdminTenantPage() {
 
                 <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                   <Link
-                    href={getTenantGestioneExternalHref(tenant.id)}
+                    href={getTenantAdminGestioneExternalHref(tenant)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 hover:border-pork-red/30 hover:text-pork-red"
                   >
                     Gestione <ExternalLink size={13} />
