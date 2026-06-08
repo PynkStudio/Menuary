@@ -20,7 +20,7 @@ import {
  *
  * Gestisce due categorie di eventi Resend tramite lo stesso endpoint:
  *
- * 1. email.received  — email in arrivo su @menuary.it / @bizery.it
+ * 1. email.received  — email in arrivo su @menuary.it / @bizery.it / @weuseorpheo.com
  *    → salva in `inbound_emails`
  *
  * 2. email.sent | email.delivered | email.delivery_delayed |
@@ -85,7 +85,10 @@ function extractMessageId(headers: ResendInboundHeader[]): string | null {
 }
 
 function isSupportRecipient(toAddresses: string[]): boolean {
-  return toAddresses.some((address) => /^support@(menuary|bizery)\.it$/i.test(parseEmailAddress(address).address));
+  return toAddresses.some((address) => {
+    const parsed = parseEmailAddress(address).address.toLowerCase();
+    return parsed === "support@menuary.it" || parsed === "support@bizery.it" || parsed === "support@weuseorpheo.com";
+  });
 }
 
 // ─── Auto-assign all'utente corrispondente ────────────────────────────────────

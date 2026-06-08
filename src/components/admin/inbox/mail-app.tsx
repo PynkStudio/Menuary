@@ -95,7 +95,8 @@ function buildReplyBody(email: InboundEmail): string {
 }
 
 function composeBrandFromFilter(filter: BrandFilter): InboundEmail["brand"] {
-  return filter === "bizery" ? "bizery" : "menuary";
+  if (filter === "bizery" || filter === "orpheo") return filter;
+  return "menuary";
 }
 
 export function MailApp({ initialInbox, initialSent, unreadTotal, unreadMine, currentSiteadminId, canCompose }: Props) {
@@ -280,7 +281,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, unreadMine, cu
                     {v === "inbox" ? "Arrivo" : v === "mine" ? "Le mie" : v === "sent" ? "Inviata" : v === "starred" ? "Stellate" : "Archivio"}
                   </button>
                 ))}
-                {(["all","menuary","bizery","support"] as BrandFilter[]).map((b) => (
+                {(["all","menuary","bizery","orpheo","support"] as BrandFilter[]).map((b) => (
                   <button
                     key={b}
                     onClick={() => handleBrandChange(b)}
@@ -291,7 +292,7 @@ export function MailApp({ initialInbox, initialSent, unreadTotal, unreadMine, cu
                         : "bg-[var(--ma-surface)] text-[var(--ma-muted)]",
                     )}
                   >
-                    {b === "all" ? "Tutte" : b === "menuary" ? "Menuary" : b === "bizery" ? "Bizery" : "Supporto"}
+                    {b === "all" ? "Tutte" : b === "menuary" ? "Menuary" : b === "bizery" ? "Bizery" : b === "orpheo" ? "Orpheo" : "Supporto"}
                   </button>
                 ))}
               </div>

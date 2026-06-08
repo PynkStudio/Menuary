@@ -34,11 +34,13 @@ function fmtDate(iso: string) {
 const BRAND_BADGE: Record<string, string> = {
   menuary: "bg-[#a95f45]/12 text-[#743d2f]",
   bizery:  "bg-[#3b6cb5]/12 text-[#234a85]",
+  orpheo:  "bg-[#7c3aed]/12 text-[#4c1d95]",
 };
 
 const VERTICAL_LABELS: Record<string, string> = {
   food: "Menuary",
   services: "Bizery",
+  creative: "Orpheo",
 };
 
 /** Converte URL in testo plain in link cliccabili. */

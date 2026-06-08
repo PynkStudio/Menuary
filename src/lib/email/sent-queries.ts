@@ -43,7 +43,7 @@ export async function getSentEmails(
     .range(from, to);
 
   if (brand === "support") {
-    query = query.in("from_address", ["support@menuary.it", "support@bizery.it"]);
+    query = query.in("from_address", ["support@menuary.it", "support@bizery.it", "support@weuseorpheo.com"]);
   } else if (brand && brand !== "all") {
     query = query.eq("brand", brand);
   }

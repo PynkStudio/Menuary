@@ -27,6 +27,7 @@ function fmtDate(iso: string) {
 const BRAND_STYLE: Record<string, { bg: string; ring: string }> = {
   menuary: { bg: "bg-[#a95f45]",  ring: "ring-[#a95f45]/30" },
   bizery:  { bg: "bg-[#3b6cb5]",  ring: "ring-[#3b6cb5]/30" },
+  orpheo:  { bg: "bg-[#7c3aed]",  ring: "ring-[#7c3aed]/30" },
 };
 
 function initialFor(email: InboundEmail): string {

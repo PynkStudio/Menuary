@@ -37,7 +37,7 @@ export async function getInboundEmails(filter: InboxFilter = {}): Promise<InboxP
     .range(from, to);
 
   if (filter.brand === "support") {
-    query = query.or("to_addresses.cs.{support@menuary.it},to_addresses.cs.{support@bizery.it}");
+    query = query.or("to_addresses.cs.{support@menuary.it},to_addresses.cs.{support@bizery.it},to_addresses.cs.{support@weuseorpheo.com}");
   } else if (filter.brand && filter.brand !== "all") {
     query = query.eq("brand", filter.brand);
   }
@@ -65,6 +65,7 @@ export async function getInboundEmails(filter: InboxFilter = {}): Promise<InboxP
 export type InboxCounts = {
   unread_menuary: number;
   unread_bizery: number;
+  unread_orpheo: number;
   unread_total: number;
 };
 
@@ -81,8 +82,9 @@ export async function getInboxUnreadCounts(): Promise<InboxCounts> {
   const rows = (data ?? []) as { brand: string }[];
   const unread_menuary = rows.filter((r) => r.brand === "menuary").length;
   const unread_bizery  = rows.filter((r) => r.brand === "bizery").length;
+  const unread_orpheo  = rows.filter((r) => r.brand === "orpheo").length;
 
-  return { unread_menuary, unread_bizery, unread_total: unread_menuary + unread_bizery };
+  return { unread_menuary, unread_bizery, unread_orpheo, unread_total: unread_menuary + unread_bizery + unread_orpheo };
 }
 
 // ─── Single email ─────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   Archive,
   Briefcase,
+  Clapperboard,
   Inbox,
   LifeBuoy,
   Mail,
@@ -43,6 +44,7 @@ const BRANDS: { value: BrandFilter; label: string; icon: React.ElementType }[] =
   { value: "all",     label: "Tutte",   icon: Mail },
   { value: "menuary", label: "Menuary", icon: UtensilsCrossed },
   { value: "bizery",  label: "Bizery",  icon: Briefcase },
+  { value: "orpheo",  label: "Orpheo",  icon: Clapperboard },
   { value: "support", label: "Supporto", icon: LifeBuoy },
 ];
 

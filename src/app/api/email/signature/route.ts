@@ -5,7 +5,7 @@ import { buildAutoSignature, type AutoSignatureProfile } from "@/lib/email/signa
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
 
 /**
- * GET /api/email/signature?brand=menuary|bizery
+ * GET /api/email/signature?brand=menuary|bizery|orpheo
  *
  * Restituisce la firma automatica del brand richiesto, compilata con i dati
  * del profilo siteadmin dell'utente corrente. La firma NON è modificabile dal
@@ -19,7 +19,9 @@ export async function GET(request: Request) {
   const profile = await loadComposerProfile(user.id);
   if (!profile) return NextResponse.json({ error: "Non autorizzato." }, { status: 403 });
 
-  const brand = (new URL(request.url).searchParams.get("brand") ?? "menuary") as InboundEmailBrand;
+  const rawBrand = new URL(request.url).searchParams.get("brand");
+  const brand: InboundEmailBrand =
+    rawBrand === "bizery" || rawBrand === "orpheo" ? rawBrand : "menuary";
   const auto  = buildAutoSignature(profile, brand);
 
   return NextResponse.json({

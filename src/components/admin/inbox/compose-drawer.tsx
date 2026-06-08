@@ -87,18 +87,21 @@ type Props = {
 const BRAND_FROM: Record<InboundEmailBrand, string> = {
   menuary: "hello@menuary.it",
   bizery:  "hello@bizery.it",
+  orpheo:  "hello@weuseorpheo.com",
 };
 
 const BRAND_LABELS: Record<InboundEmailBrand, string> = {
   menuary: "Menuary",
   bizery:  "Bizery",
+  orpheo:  "Orpheo",
 };
 
-const BRAND_ORDER: InboundEmailBrand[] = ["menuary", "bizery"];
+const BRAND_ORDER: InboundEmailBrand[] = ["menuary", "bizery", "orpheo"];
 
 const BRAND_PILL_ACTIVE: Record<InboundEmailBrand, string> = {
   menuary: "bg-[#a95f45] text-white shadow-sm",
   bizery:  "bg-[#3b6cb5] text-white shadow-sm",
+  orpheo:  "bg-[#7c3aed] text-white shadow-sm",
 };
 
 export function ComposeDrawer({
