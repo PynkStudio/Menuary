@@ -76,21 +76,21 @@ export async function MarketingHomePage() {
         <div className="menuary-hero absolute inset-0" aria-hidden />
         <div className="menuary-container relative pt-16 pb-20 lg:pt-24 lg:pb-28">
           <div className="grid items-end gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
-            <div className="menuary-fade-up">
-              <p className="menuary-section-label">
+            <div>
+              <p className="menuary-opener menuary-fade-up">
                 {h.heroLabel}
               </p>
-              <h1 className="menuary-display mt-7 text-[clamp(2.6rem,6.4vw,5.6rem)] text-balance">
+              <h1 className="menuary-statement menuary-fade-up menuary-fade-up-d1 mt-7 text-[clamp(2.05rem,6.6vw,5.8rem)]">
                 {h.heroH1a}
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
                   {h.heroH1b}
                 </span>
               </h1>
-              <p className="mt-8 max-w-xl text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
+              <p className="menuary-fade-up menuary-fade-up-d2 mt-8 max-w-xl text-[17px] leading-[1.75] text-[var(--menuary-ink)]/80">
                 {h.heroSub}
               </p>
-              <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
+              <div className="menuary-fade-up menuary-fade-up-d3 mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <Link
                   href="/contatti"
                   className="menuary-button menuary-button-accent"
@@ -102,7 +102,7 @@ export async function MarketingHomePage() {
                   <ArrowUpRight size={16} strokeWidth={1.6} />
                 </Link>
               </div>
-              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
+              <div className="menuary-fade-up menuary-fade-up-d3 mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
                 <span className="inline-flex items-center gap-2">
                   <ShieldCheck
                     size={14}
@@ -242,29 +242,32 @@ export async function MarketingHomePage() {
       <GoogleSyncSection />
       <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
         <div className="menuary-container py-20 lg:py-24">
-          <div className="max-w-3xl">
-            <p className="menuary-section-label">
+          <div className="menuary-reveal max-w-3xl">
+            <p className="menuary-opener">
               {locale === "it" ? "Mercati food" : "Food markets"}
             </p>
-            <h2 className="menuary-display mt-6 text-[clamp(2.1rem,4.4vw,3.8rem)] leading-[1.05]">
+            <h2 className="menuary-statement mt-7 text-[clamp(2rem,5vw,4.4rem)]">
               {locale === "it"
                 ? "Siti web per ristoranti, pizzerie, bar e locali."
                 : "Websites for restaurants, pizzerias, bars and venues."}
             </h2>
-            <p className="mt-6 max-w-2xl text-[16px] leading-[1.75] text-[var(--menuary-muted)]">
+            <p className="mt-7 max-w-2xl text-[16px] leading-[1.75] text-[var(--menuary-ink)]/75">
               {locale === "it"
                 ? "Menuary copre le ricerche più importanti per chi vuole farsi trovare online: sito per ristorante, menu digitale, prenotazioni online, ordini e presenza locale su Google."
                 : "Menuary covers the main discovery paths for food businesses: restaurant website, digital menu, online bookings, ordering and local Google presence."}
             </p>
           </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {seoVerticals.map((item) => (
+          <div className="menuary-reveal-row mt-14 grid gap-px overflow-hidden rounded-2xl border border-[var(--menuary-line)] md:grid-cols-3">
+            {seoVerticals.map((item, i) => (
               <article
                 key={item.title}
-                className="rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-7"
+                className="flex flex-col gap-4 bg-[var(--menuary-porcelain)] p-8 transition-colors duration-300 hover:bg-[#fffaf2]"
               >
-                <h3 className="menuary-display text-[1.55rem] leading-tight">{item.title}</h3>
-                <p className="mt-4 text-[15px] leading-[1.65] text-[var(--menuary-muted)]">
+                <span className="menuary-numeral text-[2.4rem] leading-none">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="menuary-display text-[1.6rem] leading-tight">{item.title}</h3>
+                <p className="text-[15px] leading-[1.65] text-[var(--menuary-ink)]/70">
                   {item.body}
                 </p>
               </article>

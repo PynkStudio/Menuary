@@ -640,10 +640,10 @@ export async function TestimonialsSection({ reviews }: { reviews: MarketingRevie
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
       <div className="menuary-container py-24 lg:py-32">
-        <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div className="menuary-reveal grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-3xl">
-            <p className="menuary-section-label">{t.label}</p>
-            <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.6vw,4rem)]">
+            <p className="menuary-opener">{t.label}</p>
+            <h2 className="menuary-statement mt-7 text-[clamp(2rem,5vw,4.4rem)]">
               {t.h2}
             </h2>
           </div>
@@ -662,7 +662,7 @@ export async function TestimonialsSection({ reviews }: { reviews: MarketingRevie
           </div>
         </div>
 
-        <div className="mt-12 grid gap-px sm:gap-6 md:grid-cols-3">
+        <div className="menuary-reveal-row mt-12 grid gap-px sm:gap-6 md:grid-cols-3">
           {visible.map((t) => (
             <figure key={t.id} className="menuary-testimonial">
               <div className="flex gap-0.5 text-[var(--menuary-copper)]">
@@ -718,12 +718,12 @@ export async function FAQSection({
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-24 lg:py-32">
         <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-          <div>
-            <p className="menuary-section-label">{resolvedKicker}</p>
-            <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.4vw,3.6rem)]">
+          <div className="menuary-reveal">
+            <p className="menuary-opener">{resolvedKicker}</p>
+            <h2 className="menuary-statement mt-7 text-[clamp(2rem,4.8vw,4rem)]">
               {title ?? "Le risposte alle cose che ci chiedete sempre."}
             </h2>
-            <p className="mt-6 max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
+            <p className="mt-6 max-w-sm text-[15px] leading-7 text-[var(--menuary-ink)]/75">
               {t.notFound}{" "}
               <Link href="/contatti" className="menuary-link">
                 {t.ctaLink}
@@ -980,24 +980,21 @@ export function ProcessSection() {
 export async function FinalCTASection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.finalCta;
   return (
-    <section className="bg-[var(--menuary-ink)] text-[var(--menuary-paper)]">
-      <div className="menuary-container py-24 lg:py-28">
-        <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-end lg:gap-20">
+    <section className="menuary-beat">
+      <div className="menuary-container relative py-24 lg:py-32">
+        <div className="menuary-reveal grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-end lg:gap-20">
           <div>
-            <p
-              className="menuary-section-label"
-              style={{ color: "rgba(255,250,242,0.55)" }}
-            >
+            <p className="menuary-opener" data-tone="light">
               {t.label}
             </p>
-            <h2 className="menuary-display mt-6 text-[clamp(2.6rem,5.2vw,5rem)]">
+            <h2 className="menuary-statement mt-7 text-[clamp(2.1rem,5.8vw,5.4rem)]">
               {t.h2a}
               <br />
               <span className="italic text-[var(--menuary-gold)]">
                 {t.h2b}
               </span>
             </h2>
-            <p className="mt-6 max-w-md text-[15px] leading-7 text-white/65">
+            <p className="mt-7 max-w-md text-[16px] leading-7 text-white/70">
               {t.sub}
             </p>
           </div>
@@ -1660,17 +1657,17 @@ export async function GoogleSyncSection() {
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-24 lg:py-32">
-        <div className="max-w-3xl">
-          <p className="menuary-section-label">{t.label}</p>
-          <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
+        <div className="menuary-reveal max-w-3xl">
+          <p className="menuary-opener">{t.label}</p>
+          <h2 className="menuary-statement mt-7 text-[clamp(2rem,5vw,4.4rem)]">
             {t.h2}
           </h2>
-          <p className="mt-6 max-w-xl text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
+          <p className="mt-7 max-w-xl text-[17px] leading-[1.7] text-[var(--menuary-ink)]/75">
             {t.sub}
           </p>
         </div>
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="menuary-reveal-row mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {cards.map((card, idx) => {
             const Icon = GOOGLE_SYNC_ICONS[idx] ?? Star;
             return (
@@ -1708,28 +1705,28 @@ export async function GoogleSyncSection() {
 export async function LocalPresenceSection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.localPresence;
   return (
-    <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
-      <div className="menuary-container py-24 lg:py-32">
+    <section className="menuary-beat border-t border-[var(--menuary-line)]">
+      <div className="menuary-container relative py-24 lg:py-32">
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
-          <div>
-            <p className="menuary-section-label">{t.label}</p>
-            <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
+          <div className="menuary-reveal">
+            <p className="menuary-opener" data-tone="light">{t.label}</p>
+            <h2 className="menuary-statement mt-7 text-[clamp(2rem,5vw,4.4rem)]">
               {t.h2a}
               <br />
-              <span className="italic text-[var(--menuary-copper)]">
+              <span className="italic text-[var(--menuary-gold)]">
                 {t.h2b}
               </span>
             </h2>
-            <p className="mt-7 max-w-lg text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
+            <p className="mt-7 max-w-lg text-[17px] leading-[1.7] text-white/70">
               {t.sub}
             </p>
-            <Link href="/contatti" className="menuary-link mt-8 inline-flex">
+            <Link href="/contatti" className="menuary-link menuary-link-light mt-8 inline-flex">
               {t.cta}
               <ArrowUpRight size={14} strokeWidth={1.6} />
             </Link>
           </div>
 
-          <div className="relative mx-auto w-full max-w-md">
+          <div className="menuary-reveal menuary-fade-up-d2 relative mx-auto w-full max-w-md">
             {/* Google card */}
             <div className="relative z-20 rounded-2xl border border-[var(--menuary-line)] bg-white p-5 shadow-[0_24px_60px_-24px_rgba(24,35,31,0.22)]">
               <div className="flex items-center gap-3">
@@ -1867,9 +1864,9 @@ export async function BenefitsEditorialSection() {
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-24 lg:py-32">
-        <div className="max-w-3xl">
-          <p className="menuary-section-label">{t.label}</p>
-          <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
+        <div className="menuary-reveal max-w-3xl">
+          <p className="menuary-opener">{t.label}</p>
+          <h2 className="menuary-statement mt-7 text-[clamp(2.1rem,5.6vw,5rem)]">
             {t.h2a}
             <br />
             <span className="italic text-[var(--menuary-copper)]">
@@ -1878,22 +1875,19 @@ export async function BenefitsEditorialSection() {
           </h2>
         </div>
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="menuary-reveal-row mt-16 grid gap-px overflow-hidden border-y border-[var(--menuary-line)] sm:grid-cols-2 lg:grid-cols-4">
           {t.cards.map((card) => (
             <div
               key={card.n}
-              className="flex flex-col rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--menuary-ink)]"
+              className="flex flex-col bg-[var(--menuary-paper)] p-8 transition-colors duration-300 hover:bg-[#fffaf2]"
             >
-              <p
-                className="menuary-display text-base font-medium text-[var(--menuary-copper)]"
-                aria-hidden
-              >
+              <p className="menuary-numeral" aria-hidden>
                 {card.n}
               </p>
-              <h3 className="menuary-display mt-6 text-[1.45rem] leading-tight">
+              <h3 className="menuary-display mt-7 text-[1.5rem] leading-tight">
                 {card.title}
               </h3>
-              <p className="mt-3 text-[15px] leading-[1.6] text-[var(--menuary-muted)]">
+              <p className="mt-3 text-[15px] leading-[1.6] text-[var(--menuary-ink)]/70">
                 {card.body}
               </p>
             </div>
@@ -1943,10 +1937,10 @@ export async function HomePricingSection() {
       className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]"
     >
       <div className="menuary-container py-24 lg:py-32">
-        <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div className="menuary-reveal grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-3xl">
-            <p className="menuary-section-label">{t.label}</p>
-            <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.8vw,4rem)]">
+            <p className="menuary-opener">{t.label}</p>
+            <h2 className="menuary-statement mt-7 text-[clamp(2.1rem,5.6vw,5rem)]">
               {t.h2a}
               <br />
               <span className="italic text-[var(--menuary-copper)]">
@@ -1954,12 +1948,12 @@ export async function HomePricingSection() {
               </span>
             </h2>
           </div>
-          <p className="max-w-sm text-[15px] leading-[1.6] text-[var(--menuary-muted)]">
+          <p className="max-w-sm text-[15px] leading-[1.6] text-[var(--menuary-ink)]/75">
             {t.sub}
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3 lg:items-stretch">
+        <div className="menuary-reveal-row mt-14 grid gap-6 lg:grid-cols-3 lg:items-stretch">
           {plans.map((plan) => {
             const highlighted = plan.highlighted === true;
             const saving = (plan.price_monthly - plan.price_annual) * 12;
@@ -2093,18 +2087,18 @@ export async function HomePricingSection() {
 export async function AIIntegrationsTeaserSection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.aiTeaser;
   return (
-    <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
-      <div className="menuary-container py-16 lg:py-20">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
-          <div>
-            <p className="menuary-section-label">{t.label}</p>
-            <h2 className="menuary-display mt-6 text-[clamp(1.7rem,3.2vw,2.4rem)] leading-tight">
+    <section className="menuary-beat-copper border-t border-[var(--menuary-line)]">
+      <div className="menuary-container relative py-20 lg:py-28">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="menuary-reveal">
+            <p className="menuary-opener" style={{ color: "#fff7ef" }}>{t.label}</p>
+            <h2 className="menuary-statement mt-7 text-[clamp(1.9rem,4.6vw,3.7rem)] text-[#fff7ef]">
               {t.h2}
             </h2>
-            <p className="mt-5 max-w-lg text-[15px] leading-[1.7] text-[var(--menuary-muted)]">
+            <p className="mt-6 max-w-lg text-[16px] leading-[1.7] text-[#fff7ef]/85">
               {t.sub}
             </p>
-            <Link href="/contatti" className="menuary-link mt-6 inline-flex">
+            <Link href="/contatti" className="menuary-link menuary-link-light mt-8 inline-flex">
               {t.cta}
               <ArrowUpRight size={14} strokeWidth={1.6} />
             </Link>
@@ -2112,7 +2106,7 @@ export async function AIIntegrationsTeaserSection() {
 
           <aside
             aria-hidden
-            className="rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-5"
+            className="menuary-reveal menuary-fade-up-d2 rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-5 shadow-[0_30px_70px_-30px_rgba(24,35,31,0.5)]"
           >
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
