@@ -68,7 +68,7 @@ const MOCK_BASE_PACKAGES: PlatformPackageExtended[] = PRICING_PLANS.map((p, i) =
     ? ["website", "onlineMenu", "reservations", "takeaway", "tableOrders",
        "reviews", "gallery", "favorites", "crm", "analytics", "upselling",
        "kitchenDisplay", "printStations", "productAvailability", "takeawaySlots",
-       "deliveryHub", "inventoryFoodCost", "staffRoles", "tablePlanner"] as TenantFeatureKey[]
+       "deliveryHub", "inventoryFoodCost", "staffRoles", "tablePlanner", "mail"] as TenantFeatureKey[]
     : TENANT_MODULES.map((m) => m.key).filter((key) =>
         key !== "pressKit" &&
         key !== "worksCatalog" &&
@@ -107,7 +107,7 @@ const MOCK_ORPHEO_PACKAGES: PlatformPackageExtended[] = ORPHEO_PRICING_PLANS.map
       ? ["website", "pressKit", "worksCatalog", "reviews", "gallery"] as TenantFeatureKey[]
       : p.slug === "orpheo-pro"
         ? ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "reputationReviews", "gallery", "staffRoles"] as TenantFeatureKey[]
-        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation"] as TenantFeatureKey[],
+        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation", "mail"] as TenantFeatureKey[],
   is_active: true,
   sort_order: 201 + i,
   created_at: "2026-01-01T00:00:00Z",

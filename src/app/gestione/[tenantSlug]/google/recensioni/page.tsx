@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { getPrimaryLocation } from "@/lib/data/google-sync";
 import { ReviewsManager } from "@/components/gestione/google/reviews-manager";
 import Link from "next/link";
@@ -13,7 +13,7 @@ interface Props {
 
 export default async function RecensioniPage({ params }: Props) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant || !getGestioneModuleAccess(tenant.features).modules.reviews) notFound();
 
   const location = await getPrimaryLocation(tenantSlug);

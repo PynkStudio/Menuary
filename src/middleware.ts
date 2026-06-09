@@ -653,7 +653,10 @@ export async function middleware(request: NextRequest) {
       const rest = match[2] ?? "";
       const rewritten = request.nextUrl.clone();
       rewritten.pathname = `/gestione/${tenant.id}${rest}`;
-      return NextResponse.rewrite(rewritten);
+      const rh = new Headers(request.headers);
+      rh.set("x-preview-tenant-id", tenant.id);
+      rh.set("x-tenant-public-path", pathname);
+      return NextResponse.rewrite(rewritten, { request: { headers: rh } });
     }
     // Demo kiosk: demo.menuary.it/[slug]/k/[code] o anche solo /k/[code] sul demo.
     const kioskMatch = pathname.match(/^\/(?:[a-z0-9-]+\/)?k\/([A-Z0-9]+)$/i);

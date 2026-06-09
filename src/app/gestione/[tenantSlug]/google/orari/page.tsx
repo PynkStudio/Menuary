@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { getPrimaryLocation } from "@/lib/data/google-sync";
 import { getSpecialHours } from "@/lib/data/special-hours";
 import { HoursSyncPanel } from "@/components/gestione/google/hours-sync-panel";
@@ -30,7 +30,7 @@ export default async function OrariPage({ params, searchParams }: Props) {
   const { loc, location } = await searchParams;
   const activeSlug = loc ?? location ?? null;
 
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant || !getGestioneModuleAccess(tenant.features).canManageReservations) notFound();
 
   const db = createSupabaseServiceClient();

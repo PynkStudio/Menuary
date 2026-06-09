@@ -156,6 +156,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       "Ordini sala & asporto",
       "Delivery integrato",
       "CRM clienti & analytics",
+      "Mail interna sul dominio del locale",
       "Dashboard operativa",
       "Gestione staff e cucina",
     ],
@@ -226,6 +227,7 @@ export const BIZERY_PRICING_PLANS: PricingPlan[] = [
     marketing_items: [
       "Tutto di Appuntamenti",
       "CRM clienti & analytics",
+      "Mail interna sul dominio dell'attività",
       "Gestione costi e margini per servizio",
       "Multi-sede con un account",
       "Pannello staff & ruoli",
@@ -294,6 +296,7 @@ export const ORPHEO_PRICING_PLANS: PricingPlan[] = [
       "Diritti, licenze, territori e scadenze",
       "Royalty e rendicontazioni per opera/canale",
       "Fanbase, newsletter e segmenti audience",
+      "Mail interna sul dominio dell'artista o del team",
       "Dashboard performance opere, eventi e campagne",
       "Multi-identità, team e ruoli avanzati",
     ],

@@ -1,17 +1,20 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { findTenantById } from "@/lib/tenant-registry";
 import type { TenantProfile, TenantFeatureFlags, TenantTheme } from "@/lib/tenant";
 
 const TENANT_SELECT = "id,name,label,domains,preview_slug,enabled,vertical,status,theme,features" as const;
 
 export async function getTenantById(id: string): Promise<TenantProfile | null> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
+  const service = createSupabaseServiceClient();
+  const supabase = service ?? await createSupabaseServerClient();
+  const { data } = await supabase
     .from("tenants")
     .select(TENANT_SELECT)
     .eq("id", id)
     .maybeSingle();
-  if (error || !data) return null;
+  if (!data) return findTenantById(id) ?? null;
   return rowToProfile(data);
 }
 
@@ -50,16 +53,26 @@ type Row = {
 };
 
 function rowToProfile(r: Row): TenantProfile {
+  const fallback = findTenantById(r.id);
+  const dbFeatures =
+    r.features && typeof r.features === "object" && !Array.isArray(r.features)
+      ? (r.features as Partial<TenantFeatureFlags>)
+      : {};
+  const dbTheme =
+    r.theme && typeof r.theme === "object" && !Array.isArray(r.theme)
+      ? (r.theme as Partial<TenantTheme>)
+      : {};
+
   return {
     id: r.id,
-    name: r.name,
-    label: r.label,
-    vertical: (r.vertical as TenantProfile["vertical"]) ?? "food",
-    domains: r.domains,
-    previewSlug: r.preview_slug ?? undefined,
+    name: r.name ?? fallback?.name ?? r.id,
+    label: r.label ?? fallback?.label ?? r.name ?? r.id,
+    vertical: (r.vertical as TenantProfile["vertical"]) ?? fallback?.vertical ?? "food",
+    domains: r.domains ?? fallback?.domains ?? [],
+    previewSlug: r.preview_slug ?? fallback?.previewSlug,
     enabled: r.enabled,
-    status: (r.status as TenantProfile["status"]) ?? "active",
-    theme: r.theme as TenantTheme,
-    features: r.features as TenantFeatureFlags,
+    status: (r.status as TenantProfile["status"]) ?? fallback?.status ?? "active",
+    theme: { ...(fallback?.theme ?? {}), ...dbTheme } as TenantTheme,
+    features: { ...(fallback?.features ?? {}), ...dbFeatures } as TenantFeatureFlags,
   };
 }

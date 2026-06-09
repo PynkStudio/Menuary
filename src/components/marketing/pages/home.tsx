@@ -1,12 +1,16 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowUpRight,
   CalendarCheck,
   Check,
   Clock,
   Globe,
+  MessageSquareText,
+  QrCode,
   ShieldCheck,
   Star,
+  UtensilsCrossed,
 } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import {
@@ -57,6 +61,30 @@ const MENUARY_SEO_VERTICALS = {
   ],
 };
 
+const MENUARY_OPERATING_MOMENTS = [
+  {
+    icon: QrCode,
+    title: "Menu che cambia davvero",
+    text: "Piatti esauriti, allergeni, stagionalita e prezzi non restano chiusi in un PDF vecchio: il menu online si aggiorna dal pannello e resta leggibile da mobile.",
+    image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1100&q=86",
+    alt: "Tavolo di ristorante con menu, telefono e piatti condivisi",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Prenotazioni senza caos",
+    text: "Richieste, conferme, orari speciali e turni vengono raccolti in un flusso unico, cosi sala e gestione vedono la stessa situazione prima del servizio.",
+    image: "https://images.unsplash.com/photo-1559329007-40df8a9345d8?auto=format&fit=crop&w=1100&q=86",
+    alt: "Sala ristorante apparecchiata prima del servizio serale",
+  },
+  {
+    icon: MessageSquareText,
+    title: "Google, recensioni e fiducia",
+    text: "Orari, scheda Google, recensioni e contenuti pubblici restano coerenti: chi cerca il locale trova informazioni fresche prima di chiamare o prenotare.",
+    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1100&q=86",
+    alt: "Staff di un locale al banco durante la preparazione del servizio",
+  },
+];
+
 export async function MarketingHomePage() {
   const { activeTenants, testimonials } = await getMarketingHomeData("food");
   const locale = await getLocale();
@@ -72,174 +100,194 @@ export async function MarketingHomePage() {
   return (
     <MarketingShell>
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="menuary-hero absolute inset-0" aria-hidden />
-        <div className="menuary-container relative pt-16 pb-20 lg:pt-24 lg:pb-28">
-          <div className="grid items-end gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
-            <div className="menuary-fade-up">
-              <p className="menuary-section-label">
-                {h.heroLabel}
-              </p>
-              <h1 className="menuary-display mt-7 text-[clamp(2.6rem,6.4vw,5.6rem)] text-balance">
-                {h.heroH1a}
-                <br />
-                <span className="italic text-[var(--menuary-copper)]">
-                  {h.heroH1b}
-                </span>
-              </h1>
-              <p className="mt-8 max-w-xl text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
-                {h.heroSub}
-              </p>
-              <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
-                <Link
-                  href="/contatti"
-                  className="menuary-button menuary-button-accent"
-                >
-                  {h.ctaDemo}
-                </Link>
-                <Link href="#esempio" className="menuary-link">
-                  {h.ctaExample}
-                  <ArrowUpRight size={16} strokeWidth={1.6} />
-                </Link>
-              </div>
-              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-                <span className="inline-flex items-center gap-2">
-                  <ShieldCheck
-                    size={14}
-                    strokeWidth={1.7}
-                    className="text-[var(--menuary-sage)]"
-                  />
-                  {h.badgeFreeCall}
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <Clock
-                    size={14}
-                    strokeWidth={1.7}
-                    className="text-[var(--menuary-gold)]"
-                  />
-                  {h.badgeOnline}
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <Globe
-                    size={14}
-                    strokeWidth={1.7}
-                    className="text-[var(--menuary-muted)]"
-                  />
-                  {multilangBadge}
-                </span>
-              </div>
+      <section className="relative isolate overflow-hidden border-b border-[var(--menuary-line)] bg-[#151f1b] text-white">
+        <Image
+          src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=2400&q=88"
+          alt="Sala di ristorante elegante durante il servizio"
+          fill
+          priority
+          sizes="100vw"
+          className="absolute inset-0 -z-20 object-cover"
+        />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(14,22,19,0.96)_0%,rgba(14,22,19,0.82)_44%,rgba(14,22,19,0.22)_100%),linear-gradient(180deg,rgba(14,22,19,0.16)_0%,rgba(14,22,19,0.88)_100%)]" />
+        <div className="menuary-container relative grid min-h-[calc(82svh-5.75rem)] items-end gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:py-14">
+          <div className="menuary-fade-up max-w-4xl pb-4">
+            <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.24em] text-[var(--menuary-gold)]">
+              <UtensilsCrossed size={15} strokeWidth={1.7} />
+              {h.heroLabel}
+            </p>
+            <h1 className="menuary-display mt-6 text-[clamp(3.2rem,7.6vw,6.8rem)] leading-[0.9] text-balance">
+              {h.heroH1a}
+              <br />
+              <span className="italic text-[var(--menuary-gold)]">
+                {h.heroH1b}
+              </span>
+            </h1>
+            <p className="mt-7 max-w-2xl text-[17px] leading-[1.75] text-white/78">
+              {h.heroSub}
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
+              <Link
+                href="/contatti"
+                className="menuary-button bg-white text-[var(--menuary-ink)] hover:bg-[var(--menuary-gold)]"
+              >
+                {h.ctaDemo}
+              </Link>
+              <Link href="#esempio" className="menuary-link menuary-link-light">
+                {h.ctaExample}
+                <ArrowUpRight size={16} strokeWidth={1.6} />
+              </Link>
             </div>
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.16em] text-white/66">
+              <span className="inline-flex items-center gap-2">
+                <ShieldCheck
+                  size={14}
+                  strokeWidth={1.7}
+                  className="text-[var(--menuary-gold)]"
+                />
+                {h.badgeFreeCall}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Clock
+                  size={14}
+                  strokeWidth={1.7}
+                  className="text-[var(--menuary-gold)]"
+                />
+                {h.badgeOnline}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <Globe
+                  size={14}
+                  strokeWidth={1.7}
+                  className="text-white/62"
+                />
+                {multilangBadge}
+              </span>
+            </div>
+          </div>
 
-            {/* HERO MOCKUP — dashboard + mobile + Google card */}
-            <figure
-              className="menuary-fade-up menuary-fade-up-d2 relative"
-              aria-hidden
-            >
-              {/* Dashboard frame */}
-              <div className="menuary-product-frame p-4">
-                <div className="menuary-browser-bar">
-                  <span />
-                  <span />
-                  <span />
-                  <p>app.menuary.it</p>
+          <figure className="menuary-fade-up menuary-fade-up-d2 hidden pb-3 lg:block" aria-hidden>
+            <div className="grid gap-3">
+              <div className="grid gap-3 sm:grid-cols-[0.82fr_1.18fr]">
+                <div className="border border-white/16 bg-white/10 p-4 backdrop-blur-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/62">
+                    {mockup.dashboardToday}
+                  </p>
+                  <p className="mt-2 text-4xl font-semibold text-white" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
+                    12
+                    <span className="ml-2 text-sm font-semibold text-white/62">
+                      {mockup.dashboardBookings}
+                    </span>
+                  </p>
                 </div>
-                <div className="menuary-admin-preview">
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="menuary-module-tile">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                        {mockup.dashboardToday}
-                      </p>
-                      <p className="menuary-display mt-1 text-2xl">
-                        12
-                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">
-                          {mockup.dashboardBookings}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="menuary-module-tile">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                        Google
-                      </p>
-                      <p className="menuary-display mt-1 text-2xl">
-                        4,7
-                        <span className="ml-1 text-xs font-medium text-[var(--menuary-muted)]">
-                          {mockup.dashboardAverage}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="menuary-module-tile">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                        {mockup.dashboardHours}
-                      </p>
-                      <p className="menuary-display mt-1 text-base leading-tight">
-                        {mockup.dashboardUpdated}
-                        <br />
-                        <span className="text-xs font-medium text-[var(--menuary-muted)]">
-                          {mockup.dashboardUpdatedWhen}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
+                <div className="border border-white/16 bg-white/10 p-4 backdrop-blur-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/62">
+                    {mockup.dashboardHours}
+                  </p>
+                  <p className="mt-2 text-xl font-semibold leading-tight text-white">
+                    {mockup.dashboardUpdated}
+                    <span className="ml-2 text-sm text-white/62">{mockup.dashboardUpdatedWhen}</span>
+                  </p>
                 </div>
               </div>
-
-              {/* Google Business card */}
-              <div className="absolute -top-6 -right-2 hidden w-[15rem] rounded-2xl border border-[var(--menuary-line)] bg-white p-4 shadow-[0_24px_60px_-20px_rgba(24,35,31,0.28)] sm:block">
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex h-5 w-5 items-center justify-center">
-                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden>
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.26 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC04" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18A10.99 10.99 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.46 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
-                    </svg>
-                  </span>
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                    {mockup.googleCard}
-                  </p>
-                </div>
-                <div className="mt-3 flex items-center gap-1.5">
-                  <div className="flex gap-0.5 text-[var(--menuary-copper)]">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} size={12} fill="currentColor" strokeWidth={0} />
-                    ))}
-                  </div>
-                  <span className="text-sm font-semibold text-[var(--menuary-ink)]">4,7</span>
-                </div>
-                <p className="mt-2 text-xs text-[var(--menuary-muted)]">
-                  {mockup.googleOpen}
-                </p>
-              </div>
-
-              {/* Mobile site preview */}
-              <div className="absolute -bottom-8 -left-4 hidden w-[11rem] rounded-3xl border border-[var(--menuary-line)] bg-[var(--menuary-ink)] p-3 shadow-[0_30px_70px_-24px_rgba(24,35,31,0.4)] sm:block">
-                <div className="menuary-phone-top" />
-                <div className="rounded-2xl bg-[var(--menuary-paper)] p-3 text-[var(--menuary-ink)]">
-                  <p className="menuary-display text-base leading-tight">
-                    {mockup.phoneName[0]}
-                    <br />
-                    {mockup.phoneName[1]}
-                  </p>
-                  <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[var(--menuary-muted)] font-bold">
-                    {mockup.phoneMeta}
-                  </p>
-                  <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[var(--menuary-ink)]">
-                    <CalendarCheck size={12} strokeWidth={1.8} className="text-[var(--menuary-copper)]" />
+              <div className="relative min-h-[19rem] overflow-hidden border border-white/16">
+                <Image
+                  src="https://images.unsplash.com/photo-1559329007-40df8a9345d8?auto=format&fit=crop&w=1300&q=86"
+                  alt="Sala ristorante ordinata con tavoli pronti per le prenotazioni"
+                  fill
+                  sizes="42vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/76 via-black/18 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5">
+                  <div className="inline-flex items-center gap-2 bg-white px-3 py-2 text-[12px] font-bold text-[var(--menuary-ink)] shadow-[0_20px_60px_rgba(0,0,0,0.22)]">
+                    <CalendarCheck size={15} strokeWidth={1.8} className="text-[var(--menuary-copper)]" />
                     {mockup.phoneAction}
                   </div>
-                  <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--menuary-muted)]">
-                    <Check size={11} strokeWidth={2} className="text-[var(--menuary-sage)]" />
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="border border-white/16 bg-white/10 p-4 backdrop-blur-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/62">
+                    {mockup.googleCard}
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className="flex gap-0.5 text-[var(--menuary-gold)]">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} size={13} fill="currentColor" strokeWidth={0} />
+                      ))}
+                    </div>
+                    <span className="text-sm font-semibold text-white">4,7</span>
+                  </div>
+                  <p className="mt-2 text-sm text-white/70">{mockup.googleOpen}</p>
+                </div>
+                <div className="border border-white/16 bg-white/10 p-4 backdrop-blur-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/62">
+                    {mockup.phoneMeta}
+                  </p>
+                  <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-white">
+                    <Check size={15} strokeWidth={2} className="text-[var(--menuary-gold)]" />
                     {mockup.phoneStatus}
                   </div>
                 </div>
               </div>
-            </figure>
-          </div>
+            </div>
+          </figure>
         </div>
       </section>
 
       <LogosStripSection tenants={activeTenants} />
       <GoogleSyncSection />
+      <section className="border-t border-[var(--menuary-line)] bg-[#151f1b] text-white">
+        <div className="menuary-container py-20 lg:py-24">
+          <div className="grid items-end gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+            <div>
+              <p className="menuary-section-label text-[var(--menuary-gold)]">
+                {locale === "it" ? "Dentro il servizio" : "Inside service"}
+              </p>
+              <h2 className="menuary-display mt-6 text-[clamp(2.4rem,5vw,4.6rem)] leading-[0.96]">
+                {locale === "it"
+                  ? "Non foto belle a caso: scene che succedono ogni sera."
+                  : "Not random pretty photos: scenes that happen every night."}
+              </h2>
+            </div>
+            <p className="max-w-xl text-[16px] leading-[1.75] text-white/70 lg:justify-self-end">
+              {locale === "it"
+                ? "Menuary nasce per il lavoro quotidiano di ristoranti, bar e locali: informazioni da aggiornare, clienti da rassicurare, richieste da non perdere e reputazione da proteggere."
+                : "Menuary is built for the daily work of restaurants, bars and venues: information to update, guests to reassure, requests to capture and reputation to protect."}
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            {MENUARY_OPERATING_MOMENTS.map((moment) => {
+              const Icon = moment.icon;
+              return (
+                <article key={moment.title} className="overflow-hidden border border-white/14 bg-white/[0.06]">
+                  <div className="relative min-h-72">
+                    <Image
+                      src={moment.image}
+                      alt={moment.alt}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, 100vw"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/10 to-transparent" />
+                    <div className="absolute left-5 top-5 flex h-11 w-11 items-center justify-center bg-white text-[var(--menuary-ink)]">
+                      <Icon size={19} strokeWidth={1.8} />
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-2xl font-medium leading-tight" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
+                      {moment.title}
+                    </h3>
+                    <p className="mt-4 text-sm leading-7 text-white/68">{moment.text}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
       <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
         <div className="menuary-container py-20 lg:py-24">
           <div className="max-w-3xl">

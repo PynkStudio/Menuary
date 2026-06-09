@@ -87,11 +87,10 @@
     position: relative;
   }
 
-  .vo-header-sticky {
-    position: sticky;
-    top: 0.85rem;
-    margin-top: 0;
-    margin-bottom: -5.85rem;
+  .vo-header-reveal {
+    position: relative;
+    z-index: 4;
+    padding-top: 1.15rem;
   }
 
   .vo-brand-mark {
@@ -212,6 +211,53 @@
   .vo-hero-actions-row {
     display: contents;
     gap: 1.1rem;
+  }
+
+  .vo-scroll-cue {
+    display: inline-grid;
+    justify-items: center;
+    gap: 0.55rem;
+    margin-top: 1.5rem;
+    color: rgba(242, 216, 148, 0.78);
+    font-size: 0.7rem;
+    font-weight: 850;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .vo-scroll-cue span {
+    position: relative;
+    display: block;
+    width: 1.25rem;
+    height: 2.1rem;
+    border: 1px solid rgba(242, 216, 148, 0.5);
+    border-radius: 999px;
+  }
+
+  .vo-scroll-cue span::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0.42rem;
+    width: 0.28rem;
+    height: 0.28rem;
+    border-radius: 999px;
+    background: var(--vo-gold);
+    transform: translateX(-50%);
+    animation: vo-scroll-dot 1.55s ease-in-out infinite;
+  }
+
+  @keyframes vo-scroll-dot {
+    0%,
+    100% {
+      opacity: 0.28;
+      transform: translate(-50%, 0);
+    }
+
+    45% {
+      opacity: 1;
+      transform: translate(-50%, 0.72rem);
+    }
   }
 
   .vo-btn {
@@ -678,6 +724,11 @@
     padding: clamp(5rem, 10vw, 8rem) 0 clamp(4rem, 8vw, 7rem);
   }
 
+  .vo-subpage-intro-plain {
+    padding-top: clamp(4.5rem, 8vw, 7rem);
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+  }
+
   .vo-subpage-intro h1 {
     margin: 0.35rem 0 0;
     color: #e5c77d;
@@ -947,6 +998,204 @@
     border-color: rgba(242, 216, 148, 0.62);
   }
 
+  .vo-contact-visible {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.7rem;
+  }
+
+  .vo-contact-visible a {
+    display: inline-flex;
+    min-height: 2.8rem;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(216, 173, 90, 0.28);
+    background: rgba(5, 5, 5, 0.44);
+    padding: 0.72rem 0.9rem;
+    color: var(--vo-gold-soft);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .vo-contact-form {
+    display: grid;
+    gap: 0.9rem;
+    border: 1px solid rgba(216, 173, 90, 0.3);
+    background:
+      radial-gradient(circle at 95% 8%, rgba(151, 31, 24, 0.24), transparent 13rem),
+      rgba(5, 5, 5, 0.56);
+    padding: clamp(1.2rem, 4vw, 2rem);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.28);
+  }
+
+  .vo-contact-form label {
+    display: grid;
+    gap: 0.42rem;
+    color: rgba(242, 216, 148, 0.7);
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .vo-contact-form input,
+  .vo-contact-form textarea {
+    width: 100%;
+    border: 1px solid rgba(216, 173, 90, 0.28);
+    background: rgba(3, 3, 3, 0.74);
+    padding: 0.88rem 0.95rem;
+    color: var(--vo-gold-soft);
+    font: inherit;
+    outline: none;
+  }
+
+  .vo-contact-form textarea {
+    resize: vertical;
+  }
+
+  .vo-contact-form input:focus,
+  .vo-contact-form textarea:focus {
+    border-color: rgba(242, 216, 148, 0.72);
+    box-shadow: 0 0 0 3px rgba(216, 173, 90, 0.14);
+  }
+
+  .vo-contact-form button {
+    display: inline-flex;
+    min-height: 3.2rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border: 1px solid rgba(242, 216, 148, 0.42);
+    background: linear-gradient(180deg, #a42a22, #701711);
+    color: #f8e2af;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .vo-contact-form button:disabled {
+    cursor: wait;
+    opacity: 0.7;
+  }
+
+  .vo-contact-form small {
+    color: rgba(242, 216, 148, 0.72);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .vo-linktree-section {
+    display: grid;
+    place-items: center;
+    padding: clamp(4rem, 8vw, 7rem) 1.25rem;
+    background:
+      radial-gradient(circle at 50% 15%, rgba(151, 31, 24, 0.32), transparent 18rem),
+      radial-gradient(circle at 78% 70%, rgba(216, 173, 90, 0.18), transparent 20rem),
+      linear-gradient(180deg, #050505, #090706);
+  }
+
+  .vo-linktree-card {
+    position: relative;
+    width: min(100%, 34rem);
+    border: 1px solid rgba(216, 173, 90, 0.34);
+    background:
+      linear-gradient(180deg, rgba(18, 12, 9, 0.9), rgba(5, 5, 5, 0.92)),
+      url("/valentina-orciuoli/ink-trilogy-bg.png") center / cover no-repeat;
+    padding: clamp(1.5rem, 5vw, 2.6rem);
+    text-align: center;
+    box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.48);
+  }
+
+  .vo-linktree-card > img {
+    display: block;
+    width: 6.2rem;
+    height: 6.2rem;
+    object-fit: contain;
+    margin: 0 auto 1rem;
+  }
+
+  .vo-linktree-card h2 {
+    margin: 0.35rem 0 0;
+    color: var(--vo-gold);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.4rem, 8vw, 4.2rem);
+    font-weight: 400;
+    line-height: 0.92;
+    text-transform: uppercase;
+  }
+
+  .vo-linktree-card p {
+    max-width: 25rem;
+    margin: 1rem auto 0;
+    color: rgba(248, 226, 175, 0.82);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .vo-linktree-list {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 1.8rem;
+    text-align: left;
+  }
+
+  .vo-linktree-list a {
+    display: flex;
+    min-height: 4.25rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid rgba(216, 173, 90, 0.28);
+    background: rgba(5, 5, 5, 0.58);
+    padding: 0.9rem 1rem;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+  }
+
+  .vo-linktree-list a:hover {
+    transform: translateY(-2px);
+    border-color: rgba(242, 216, 148, 0.66);
+    background: rgba(151, 31, 24, 0.28);
+  }
+
+  .vo-linktree-list strong,
+  .vo-linktree-list small {
+    display: block;
+  }
+
+  .vo-linktree-list strong {
+    color: var(--vo-gold-soft);
+    font-size: 0.86rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .vo-linktree-list small {
+    margin-top: 0.25rem;
+    color: rgba(242, 216, 148, 0.66);
+    font-size: 0.82rem;
+    line-height: 1.35;
+  }
+
+  .vo-linktree-socials {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.4rem;
+    color: var(--vo-gold);
+    font-size: 0.74rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
   .vo-author-section {
     display: grid;
     min-height: 44rem;
@@ -960,6 +1209,51 @@
 
   .vo-author-copy h2 {
     font-size: clamp(3.4rem, 7vw, 7rem);
+  }
+
+  .vo-author-section-full {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.52fr);
+    align-items: start;
+  }
+
+  .vo-author-copy-long p {
+    max-width: 43rem;
+  }
+
+  .vo-author-pillars {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 2rem;
+  }
+
+  .vo-author-pillars article {
+    border: 1px solid rgba(216, 173, 90, 0.24);
+    background: rgba(5, 5, 5, 0.46);
+    padding: 1rem;
+  }
+
+  .vo-author-pillars span {
+    color: var(--vo-gold);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.55rem;
+  }
+
+  .vo-author-pillars strong {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--vo-gold-soft);
+    font-size: 0.82rem;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .vo-author-pillars p {
+    margin-top: 0.65rem;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.88rem;
+    line-height: 1.55;
   }
 
   .vo-author-seal {
@@ -1044,6 +1338,346 @@
     text-transform: uppercase;
   }
 
+  .vo-footer-links .vo-footer-staff-link {
+    border: 1px solid rgba(242, 216, 148, 0.2);
+    background: rgba(242, 216, 148, 0.06);
+    padding: 0.42rem 0.62rem;
+    color: rgba(242, 216, 148, 0.56);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] {
+    --ga-bg: #050506;
+    --ga-surface: #100c09;
+    --ga-surface-2: #17100d;
+    --ga-surface-3: #050506;
+    --ga-surface-strong: #17100d;
+    --ga-border: rgba(216, 173, 90, 0.28);
+    --ga-border-soft: rgba(216, 173, 90, 0.16);
+    --ga-ink: #f7eedc;
+    --ga-ink-muted: rgba(247, 238, 220, 0.66);
+    --ga-ink-faint: rgba(247, 238, 220, 0.45);
+    --ga-ink-dim: rgba(247, 238, 220, 0.28);
+    --ga-text: #f7eedc;
+    --ga-muted: rgba(247, 238, 220, 0.66);
+    --ga-accent: #a12b24;
+    --ga-accent-soft: rgba(161, 43, 36, 0.2);
+    --ga-accent-ring: rgba(216, 173, 90, 0.34);
+    --ga-accent-ink: #fff6dc;
+    --ga-font-display: Georgia, "Times New Roman", serif;
+    --ga-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(161, 43, 36, 0.24), transparent 24rem),
+      radial-gradient(circle at 92% 12%, rgba(216, 173, 90, 0.18), transparent 22rem),
+      #050506;
+    color: var(--ga-text);
+    color-scheme: dark;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-header {
+    border-bottom: 1px solid var(--ga-border);
+    background: rgba(5, 5, 6, 0.86);
+    box-shadow: 0 1.2rem 3.2rem rgba(0, 0, 0, 0.34);
+    backdrop-filter: blur(16px);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-brand-tag,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-eyebrow,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-section-hint,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-kpi-label,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-kpi-hint,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-quick-hint {
+    color: var(--ga-muted);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-brand-name,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-heading,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-section-title,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-kpi-value,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-module-name {
+    color: #f1d17c;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-lead,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-user,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-support-link {
+    color: rgba(247, 238, 220, 0.78);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav {
+    border-top: 1px solid rgba(216, 173, 90, 0.16);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav-link,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-profile-link,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-icon-button,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-pill {
+    border-color: rgba(216, 173, 90, 0.24);
+    background: rgba(5, 5, 6, 0.44);
+    color: var(--ga-text);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav-link[data-active="true"],
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-pill[data-active="true"] {
+    border-color: rgba(241, 209, 124, 0.64);
+    background: linear-gradient(180deg, rgba(161, 43, 36, 0.7), rgba(103, 23, 19, 0.7));
+    color: #fff6dc;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-main,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-dashboard {
+    background: transparent;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-section,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-card,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-kpi,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-quick,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-module,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-empty,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-reservation,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-settings-popover,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-table,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-panel {
+    border: 1px solid var(--ga-border);
+    background:
+      radial-gradient(circle at 92% 0%, rgba(216, 173, 90, 0.1), transparent 12rem),
+      rgba(16, 12, 9, 0.76);
+    color: var(--ga-text);
+    box-shadow: 0 1.3rem 3rem rgba(0, 0, 0, 0.26);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-quick:hover,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav-link:hover,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-profile-link:hover,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-icon-button:hover {
+    border-color: rgba(241, 209, 124, 0.58);
+    background: rgba(161, 43, 36, 0.22);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] input,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] select,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] textarea,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-input,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-select,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-textarea,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-location-select {
+    border: 1px solid rgba(216, 173, 90, 0.3);
+    background: rgba(5, 5, 6, 0.78);
+    color: var(--ga-text);
+    outline-color: rgba(241, 209, 124, 0.72);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] button,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-button {
+    border-color: rgba(216, 173, 90, 0.32);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] button[type="submit"],
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-button-primary {
+    background: linear-gradient(180deg, #a12b24, #671713);
+    color: #fff6dc;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-module-status {
+    border-color: rgba(216, 173, 90, 0.24);
+    background: rgba(216, 173, 90, 0.12);
+    color: #f1d17c;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-module-status[data-status="ok"] {
+    background: rgba(110, 139, 105, 0.22);
+    color: #d7efc8;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-module-status[data-status="warn"] {
+    background: rgba(216, 173, 90, 0.18);
+    color: #ffe1a0;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-module-status[data-status="error"] {
+    background: rgba(161, 43, 36, 0.28);
+    color: #ffd0cb;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works {
+    display: grid;
+    gap: 1.4rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.5rem;
+    align-items: start;
+    border: 1px solid var(--ga-border);
+    background:
+      linear-gradient(90deg, rgba(161, 43, 36, 0.22), transparent 42%),
+      url("/valentina-orciuoli/ink-trilogy-bg.png") center / cover no-repeat,
+      rgba(16, 12, 9, 0.82);
+    padding: clamp(1.4rem, 4vw, 2.2rem);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.32);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    border: 1px solid rgba(216, 173, 90, 0.24);
+    background:
+      radial-gradient(circle at 95% 12%, rgba(216, 173, 90, 0.12), transparent 10rem),
+      rgba(5, 5, 6, 0.58);
+    padding: 1rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card h3 {
+    margin: 0.6rem 0 0;
+    color: #f1d17c;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.6rem, 3vw, 2.35rem);
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card p {
+    margin: 0.55rem 0 0;
+    max-width: 52rem;
+    color: rgba(247, 238, 220, 0.74);
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-meta {
+    color: rgba(241, 209, 124, 0.7) !important;
+    font-size: 0.74rem !important;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card > a,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-press-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border: 1px solid rgba(216, 173, 90, 0.28);
+    background: rgba(5, 5, 6, 0.5);
+    color: #f7eedc;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-row {
+    display: grid;
+    grid-template-columns: auto repeat(4, minmax(0, 1fr)) auto auto;
+    gap: 0.8rem;
+    align-items: end;
+    border: 1px solid rgba(216, 173, 90, 0.22);
+    background: rgba(5, 5, 6, 0.52);
+    padding: 0.9rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-row label {
+    display: grid;
+    gap: 0.35rem;
+    color: rgba(247, 238, 220, 0.66);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-order {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: rgba(247, 238, 220, 0.5);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-toggle {
+    align-self: center;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-toggle input {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card > a {
+    width: 2.7rem;
+    height: 2.7rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card > a:hover,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-press-links a:hover {
+    transform: translateY(-2px);
+    border-color: rgba(241, 209, 124, 0.62);
+    background: rgba(161, 43, 36, 0.24);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-press-links {
+    display: grid;
+    gap: 0.7rem;
+    margin-top: 1rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-press-links a {
+    min-height: 3rem;
+    justify-content: flex-start;
+    padding: 0.75rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
   @media (max-width: 980px) {
     .vo-header,
     .vo-hero-inner,
@@ -1068,7 +1702,10 @@
     .vo-book-showcase,
     .vo-author-section,
     .vo-events-section,
-    .vo-contact-section {
+    .vo-contact-section,
+    .vo-author-section-full,
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-hero,
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-grid {
       grid-template-columns: 1fr;
     }
 
@@ -1079,6 +1716,14 @@
     .vo-trilogy-grid {
       margin-left: 0;
     }
+
+    .vo-author-pillars {
+      grid-template-columns: 1fr;
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-linktree-admin-row {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 760px) {
@@ -1087,12 +1732,6 @@
       gap: 0.8rem;
       margin-top: 0.8rem;
       padding: 0.34rem 0.62rem;
-    }
-
-    .vo-header-sticky {
-      top: 0.55rem;
-      margin-top: 0;
-      margin-bottom: -4.6rem;
     }
 
     .vo-brand-mark {
@@ -1185,6 +1824,10 @@
 
     .vo-footer-links {
       justify-content: flex-start;
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-stats {
+      grid-template-columns: 1fr;
     }
   }
 
