@@ -14,8 +14,8 @@ export const messages = mergeMessages(en, {
       heroSub: "Profesionální web, online rezervace a jednoduchá správa Google Maps a digitální prezentace.",
       ctaDemo: "Vyžádat demo",
       ctaExample: "Zobrazit příklad",
-      badgeFreeCall: "První hovor zdarma",
-      badgeOnline: "Online za 2-4 týdny",
+      badgeFreeCall: "Platíte jen když se vám líbí",
+      badgeOnline: "Online za 7 dní",
       badgeMultilang: "Vícejazyčné · CS EN DE PL SK +",
     },
     contact: {

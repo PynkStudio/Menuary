@@ -14,8 +14,8 @@ export const messages = mergeMessages(en, {
       heroSub: "Profesjonalna strona, rezerwacje online oraz proste zarządzanie Google Maps i obecnością cyfrową.",
       ctaDemo: "Poproś o demo",
       ctaExample: "Zobacz przykład",
-      badgeFreeCall: "Pierwsza rozmowa gratis",
-      badgeOnline: "Online w 2-4 tygodnie",
+      badgeFreeCall: "Płacisz tylko jeśli Ci się spodoba",
+      badgeOnline: "Online w 7 dni",
       badgeMultilang: "Wielojęzyczne · PL EN DE FR UA +",
     },
     contact: {

@@ -14,8 +14,8 @@ export const messages = mergeMessages(en, {
       heroSub: "Ammattimainen verkkosivusto, online-varaukset ja helppo Google Mapsin sekä digitaalisen näkyvyyden hallinta.",
       ctaDemo: "Pyydä demo",
       ctaExample: "Katso esimerkki",
-      badgeFreeCall: "Ensimmäinen puhelu maksuton",
-      badgeOnline: "Verkossa 2-4 viikossa",
+      badgeFreeCall: "Maksat vain jos pidät siitä",
+      badgeOnline: "Verkossa 7 päivässä",
       badgeMultilang: "Monikielinen · FI EN SV DE RU +",
     },
     contact: {

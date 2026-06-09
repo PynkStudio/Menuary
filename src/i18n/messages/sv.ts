@@ -14,8 +14,8 @@ export const messages = mergeMessages(en, {
       heroSub: "Professionell webbplats, onlinebokningar och enkel hantering av Google Maps och din digitala närvaro.",
       ctaDemo: "Begär en demo",
       ctaExample: "Se ett exempel",
-      badgeFreeCall: "Första samtalet gratis",
-      badgeOnline: "Online på 2-4 veckor",
+      badgeFreeCall: "Betala bara om du gillar det",
+      badgeOnline: "Online på 7 dagar",
       badgeMultilang: "Flerspråkig · SV EN DE FI NO +",
     },
     contact: {

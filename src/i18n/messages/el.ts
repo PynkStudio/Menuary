@@ -13,7 +13,7 @@ export const messages = mergeMessages(en, {
       heroH1b: "χωρίς ταλαιπωρία.",
       heroSub: "Επαγγελματική ιστοσελίδα, online κρατήσεις και απλή διαχείριση της παρουσίας σας στο Google Maps.",
       ctaDemo: "Ζητήστε demo", ctaExample: "Δείτε παράδειγμα",
-      badgeFreeCall: "Πρώτη κλήση δωρεάν", badgeOnline: "Online σε 2-4 εβδομάδες", badgeMultilang: "Πολύγλωσσο · IT EN FR DE ES +",
+      badgeFreeCall: "Πληρώνετε μόνο αν σας αρέσει", badgeOnline: "Online σε 7 ημέρες", badgeMultilang: "Πολύγλωσσο · IT EN FR DE ES +",
     },
     contact: {
       label: "Επικοινωνία", h1a: "Πείτε μας για το εστιατόριό σας.", h1b: "Απαντάμε με μια συγκεκριμένη ιδέα.",
