@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { getProgram } from "@/lib/fidelity/queries";
 import { saveProgram } from "./actions";
@@ -13,7 +13,7 @@ export default async function FidelityProgramPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant) notFound();
   const access = getGestioneModuleAccess(tenant.features);
   if (!access.canManageFidelity) notFound();

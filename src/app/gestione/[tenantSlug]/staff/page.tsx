@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { GestioneStaffManager } from "@/components/gestione/gestione-staff-manager";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { isDemoHost } from "@/lib/platform";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 export default async function StaffPage({
@@ -13,7 +13,7 @@ export default async function StaffPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant || !getGestioneModuleAccess(tenant.features).canManageStaff) notFound();
 
   const host = (await headers()).get("host");

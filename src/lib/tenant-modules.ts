@@ -356,6 +356,38 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     requires: ["website"],
   },
   {
+    key: "linktree",
+    label: "Linktree",
+    description: "Gestisce una pagina link pubblica con collegamenti ordinabili e aggiornabili dal pannello gestione.",
+    category: "Crescita",
+    verticals: ["food", "services", "creative"],
+    requires: ["website"],
+    verticalCopy: {
+      creative: {
+        label: "Linktree",
+        description: "Gestisce una pagina link pubblica per sito, social, contatti, opere ed eventi.",
+      },
+    },
+  },
+  {
+    key: "blog",
+    label: "Blog",
+    description: "Gestisce articoli, immagini, blocchi editoriali e commenti semplici con moderazione.",
+    category: "Crescita",
+    verticals: ["food", "services", "creative"],
+    requires: ["website"],
+    verticalCopy: {
+      services: {
+        label: "Blog",
+        description: "Gestisce articoli, aggiornamenti, immagini, blocchi editoriali e commenti semplici.",
+      },
+      creative: {
+        label: "Journal",
+        description: "Gestisce news, diario creativo, media, blocchi editoriali e commenti semplici.",
+      },
+    },
+  },
+  {
     key: "favorites",
     label: "Preferiti",
     description: "Mantiene attivo il layer di salvataggio piatti preferiti.",

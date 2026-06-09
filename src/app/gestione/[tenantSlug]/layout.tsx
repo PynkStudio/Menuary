@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { GestioneShell } from "@/components/gestione/gestione-shell";
@@ -18,6 +18,7 @@ import { getGestioneBaseHref } from "@/lib/gestione-routing";
 import { buildTenantIconSet } from "@/lib/favicon";
 import { TenantProvider } from "@/components/core/tenant-provider";
 import { getGestioneTranslations } from "@/i18n/gestione";
+import type { TenantTheme } from "@/lib/tenant";
 
 interface Props {
   children: React.ReactNode;
@@ -26,7 +27,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant) return {};
 
   return {
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
 
 export default async function GestioneLayout({ children, params }: Props) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   if (!tenant) notFound();
   const messages = await getGestioneTranslations();
 
@@ -219,7 +220,7 @@ export default async function GestioneLayout({ children, params }: Props) {
   );
 }
 
-export type GestioneTenantTheme = (typeof TENANTS)[number]["theme"];
+export type GestioneTenantTheme = TenantTheme;
 export type GestioneCurrentUser = {
   email: string;
   displayName: string | null;

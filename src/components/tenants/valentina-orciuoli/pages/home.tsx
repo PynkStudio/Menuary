@@ -3,6 +3,9 @@
 /* eslint-disable @next/next/no-img-element */
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Instagram, Music2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import {
   useValentinaNewsletter,
   ValentinaNewsletterPanel,
@@ -15,7 +18,6 @@ import {
   anxietyCoverSrc,
   authorPortraitSrc,
   instagramHref,
-  linktreeHref,
   tiktokHref,
   trilogy,
   trilogyHref,
@@ -23,6 +25,28 @@ import {
 
 export function ValentinaOrciuoliHomePage() {
   const newsletter = useValentinaNewsletter();
+  const staffHref = getTenantGestioneExternalHref("valentina-orciuoli");
+  const headerRegionRef = useRef<HTMLDivElement>(null);
+  const [headerProgress, setHeaderProgress] = useState(0);
+
+  useEffect(() => {
+    function updateHeaderProgress() {
+      const region = headerRegionRef.current;
+      if (!region) return;
+      const top = region.getBoundingClientRect().top;
+      const viewport = window.innerHeight || 1;
+      const progress = (viewport * 0.92 - top) / (viewport * 0.74);
+      setHeaderProgress(Math.max(0, Math.min(1, progress)));
+    }
+
+    updateHeaderProgress();
+    window.addEventListener("scroll", updateHeaderProgress, { passive: true });
+    window.addEventListener("resize", updateHeaderProgress);
+    return () => {
+      window.removeEventListener("scroll", updateHeaderProgress);
+      window.removeEventListener("resize", updateHeaderProgress);
+    };
+  }, []);
 
   return (
     <main className="vo-site">
@@ -44,21 +68,19 @@ export function ValentinaOrciuoliHomePage() {
               <a className="vo-btn vo-btn-primary vo-btn-trilogy" href={trilogyHref} target="_blank" rel="noopener noreferrer">
                 Scopri la Trilogia dei Draghi delle Emozioni <ArrowRight size={16} />
               </a>
-              <div className="vo-hero-actions-row">
-                <a className="vo-btn vo-btn-secondary" href={linktreeHref} target="_blank" rel="noopener noreferrer">
-                  Scopri l&apos;autrice <ArrowRight size={16} />
-                </a>
-                <a className="vo-btn vo-btn-secondary" href="#newsletter">
-                  Iscriviti alla newsletter <ArrowRight size={16} />
-                </a>
-              </div>
             </div>
+            <a className="vo-scroll-cue" href="#libri" aria-label="Scorri verso i contenuti">
+              <span />
+              Scorri
+            </a>
           </motion.div>
         </div>
       </section>
 
-      <div className="vo-sticky-header-region">
-        <ValentinaOrciuoliHeader sticky />
+      <div className="vo-sticky-header-region" ref={headerRegionRef}>
+        <motion.div className="vo-header-reveal" style={{ opacity: headerProgress, y: 22 * (1 - headerProgress) }}>
+          <ValentinaOrciuoliHeader />
+        </motion.div>
 
         <section id="libri" className="vo-book-showcase">
           <div className="vo-ink-bg" aria-hidden="true" />
@@ -149,7 +171,7 @@ export function ValentinaOrciuoliHomePage() {
         <footer id="contatti" className="vo-footer">
           <div>
             <strong>Valentina Orciuoli</strong>
-            <p>Author site demo su piattaforma Bizery.</p>
+            <p>Author site ufficiale · fantasy, draghi ed emozioni.</p>
           </div>
           <div className="vo-footer-links">
             <a href={instagramHref} target="_blank" rel="noopener noreferrer">
@@ -160,6 +182,11 @@ export function ValentinaOrciuoliHomePage() {
             </a>
             <a href={amazonStoreHref} target="_blank" rel="noopener noreferrer">
               <BookOpen size={15} /> Amazon
+            </a>
+            <Link href="/privacy">Privacy Policy</Link>
+            <Link href="/cookie">Cookie Policy</Link>
+            <a className="vo-footer-staff-link" href={staffHref} target="_blank" rel="noopener noreferrer">
+              Staff
             </a>
           </div>
         </footer>

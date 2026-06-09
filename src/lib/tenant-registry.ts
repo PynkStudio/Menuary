@@ -84,7 +84,7 @@ export const VALENTINA_ORCIUOLI_MODULE_FLAGS: TenantFeatureFlags = {
   cashRegister: false,
   inventoryFoodCost: false,
   printStations: false,
-  staffRoles: false,
+  staffRoles: true,
   multiLocation: false,
   favorites: false,
   reviews: false,
@@ -101,6 +101,7 @@ export const VALENTINA_ORCIUOLI_MODULE_FLAGS: TenantFeatureFlags = {
   rightsRoyalties: false,
   reputationReviews: true,
   fanbaseCommunity: true,
+  linktree: true,
 };
 
 /** Studio Legale Aranzulla: studio legale su verticale services. */

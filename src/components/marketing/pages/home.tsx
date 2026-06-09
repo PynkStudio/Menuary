@@ -1,10 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowUpRight,
   CalendarCheck,
   Check,
   Clock,
   Globe,
+  MessageSquareText,
+  QrCode,
   ShieldCheck,
   Star,
 } from "lucide-react";
@@ -56,6 +59,30 @@ const MENUARY_SEO_VERTICALS = {
     },
   ],
 };
+
+const MENUARY_OPERATING_MOMENTS = [
+  {
+    icon: QrCode,
+    title: "Menu che cambia davvero",
+    text: "Piatti esauriti, allergeni, stagionalita e prezzi non restano chiusi in un PDF vecchio: il menu online si aggiorna dal pannello e resta leggibile da mobile.",
+    image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1100&q=86",
+    alt: "Tavolo di ristorante con menu, telefono e piatti condivisi",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Prenotazioni senza caos",
+    text: "Richieste, conferme, orari speciali e turni vengono raccolti in un flusso unico, cosi sala e gestione vedono la stessa situazione prima del servizio.",
+    image: "https://images.unsplash.com/photo-1559329007-40df8a9345d8?auto=format&fit=crop&w=1100&q=86",
+    alt: "Sala ristorante apparecchiata prima del servizio serale",
+  },
+  {
+    icon: MessageSquareText,
+    title: "Google, recensioni e fiducia",
+    text: "Orari, scheda Google, recensioni e contenuti pubblici restano coerenti: chi cerca il locale trova informazioni fresche prima di chiamare o prenotare.",
+    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1100&q=86",
+    alt: "Staff di un locale al banco durante la preparazione del servizio",
+  },
+];
 
 export async function MarketingHomePage() {
   const { activeTenants, testimonials } = await getMarketingHomeData("food");
@@ -240,6 +267,56 @@ export async function MarketingHomePage() {
 
       <LogosStripSection tenants={activeTenants} />
       <GoogleSyncSection />
+      <section className="menuary-beat border-t border-[var(--menuary-line)]">
+        <div className="menuary-container relative py-20 lg:py-24">
+          <div className="menuary-reveal grid items-end gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+            <div>
+              <p className="menuary-opener" data-tone="light">
+                {locale === "it" ? "Dentro il servizio" : "Inside service"}
+              </p>
+              <h2 className="menuary-statement mt-7 text-[clamp(2rem,5vw,4.4rem)]">
+                {locale === "it"
+                  ? "Non foto belle a caso: scene che succedono ogni sera."
+                  : "Not random pretty photos: scenes that happen every night."}
+              </h2>
+            </div>
+            <p className="max-w-xl text-[16px] leading-[1.75] text-white/70 lg:justify-self-end">
+              {locale === "it"
+                ? "Menuary nasce per il lavoro quotidiano di ristoranti, bar e locali: informazioni da aggiornare, clienti da rassicurare, richieste da non perdere e reputazione da proteggere."
+                : "Menuary is built for the daily work of restaurants, bars and venues: information to update, guests to reassure, requests to capture and reputation to protect."}
+            </p>
+          </div>
+
+          <div className="menuary-reveal-row mt-12 grid gap-5 lg:grid-cols-3">
+            {MENUARY_OPERATING_MOMENTS.map((moment) => {
+              const Icon = moment.icon;
+              return (
+                <article key={moment.title} className="overflow-hidden border border-white/14 bg-white/[0.06]">
+                  <div className="relative min-h-72">
+                    <Image
+                      src={moment.image}
+                      alt={moment.alt}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, 100vw"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/72 via-black/10 to-transparent" />
+                    <div className="absolute left-5 top-5 flex h-11 w-11 items-center justify-center bg-white text-[var(--menuary-ink)]">
+                      <Icon size={19} strokeWidth={1.8} />
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="menuary-display text-2xl leading-tight">
+                      {moment.title}
+                    </h3>
+                    <p className="mt-4 text-sm leading-7 text-white/68">{moment.text}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
       <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
         <div className="menuary-container py-20 lg:py-24">
           <div className="menuary-reveal max-w-3xl">

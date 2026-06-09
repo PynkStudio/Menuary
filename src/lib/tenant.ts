@@ -69,6 +69,8 @@ export type TenantFeatureFlags = {
   payments: boolean;
   /** Casella mail interna tenant nel pannello gestione. */
   mail?: boolean;
+  /** Blog editoriale: articoli, media, blocchi contenuto e commenti semplici moderati. */
+  blog?: boolean;
   /** Press kit pubblico: bio, foto ufficiali, contatti media/booking e materiali scaricabili. */
   pressKit?: boolean;
   /** Catalogo opere: libri, brani, album, filmografia, spettacoli, crediti e asset collegati. */
@@ -81,6 +83,8 @@ export type TenantFeatureFlags = {
   reputationReviews?: boolean;
   /** Fanbase e community: newsletter, segmenti, contenuti esclusivi e campagne audience. */
   fanbaseCommunity?: boolean;
+  /** Linktree proprietario: pagina link pubblica e gestione autonoma dei link. */
+  linktree?: boolean;
   // TODO(google-reserve): aggiungere flag `googleReserve: boolean` una volta approvati come partner Actions Center.
   // Abilita il pulsante "Prenota" direttamente su Google Maps/Search per il tenant.
   // Prerequisito: tenant deve avere `reservations: true` e una location Google collegata.

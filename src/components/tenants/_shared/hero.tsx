@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { ChevronDown, MessageCircle, ShoppingBag, UtensilsCrossed } from "lucide-react";
+import { ChevronDown, MessageCircle, UtensilsCrossed } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 import { VenueWhatsappLink } from "@/components/modules/reservations/venue-display";
@@ -75,10 +75,6 @@ export function Hero() {
               </p>
               <div className="doca-hero-actions">
                 <Link href={menuHref} className="doca-button doca-button-primary">
-                  <ShoppingBag size={20} />
-                  {docaCopy.reserve}
-                </Link>
-                <Link href={menuHref} className="doca-button doca-button-secondary">
                   <UtensilsCrossed size={20} />
                   {docaCopy.menu}
                 </Link>

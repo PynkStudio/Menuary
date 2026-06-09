@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 import { AiPhoneQuickSettings } from "@/components/gestione/ai-phone-quick-settings";
 
 export default async function GestioneAssistenteAiPage({
@@ -8,8 +8,8 @@ export default async function GestioneAssistenteAiPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((item) => item.id === tenantSlug);
-  if (!tenant) notFound();
+  const tenant = await getTenantById(tenantSlug);
+  if (!tenant || (!tenant.features.aiPhone && !tenant.features.aiWhatsapp)) notFound();
 
   return <AiPhoneQuickSettings tenantId={tenantSlug} />;
 }

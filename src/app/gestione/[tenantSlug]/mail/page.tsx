@@ -9,7 +9,7 @@ import { isDemoHost } from "@/lib/platform";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getTenantContent } from "@/lib/tenant-content";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getTenantById } from "@/lib/data/tenant";
 
 function activeMailDomain(domains: string[]): string | null {
   return domains.find((domain) =>
@@ -34,7 +34,7 @@ export default async function GestioneMailPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
+  const tenant = await getTenantById(tenantSlug);
   const access = tenant ? getGestioneModuleAccess(tenant.features) : null;
   if (!tenant || !access?.canManageMail) notFound();
 
