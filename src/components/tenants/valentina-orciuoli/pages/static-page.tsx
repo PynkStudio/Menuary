@@ -66,6 +66,15 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
             </div>
           </section>
           <section className="vo-book-feature-section vo-book-feature-section-fury vo-subpage-section">
+            <video
+              className="vo-book-feature-video"
+              src="/valentina-orciuoli/video-fury.webm"
+              autoPlay
+              muted
+              loop
+              playsInline
+              aria-hidden="true"
+            />
             <div className="vo-book-feature-panel vo-book-feature-panel-fury">
               <h2>Fury</h2>
               <p>
