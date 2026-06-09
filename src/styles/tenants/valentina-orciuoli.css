@@ -612,9 +612,16 @@
   }
 
   .vo-book-feature-section-dark {
-    background:
-      linear-gradient(90deg, rgba(5, 5, 5, 0.46), rgba(5, 5, 5, 0.04) 58%),
-      url("/valentina-orciuoli/sfondo-dark.webp") center / cover no-repeat;
+    background: #050505;
+  }
+
+  .vo-book-feature-section-dark::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(5, 5, 5, 0.46), rgba(5, 5, 5, 0.04) 58%);
   }
 
   .vo-book-feature-panel {

@@ -127,6 +127,15 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
             </div>
           </section>
           <section id="tra-fumo-e-ombre" className="vo-book-feature-section vo-book-feature-section-dark vo-subpage-section">
+            <video
+              className="vo-book-feature-video"
+              src="/valentina-orciuoli/video-dark.webm"
+              autoPlay
+              muted
+              loop
+              playsInline
+              aria-hidden="true"
+            />
             <div className="vo-book-feature-panel vo-book-feature-panel-dark">
               <h2>Tra fumo e ombre</h2>
               <p>E se il fumo fosse l&apos;unico posto dove poter nascondere la verità?</p>
