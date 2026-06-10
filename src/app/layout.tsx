@@ -279,7 +279,9 @@ export async function generateMetadata(): Promise<Metadata> {
       : tenant.vertical === "services"
         ? tenant.id === "officinakam"
           ? "Officina KAM - Meccanica di precisione"
-          : `${tenant.name} - servizi, appuntamenti e listino prezzi`
+          : tenant.id === "pynkstudio"
+            ? "PYNK STUDIO — Software, web e app su misura"
+            : `${tenant.name} - servizi, appuntamenti e listino prezzi`
         : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
@@ -324,6 +326,16 @@ export async function generateMetadata(): Promise<Metadata> {
                 "pão de queijo Milano",
                 "caffè filtro Cafezal",
                 "Via Breno 2 Milano",
+              ]
+          : tenant.id === "pynkstudio"
+            ? [
+                "PYNK STUDIO",
+                "sviluppo siti web",
+                "web app su misura",
+                "app iOS Android",
+                "applicazioni desktop",
+                "software house Milano",
+                "consulenza operativa PMI",
               ]
           : tenant.id === "junior-food"
             ? [

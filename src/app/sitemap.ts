@@ -21,16 +21,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     tenantLocaleConfig && host
       ? `${host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https"}://${host}`
       : siteConfig.url;
-  const routes = [
-    "",
-    "/menu",
-    "/chi-siamo",
-    "/galleria",
-    "/recensioni",
-    "/contatti",
-    "/privacy",
-    "/cookie",
-  ];
+  const routes =
+    tenant.id === "pynkstudio"
+      ? ["", "/servizi", "/settori", "/lavori", "/consulenza", "/contattaci"]
+      : [
+          "",
+          "/menu",
+          "/chi-siamo",
+          "/galleria",
+          "/recensioni",
+          "/contatti",
+          "/privacy",
+          "/cookie",
+        ];
   const localizedRoutes = tenantLocaleConfig
     ? tenantLocaleConfig.locales.flatMap((locale) => routes.map((path) => `/${locale}${path}`))
     : routes;

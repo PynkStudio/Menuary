@@ -13,113 +13,64 @@ import {
 import type { AppLocale } from "@/i18n";
 import { getPlanLabels, localizePricingPlanName } from "@/lib/localized-commercial-copy";
 
-// ─── Tabella di confronto ─────────────────────────────────────────────────────
+type CompareRow = { label: string; presence: string; booking: string; ops: string };
+type FaqItem = { q: string; a: string };
+type Conditions = { title: string; body: string }[];
 
-type Row = {
-  label: string;
-  presence: boolean | string;
-  booking: boolean | string;
-  ops: boolean | string;
+export type PricingCopy = {
+  hero: { label: string; h1a: string; h1b: string; sub: string };
+  billing: {
+    annual: string;
+    monthly: string;
+    savings: string;
+    vatNoteAnnual: string;
+    vatNoteMonthly: string;
+  };
+  card: {
+    mostChosen: string;
+    perMonth: string;
+    annualBilling: string;
+    annualSaving: string;
+    monthlyWithAnnual: string;
+    monthlyWithAnnualSaving: string;
+    ctaDefault: string;
+  };
+  ai: {
+    label: string;
+    h2: string;
+    perMonth: string;
+    quotaTitle: string;
+    quotaBody: string;
+    cta: string;
+  };
+  conditions: { label: string; items: Conditions };
+  compare: {
+    label: string;
+    h2: string;
+    sub: string;
+    headerFunction: string;
+    rows: CompareRow[];
+  };
+  faq: { title: string; items: FaqItem[] };
 };
-
-const COMPARE_ROWS: Row[] = [
-  { label: "Sito su misura", presence: true, booking: true, ops: true },
-  { label: "Multilingua · IT EN FR DE ES (+ altre su richiesta)", presence: true, booking: true, ops: true },
-  { label: "Dominio personalizzato", presence: true, booking: true, ops: true },
-  { label: "Hosting, SSL, backup", presence: true, booking: true, ops: true },
-  { label: "Menu digitale aggiornabile", presence: true, booking: true, ops: true },
-  { label: "Recensioni Google sul sito", presence: true, booking: true, ops: true },
-  { label: "Orari e info su Google Maps", presence: true, booking: true, ops: true },
-  { label: "Aggiornamenti tecnici", presence: true, booking: true, ops: true },
-  { label: "Prenotazioni online", presence: false, booking: true, ops: true },
-  { label: "Conferme e reminder automatici", presence: false, booking: true, ops: true },
-  { label: "Calendario di sala", presence: false, booking: true, ops: true },
-  { label: "Click-to-WhatsApp", presence: false, booking: true, ops: true },
-  { label: "Ordini sala & asporto", presence: false, booking: false, ops: true },
-  { label: "Delivery integrato", presence: false, booking: false, ops: true },
-  { label: "CRM clienti & analytics", presence: false, booking: false, ops: true },
-  { label: "Dashboard operativa", presence: false, booking: false, ops: true },
-  { label: "Gestione staff e cucina", presence: false, booking: false, ops: true },
-  {
-    label: "Integrazione AI (add-on)",
-    presence: false,
-    booking: "+€60/mese",
-    ops: "+€60/mese",
-  },
-  {
-    label: "Supporto",
-    presence: "Standard",
-    booking: "Prioritario",
-    ops: "Dedicato",
-  },
-];
-
-// ─── FAQ ──────────────────────────────────────────────────────────────────────
-
-export const PRICING_FAQ = [
-  {
-    q: "Come funziona il contratto?",
-    a: "Il contratto è annuale con pagamento anticipato di 12 mesi. Non è previsto il recesso anticipato, ma puoi disdire il rinnovo automatico con un preavviso di 30 giorni: il contratto scade naturalmente al termine del periodo pagato.",
-  },
-  {
-    q: "Quando va online il sito?",
-    a: "Sito e servizi vengono attivati entro 7 giorni dalla firma del contratto e dal pagamento del setup iniziale.",
-  },
-  {
-    q: "Posso cambiare piano?",
-    a: "Sì. Passare a un piano superiore è possibile in qualsiasi momento ed è attivo immediatamente. Passare a un piano inferiore è possibile, ma la variazione parte dal rinnovo successivo.",
-  },
-  {
-    q: "Cosa cambia tra fatturazione annuale e mensile?",
-    a: "Con pagamento annuale anticipato benefici di un canone mensile equivalente ridotto. Con fatturazione mensile la spesa è ripartita mese per mese, ma il canone è più alto. In entrambi i casi il contratto è annuale.",
-  },
-  {
-    q: "Cos'è il costo di attivazione?",
-    a: "È una tariffa una tantum per la configurazione iniziale: setup tecnico, onboarding e personalizzazione del sito. Non è inclusa nel canone mensile. I prezzi indicati sono indicativi; il preventivo esatto dipende dalla complessità del locale.",
-  },
-  {
-    q: "Cosa è incluso nel canone mensile?",
-    a: "Hosting, dominio, certificati SSL, backup, aggiornamenti tecnici, sicurezza e tutte le nuove funzioni del prodotto. Più il supporto del nostro team.",
-  },
-  {
-    q: "Come funziona l'integrazione AI?",
-    a: "L'assistente IA risponde al telefono 24/7 con la voce e il tono del locale: prende prenotazioni e le scrive direttamente in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce richieste fuori orario. Supporta il cloning vocale opzionale e parla nativamente italiano, inglese, francese, spagnolo e tedesco. È disponibile dai piani Prenotazioni e Operatività al costo aggiuntivo di €60/mese.",
-  },
-  {
-    q: "Come funziona la quota minuti dell'integrazione AI?",
-    a: "Ogni piano AI include una quota mensile di minuti di conversazione. Se la superi, gli addebiti aggiuntivi sono calcolati a prezzo di costo — senza nessun markup da parte nostra. Trovi il dettaglio della quota nel contratto.",
-  },
-  {
-    q: "Ci sono commissioni su prenotazioni, ordini o delivery?",
-    a: "Zero. Menuary non trattiene nulla sui tuoi ordini, prenotazioni o consegne. Quello che incassi è tuo, integrale.",
-  },
-  {
-    q: "Posso usare il mio dominio attuale?",
-    a: "Sì. Possiamo configurare il tuo dominio esistente o registrarne uno nuovo. In entrambi i casi senza costo aggiuntivo.",
-  },
-  {
-    q: "Il sito è disponibile in più lingue?",
-    a: "Sì. Ogni sito viene realizzato in versione multilingua di default, coprendo le principali lingue europee: italiano, inglese, francese, tedesco e spagnolo. Su richiesta è possibile aggiungere altre lingue in base all'utenza tipica del locale — ad esempio russo, arabo, cinese o giapponese per zone ad alta frequentazione turistica internazionale. Il costo delle lingue aggiuntive viene concordato in fase di preventivo.",
-  },
-];
-
-// ─── Componente principale ────────────────────────────────────────────────────
 
 export function MarketingPricingPage({
   plans = PRICING_PLANS,
   aiAddon = AI_ADDON,
   locale = "it",
   priceLocale = "it-IT",
+  copy,
 }: {
   plans?: PricingPlan[];
   aiAddon?: PricingAddon;
   locale?: AppLocale;
   priceLocale?: string;
+  copy: PricingCopy;
 }) {
   const [billing, setBilling] = useState<"annual" | "monthly">("annual");
   const maxSaving = Math.max(...plans.map(annualSaving));
   const displayCurrency = plans[0]?.currency ?? "EUR";
-  const [presenceName, bookingName, operationsName] = getPlanLabels(locale, "food");
+  const [, bookingName] = getPlanLabels(locale, "food");
 
   return (
     <>
@@ -128,18 +79,17 @@ export function MarketingPricingPage({
         <div className="menuary-container pt-20 pb-20 lg:pt-28 lg:pb-24">
           <div className="grid items-end gap-14 lg:grid-cols-[1.2fr_0.8fr]">
             <div className="menuary-fade-up">
-              <p className="menuary-section-label">Offerta</p>
+              <p className="menuary-section-label">{copy.hero.label}</p>
               <h1 className="menuary-display mt-7 text-[clamp(3rem,6.8vw,6rem)] text-balance">
-                Tre piani.
+                {copy.hero.h1a}
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
-                  Nessuna sorpresa.
+                  {copy.hero.h1b}
                 </span>
               </h1>
             </div>
             <p className="menuary-fade-up menuary-fade-up-d1 max-w-md text-[15px] leading-7 text-[var(--menuary-muted)] lg:text-right">
-              Prezzi chiari, zero commissioni su ordini e prenotazioni. Parti
-              da dove vuoi, aggiungi solo ciò che ti serve.
+              {copy.hero.sub}
             </p>
           </div>
         </div>
@@ -160,7 +110,7 @@ export function MarketingPricingPage({
                     : "text-[var(--menuary-muted)] hover:text-[var(--menuary-ink)]")
                 }
               >
-                Annuale anticipato
+                {copy.billing.annual}
               </button>
               <button
                 onClick={() => setBilling("monthly")}
@@ -171,27 +121,34 @@ export function MarketingPricingPage({
                     : "text-[var(--menuary-muted)] hover:text-[var(--menuary-ink)]")
                 }
               >
-                Mensile
+                {copy.billing.monthly}
               </button>
             </div>
             {billing === "annual" && maxSaving > 0 && (
               <p className="text-xs font-semibold text-[var(--menuary-sage)]">
-                Risparmi fino a {formatPlanPrice(maxSaving, displayCurrency, priceLocale)}/anno
+                {copy.billing.savings.replace(
+                  "{amount}",
+                  formatPlanPrice(maxSaving, displayCurrency, priceLocale),
+                )}
               </p>
             )}
           </div>
 
           <div className="grid gap-px sm:gap-6 lg:grid-cols-3">
             {plans.map((plan) => (
-              <PlanCard key={plan.slug} plan={plan} billing={billing} locale={locale} priceLocale={priceLocale} />
+              <PlanCard
+                key={plan.slug}
+                plan={plan}
+                billing={billing}
+                locale={locale}
+                priceLocale={priceLocale}
+                copy={copy.card}
+              />
             ))}
           </div>
 
           <p className="mt-10 text-center text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-            Tutti i prezzi sono IVA esclusa · contratto annuale ·{" "}
-            {billing === "annual"
-              ? "pagamento anticipato 12 mesi"
-              : "fatturazione mensile"}
+            {billing === "annual" ? copy.billing.vatNoteAnnual : copy.billing.vatNoteMonthly}
           </p>
         </div>
       </section>
@@ -201,9 +158,11 @@ export function MarketingPricingPage({
         <div className="menuary-container py-20 lg:py-24">
           <div className="grid items-start gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
             <div>
-              <p className="menuary-section-label">Dal piano {bookingName} in su</p>
+              <p className="menuary-section-label">
+                {copy.ai.label.replace("{plan}", bookingName)}
+              </p>
               <h2 className="menuary-display mt-6 text-[clamp(2rem,4.2vw,3.4rem)] text-balance">
-                Integrazione AI al telefono.
+                {copy.ai.h2}
               </h2>
               <p className="mt-6 text-[17px] leading-[1.75] text-[var(--menuary-muted)]">
                 {aiAddon.description}
@@ -212,13 +171,13 @@ export function MarketingPricingPage({
                 <span className="menuary-display text-[3rem] leading-none">
                   +{formatPlanPrice(aiAddon.monthly, aiAddon.currency ?? displayCurrency, priceLocale)}
                 </span>
-                <span className="text-sm text-[var(--menuary-muted)]">/mese</span>
+                <span className="text-sm text-[var(--menuary-muted)]">{copy.ai.perMonth}</span>
               </div>
               <p className="mt-3 max-w-sm text-sm leading-[1.65] text-[var(--menuary-muted)]">
                 {aiAddon.minutesNote}
               </p>
               <Link href="/contatti" className="menuary-link mt-7 inline-flex">
-                Scopri l&apos;integrazione IA
+                {copy.ai.cta}
                 <ArrowRight size={14} strokeWidth={1.8} className="ml-1" />
               </Link>
             </div>
@@ -250,8 +209,8 @@ export function MarketingPricingPage({
               </ul>
 
               <div className="mt-8 rounded-xl bg-[var(--menuary-ink)]/5 p-4 text-sm leading-[1.6] text-[var(--menuary-ink)]">
-                <span className="font-semibold">Quota minuti mensile inclusa.</span>{" "}
-                Oltre la soglia, addebiti a prezzo di costo — senza markup.
+                <span className="font-semibold">{copy.ai.quotaTitle}</span>{" "}
+                {copy.ai.quotaBody}
               </div>
             </div>
           </div>
@@ -262,46 +221,14 @@ export function MarketingPricingPage({
       <section className="border-t border-[var(--menuary-line)]">
         <div className="menuary-container py-16 lg:py-20">
           <div className="mx-auto max-w-3xl">
-            <p className="menuary-section-label mb-6">Condizioni</p>
+            <p className="menuary-section-label mb-6">{copy.conditions.label}</p>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-[14px] leading-7 text-[var(--menuary-muted)]">
-              <div>
-                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">
-                  Contratto annuale
-                </p>
-                <p>
-                  Durata 12 mesi con pagamento anticipato. Disdetta del rinnovo
-                  automatico con 30 giorni di preavviso — il contratto scade al
-                  termine del periodo pagato.
-                </p>
-              </div>
-              <div>
-                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">
-                  Cambio piano
-                </p>
-                <p>
-                  Upgrade attivo subito, in qualsiasi momento. Downgrade
-                  possibile, parte dal rinnovo successivo.
-                </p>
-              </div>
-              <div>
-                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">
-                  Attivazione
-                </p>
-                <p>
-                  Sito e servizi online entro 7 giorni dalla firma del
-                  contratto. Il costo di setup è una tantum, concordato prima
-                  dell&apos;avvio.
-                </p>
-              </div>
-              <div>
-                <p className="mb-2 font-semibold text-[var(--menuary-ink)]">
-                  IVA e prezzi
-                </p>
-                <p>
-                  Tutti i prezzi sono al netto dell&apos;IVA. La fattura sarà
-                  emessa con l&apos;aliquota vigente.
-                </p>
-              </div>
+              {copy.conditions.items.map((c) => (
+                <div key={c.title}>
+                  <p className="mb-2 font-semibold text-[var(--menuary-ink)]">{c.title}</p>
+                  <p>{c.body}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -312,13 +239,12 @@ export function MarketingPricingPage({
         <div className="menuary-container py-24 lg:py-28">
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div>
-              <p className="menuary-section-label">Confronta</p>
+              <p className="menuary-section-label">{copy.compare.label}</p>
               <h2 className="menuary-display mt-6 text-[clamp(2.2rem,4.4vw,3.6rem)]">
-                Cosa c&apos;è in ogni piano.
+                {copy.compare.h2}
               </h2>
               <p className="mt-6 max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
-                Una vista chiara delle differenze. Nessun asterisco, nessuna
-                fee a sorpresa.
+                {copy.compare.sub}
               </p>
             </div>
 
@@ -327,28 +253,26 @@ export function MarketingPricingPage({
                 <thead>
                   <tr className="border-b border-[var(--menuary-ink)]">
                     <th className="py-4 pr-4 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-semibold">
-                      Funzione
+                      {copy.compare.headerFunction}
                     </th>
-                    <th className="py-4 px-4 text-center font-semibold">{presenceName}</th>
+                    <th className="py-4 px-4 text-center font-semibold">
+                      {getPlanLabels(locale, "food")[0]}
+                    </th>
                     <th className="py-4 px-4 text-center font-semibold text-[var(--menuary-copper)]">
                       {bookingName}
                     </th>
-                    <th className="py-4 pl-4 text-center font-semibold">{operationsName}</th>
+                    <th className="py-4 pl-4 text-center font-semibold">
+                      {getPlanLabels(locale, "food")[2]}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {COMPARE_ROWS.map((row) => (
+                  {copy.compare.rows.map((row) => (
                     <tr key={row.label} className="border-b border-[var(--menuary-line)]">
                       <td className="py-4 pr-4">{row.label}</td>
-                      <td className="py-4 px-4 text-center">
-                        <CellMark value={row.presence} />
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <CellMark value={row.booking} />
-                      </td>
-                      <td className="py-4 pl-4 text-center">
-                        <CellMark value={row.ops} />
-                      </td>
+                      <td className="py-4 px-4 text-center"><CellMark value={row.presence} /></td>
+                      <td className="py-4 px-4 text-center"><CellMark value={row.booking} /></td>
+                      <td className="py-4 pl-4 text-center"><CellMark value={row.ops} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -357,8 +281,6 @@ export function MarketingPricingPage({
           </div>
         </div>
       </section>
-
-      {/* FAQ */}
     </>
   );
 }
@@ -370,11 +292,13 @@ function PlanCard({
   billing,
   locale,
   priceLocale,
+  copy,
 }: {
   plan: PricingPlan;
   billing: "annual" | "monthly";
   locale: AppLocale;
   priceLocale: string;
+  copy: PricingCopy["card"];
 }) {
   const price = billing === "annual" ? plan.price_annual : plan.price_monthly;
   const saving = annualSaving(plan);
@@ -392,7 +316,7 @@ function PlanCard({
     >
       {plan.is_featured && (
         <span className="absolute -top-3 left-8 inline-flex items-center gap-1 rounded-full bg-[var(--menuary-copper)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white">
-          Più scelto
+          {copy.mostChosen}
         </span>
       )}
 
@@ -407,22 +331,25 @@ function PlanCard({
       <div>
         <span className="menuary-price-tag">
           <span className="amount">{formatPlanPrice(price, currency, priceLocale)}</span>
-          <span className="unit">/mese</span>
+          <span className="unit">{copy.perMonth}</span>
         </span>
         {billing === "annual" ? (
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
-            Fatturazione annuale anticipata
+            {copy.annualBilling}
             {saving > 0 && (
               <span className="ml-1 font-semibold text-[var(--menuary-sage)]">
-                · risparmi {formatPlanPrice(saving, currency, priceLocale)}/anno
+                {" "}
+                {copy.annualSaving.replace("{amount}", formatPlanPrice(saving, currency, priceLocale))}
               </span>
             )}
           </p>
         ) : (
           <p className="mt-2 text-xs text-[var(--menuary-muted)]">
-            Con pagamento annuale:{" "}
+            {copy.monthlyWithAnnual}{" "}
             <span className="font-semibold text-[var(--menuary-sage)]">
-              {formatPlanPrice(plan.price_annual, currency, priceLocale)}/mese · risparmi {formatPlanPrice(saving, currency, priceLocale)}/anno
+              {copy.monthlyWithAnnualSaving
+                .replace("{price}", formatPlanPrice(plan.price_annual, currency, priceLocale))
+                .replace("{amount}", formatPlanPrice(saving, currency, priceLocale))}
             </span>
           </p>
         )}
@@ -454,7 +381,7 @@ function PlanCard({
             : "menuary-button menuary-button-light")
         }
       >
-        {plan.cta_label ?? "Richiedi proposta"}
+        {plan.cta_label ?? copy.ctaDefault}
         <ArrowRight size={15} strokeWidth={2} />
       </Link>
     </article>
@@ -471,15 +398,15 @@ function formatPlanPrice(amount: number, currency = "EUR", locale = "it-IT"): st
 
 // ─── CellMark ─────────────────────────────────────────────────────────────────
 
-function CellMark({ value }: { value: boolean | string }) {
-  if (value === true) {
+function CellMark({ value }: { value: string }) {
+  if (value === "true") {
     return (
       <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--menuary-sage)]/15 text-[var(--menuary-sage)]">
         <Check size={14} strokeWidth={2} />
       </span>
     );
   }
-  if (value === false) {
+  if (value === "false") {
     return (
       <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--menuary-line)] text-[var(--menuary-muted)]">
         <Minus size={14} strokeWidth={2} />

@@ -1,0 +1,595 @@
+@layer components {
+
+  /* ════════════════════════════════════════════════════════════
+     PYNK STUDIO — identità visiva tenant
+     Dark-first (palette originale), light mode "soft pynk warmth".
+     Tutti i token sono propri del tenant: nessun riuso cross-tenant.
+     ════════════════════════════════════════════════════════════ */
+
+  .pynk-site {
+    /* Dark — palette originale Pynk Studio */
+    --pynk-bg:            hsl(240 8% 6%);
+    --pynk-fg:            hsl(0 0% 98%);
+    --pynk-card:          hsl(330 28% 13%);
+    --pynk-card-fg:       hsl(0 0% 98%);
+    --pynk-muted:         hsl(330 20% 20%);
+    --pynk-muted-fg:      hsl(330 10% 65%);
+    --pynk-primary:       hsl(330 80% 60%);
+    --pynk-primary-fg:    hsl(0 0% 98%);
+    --pynk-secondary:     hsl(330 80% 80%);
+    --pynk-border:        hsl(330 20% 25%);
+    --pynk-input:         hsl(330 25% 15%);
+    --pynk-radius:        1rem;
+    --pynk-glow:          0 0 60px hsl(330 80% 60% / 0.2);
+    --pynk-shadow-card:   0 8px 32px hsl(240 8% 3% / 0.4);
+    --pynk-gradient:      linear-gradient(135deg, hsl(330 80% 60%), hsl(330 80% 80%));
+    --pynk-font:          -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+
+    min-height: 100vh;
+    background: var(--pynk-bg);
+    color: var(--pynk-fg);
+    font-family: var(--pynk-font);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .pynk-site[data-pynk-theme="light"] {
+    --pynk-bg:            hsl(330 20% 97%);
+    --pynk-fg:            hsl(330 15% 12%);
+    --pynk-card:          hsl(330 20% 93%);
+    --pynk-card-fg:       hsl(330 15% 12%);
+    --pynk-muted:         hsl(330 15% 90%);
+    --pynk-muted-fg:      hsl(330 10% 45%);
+    --pynk-primary:       hsl(330 80% 52%);
+    --pynk-primary-fg:    hsl(0 0% 100%);
+    --pynk-secondary:     hsl(330 60% 70%);
+    --pynk-border:        hsl(330 15% 85%);
+    --pynk-input:         hsl(330 15% 88%);
+    --pynk-glow:          0 0 40px hsl(330 80% 52% / 0.12);
+    --pynk-shadow-card:   0 4px 20px hsl(330 15% 12% / 0.06);
+    --pynk-gradient:      linear-gradient(135deg, hsl(330 80% 52%), hsl(330 60% 70%));
+  }
+
+  .pynk-site * { box-sizing: border-box; }
+  .pynk-site a { color: inherit; text-decoration: none; }
+  .pynk-site button, .pynk-site input, .pynk-site textarea { font: inherit; }
+
+  /* ─── Utility ───────────────────────────────────────────── */
+  .pynk-container { width: min(100% - 48px, 1160px); margin-inline: auto; }
+  .pynk-narrow { max-width: 760px; margin-inline: auto; }
+  .pynk-center { text-align: center; }
+  .pynk-center-col { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; }
+  .pynk-mt-12 { margin-top: 12px; }
+  .pynk-mt-24 { margin-top: 24px; }
+  .pynk-block { display: block; }
+  .pynk-accent { color: var(--pynk-primary); }
+  .pynk-muted { color: var(--pynk-muted-fg); }
+  .pynk-strong { font-weight: 500; color: var(--pynk-fg); }
+  .pynk-note { font-size: 14px; font-weight: 300; color: var(--pynk-muted-fg); max-width: 560px; }
+  .pynk-icon { width: 24px; height: 24px; }
+  .pynk-icon-sm { width: 18px; height: 18px; }
+  .pynk-icon-xs { width: 14px; height: 14px; }
+  .pynk-icon-lg { width: 48px; height: 48px; }
+  .pynk-sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+  .pynk-spin { animation: pynk-spin 1s linear infinite; }
+  @keyframes pynk-spin { to { transform: rotate(360deg); } }
+
+  /* ─── Navbar ────────────────────────────────────────────── */
+  .pynk-nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    backdrop-filter: blur(20px);
+    background: color-mix(in srgb, var(--pynk-bg) 70%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--pynk-border) 35%, transparent);
+  }
+  .pynk-nav-inner { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 24px; }
+  .pynk-logo { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+  .pynk-logo-img { height: 32px; width: auto; }
+  .pynk-logo-text { font-size: 17px; font-weight: 300; letter-spacing: 0.06em; }
+  .pynk-magnetic-letter { display: inline-block; transform-origin: center bottom; will-change: transform; }
+  .pynk-nav-links { display: none; align-items: center; gap: 22px; }
+  .pynk-nav-link { font-size: 14px; font-weight: 300; color: var(--pynk-muted-fg); transition: color 0.25s; }
+  .pynk-nav-link:hover, .pynk-nav-link.is-active { color: var(--pynk-primary); }
+  .pynk-nav-cta {
+    border-radius: 999px;
+    background: var(--pynk-primary);
+    color: var(--pynk-primary-fg);
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 300;
+    transition: background 0.25s, box-shadow 0.3s;
+  }
+  .pynk-nav-cta:hover { background: color-mix(in srgb, var(--pynk-primary) 90%, black); box-shadow: var(--pynk-glow); }
+  .pynk-nav-cta-mobile { display: block; text-align: center; margin-top: 10px; padding: 12px 20px; }
+  .pynk-nav-burger { display: inline-flex; background: none; border: 0; color: var(--pynk-fg); cursor: pointer; padding: 8px; }
+  .pynk-nav-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px 24px 26px;
+    border-top: 1px solid color-mix(in srgb, var(--pynk-border) 35%, transparent);
+    background: color-mix(in srgb, var(--pynk-bg) 92%, transparent);
+    backdrop-filter: blur(20px);
+    animation: pynk-fade-in 0.4s ease-out;
+  }
+  .pynk-nav-mobile-link { font-size: 18px; font-weight: 300; color: var(--pynk-muted-fg); }
+  .pynk-nav-mobile-link.is-active { color: var(--pynk-primary); }
+  .pynk-nav-mobile-row { display: flex; align-items: center; gap: 12px; }
+
+  @media (min-width: 900px) {
+    .pynk-nav-links { display: flex; }
+    .pynk-nav-burger { display: none; }
+    .pynk-nav-mobile { display: none; }
+  }
+
+  .pynk-nerd-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 60%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 35%, transparent);
+    color: var(--pynk-muted-fg);
+    padding: 6px 11px;
+    font-size: 12px;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .pynk-nerd-toggle:hover { border-color: color-mix(in srgb, var(--pynk-primary) 40%, transparent); color: var(--pynk-fg); }
+  .pynk-nerd-toggle.is-on {
+    border-color: color-mix(in srgb, var(--pynk-primary) 55%, transparent);
+    background: color-mix(in srgb, var(--pynk-primary) 16%, transparent);
+    color: var(--pynk-primary);
+  }
+  .pynk-theme-toggle { background: none; border: 0; color: var(--pynk-muted-fg); cursor: pointer; padding: 8px; border-radius: 999px; transition: color 0.25s; }
+  .pynk-theme-toggle:hover { color: var(--pynk-primary); }
+
+  /* ─── Hero ──────────────────────────────────────────────── */
+  .pynk-page { min-height: 100vh; }
+  .pynk-hero {
+    position: relative;
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding-top: 64px;
+  }
+  .pynk-hero-sub { min-height: 55vh; }
+  .pynk-hero-compact { min-height: 45vh; padding-bottom: 32px; }
+  .pynk-hero-content { position: relative; z-index: 10; max-width: 880px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .pynk-hero-title {
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .pynk-hero-subtitle {
+    margin: 24px auto 0;
+    max-width: 620px;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--pynk-muted-fg);
+  }
+  .pynk-hero-ctas { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 36px; }
+  @media (min-width: 640px) { .pynk-hero-ctas { flex-direction: row; } }
+  .pynk-hero-scroll { margin-top: 40px; color: var(--pynk-muted-fg); }
+  .pynk-hero-veil {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--pynk-bg) 30%, transparent),
+      color-mix(in srgb, var(--pynk-bg) 70%, transparent),
+      var(--pynk-bg)
+    );
+  }
+
+  /* Blob organico animato (sostituisce la scena 3D del sito originale) */
+  .pynk-hero-blob { position: absolute; inset: 0; z-index: 0; opacity: 0.45; }
+  .pynk-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    will-change: transform;
+  }
+  .pynk-blob-a {
+    width: 480px; height: 480px;
+    left: 50%; top: 50%;
+    background: radial-gradient(circle, var(--pynk-primary) 0%, transparent 65%);
+    animation: pynk-blob-a 14s ease-in-out infinite;
+  }
+  .pynk-blob-b {
+    width: 340px; height: 340px;
+    left: 30%; top: 30%;
+    background: radial-gradient(circle, var(--pynk-secondary) 0%, transparent 65%);
+    opacity: 0.6;
+    animation: pynk-blob-b 18s ease-in-out infinite;
+  }
+  .pynk-blob-c {
+    width: 280px; height: 280px;
+    left: 62%; top: 26%;
+    background: radial-gradient(circle, var(--pynk-primary) 0%, transparent 70%);
+    opacity: 0.4;
+    animation: pynk-blob-c 22s ease-in-out infinite;
+  }
+  @keyframes pynk-blob-a {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    33% { transform: translate(-44%, -56%) scale(1.12); }
+    66% { transform: translate(-56%, -46%) scale(0.94); }
+  }
+  @keyframes pynk-blob-b {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(60px, -40px) scale(1.18); }
+  }
+  @keyframes pynk-blob-c {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-50px, 60px) scale(0.85); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pynk-blob { animation: none; }
+  }
+
+  .pynk-glow { pointer-events: none; position: absolute; border-radius: 50%; opacity: 0.1; width: 460px; height: 460px; }
+  .pynk-glow-tr { top: 10%; right: 12%; background: radial-gradient(circle, var(--pynk-primary) 0%, transparent 70%); }
+  .pynk-glow-tl { top: 14%; left: 16%; background: radial-gradient(circle, var(--pynk-primary) 0%, transparent 70%); }
+  .pynk-glow-bl { bottom: 18%; left: 8%; background: radial-gradient(circle, var(--pynk-secondary) 0%, transparent 70%); }
+
+  /* ─── Bottoni ───────────────────────────────────────────── */
+  .pynk-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    border: 0;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pynk-btn-lg { padding: 18px 40px; font-size: 18px; }
+  .pynk-btn-block { width: 100%; border-radius: 16px; padding: 18px 28px; font-size: 17px; }
+  .pynk-btn-primary { background: var(--pynk-primary); color: var(--pynk-primary-fg); }
+  .pynk-btn-primary:hover { background: color-mix(in srgb, var(--pynk-primary) 90%, black); transform: scale(1.04); box-shadow: 0 0 60px hsl(330 80% 60% / 0.4); }
+  .pynk-btn-primary:disabled { opacity: 0.6; transform: none; cursor: default; }
+  .pynk-btn-outline {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 70%, transparent);
+    color: var(--pynk-fg);
+  }
+  .pynk-btn-outline:hover { border-color: color-mix(in srgb, var(--pynk-primary) 50%, transparent); }
+  .pynk-arrow { transition: transform 0.3s; }
+  .pynk-group:hover .pynk-arrow { transform: translateX(6px); }
+  .pynk-link-cta { display: inline-flex; align-items: center; gap: 6px; color: var(--pynk-primary); font-weight: 300; }
+  .pynk-link-cta:hover { text-decoration: underline; }
+
+  /* ─── Sezioni ───────────────────────────────────────────── */
+  .pynk-section { position: relative; padding: 110px 0; }
+  .pynk-section-alt { background: linear-gradient(to bottom, var(--pynk-bg), color-mix(in srgb, var(--pynk-card) 20%, var(--pynk-bg))); }
+  .pynk-section-tight { padding-top: 0; }
+  .pynk-section-top { padding-top: 150px; }
+  .pynk-section-fill { min-height: calc(100vh - 64px); display: flex; align-items: center; }
+  .pynk-section-title { font-size: clamp(1.9rem, 4.5vw, 3rem); font-weight: 300; line-height: 1.15; margin: 0; text-align: center; }
+  .pynk-section-title-sm { font-size: clamp(1.5rem, 3.5vw, 2.2rem); text-align: left; margin-bottom: 24px; }
+  .pynk-section-lead { margin: 16px auto 0; max-width: 620px; text-align: center; font-weight: 300; line-height: 1.65; color: var(--pynk-muted-fg); }
+  .pynk-section-head { margin-bottom: 52px; }
+  .pynk-eyebrow { font-size: 14px; font-weight: 300; color: var(--pynk-muted-fg); margin: 0 0 18px; }
+
+  /* ─── Griglie e pannelli ───────────────────────────────── */
+  .pynk-grid-3 { display: grid; gap: 28px; margin-top: 44px; }
+  .pynk-grid-2 { display: grid; gap: 24px; margin-top: 44px; }
+  .pynk-grid-loose { gap: 48px; margin-top: 0; }
+  @media (min-width: 720px) {
+    .pynk-grid-2 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 960px) {
+    .pynk-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  }
+  .pynk-stack-list { display: grid; gap: 28px; }
+
+  .pynk-panel {
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 25%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 12%, transparent);
+    backdrop-filter: blur(6px);
+    padding: 32px;
+    transition: border-color 0.5s, box-shadow 0.5s, background 0.5s;
+  }
+  .pynk-panel:hover {
+    border-color: color-mix(in srgb, var(--pynk-primary) 35%, transparent);
+    box-shadow: 0 24px 60px -28px hsl(330 80% 60% / 0.18);
+  }
+  .pynk-panel-sm { padding: 24px; border-radius: 18px; }
+  .pynk-panel-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--pynk-gradient);
+    color: var(--pynk-primary-fg);
+    box-shadow: 0 8px 22px hsl(330 80% 60% / 0.22);
+    margin-bottom: 18px;
+    flex-shrink: 0;
+  }
+  .pynk-panel-icon-sm { width: 40px; height: 40px; margin-bottom: 0; }
+  .pynk-panel-icon-lg { width: 64px; height: 64px; border-radius: 18px; margin-bottom: 0; }
+  .pynk-panel-icon-soft { background: color-mix(in srgb, var(--pynk-primary) 12%, transparent); color: var(--pynk-primary); box-shadow: none; }
+  .pynk-panel-title { font-size: 21px; font-weight: 300; margin: 0; }
+  .pynk-panel-title-sm { font-size: 18px; }
+  .pynk-panel-desc { margin: 10px 0 0; font-weight: 300; line-height: 1.65; color: color-mix(in srgb, var(--pynk-fg) 80%, transparent); }
+  .pynk-panel-desc-sm { font-size: 14px; color: var(--pynk-muted-fg); }
+
+  .pynk-service-card { padding: 36px; }
+  .pynk-service-row { display: flex; flex-direction: column; gap: 22px; }
+  @media (min-width: 720px) { .pynk-service-row { flex-direction: row; align-items: flex-start; } }
+  .pynk-service-body { min-width: 0; flex: 1; }
+  .pynk-service-title { font-size: clamp(1.4rem, 3vw, 1.85rem); font-weight: 300; color: var(--pynk-primary); margin: 0 0 8px; }
+
+  /* ─── Chips / pills ─────────────────────────────────────── */
+  .pynk-stack-chips { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; }
+  .pynk-chip {
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 35%, transparent);
+    background: color-mix(in srgb, var(--pynk-muted) 40%, transparent);
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--pynk-muted-fg);
+  }
+  .pynk-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 28px; }
+  .pynk-pill {
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 35%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 20%, transparent);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 300;
+    color: color-mix(in srgb, var(--pynk-fg) 80%, transparent);
+    transition: border-color 0.3s;
+  }
+  .pynk-pill:hover { border-color: color-mix(in srgb, var(--pynk-primary) 30%, transparent); }
+  .pynk-pill-contact { display: inline-flex; align-items: center; gap: 8px; }
+  .pynk-contact-pills { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; margin: 0 0 44px; }
+  .pynk-copy-btn { background: none; border: 0; cursor: pointer; color: var(--pynk-muted-fg); padding: 4px; border-radius: 6px; display: inline-flex; }
+  .pynk-copy-btn:hover { background: color-mix(in srgb, var(--pynk-card) 50%, transparent); }
+
+  /* ─── Card portfolio ───────────────────────────────────── */
+  .pynk-card {
+    display: block;
+    height: 100%;
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 25%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 12%, transparent);
+    backdrop-filter: blur(6px);
+    padding: 26px;
+    transition: border-color 0.5s, box-shadow 0.5s;
+  }
+  .pynk-card:hover {
+    border-color: color-mix(in srgb, var(--pynk-primary) 35%, transparent);
+    box-shadow: 0 20px 60px -20px hsl(330 80% 60% / 0.25);
+  }
+  .pynk-card-link { cursor: pointer; }
+  .pynk-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .pynk-card-icon {
+    display: flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 13px;
+    background: var(--pynk-gradient);
+    color: var(--pynk-primary-fg);
+    box-shadow: 0 6px 16px hsl(330 80% 60% / 0.18);
+    flex-shrink: 0;
+  }
+  .pynk-card-icon-img { width: 100%; height: 100%; object-fit: cover; }
+  .pynk-card-kind {
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 35%, transparent);
+    background: color-mix(in srgb, var(--pynk-muted) 30%, transparent);
+    padding: 2px 10px;
+    font-size: 10px;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--pynk-muted-fg);
+  }
+  .pynk-card-title { font-size: 19px; font-weight: 300; margin: 0; }
+  .pynk-card-desc { margin: 8px 0 0; font-size: 14px; font-weight: 300; line-height: 1.65; color: var(--pynk-muted-fg); }
+  .pynk-card-cta { display: inline-flex; align-items: center; gap: 5px; margin-top: 16px; font-size: 12px; font-weight: 300; color: var(--pynk-primary); opacity: 0.85; }
+  .pynk-card:hover .pynk-card-cta { opacity: 1; }
+  .pynk-card-note { margin: 16px 0 0; font-size: 11px; font-weight: 300; color: color-mix(in srgb, var(--pynk-muted-fg) 80%, transparent); }
+
+  /* ─── Consulenza ────────────────────────────────────────── */
+  .pynk-consulting-card {
+    margin-inline: auto;
+    max-width: 680px;
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 25%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 12%, transparent);
+    backdrop-filter: blur(6px);
+    padding: 44px;
+    text-align: center;
+  }
+  .pynk-steps { display: grid; gap: 16px; max-width: 760px; margin-inline: auto; }
+  .pynk-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 25%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 12%, transparent);
+    padding: 22px;
+    transition: border-color 0.3s;
+  }
+  .pynk-step:hover { border-color: color-mix(in srgb, var(--pynk-primary) 30%, transparent); }
+  .pynk-step-title { font-size: 16px; font-weight: 300; margin: 0; }
+  .pynk-step-title-lg { font-size: 20px; }
+  .pynk-step-desc { margin: 4px 0 0; font-size: 14px; font-weight: 300; color: var(--pynk-muted-fg); line-height: 1.6; }
+  .pynk-step-number { font-size: 19px; font-weight: 300; }
+  .pynk-check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .pynk-check-list li { display: flex; align-items: flex-start; gap: 12px; font-weight: 300; color: color-mix(in srgb, var(--pynk-fg) 80%, transparent); }
+  .pynk-check { color: var(--pynk-primary); flex-shrink: 0; margin-top: 3px; }
+  .pynk-final { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+
+  /* ─── Form ──────────────────────────────────────────────── */
+  .pynk-form {
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--pynk-primary) 12%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 40%, transparent);
+    backdrop-filter: blur(24px);
+    padding: clamp(28px, 5vw, 48px);
+    display: grid;
+    gap: 24px;
+  }
+  .pynk-form-row { display: grid; gap: 24px; }
+  @media (min-width: 640px) { .pynk-form-row { grid-template-columns: 1fr 1fr; } }
+  .pynk-field { display: grid; gap: 8px; }
+  .pynk-field label { font-size: 14px; font-weight: 300; color: color-mix(in srgb, var(--pynk-fg) 80%, transparent); }
+  .pynk-field input,
+  .pynk-field textarea,
+  .pynk-unsubscribe-form input {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 50%, transparent);
+    background: var(--pynk-input);
+    color: var(--pynk-fg);
+    padding: 12px 14px;
+    font-weight: 300;
+    transition: border-color 0.25s;
+    outline: none;
+  }
+  .pynk-field input:focus,
+  .pynk-field textarea:focus,
+  .pynk-unsubscribe-form input:focus { border-color: var(--pynk-primary); }
+  .pynk-field input::placeholder,
+  .pynk-field textarea::placeholder { color: color-mix(in srgb, var(--pynk-muted-fg) 75%, transparent); }
+  .pynk-field textarea { min-height: 150px; resize: none; }
+  .pynk-feedback { margin: 0; font-size: 14px; font-weight: 300; }
+  .pynk-feedback-success { color: hsl(150 65% 45%); }
+  .pynk-feedback-error { color: hsl(0 70% 58%); }
+
+  /* ─── Unsubscribe ───────────────────────────────────────── */
+  .pynk-unsubscribe { display: flex; flex-direction: column; align-items: center; gap: 18px; max-width: 480px; text-align: center; }
+  .pynk-unsubscribe-form { display: grid; gap: 12px; width: 100%; margin-top: 8px; }
+
+  /* ─── vCard (/ad/mp) ───────────────────────────────────── */
+  .pynk-vcard-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 64px 24px;
+  }
+  .pynk-vcard {
+    width: 100%;
+    max-width: 430px;
+    border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 40%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 40%, transparent);
+    backdrop-filter: blur(10px);
+    padding: 34px;
+    box-shadow: var(--pynk-shadow-card);
+  }
+  .pynk-vcard-inner { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 24px; }
+  .pynk-vcard-logo { height: 40px; width: auto; opacity: 0.9; }
+  .pynk-vcard-name { font-size: 24px; font-weight: 300; letter-spacing: 0.04em; margin: 0; }
+  .pynk-vcard-role { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0 0; font-size: 14px; font-weight: 300; color: var(--pynk-muted-fg); }
+  .pynk-vcard-rows { display: grid; gap: 12px; width: 100%; text-align: left; }
+  .pynk-vcard-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 13px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 35%, transparent);
+    background: color-mix(in srgb, var(--pynk-bg) 50%, transparent);
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 300;
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .pynk-vcard-row:hover { border-color: color-mix(in srgb, var(--pynk-primary) 40%, transparent); background: color-mix(in srgb, var(--pynk-primary) 5%, transparent); }
+  .pynk-vcard-actions { display: grid; gap: 10px; width: 100%; }
+  @media (min-width: 480px) { .pynk-vcard-actions { grid-template-columns: 1fr 1fr; } }
+  .pynk-vcard-qr { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--pynk-border) 35%, transparent); }
+  .pynk-vcard-qr-box { background: #fff; border-radius: 14px; padding: 12px; box-shadow: 0 2px 8px rgb(0 0 0 / 0.1); }
+  .pynk-vcard-home { margin-top: 40px; font-size: 12px; font-weight: 300; color: color-mix(in srgb, var(--pynk-muted-fg) 70%, transparent); }
+  .pynk-vcard-home a:hover { color: var(--pynk-primary); }
+  .pynk-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 80;
+    border-radius: 12px;
+    background: var(--pynk-card);
+    color: var(--pynk-card-fg);
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 50%, transparent);
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 300;
+    box-shadow: var(--pynk-shadow-card);
+    animation: pynk-fade-in 0.3s ease-out;
+  }
+
+  /* ─── Footer ────────────────────────────────────────────── */
+  .pynk-footer { padding: 24px 0; border-top: 1px solid color-mix(in srgb, var(--pynk-border) 20%, transparent); background: var(--pynk-bg); }
+  .pynk-footer-inner { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 16px; }
+  @media (min-width: 768px) { .pynk-footer-inner { flex-direction: row; } }
+  .pynk-footer-links { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 12px; font-weight: 300; color: color-mix(in srgb, var(--pynk-muted-fg) 70%, transparent); }
+  .pynk-footer-link:hover { color: var(--pynk-primary); }
+  .pynk-footer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12px; font-weight: 300; color: color-mix(in srgb, var(--pynk-muted-fg) 55%, transparent); }
+  .pynk-footer-brand { color: color-mix(in srgb, var(--pynk-primary) 70%, transparent); }
+  .pynk-footer-social { display: inline-flex; align-items: center; gap: 6px; }
+  .pynk-footer-social:hover { color: var(--pynk-primary); }
+
+  @keyframes pynk-fade-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .pynk-toast { transform: translateX(-50%); }
+
+  /* ════════════════════════════════════════════════════════════
+     Pannello gestione — identità PYNK STUDIO (dark, accent pynk).
+     Copre tutti i moduli piattaforma via variabili --ga-*, anche
+     quelli oggi disattivi nei feature-flag del tenant.
+     ════════════════════════════════════════════════════════════ */
+  .gestione-admin[data-gestione-tenant="pynkstudio"] {
+    --ga-bg:          #0F0E11;
+    --ga-surface:     #1A151B;
+    --ga-surface-2:   #211A22;
+    --ga-surface-3:   #2C222D;
+    --ga-border:      rgba(250, 250, 250, 0.10);
+    --ga-border-soft: rgba(250, 250, 250, 0.06);
+    --ga-ink:         #FAFAFA;
+    --ga-ink-muted:   rgba(250, 250, 250, 0.66);
+    --ga-ink-faint:   rgba(250, 250, 250, 0.45);
+    --ga-ink-dim:     rgba(250, 250, 250, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    --ga-font-body:    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  }
+  .gestione-admin[data-gestione-tenant="pynkstudio"] .ga-header {
+    background: rgba(15, 14, 17, 0.84);
+  }
+  .gestione-admin[data-gestione-tenant="pynkstudio"] .ga-input,
+  .gestione-admin[data-gestione-tenant="pynkstudio"] .ga-select,
+  .gestione-admin[data-gestione-tenant="pynkstudio"] .ga-textarea { color-scheme: dark; }
+}

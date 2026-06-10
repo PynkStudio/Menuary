@@ -16,6 +16,7 @@ import { OfficinaKamHomePage } from "@/components/tenants/officinakam/pages/home
 import { LibritechHomePage } from "@/components/tenants/libritech/pages/home";
 import { ValentinaOrciuoliHomePage } from "@/components/tenants/valentina-orciuoli/pages/home";
 import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pages/home";
+import { PynkStudioHomePage } from "@/components/tenants/pynkstudio/pages/home";
 import { JuniorFoodHomePage } from "@/components/tenants/junior-food/pages/home";
 import { KimosHomePage } from "@/components/tenants/kimos/pages/home";
 import { OrpheoShell } from "@/components/orpheo/orpheo-shell";
@@ -60,6 +61,8 @@ export async function generateMetadata({
           ? "Valentina Orciuoli - Fantasy orientale e The Emotion Dragons Trilogy"
         : tenant.id === "studioaranzulla"
           ? "Studio Legale Aranzulla - Avv. Lara Aranzulla"
+        : tenant.id === "pynkstudio"
+          ? "PYNK STUDIO — Software, web e app su misura"
           : isServices
         ? `${tenant.name} - servizi, appuntamenti e listino prezzi`
         : tenant.id === "faak"
@@ -181,6 +184,8 @@ export default async function PreviewTenantHome({
             <LibritechHomePage />
           ) : tenant.id === "studioaranzulla" ? (
             <StudioAranzullaHomePage />
+          ) : tenant.id === "pynkstudio" ? (
+            <PynkStudioHomePage />
           ) : (
             <>
               <ServicesHero />

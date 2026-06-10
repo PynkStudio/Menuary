@@ -9,6 +9,9 @@ import { StudioShell } from "@/components/studio/studio-shell";
 import { BizeryStudioHomePage } from "@/components/bizery-studio/bizery-studio-home-page";
 import { BizeryStudioShell } from "@/components/bizery-studio/bizery-studio-shell";
 import { PreviewNoSlug } from "@/components/preview/preview-no-slug";
+import { PynkStudioHomePage } from "@/components/tenants/pynkstudio/pages/home";
+import { findTenantById } from "@/lib/tenant-registry";
+import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 
 export default async function HomePage() {
   const h = await headers();
@@ -40,5 +43,10 @@ export default async function HomePage() {
       </BizeryStudioShell>
     );
   }
+  // Tenant con sito proprio sul dominio custom: dispatch per id.
+  const tenant =
+    findTenantById(h.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(h.get("host"));
+  if (tenant.id === "pynkstudio") return <PynkStudioHomePage />;
+
   return <TenantHomePage />;
 }

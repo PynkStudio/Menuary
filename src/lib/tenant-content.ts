@@ -1475,6 +1475,128 @@ const kimosContent: TenantContent = {
   },
 };
 
+const pynkstudioContent: TenantContent = {
+  logoSrc: "/pynkstudio/pynk-logo-transparent.png",
+  logoAlt: "PYNK STUDIO",
+  showcaseLogoSrc: "/pynkstudio/pynk-logo.png",
+  showcaseLogoAlt: "PYNK STUDIO — Software, web e app su misura",
+  description:
+    "Sviluppo siti e web app, mobile e desktop. Portfolio reale, stack moderno. Consulenza operativa per PMI quando serve mettere ordine nei processi.",
+  url: "https://pynkstudio.it",
+  social: {
+    instagram: "https://www.instagram.com/pynkstudios",
+    facebook: "https://www.linkedin.com/company/pynkstudio",
+    instagramLabel: "Instagram @pynkstudios",
+    facebookLabel: "LinkedIn PYNK STUDIO",
+  },
+  contact: {
+    phone: "+39 351 376 8607",
+    email: "info@pynkstudio.it",
+    whatsappDigits: "393513768607",
+    whatsappMessage: "Buongiorno, vorrei informazioni su PYNK STUDIO.",
+  },
+  address: {
+    street: "—",
+    zip: "20100",
+    city: "Milano",
+    province: "MI",
+    full: "Milano (MI) · P.IVA 13577530960",
+  },
+  maps: {
+    searchUrl: "https://www.google.com/maps/search/?api=1&query=Milano",
+    embedUrl: "https://www.google.com/maps?q=Milano&output=embed",
+  },
+  hero: {
+    eyebrow: "Software house · Milano",
+    titleLead: "Costruiamo software",
+    titleAccent: "che reggono il mondo reale.",
+    body:
+      "Siti, web app, mobile e desktop quando serve qualcosa di più del generico. Pochi fronzoli, molta cura su performance, accessibilità e manutenibilità.",
+    backdrop: "/pynkstudio/pynk-logo.png",
+    ctaLabel: "Contattaci",
+  },
+  soulsIntro: {
+    eyebrow: "Cosa facciamo",
+    titleLead: "Tre pilastri,",
+    titleAccent: "un solo metodo.",
+    body: "Web, mobile e desktop: delivery surface diverse, stessa cura ingegneristica.",
+  },
+  souls: [
+    {
+      id: "web",
+      kicker: "Web & product engineering",
+      title: "Siti e web app",
+      desc: "Dal sito vetrina al portale con login: velocità percepita, SEO sensato e pannello che non spaventa chi deve aggiornarlo.",
+      href: "/servizi",
+      image: "/pynkstudio/pynk-logo.png",
+    },
+    {
+      id: "mobile",
+      kicker: "Mobile · native & cross",
+      title: "App iOS e Android",
+      desc: "Per utenti finali o squadre sul campo: notifiche, sessione sicura, integrazione con i vostri backend.",
+      href: "/servizi",
+      image: "/pynkstudio/pynk-logo.png",
+    },
+    {
+      id: "desktop",
+      kicker: "Desktop & tooling",
+      title: "Applicazioni desktop",
+      desc: "Programmi su misura per ufficio, produzione o amministrazione, anche quando il browser non basta.",
+      href: "/servizi",
+      image: "/pynkstudio/pynk-logo.png",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "Portfolio",
+    title: "Dove abbiamo già messo le mani.",
+    subtitle:
+      "Prodotti e siti curati end-to-end: software professionale, strumenti operativi, esperienze web, mobile e titoli creativi.",
+  },
+  dishes: [
+    {
+      name: "PerX",
+      desc: "Gestionale desktop per studi peritali: pratiche di sinistro in ordine, meno errori, tempi più contenuti.",
+      price: "perx.it",
+      image: "/pynkstudio/pynk-logo.png",
+      variant: "pink",
+      href: "https://perx.it",
+    },
+    {
+      name: "CAT Dispatcher",
+      desc: "Coordina sul territorio le attività CAT con logiche chiare e automazioni su assegnazioni e comunicazioni.",
+      price: "catdispatcher.it",
+      image: "/pynkstudio/pynk-logo.png",
+      variant: "red",
+      href: "https://catdispatcher.it",
+    },
+    {
+      name: "Echoes",
+      desc: "Scoperta musicale guidata dall'AI: descrivi un'emozione e trova brani che ci stanno dentro.",
+      price: "echoesmusic.it",
+      image: "/pynkstudio/pynk-logo.png",
+      variant: "mustard",
+      href: "https://echoesmusic.it",
+    },
+  ],
+  findUs: {
+    eyebrow: "Contatti",
+    titleLead: "Parliamo del vostro",
+    titleAccent: "progetto.",
+    body: "Sviluppo software o consulenza operativa: call di 20 minuti, senza impegno.",
+    mapTitle: "PYNK STUDIO",
+  },
+  footer: {
+    tagline: "Software, web e app su misura.",
+    body: "PYNK STUDIO — sviluppo siti e web app, mobile e desktop. Consulenza operativa per PMI. P.IVA 13577530960.",
+  },
+  delivery: {
+    title: "Prossimo progetto: il vostro?",
+    body: "Obiettivi, tempi, vincoli: parliamone senza giri di parole.",
+    partners: [],
+  },
+};
+
 import { findTenantById } from "./tenant-registry";
 
 export function getTenantContent(tenantId: string): TenantContent {
@@ -1483,6 +1605,7 @@ export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "valentina-orciuoli") return valentinaOrciuoliContent;
   if (tenantId === "officinakam") return officinakamContent;
   if (tenantId === "studioaranzulla") return studioaranzullaContent;
+  if (tenantId === "pynkstudio") return pynkstudioContent;
   if (tenantId === "doca") return docaContent;
   if (tenantId === "junior-food") return juniorFoodContent;
   if (tenantId === "nom-sushi") return nomSushiContent;

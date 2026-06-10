@@ -302,6 +302,40 @@ export const OFFICINAKAM_MODULE_FLAGS: TenantFeatureFlags = {
   payments: false,
 };
 
+/** PynkStudio: software house / agenzia digitale su verticale services. Sito multi-pagina con portfolio, consulenza e form contatti. */
+export const PYNKSTUDIO_MODULE_FLAGS: TenantFeatureFlags = {
+  website: true,
+  onlineMenu: false,
+  takeaway: false,
+  tableOrders: false,
+  orderKiosk: false,
+  kitchenDisplay: false,
+  dinerSeparation: false,
+  reservations: false,
+  tablePlanner: false,
+  productAvailability: false,
+  upselling: false,
+  crm: true,
+  analytics: true,
+  takeawaySlots: false,
+  deliveryHub: false,
+  cashRegister: false,
+  inventoryFoodCost: false,
+  printStations: false,
+  staffRoles: false,
+  multiLocation: false,
+  favorites: false,
+  reviews: false,
+  gallery: false,
+  shop: false,
+  slabbby: false,
+  aiPhone: false,
+  aiWhatsapp: false,
+  hubriseSync: false,
+  payments: false,
+  mail: true,
+};
+
 /** Orpheo: tenant tecnico/demo per il verticale creative. */
 export const ORPHEO_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
@@ -596,6 +630,31 @@ export const TENANTS: TenantProfile[] = [
       pink: "#A855F7",
     },
     features: OFFICINAKAM_MODULE_FLAGS,
+  },
+
+  {
+    id: "pynkstudio",
+    name: "PynkStudio",
+    label: "Tenant · PynkStudio",
+    vertical: "services",
+    domains: ["pynkstudio.it", "www.pynkstudio.it"],
+    previewSlug: "pynkstudio",
+    enabled: true,
+    status: "active",
+    theme: {
+      // Palette Pynk: flamingo pink su fondo near-black, superfici plum.
+      red: "#E94B97",        // pynk flamingo (primario, CTA)
+      redDark: "#C22D74",    // pynk scuro (hover)
+      peach: "#F0A8CC",      // pynk light (secondario)
+      cream: "#0E0E11",      // sfondo near-black (brand dark-first)
+      ink: "#FAFAFA",        // testo chiaro su fondo scuro
+      brick: "#2B1B26",      // superficie plum (card)
+      mustard: "#E94B97",    // alias accent
+      mustardSoft: "#F4C2DC",
+      green: "#3DD68C",
+      pink: "#E94B97",
+    },
+    features: PYNKSTUDIO_MODULE_FLAGS,
   },
 
   // ── Verticale creative (Orpheo — weuseorpheo.com) ─────────────────────────

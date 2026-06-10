@@ -10,6 +10,12 @@ const TENANT_LOCALES: Record<string, TenantLocaleConfig> = {
     defaultLocale: "it",
     locales: ["it", "pt", "en"],
   },
+  // Predisposto per l'inglese: aggiungere "en" qui (e i copy in pynkstudio-i18n.ts)
+  // quando la traduzione è pronta. Non pubblicare varianti URL senza contenuti.
+  pynkstudio: {
+    defaultLocale: "it",
+    locales: ["it"],
+  },
 };
 
 export function getTenantLocaleConfig(tenantId: string) {

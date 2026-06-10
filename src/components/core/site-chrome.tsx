@@ -11,6 +11,9 @@ import { useTenantOrNull } from "@/components/core/tenant-provider";
 import { resolveTenantFeatures } from "@/lib/tenant-modules";
 import { findTenantByPreviewSlug } from "@/lib/tenant-registry";
 
+/** Tenant che montano una shell completa propria (navbar/footer dentro le pagine). */
+const OWN_SHELL_TENANTS = new Set(["pynkstudio"]);
+
 const EXCLUDED_MODES = new Set([
   "marketing",
   "marketing-bizery",
@@ -65,7 +68,8 @@ export function SiteChrome() {
     isInternal(pathname) ||
     EXCLUDED_MODES.has(mode as never) ||
     isPathPreview(pathname) ||
-    !features
+    !features ||
+    (tenant && OWN_SHELL_TENANTS.has(tenant.id))
   ) {
     return null;
   }
@@ -83,11 +87,13 @@ export function SiteChrome() {
 export function SiteFooterGate() {
   const pathname = usePathname();
   const mode = usePlatformMode();
+  const tenant = useTenantOrNull();
 
   if (
     isInternal(pathname) ||
     EXCLUDED_MODES.has(mode as never) ||
-    isPathPreview(pathname)
+    isPathPreview(pathname) ||
+    (tenant && OWN_SHELL_TENANTS.has(tenant.id))
   ) {
     return null;
   }

@@ -341,6 +341,17 @@ const PREVIEW_GLOBAL_TENANT_ROUTES = new Set([
   "privacy",
   "staff",
   "tavolo",
+  // Route del sito PynkStudio (servite dai segmenti globali dell'app dir).
+  "servizi",
+  "settori",
+  "lavori",
+  "consulenza",
+  "contattaci",
+  "unsubscribe",
+  "checkup-operativo",
+  "per-le-aziende",
+  "metodo",
+  "ad",
 ]);
 
 function handlePreviewTenantLocale(
