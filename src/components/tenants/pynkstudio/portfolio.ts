@@ -1,6 +1,6 @@
 /** Voci portfolio PYNK STUDIO mostrate in /lavori e in anteprima home. */
 
-export type PynkPortfolioKind = "web" | "game" | "tool" | "mobile" | "desktop";
+export type PynkPortfolioKind = "platform" | "web" | "game" | "tool" | "mobile" | "desktop";
 
 export type PynkPortfolioItem = {
   id: string;
@@ -17,6 +17,39 @@ export type PynkPortfolioItem = {
 };
 
 export const pynkPortfolioItems: PynkPortfolioItem[] = [
+  {
+    id: "menuary",
+    title: "Menuary",
+    kind: "platform",
+    descriptionPlain:
+      "Piattaforma multi-tenant per ristoranti, bar e pizzerie: sito su misura, menu digitale, prenotazioni, ordini e gestionale, tutto su un'unica infrastruttura.",
+    descriptionNerd:
+      "Verticale food della piattaforma multi-tenant: Next.js App Router, isolamento per tenant via feature-flag, middleware di routing host-based, Supabase + RLS, SEO/i18n e gestionale modulare.",
+    stack: ["Next.js", "TypeScript", "Supabase", "Multi-tenant"],
+    href: "https://menuary.it",
+  },
+  {
+    id: "bizery",
+    title: "Bizery",
+    kind: "platform",
+    descriptionPlain:
+      "Verticale per studi, saloni e aziende di servizi: sito professionale, listino servizi, appuntamenti e presenza digitale gestita in un posto solo.",
+    descriptionNerd:
+      "Sotto-brand services della piattaforma: stesso core multi-tenant di Menuary, copy e moduli adattati ai servizi, dominio e identità proprie, auth cross-domain via popup.",
+    stack: ["Next.js", "TypeScript", "Supabase", "Multi-tenant"],
+    href: "https://bizery.it",
+  },
+  {
+    id: "orpheo",
+    title: "Orpheo",
+    kind: "platform",
+    descriptionPlain:
+      "Verticale per artisti e professionisti creativi: press kit, catalogo opere, booking, diritti e fanbase in un'unica piattaforma.",
+    descriptionNerd:
+      "Verticale creative della piattaforma: moduli press kit, works catalog, creative booking, rights/royalties e fanbase, costruiti sullo stesso core multi-tenant.",
+    stack: ["Next.js", "TypeScript", "Supabase", "Multi-tenant"],
+    href: "https://weuseorpheo.com",
+  },
   {
     id: "perx",
     title: "PerX",

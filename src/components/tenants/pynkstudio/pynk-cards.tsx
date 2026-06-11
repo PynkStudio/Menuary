@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ExternalLink, Gamepad2, Globe, Monitor, Smartphone, Wrench } from "lucide-react";
+import { ExternalLink, Gamepad2, Globe, Layers, Monitor, Smartphone, Wrench } from "lucide-react";
 import type { PynkPortfolioItem, PynkPortfolioKind } from "./portfolio";
 import { usePynkNerd } from "./pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
@@ -21,6 +21,8 @@ export function PynkStackChips({ items, className = "" }: { items: readonly stri
 
 const kindIcon = (k: PynkPortfolioKind) => {
   switch (k) {
+    case "platform":
+      return Layers;
     case "web":
       return Globe;
     case "game":

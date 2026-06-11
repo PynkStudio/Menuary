@@ -22,6 +22,8 @@ const it = {
   },
   footer: {
     piva: "P.IVA 13577530960",
+    staff: "Area staff",
+    poweredBy: "Powered by",
   },
   homeHero: {
     title: {
@@ -290,6 +292,11 @@ const it = {
       "Dal gestionale al sito vetrina, dal coordinamento sul territorio al gioco per telefono: progetti reali, con una scheda che racconta contesto e valore per ciascuno.",
     cta: "Raccontaci il prossimo",
     srTitle: "Progetti realizzati",
+    sitesTitleLead: "Siti",
+    sitesTitleAccent: "online ora",
+    sitesSubtitle:
+      "Attività reali che gestiamo sulla nostra piattaforma. Clienti già pubblicati sul proprio dominio — clicca per visitare il sito live.",
+    sitesVisit: "Visita il sito",
   },
   consulenzaPage: {
     eyebrow: "Oltre allo sviluppo",
@@ -402,6 +409,7 @@ const it = {
     hint: "Per chi conosce stack e linguaggi",
   },
   portfolioLabels: {
+    platform: "Piattaforma",
     web: "Web",
     game: "Gioco / 3D",
     tool: "Tool",

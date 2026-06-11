@@ -77,7 +77,7 @@ function VisitCardInner() {
     <div className="pynk-page pynk-vcard-page">
       <div className="pynk-vcard">
         <div className="pynk-vcard-inner">
-          <Image src="/pynkstudio/pynk-logo-transparent.png" alt="" width={80} height={40} className="pynk-vcard-logo" />
+          <Image src="/pynkstudio/pynk-logo-transparent.png" alt="" width={64} height={64} className="pynk-vcard-logo" />
 
           <div>
             <h1 className="pynk-vcard-name">{c.name}</h1>

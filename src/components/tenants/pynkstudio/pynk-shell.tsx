@@ -4,9 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Code2, Instagram, Linkedin, Menu, Moon, Sun, X } from "lucide-react";
+import { Code2, Instagram, Linkedin, Lock, Menu, Moon, Sun, X } from "lucide-react";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
+import { buildTenantManagementUrl } from "@/lib/login-url";
 
 // ─── Nerd mode ────────────────────────────────────────────────────────────────
 
@@ -114,7 +115,7 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
     <nav className="pynk-nav">
       <div className="pynk-container pynk-nav-inner">
         <Link href={href("/")} className="pynk-logo" onClick={() => setMenuOpen(false)}>
-          <Image src="/pynkstudio/pynk-logo-transparent.png" alt="Pynk Studio" width={64} height={32} className="pynk-logo-img" />
+          <Image src="/pynkstudio/pynk-logo-transparent.png" alt="Pynk Studio" width={64} height={64} className="pynk-logo-img" />
           <PynkMagneticText text="PYNK STUDIO" className="pynk-logo-text" />
         </Link>
 
@@ -183,6 +184,8 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
 function PynkFooter() {
   const copy = usePynkCopy();
   const href = useTenantLocalizedHref();
+  // Accesso staff/gestione sul dominio del tenant (gestione.pynkstudio.it).
+  const staffUrl = buildTenantManagementUrl("pynkstudio");
   const links = [
     { label: copy.nav.servizi, to: "/servizi" },
     { label: copy.nav.settori, to: "/settori" },
@@ -200,6 +203,12 @@ function PynkFooter() {
               {l.label}
             </Link>
           ))}
+          {staffUrl && (
+            <a href={staffUrl} className="pynk-footer-link pynk-footer-staff">
+              <Lock className="pynk-icon-xs" />
+              {copy.footer.staff}
+            </a>
+          )}
         </div>
         <div className="pynk-footer-meta">
           <span>
@@ -220,6 +229,10 @@ function PynkFooter() {
           >
             <Instagram className="pynk-icon-xs" />
             <span>@pynkstudios</span>
+          </a>
+          <span>·</span>
+          <a href="https://bizery.it" target="_blank" rel="noopener noreferrer" className="pynk-footer-powered">
+            {copy.footer.poweredBy} <span className="pynk-footer-bizery">Bizery</span>
           </a>
         </div>
       </div>

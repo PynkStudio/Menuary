@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { PynkPortfolioCard } from "../pynk-cards";
 import { pynkPortfolioItems } from "../portfolio";
+import type { ShowcaseTenant } from "../showcase";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
-function LavoriInner() {
+function LavoriInner({ sites }: { sites: ShowcaseTenant[] }) {
   const copy = usePynkCopy();
   const href = useTenantLocalizedHref();
 
@@ -50,14 +51,56 @@ function LavoriInner() {
           </div>
         </div>
       </section>
+
+      {sites.length > 0 && (
+        <section className="pynk-section pynk-section-alt" aria-labelledby="siti-online">
+          <div className="pynk-container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              className="pynk-section-head"
+            >
+              <h2 id="siti-online" className="pynk-section-title">
+                {copy.lavoriPage.sitesTitleLead} <span className="pynk-accent">{copy.lavoriPage.sitesTitleAccent}</span>
+              </h2>
+              <p className="pynk-section-lead">{copy.lavoriPage.sitesSubtitle}</p>
+            </motion.div>
+            <div className="pynk-grid-3">
+              {sites.map((site, i) => (
+                <motion.a
+                  key={site.id}
+                  href={site.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.4, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ y: -4 }}
+                  className="pynk-site-card"
+                >
+                  <span className="pynk-site-platform">{site.platform}</span>
+                  <span className="pynk-site-name">{site.name}</span>
+                  <span className="pynk-site-url">{site.url.replace(/^https?:\/\//, "")}</span>
+                  <span className="pynk-site-cta">
+                    {copy.lavoriPage.sitesVisit}
+                    <ArrowUpRight className="pynk-icon-xs" />
+                  </span>
+                </motion.a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
 
-export function PynkStudioLavoriPage() {
+export function PynkStudioLavoriPage({ sites = [] }: { sites?: ShowcaseTenant[] }) {
   return (
     <PynkShell>
-      <LavoriInner />
+      <LavoriInner sites={sites} />
     </PynkShell>
   );
 }

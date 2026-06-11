@@ -416,6 +416,47 @@
   .pynk-card:hover .pynk-card-cta { opacity: 1; }
   .pynk-card-note { margin: 16px 0 0; font-size: 11px; font-weight: 300; color: color-mix(in srgb, var(--pynk-muted-fg) 80%, transparent); }
 
+  /* ─── Card sito tenant live ────────────────────────────── */
+  .pynk-site-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: 100%;
+    border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 25%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 12%, transparent);
+    backdrop-filter: blur(6px);
+    padding: 24px 26px;
+    transition: border-color 0.4s, box-shadow 0.4s;
+  }
+  .pynk-site-card:hover {
+    border-color: color-mix(in srgb, var(--pynk-primary) 35%, transparent);
+    box-shadow: 0 20px 60px -22px hsl(330 80% 60% / 0.25);
+  }
+  .pynk-site-platform {
+    align-self: flex-start;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--pynk-primary) 35%, transparent);
+    background: color-mix(in srgb, var(--pynk-primary) 12%, transparent);
+    color: var(--pynk-primary);
+    padding: 3px 11px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+  .pynk-site-name { font-size: 20px; font-weight: 300; margin-top: 8px; }
+  .pynk-site-url { font-size: 13px; font-weight: 300; color: var(--pynk-muted-fg); word-break: break-all; }
+  .pynk-site-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 14px;
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--pynk-primary);
+  }
+  .pynk-site-card:hover .pynk-site-cta { text-decoration: underline; }
+
   /* ─── Consulenza ────────────────────────────────────────── */
   .pynk-consulting-card {
     margin-inline: auto;
@@ -555,10 +596,14 @@
   @media (min-width: 768px) { .pynk-footer-inner { flex-direction: row; } }
   .pynk-footer-links { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; font-size: 12px; font-weight: 300; color: color-mix(in srgb, var(--pynk-muted-fg) 70%, transparent); }
   .pynk-footer-link:hover { color: var(--pynk-primary); }
+  .pynk-footer-staff { display: inline-flex; align-items: center; gap: 5px; }
   .pynk-footer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12px; font-weight: 300; color: color-mix(in srgb, var(--pynk-muted-fg) 55%, transparent); }
   .pynk-footer-brand { color: color-mix(in srgb, var(--pynk-primary) 70%, transparent); }
   .pynk-footer-social { display: inline-flex; align-items: center; gap: 6px; }
   .pynk-footer-social:hover { color: var(--pynk-primary); }
+  .pynk-footer-powered { display: inline-flex; align-items: center; gap: 5px; }
+  .pynk-footer-powered:hover { color: var(--pynk-fg); }
+  .pynk-footer-bizery { font-weight: 500; color: color-mix(in srgb, var(--pynk-fg) 80%, transparent); }
 
   @keyframes pynk-fade-in {
     from { opacity: 0; transform: translateY(12px); }
