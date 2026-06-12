@@ -20,15 +20,20 @@ import {
   BRAND_INFO,
   FORNITORE,
   MAX_SETUP_RATE,
+  clientName,
+  clientTaxDetails,
   computeYearlyTotal,
   defaultContractData,
   formatEUR,
+  isIndividualClient,
+  normalizeContractData,
   paymentMethodLabel,
   round2,
   setupRateTotal,
   splitSetupEvenly,
   type BillingCycle,
   type ContractBrand,
+  type ContractClientType,
   type ContractData,
   type PaymentMethod,
 } from "@/lib/contracts/menuary-contract";
@@ -84,8 +89,7 @@ export function ContractEditor({ contractId }: Props) {
     if (contractId) {
       const c = getContract(contractId);
       if (c) {
-        setStored(c);
-        setData({
+        const normalizedData = normalizeContractData({
           ...c.data,
           brand: c.data.brand ?? "menuary",
           economiche: {
@@ -94,6 +98,8 @@ export function ContractEditor({ contractId }: Props) {
             setupRate: c.data.economiche.setupRate ?? [c.data.economiche.setup],
           },
         });
+        setStored({ ...c, data: normalizedData });
+        setData(normalizedData);
         setOverrides(c.clauseOverrides);
         setLeadId(c.leadId ?? "");
         setPackageSlug(c.packageSlug ?? "");
@@ -136,11 +142,16 @@ export function ContractEditor({ contractId }: Props) {
     if (!lead) return;
     setLeadId(id);
     const inferredBrand: ContractBrand =
-      lead.business_vertical === "services" ? "bizery" : "menuary";
+      lead.business_vertical === "creative"
+        ? "orpheo"
+        : lead.business_vertical === "services"
+          ? "bizery"
+          : "menuary";
     setData((d) => ({
       ...d,
       brand: inferredBrand,
       cliente: {
+        tipo: lead.billing_cf && !lead.billing_vat ? "individual" : d.cliente.tipo,
         ragioneSociale: lead.billing_name ?? lead.business_name,
         legaleRappresentante: lead.contact_name ?? "",
         piva: lead.billing_vat ?? "",
@@ -322,6 +333,13 @@ export function ContractEditor({ contractId }: Props) {
 
   const statusLabel = stored ? CONTRACT_STATUS_LABELS[stored.status] : "Nuova bozza";
   const statusColor = stored ? CONTRACT_STATUS_COLORS[stored.status] : "bg-gray-100 text-gray-700";
+  const individualClient = isIndividualClient(data);
+  const availablePackages = PLATFORM_PACKAGES.filter(
+    (pkg) =>
+      BRAND_INFO[data.brand].vertical === "creative"
+        ? pkg.vertical === "creative"
+        : pkg.vertical === "both" || pkg.vertical === BRAND_INFO[data.brand].vertical,
+  );
 
   return (
     <div className="contract-page">
@@ -352,7 +370,7 @@ export function ContractEditor({ contractId }: Props) {
               <button type="button"
                 onClick={() => {
                   const d = contractDraft.readDraft();
-                  if (d) { setData(d.data); setOverrides(d.overrides); contractDraft.clearDraft(); }
+                  if (d) { setData(normalizeContractData(d.data)); setOverrides(d.overrides); contractDraft.clearDraft(); }
                 }}
                 style={{ fontSize: 12, fontWeight: 700, background: "#92400e", color: "#fff", border: "none", borderRadius: 999, padding: "3px 10px", cursor: "pointer" }}>
                 Recupera modifiche
@@ -377,9 +395,7 @@ export function ContractEditor({ contractId }: Props) {
           ))}
         </div>
         <p style={{ fontSize: 11, color: "#6b7280", margin: "0 0 12px" }}>
-          {data.brand === "menuary"
-            ? "Verticale food (HORECA)"
-            : "Verticale services (non-HORECA)"}
+          Verticale {BRAND_INFO[data.brand].vertical}
         </p>
 
         <h3>Lead</h3>
@@ -393,25 +409,50 @@ export function ContractEditor({ contractId }: Props) {
         </select>
 
         <h3>Cliente</h3>
-        <label>Ragione sociale</label>
+        <label>Tipo cliente</label>
+        <select
+          value={data.cliente.tipo}
+          onChange={(e) =>
+            setData((d) => ({
+              ...d,
+              cliente: {
+                ...d.cliente,
+                tipo: e.target.value as ContractClientType,
+                piva: e.target.value === "individual" ? "" : d.cliente.piva,
+                legaleRappresentante:
+                  e.target.value === "individual" ? "" : d.cliente.legaleRappresentante,
+                sdi: e.target.value === "individual" ? "" : d.cliente.sdi,
+              },
+            }))
+          }
+        >
+          <option value="business">Azienda / professionista con P.IVA</option>
+          <option value="individual">Persona fisica senza P.IVA</option>
+        </select>
+        <label>{individualClient ? "Nome e cognome" : "Ragione sociale"}</label>
         <input
           value={data.cliente.ragioneSociale}
           onChange={(e) =>
             setData((d) => ({ ...d, cliente: { ...d.cliente, ragioneSociale: e.target.value } }))
           }
         />
-        <label>Legale rappresentante</label>
-        <input
-          value={data.cliente.legaleRappresentante}
-          onChange={(e) =>
-            setData((d) => ({
-              ...d,
-              cliente: { ...d.cliente, legaleRappresentante: e.target.value },
-            }))
-          }
-        />
-        <div className="row">
-          <div>
+        {!individualClient && (
+          <>
+            <label>Legale rappresentante</label>
+            <input
+              value={data.cliente.legaleRappresentante}
+              onChange={(e) =>
+                setData((d) => ({
+                  ...d,
+                  cliente: { ...d.cliente, legaleRappresentante: e.target.value },
+                }))
+              }
+            />
+          </>
+        )}
+        <div className={individualClient ? "" : "row"}>
+          {!individualClient && (
+            <div>
             <label>P.IVA</label>
             <input
               value={data.cliente.piva}
@@ -420,8 +461,9 @@ export function ContractEditor({ contractId }: Props) {
               }
             />
           </div>
+          )}
           <div>
-            <label>C.F.</label>
+            <label>Codice fiscale</label>
             <input
               value={data.cliente.cf}
               onChange={(e) =>
@@ -457,16 +499,18 @@ export function ContractEditor({ contractId }: Props) {
             />
           </div>
         </div>
-        <div className="row">
-          <div>
-            <label>SDI</label>
-            <input
-              value={data.cliente.sdi}
-              onChange={(e) =>
-                setData((d) => ({ ...d, cliente: { ...d.cliente, sdi: e.target.value } }))
-              }
-            />
-          </div>
+        <div className={individualClient ? "" : "row"}>
+          {!individualClient && (
+            <div>
+              <label>SDI</label>
+              <input
+                value={data.cliente.sdi}
+                onChange={(e) =>
+                  setData((d) => ({ ...d, cliente: { ...d.cliente, sdi: e.target.value } }))
+                }
+              />
+            </div>
+          )}
           <div>
             <label>Telefono</label>
             <input
@@ -482,7 +526,7 @@ export function ContractEditor({ contractId }: Props) {
         <label>Pacchetto</label>
         <select value={packageSlug} onChange={(e) => applyPackage(e.target.value)}>
           <option value="">— Seleziona piano —</option>
-          {PLATFORM_PACKAGES.map((p) => (
+          {availablePackages.map((p) => (
             <option key={p.id} value={p.slug}>
               {p.name} ({formatEUR(p.price_monthly)}/mese)
             </option>
@@ -807,16 +851,21 @@ export function ContractEditor({ contractId }: Props) {
           </div>
           <div>
             <h4>Cliente</h4>
-            <strong>{data.cliente.ragioneSociale || "—"}</strong>
+            <strong>{clientName(data)}</strong>
             <br />
-            P.IVA {data.cliente.piva || "—"}{" "}
-            {data.cliente.cf ? `· C.F. ${data.cliente.cf}` : ""}
+            {clientTaxDetails(data)}
             <br />
             {data.cliente.sedeLegale || "—"}
             <br />
-            PEC: {data.cliente.pec || "—"}
-            <br />
-            Legale rappresentante: {data.cliente.legaleRappresentante || "—"}
+            {data.cliente.pec
+              ? `PEC: ${data.cliente.pec}`
+              : `Email: ${data.cliente.email || "—"}`}
+            {!individualClient && (
+              <>
+                <br />
+                Legale rappresentante: {data.cliente.legaleRappresentante || "—"}
+              </>
+            )}
           </div>
         </div>
 
@@ -885,9 +934,9 @@ export function ContractEditor({ contractId }: Props) {
           <div>
             <div>Per il Cliente</div>
             <div style={{ color: "#6b7280", fontSize: 12 }}>
-              {data.cliente.ragioneSociale || "—"}
+              {clientName(data)}
             </div>
-            <div className="sig-line">Timbro e firma</div>
+            <div className="sig-line">{individualClient ? "Firma" : "Timbro e firma"}</div>
           </div>
         </div>
 
@@ -950,7 +999,7 @@ function buildEmailBody(data: ContractData): string {
     : `${formatEUR(data.economiche.canoneMensile)} + IVA / mese`;
 
   const saluto =
-    data.cliente.legaleRappresentante?.trim() ||
+    (isIndividualClient(data) ? "" : data.cliente.legaleRappresentante?.trim()) ||
     data.cliente.ragioneSociale?.trim() ||
     "Cliente";
 
@@ -967,12 +1016,12 @@ Riepilogo delle condizioni economiche:
   }
 • Canone: ${canone}
 • Durata: 12 mesi con rinnovo tacito · preavviso di recesso 30 giorni
-• Foro competente: Milano
+• Foro competente: ${isIndividualClient(data) ? "quello previsto dalla normativa applicabile al consumatore, ove ricorrano i presupposti" : FORNITORE.foro}
 
 Per perfezionare la sottoscrizione le chiediamo cortesemente di:
 
 1. stampare il documento integralmente, comprensivo di tutti gli allegati;
-2. apporre firma e timbro su ciascuna pagina, prestando particolare attenzione alle clausole vessatorie ex artt. 1341-1342 c.c. che richiedono una seconda firma di accettazione specifica;
+2. apporre ${isIndividualClient(data) ? "la firma" : "firma e timbro"} su ciascuna pagina, prestando particolare attenzione alle clausole vessatorie ex artt. 1341-1342 c.c. che richiedono una seconda firma di accettazione specifica;
 3. restituire il contratto controfirmato, scansionato in formato PDF, in risposta alla presente email entro e non oltre 5 (cinque) giorni lavorativi dalla data di ricezione, oppure via PEC all'indirizzo ${FORNITORE.pec}.
 
 In assenza di ricezione del documento controfirmato entro il termine indicato, la presente proposta si intenderà automaticamente decaduta e dovrà essere rinnovata su nuova base economica.
@@ -1028,6 +1077,7 @@ const CONTRACT_STYLES = `
 .brand-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }
 .brand-badge-menuary { background: #fef3c7; color: #92400e; }
 .brand-badge-bizery { background: #dbeafe; color: #1e40af; }
+.brand-badge-orpheo { background: #fae8ff; color: #86198f; }
 .contract-doc .subtitle { color: #6b7280; font-size: 13px; margin-bottom: 24px; }
 .contract-doc .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; font-size: 13px; line-height: 1.5; }
 .contract-doc .parties h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; margin: 0 0 6px; }

@@ -12,6 +12,7 @@ export function buildAttachments(data: ContractData): AttachmentBlock[] {
   const cliente = data.cliente;
   const ragioneSocialeCliente = cliente.ragioneSociale || "_______________";
   const brandName = BRAND_INFO[data.brand].platformName;
+  const supportEmail = BRAND_INFO[data.brand].supportEmail;
 
   return [
     {
@@ -148,7 +149,7 @@ Orario di lavoro standard: lun-ven 09:00-18:00. Interventi su Severity 1 sono ga
         },
         {
           heading: "4. Canali di assistenza",
-          body: `Apertura ticket: support@menuary.it o tramite il pannello admin. Per emergenze di Severity 1, contatto telefonico o WhatsApp al numero comunicato in fase di onboarding.`,
+          body: `Apertura ticket: ${supportEmail} o tramite il pannello admin. Per emergenze di Severity 1, contatto telefonico o WhatsApp al numero comunicato in fase di onboarding.`,
         },
         {
           heading: "5. Penali per inadempimento SLA",
@@ -168,7 +169,7 @@ Orario di lavoro standard: lun-ven 09:00-18:00. Interventi su Severity 1 sono ga
       sections: [
         {
           heading: "1. Uso conforme",
-          body: `Il Cliente si impegna a utilizzare la piattaforma esclusivamente per le finalità connesse alla propria attività imprenditoriale, nel rispetto della legge, dei diritti di terzi e delle presenti condizioni.`,
+          body: `Il Cliente si impegna a utilizzare la piattaforma esclusivamente per le finalità professionali, creative o personali dichiarate in fase di attivazione, nel rispetto della legge, dei diritti di terzi e delle presenti condizioni.`,
         },
         {
           heading: "2. Contenuti vietati",

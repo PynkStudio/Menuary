@@ -117,8 +117,8 @@ export function ValentinaWorksCatalogAdmin() {
             <Newspaper size={18} />
           </div>
           <p className="ga-lead">
-            Bio, copertine, link autore e materiali per collaborazioni editoriali restano separati
-            dal menu food e seguono il verticale creative.
+            Bio, copertine, link autore e materiali per collaborazioni editoriali sono raccolti
+            in uno spazio dedicato alla comunicazione professionale.
           </p>
           <div className="vo-admin-press-links">
             {pressItems.map((item) => {
@@ -140,8 +140,7 @@ export function ValentinaWorksCatalogAdmin() {
             <CalendarDays size={18} />
           </div>
           <p className="ga-lead">
-            Presentazioni, firmacopie e festival vengono gestiti dal modulo booking eventi,
-            non dalle prenotazioni ristorante.
+            Organizza richieste per presentazioni, firmacopie, festival e collaborazioni.
           </p>
           <a className="ga-btn ga-btn-ghost" href="prenotazioni">
             Apri booking eventi <ArrowUpRight size={14} />

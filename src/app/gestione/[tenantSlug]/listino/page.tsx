@@ -26,7 +26,7 @@ export default async function GestioneListinoPage({
           <span className="ga-eyebrow">Catalogo opere</span>
           <h1 className="ga-heading">Opere e progetti</h1>
           <p className="ga-lead">
-            Il catalogo creative usa il verticale Orpheo e non il menu food.
+            Gestisci schede, materiali, crediti e link pubblici delle opere.
           </p>
         </header>
         <section className="ga-empty">

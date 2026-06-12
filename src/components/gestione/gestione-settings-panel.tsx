@@ -31,6 +31,8 @@ type SubscriptionSummary = {
 type Props = {
   tenantSlug: string;
   tenantName: string;
+  productName: string;
+  isCreative?: boolean;
   subscription: SubscriptionSummary | null;
   loginFrom?: LoginFrom;
   isDemo?: boolean;
@@ -82,6 +84,8 @@ function formatAmount(amount: number | null, currency: string) {
 export function GestioneSettingsPanel({
   tenantSlug,
   tenantName,
+  productName,
+  isCreative = false,
   subscription,
   loginFrom,
   isDemo = false,
@@ -138,7 +142,7 @@ export function GestioneSettingsPanel({
         <div className="ga-section-head">
           <div>
             <h2 className="ga-section-title">
-              <CreditCard size={16} /> Abbonamento Menuary
+              <CreditCard size={16} /> Abbonamento {productName}
             </h2>
             <p className="ga-card-hint">Stato commerciale e prossimo rinnovo per {tenantName}.</p>
           </div>
@@ -150,7 +154,7 @@ export function GestioneSettingsPanel({
         <dl className="mt-5 grid gap-3 sm:grid-cols-2">
           <div>
             <dt className="ga-label-text">Piano</dt>
-            <dd className="font-semibold">{subscription?.packageName ?? (isDemo ? "Menuary Pro" : "Non collegato")}</dd>
+            <dd className="font-semibold">{subscription?.packageName ?? (isDemo ? `${productName} Pro` : "Non collegato")}</dd>
           </div>
           <div>
             <dt className="ga-label-text">Canone</dt>
@@ -224,7 +228,9 @@ export function GestioneSettingsPanel({
             <h2 className="ga-section-title">
               <Globe2 size={16} /> Lingue sito
             </h2>
-            <p className="ga-card-hint">Aggiungi o rimuovi lingue gestibili per contenuti e menu.</p>
+            <p className="ga-card-hint">
+              Aggiungi o rimuovi lingue gestibili per {isCreative ? "opere, pagine e contenuti editoriali" : "contenuti e menu"}.
+            </p>
           </div>
         </div>
         <div className="mt-5 flex flex-wrap gap-2">

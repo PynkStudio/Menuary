@@ -556,13 +556,34 @@ export type BillingInvoice = {
   pdfUrl?: string;
 };
 
-export function demoBillingPlan(vertical: "food" | "services"): BillingPlan {
+export function demoBillingPlan(vertical: "food" | "services" | "creative"): BillingPlan {
+  if (vertical === "creative") {
+    return {
+      name: "Orpheo Pro",
+      tier: "pro",
+      monthlyPrice: 49,
+      includedModules: [
+        "Sito autore",
+        "Catalogo opere",
+        "Booking eventi",
+        "Reputation",
+        "Fanbase e community",
+      ],
+      nextBillingDate: "2026-07-05",
+      paymentMethod: {
+        type: "stripe",
+        last4: "4242",
+      },
+      status: "active",
+    };
+  }
+
   return {
     name: vertical === "services" ? "Bizery Pro" : "Menuary Pro",
     tier: "pro",
     monthlyPrice: 49,
     includedModules: [
-      "Menu online",
+      vertical === "services" ? "Listino prezzi" : "Menu online",
       vertical === "services" ? "Appuntamenti" : "Prenotazioni",
       "Google Business",
       "Analytics",

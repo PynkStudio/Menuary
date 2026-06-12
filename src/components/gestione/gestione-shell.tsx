@@ -118,6 +118,7 @@ function GestioneShellInner({
   const isAdmin = currentUser.isTenantAdmin;
   const verticalMeta = getVerticalMeta(tenant.vertical);
   const supportEmail = `support@${verticalMeta.marketingDomain}`;
+  const productName = verticalMeta.productName;
   const menuNavLabel =
     tenant.vertical === "creative"
       ? getModuleLabel("worksCatalog", tenant.vertical)
@@ -138,7 +139,7 @@ function GestioneShellInner({
     { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
     { label: bookingNavLabel, href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations, arrivalKind: "reservations" },
     { label: t.nav.checkout, href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
-    { label: t.nav.shifts, href: sectionHref("turni"), visible: () => access.canManageShifts },
+    { label: t.nav.shifts, href: sectionHref("turni"), visible: () => tenant.vertical !== "creative" && access.canManageShifts },
     { label: t.nav.staff, href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
     { label: t.nav.mail, href: sectionHref("mail"), visible: () => isAdmin && access.canManageMail },
     { label: t.nav.kiosk, href: sectionHref("kiosk"), visible: () => isAdmin && tenant.features.orderKiosk },
@@ -207,7 +208,7 @@ function GestioneShellInner({
                   </Link>
                   <Link href={`${settingsHref}#abbonamento`} role="menuitem" onClick={() => setSettingsOpen(false)}>
                     <CreditCard size={14} />
-                    <span>Abbonamento Menuary</span>
+                    <span>Abbonamento {productName}</span>
                   </Link>
                   <Link href={`${settingsHref}#valuta-lingue`} role="menuitem" onClick={() => setSettingsOpen(false)}>
                     <Globe2 size={14} />
@@ -217,10 +218,12 @@ function GestioneShellInner({
                     <KeyRound size={14} />
                     <span>Password</span>
                   </Link>
-                  <Link href={`${settingsHref}#dati-attivita`} role="menuitem" onClick={() => setSettingsOpen(false)}>
-                    <Building2 size={14} />
-                    <span>Dati attività</span>
-                  </Link>
+                  {tenant.vertical !== "creative" && (
+                    <Link href={`${settingsHref}#dati-attivita`} role="menuitem" onClick={() => setSettingsOpen(false)}>
+                      <Building2 size={14} />
+                      <span>Dati attività</span>
+                    </Link>
+                  )}
                   <button type="button" role="menuitem" onClick={handleLogout} className="ga-settings-popover-danger">
                     <LogOut size={14} />
                     <span>{t.logout}</span>

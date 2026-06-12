@@ -146,6 +146,7 @@ export default async function GestioneLayout({ children, params }: Props) {
 
   const navBaseHref = getGestioneBaseHref(host, tenant);
   const cssVars = tenantThemeCssVars(tenant.theme);
+  const demoEmailDomain = tenant.vertical === "creative" ? "weuseorpheo.com" : tenant.vertical === "services" ? "bizery.it" : "menuary.it";
 
   // Sedi: solo se il tenant ha multiLocation abilitato.
   // Su demo non interroghiamo il DB: l'idratazione avviene client-side da localStorage.
@@ -193,7 +194,7 @@ export default async function GestioneLayout({ children, params }: Props) {
             ta?.email
             ?? emp?.email
             ?? user?.email
-            ?? (isDemo ? "demo@menuary.it" : backendLive ? "backend-live@menuary.it" : ""),
+            ?? (isDemo ? `demo@${demoEmailDomain}` : backendLive ? `backend-live@${demoEmailDomain}` : ""),
           displayName:
             (
               [ta?.first_name, ta?.last_name].filter(Boolean).join(" ").trim()

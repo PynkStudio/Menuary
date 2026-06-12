@@ -35,11 +35,13 @@ export default async function StaffPage({
   return (
     <div>
       <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-50">
-        Account staff
+        {tenant.vertical === "creative" ? "Accessi progetto" : "Account staff"}
       </p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight">Gestione dipendenti</h1>
+      <h1 className="mt-2 text-3xl font-bold tracking-tight">
+        {tenant.vertical === "creative" ? "Gestione collaboratori" : "Gestione dipendenti"}
+      </h1>
       <p className="mt-3 max-w-2xl opacity-70">
-        Invita nuovi dipendenti via email. Riceveranno un link per impostare la password
+        Invita {tenant.vertical === "creative" ? "nuovi collaboratori" : "nuovi dipendenti"} via email. Riceveranno un link per impostare la password
         e accedere al pannello. Puoi revocare l&apos;accesso in qualsiasi momento —
         l&apos;account utente rimarrà attivo come cliente.
       </p>
@@ -47,6 +49,7 @@ export default async function StaffPage({
       <div className="mt-8">
         <GestioneStaffManager
           tenantSlug={tenantSlug}
+          isCreative={tenant.vertical === "creative"}
           initialStaff={staff.map((row) => ({
             id: row.id,
             email: row.email,

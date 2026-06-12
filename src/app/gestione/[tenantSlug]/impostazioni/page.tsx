@@ -9,6 +9,7 @@ import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { getPlatformModeFromHost, isDemoHost } from "@/lib/platform";
 import { TENANTS } from "@/lib/tenant-registry";
 import type { LoginFrom } from "@/lib/login-url";
+import { getVerticalMeta } from "@/lib/vertical";
 
 type SubscriptionSummary = {
   status: string;
@@ -102,6 +103,7 @@ export default async function GestioneSettingsPage({
   const isDemo = isDemoHostname && !demoControl?.backendLive;
   const loginFrom = resolveLoginFrom(host, tenantSlug);
   const access = getGestioneModuleAccess(tenant.features);
+  const vertical = getVerticalMeta(tenant.vertical);
 
   let subscription: SubscriptionSummary | null = null;
 
@@ -129,19 +131,23 @@ export default async function GestioneSettingsPage({
         <span className="ga-eyebrow">Impostazioni</span>
         <h1 className="ga-heading">Impostazioni</h1>
         <p className="ga-lead">
-          Account, abbonamento, valuta, lingue e dati pubblici dell&apos;attività.
+          {tenant.vertical === "creative"
+            ? "Account, abbonamento, valuta e lingue del sito autore."
+            : "Account, abbonamento, valuta, lingue e dati pubblici dell'attività."}
         </p>
       </header>
 
       <GestioneSettingsPanel
         tenantSlug={tenantSlug}
         tenantName={tenant.name}
+        productName={vertical.productName}
+        isCreative={tenant.vertical === "creative"}
         subscription={subscription}
         loginFrom={loginFrom}
         isDemo={isDemo}
       />
 
-      {access.canManageActivity && (
+      {access.canManageActivity && tenant.vertical !== "creative" && (
         <div id="dati-attivita">
           <ActivitySettingsPanel />
         </div>

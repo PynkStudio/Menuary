@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { MenuaryContractPdf } from "@/lib/contracts/menuary-contract-pdf";
-import type { ContractData } from "@/lib/contracts/menuary-contract";
+import {
+  normalizeContractData,
+  type ContractData,
+} from "@/lib/contracts/menuary-contract";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,14 +31,15 @@ export async function POST(req: NextRequest) {
   }
 
   const overrides = body.overrides ?? {};
+  const data = normalizeContractData(body.data);
   try {
     const buffer = await renderToBuffer(
-      <MenuaryContractPdf data={body.data} overrides={overrides} />,
+      <MenuaryContractPdf data={data} overrides={overrides} />,
     );
 
     const fileName =
       body.fileName ??
-      `Contratto-${body.data.numero}-${slug(body.data.cliente.ragioneSociale)}.pdf`;
+      `Contratto-${data.numero}-${slug(data.cliente.ragioneSociale)}.pdf`;
 
     return new NextResponse(buffer, {
       status: 200,
@@ -47,7 +51,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[contracts/pdf] render failed", {
-      contractNumber: body.data.numero,
+      contractNumber: data.numero,
       error: err instanceof Error ? err.message : String(err),
     });
     return NextResponse.json({ error: "PDF render failed" }, { status: 500 });

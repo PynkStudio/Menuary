@@ -11,13 +11,16 @@ export const FORNITORE = {
 
 export type BillingCycle = "monthly" | "yearly";
 export type PaymentMethod = "sdd" | "bonifico" | "carta";
-export type ContractBrand = "menuary" | "bizery";
+export type ContractBrand = "menuary" | "bizery" | "orpheo";
+export type ContractClientType = "business" | "individual";
 
 export const BRAND_INFO: Record<ContractBrand, {
   label: string;
   platformName: string;
   verticalDescription: string;
-  vertical: "food" | "services";
+  vertical: "food" | "services" | "creative";
+  supportEmail: string;
+  privacyUrl: string;
 }> = {
   menuary: {
     label: "Menuary",
@@ -25,6 +28,8 @@ export const BRAND_INFO: Record<ContractBrand, {
     verticalDescription:
       "piattaforma SaaS multi-tenant per la pubblicazione e gestione di siti e moduli operativi per attività HORECA (ristoranti, bar, pizzerie, trattorie)",
     vertical: "food",
+    supportEmail: "support@menuary.it",
+    privacyUrl: "https://menuary.it/privacy",
   },
   bizery: {
     label: "Bizery",
@@ -32,6 +37,17 @@ export const BRAND_INFO: Record<ContractBrand, {
     verticalDescription:
       "piattaforma SaaS multi-tenant per la pubblicazione e gestione di siti e moduli operativi per attività non-HORECA (officine, studi professionali, saloni, centri benessere, servizi)",
     vertical: "services",
+    supportEmail: "support@bizery.it",
+    privacyUrl: "https://bizery.it/privacy",
+  },
+  orpheo: {
+    label: "Orpheo",
+    platformName: "Orpheo",
+    verticalDescription:
+      "piattaforma SaaS multi-tenant per artisti, autori, musicisti, attori, registi, collettivi e professionisti creativi, dedicata alla gestione della presenza digitale, delle opere, del booking, dei diritti e della relazione con il pubblico",
+    vertical: "creative",
+    supportEmail: "support@weuseorpheo.com",
+    privacyUrl: "https://weuseorpheo.com/privacy",
   },
 };
 
@@ -40,6 +56,7 @@ export type ContractData = {
   dataStipula: string;
   brand: ContractBrand;
   cliente: {
+    tipo: ContractClientType;
     ragioneSociale: string;
     legaleRappresentante: string;
     piva: string;
@@ -79,6 +96,7 @@ export function defaultContractData(): ContractData {
     dataStipula: today.toISOString().slice(0, 10),
     brand: "menuary",
     cliente: {
+      tipo: "business",
       ragioneSociale: "",
       legaleRappresentante: "",
       piva: "",
@@ -112,6 +130,33 @@ export function defaultContractData(): ContractData {
     },
     noteAggiuntive: "",
   };
+}
+
+export function normalizeContractData(data: ContractData): ContractData {
+  return {
+    ...data,
+    brand: data.brand in BRAND_INFO ? data.brand : "menuary",
+    cliente: {
+      ...data.cliente,
+      tipo: data.cliente.tipo ?? "business",
+    },
+  };
+}
+
+export function isIndividualClient(data: ContractData): boolean {
+  return data.cliente.tipo === "individual";
+}
+
+export function clientName(data: ContractData): string {
+  return data.cliente.ragioneSociale || "—";
+}
+
+export function clientTaxDetails(data: ContractData): string {
+  const parts = [
+    data.cliente.piva ? `P.IVA ${data.cliente.piva}` : "",
+    data.cliente.cf ? `C.F. ${data.cliente.cf}` : "",
+  ].filter(Boolean);
+  return parts.join(" · ") || "—";
 }
 
 export function formatEUR(value: number): string {

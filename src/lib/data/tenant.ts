@@ -54,6 +54,7 @@ type Row = {
 
 function rowToProfile(r: Row): TenantProfile {
   const fallback = findTenantById(r.id);
+  const keepRegistryIdentity = fallback?.vertical === "creative";
   const dbFeatures =
     r.features && typeof r.features === "object" && !Array.isArray(r.features)
       ? (r.features as Partial<TenantFeatureFlags>)
@@ -65,9 +66,11 @@ function rowToProfile(r: Row): TenantProfile {
 
   return {
     id: r.id,
-    name: r.name ?? fallback?.name ?? r.id,
-    label: r.label ?? fallback?.label ?? r.name ?? r.id,
-    vertical: (r.vertical as TenantProfile["vertical"]) ?? fallback?.vertical ?? "food",
+    name: keepRegistryIdentity ? fallback.name : r.name ?? fallback?.name ?? r.id,
+    label: keepRegistryIdentity ? fallback.label : r.label ?? fallback?.label ?? r.name ?? r.id,
+    vertical: keepRegistryIdentity
+      ? fallback.vertical
+      : (r.vertical as TenantProfile["vertical"]) ?? fallback?.vertical ?? "food",
     domains: r.domains ?? fallback?.domains ?? [],
     previewSlug: r.preview_slug ?? fallback?.previewSlug,
     enabled: r.enabled,

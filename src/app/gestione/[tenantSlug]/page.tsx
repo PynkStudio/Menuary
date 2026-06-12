@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import {
   Settings,
   ClipboardList,
-  UtensilsCrossed,
+  BookOpen,
   CalendarDays,
   Users,
   Star,
@@ -29,6 +29,15 @@ type Kpi = {
 };
 
 async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services" | "creative", t: GestioneMessages["dashboard"]): Promise<Kpi[]> {
+  if (vertical === "creative") {
+    return [
+      { label: "Catalogo opere", value: features.hasCreativeWorks ? "Attivo" : null, hint: features.hasCreativeWorks ? "Schede e press kit" : t.kpi.inactiveModule },
+      { label: "Booking eventi", value: features.hasCreativeBookings ? "Attivo" : null, hint: features.hasCreativeBookings ? "Richieste e disponibilità" : t.kpi.inactiveModule },
+      { label: "Reputation", value: features.hasCreativeAudience ? "Attiva" : null, hint: features.hasCreativeAudience ? "Recensioni e presenza pubblica" : t.kpi.inactiveModule },
+      { label: "Community", value: features.canManageFidelity ? "Attiva" : null, hint: features.canManageFidelity ? "Fanbase e newsletter" : t.kpi.inactiveModule },
+    ];
+  }
+
   const operationalVertical = vertical === "food" ? "food" : "services";
   if (isDemo) {
     const k = demoDashboardKpis(operationalVertical);
@@ -122,7 +131,9 @@ export default async function GestioneDashboardPage({
     tenant.vertical === "creative" ? getModuleLabel("fanbaseCommunity", tenant.vertical) : t.actions.analytics.label;
 
   const dashboardCopy =
-    tenant.vertical === "services" || tenant.vertical === "creative"
+    tenant.vertical === "creative"
+      ? "Da qui gestisci sito, catalogo opere, booking eventi, reputation, community e materiali editoriali."
+      : tenant.vertical === "services"
       ? interpolate(t.copyServices, {
           menuLabel: worksLabel.toLowerCase(),
           reservationsLabel: bookingLabel.toLowerCase(),
@@ -135,23 +146,23 @@ export default async function GestioneDashboardPage({
   const quickActions: { href: string; label: string; hint: string; icon: React.ReactNode; show: boolean }[] = [
     {
       href: `${base}/impostazioni`,
-      label: t.actions.activity.label,
-      hint: t.actions.activity.hint,
+      label: tenant.vertical === "creative" ? "Presenza online" : t.actions.activity.label,
+      hint: tenant.vertical === "creative" ? "Sito, contatti e contenuti" : t.actions.activity.hint,
       icon: <Settings size={16} strokeWidth={2} />,
       show: access.canManageActivity,
     },
     {
       href: `${base}/prenotazioni`,
       label: bookingLabel,
-      hint: t.actions.reservations.hint,
+      hint: tenant.vertical === "creative" ? "Eventi e collaborazioni" : t.actions.reservations.hint,
       icon: <CalendarDays size={16} strokeWidth={2} />,
       show: access.canManageReservations,
     },
     {
       href: `${base}/listino`,
       label: worksLabel,
-      hint: t.actions.menu.hint,
-      icon: <UtensilsCrossed size={16} strokeWidth={2} />,
+      hint: tenant.vertical === "creative" ? "Libri, press kit e provider" : t.actions.menu.hint,
+      icon: <BookOpen size={16} strokeWidth={2} />,
       show: access.canManageMenu,
     },
     {
@@ -178,7 +189,7 @@ export default async function GestioneDashboardPage({
     {
       href: `${base}/analytics`,
       label: audienceLabel,
-      hint: t.actions.analytics.hint,
+      hint: tenant.vertical === "creative" ? "Reputation e pubblico" : t.actions.analytics.hint,
       icon: <BarChart3 size={16} strokeWidth={2} />,
       show: access.canViewAnalytics,
     },

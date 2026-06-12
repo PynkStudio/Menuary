@@ -168,9 +168,14 @@ export default async function PrenotazioniPage({
     tenant.vertical === "creative"
       ? getModuleLabel("creativeBooking", tenant.vertical)
       : getModuleLabel("reservations", tenant.vertical);
-  const lead = isServices
-    ? interpolate(t.leadServices, { businessNoun: vertical.businessNoun })
-    : t.leadFood;
+  const lead =
+    tenant.vertical === "creative"
+      ? "Gestisci richieste per presentazioni, firmacopie, festival e collaborazioni: conferma, sposta o rifiuta."
+      : isServices
+        ? interpolate(t.leadServices, { businessNoun: vertical.businessNoun })
+        : t.leadFood;
+  const filterLabel = tenant.vertical === "creative" ? "Filtra richieste booking" : t.filterLabel;
+  const emptyLabel = tenant.vertical === "creative" ? "Nessuna richiesta di booking in questo intervallo." : t.empty;
 
   return (
     <div className="ga-dashboard">
@@ -180,9 +185,9 @@ export default async function PrenotazioniPage({
         <p className="ga-lead">{lead}</p>
       </header>
 
-      <ReservationSettingsPanel />
+      {tenant.vertical !== "creative" && <ReservationSettingsPanel />}
 
-      <nav className="ga-pills" aria-label={t.filterLabel}>
+      <nav className="ga-pills" aria-label={filterLabel}>
         {FILTERS.map((opt) => (
           <Link
             key={opt.id}
@@ -197,7 +202,7 @@ export default async function PrenotazioniPage({
 
       {reservations.length === 0 ? (
         <div className="ga-empty">
-          {t.empty}
+          {emptyLabel}
         </div>
       ) : (
         <div className="ga-reservation-list">

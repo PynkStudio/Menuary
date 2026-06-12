@@ -3,6 +3,7 @@ import {
   BRAND_INFO,
   formatEUR,
   computeYearlyTotal,
+  isIndividualClient,
   paymentMethodLabel,
   type ContractData,
 } from "./menuary-contract";
@@ -21,6 +22,10 @@ function numberToItalian(n: number): string {
 export function buildClauses(data: ContractData): ClauseBlock[] {
   const { cliente, servizio, economiche } = data;
   const brandInfo = BRAND_INFO[data.brand];
+  const individualClient = isIndividualClient(data);
+  const clienteEpigrafe = individualClient
+    ? `${cliente.ragioneSociale || "_______________"}, C.F. ${cliente.cf || "_______________"}, residente in ${cliente.sedeLegale || "_______________"}, email/PEC ${cliente.pec || cliente.email || "_______________"}`
+    : `${cliente.ragioneSociale || "_______________"}, P.IVA ${cliente.piva || "_______________"}, C.F. ${cliente.cf || "_______________"}, con sede in ${cliente.sedeLegale || "_______________"}, PEC ${cliente.pec || "_______________"}, in persona del legale rappresentante ${cliente.legaleRappresentante || "_______________"}`;
   const annuale = economiche.cicloFatturazione === "yearly";
   const totaleAnnuale = computeYearlyTotal(
     economiche.canoneMensile,
@@ -31,7 +36,7 @@ export function buildClauses(data: ContractData): ClauseBlock[] {
     {
       id: "premesse",
       title: "Premesse",
-      body: `Il presente contratto (di seguito "Contratto") è stipulato tra ${FORNITORE.ragioneSociale}, P.IVA ${FORNITORE.piva}, con sede in ${FORNITORE.indirizzo}, PEC ${FORNITORE.pec}, in persona del legale rappresentante ${FORNITORE.legaleRappresentante} (di seguito "Fornitore" o "${brandInfo.platformName}"), e ${cliente.ragioneSociale || "_______________"}, P.IVA ${cliente.piva || "_______________"}, C.F. ${cliente.cf || "_______________"}, con sede in ${cliente.sedeLegale || "_______________"}, PEC ${cliente.pec || "_______________"}, in persona del legale rappresentante ${cliente.legaleRappresentante || "_______________"} (di seguito "Cliente").
+      body: `Il presente contratto (di seguito "Contratto") è stipulato tra ${FORNITORE.ragioneSociale}, P.IVA ${FORNITORE.piva}, con sede in ${FORNITORE.indirizzo}, PEC ${FORNITORE.pec}, in persona del legale rappresentante ${FORNITORE.legaleRappresentante} (di seguito "Fornitore" o "${brandInfo.platformName}"), e ${clienteEpigrafe} (di seguito "Cliente").
 
 Premesso che il Fornitore eroga "${brandInfo.platformName}", ${brandInfo.verticalDescription}, e che il Cliente intende acquistare il servizio nei termini di seguito indicati.`,
     },
@@ -151,7 +156,7 @@ In nessun caso il Fornitore risponderà di danni indiretti, mancato guadagno, pe
       title: "11. Trattamento dei dati personali (GDPR)",
       body: `Le Parti si danno atto che, nell'erogazione del servizio, il Fornitore tratta dati personali di cui il Cliente è Titolare del trattamento ai sensi del Reg. UE 679/2016 ("GDPR"). Con la sottoscrizione del Contratto, il Cliente nomina il Fornitore Responsabile del trattamento ex art. 28 GDPR, secondo l'atto di nomina che costituisce Allegato A al presente Contratto.
 
-Il Fornitore tratta i dati personali del Cliente (legale rappresentante, referenti, dati di contatto) in qualità di autonomo Titolare per le finalità di esecuzione contrattuale, fatturazione e adempimenti di legge, secondo l'informativa privacy disponibile su menuary.it/privacy.
+Il Fornitore tratta i dati personali del Cliente (${individualClient ? "dati identificativi e di contatto" : "legale rappresentante, referenti e dati di contatto"}) in qualità di autonomo Titolare per le finalità di esecuzione contrattuale, fatturazione e adempimenti di legge, secondo l'informativa privacy disponibile su ${brandInfo.privacyUrl}.
 
 Cessazione e portabilità dei dati: alla cessazione del Contratto, per qualsiasi causa, il Fornitore conserverà i dati e i contenuti del Cliente per un periodo di 12 (dodici) mesi, durante il quale il Cliente potrà richiederne l'export in formato strutturato (CSV/JSON). Decorso tale termine, il Fornitore procederà alla cancellazione definitiva dei dati, salvo obblighi di conservazione previsti dalla legge (es. dati fiscali e contabili).
 
@@ -192,7 +197,9 @@ Le modifiche meramente tecniche, evolutive o di sicurezza non costituiscono modi
     {
       id: "legge-foro",
       title: "17. Legge applicabile e foro competente",
-      body: `Il Contratto è regolato dalla legge italiana. Per ogni controversia derivante dal Contratto o ad esso connessa, sarà competente in via esclusiva il Foro di ${FORNITORE.foro}, con espressa esclusione di ogni altro foro eventualmente concorrente.`,
+      body: individualClient
+        ? `Il Contratto è regolato dalla legge italiana. Qualora il Cliente rivesta la qualità di consumatore, per ogni controversia derivante dal Contratto o ad esso connessa sarà competente il foro inderogabile previsto dalla normativa a tutela del consumatore. Negli altri casi sarà competente in via esclusiva il Foro di ${FORNITORE.foro}.`
+        : `Il Contratto è regolato dalla legge italiana. Per ogni controversia derivante dal Contratto o ad esso connessa, sarà competente in via esclusiva il Foro di ${FORNITORE.foro}, con espressa esclusione di ogni altro foro eventualmente concorrente.`,
     },
     {
       id: "finali",

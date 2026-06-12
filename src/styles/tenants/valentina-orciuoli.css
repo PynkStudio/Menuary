@@ -88,9 +88,15 @@
   }
 
   .vo-header-reveal {
-    position: relative;
-    z-index: 4;
-    padding-top: 1.15rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 0.85rem 0 0.65rem;
+    pointer-events: none;
+  }
+
+  .vo-header-reveal .vo-header {
+    pointer-events: auto;
   }
 
   .vo-brand-mark {
@@ -214,15 +220,25 @@
   }
 
   .vo-scroll-cue {
-    display: inline-grid;
+    position: absolute;
+    left: 50%;
+    bottom: max(1.5rem, env(safe-area-inset-bottom));
+    z-index: 4;
+    display: grid;
     justify-items: center;
     gap: 0.55rem;
-    margin-top: 1.5rem;
     color: rgba(242, 216, 148, 0.78);
     font-size: 0.7rem;
     font-weight: 850;
     letter-spacing: 0.18em;
     text-transform: uppercase;
+    transform: translateX(-50%);
+    transition: color 180ms ease, transform 180ms ease;
+  }
+
+  .vo-scroll-cue:hover {
+    color: var(--vo-gold-soft);
+    transform: translate(-50%, -0.2rem);
   }
 
   .vo-scroll-cue span {
@@ -1737,8 +1753,12 @@
     .vo-header {
       align-items: flex-start;
       gap: 0.8rem;
-      margin-top: 0.8rem;
+      margin-top: 0;
       padding: 0.34rem 0.62rem;
+    }
+
+    .vo-header-reveal {
+      padding-top: 0.55rem;
     }
 
     .vo-brand-mark {

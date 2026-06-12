@@ -137,9 +137,74 @@ export default async function AnalyticsPage({
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 
+  if (tenant.vertical === "creative") {
+    const creativeModules = [
+      {
+        label: "Catalogo opere",
+        detail: "Schede libro, copertine, link provider e materiali editoriali.",
+        active: Boolean(tenant.features.worksCatalog || tenant.features.pressKit),
+      },
+      {
+        label: "Reputation",
+        detail: "Recensioni e segnali dai canali pubblici collegati.",
+        active: Boolean(tenant.features.reputationReviews),
+      },
+      {
+        label: "Fanbase e community",
+        detail: "Newsletter, pubblico e campagne editoriali.",
+        active: Boolean(tenant.features.fanbaseCommunity),
+      },
+      {
+        label: "Booking eventi",
+        detail: "Presentazioni, firmacopie, festival e collaborazioni.",
+        active: Boolean(tenant.features.creativeBooking),
+      },
+    ];
+
+    return (
+      <div className="ga-dashboard">
+        <header>
+          <span className="ga-eyebrow">Pubblico e presenza</span>
+          <h1 className="ga-heading">Analytics editoriali</h1>
+          <p className="ga-lead">
+            Stato dei canali che raccontano opere, reputazione e rapporto con la community di {tenant.name}.
+          </p>
+        </header>
+
+        <section className="ga-section">
+          <div className="ga-section-head">
+            <h2 className="ga-section-title">Canali monitorati</h2>
+            {auth.isDemo && <span className="ga-section-hint">Demo: configurazione di esempio</span>}
+          </div>
+          <div className="ga-modules-grid">
+            {creativeModules.map((module) => (
+              <article className="ga-module" key={module.label}>
+                <div>
+                  <span className="ga-module-name">{module.label}</span>
+                  <p className="ga-kpi-hint">{module.detail}</p>
+                </div>
+                <span className="ga-module-status" data-status={module.active ? "ok" : "warn"}>
+                  {module.active ? "attivo" : "da configurare"}
+                </span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="ga-card">
+          <h2 className="ga-section-title">Dati editoriali</h2>
+          <p className="ga-lead">
+            Le metriche reali compariranno quando i provider pubblici e i moduli community saranno collegati.
+            La schermata resta concentrata sui dati editoriali pertinenti al progetto.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
   const demoVertical = tenant.vertical === "food" ? "food" : "services";
   const data = auth.isDemo ? demoAnalytics(demoVertical) : await fetchAnalytics(tenantSlug, t);
-  const isServices = tenant.vertical === "services" || tenant.vertical === "creative";
+  const isServices = tenant.vertical === "services";
 
   return (
     <div className="ga-dashboard">

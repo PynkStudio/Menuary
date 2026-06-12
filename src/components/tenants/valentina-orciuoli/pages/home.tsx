@@ -69,12 +69,12 @@ export function ValentinaOrciuoliHomePage() {
                 Scopri la Trilogia dei Draghi delle Emozioni <ArrowRight size={16} />
               </a>
             </div>
-            <a className="vo-scroll-cue" href="#libri" aria-label="Scorri verso i contenuti">
-              <span />
-              Scorri
-            </a>
           </motion.div>
         </div>
+        <a className="vo-scroll-cue" href="#libri" aria-label="Scorri verso i contenuti">
+          <span />
+          Scorri
+        </a>
       </section>
 
       <div className="vo-sticky-header-region" ref={headerRegionRef}>

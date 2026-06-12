@@ -10,7 +10,7 @@ import {
   listContracts,
   type StoredContract,
 } from "@/lib/contracts/contracts-store";
-import { formatEUR, computeYearlyTotal } from "@/lib/contracts/menuary-contract";
+import { BRAND_INFO, formatEUR, computeYearlyTotal } from "@/lib/contracts/menuary-contract";
 
 export function ContractsList() {
   const [items, setItems] = useState<StoredContract[]>([]);
@@ -116,11 +116,21 @@ export function ContractsList() {
                           fontWeight: 700,
                           textTransform: "uppercase",
                           letterSpacing: "0.04em",
-                          background: c.data.brand === "bizery" ? "#dbeafe" : "#fef3c7",
-                          color: c.data.brand === "bizery" ? "#1e40af" : "#92400e",
+                          background:
+                            c.data.brand === "orpheo"
+                              ? "#fae8ff"
+                              : c.data.brand === "bizery"
+                                ? "#dbeafe"
+                                : "#fef3c7",
+                          color:
+                            c.data.brand === "orpheo"
+                              ? "#86198f"
+                              : c.data.brand === "bizery"
+                                ? "#1e40af"
+                                : "#92400e",
                         }}
                       >
-                        {c.data.brand === "bizery" ? "Bizery" : "Menuary"}
+                        {BRAND_INFO[c.data.brand ?? "menuary"].label}
                       </span>
                     </td>
                     <td style={td}>{c.data.cliente.ragioneSociale || "—"}</td>

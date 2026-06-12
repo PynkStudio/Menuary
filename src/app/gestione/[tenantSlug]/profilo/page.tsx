@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isDemoHost } from "@/lib/platform";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { TENANTS } from "@/lib/tenant-registry";
+import { getVerticalMeta } from "@/lib/vertical";
 
 type ProfileSource = {
   email: string | null;
@@ -16,7 +17,7 @@ type ProfileSource = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  siteadmin: "Amministratore Menuary",
+  siteadmin: "Amministratore piattaforma",
   tenantadmin: "Titolare",
   manager: "Manager",
   chef: "Chef",
@@ -44,6 +45,7 @@ export default async function GestioneProfiloPage({
 
   const host = (await headers()).get("host");
   const isDemo = isDemoHost(host);
+  const vertical = getVerticalMeta(tenant.vertical);
 
   if (isDemo) {
     return (
@@ -51,7 +53,7 @@ export default async function GestioneProfiloPage({
         <GestioneProfileForm
           initial={{
             tenantSlug,
-            email: "demo@menuary.it",
+            email: `demo@${vertical.marketingDomain}`,
             roleLabel: "Demo",
             firstName: "Demo",
             lastName: "",

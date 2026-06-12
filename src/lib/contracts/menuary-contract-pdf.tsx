@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Document,
   Page,
@@ -8,8 +9,11 @@ import {
 import {
   BRAND_INFO,
   FORNITORE,
+  clientName,
+  clientTaxDetails,
   computeYearlyTotal,
   formatEUR,
+  isIndividualClient,
   paymentMethodLabel,
   type ContractData,
 } from "./menuary-contract";
@@ -38,6 +42,7 @@ const styles = StyleSheet.create({
   },
   brandBadgeMenuary: { backgroundColor: "#fef3c7", color: "#92400e" },
   brandBadgeBizery: { backgroundColor: "#dbeafe", color: "#1e40af" },
+  brandBadgeOrpheo: { backgroundColor: "#fae8ff", color: "#86198f" },
   h1: { fontSize: 18, fontFamily: "Helvetica-Bold", marginBottom: 4 },
   subtitle: { fontSize: 10, color: "#6b7280", marginBottom: 16 },
   partiesRow: { flexDirection: "row", marginVertical: 12, gap: 16 },
@@ -128,6 +133,7 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
   );
 
   const brandName = BRAND_INFO[data.brand].platformName;
+  const individualClient = isIndividualClient(data);
 
   return (
     <Document
@@ -139,7 +145,11 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
         <Text
           style={[
             styles.brandBadge,
-            data.brand === "bizery" ? styles.brandBadgeBizery : styles.brandBadgeMenuary,
+            data.brand === "orpheo"
+              ? styles.brandBadgeOrpheo
+              : data.brand === "bizery"
+                ? styles.brandBadgeBizery
+                : styles.brandBadgeMenuary,
           ]}
         >
           {brandName}
@@ -160,16 +170,17 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
           </View>
           <View style={styles.partyBox}>
             <Text style={styles.partyLabel}>Cliente</Text>
-            <Text style={styles.partyName}>
-              {data.cliente.ragioneSociale || "—"}
-            </Text>
-            <Text>
-              P.IVA {data.cliente.piva || "—"}
-              {data.cliente.cf ? ` · C.F. ${data.cliente.cf}` : ""}
-            </Text>
+            <Text style={styles.partyName}>{clientName(data)}</Text>
+            <Text>{clientTaxDetails(data)}</Text>
             <Text>{data.cliente.sedeLegale || "—"}</Text>
-            <Text>PEC: {data.cliente.pec || "—"}</Text>
-            <Text>Legale rappr.: {data.cliente.legaleRappresentante || "—"}</Text>
+            <Text>
+              {data.cliente.pec
+                ? `PEC: ${data.cliente.pec}`
+                : `Email: ${data.cliente.email || "—"}`}
+            </Text>
+            {!individualClient && (
+              <Text>Legale rappr.: {data.cliente.legaleRappresentante || "—"}</Text>
+            )}
           </View>
         </View>
 
@@ -237,9 +248,9 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
           </View>
           <View style={styles.sigBox}>
             <Text style={styles.sigLabel}>
-              Per il Cliente — {data.cliente.ragioneSociale || "—"}
+              Per il Cliente — {clientName(data)}
             </Text>
-            <Text style={styles.sigLine}>Timbro e firma</Text>
+            <Text style={styles.sigLine}>{individualClient ? "Firma" : "Timbro e firma"}</Text>
           </View>
         </View>
 

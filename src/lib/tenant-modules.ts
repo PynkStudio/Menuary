@@ -43,6 +43,10 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
         label: "Sito dell'attività",
         description: "Pubblica pagine, contatti, indirizzo, orari, brand e contenuti base dell'azienda.",
       },
+      creative: {
+        label: "Sito autore",
+        description: "Pubblica bio, opere, contatti, eventi, brand e contenuti editoriali.",
+      },
     },
   },
   {
@@ -314,6 +318,10 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
       services: {
         label: "Analytics attività",
         description: "Mostra richieste, appuntamenti, servizi più consultati, canali e conversioni.",
+      },
+      creative: {
+        label: "Analytics editoriali",
+        description: "Mostra interesse sulle opere, canali pubblici, reputation e andamento della community.",
       },
     },
   },

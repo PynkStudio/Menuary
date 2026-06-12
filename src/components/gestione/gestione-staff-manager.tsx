@@ -24,6 +24,7 @@ interface StaffRow {
 interface Props {
   tenantSlug: string;
   initialStaff: StaffRow[];
+  isCreative?: boolean;
 }
 
 const INVITABLE_ROLES: StoreRole[] = [
@@ -46,7 +47,7 @@ function hydrateStaffFromDemo(tenantSlug: string): StaffRow[] | null {
   }));
 }
 
-export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
+export function GestioneStaffManager({ tenantSlug, initialStaff, isCreative = false }: Props) {
   const router = useRouter();
   const [staff, setStaff] = useState<StaffRow[]>(initialStaff);
   const [pending, startTransition] = useTransition();
@@ -59,7 +60,7 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
   // Form invito
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [role, setRole] = useState<StoreRole>("cameriere");
+  const [role, setRole] = useState<StoreRole>(isCreative ? "manager" : "cameriere");
   const [canCassa, setCanCassa] = useState(false);
   const [canManageShifts, setCanManageShifts] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -149,7 +150,7 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
       <section className="rounded-3xl border border-current/10 bg-white/50 p-6 backdrop-blur">
         <div className="flex items-center gap-2">
           <UserPlus size={18} />
-          <h2 className="text-lg font-bold">Invita un nuovo dipendente</h2>
+          <h2 className="text-lg font-bold">{isCreative ? "Invita un collaboratore" : "Invita un nuovo dipendente"}</h2>
         </div>
 
         <form onSubmit={handleInvite} className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -188,13 +189,13 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
               }}
               className="mt-1.5 w-full rounded-xl border border-current/20 bg-white px-4 py-2.5 text-sm outline-none focus:border-current"
             >
-              {INVITABLE_ROLES.map((r) => (
-                <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+              {(isCreative ? (["manager"] as StoreRole[]) : INVITABLE_ROLES).map((r) => (
+                <option key={r} value={r}>{isCreative ? "Collaboratore" : ROLE_LABELS[r]}</option>
               ))}
             </select>
           </label>
 
-          <div className="sm:col-span-2 grid gap-2 rounded-2xl border border-current/10 bg-current/5 p-4">
+          {!isCreative && <div className="sm:col-span-2 grid gap-2 rounded-2xl border border-current/10 bg-current/5 p-4">
             <p className="text-xs font-bold uppercase tracking-wider opacity-60">
               Permessi aggiuntivi
             </p>
@@ -222,7 +223,7 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
                 <span className="ml-1 opacity-60">— crea/modifica turni di tutti i dipendenti</span>
               </span>
             </label>
-          </div>
+          </div>}
 
           {inviteError && (
             <p className="sm:col-span-2 rounded-lg bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600">
@@ -250,11 +251,11 @@ export function GestioneStaffManager({ tenantSlug, initialStaff }: Props) {
 
       {/* ── Lista staff ──────────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-lg font-bold">Staff del locale</h2>
+        <h2 className="text-lg font-bold">{isCreative ? "Collaboratori del progetto" : "Staff del locale"}</h2>
         <p className="mt-1 text-sm opacity-60">
           {staff.length === 0
-            ? "Nessun dipendente ancora invitato."
-            : `${staff.length} ${staff.length === 1 ? "dipendente" : "dipendenti"}`}
+            ? isCreative ? "Nessun collaboratore ancora invitato." : "Nessun dipendente ancora invitato."
+            : `${staff.length} ${isCreative ? (staff.length === 1 ? "collaboratore" : "collaboratori") : (staff.length === 1 ? "dipendente" : "dipendenti")}`}
         </p>
 
         {staff.length > 0 && (
