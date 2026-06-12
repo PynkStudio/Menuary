@@ -807,7 +807,7 @@
     margin-top: 1.25rem;
   }
 
-  .vo-newsletter-form input {
+  .vo-newsletter-form input[type="email"] {
     min-width: 0;
     min-height: 3.3rem;
     border: 1px solid rgba(216, 173, 90, 0.34);
@@ -819,11 +819,11 @@
     transition: border-color 180ms ease, box-shadow 180ms ease;
   }
 
-  .vo-newsletter-form input::placeholder {
+  .vo-newsletter-form input[type="email"]::placeholder {
     color: rgba(242, 216, 148, 0.5);
   }
 
-  .vo-newsletter-form input:focus {
+  .vo-newsletter-form input[type="email"]:focus {
     border-color: rgba(242, 216, 148, 0.78);
     box-shadow: 0 0 0 3px rgba(216, 173, 90, 0.14);
   }
@@ -852,6 +852,29 @@
     color: rgba(242, 216, 148, 0.7);
     font-size: 0.78rem;
     font-weight: 700;
+  }
+
+  .vo-newsletter-consent {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    color: rgba(242, 216, 148, 0.68);
+    font-size: 0.72rem;
+    line-height: 1.45;
+  }
+
+  .vo-newsletter-consent input {
+    width: 0.95rem;
+    height: 0.95rem;
+    margin-top: 0.12rem;
+    accent-color: var(--vo-cinnabar);
+  }
+
+  .vo-newsletter-consent a {
+    color: var(--vo-gold-soft);
+    text-decoration: underline;
+    text-underline-offset: 0.14em;
   }
 
   .vo-newsletter-modal {
@@ -1526,6 +1549,36 @@
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-module-status[data-status="error"] {
     background: rgba(161, 43, 36, 0.28);
     color: #ffd0cb;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-metric,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-panel,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-list,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-editor,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-empty-large {
+    border-color: rgba(216, 173, 90, 0.3);
+    background:
+      radial-gradient(circle at 95% 0%, rgba(216, 173, 90, 0.11), transparent 12rem),
+      rgba(16, 12, 9, 0.88);
+    box-shadow: 0 1.4rem 3.4rem rgba(0, 0, 0, 0.3);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-metric strong,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-editor label,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-list-item strong {
+    color: #f1d17c;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-primary,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-tabs button[data-active="true"] {
+    border-color: rgba(241, 209, 124, 0.6);
+    background: linear-gradient(180deg, #a12b24, #671713);
+    color: #fff6dc;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-list-item[data-active="true"],
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .nl-table tbody tr:hover {
+    background: rgba(161, 43, 36, 0.2);
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works {

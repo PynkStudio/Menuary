@@ -159,6 +159,8 @@ export function ValentinaOrciuoliHomePage() {
             </p>
             <ValentinaNewsletterPanel
               sent={newsletter.newsletterSent}
+              pending={newsletter.newsletterPending}
+              error={newsletter.newsletterError}
               onSubmit={newsletter.handleNewsletterSubmit}
             />
           </div>
@@ -195,6 +197,8 @@ export function ValentinaOrciuoliHomePage() {
       <ValentinaNewsletterPopup
         open={newsletter.showNewsletterPopup}
         sent={newsletter.newsletterSent}
+        pending={newsletter.newsletterPending}
+        error={newsletter.newsletterError}
         onClose={newsletter.closeNewsletterPopup}
         onSubmit={newsletter.handleNewsletterSubmit}
       />

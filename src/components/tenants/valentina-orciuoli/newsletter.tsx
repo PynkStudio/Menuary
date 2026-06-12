@@ -3,12 +3,15 @@
 import { motion } from "framer-motion";
 import { useEffect, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
+import Link from "next/link";
 
 const newsletterStorageKey = "valentina-orciuoli-newsletter-popup-seen";
 
 export function useValentinaNewsletter() {
   const [showNewsletterPopup, setShowNewsletterPopup] = useState(false);
   const [newsletterSent, setNewsletterSent] = useState(false);
+  const [newsletterPending, setNewsletterPending] = useState(false);
+  const [newsletterError, setNewsletterError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -36,14 +39,39 @@ export function useValentinaNewsletter() {
     };
   }, [showNewsletterPopup]);
 
-  function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setNewsletterSent(true);
-    setShowNewsletterPopup(false);
+    const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "").trim();
+    setNewsletterPending(true);
+    setNewsletterError(null);
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId: "valentina-orciuoli",
+          email,
+          locale: document.documentElement.lang || "it",
+          source: "valentina_orciuoli_site",
+          consent: true,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error ?? "Iscrizione non riuscita.");
+      setNewsletterSent(true);
+      setShowNewsletterPopup(false);
+    } catch (error) {
+      setNewsletterError(error instanceof Error ? error.message : "Iscrizione non riuscita.");
+    } finally {
+      setNewsletterPending(false);
+    }
   }
 
   return {
     newsletterSent,
+    newsletterPending,
+    newsletterError,
     showNewsletterPopup,
     closeNewsletterPopup: () => setShowNewsletterPopup(false),
     handleNewsletterSubmit,
@@ -52,9 +80,13 @@ export function useValentinaNewsletter() {
 
 export function ValentinaNewsletterPanel({
   sent,
+  pending,
+  error,
   onSubmit,
 }: {
   sent: boolean;
+  pending: boolean;
+  error: string | null;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
@@ -64,7 +96,7 @@ export function ValentinaNewsletterPanel({
         Iscriviti con il tuo indirizzo email per ricevere notizie, aggiornamenti
         e contenuti esclusivi.
       </p>
-      <ValentinaNewsletterForm sent={sent} onSubmit={onSubmit} />
+      <ValentinaNewsletterForm sent={sent} pending={pending} error={error} onSubmit={onSubmit} />
     </div>
   );
 }
@@ -72,11 +104,15 @@ export function ValentinaNewsletterPanel({
 export function ValentinaNewsletterPopup({
   open,
   sent,
+  pending,
+  error,
   onClose,
   onSubmit,
 }: {
   open: boolean;
   sent: boolean;
+  pending: boolean;
+  error: string | null;
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
@@ -112,7 +148,7 @@ export function ValentinaNewsletterPopup({
           Iscriviti con il tuo indirizzo email per ricevere notizie, aggiornamenti
           e contenuti esclusivi.
         </p>
-        <ValentinaNewsletterForm sent={sent} onSubmit={onSubmit} compact />
+        <ValentinaNewsletterForm sent={sent} pending={pending} error={error} onSubmit={onSubmit} compact />
       </motion.div>
     </motion.div>
   );
@@ -121,10 +157,14 @@ export function ValentinaNewsletterPopup({
 function ValentinaNewsletterForm({
   compact = false,
   sent,
+  pending,
+  error,
   onSubmit,
 }: {
   compact?: boolean;
   sent: boolean;
+  pending: boolean;
+  error: string | null;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
@@ -139,8 +179,13 @@ function ValentinaNewsletterForm({
         placeholder="La tua email"
         required
       />
-      <button type="submit">Iscriviti</button>
+      <button type="submit" disabled={pending}>{pending ? "Iscrizione..." : "Iscriviti"}</button>
+      <label className="vo-newsletter-consent">
+        <input name="consent" type="checkbox" required />
+        <span>Accetto la <Link href="/privacy">privacy policy</Link> e l&apos;invio della newsletter.</span>
+      </label>
       {sent ? <small>Grazie, la tua iscrizione è stata registrata.</small> : null}
+      {error ? <small role="alert">{error}</small> : null}
     </form>
   );
 }

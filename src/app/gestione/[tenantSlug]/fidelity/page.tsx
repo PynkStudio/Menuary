@@ -4,6 +4,8 @@ import { getTenantById } from "@/lib/data/tenant";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { getProgram } from "@/lib/fidelity/queries";
 import { saveProgram } from "./actions";
+import { NewsletterManager } from "@/components/gestione/newsletter-manager";
+import { getNewsletterDashboard } from "@/lib/newsletter/server";
 
 export const dynamic = "force-dynamic";
 
@@ -19,46 +21,21 @@ export default async function FidelityProgramPage({
   if (!access.canManageFidelity) notFound();
 
   if (tenant.vertical === "creative") {
+    let newsletterData = undefined;
+    let newsletterError = null;
+    try {
+      newsletterData = await getNewsletterDashboard(tenantSlug);
+    } catch (error) {
+      newsletterError = error instanceof Error
+        ? `Newsletter non ancora inizializzata: ${error.message}`
+        : "Newsletter non ancora inizializzata.";
+    }
     return (
-      <div className="ga-dashboard">
-        <header>
-          <span className="ga-eyebrow">Pubblico</span>
-          <h1 className="ga-heading">Fanbase e community</h1>
-          <p className="ga-lead">
-            Organizza newsletter, contatti, segmenti di pubblico e iniziative dedicate ai lettori.
-          </p>
-        </header>
-
-        <section className="ga-section">
-          <div className="ga-section-head">
-            <h2 className="ga-section-title">Strumenti community</h2>
-            <span className="ga-section-hint">Configurazione editoriale</span>
-          </div>
-          <div className="ga-modules-grid">
-            <article className="ga-module">
-              <div>
-                <span className="ga-module-name">Newsletter</span>
-                <p className="ga-kpi-hint">Iscrizioni e aggiornamenti sulle nuove uscite.</p>
-              </div>
-              <span className="ga-module-status" data-status="ok">attiva</span>
-            </article>
-            <article className="ga-module">
-              <div>
-                <span className="ga-module-name">Segmenti lettori</span>
-                <p className="ga-kpi-hint">Interessi, opere seguite ed eventi.</p>
-              </div>
-              <span className="ga-module-status" data-status="warn">da configurare</span>
-            </article>
-            <article className="ga-module">
-              <div>
-                <span className="ga-module-name">Campagne</span>
-                <p className="ga-kpi-hint">Comunicazioni editoriali e contenuti dedicati.</p>
-              </div>
-              <span className="ga-module-status" data-status="warn">da configurare</span>
-            </article>
-          </div>
-        </section>
-      </div>
+      <NewsletterManager
+        tenantId={tenantSlug}
+        initialData={newsletterData}
+        initialError={newsletterError}
+      />
     );
   }
 

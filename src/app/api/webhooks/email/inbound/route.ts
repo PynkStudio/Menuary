@@ -378,6 +378,70 @@ async function handleTracking(
       .eq("resend_message_id", email_id);
   }
 
+  if (email_id) {
+    const newsletterDb = svc as unknown as {
+      from(table: string): {
+        select(columns: string): {
+          eq(column: string, value: string): {
+            maybeSingle(): Promise<{ data: Record<string, unknown> | null }>;
+          };
+        };
+        update(values: Record<string, unknown>): {
+          eq(column: string, value: string): Promise<unknown>;
+        };
+      };
+    };
+    const { data: delivery } = await newsletterDb
+      .from("tenant_newsletter_deliveries")
+      .select("id, subscriber_id, status, open_count, click_count, first_opened_at, first_clicked_at")
+      .eq("provider_message_id", email_id)
+      .maybeSingle();
+
+    if (delivery) {
+      const now = event.created_at || new Date().toISOString();
+      const update: Record<string, unknown> = {};
+      if (event.type === "email.delivered") {
+        update.status = delivery.status === "opened" || delivery.status === "clicked" ? delivery.status : "delivered";
+        update.delivered_at = now;
+      } else if (event.type === "email.opened") {
+        update.status = delivery.status === "clicked" ? "clicked" : "opened";
+        update.open_count = Number(delivery.open_count ?? 0) + 1;
+        update.first_opened_at = delivery.first_opened_at ?? now;
+        update.last_opened_at = now;
+      } else if (event.type === "email.clicked") {
+        update.status = "clicked";
+        update.click_count = Number(delivery.click_count ?? 0) + 1;
+        update.first_clicked_at = delivery.first_clicked_at ?? now;
+        update.last_clicked_at = now;
+        update.last_clicked_url = click?.link ?? null;
+      } else if (event.type === "email.bounced" || event.type === "email.complained") {
+        update.status = event.type === "email.bounced" ? "bounced" : "complained";
+        update.failed_at = now;
+        update.error_message = bounce?.message ?? event.type;
+      }
+
+      if (Object.keys(update).length > 0) {
+        await newsletterDb
+          .from("tenant_newsletter_deliveries")
+          .update(update)
+          .eq("id", String(delivery.id));
+      }
+
+      if (
+        delivery.subscriber_id &&
+        (event.type === "email.bounced" || event.type === "email.complained")
+      ) {
+        await newsletterDb
+          .from("tenant_newsletter_subscribers")
+          .update({
+            status: event.type === "email.bounced" ? "bounced" : "complained",
+            updated_at: now,
+          })
+          .eq("id", String(delivery.subscriber_id));
+      }
+    }
+  }
+
   return NextResponse.json({ ok: true, type: "tracking", event: event.type });
 }
 
