@@ -58,7 +58,7 @@ function rowToProfile(r: Row): TenantProfile {
   const dbFeatures =
     r.features && typeof r.features === "object" && !Array.isArray(r.features)
       ? (r.features as Partial<TenantFeatureFlags>)
-      : {};
+      : null;
   const dbTheme =
     r.theme && typeof r.theme === "object" && !Array.isArray(r.theme)
       ? (r.theme as Partial<TenantTheme>)
@@ -76,6 +76,10 @@ function rowToProfile(r: Row): TenantProfile {
     enabled: r.enabled,
     status: (r.status as TenantProfile["status"]) ?? fallback?.status ?? "active",
     theme: { ...(fallback?.theme ?? {}), ...dbTheme } as TenantTheme,
-    features: { ...(fallback?.features ?? {}), ...dbFeatures } as TenantFeatureFlags,
+    features: (
+      dbFeatures && Object.keys(dbFeatures).length > 0
+        ? dbFeatures
+        : fallback?.features ?? {}
+    ) as TenantFeatureFlags,
   };
 }

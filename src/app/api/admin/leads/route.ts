@@ -259,8 +259,11 @@ async function requirePermission(permission: Parameters<typeof hasAdminPermissio
   };
 }
 
-export async function GET() {
-  const auth = await requirePermission("crm:view");
+export async function GET(request: Request) {
+  const scope = new URL(request.url).searchParams.get("scope");
+  const auth = await requirePermission(
+    scope === "contracts" ? "subscriptions:view" : "crm:view",
+  );
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const admin = createSupabaseAdminClient();

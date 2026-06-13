@@ -136,3 +136,59 @@ grant all on public.tenant_newsletter_messages to service_role;
 grant all on public.tenant_newsletter_trigger_events to service_role;
 grant all on public.tenant_newsletter_deliveries to service_role;
 grant all on public.tenant_newsletter_unsubscribe_feedback to service_role;
+
+create extension if not exists pg_cron with schema extensions;
+create extension if not exists pg_net with schema extensions;
+
+do $$
+begin
+  if exists (select 1 from cron.job where jobname = 'process-tenant-newsletter') then
+    perform cron.unschedule('process-tenant-newsletter');
+  end if;
+end
+$$;
+
+do $$
+declare
+  project_url text;
+  service_role_key text;
+begin
+  select decrypted_secret
+    into project_url
+    from vault.decrypted_secrets
+   where name = 'project_url'
+   order by created_at desc
+   limit 1;
+
+  select decrypted_secret
+    into service_role_key
+    from vault.decrypted_secrets
+   where name = 'service_role_key'
+   order by created_at desc
+   limit 1;
+
+  if project_url is null or service_role_key is null then
+    raise warning 'Newsletter cron not scheduled: add project_url and service_role_key to Supabase Vault, then rerun the scheduling block.';
+    return;
+  end if;
+
+  perform cron.schedule(
+    'process-tenant-newsletter',
+    '*/5 * * * *',
+    format(
+      $job$
+        select net.http_post(
+          url := %L,
+          headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'Authorization', 'Bearer ' || %L
+          ),
+          body := '{}'::jsonb
+        );
+      $job$,
+      rtrim(project_url, '/') || '/functions/v1/process-tenant-newsletter',
+      service_role_key
+    )
+  );
+end
+$$;

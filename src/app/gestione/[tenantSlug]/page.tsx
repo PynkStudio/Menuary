@@ -33,9 +33,9 @@ async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnTyp
     return [
       { label: "Catalogo opere", value: features.hasCreativeWorks ? "Attivo" : null, hint: features.hasCreativeWorks ? "Schede e press kit" : t.kpi.inactiveModule },
       { label: "Booking eventi", value: features.hasCreativeBookings ? "Attivo" : null, hint: features.hasCreativeBookings ? "Richieste e disponibilità" : t.kpi.inactiveModule },
-      { label: "Reputation", value: features.hasCreativeAudience ? "Attiva" : null, hint: features.hasCreativeAudience ? "Recensioni e presenza pubblica" : t.kpi.inactiveModule },
+      { label: "Reputation", value: features.modules.reputationReviews ? "Attiva" : null, hint: features.modules.reputationReviews ? "Recensioni e presenza pubblica" : t.kpi.inactiveModule },
       { label: "Community", value: features.canManageFidelity ? "Attiva" : null, hint: features.canManageFidelity ? "Fanbase e newsletter" : t.kpi.inactiveModule },
-    ];
+    ].filter((kpi) => kpi.value !== null);
   }
 
   const operationalVertical = vertical === "food" ? "food" : "services";
@@ -132,7 +132,7 @@ export default async function GestioneDashboardPage({
 
   const dashboardCopy =
     tenant.vertical === "creative"
-      ? "Da qui gestisci sito, catalogo opere, booking eventi, reputation, community e materiali editoriali."
+      ? "Da qui gestisci sito, catalogo opere, community e materiali editoriali."
       : tenant.vertical === "services"
       ? interpolate(t.copyServices, {
           menuLabel: worksLabel.toLowerCase(),
@@ -189,7 +189,7 @@ export default async function GestioneDashboardPage({
     {
       href: `${base}/analytics`,
       label: audienceLabel,
-      hint: tenant.vertical === "creative" ? "Reputation e pubblico" : t.actions.analytics.hint,
+      hint: tenant.vertical === "creative" ? "Pubblico e newsletter" : t.actions.analytics.hint,
       icon: <BarChart3 size={16} strokeWidth={2} />,
       show: access.canViewAnalytics,
     },

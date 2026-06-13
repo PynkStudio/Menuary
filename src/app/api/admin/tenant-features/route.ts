@@ -58,7 +58,7 @@ export async function PATCH(request: NextRequest) {
       ? (row.features as Partial<TenantFeatureFlags>)
       : {};
   const nextFeatures: TenantFeatureFlags = {
-    ...(fallback?.features ?? {}),
+    ...(row ? {} : fallback?.features ?? {}),
     ...dbFeatures,
     [feature]: enabled,
   } as TenantFeatureFlags;

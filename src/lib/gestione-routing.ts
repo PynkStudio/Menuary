@@ -38,8 +38,7 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
   const hasCreativeWorks = Boolean(modules.worksCatalog || modules.pressKit);
   const hasCreativeBookings = Boolean(modules.creativeBooking);
   const hasCreativeAudience = Boolean(modules.reputationReviews || modules.fanbaseCommunity);
-  const hasGoogleBusiness =
-    modules.reservations || modules.reviews || modules.analytics || Boolean(modules.reputationReviews);
+  const hasGoogleBusiness = modules.reviews;
 
   return {
     modules,

@@ -159,7 +159,7 @@ export default async function AnalyticsPage({
         detail: "Presentazioni, firmacopie, festival e collaborazioni.",
         active: Boolean(tenant.features.creativeBooking),
       },
-    ];
+    ].filter((module) => module.active);
 
     return (
       <div className="ga-dashboard">
@@ -183,8 +183,8 @@ export default async function AnalyticsPage({
                   <span className="ga-module-name">{module.label}</span>
                   <p className="ga-kpi-hint">{module.detail}</p>
                 </div>
-                <span className="ga-module-status" data-status={module.active ? "ok" : "warn"}>
-                  {module.active ? "attivo" : "da configurare"}
+                <span className="ga-module-status" data-status="ok">
+                  attivo
                 </span>
               </article>
             ))}

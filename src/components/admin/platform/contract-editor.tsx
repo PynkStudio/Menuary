@@ -15,7 +15,8 @@ import {
   ArrowLeft,
   Download,
 } from "lucide-react";
-import { PLATFORM_LEADS, PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
+import { PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
+import type { PlatformLead } from "@/lib/platform-crm-types";
 import {
   BRAND_INFO,
   FORNITORE,
@@ -60,11 +61,15 @@ type Props = {
 export function ContractEditor({ contractId }: Props) {
   const router = useRouter();
   const search = useSearchParams();
+  const prefillLeadId = search.get("leadId");
   const launcher = useMailLauncher();
 
   const [data, setData] = useState<ContractData>(() => defaultContractData());
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [stored, setStored] = useState<StoredContract | null>(null);
+  const [leads, setLeads] = useState<PlatformLead[]>([]);
+  const [loadingLeads, setLoadingLeads] = useState(true);
+  const [leadsError, setLeadsError] = useState<string | null>(null);
   const [leadId, setLeadId] = useState<string>("");
   const [packageSlug, setPackageSlug] = useState<string>("");
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -107,14 +112,44 @@ export function ContractEditor({ contractId }: Props) {
       loadedRef.current = true;
       return;
     }
-    const prefillLead = search.get("leadId");
-    if (prefillLead) {
-      setLeadId(prefillLead);
-      applyLead(prefillLead);
-    }
+    if (prefillLeadId) setLeadId(prefillLeadId);
     loadedRef.current = true;
+  }, [contractId, prefillLeadId]);
+
+  useEffect(() => {
+    let active = true;
+    setLoadingLeads(true);
+    setLeadsError(null);
+    fetch("/api/admin/leads?scope=contracts", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => ({}))) as {
+          leads?: PlatformLead[];
+          error?: string;
+        };
+        if (!response.ok) {
+          throw new Error(payload.error ?? "Impossibile caricare i lead del CRM.");
+        }
+        if (!active) return;
+        const crmLeads = payload.leads ?? [];
+        setLeads(crmLeads);
+        if (!contractId && prefillLeadId) applyLead(prefillLeadId, crmLeads);
+      })
+      .catch((error) => {
+        if (active) {
+          setLeadsError(
+            error instanceof Error ? error.message : "Impossibile caricare i lead del CRM.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoadingLeads(false);
+      });
+    return () => {
+      active = false;
+    };
+    // applyLead legge solo lo stato corrente del form; il caricamento va eseguito una volta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contractId]);
+  }, [contractId, prefillLeadId]);
 
   // Salva bozza ad ogni modifica utente (salta il primo ciclo = caricamento iniziale)
   const skipFirstSaveRef = useRef(true);
@@ -136,9 +171,9 @@ export function ContractEditor({ contractId }: Props) {
     data.economiche.scontoAnnuale,
   );
 
-  function applyLead(id: string) {
+  function applyLead(id: string, source = leads) {
     if (!id) return;
-    const lead = PLATFORM_LEADS.find((l) => l.id === id);
+    const lead = source.find((item) => item.id === id);
     if (!lead) return;
     setLeadId(id);
     const inferredBrand: ContractBrand =
@@ -241,7 +276,7 @@ export function ContractEditor({ contractId }: Props) {
       const updated = markSent(saved.id);
       if (updated) setStored(updated);
 
-      const lead = leadId ? PLATFORM_LEADS.find((l) => l.id === leadId) : null;
+      const lead = leadId ? leads.find((item) => item.id === leadId) : null;
       const dest = lead?.contact_email || data.cliente.email || data.cliente.pec;
       const brand = data.brand;
       const subject = `Contratto ${data.numero} ${BRAND_INFO[brand].platformName} — ${data.cliente.ragioneSociale || "—"}`;
@@ -340,6 +375,17 @@ export function ContractEditor({ contractId }: Props) {
         ? pkg.vertical === "creative"
         : pkg.vertical === "both" || pkg.vertical === BRAND_INFO[data.brand].vertical,
   );
+  const filteredLeads = leads.filter(
+    (lead) => lead.business_vertical === BRAND_INFO[data.brand].vertical,
+  );
+
+  function selectBrand(brand: ContractBrand) {
+    const selectedLead = leads.find((lead) => lead.id === leadId);
+    if (selectedLead && selectedLead.business_vertical !== BRAND_INFO[brand].vertical) {
+      setLeadId("");
+    }
+    setData((current) => ({ ...current, brand }));
+  }
 
   return (
     <div className="contract-page">
@@ -387,7 +433,7 @@ export function ContractEditor({ contractId }: Props) {
             <button
               key={b}
               type="button"
-              onClick={() => setData((d) => ({ ...d, brand: b }))}
+              onClick={() => selectBrand(b)}
               className={data.brand === b ? "brand-pill active" : "brand-pill"}
             >
               {BRAND_INFO[b].label}
@@ -399,14 +445,30 @@ export function ContractEditor({ contractId }: Props) {
         </p>
 
         <h3>Lead</h3>
-        <select value={leadId} onChange={(e) => applyLead(e.target.value)}>
-          <option value="">— Compila da lead esistente —</option>
-          {PLATFORM_LEADS.map((l) => (
+        <select
+          value={leadId}
+          onChange={(e) => {
+            setLeadId(e.target.value);
+            applyLead(e.target.value);
+          }}
+          disabled={loadingLeads}
+        >
+          <option value="">
+            {loadingLeads
+              ? "Caricamento lead CRM…"
+              : `— Lead ${BRAND_INFO[data.brand].label} —`}
+          </option>
+          {filteredLeads.map((l) => (
             <option key={l.id} value={l.id}>
               {l.business_name}
             </option>
           ))}
         </select>
+        {leadsError && (
+          <p className="contract-field-error">
+            {leadsError}
+          </p>
+        )}
 
         <h3>Cliente</h3>
         <label>Tipo cliente</label>
@@ -1044,6 +1106,7 @@ const CONTRACT_STYLES = `
 .contract-form input, .contract-form select, .contract-form textarea {
   width: 100%; padding: 6px 8px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 8px; box-sizing: border-box;
 }
+.contract-field-error { margin: -2px 0 8px; color: #b91c1c; font-size: 11px; line-height: 1.4; }
 .contract-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .brand-picker { display: inline-flex; padding: 3px; gap: 3px; border-radius: 999px; background: #f3f4f6; margin-bottom: 4px; }
 .brand-picker .brand-pill { border: none; padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; background: transparent; color: #6b7280; }
