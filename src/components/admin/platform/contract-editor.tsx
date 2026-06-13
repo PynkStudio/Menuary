@@ -49,7 +49,6 @@ import {
   CONTRACT_STATUS_LABELS,
   type StoredContract,
 } from "@/lib/contracts/contracts-store";
-import { useMailLauncher } from "@/components/admin/inbox/mail-launcher";
 import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
 
 type ServerContract = {
@@ -84,7 +83,6 @@ export function ContractEditor({ contractId }: Props) {
   const router = useRouter();
   const search = useSearchParams();
   const prefillLeadId = search.get("leadId");
-  const launcher = useMailLauncher();
 
   const [data, setData] = useState<ContractData>(() => defaultContractData());
   const [overrides, setOverrides] = useState<Record<string, string>>({});
@@ -435,10 +433,6 @@ export function ContractEditor({ contractId }: Props) {
     setStored(null);
     setServerContract(null);
     setFeedback(null);
-  }
-
-  function handleUploadSigned(_file: File) {
-    setFeedback("La firma avviene ora tramite Documenso. Il PDF firmato viene scaricato automaticamente dopo la firma elettronica.");
   }
 
   const effectiveStatus = (serverContract?.status ?? stored?.status ?? "draft") as keyof typeof CONTRACT_STATUS_LABELS;

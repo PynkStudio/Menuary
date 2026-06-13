@@ -1,5 +1,6 @@
 import "server-only";
 
+import { timingSafeEqual } from "node:crypto";
 const BASE_URL = process.env.DOCUMENSO_API_URL ?? "https://app.documenso.com/api/v2";
 
 function apiToken(): string {
@@ -191,8 +192,7 @@ export function verifyDocumensoWebhook(
   const a = Buffer.from(receivedSecret);
   const b = Buffer.from(expectedSecret);
   if (a.length !== b.length) return false;
-  const crypto = require("node:crypto");
-  return crypto.timingSafeEqual(a, b);
+  return timingSafeEqual(a, b);
 }
 
 export type DocumensoWebhookPayload = {

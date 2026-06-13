@@ -11,7 +11,14 @@ import {
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { createContractPayment } from "@/lib/contracts/contract-checkout";
 import { sendEmail, PLATFORM_BRANDS } from "@/lib/email/sender";
-import { BRAND_INFO, FORNITORE, type ContractBrand } from "@/lib/contracts/menuary-contract";
+import {
+  BRAND_INFO,
+  FORNITORE,
+  computeFirstPaymentTotal,
+  formatEUR,
+  type ContractBrand,
+  type ContractData,
+} from "@/lib/contracts/menuary-contract";
 
 export const dynamic = "force-dynamic";
 
@@ -33,10 +40,6 @@ export async function POST(req: NextRequest) {
   if (payload.event !== "DOCUMENT_COMPLETED") {
     return NextResponse.json({ received: true, handled: false });
   }
-
-  const envelopeId = payload.payload?.externalId
-    ? null
-    : String(payload.payload?.id);
 
   const contract = payload.payload?.externalId
     ? await getContractByEnvelopeId(
@@ -113,7 +116,7 @@ async function uploadSignedPdf(
 
 async function handlePaymentByMethod(
   contractId: string,
-  data: import("@/lib/contracts/menuary-contract").ContractData,
+  data: ContractData,
   numero: string,
 ) {
   try {
@@ -166,14 +169,12 @@ async function handlePaymentByMethod(
 }
 
 function buildPaymentEmailHtml(
-  data: import("@/lib/contracts/menuary-contract").ContractData,
+  data: ContractData,
   checkoutUrl: string,
   numero: string,
 ): string {
   const brandMeta = BRAND_INFO[data.brand as ContractBrand];
   const brand = PLATFORM_BRANDS[brandMeta.vertical];
-  const { formatEUR, computeFirstPaymentTotal } =
-    require("@/lib/contracts/menuary-contract") as typeof import("@/lib/contracts/menuary-contract");
   const firstPayment = computeFirstPaymentTotal(data.economiche);
 
   return `<!DOCTYPE html>
