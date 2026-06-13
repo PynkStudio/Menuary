@@ -37,7 +37,7 @@ export type ResendInboundPayload = {
 
 // ─── Riga DB ──────────────────────────────────────────────────────────────────
 
-export type InboundEmailBrand = "menuary" | "bizery" | "orpheo";
+export type InboundEmailBrand = "menuary" | "bizery" | "orpheo" | "pynkstudio";
 
 export type InboundEmail = {
   id: string;
@@ -77,6 +77,7 @@ export function parseEmailAddress(raw: string): { name: string | null; address: 
  */
 export function detectBrandFromRecipients(toAddresses: string[]): InboundEmailBrand {
   const addresses = toAddresses.join(" ").toLowerCase();
+  if (addresses.includes("@pynkstudio.it")) return "pynkstudio";
   if (addresses.includes("@weuseorpheo.com")) return "orpheo";
   if (addresses.includes("@bizery.it")) return "bizery";
   return "menuary";

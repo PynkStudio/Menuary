@@ -23,9 +23,10 @@ import {
   MAX_SETUP_RATE,
   clientName,
   clientTaxDetails,
-  computeFirstPayment,
-  computeRecurringPayment,
+  computeFirstPaymentTotal,
+  computeRecurringPaymentTotal,
   computeYearlyTotal,
+  contractPaymentDescription,
   defaultContractData,
   formatEUR,
   isIndividualClient,
@@ -46,16 +47,34 @@ import { buildAttachments } from "@/lib/contracts/menuary-attachments";
 import {
   CONTRACT_STATUS_COLORS,
   CONTRACT_STATUS_LABELS,
-  attachSignedFile,
-  getContract,
-  linkSubscription,
-  markSent,
-  saveContract,
   type StoredContract,
 } from "@/lib/contracts/contracts-store";
-import { upsertSubscriptionFromContract } from "@/lib/contracts/contract-to-subscription";
 import { useMailLauncher } from "@/components/admin/inbox/mail-launcher";
 import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
+
+type ServerContract = {
+  id: string;
+  numero: string;
+  brand: string;
+  status: string;
+  lead_id: string | null;
+  package_slug: string | null;
+  contract_data: ContractData;
+  clause_overrides: Record<string, string>;
+  documenso_envelope_id: string | null;
+  signing_url: string | null;
+  signed_at: string | null;
+  signed_document_path: string | null;
+  payment_method: string | null;
+  payment_status: string;
+  paid_at: string | null;
+  tenant_id: string | null;
+  tenant_activated_at: string | null;
+  sent_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 type Props = {
   contractId?: string;
@@ -70,6 +89,7 @@ export function ContractEditor({ contractId }: Props) {
   const [data, setData] = useState<ContractData>(() => defaultContractData());
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [stored, setStored] = useState<StoredContract | null>(null);
+  const [serverContract, setServerContract] = useState<ServerContract | null>(null);
   const [leads, setLeads] = useState<PlatformLead[]>([]);
   const [loadingLeads, setLoadingLeads] = useState(true);
   const [leadsError, setLeadsError] = useState<string | null>(null);
@@ -77,42 +97,52 @@ export function ContractEditor({ contractId }: Props) {
   const [packageSlug, setPackageSlug] = useState<string>("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [confirmingPayment, setConfirmingPayment] = useState(false);
 
   type ContractDraft = { data: ContractData; overrides: Record<string, string> };
   const draftKey = `draft:contract:${contractId ?? "new"}`;
   const contractDraft = useDraftPersistence<ContractDraft>(draftKey, {
-    serverUpdatedAt: stored?.updatedAt,
+    serverUpdatedAt: serverContract?.updated_at ?? stored?.updatedAt,
   });
   const loadedRef = useRef(false);
 
   const isDirty = useMemo(() => {
     if (!loadedRef.current) return false;
+    if (serverContract) {
+      return JSON.stringify(data) !== JSON.stringify(serverContract.contract_data) ||
+        JSON.stringify(overrides) !== JSON.stringify(serverContract.clause_overrides);
+    }
     if (stored) return JSON.stringify(data) !== JSON.stringify(stored.data) || JSON.stringify(overrides) !== JSON.stringify(stored.clauseOverrides);
-    // Nuovo contratto: dirty se almeno un campo cliente è stato compilato
     return !!(data.cliente.ragioneSociale || data.cliente.email || data.cliente.piva);
-  }, [data, overrides, stored]);
+  }, [data, overrides, stored, serverContract]);
   useUnsavedChangesWarning(isDirty);
 
   useEffect(() => {
     if (contractId) {
-      const c = getContract(contractId);
-      if (c) {
-        const normalizedData = normalizeContractData({
-          ...c.data,
-          brand: c.data.brand ?? "menuary",
-          economiche: {
-            ...c.data.economiche,
-            setupRateale: c.data.economiche.setupRateale ?? false,
-            setupRate: c.data.economiche.setupRate ?? [c.data.economiche.setup],
-          },
-        });
-        setStored({ ...c, data: normalizedData });
-        setData(normalizedData);
-        setOverrides(c.clauseOverrides);
-        setLeadId(c.leadId ?? "");
-        setPackageSlug(c.packageSlug ?? "");
-      }
-      loadedRef.current = true;
+      // Load from server
+      fetch(`/api/admin/contracts?id=${contractId}`, { cache: "no-store" })
+        .then(async (res) => {
+          if (!res.ok) return;
+          const { contract } = await res.json() as { contract: ServerContract };
+          if (!contract) return;
+          setServerContract(contract);
+          const normalizedData = normalizeContractData({
+            ...contract.contract_data,
+            brand: contract.contract_data.brand ?? "menuary",
+            economiche: {
+              ...contract.contract_data.economiche,
+              setupRateale: contract.contract_data.economiche.setupRateale ?? false,
+              setupRate: contract.contract_data.economiche.setupRate ?? [contract.contract_data.economiche.setup],
+            },
+          });
+          setData(normalizedData);
+          setOverrides(contract.clause_overrides ?? {});
+          setLeadId(contract.lead_id ?? "");
+          setPackageSlug(contract.package_slug ?? "");
+        })
+        .catch(() => {})
+        .finally(() => { loadedRef.current = true; });
       return;
     }
     if (prefillLeadId) setLeadId(prefillLeadId);
@@ -173,8 +203,9 @@ export function ContractEditor({ contractId }: Props) {
     data.economiche.canoneMensile,
     data.economiche.scontoAnnuale,
   );
-  const firstPayment = computeFirstPayment(data.economiche);
-  const recurringPayment = computeRecurringPayment(data.economiche);
+  const firstPayment = computeFirstPaymentTotal(data.economiche);
+  const recurringPayment = computeRecurringPaymentTotal(data.economiche);
+  const paymentDescription = contractPaymentDescription(data);
 
   function applyLead(id: string, source = leads) {
     if (!id) return;
@@ -228,17 +259,56 @@ export function ContractEditor({ contractId }: Props) {
     }));
   }
 
-  function handleSave(): StoredContract {
-    const saved = saveContract(data, overrides, {
-      leadId: leadId || null,
-      packageSlug: packageSlug || null,
-      id: stored?.id,
-    });
-    setStored(saved);
-    contractDraft.clearDraft();
-    setFeedback("Contratto salvato nello storico");
-    if (!stored && saved) router.replace(`/admin/contratti/${saved.id}`);
-    return saved;
+  async function handleSave(): Promise<ServerContract | null> {
+    try {
+      let result: ServerContract;
+      if (serverContract) {
+        const res = await fetch("/api/admin/contracts", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: serverContract.id,
+            contract_data: data,
+            clause_overrides: overrides,
+            lead_id: leadId || null,
+            package_slug: packageSlug || null,
+            numero: data.numero,
+            brand: data.brand,
+          }),
+        });
+        if (!res.ok) {
+          setFeedback("Errore nel salvataggio");
+          return null;
+        }
+        const { contract } = await res.json() as { contract: ServerContract };
+        result = contract;
+      } else {
+        const res = await fetch("/api/admin/contracts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            data,
+            overrides,
+            leadId: leadId || null,
+            packageSlug: packageSlug || null,
+          }),
+        });
+        if (!res.ok) {
+          setFeedback("Errore nella creazione del contratto");
+          return null;
+        }
+        const { contract } = await res.json() as { contract: ServerContract };
+        result = contract;
+      }
+      setServerContract(result);
+      contractDraft.clearDraft();
+      setFeedback("Contratto salvato");
+      if (!serverContract && result) router.replace(`/admin/contratti/${result.id}`);
+      return result;
+    } catch {
+      setFeedback("Errore di rete nel salvataggio");
+      return null;
+    }
   }
 
   function validateRate(): string | null {
@@ -251,61 +321,77 @@ export function ContractEditor({ contractId }: Props) {
     return null;
   }
 
-  async function handleSendViaInbox() {
+  async function handleSendViaDocumenso() {
     const rateErr = validateRate();
     if (rateErr) {
       setFeedback(rateErr);
       return;
     }
-    setGeneratingPdf(true);
-    setFeedback("Preparo il PDF e apro la mail…");
+    setSending(true);
+    setFeedback("Salvo, genero il PDF, carico su Documenso e invio la mail…");
     try {
-      const saved = stored ?? handleSave();
+      // Save first
+      let contract = serverContract;
+      if (!contract) {
+        contract = await handleSave();
+        if (!contract) return;
+      } else if (isDirty) {
+        contract = await handleSave();
+        if (!contract) return;
+      }
 
-      const pdfRes = await fetch("/api/admin/contracts/pdf", {
+      const res = await fetch("/api/admin/contracts/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data, overrides }),
+        body: JSON.stringify({ contractId: contract.id }),
       });
-      if (!pdfRes.ok) {
-        setFeedback("Errore nella generazione del PDF — riprova.");
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Errore sconosciuto" })) as { error?: string };
+        setFeedback(`Errore: ${err.error ?? res.statusText}`);
         return;
       }
-      const arrayBuf = await pdfRes.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuf);
-      let binary = "";
-      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-      const base64 = btoa(binary);
-      const filename = `Contratto-${data.numero}.pdf`;
 
-      const updated = markSent(saved.id);
-      if (updated) setStored(updated);
-
-      const lead = leadId ? leads.find((item) => item.id === leadId) : null;
-      const dest = lead?.contact_email || data.cliente.email || data.cliente.pec;
-      const brand = data.brand;
-      const subject = `Contratto ${data.numero} ${BRAND_INFO[brand].platformName} — ${data.cliente.ragioneSociale || "—"}`;
-      const body = buildEmailBody(data);
-
-      launcher.open({
-        to: dest || "",
-        subject,
-        body,
-        brand,
-        attachments: [
-          {
-            filename,
-            content: base64,
-            contentType: "application/pdf",
-            size: arrayBuf.byteLength,
-          },
-        ],
-      });
+      const result = await res.json() as {
+        contract: ServerContract;
+        signingUrl: string | null;
+        emailSent: boolean;
+      };
+      setServerContract(result.contract);
       setFeedback(
-        "Mail pronta con contratto allegato. Verifica destinatario e premi Invia.",
+        result.emailSent
+          ? `Contratto inviato con link firma elettronica.${result.signingUrl ? "" : " (Link firma non disponibile)"}`
+          : "Contratto caricato su Documenso ma errore nell'invio email.",
       );
+    } catch {
+      setFeedback("Errore di rete nell'invio del contratto.");
     } finally {
-      setGeneratingPdf(false);
+      setSending(false);
+    }
+  }
+
+  async function handleConfirmPayment() {
+    if (!serverContract) return;
+    if (!window.confirm("Confermi la ricezione del pagamento per questo contratto?")) return;
+    setConfirmingPayment(true);
+    try {
+      const res = await fetch("/api/admin/contracts/confirm-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contractId: serverContract.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Errore" })) as { error?: string };
+        setFeedback(`Errore: ${err.error}`);
+        return;
+      }
+      const { contract } = await res.json() as { contract: ServerContract };
+      setServerContract(contract);
+      setFeedback("Pagamento confermato. Tenant attivato.");
+    } catch {
+      setFeedback("Errore di rete nella conferma pagamento.");
+    } finally {
+      setConfirmingPayment(false);
     }
   }
 
@@ -347,32 +433,17 @@ export function ContractEditor({ contractId }: Props) {
     setLeadId("");
     setPackageSlug("");
     setStored(null);
+    setServerContract(null);
     setFeedback(null);
   }
 
-  function handleUploadSigned(file: File) {
-    if (!stored) {
-      setFeedback("Prima salva il contratto, poi carica il PDF controfirmato.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result || "");
-      const updated = attachSignedFile(stored.id, file.name, dataUrl);
-      if (updated) {
-        const sub = upsertSubscriptionFromContract(updated);
-        linkSubscription(updated.id, sub.id);
-        setStored({ ...updated, subscriptionId: sub.id });
-        setFeedback(
-          `PDF controfirmato caricato. Generato l'abbonamento ${sub.id} (visibile in /admin/abbonamenti).`,
-        );
-      }
-    };
-    reader.readAsDataURL(file);
+  function handleUploadSigned(_file: File) {
+    setFeedback("La firma avviene ora tramite Documenso. Il PDF firmato viene scaricato automaticamente dopo la firma elettronica.");
   }
 
-  const statusLabel = stored ? CONTRACT_STATUS_LABELS[stored.status] : "Nuova bozza";
-  const statusColor = stored ? CONTRACT_STATUS_COLORS[stored.status] : "bg-gray-100 text-gray-700";
+  const effectiveStatus = (serverContract?.status ?? stored?.status ?? "draft") as keyof typeof CONTRACT_STATUS_LABELS;
+  const statusLabel = CONTRACT_STATUS_LABELS[effectiveStatus] ?? "Nuova bozza";
+  const statusColor = CONTRACT_STATUS_COLORS[effectiveStatus] ?? "bg-gray-100 text-gray-700";
   const individualClient = isIndividualClient(data);
   const availablePackages = PLATFORM_PACKAGES.filter(
     (pkg) =>
@@ -812,6 +883,7 @@ export function ContractEditor({ contractId }: Props) {
           <option value="sdd">SDD SEPA</option>
           <option value="bonifico">Bonifico 30gg</option>
           <option value="carta">Carta ricorrente (Stripe)</option>
+          <option value="bunq">Link di pagamento Bunq</option>
         </select>
         <label className="rate-toggle">
           <input
@@ -824,7 +896,7 @@ export function ContractEditor({ contractId }: Props) {
               }))
             }
           />
-          Esenzione IVA (regime forfettario — rivalsa INPS 4% + €2 marca da bollo)
+          Regime forfettario (€2 marca da bollo, poi rivalsa INPS 4% sul totale)
         </label>
 
         <h3>Documento</h3>
@@ -847,8 +919,13 @@ export function ContractEditor({ contractId }: Props) {
           <button type="button" onClick={handleDownloadPdf} disabled={generatingPdf}>
             <Printer size={14} /> {generatingPdf ? "..." : "PDF"}
           </button>
-          <button type="button" className="primary" onClick={handleSendViaInbox}>
-            <Send size={14} /> Invia
+          <button
+            type="button"
+            className="primary"
+            onClick={handleSendViaDocumenso}
+            disabled={sending || effectiveStatus === "sent" || effectiveStatus === "signed" || effectiveStatus === "countersigned"}
+          >
+            <Send size={14} /> {sending ? "Invio in corso…" : "Invia con firma elettronica"}
           </button>
         </div>
         <div className="contract-actions">
@@ -857,43 +934,110 @@ export function ContractEditor({ contractId }: Props) {
           </button>
         </div>
 
-        {stored && (
+        {serverContract && (
           <>
-            <h3>Controfirma</h3>
-            {stored.signedFileDataUrl ? (
-              <div className="signed-box">
-                <CheckCircle2 size={16} />
-                <div>
-                  <strong>{stored.signedFileName}</strong>
-                  <div style={{ fontSize: 11, color: "#6b7280" }}>
-                    Caricato il{" "}
-                    {stored.signedAt ? new Date(stored.signedAt).toLocaleString("it-IT") : "—"}
-                  </div>
-                  <a href={stored.signedFileDataUrl} download={stored.signedFileName ?? "contratto-firmato.pdf"}>
-                    <Download size={12} /> Scarica
-                  </a>
+            {/* Signing status */}
+            {serverContract.signing_url && effectiveStatus === "sent" && (
+              <div style={{ marginTop: 12 }}>
+                <h3>Firma elettronica</h3>
+                <div style={{ fontSize: 12, padding: "8px 10px", background: "#dbeafe", border: "1px solid #93c5fd", borderRadius: 6, color: "#1e40af" }}>
+                  <Send size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                  In attesa di firma del cliente
+                  {serverContract.expires_at && (
+                    <span style={{ display: "block", fontSize: 11, marginTop: 4, color: "#3b82f6" }}>
+                      Scadenza: {new Date(serverContract.expires_at).toLocaleDateString("it-IT")}
+                    </span>
+                  )}
                 </div>
               </div>
-            ) : (
-              <>
-                <p style={{ fontSize: 11, color: "#6b7280", marginBottom: 6 }}>
-                  Carica il PDF restituito firmato dal cliente.
-                </p>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) handleUploadSigned(f);
-                  }}
-                />
-                {stored.expiresAt && stored.status === "sent" && (
-                  <div className="expiry-warning">
-                    <AlertTriangle size={12} /> Scadenza firma:{" "}
-                    {new Date(stored.expiresAt).toLocaleDateString("it-IT")}
+            )}
+
+            {/* Signed status */}
+            {(effectiveStatus === "signed" || effectiveStatus === "countersigned") && (
+              <div style={{ marginTop: 12 }}>
+                <h3>Firma elettronica</h3>
+                <div className="signed-box">
+                  <CheckCircle2 size={16} />
+                  <div>
+                    <strong>Contratto firmato elettronicamente</strong>
+                    {serverContract.signed_at && (
+                      <div style={{ fontSize: 11, color: "#6b7280" }}>
+                        Firmato il {new Date(serverContract.signed_at).toLocaleString("it-IT")}
+                      </div>
+                    )}
+                    {serverContract.signed_document_path && (
+                      <div style={{ fontSize: 11, color: "#047857", marginTop: 4 }}>
+                        <Download size={12} style={{ display: "inline", verticalAlign: "middle" }} /> PDF firmato salvato
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Payment status */}
+            {effectiveStatus === "signed" && serverContract.payment_status !== "paid" && (
+              <div style={{ marginTop: 12 }}>
+                <h3>Pagamento</h3>
+                {serverContract.payment_method === "carta" ? (
+                  <div style={{ fontSize: 12, padding: "8px 10px", background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 6, color: "#92400e" }}>
+                    <AlertTriangle size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                    Link checkout Stripe inviato al cliente. In attesa di pagamento.
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 12, padding: "8px 10px", background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 6, color: "#92400e" }}>
+                    <AlertTriangle size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                    In attesa di bonifico
+                    <button
+                      type="button"
+                      onClick={handleConfirmPayment}
+                      disabled={confirmingPayment}
+                      style={{
+                        display: "block", marginTop: 8, padding: "6px 12px",
+                        background: "#065f46", color: "#fff", border: "none",
+                        borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      }}
+                    >
+                      <CheckCircle2 size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                      {confirmingPayment ? "Confermo…" : "Conferma ricezione pagamento"}
+                    </button>
                   </div>
                 )}
-              </>
+              </div>
+            )}
+
+            {/* Payment confirmed */}
+            {serverContract.payment_status === "paid" && (
+              <div style={{ marginTop: 12 }}>
+                <h3>Pagamento</h3>
+                <div className="signed-box">
+                  <CheckCircle2 size={16} />
+                  <div>
+                    <strong>Pagamento confermato</strong>
+                    {serverContract.paid_at && (
+                      <div style={{ fontSize: 11, color: "#6b7280" }}>
+                        {new Date(serverContract.paid_at).toLocaleString("it-IT")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tenant activation */}
+            {serverContract.tenant_activated_at && (
+              <div style={{ marginTop: 12 }}>
+                <h3>Attivazione</h3>
+                <div className="signed-box">
+                  <CheckCircle2 size={16} />
+                  <div>
+                    <strong>Tenant attivato: {serverContract.tenant_id}</strong>
+                    <div style={{ fontSize: 11, color: "#6b7280" }}>
+                      {new Date(serverContract.tenant_activated_at).toLocaleString("it-IT")}
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </>
         )}
@@ -901,7 +1045,8 @@ export function ContractEditor({ contractId }: Props) {
         <p style={{ fontSize: 11, color: "#6b7280", marginTop: 12, lineHeight: 1.4 }}>
           Le clausole nel documento sono modificabili: clicca un paragrafo per editarlo.
           Il bottone PDF genera un file lato server con grafica vettoriale, allegati e
-          numerazione delle pagine.
+          numerazione delle pagine. L&apos;invio carica il contratto su Documenso per la
+          firma elettronica e invia l&apos;email al cliente.
         </p>
       </aside>
 
@@ -978,14 +1123,22 @@ export function ContractEditor({ contractId }: Props) {
             </dd>
             <dt>Modalità di pagamento</dt>
             <dd>{paymentMethodLabel(data.economiche.metodoPagamento)}</dd>
-            {data.economiche.metodoPagamento === "bonifico" && (
+            {(data.economiche.metodoPagamento === "bonifico" || data.economiche.metodoPagamento === "bunq") && (
               <>
                 <dt>IBAN</dt>
-                <dd>NL33BUNQ2063062498 — Massimo Pernozzoli</dd>
-                <dt>Primo pagamento</dt>
-                <dd>{formatEUR(firstPayment)} {taxSuffix(data.economiche)}</dd>
-                <dt>Pagamenti successivi</dt>
-                <dd>{formatEUR(recurringPayment)} {taxSuffix(data.economiche)} / {annuale ? "anno" : "mese"}</dd>
+                <dd>{FORNITORE.iban} — Massimo Pernozzoli</dd>
+                <dt>Causale</dt>
+                <dd>{paymentDescription}</dd>
+                <dt>Primo pagamento complessivo</dt>
+                <dd>{formatEUR(firstPayment)}</dd>
+                <dt>Pagamenti successivi complessivi</dt>
+                <dd>{formatEUR(recurringPayment)} / {annuale ? "anno" : "mese"}</dd>
+                {data.economiche.metodoPagamento === "bunq" && (
+                  <>
+                    <dt>Nota</dt>
+                    <dd>Il link di pagamento Bunq verrà inviato con importo precompilato</dd>
+                  </>
+                )}
               </>
             )}
             <dt>Durata</dt>
@@ -1078,62 +1231,6 @@ export function ContractEditor({ contractId }: Props) {
       </article>
     </div>
   );
-}
-
-function buildEmailBody(data: ContractData): string {
-  const annuale = data.economiche.cicloFatturazione === "yearly";
-  const totaleAnnuale = computeYearlyTotal(
-    data.economiche.canoneMensile,
-    data.economiche.scontoAnnuale,
-  );
-  const sTax = taxSuffix(data.economiche);
-  const canone = annuale
-    ? data.economiche.scontoAnnuale > 0
-      ? `${formatEUR(totaleAnnuale)} ${sTax} / anno (sconto ${data.economiche.scontoAnnuale}% sul listino annuo)`
-      : `${formatEUR(totaleAnnuale)} ${sTax} / anno`
-    : `${formatEUR(data.economiche.canoneMensile)} ${sTax} / mese`;
-  const firstPayment = computeFirstPayment(data.economiche);
-  const recurringPayment = computeRecurringPayment(data.economiche);
-
-  const saluto =
-    (isIndividualClient(data) ? "" : data.cliente.legaleRappresentante?.trim()) ||
-    data.cliente.ragioneSociale?.trim() ||
-    "Cliente";
-
-  return `Gentile ${saluto},
-
-come da accordi intercorsi, le inviamo in allegato la proposta contrattuale n. ${data.numero} per l'attivazione del servizio "${data.servizio.pianoNome}" sulla piattaforma ${BRAND_INFO[data.brand].platformName}, comprensiva degli allegati tecnici e regolamentari (DPA art. 28 GDPR, informativa privacy, SLA e condizioni d'uso).
-
-Riepilogo delle condizioni economiche:
-• Piano: ${data.servizio.pianoNome}
-• Setup una tantum: ${formatEUR(data.economiche.setup)} ${sTax}${
-    data.economiche.setupRateale && data.economiche.setupRate.length > 1
-      ? ` — rateizzato in ${data.economiche.setupRate.length} mensilità (${data.economiche.setupRate.map((r) => formatEUR(r)).join(" + ")})`
-      : ""
-  }
-• Canone: ${canone}
-• Modalità di pagamento: ${paymentMethodLabel(data.economiche.metodoPagamento)}${data.economiche.metodoPagamento === "bonifico" ? `
-• IBAN: NL33BUNQ2063062498 — Massimo Pernozzoli
-• Primo pagamento: ${formatEUR(firstPayment)} ${sTax}
-• Pagamenti successivi: ${formatEUR(recurringPayment)} ${sTax} / ${annuale ? "anno" : "mese"}` : ""}
-• Durata: 12 mesi con rinnovo tacito · preavviso di recesso 30 giorni
-• Foro competente: ${isIndividualClient(data) ? "quello previsto dalla normativa applicabile al consumatore, ove ricorrano i presupposti" : FORNITORE.foro}
-
-Per perfezionare la sottoscrizione le chiediamo cortesemente di:
-
-1. stampare il documento integralmente, comprensivo di tutti gli allegati;
-2. apporre ${isIndividualClient(data) ? "la firma" : "firma e timbro"} su ciascuna pagina, prestando particolare attenzione alle clausole vessatorie ex artt. 1341-1342 c.c. che richiedono una seconda firma di accettazione specifica;
-3. restituire il contratto controfirmato, scansionato in formato PDF, in risposta alla presente email entro e non oltre 5 (cinque) giorni lavorativi dalla data di ricezione, oppure via PEC all'indirizzo ${FORNITORE.pec}.
-
-In assenza di ricezione del documento controfirmato entro il termine indicato, la presente proposta si intenderà automaticamente decaduta e dovrà essere rinnovata su nuova base economica.
-
-Per qualsiasi chiarimento, anche operativo, rimaniamo a sua completa disposizione.
-
-Cordialmente,
-
-${FORNITORE.legaleRappresentante}
-${FORNITORE.ragioneSociale}
-PEC: ${FORNITORE.pec}`;
 }
 
 const CONTRACT_STYLES = `

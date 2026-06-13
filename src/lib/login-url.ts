@@ -17,6 +17,7 @@ import { findTenantById } from "@/lib/tenant-registry";
 
 export type LoginFrom =
   | "admin"
+  | "admin-pynkstudio"
   | "studio"
   | "clienti"
   | `gestione.${string}`
@@ -71,7 +72,7 @@ export function buildRecoveryCallbackUrl(from: LoginFrom): string {
 /** Valida e normalizza il param `from` — previene open redirect */
 export function parseFrom(raw: string | null | undefined): LoginFrom | null {
   if (!raw) return null;
-  const allowed: LoginFrom[] = ["admin", "studio", "clienti"];
+  const allowed: LoginFrom[] = ["admin", "admin-pynkstudio", "studio", "clienti"];
   if ((allowed as string[]).includes(raw)) return raw as LoginFrom;
   if (/^gestione\.[a-z0-9-]+$/.test(raw)) return raw as LoginFrom;
   if (/^gestione-bizery\.[a-z0-9-]+$/.test(raw)) return raw as LoginFrom;
@@ -139,6 +140,7 @@ export function resolveDestination(options: {
   const { from, next, isSiteadmin, tenantId } = options;
 
   if (from === "admin" && isSiteadmin) return `https://admin.menuary.it${next ?? ""}`;
+  if (from === "admin-pynkstudio" && isSiteadmin) return `https://admin.pynkstudio.it${next ?? ""}`;
   if (from === "studio") {
     if (isSiteadmin) return "https://admin.menuary.it";
     if (tenantId)    return `https://gestione.menuary.it/${tenantId}/fatturazione${next ?? ""}`;

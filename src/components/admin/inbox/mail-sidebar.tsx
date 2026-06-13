@@ -5,6 +5,7 @@ import {
   Archive,
   Briefcase,
   Clapperboard,
+  Heart,
   Inbox,
   LifeBuoy,
   Mail,
@@ -42,11 +43,12 @@ const VIEWS: { value: MailView; label: string; icon: React.ElementType }[] = [
 ];
 
 const BRANDS: { value: BrandFilter; label: string; icon: React.ElementType }[] = [
-  { value: "all",     label: "Tutte",   icon: Mail },
-  { value: "menuary", label: "Menuary", icon: UtensilsCrossed },
-  { value: "bizery",  label: "Bizery",  icon: Briefcase },
-  { value: "orpheo",  label: "Orpheo",  icon: Clapperboard },
-  { value: "support", label: "Supporto", icon: LifeBuoy },
+  { value: "all",        label: "Tutte",       icon: Mail },
+  { value: "pynkstudio", label: "PynkStudio",  icon: Heart },
+  { value: "menuary",    label: "Menuary",     icon: UtensilsCrossed },
+  { value: "bizery",     label: "Bizery",      icon: Briefcase },
+  { value: "orpheo",     label: "Orpheo",      icon: Clapperboard },
+  { value: "support",    label: "Supporto",    icon: LifeBuoy },
 ];
 
 export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, mode = "platform", onViewChange, onBrandChange, onCompose }: Props) {

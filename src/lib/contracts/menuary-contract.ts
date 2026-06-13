@@ -7,10 +7,11 @@ export const FORNITORE = {
   email: "massimo.pernozzoli@gmail.com",
   legaleRappresentante: "Massimo Pernozzoli",
   foro: "Milano",
+  iban: "NL64BUNQ2199015297",
 } as const;
 
 export type BillingCycle = "monthly" | "yearly";
-export type PaymentMethod = "sdd" | "bonifico" | "carta";
+export type PaymentMethod = "sdd" | "bonifico" | "carta" | "bunq";
 export type ContractBrand = "menuary" | "bizery" | "orpheo";
 export type ContractClientType = "business" | "individual";
 
@@ -129,7 +130,8 @@ export function defaultContractData(): ContractData {
       scontoAnnuale: 10,
       setupRateale: false,
       setupRate: [290],
-      esenzioneIva: false,
+      // TODO: impostare false quando il fornitore passerà al regime ordinario/SRL.
+      esenzioneIva: true,
     },
     noteAggiuntive: "",
   };
@@ -145,7 +147,7 @@ export function normalizeContractData(data: ContractData): ContractData {
     },
     economiche: {
       ...data.economiche,
-      esenzioneIva: data.economiche.esenzioneIva ?? false,
+      esenzioneIva: data.economiche.esenzioneIva ?? true,
     },
   };
 }
@@ -181,16 +183,21 @@ export function computeYearlyTotal(canoneMensile: number, scontoPct: number): nu
 }
 
 export const MAX_SETUP_RATE = 6;
+export const IVA_RATE = 0.22;
 export const RIVALSA_INPS_RATE = 0.04;
 export const MARCA_BOLLO = 2;
 
 export function taxSuffix(economiche: ContractData['economiche']): string {
-  if (economiche.esenzioneIva) return "+ 4% rivalsa INPS + €2 marca da bollo";
+  if (economiche.esenzioneIva) {
+    return "+ €2 marca da bollo, con rivalsa INPS 4% sul totale";
+  }
   return "+ IVA";
 }
 
 export function taxClauseSuffix(economiche: ContractData['economiche']): string {
-  if (economiche.esenzioneIva) return "con rivalsa INPS del 4% e marca da bollo di €2,00";
+  if (economiche.esenzioneIva) {
+    return "con marca da bollo di €2,00 inclusa nella base di calcolo della rivalsa INPS del 4%";
+  }
   return "oltre IVA di legge";
 }
 
@@ -235,6 +242,37 @@ export function computeRecurringPayment(economiche: ContractData['economiche']):
   return computeCanoneAmount(economiche);
 }
 
+export function computePaymentTotal(
+  netAmount: number,
+  economiche: ContractData["economiche"],
+): number {
+  if (economiche.esenzioneIva) {
+    return round2((netAmount + MARCA_BOLLO) * (1 + RIVALSA_INPS_RATE));
+  }
+  return round2(netAmount * (1 + IVA_RATE));
+}
+
+export function computeFirstPaymentTotal(
+  economiche: ContractData["economiche"],
+): number {
+  return computePaymentTotal(computeFirstPayment(economiche), economiche);
+}
+
+export function computeRecurringPaymentTotal(
+  economiche: ContractData["economiche"],
+): number {
+  return computePaymentTotal(computeRecurringPayment(economiche), economiche);
+}
+
+export function contractPaymentDescription(data: ContractData): string {
+  const tenantName =
+    data.servizio.tenantSlug.trim() ||
+    data.cliente.ragioneSociale.trim() ||
+    data.servizio.pianoNome.trim() ||
+    "tenant";
+  return `contratto ${data.numero} - ${tenantName}`;
+}
+
 export function paymentMethodLabel(m: PaymentMethod): string {
   switch (m) {
     case "sdd":
@@ -243,5 +281,7 @@ export function paymentMethodLabel(m: PaymentMethod): string {
       return "Bonifico bancario — pagamento immediato";
     case "carta":
       return "Addebito ricorrente su carta di credito (circuito Stripe)";
+    case "bunq":
+      return "Link di pagamento Bunq";
   }
 }

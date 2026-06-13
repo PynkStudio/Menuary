@@ -72,6 +72,7 @@ export type InboxCounts = {
   unread_menuary: number;
   unread_bizery: number;
   unread_orpheo: number;
+  unread_pynkstudio: number;
   unread_total: number;
 };
 
@@ -86,11 +87,12 @@ export async function getInboxUnreadCounts(): Promise<InboxCounts> {
   if (error) throw new Error(error.message);
 
   const rows = (data ?? []) as { brand: string }[];
-  const unread_menuary = rows.filter((r) => r.brand === "menuary").length;
-  const unread_bizery  = rows.filter((r) => r.brand === "bizery").length;
-  const unread_orpheo  = rows.filter((r) => r.brand === "orpheo").length;
+  const unread_menuary     = rows.filter((r) => r.brand === "menuary").length;
+  const unread_bizery      = rows.filter((r) => r.brand === "bizery").length;
+  const unread_orpheo      = rows.filter((r) => r.brand === "orpheo").length;
+  const unread_pynkstudio  = rows.filter((r) => r.brand === "pynkstudio").length;
 
-  return { unread_menuary, unread_bizery, unread_orpheo, unread_total: unread_menuary + unread_bizery + unread_orpheo };
+  return { unread_menuary, unread_bizery, unread_orpheo, unread_pynkstudio, unread_total: unread_menuary + unread_bizery + unread_orpheo + unread_pynkstudio };
 }
 
 export async function getTenantInboxUnreadCount(scope: TenantEmailScope): Promise<number> {

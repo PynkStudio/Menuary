@@ -575,6 +575,46 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── Admin PynkStudio (admin.pynkstudio.it) ────────────────────────────────
+  if (mode === "admin-pynkstudio") {
+    const effectivePath = pathname.startsWith("/admin-pynkstudio")
+      ? pathname
+      : "/admin-pynkstudio" + (pathname === "/" ? "" : pathname);
+
+    const PUBLIC_PYNK = new Set(["/admin-pynkstudio/login", "/admin-pynkstudio/set-password"]);
+    if (!PUBLIC_PYNK.has(effectivePath)) {
+      let response: NextResponse;
+      if (!pathname.startsWith("/admin-pynkstudio")) {
+        const rewritten = request.nextUrl.clone();
+        rewritten.pathname = effectivePath;
+        response = NextResponse.rewrite(rewritten);
+      } else {
+        response = NextResponse.next({ request });
+      }
+      const { user, role } = await getSessionUserAndSiteadminRole(request, response, cookieDomain);
+      if (!user) {
+        const next = pathname.replace(/^\/admin-pynkstudio/, "") || "/";
+        const fallback = new URL("/admin-pynkstudio/login", request.url);
+        fallback.searchParams.set("next", next);
+        return NextResponse.redirect(fallback);
+      }
+      if (!role) {
+        return NextResponse.redirect(new URL("/admin-pynkstudio/login", request.url));
+      }
+      if ((effectivePath.replace(/\/+$/, "") || "/admin-pynkstudio") === "/admin-pynkstudio") {
+        return NextResponse.redirect(new URL("/admin-pynkstudio/inbox", request.url));
+      }
+      return response;
+    }
+
+    if (!pathname.startsWith("/admin-pynkstudio")) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = effectivePath;
+      return NextResponse.rewrite(rewritten);
+    }
+    return NextResponse.next();
+  }
+
   // ── Platform admin (admin.menuary.it) ─────────────────────────────────────
   if (mode === "platform-admin") {
     const effectivePath = pathname.startsWith("/admin")

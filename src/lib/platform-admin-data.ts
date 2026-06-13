@@ -429,6 +429,9 @@ export const PLATFORM_PAYMENTS: PlatformPayment[] = [
     invoice_number: "FT-2026-001",
     notes: null,
     stripe_payment_link: "https://buy.stripe.com/test_bepork",
+    bunq_request_id: null,
+    bunq_payment_url: null,
+    payment_provider: "manual",
     billing_payload: {
       plan: "Operatività",
       billing_cycle: "yearly",

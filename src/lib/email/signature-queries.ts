@@ -44,6 +44,16 @@ const BRAND_TEMPLATE = {
     paper:    "#FBFAF7",
     rule:     "#E7E0F0",
   },
+  pynkstudio: {
+    label:    "PynkStudio",
+    tagline:  "Gruppo creativo e tecnologico",
+    email:    "hello@pynkstudio.it",
+    website:  "pynkstudio.it",
+    accent:   "#D946A8",
+    accentInk:"#9B2D7A",
+    paper:    "#FDF5FA",
+    rule:     "#F0DDE9",
+  },
 } as const;
 
 export type AutoSignatureProfile = {

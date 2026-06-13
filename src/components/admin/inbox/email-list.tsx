@@ -1,13 +1,15 @@
 "use client";
 
-import { Inbox, Star } from "lucide-react";
+import { Inbox, Star, Eye, MousePointerClick } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InboundEmail } from "@/lib/email/inbound-types";
+import type { TrackingSummary } from "@/lib/email/tracking-queries";
 
 type Props = {
   emails: InboundEmail[];
   selectedId: string | null;
   onSelect: (email: InboundEmail) => void;
+  trackingMap?: Record<string, TrackingSummary>;
 };
 
 function fmtDate(iso: string) {
@@ -25,9 +27,10 @@ function fmtDate(iso: string) {
 }
 
 const BRAND_STYLE: Record<string, { bg: string; ring: string }> = {
-  menuary: { bg: "bg-[#a95f45]",  ring: "ring-[#a95f45]/30" },
-  bizery:  { bg: "bg-[#3b6cb5]",  ring: "ring-[#3b6cb5]/30" },
-  orpheo:  { bg: "bg-[#7c3aed]",  ring: "ring-[#7c3aed]/30" },
+  menuary:    { bg: "bg-[#a95f45]",  ring: "ring-[#a95f45]/30" },
+  bizery:     { bg: "bg-[#3b6cb5]",  ring: "ring-[#3b6cb5]/30" },
+  orpheo:     { bg: "bg-[#7c3aed]",  ring: "ring-[#7c3aed]/30" },
+  pynkstudio: { bg: "bg-[#d946a8]",  ring: "ring-[#d946a8]/30" },
 };
 
 function initialFor(email: InboundEmail): string {
@@ -35,7 +38,7 @@ function initialFor(email: InboundEmail): string {
   return src.charAt(0).toUpperCase();
 }
 
-export function EmailList({ emails, selectedId, onSelect }: Props) {
+export function EmailList({ emails, selectedId, onSelect, trackingMap }: Props) {
   if (emails.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center text-[var(--ma-muted)]">
@@ -51,6 +54,7 @@ export function EmailList({ emails, selectedId, onSelect }: Props) {
         const isSelected = email.id === selectedId;
         const isUnread = !email.read;
         const brand = BRAND_STYLE[email.brand] ?? { bg: "bg-gray-400", ring: "ring-gray-300" };
+        const tracking = email.message_id && trackingMap ? trackingMap[email.message_id] : undefined;
 
         return (
           <li key={email.id} className="relative">
@@ -118,6 +122,24 @@ export function EmailList({ emails, selectedId, onSelect }: Props) {
                     <p className="min-w-0 flex-1 truncate text-xs text-[var(--ma-muted)]">
                       {email.text_body?.slice(0, 120) ?? ""}
                     </p>
+                    {tracking && tracking.openCount > 0 && (
+                      <span
+                        className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-600"
+                        title={`Aperta ${tracking.openCount} volt${tracking.openCount === 1 ? "a" : "e"}`}
+                      >
+                        <Eye size={10} />
+                        {tracking.openCount > 1 && tracking.openCount}
+                      </span>
+                    )}
+                    {tracking && tracking.clickCount > 0 && (
+                      <span
+                        className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-600"
+                        title={`Link cliccato ${tracking.clickCount} volt${tracking.clickCount === 1 ? "a" : "e"}`}
+                      >
+                        <MousePointerClick size={10} />
+                        {tracking.clickCount > 1 && tracking.clickCount}
+                      </span>
+                    )}
                     {email.starred && (
                       <Star size={12} className="shrink-0 fill-amber-400 text-amber-400" />
                     )}

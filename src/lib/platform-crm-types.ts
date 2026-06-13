@@ -15,7 +15,7 @@ export type LeadSource = "form_web" | "referral" | "diretto" | "evento" | "manua
 export type BillingCycle = "monthly" | "yearly";
 export type SubscriptionStatus = "trial" | "active" | "suspended" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
-export type PaymentMethod = "bonifico" | "carta" | "sepa" | "altro";
+export type PaymentMethod = "bonifico" | "carta" | "sepa" | "bunq" | "altro";
 export type CommissionStatus = "pending" | "approved" | "paid";
 
 export type LeadLocation = {
@@ -137,6 +137,9 @@ export type PlatformPayment = {
   invoice_number: string | null;
   notes: string | null;
   stripe_payment_link: string | null;
+  bunq_request_id: number | null;
+  bunq_payment_url: string | null;
+  payment_provider: "manual" | "stripe" | "bunq" | null;
   billing_payload: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;

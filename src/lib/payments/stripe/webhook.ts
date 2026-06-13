@@ -116,6 +116,13 @@ async function handleCheckoutCompleted(
   event: VerifiedStripeEvent,
 ): Promise<void> {
   const session = event.data.object as unknown as CheckoutSessionObject;
+
+  // Platform contract payment (source=platform_contract)
+  if (session.metadata?.source === "platform_contract" && session.metadata?.contract_id) {
+    await handleContractPaymentCompleted(session);
+    return;
+  }
+
   const orderId = session.metadata?.order_id;
   const tenantId = session.metadata?.tenant_id;
   if (!orderId || !tenantId) return; // niente da aggiornare
@@ -209,4 +216,80 @@ export async function processStripeEvent(event: VerifiedStripeEvent): Promise<{
     await markProcessed(event.id, msg);
     throw err;
   }
+}
+
+// ─── Platform contract payment ───────────────────────────────────────────────
+
+async function handleContractPaymentCompleted(
+  session: CheckoutSessionObject,
+): Promise<void> {
+  const contractId = session.metadata?.contract_id;
+  if (!contractId) return;
+
+  const { getContract, updateContract } = await import("@/lib/contracts/contract-queries");
+
+  const contract = await getContract(contractId);
+  if (!contract) {
+    console.warn("[stripe-webhook] Contract not found:", contractId);
+    return;
+  }
+
+  // Update contract payment status
+  await updateContract(contractId, {
+    payment_status: "paid",
+    stripe_payment_intent_id: session.payment_intent,
+    paid_at: new Date().toISOString(),
+    status: "countersigned",
+  });
+
+  // Activate tenant if linked
+  const tenantSlug = contract.contract_data?.servizio?.tenantSlug;
+  if (tenantSlug) {
+    await activateTenantForContract(contractId, tenantSlug);
+  }
+}
+
+async function activateTenantForContract(
+  contractId: string,
+  tenantSlug: string,
+): Promise<void> {
+  const db = serviceDb();
+
+  // Find tenant by slug (id = slug in this codebase)
+  const { data: tenant } = await (db as unknown as {
+    from: (t: "tenants") => {
+      select: (s: string) => {
+        eq: (k: string, v: string) => {
+          maybeSingle: () => Promise<{ data: { id: string; status: string } | null }>;
+        };
+      };
+    };
+  }).from("tenants").select("id, status").eq("id", tenantSlug).maybeSingle();
+
+  if (!tenant) {
+    console.warn("[stripe-webhook] Tenant not found for activation:", tenantSlug);
+    return;
+  }
+
+  // Activate tenant
+  await (db as unknown as {
+    from: (t: "tenants") => {
+      update: (row: Record<string, unknown>) => {
+        eq: (k: string, v: string) => Promise<{ error: { message: string } | null }>;
+      };
+    };
+  }).from("tenants").update({
+    enabled: true,
+    status: "active",
+    updated_at: new Date().toISOString(),
+  }).eq("id", tenant.id);
+
+  // Mark activation on contract
+  const { updateContract } = await import("@/lib/contracts/contract-queries");
+  await updateContract(contractId, {
+    tenant_id: tenant.id,
+    tenant_activated_at: new Date().toISOString(),
+  });
+
+  console.log("[stripe-webhook] Tenant activated:", tenant.id, "for contract:", contractId);
 }

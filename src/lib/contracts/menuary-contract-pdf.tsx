@@ -11,9 +11,10 @@ import {
   FORNITORE,
   clientName,
   clientTaxDetails,
-  computeFirstPayment,
-  computeRecurringPayment,
+  computeFirstPaymentTotal,
+  computeRecurringPaymentTotal,
   computeYearlyTotal,
+  contractPaymentDescription,
   formatEUR,
   isIndividualClient,
   paymentMethodLabel,
@@ -215,17 +216,24 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
             dt="Modalità di pagamento"
             dd={paymentMethodLabel(data.economiche.metodoPagamento)}
           />
-          {data.economiche.metodoPagamento === "bonifico" && (
+          {(data.economiche.metodoPagamento === "bonifico" || data.economiche.metodoPagamento === "bunq") && (
             <>
-              <SummaryItem dt="IBAN" dd="NL33BUNQ2063062498 — Massimo Pernozzoli" />
+              <SummaryItem dt="IBAN" dd={`${FORNITORE.iban} — Massimo Pernozzoli`} />
+              <SummaryItem dt="Causale" dd={contractPaymentDescription(data)} />
               <SummaryItem
-                dt="Primo pagamento"
-                dd={`${formatEUR(computeFirstPayment(data.economiche))} ${taxSuffix(data.economiche)}`}
+                dt="Primo pagamento complessivo"
+                dd={formatEUR(computeFirstPaymentTotal(data.economiche))}
               />
               <SummaryItem
-                dt="Pagamenti successivi"
-                dd={`${formatEUR(computeRecurringPayment(data.economiche))} ${taxSuffix(data.economiche)} / ${annuale ? "anno" : "mese"}`}
+                dt="Pagamenti successivi complessivi"
+                dd={`${formatEUR(computeRecurringPaymentTotal(data.economiche))} / ${annuale ? "anno" : "mese"}`}
               />
+              {data.economiche.metodoPagamento === "bunq" && (
+                <SummaryItem
+                  dt="Nota"
+                  dd="Il link di pagamento Bunq verrà inviato dal Fornitore con importo precompilato"
+                />
+              )}
             </>
           )}
           <SummaryItem

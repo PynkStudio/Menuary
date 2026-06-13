@@ -12,6 +12,8 @@ import { ComposeDrawer, type ComposeAttachment } from "./compose-drawer";
 
 import { getInboundEmails, markEmailRead } from "@/lib/email/inbound-queries";
 import { getSentEmails } from "@/lib/email/sent-queries";
+import { getTrackingSummariesForEmails } from "@/lib/email/tracking-queries";
+import type { TrackingSummary } from "@/lib/email/tracking-queries";
 
 import type { InboxPage } from "@/lib/email/inbound-queries";
 import type { SentPage, SentEmail } from "@/lib/email/sent-queries";
@@ -128,9 +130,17 @@ export function MailApp({
   const [selectedSent, setSelectedSent]       = useState<SentEmail | null>(null);
   const [composeOpen, setComposeOpen]         = useState(false);
   const [composePrefill, setComposePrefill]   = useState<ComposePrefill>({});
+  const [sentTrackingMap, setSentTrackingMap] = useState<Record<string, TrackingSummary>>({});
   const [isPending, startTransition]          = useTransition();
 
   const prevInboxIdsRef = useRef<Set<string>>(new Set(initialInbox.emails.map((e) => e.id)));
+
+  useEffect(() => {
+    const ids = initialSent.emails.map((e) => e.resend_message_id).filter(Boolean) as string[];
+    if (ids.length > 0) {
+      getTrackingSummariesForEmails(ids).then(setSentTrackingMap).catch(() => {});
+    }
+  }, [initialSent]);
 
   const refreshSidebarCounters = useCallback(async () => {
     try {
@@ -153,6 +163,9 @@ export function MailApp({
         if (v === "sent") {
           const fresh = await getSentEmails(b, 1, scope);
           setSent(fresh);
+          const ids = fresh.emails.map((e) => e.resend_message_id).filter(Boolean) as string[];
+          const tracking = await getTrackingSummariesForEmails(ids);
+          setSentTrackingMap(tracking);
         } else {
           const fresh = await getInboundEmails({
             brand:             b,
@@ -304,7 +317,7 @@ export function MailApp({
                     {v === "inbox" ? "Arrivo" : v === "mine" ? "Le mie" : v === "sent" ? "Inviata" : v === "starred" ? "Stellate" : "Archivio"}
                   </button>
                 ))}
-                {mode === "platform" && (["all","menuary","bizery","orpheo","support"] as BrandFilter[]).map((b) => (
+                {mode === "platform" && (["all","pynkstudio","menuary","bizery","orpheo","support"] as BrandFilter[]).map((b) => (
                   <button
                     key={b}
                     onClick={() => handleBrandChange(b)}
@@ -315,7 +328,7 @@ export function MailApp({
                         : "bg-[var(--ma-surface)] text-[var(--ma-muted)]",
                     )}
                   >
-                    {b === "all" ? "Tutte" : b === "menuary" ? "Menuary" : b === "bizery" ? "Bizery" : b === "orpheo" ? "Orpheo" : "Supporto"}
+                    {b === "all" ? "Tutte" : b === "pynkstudio" ? "Pynk" : b === "menuary" ? "Menuary" : b === "bizery" ? "Bizery" : b === "orpheo" ? "Orpheo" : "Supporto"}
                   </button>
                 ))}
               </div>
@@ -337,6 +350,7 @@ export function MailApp({
                 emails={listEmails}
                 selectedId={selectedListId}
                 onSelect={isSentView ? handleSelectSent : handleSelectInbound}
+                trackingMap={isSentView ? sentTrackingMap : undefined}
               />
             </div>
           </div>

@@ -347,6 +347,9 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
       invoice_number: null,
       notes: "Primo pagamento generato dalla conferma vendita.",
       stripe_payment_link: null,
+      bunq_request_id: null,
+      bunq_payment_url: null,
+      payment_provider: null,
       billing_payload: {
         plan: selectedPackage.name,
         billing_cycle: payload.billingCycle,

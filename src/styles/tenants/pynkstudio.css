@@ -637,4 +637,269 @@
   .gestione-admin[data-gestione-tenant="pynkstudio"] .ga-input,
   .gestione-admin[data-gestione-tenant="pynkstudio"] .ga-select,
   .gestione-admin[data-gestione-tenant="pynkstudio"] .ga-textarea { color-scheme: dark; }
+
+  /* ════════════════════════════════════════════════════════════
+     PYNK STUDIO — admin panel (admin.pynkstudio.it)
+     Dark sidebar + light content area, palette propria.
+     ════════════════════════════════════════════════════════════ */
+
+  html[data-platform="admin-pynkstudio"] {
+    --pa-bg:      hsl(330 20% 97%);
+    --pa-surface: hsl(330 15% 93%);
+    --pa-line:    hsl(330 10% 85%);
+    --pa-ink:     hsl(330 15% 12%);
+    --pa-muted:   hsl(330 10% 45%);
+    --pa-accent:  hsl(330 80% 52%);
+    --pa-accent-dark: hsl(330 80% 42%);
+    --pa-sidebar-bg: hsl(240 8% 8%);
+    --pa-sidebar-fg: hsl(0 0% 96%);
+    --pa-sidebar-muted: hsl(330 10% 65%);
+    --pa-sidebar-active: hsl(330 80% 60%);
+    --pa-sidebar-border: hsl(330 20% 18%);
+    --ma-paper:   hsl(330 20% 97%);
+    --ma-surface: hsl(330 15% 93%);
+    --ma-line:    hsl(330 10% 85% / 0.5);
+    --ma-ink:     hsl(330 15% 12%);
+    --ma-muted:   hsl(330 10% 45%);
+    --ma-accent:  hsl(330 80% 52%);
+    --ma-accent-dark: hsl(330 80% 42%);
+  }
+
+  .pynk-admin-root {
+    min-height: 100vh;
+    background: var(--pa-bg);
+    color: var(--pa-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  }
+
+  .pynk-admin-sidebar {
+    background: var(--pa-sidebar-bg);
+    color: var(--pa-sidebar-fg);
+    border-right: 1px solid var(--pa-sidebar-border);
+  }
+
+  .pynk-admin-sidebar-header {
+    border-bottom: 1px solid hsl(330 20% 18% / 0.5);
+  }
+
+  .pynk-admin-brand {
+    font-weight: 300;
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+    color: var(--pa-sidebar-active);
+  }
+
+  .pynk-admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.94rem;
+    color: var(--pa-sidebar-muted);
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+  .pynk-admin-nav-link:hover {
+    background: hsl(330 20% 18% / 0.5);
+    color: var(--pa-sidebar-fg);
+  }
+  .pynk-admin-nav-link[data-active="true"] {
+    background: var(--pa-sidebar-active);
+    color: #ffffff;
+  }
+
+  .pynk-admin-nav-tag {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--pa-sidebar-muted);
+  }
+
+  .pynk-admin-logout {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--pa-sidebar-fg);
+    font-weight: 600;
+    border: 1px solid hsl(330 20% 18%);
+    transition: background-color 200ms ease, border-color 200ms ease;
+  }
+  .pynk-admin-logout:hover {
+    background: hsl(330 20% 18% / 0.5);
+    border-color: hsl(330 20% 30%);
+  }
+
+  .pynk-admin-topbar {
+    background: hsl(330 20% 97% / 0.92);
+    border-bottom: 1px solid var(--pa-line);
+    backdrop-filter: blur(10px);
+  }
+  .pynk-admin-topbar-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 999px;
+    background: var(--pa-sidebar-bg);
+    color: var(--pa-sidebar-fg);
+  }
+  .pynk-admin-topbar-title {
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: var(--pa-ink);
+  }
+
+  .pynk-admin-backdrop {
+    background: hsl(240 8% 6% / 0.7);
+  }
+
+  /* Page titles on admin.pynkstudio.it */
+  .pynk-admin-page-title {
+    font-weight: 300;
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    color: var(--pa-ink);
+  }
+  .pynk-admin-page-subtitle {
+    margin-top: 4px;
+    color: var(--pa-muted);
+    font-size: 0.875rem;
+  }
+
+  .pynk-admin-card {
+    background: #ffffff;
+    border: 1px solid var(--pa-line);
+    border-radius: 16px;
+    box-shadow:
+      0 1px 0 hsl(330 10% 85% / 0.3),
+      0 8px 24px -16px hsl(330 15% 12% / 0.08);
+  }
+
+  .pynk-admin-kpi-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  .pynk-admin-kpi {
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px solid var(--pa-line);
+    background: #ffffff;
+  }
+  .pynk-admin-kpi-label {
+    color: var(--pa-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .pynk-admin-kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--pa-ink);
+    margin-top: 4px;
+  }
+  .pynk-admin-kpi-hint {
+    color: var(--pa-muted);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .pynk-admin-quick-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .pynk-admin-quick {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    border: 1px solid var(--pa-line);
+    background: #ffffff;
+    color: var(--pa-ink);
+    font-weight: 600;
+    font-size: 14px;
+    transition: border-color 160ms ease, transform 160ms ease;
+    text-decoration: none;
+  }
+  .pynk-admin-quick:hover {
+    border-color: var(--pa-accent);
+    transform: translateY(-1px);
+  }
+  .pynk-admin-quick-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: hsl(330 80% 52% / 0.12);
+    color: var(--pa-accent);
+    flex: 0 0 36px;
+  }
+
+  .pynk-admin-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    background: var(--pa-accent);
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: background 160ms ease, transform 160ms ease;
+    cursor: pointer;
+  }
+  .pynk-admin-action-btn:hover:not(:disabled) {
+    background: var(--pa-accent-dark);
+  }
+
+  /* Reuse menuary-admin-card classes inside pynk-admin for inbox */
+  html[data-platform="admin-pynkstudio"] .menuary-admin-card {
+    background: #ffffff;
+    border-color: var(--pa-line);
+    box-shadow:
+      0 1px 0 hsl(330 10% 85% / 0.3),
+      0 8px 24px -16px hsl(330 15% 12% / 0.08);
+  }
+  html[data-platform="admin-pynkstudio"] .menuary-admin-nav-link {
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--pa-muted);
+    background: transparent;
+  }
+  html[data-platform="admin-pynkstudio"] .menuary-admin-nav-link:hover {
+    background: hsl(330 15% 93% / 0.6);
+    color: var(--pa-ink);
+  }
+  html[data-platform="admin-pynkstudio"] .menuary-admin-action-btn {
+    background: var(--pa-accent);
+    color: #ffffff;
+  }
+  html[data-platform="admin-pynkstudio"] .menuary-admin-action-btn:hover:not(:disabled) {
+    background: var(--pa-accent-dark);
+  }
+  html[data-platform="admin-pynkstudio"] .menuary-admin-page-title {
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    color: var(--pa-ink);
+  }
+  html[data-platform="admin-pynkstudio"] .menuary-admin-page-subtitle {
+    color: var(--pa-muted);
+  }
 }

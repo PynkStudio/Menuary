@@ -4,7 +4,10 @@ import type {
   SubscriptionStatus,
 } from "@/lib/platform-crm-types";
 import type { StoredContract } from "./contracts-store";
-import { computeYearlyTotal } from "./menuary-contract";
+import {
+  computeFirstPaymentTotal,
+  computeYearlyTotal,
+} from "./menuary-contract";
 
 const STORAGE_KEY = "menuary.contract.subscriptions.v1";
 
@@ -60,7 +63,7 @@ export function upsertSubscriptionFromContract(c: StoredContract): DerivedSubscr
     billing_cycle,
     price_override: priceOverride,
     setup_amount: c.data.economiche.setup,
-    first_payment_amount: c.data.economiche.setup + priceOverride,
+    first_payment_amount: computeFirstPaymentTotal(c.data.economiche),
     currency: "EUR",
     status,
     started_at: existing?.started_at ?? periodStart,
