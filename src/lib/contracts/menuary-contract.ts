@@ -220,7 +220,7 @@ export function paymentMethodLabel(m: PaymentMethod): string {
     case "sdd":
       return "Addebito diretto SEPA (SDD) su IBAN del Cliente";
     case "bonifico":
-      return "Bonifico bancario a 30 giorni data fattura — IBAN: NL33BUNQ2063062498 intestato a Massimo Pernozzoli";
+      return "Bonifico bancario a 30 giorni data fattura";
     case "carta":
       return "Addebito ricorrente su carta di credito (circuito Stripe)";
   }
