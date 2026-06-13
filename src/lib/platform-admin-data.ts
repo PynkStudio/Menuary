@@ -30,8 +30,13 @@ const operationsModules = Object.entries(allTenantFeatures(true))
 const aiAddonModules: TenantFeatureKey[] = ["aiPhone"];
 const aiWhatsappAddonModules: TenantFeatureKey[] = ["aiWhatsapp"];
 
+function parseSetupAmount(setupFrom: string): number {
+  return Number(setupFrom.replace(/[^0-9]/g, ""));
+}
+
 export const PLATFORM_PACKAGES: PlatformPackage[] = PRICING_PLANS.map((plan, index) => {
   const bizery = BIZERY_PRICING_PLANS.find((p) => p.slug === plan.slug);
+  const annualDiscount = Math.round((1 - plan.price_annual / plan.price_monthly) * 100);
   return {
     id: `pkg-${plan.slug}`,
     name: plan.marketing_name,
@@ -41,6 +46,9 @@ export const PLATFORM_PACKAGES: PlatformPackage[] = PRICING_PLANS.map((plan, ind
     description: plan.description,
     price_monthly: plan.price_annual,
     price_yearly: plan.price_annual * 12,
+    price_monthly_real: plan.price_monthly,
+    setup_amount: parseSetupAmount(plan.setup_from),
+    annual_discount_pct: annualDiscount,
     currency: "EUR",
     modules:
       plan.slug === "presenza"
@@ -55,27 +63,33 @@ export const PLATFORM_PACKAGES: PlatformPackage[] = PRICING_PLANS.map((plan, ind
   };
 });
 
-export const ORPHEO_PLATFORM_PACKAGES: PlatformPackage[] = ORPHEO_PRICING_PLANS.map((plan, index) => ({
-  id: `pkg-${plan.slug}`,
-  name: plan.marketing_name,
-  slug: plan.slug,
-  vertical: "creative",
-  adapted_name: null,
-  description: plan.description,
-  price_monthly: plan.price_annual,
-  price_yearly: plan.price_annual * 12,
-  currency: "EUR",
-  modules:
-    plan.slug === "orpheo-presenza"
-      ? ["website", "pressKit", "worksCatalog", "reviews", "gallery"]
-      : plan.slug === "orpheo-pro"
-        ? ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "reputationReviews", "gallery", "staffRoles"]
-        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation", "mail"],
-  is_active: true,
-  sort_order: 201 + index,
-  created_at: "2026-01-01T00:00:00Z",
-  updated_at: "2026-01-01T00:00:00Z",
-}));
+export const ORPHEO_PLATFORM_PACKAGES: PlatformPackage[] = ORPHEO_PRICING_PLANS.map((plan, index) => {
+  const annualDiscount = Math.round((1 - plan.price_annual / plan.price_monthly) * 100);
+  return {
+    id: `pkg-${plan.slug}`,
+    name: plan.marketing_name,
+    slug: plan.slug,
+    vertical: "creative",
+    adapted_name: null,
+    description: plan.description,
+    price_monthly: plan.price_annual,
+    price_yearly: plan.price_annual * 12,
+    price_monthly_real: plan.price_monthly,
+    setup_amount: parseSetupAmount(plan.setup_from),
+    annual_discount_pct: annualDiscount,
+    currency: "EUR",
+    modules:
+      plan.slug === "orpheo-presenza"
+        ? ["website", "pressKit", "worksCatalog", "reviews", "gallery"]
+        : plan.slug === "orpheo-pro"
+          ? ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "reputationReviews", "gallery", "staffRoles"]
+          : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation", "mail"],
+    is_active: true,
+    sort_order: 201 + index,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  };
+});
 
 PLATFORM_PACKAGES.push(...ORPHEO_PLATFORM_PACKAGES);
 

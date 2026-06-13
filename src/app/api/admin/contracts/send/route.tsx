@@ -3,6 +3,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { MenuaryContractPdf } from "@/lib/contracts/menuary-contract-pdf";
+import { buildAttachments } from "@/lib/contracts/menuary-attachments";
 import {
   normalizeContractData,
   BRAND_INFO,
@@ -18,8 +19,14 @@ import {
   type ContractData,
 } from "@/lib/contracts/menuary-contract";
 import { getContract, updateContract } from "@/lib/contracts/contract-queries";
-import { createEnvelope, distributeEnvelope, getEnvelope } from "@/lib/contracts/documenso";
-import { sendEmail, PLATFORM_BRANDS } from "@/lib/email/sender";
+import {
+  createEnvelope,
+  distributeEnvelope,
+  getEnvelope,
+  countPdfPages,
+  buildSignatureFields,
+} from "@/lib/contracts/documenso";
+import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -88,16 +95,28 @@ export async function POST(req: NextRequest) {
   let signingUrl: string | null = null;
   let documensoItemId: string | null = null;
 
+  // Conta pagine PDF e allegati per posizionare i campi firma su tutte le pagine
+  const totalPages = countPdfPages(pdfBuffer);
+  const attachmentCount = buildAttachments(data).length;
+  const recipients = buildSignatureFields(
+    totalPages,
+    signerEmail,
+    signerName,
+    attachmentCount,
+  );
+
+  const subject = `Firma contratto ${data.numero} ${BRAND_INFO[data.brand].platformName}`;
+  const message = `Gentile ${signerName}, clicchi il link per visionare e firmare elettronicamente il contratto ${data.numero}.`;
+
   try {
     const envelope = await createEnvelope({
       title: `Contratto ${data.numero} — ${data.cliente.ragioneSociale}`,
       pdfBuffer,
       pdfFileName,
-      signerEmail,
-      signerName,
+      recipients,
       externalId: contractId,
-      subject: `Firma contratto ${data.numero} ${BRAND_INFO[data.brand].platformName}`,
-      message: `Gentile ${signerName}, clicchi il link per visionare e firmare elettronicamente il contratto ${data.numero}.`,
+      subject,
+      message,
     });
     envelopeId = envelope.envelopeId;
 
@@ -119,10 +138,12 @@ export async function POST(req: NextRequest) {
   const brand = data.brand;
   const emailHtml = buildContractEmailHtml(data, signingUrl);
 
+  const sender = resolveSenderForVertical(BRAND_INFO[brand].vertical);
   const emailResult = await sendEmail({
     to: signerEmail,
     subject: `Contratto ${data.numero} ${BRAND_INFO[brand].platformName} — ${data.cliente.ragioneSociale || "—"}`,
     html: emailHtml,
+    fromOverride: sender.from,
     attachments: [
       {
         filename: pdfFileName,

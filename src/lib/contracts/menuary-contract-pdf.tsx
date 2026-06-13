@@ -19,6 +19,7 @@ import {
   isIndividualClient,
   paymentMethodLabel,
   taxSuffix,
+  MARCA_BOLLO,
   type ContractData,
 } from "./menuary-contract";
 import { buildClauses, VESSATORIE_RIF } from "./menuary-clauses";
@@ -230,13 +231,10 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
                 dt="Pagamenti successivi complessivi"
                 dd={`${formatEUR(computeRecurringPaymentTotal(data.economiche))} / ${annuale ? "anno" : "mese"}`}
               />
-              {data.economiche.metodoPagamento === "bunq" && (
-                <SummaryItem
-                  dt="Nota"
-                  dd="Il link di pagamento Bunq verrà inviato dal Fornitore con importo precompilato"
-                />
-              )}
             </>
+          )}
+          {data.economiche.esenzioneIva && (
+            <SummaryItem dt="Marca da bollo" dd={`${formatEUR(MARCA_BOLLO)} — applicata una sola volta per fattura`} />
           )}
           <SummaryItem
             dt="Dominio"

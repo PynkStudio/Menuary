@@ -45,12 +45,29 @@ async function request<T>(
 
 // ─── Create envelope ────────────────────────────────────────────────────────
 
+export type DocumensoField = {
+  type: "SIGNATURE" | "DATE";
+  page: number;
+  positionX: number;
+  positionY: number;
+  width: number;
+  height: number;
+  identifier: number;
+};
+
+export type EnvelopeRecipient = {
+  email: string;
+  name: string;
+  role: "SIGNER";
+  signingOrder: number;
+  fields: DocumensoField[];
+};
+
 export type CreateEnvelopeInput = {
   title: string;
   pdfBuffer: Buffer;
   pdfFileName: string;
-  signerEmail: string;
-  signerName: string;
+  recipients: EnvelopeRecipient[];
   externalId?: string;
   subject?: string;
   message?: string;
@@ -59,6 +76,75 @@ export type CreateEnvelopeInput = {
 export type CreateEnvelopeResult = {
   envelopeId: string;
 };
+
+export function countPdfPages(buffer: Buffer): number {
+  const str = buffer.toString("latin1");
+  const match = str.match(/\/Count\s+(\d+)/);
+  return match ? Math.max(1, parseInt(match[1], 10)) : 1;
+}
+
+/**
+ * Genera campi firma + data per il Cliente (unico firmatario su Documenso)
+ * su tutte le pagine dove compaiono blocchi firma.
+ *
+ * Il contratto ha questa struttura:
+ *   - corpo principale (clausole + vessatorie + firme: entrambe le parti)
+ *   - N allegati, ciascuno con firme Cliente + Fornitore in calce
+ *
+ * Il Cliente firma:
+ *   1. Firma principale + vessatorie sul corpo (ultima pagina prima degli allegati)
+ *   2. Firma su ogni allegato (pagina dell'allegato)
+ *
+ * Le pagine di firma sono le ultime (1 + attachmentCount) pagine del PDF.
+ *
+ * Posizionamento (coordinate percentuali 0-100):
+ *   - Firma vessatorie: colonna destra, Y ~68
+ *   - Firma principale: colonna destra, Y ~83
+ *   - Data sotto ogni firma: Y +7
+ */
+export function buildSignatureFields(
+  totalPages: number,
+  clienteEmail: string,
+  clienteName: string,
+  attachmentPageCount: number,
+): EnvelopeRecipient[] {
+  const sigCount = 1 + attachmentPageCount;
+  const startPage = Math.max(1, totalPages - sigCount + 1);
+  const sigPages: number[] = [];
+  for (let i = 0; i < sigCount; i++) {
+    const p = startPage + i;
+    if (p >= 1 && p <= totalPages) sigPages.push(p);
+  }
+
+  let idCounter = 0;
+  const fields: DocumensoField[] = [];
+
+  for (const page of sigPages) {
+    const id0 = idCounter++;
+    const id1 = idCounter++;
+
+    // Firma vessatorie (destra)
+    fields.push(
+      { type: "SIGNATURE", page, positionX: 58, positionY: 68, width: 28, height: 5, identifier: id0 },
+      { type: "DATE", page, positionX: 58, positionY: 75, width: 20, height: 3, identifier: id0 },
+    );
+    // Firma principale (destra)
+    fields.push(
+      { type: "SIGNATURE", page, positionX: 58, positionY: 83, width: 28, height: 5, identifier: id1 },
+      { type: "DATE", page, positionX: 58, positionY: 90, width: 20, height: 3, identifier: id1 },
+    );
+  }
+
+  return [
+    {
+      email: clienteEmail,
+      name: clienteName,
+      role: "SIGNER",
+      signingOrder: 1,
+      fields,
+    },
+  ];
+}
 
 export async function createEnvelope(
   input: CreateEnvelopeInput,
@@ -69,41 +155,20 @@ export async function createEnvelope(
     type: "DOCUMENT",
     title: input.title,
     ...(input.externalId ? { externalId: input.externalId } : {}),
-    recipients: [
-      {
-        email: input.signerEmail,
-        name: input.signerName,
-        role: "SIGNER",
-        signingOrder: 1,
-        fields: [
-          {
-            type: "SIGNATURE",
-            page: 1,
-            positionX: 55,
-            positionY: 85,
-            width: 30,
-            height: 5,
-            identifier: 0,
-          },
-          {
-            type: "DATE",
-            page: 1,
-            positionX: 55,
-            positionY: 92,
-            width: 20,
-            height: 3,
-            identifier: 0,
-          },
-        ],
-      },
-    ],
+    recipients: input.recipients.map((r) => ({
+      email: r.email,
+      name: r.name,
+      role: r.role,
+      signingOrder: r.signingOrder,
+      fields: r.fields,
+    })),
     meta: {
       subject: input.subject ?? `Firma contratto: ${input.title}`,
       message:
         input.message ??
         "Clicca il link qui sotto per visionare e firmare il contratto elettronicamente.",
       distributionMethod: "NONE",
-      signingOrder: "PARALLEL",
+      signingOrder: "SEQUENTIAL",
     },
   };
 

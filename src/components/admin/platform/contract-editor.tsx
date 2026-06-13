@@ -21,6 +21,7 @@ import { PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
 import type { PlatformLead } from "@/lib/platform-crm-types";
 import {
   BRAND_INFO,
+  BRAND_PREFIX,
   FORNITORE,
   MAX_SETUP_RATE,
   clientName,
@@ -38,6 +39,7 @@ import {
   setupRateTotal,
   splitSetupEvenly,
   taxSuffix,
+  MARCA_BOLLO,
   type BillingCycle,
   type ContractBrand,
   type ContractClientType,
@@ -217,6 +219,12 @@ export function ContractEditor({ contractId }: Props) {
   const firstPayment = computeFirstPaymentTotal(data.economiche);
   const recurringPayment = computeRecurringPaymentTotal(data.economiche);
   const paymentDescription = contractPaymentDescription(data);
+  const selectedPkg = PLATFORM_PACKAGES.find((p) => p.slug === packageSlug);
+  const defaultSetup = selectedPkg?.setup_amount;
+  const setupDiscountPct =
+    defaultSetup && data.economiche.setup < defaultSetup
+      ? Math.round((1 - data.economiche.setup / defaultSetup) * 100)
+      : 0;
 
   function applyLead(id: string, source = leads) {
     if (!id) return;
@@ -266,7 +274,16 @@ export function ContractEditor({ contractId }: Props) {
     setData((d) => ({
       ...d,
       servizio: { ...d.servizio, pianoNome: pkg.name },
-      economiche: { ...d.economiche, canoneMensile: pkg.price_monthly },
+      economiche: {
+        ...d.economiche,
+        canoneMensile: pkg.price_monthly,
+        setup: pkg.setup_amount ?? d.economiche.setup,
+        setupRate: pkg.setup_amount ? [pkg.setup_amount] : d.economiche.setupRate,
+        scontoAnnuale:
+          d.economiche.cicloFatturazione === "yearly"
+            ? (pkg.annual_discount_pct ?? d.economiche.scontoAnnuale)
+            : 0,
+      },
     }));
   }
 
@@ -400,6 +417,31 @@ export function ContractEditor({ contractId }: Props) {
     }
   }
 
+  async function handleCountersign() {
+    if (!serverContract) return;
+    if (!window.confirm("Confermi la controfirma del contratto? Il PDF firmato verrà scaricato da Documenso e salvato come controfirmato.")) return;
+    setSending(true);
+    try {
+      const res = await fetch("/api/admin/contracts/countersign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contractId: serverContract.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Errore" })) as { error?: string };
+        setFeedback(`Errore: ${err.error}`);
+        return;
+      }
+      const { contract } = await res.json() as { contract: ServerContract };
+      setServerContract(contract);
+      setFeedback("Contratto controfirmato con successo.");
+    } catch {
+      setFeedback("Errore di rete nella controfirma.");
+    } finally {
+      setSending(false);
+    }
+  }
+
   async function handleConfirmPayment() {
     if (!serverContract) return;
     if (!window.confirm("Confermi la ricezione del pagamento per questo contratto?")) return;
@@ -486,7 +528,14 @@ export function ContractEditor({ contractId }: Props) {
     if (selectedLead && selectedLead.business_vertical !== BRAND_INFO[brand].vertical) {
       setLeadId("");
     }
-    setData((current) => ({ ...current, brand }));
+    setData((current) => {
+      const prefix = BRAND_PREFIX[brand];
+      const oldPrefix = BRAND_PREFIX[current.brand];
+      const numero = current.numero.startsWith(oldPrefix)
+        ? `${prefix}${current.numero.slice(oldPrefix.length)}`
+        : current.numero;
+      return { ...current, brand, numero };
+    });
   }
 
   return (
@@ -722,15 +771,23 @@ export function ContractEditor({ contractId }: Props) {
         <label>Ciclo di fatturazione</label>
         <select
           value={data.economiche.cicloFatturazione}
-          onChange={(e) =>
-            setData((d) => ({
-              ...d,
-              economiche: {
-                ...d.economiche,
-                cicloFatturazione: e.target.value as BillingCycle,
-              },
-            }))
-          }
+          onChange={(e) => {
+            const next = e.target.value as BillingCycle;
+            setData((d) => {
+              const pkg = PLATFORM_PACKAGES.find((p) => p.slug === packageSlug);
+              return {
+                ...d,
+                economiche: {
+                  ...d.economiche,
+                  cicloFatturazione: next,
+                  scontoAnnuale:
+                    next === "yearly"
+                      ? (pkg?.annual_discount_pct ?? d.economiche.scontoAnnuale)
+                      : 0,
+                },
+              };
+            });
+          }}
         >
           <option value="monthly">Mensile</option>
           <option value="yearly">Annuale anticipato</option>
@@ -1124,6 +1181,11 @@ export function ContractEditor({ contractId }: Props) {
             <dt>Setup una tantum</dt>
             <dd>
               {formatEUR(data.economiche.setup)} {taxSuffix(data.economiche)}
+              {setupDiscountPct > 0 && (
+                <span style={{ color: "#059669", fontWeight: 600, marginLeft: 6 }}>
+                  (sconto {setupDiscountPct}%)
+                </span>
+              )}
               {data.economiche.setupRateale && data.economiche.setupRate.length > 1 ? (
                 <span style={{ display: "block", color: "#6b7280", fontWeight: 400, fontSize: 11 }}>
                   Rateizzato in {data.economiche.setupRate.length} mensilità:{" "}
@@ -1139,6 +1201,14 @@ export function ContractEditor({ contractId }: Props) {
                   : `${formatEUR(totaleAnnuale)} ${taxSuffix(data.economiche)} / anno`
                 : `${formatEUR(data.economiche.canoneMensile)} ${taxSuffix(data.economiche)} / mese`}
             </dd>
+            {data.economiche.esenzioneIva && (
+              <>
+                <dt>Marca da bollo</dt>
+                <dd>
+                  {formatEUR(MARCA_BOLLO)} — applicata una sola volta per fattura
+                </dd>
+              </>
+            )}
             <dt>Modalità di pagamento</dt>
             <dd>{paymentMethodLabel(data.economiche.metodoPagamento)}</dd>
             {(data.economiche.metodoPagamento === "bonifico" || data.economiche.metodoPagamento === "bunq") && (
@@ -1155,12 +1225,6 @@ export function ContractEditor({ contractId }: Props) {
                 <dd>{formatEUR(firstPayment)}</dd>
                 <dt>Pagamenti successivi complessivi</dt>
                 <dd>{formatEUR(recurringPayment)} / {annuale ? "anno" : "mese"}</dd>
-                {data.economiche.metodoPagamento === "bunq" && (
-                  <>
-                    <dt>Nota</dt>
-                    <dd>Il link di pagamento Bunq verrà inviato con importo precompilato</dd>
-                  </>
-                )}
               </>
             )}
             <dt>Durata</dt>

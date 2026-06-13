@@ -17,7 +17,7 @@ export const PLATFORM_BRANDS: Record<TenantVertical, EmailBrand> = {
   food: {
     name: "Menuary",
     domain: "menuary.it",
-    fromEmail: "noreply@menuary.it",
+    fromEmail: "amministrazione@menuary.it",
     primary: "#B8332E",
     bg: "#FFF4E6",
     text: "#141010",
@@ -26,7 +26,7 @@ export const PLATFORM_BRANDS: Record<TenantVertical, EmailBrand> = {
   services: {
     name: "Bizery",
     domain: "bizery.it",
-    fromEmail: "noreply@bizery.it",
+    fromEmail: "amministrazione@bizery.it",
     primary: "#2563EB",
     bg: "#F0F5FF",
     text: "#0F172A",
@@ -35,7 +35,7 @@ export const PLATFORM_BRANDS: Record<TenantVertical, EmailBrand> = {
   creative: {
     name: "Orpheo",
     domain: "weuseorpheo.com",
-    fromEmail: "noreply@weuseorpheo.com",
+    fromEmail: "amministrazione@weuseorpheo.com",
     primary: "#7C3AED",
     bg: "#FBFAF7",
     text: "#17111F",

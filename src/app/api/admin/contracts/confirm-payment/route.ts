@@ -45,9 +45,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (contract.status !== "signed") {
+  if (contract.status !== "signed" && contract.status !== "countersigned") {
     return NextResponse.json(
-      { error: `Il contratto deve essere in stato "signed", attuale: "${contract.status}"` },
+      { error: `Il contratto deve essere in stato "signed" o "countersigned", attuale: "${contract.status}"` },
       { status: 400 },
     );
   }

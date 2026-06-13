@@ -5,12 +5,13 @@ import {
   type DocumensoWebhookPayload,
 } from "@/lib/contracts/documenso";
 import {
+  getContract,
   getContractByEnvelopeId,
   updateContract,
 } from "@/lib/contracts/contract-queries";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { createContractPayment } from "@/lib/contracts/contract-checkout";
-import { sendEmail, PLATFORM_BRANDS } from "@/lib/email/sender";
+import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
 import {
   BRAND_INFO,
   FORNITORE,
@@ -42,13 +43,8 @@ export async function POST(req: NextRequest) {
   }
 
   const contract = payload.payload?.externalId
-    ? await getContractByEnvelopeId(
-        // externalId was set to the contract UUID, but documenso_envelope_id stores the envelope id
-        // Try both approaches
-        payload.payload.externalId,
-      ).then((c) => c ?? getContractByEnvelopeIdFallback(payload))
+    ? await getContract(payload.payload.externalId)
     : await getContractByEnvelopeIdFallback(payload);
-
   if (!contract) {
     console.warn("[documenso-webhook] Contract not found for envelope", payload.payload?.id);
     return NextResponse.json({ received: true, error: "contract_not_found" });
@@ -123,6 +119,7 @@ async function handlePaymentByMethod(
     const result = await createContractPayment(contractId, data);
     const brandMeta = BRAND_INFO[data.brand as ContractBrand];
     const emailBrand = PLATFORM_BRANDS[brandMeta.vertical];
+    const sender = resolveSenderForVertical(brandMeta.vertical);
     const signerEmail = data.cliente.email || data.cliente.pec;
 
     switch (result.provider) {
@@ -137,6 +134,7 @@ async function handlePaymentByMethod(
             to: signerEmail,
             subject: `Pagamento contratto ${numero} — ${emailBrand.name}`,
             html: buildPaymentEmailHtml(data, result.checkoutUrl, numero),
+            fromOverride: sender.from,
           });
         }
         break;
@@ -148,6 +146,7 @@ async function handlePaymentByMethod(
             to: signerEmail,
             subject: `Pagamento contratto ${numero} — ${emailBrand.name}`,
             html: buildPaymentEmailHtml(data, result.bunqShareUrl, numero),
+            fromOverride: sender.from,
           });
         }
         break;
@@ -159,6 +158,7 @@ async function handlePaymentByMethod(
           subject: `[${emailBrand.name}] Contratto ${numero} firmato — in attesa di bonifico`,
           html: `<p>Il contratto <strong>${numero}</strong> di <strong>${data.cliente.ragioneSociale}</strong> è stato firmato elettronicamente.</p>
                  <p>Metodo di pagamento: <strong>bonifico</strong>. Il webhook Bunq aggiornerà lo stato automaticamente quando il pagamento verrà ricevuto.</p>`,
+          fromOverride: sender.from,
         });
         break;
       }

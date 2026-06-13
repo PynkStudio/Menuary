@@ -91,6 +91,10 @@ export type PlatformPackage = {
   description: string | null;
   price_monthly: number;
   price_yearly: number | null;
+  /** Prezzo pieno mensile (per calcolo sconto annuale) */
+  price_monthly_real?: number | null;
+  setup_amount?: number;
+  annual_discount_pct?: number;
   currency: string;
   modules: TenantFeatureKey[];
   is_active: boolean;

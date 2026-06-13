@@ -15,6 +15,12 @@ export type PaymentMethod = "sdd" | "bonifico" | "carta" | "bunq";
 export type ContractBrand = "menuary" | "bizery" | "orpheo";
 export type ContractClientType = "business" | "individual";
 
+export const BRAND_PREFIX: Record<ContractBrand, string> = {
+  menuary: "MEN",
+  bizery: "BIZ",
+  orpheo: "ORP",
+};
+
 export const BRAND_INFO: Record<ContractBrand, {
   label: string;
   platformName: string;
@@ -88,16 +94,26 @@ export type ContractData = {
     esenzioneIva: boolean;
   };
   noteAggiuntive: string;
+  countersigned?: {
+    at: string;
+    by: string;
+    documentPath: string;
+  } | null;
 };
 
 export function defaultContractData(): ContractData {
+  return freshContractData("menuary");
+}
+
+export function freshContractData(brand: ContractBrand): ContractData {
   const today = new Date();
   const yyyy = today.getFullYear();
-  const numero = `MEN-${yyyy}-${String(today.getTime()).slice(-5)}`;
+  const prefix = BRAND_PREFIX[brand];
+  const numero = `${prefix}-${yyyy}-${String(today.getTime()).slice(-5)}`;
   return {
     numero,
     dataStipula: today.toISOString().slice(0, 10),
-    brand: "menuary",
+    brand,
     cliente: {
       tipo: "business",
       ragioneSociale: "",
@@ -149,6 +165,7 @@ export function normalizeContractData(data: ContractData): ContractData {
       ...data.economiche,
       esenzioneIva: data.economiche.esenzioneIva ?? true,
     },
+    countersigned: data.countersigned ?? null,
   };
 }
 
@@ -189,14 +206,14 @@ export const MARCA_BOLLO = 2;
 
 export function taxSuffix(economiche: ContractData['economiche']): string {
   if (economiche.esenzioneIva) {
-    return "+ €2 marca da bollo, con rivalsa INPS 4% sul totale";
+    return "+ rivalsa INPS 4%";
   }
   return "+ IVA";
 }
 
 export function taxClauseSuffix(economiche: ContractData['economiche']): string {
   if (economiche.esenzioneIva) {
-    return "con marca da bollo di €2,00 inclusa nella base di calcolo della rivalsa INPS del 4%";
+    return "con rivalsa INPS del 4% (la marca da bollo di €2 è applicata una sola volta per fattura)";
   }
   return "oltre IVA di legge";
 }
