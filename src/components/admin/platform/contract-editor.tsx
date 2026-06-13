@@ -103,6 +103,7 @@ export function ContractEditor({ contractId }: Props) {
   const [sendPreviewOpen, setSendPreviewOpen] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [confirmingPayment, setConfirmingPayment] = useState(false);
+  const [countersigning, setCountersigning] = useState(false);
 
   type ContractDraft = { data: ContractData; overrides: Record<string, string> };
   const draftKey = `draft:contract:${contractId ?? "new"}`;
@@ -420,7 +421,7 @@ export function ContractEditor({ contractId }: Props) {
   async function handleCountersign() {
     if (!serverContract) return;
     if (!window.confirm("Confermi la controfirma del contratto? Il PDF firmato verrà scaricato da Documenso e salvato come controfirmato.")) return;
-    setSending(true);
+    setCountersigning(true);
     try {
       const res = await fetch("/api/admin/contracts/countersign", {
         method: "POST",
@@ -434,11 +435,12 @@ export function ContractEditor({ contractId }: Props) {
       }
       const { contract } = await res.json() as { contract: ServerContract };
       setServerContract(contract);
+      setData(normalizeContractData(contract.contract_data));
       setFeedback("Contratto controfirmato con successo.");
     } catch {
       setFeedback("Errore di rete nella controfirma.");
     } finally {
-      setSending(false);
+      setCountersigning(false);
     }
   }
 
@@ -1028,13 +1030,13 @@ export function ContractEditor({ contractId }: Props) {
             )}
 
             {/* Signed status */}
-            {(effectiveStatus === "signed" || effectiveStatus === "countersigned") && (
+            {effectiveStatus === "signed" && (
               <div style={{ marginTop: 12 }}>
                 <h3>Firma elettronica</h3>
                 <div className="signed-box">
                   <CheckCircle2 size={16} />
                   <div>
-                    <strong>Contratto firmato elettronicamente</strong>
+                    <strong>Contratto firmato dal cliente</strong>
                     {serverContract.signed_at && (
                       <div style={{ fontSize: 11, color: "#6b7280" }}>
                         Firmato il {new Date(serverContract.signed_at).toLocaleString("it-IT")}
@@ -1043,6 +1045,47 @@ export function ContractEditor({ contractId }: Props) {
                     {serverContract.signed_document_path && (
                       <div style={{ fontSize: 11, color: "#047857", marginTop: 4 }}>
                         <Download size={12} style={{ display: "inline", verticalAlign: "middle" }} /> PDF firmato salvato
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleCountersign}
+                      disabled={countersigning}
+                      style={{
+                        display: "block", marginTop: 8, padding: "6px 12px",
+                        background: "#1d4ed8", color: "#fff", border: "none",
+                        borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      }}
+                    >
+                      <CheckCircle2 size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                      {countersigning ? "Controfirmo…" : "Controfirma"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Countersigned status */}
+            {effectiveStatus === "countersigned" && (
+              <div style={{ marginTop: 12 }}>
+                <h3>Firma elettronica</h3>
+                <div className="signed-box">
+                  <CheckCircle2 size={16} />
+                  <div>
+                    <strong>Contratto controfirmato</strong>
+                    {serverContract.signed_at && (
+                      <div style={{ fontSize: 11, color: "#6b7280" }}>
+                        Firmato dal cliente il {new Date(serverContract.signed_at).toLocaleString("it-IT")}
+                      </div>
+                    )}
+                    {data.countersigned?.at && (
+                      <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>
+                        Controfirmato da {data.countersigned.by} il {new Date(data.countersigned.at).toLocaleString("it-IT")}
+                      </div>
+                    )}
+                    {serverContract.signed_document_path && (
+                      <div style={{ fontSize: 11, color: "#047857", marginTop: 4 }}>
+                        <Download size={12} style={{ display: "inline", verticalAlign: "middle" }} /> PDF controfirmato salvato
                       </div>
                     )}
                   </div>

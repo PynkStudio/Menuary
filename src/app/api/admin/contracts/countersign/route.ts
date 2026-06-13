@@ -57,26 +57,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const data = contract.contract_data;
-  const adminName = user.user_metadata?.full_name || user.email || FORNITORE.legaleRappresentante;
-  const db = createSupabaseServiceClient();
-  if (!db) {
+  if (!contract.documenso_item_id) {
     return NextResponse.json(
-      { error: "Servizio di archiviazione non configurato" },
-      { status: 500 },
+      { error: "Nessun documento Documenso associato al contratto" },
+      { status: 400 },
     );
   }
 
   // Download signed PDF from Documenso
   let countersignedPath: string;
   try {
-    if (!contract.documenso_item_id) {
+    const signedPdf = await downloadSignedDocument(contract.documenso_item_id);
+    const db = createSupabaseServiceClient();
+    if (!db) {
       return NextResponse.json(
-        { error: "Nessun documento Documenso associato al contratto" },
-        { status: 400 },
+        { error: "Servizio di archiviazione non configurato" },
+        { status: 500 },
       );
     }
-    const signedPdf = await downloadSignedDocument(contract.documenso_item_id);
     const path = `contracts/${contract.id}/controfirmato-${contract.numero}.pdf`;
     const { error: uploadError } = await db.storage
       .from("platform-documents")
@@ -93,15 +91,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Update contract: countersign status + metadata
-  await updateContract(contractId, {
-    status: "countersigned",
-    signed_document_path: countersignedPath,
-  });
+  const adminName =
+    user.user_metadata?.full_name || user.email || FORNITORE.legaleRappresentante;
 
-  // Update contract_data JSONB with countersign metadata
-  const updatedData = {
-    ...data,
+  const updatedContractData = {
+    ...contract.contract_data,
     countersigned: {
       at: new Date().toISOString(),
       by: adminName,
@@ -109,18 +103,11 @@ export async function POST(req: NextRequest) {
     },
   };
 
-  const { error: updateDataError } = await db
-    .from("platform_contracts")
-    .update({
-      contract_data: updatedData,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", contractId);
+  const updated = await updateContract(contractId, {
+    status: "countersigned",
+    signed_document_path: countersignedPath,
+    contract_data: updatedContractData,
+  });
 
-  if (updateDataError) {
-    console.error("[countersign] Failed to update contract_data", updateDataError);
-  }
-
-  const updated = await getContract(contractId);
   return NextResponse.json({ contract: updated });
 }
