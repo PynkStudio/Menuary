@@ -14,6 +14,58 @@ export const furyCoverSrc = "https://m.media-amazon.com/images/I/71z2LZ6a8XL.jpg
 export const darkNoirCoverSrc = "/valentina-orciuoli/tra-fumo-e-ombre.webp";
 export const authorPortraitSrc = "https://www.selfcreation.it/wp-content/uploads/2024/11/Valentina-Orciuoli.jpg";
 
+export type ValentinaCreativeWork = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  secondaryText: string;
+  coverImageUrl: string;
+  backgroundMediaUrl: string;
+  ctaLabel: string;
+  ctaHref: string;
+  enabled: boolean;
+};
+
+export const valentinaCreativeWorks: ValentinaCreativeWork[] = [
+  {
+    id: "44acaaba-1814-46ef-923d-a4f50aa11901",
+    slug: "anxiety",
+    title: "Anxiety",
+    description: "E se l'ansia fosse un potere? E se questo potere si manifestasse nella forma di un dragone?",
+    secondaryText: "Quando non è più possibile mentire a sé stessi, quando il vero combatte per uscire allo scoperto il potere dell'ansia si sprigiona, più feroce che mai.",
+    coverImageUrl: anxietyCoverSrc,
+    backgroundMediaUrl: "/valentina-orciuoli/video-anxiety.webm",
+    ctaLabel: "Leggilo qui",
+    ctaHref: amazonHref,
+    enabled: true,
+  },
+  {
+    id: "44acaaba-1814-46ef-923d-a4f50aa11902",
+    slug: "fury",
+    title: "Fury",
+    description: "E se perdere se stessi fosse l'unico modo per salvare chi ami? Quando la rabbia prende il sopravvento, cosa resta del proprio io?",
+    secondaryText: "Un secolo prima dell'apparizione del Dragone Nero dell'ansia, il Primo Long era l'incarnazione della rabbia.",
+    coverImageUrl: furyCoverSrc,
+    backgroundMediaUrl: "/valentina-orciuoli/video-fury.webm",
+    ctaLabel: "Leggilo qui",
+    ctaHref: furyHref,
+    enabled: true,
+  },
+  {
+    id: "44acaaba-1814-46ef-923d-a4f50aa11903",
+    slug: "tra-fumo-e-ombre",
+    title: "Tra fumo e ombre",
+    description: "E se il fumo fosse l'unico posto dove poter nascondere la verità?",
+    secondaryText: "Nella Milano cupa degli anni '70, tra nebbia, silenzi e ombre che sembrano respirare, una donna cerca di dimenticare ciò che ha perduto. Ma ogni sigaretta accesa riporta a galla un ricordo, ogni strada bagnata riflette un volto che non vuole più vedere.",
+    coverImageUrl: darkNoirCoverSrc,
+    backgroundMediaUrl: "/valentina-orciuoli/video-dark.webm",
+    ctaLabel: "Preordina qui",
+    ctaHref: linktreeHref,
+    enabled: true,
+  },
+];
+
 export const valentinaLinks = [
   {
     label: "Sito",

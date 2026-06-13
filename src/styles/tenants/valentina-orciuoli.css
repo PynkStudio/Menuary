@@ -643,12 +643,27 @@
   .vo-book-feature-panel {
     position: relative;
     z-index: 2;
-    width: min(100%, 33rem);
+    display: grid;
+    width: min(100%, 47rem);
+    grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr);
+    gap: clamp(1.2rem, 3vw, 2rem);
+    align-items: center;
     border: 1px solid rgba(255, 218, 212, 0.42);
     padding: clamp(1.45rem, 4vw, 2.6rem);
     color: #fff4e8;
     box-shadow: 0 1.5rem 4rem rgba(42, 12, 10, 0.32);
     backdrop-filter: blur(10px);
+  }
+
+  .vo-book-feature-cover {
+    width: 100%;
+    max-height: 22rem;
+    object-fit: contain;
+    filter: drop-shadow(0 1.2rem 1.4rem rgba(0, 0, 0, 0.34));
+  }
+
+  .vo-book-feature-copy {
+    min-width: 0;
   }
 
   .vo-book-feature-panel-anxiety {
@@ -1732,6 +1747,133 @@
     background: rgba(161, 43, 36, 0.24);
   }
 
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-editor {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card {
+    grid-template-columns: auto minmax(0, 1fr) minmax(18rem, 0.72fr);
+    align-items: start;
+    padding: 1.15rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-order {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: center;
+    color: rgba(241, 209, 124, 0.62);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-order > span {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.2rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-fields,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-media {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-fields label,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-image-field > span {
+    display: grid;
+    gap: 0.4rem;
+    color: rgba(247, 238, 220, 0.66);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-link-fields,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-media {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-image-field {
+    min-width: 0;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-image-preview {
+    position: relative;
+    display: grid;
+    aspect-ratio: 4 / 3;
+    place-items: center;
+    overflow: hidden;
+    margin-top: 0.4rem;
+    border: 1px solid rgba(216, 173, 90, 0.24);
+    background: rgba(0, 0, 0, 0.32);
+    color: rgba(247, 238, 220, 0.45);
+    font-size: 0.75rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-image-preview img,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-image-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-image-preview strong {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(5, 5, 6, 0.76);
+    color: #fff6dc;
+    font-size: 0.75rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-image-field > div:last-child {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-image-field .ga-button {
+    cursor: pointer;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-footer {
+    grid-column: 2 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid rgba(216, 173, 90, 0.16);
+    padding-top: 0.85rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: rgba(247, 238, 220, 0.76);
+    font-size: 0.8rem;
+    font-weight: 750;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-toggle input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #a12b24;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-delete {
+    color: #ffc6c0;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-savebar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1783,6 +1925,15 @@
     .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-hero,
     .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-grid {
       grid-template-columns: 1fr;
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-media,
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-footer {
+      grid-column: 2;
     }
 
     .vo-book-showcase {
@@ -1868,6 +2019,36 @@
 
     .vo-newsletter-form button {
       width: 100%;
+    }
+
+    .vo-book-feature-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .vo-book-feature-cover {
+      width: min(100%, 10rem);
+      max-height: 14rem;
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-stats,
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-link-fields,
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-media {
+      grid-template-columns: 1fr;
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-card {
+      grid-template-columns: 1fr;
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-order {
+      grid-template-columns: auto auto auto auto;
+      justify-content: start;
+      align-items: center;
+    }
+
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-media,
+    .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-work-footer {
+      grid-column: 1;
     }
 
     .vo-newsletter-modal {

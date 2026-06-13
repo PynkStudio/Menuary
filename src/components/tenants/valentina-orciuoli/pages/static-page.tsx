@@ -15,12 +15,14 @@ import {
   valentinaLinks,
   linktreeHref,
   valentinaBasePath,
+  valentinaCreativeWorks,
+  type ValentinaCreativeWork,
 } from "@/components/tenants/valentina-orciuoli/content";
 
 type ValentinaPageKind = "libri" | "autrice" | "eventi" | "contatti" | "link";
 
 export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind }) {
-  const staffHref = getTenantGestioneExternalHref("valentina-orciuoli");
+  const gestioneHref = getTenantGestioneExternalHref("valentina-orciuoli");
   const [linktreeItems, setLinktreeItems] = useState<TenantLinktreeItem[]>(
     () => valentinaLinks.map((item) => ({
       label: item.label,
@@ -29,6 +31,7 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
       kind: item.kind,
     })),
   );
+  const [creativeWorks, setCreativeWorks] = useState<ValentinaCreativeWork[]>(valentinaCreativeWorks);
 
   useEffect(() => {
     if (page !== "link") return;
@@ -37,6 +40,20 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
       .then((res) => res.json())
       .then((data) => {
         if (alive && Array.isArray(data.links) && data.links.length) setLinktreeItems(data.links);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [page]);
+
+  useEffect(() => {
+    if (page !== "libri") return;
+    let alive = true;
+    fetch("/api/tenant/valentina-orciuoli/creative-works")
+      .then((res) => res.json())
+      .then((data) => {
+        if (alive && Array.isArray(data.works) && data.works.length) setCreativeWorks(data.works);
       })
       .catch(() => {});
     return () => {
@@ -64,94 +81,53 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
 
       {page === "libri" && (
         <>
-          <section className="vo-book-feature-section vo-book-feature-section-anxiety vo-subpage-section">
-            <video
-              className="vo-book-feature-video"
-              src="/valentina-orciuoli/video-anxiety.webm"
-              autoPlay
-              muted
-              loop
-              playsInline
-              aria-hidden="true"
-            />
-            <div className="vo-book-feature-panel vo-book-feature-panel-anxiety">
-              <h2>Anxiety</h2>
-              <p>
-                E se l&apos;ansia fosse un potere?
-                <br />
-                E se questo potere si manifestasse nella forma di un dragone?
-              </p>
-              <p>
-                Quando non è più possibile mentire a sé stessi, quando il vero lo combatte per uscire allo
-                scoperto il potere dell&apos;ansia si sprigiona, più feroce che mai.
-              </p>
-              <a
-                className="vo-book-feature-cta"
-                href="https://www.amazon.it/Anxiety-Valentina-Orciuoli-ebook/dp/B0F1KVZKFC"
-                target="_blank"
-                rel="noopener noreferrer"
+          {creativeWorks.filter((work) => work.enabled).map((work, index) => {
+            const tone = index % 3 === 0 ? "anxiety" : index % 3 === 1 ? "fury" : "dark";
+            const isVideo = /\.(mp4|webm)(\?|$)/i.test(work.backgroundMediaUrl);
+            return (
+              <section
+                id={work.slug}
+                className={`vo-book-feature-section vo-book-feature-section-${tone} vo-subpage-section`}
+                key={work.id}
               >
-                Leggilo qui <ArrowRight size={15} />
-              </a>
-            </div>
-          </section>
-          <section className="vo-book-feature-section vo-book-feature-section-fury vo-subpage-section">
-            <video
-              className="vo-book-feature-video"
-              src="/valentina-orciuoli/video-fury.webm"
-              autoPlay
-              muted
-              loop
-              playsInline
-              aria-hidden="true"
-            />
-            <div className="vo-book-feature-panel vo-book-feature-panel-fury">
-              <h2>Fury</h2>
-              <p>
-                E se perdere se stessi fosse l&apos;unico modo per salvare chi ami?
-                <br />
-                Quando la rabbia prende il sopravvento, cosa resta del proprio lo?
-              </p>
-              <p>
-                Un secolo prima dell&apos;apparizione del Dragone Nero dell&apos;ansia, il Primo Long era
-                l&apos;incarnazione della rabbia.
-              </p>
-              <a
-                className="vo-book-feature-cta"
-                href="https://www.amazon.it/Fury-Emotion-Dragons-Trilogy-Vol-ebook/dp/B0GKWCS774/?_encoding=UTF8&pd_rd_w=CzMXZ&content-id=amzn1.sym.1eec5ee4-65c7-4941-9685-3f18adf58c9a&pf_rd_p=1eec5ee4-65c7-4941-9685-3f18adf58c9a&pf_rd_r=259-4433171-8421603&pd_rd_wg=5vSf0&pd_rd_r=e0723301-afcb-4ed3-9d1a-a5a3f8f5343e"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Leggilo qui <ArrowRight size={15} />
-              </a>
-            </div>
-          </section>
-          <section id="tra-fumo-e-ombre" className="vo-book-feature-section vo-book-feature-section-dark vo-subpage-section">
-            <video
-              className="vo-book-feature-video"
-              src="/valentina-orciuoli/video-dark.webm"
-              autoPlay
-              muted
-              loop
-              playsInline
-              aria-hidden="true"
-            />
-            <div className="vo-book-feature-panel vo-book-feature-panel-dark">
-              <h2>Tra fumo e ombre</h2>
-              <p>E se il fumo fosse l&apos;unico posto dove poter nascondere la verità?</p>
-              <p>
-                Nella Milano cupa degli anni &apos;70, tra nebbia, silenzi e ombre che sembrano respirare,
-                una donna cerca di dimenticare ciò che ha perduto. Ma ogni sigaretta accesa riporta a galla un
-                ricordo, ogni strada bagnata riflette un volto che non vuole più vedere.
-              </p>
-              <a
-                className="vo-book-feature-cta"
-                href={linktreeHref}
-              >
-                Preordina qui <ArrowRight size={15} />
-              </a>
-            </div>
-          </section>
+                {work.backgroundMediaUrl && (
+                  isVideo ? (
+                    <video
+                      className="vo-book-feature-video"
+                      src={work.backgroundMediaUrl}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <img className="vo-book-feature-video" src={work.backgroundMediaUrl} alt="" aria-hidden="true" />
+                  )
+                )}
+                <div className={`vo-book-feature-panel vo-book-feature-panel-${tone}`}>
+                  {work.coverImageUrl && (
+                    <img className="vo-book-feature-cover" src={work.coverImageUrl} alt={`Copertina di ${work.title}`} />
+                  )}
+                  <div className="vo-book-feature-copy">
+                    <h2>{work.title}</h2>
+                    {work.description && <p>{work.description}</p>}
+                    {work.secondaryText && <p>{work.secondaryText}</p>}
+                    {work.ctaHref && (
+                      <a
+                        className="vo-book-feature-cta"
+                        href={work.ctaHref}
+                        target={work.ctaHref.startsWith("http") ? "_blank" : undefined}
+                        rel={work.ctaHref.startsWith("http") ? "noopener noreferrer" : undefined}
+                      >
+                        {work.ctaLabel} <ArrowRight size={15} />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </section>
+            );
+          })}
         </>
       )}
 
@@ -262,8 +238,8 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
           </a>
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/cookie">Cookie Policy</Link>
-          <a className="vo-footer-staff-link" href={staffHref} target="_blank" rel="noopener noreferrer">
-            Staff
+          <a className="vo-footer-staff-link" href={gestioneHref} target="_blank" rel="noopener noreferrer">
+            Gestione
           </a>
         </div>
       </footer>
