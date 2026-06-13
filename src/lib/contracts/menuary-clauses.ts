@@ -5,6 +5,7 @@ import {
   computeYearlyTotal,
   isIndividualClient,
   paymentMethodLabel,
+  taxClauseSuffix,
   type ContractData,
 } from "./menuary-contract";
 
@@ -63,17 +64,17 @@ Il recesso non dà diritto ad alcun rimborso, totale o parziale, dei canoni e de
       id: "corrispettivi",
       title: "3. Corrispettivi e modalità di pagamento",
       body: `Il Cliente si obbliga a corrispondere al Fornitore:
-  a) Una quota una tantum di attivazione (setup) pari a ${formatEUR(economiche.setup)} oltre IVA di legge${
+  a) Una quota una tantum di attivazione (setup) pari a ${formatEUR(economiche.setup)} ${taxClauseSuffix(economiche)}${
     economiche.setupRateale && economiche.setupRate.length > 1
       ? `, suddivisa in ${economiche.setupRate.length} (${numberToItalian(economiche.setupRate.length)}) rate mensili consecutive secondo il piano riportato di seguito:\n${economiche.setupRate
           .map(
             (r, i) =>
-              `     • Rata ${i + 1} di ${economiche.setupRate.length}: ${formatEUR(r)} oltre IVA — dovuta entro il ${i === 0 ? "5° giorno successivo alla sottoscrizione del Contratto" : `${i * 30 + 5}° giorno successivo alla sottoscrizione`}`,
+              `     • Rata ${i + 1} di ${economiche.setupRate.length}: ${formatEUR(r)} ${taxClauseSuffix(economiche)} — dovuta entro il ${i === 0 ? "5° giorno successivo alla sottoscrizione del Contratto" : `${i * 30 + 5}° giorno successivo alla sottoscrizione`}`,
           )
           .join("\n")}\n     Il mancato pagamento anche di una sola rata comporta la decadenza dal beneficio del termine ai sensi dell'art. 1186 c.c. ed il diritto del Fornitore di esigere immediatamente l'intero importo residuo del setup, oltre agli effetti previsti al successivo art. 4.`
       : ", dovuta alla sottoscrizione del Contratto"
   };
-  b) Un canone${annuale ? " annuale anticipato" : " mensile"} pari a ${annuale ? (economiche.scontoAnnuale > 0 ? `${formatEUR(totaleAnnuale)} oltre IVA (sconto del ${economiche.scontoAnnuale}% sul totale annuo)` : `${formatEUR(totaleAnnuale)} oltre IVA`) : `${formatEUR(economiche.canoneMensile)} oltre IVA`}, dovuto a fronte dell'erogazione continuativa del servizio.
+  b) Un canone${annuale ? " annuale anticipato" : " mensile"} pari a ${annuale ? (economiche.scontoAnnuale > 0 ? `${formatEUR(totaleAnnuale)} ${taxClauseSuffix(economiche)} (sconto del ${economiche.scontoAnnuale}% sul totale annuo)` : `${formatEUR(totaleAnnuale)} ${taxClauseSuffix(economiche)}`) : `${formatEUR(economiche.canoneMensile)} ${taxClauseSuffix(economiche)}`}, dovuto a fronte dell'erogazione continuativa del servizio.
 
 In caso di configurazione multi-sede, la sede principale è inclusa nel canone del piano sottoscritto. Per ciascuna sede aggiuntiva collegata allo stesso Cliente e allo stesso piano, il Cliente corrisponderà un canone pari al 50% (cinquanta per cento) del canone del piano selezionato, con la medesima periodicità di fatturazione. Eventuali sedi aggiuntive attivate in corso di annualità saranno fatturate pro-rata per il periodo residuo, salvo diverso accordo scritto.
 

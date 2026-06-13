@@ -34,6 +34,7 @@ import {
   round2,
   setupRateTotal,
   splitSetupEvenly,
+  taxSuffix,
   type BillingCycle,
   type ContractBrand,
   type ContractClientType,
@@ -812,6 +813,19 @@ export function ContractEditor({ contractId }: Props) {
           <option value="bonifico">Bonifico 30gg</option>
           <option value="carta">Carta ricorrente (Stripe)</option>
         </select>
+        <label className="rate-toggle">
+          <input
+            type="checkbox"
+            checked={data.economiche.esenzioneIva}
+            onChange={(e) =>
+              setData((d) => ({
+                ...d,
+                economiche: { ...d.economiche, esenzioneIva: e.target.checked },
+              }))
+            }
+          />
+          Esenzione IVA (regime forfettario — rivalsa INPS 4% + €2 marca da bollo)
+        </label>
 
         <h3>Documento</h3>
         <label>Numero contratto</label>
@@ -946,7 +960,7 @@ export function ContractEditor({ contractId }: Props) {
             </dd>
             <dt>Setup una tantum</dt>
             <dd>
-              {formatEUR(data.economiche.setup)} + IVA
+              {formatEUR(data.economiche.setup)} {taxSuffix(data.economiche)}
               {data.economiche.setupRateale && data.economiche.setupRate.length > 1 ? (
                 <span style={{ display: "block", color: "#6b7280", fontWeight: 400, fontSize: 11 }}>
                   Rateizzato in {data.economiche.setupRate.length} mensilità:{" "}
@@ -958,9 +972,9 @@ export function ContractEditor({ contractId }: Props) {
             <dd>
               {annuale
                 ? data.economiche.scontoAnnuale > 0
-                  ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% — equivalente a ${formatEUR(totaleAnnuale / 12)}/mese)`
-                  : `${formatEUR(totaleAnnuale)} + IVA / anno`
-                : `${formatEUR(data.economiche.canoneMensile)} + IVA / mese`}
+                  ? `${formatEUR(totaleAnnuale)} ${taxSuffix(data.economiche)} / anno (sconto ${data.economiche.scontoAnnuale}% — equivalente a ${formatEUR(totaleAnnuale / 12)}/mese)`
+                  : `${formatEUR(totaleAnnuale)} ${taxSuffix(data.economiche)} / anno`
+                : `${formatEUR(data.economiche.canoneMensile)} ${taxSuffix(data.economiche)} / mese`}
             </dd>
             <dt>Modalità di pagamento</dt>
             <dd>{paymentMethodLabel(data.economiche.metodoPagamento)}</dd>
@@ -969,9 +983,9 @@ export function ContractEditor({ contractId }: Props) {
                 <dt>IBAN</dt>
                 <dd>NL33BUNQ2063062498 — Massimo Pernozzoli</dd>
                 <dt>Primo pagamento</dt>
-                <dd>{formatEUR(firstPayment)} + IVA</dd>
+                <dd>{formatEUR(firstPayment)} {taxSuffix(data.economiche)}</dd>
                 <dt>Pagamenti successivi</dt>
-                <dd>{formatEUR(recurringPayment)} + IVA / {annuale ? "anno" : "mese"}</dd>
+                <dd>{formatEUR(recurringPayment)} {taxSuffix(data.economiche)} / {annuale ? "anno" : "mese"}</dd>
               </>
             )}
             <dt>Durata</dt>
@@ -1072,11 +1086,12 @@ function buildEmailBody(data: ContractData): string {
     data.economiche.canoneMensile,
     data.economiche.scontoAnnuale,
   );
+  const sTax = taxSuffix(data.economiche);
   const canone = annuale
     ? data.economiche.scontoAnnuale > 0
-      ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% sul listino annuo)`
-      : `${formatEUR(totaleAnnuale)} + IVA / anno`
-    : `${formatEUR(data.economiche.canoneMensile)} + IVA / mese`;
+      ? `${formatEUR(totaleAnnuale)} ${sTax} / anno (sconto ${data.economiche.scontoAnnuale}% sul listino annuo)`
+      : `${formatEUR(totaleAnnuale)} ${sTax} / anno`
+    : `${formatEUR(data.economiche.canoneMensile)} ${sTax} / mese`;
   const firstPayment = computeFirstPayment(data.economiche);
   const recurringPayment = computeRecurringPayment(data.economiche);
 
@@ -1091,7 +1106,7 @@ come da accordi intercorsi, le inviamo in allegato la proposta contrattuale n. $
 
 Riepilogo delle condizioni economiche:
 • Piano: ${data.servizio.pianoNome}
-• Setup una tantum: ${formatEUR(data.economiche.setup)} + IVA${
+• Setup una tantum: ${formatEUR(data.economiche.setup)} ${sTax}${
     data.economiche.setupRateale && data.economiche.setupRate.length > 1
       ? ` — rateizzato in ${data.economiche.setupRate.length} mensilità (${data.economiche.setupRate.map((r) => formatEUR(r)).join(" + ")})`
       : ""
@@ -1099,8 +1114,8 @@ Riepilogo delle condizioni economiche:
 • Canone: ${canone}
 • Modalità di pagamento: ${paymentMethodLabel(data.economiche.metodoPagamento)}${data.economiche.metodoPagamento === "bonifico" ? `
 • IBAN: NL33BUNQ2063062498 — Massimo Pernozzoli
-• Primo pagamento: ${formatEUR(firstPayment)} + IVA
-• Pagamenti successivi: ${formatEUR(recurringPayment)} + IVA / ${annuale ? "anno" : "mese"}` : ""}
+• Primo pagamento: ${formatEUR(firstPayment)} ${sTax}
+• Pagamenti successivi: ${formatEUR(recurringPayment)} ${sTax} / ${annuale ? "anno" : "mese"}` : ""}
 • Durata: 12 mesi con rinnovo tacito · preavviso di recesso 30 giorni
 • Foro competente: ${isIndividualClient(data) ? "quello previsto dalla normativa applicabile al consumatore, ove ricorrano i presupposti" : FORNITORE.foro}
 

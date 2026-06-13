@@ -17,6 +17,7 @@ import {
   formatEUR,
   isIndividualClient,
   paymentMethodLabel,
+  taxSuffix,
   type ContractData,
 } from "./menuary-contract";
 import { buildClauses, VESSATORIE_RIF } from "./menuary-clauses";
@@ -196,8 +197,8 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
             dt="Setup una tantum"
             dd={
               data.economiche.setupRateale && data.economiche.setupRate.length > 1
-                ? `${formatEUR(data.economiche.setup)} + IVA — ${data.economiche.setupRate.length} rate mensili (${data.economiche.setupRate.map((r) => formatEUR(r)).join(" + ")})`
-                : `${formatEUR(data.economiche.setup)} + IVA`
+                ? `${formatEUR(data.economiche.setup)} ${taxSuffix(data.economiche)} — ${data.economiche.setupRate.length} rate mensili (${data.economiche.setupRate.map((r) => formatEUR(r)).join(" + ")})`
+                : `${formatEUR(data.economiche.setup)} ${taxSuffix(data.economiche)}`
             }
           />
           <SummaryItem
@@ -205,9 +206,9 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
             dd={
               annuale
                 ? data.economiche.scontoAnnuale > 0
-                  ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% — equivalente a ${formatEUR(totaleAnnuale / 12)}/mese)`
-                  : `${formatEUR(totaleAnnuale)} + IVA / anno`
-                : `${formatEUR(data.economiche.canoneMensile)} + IVA / mese`
+                  ? `${formatEUR(totaleAnnuale)} ${taxSuffix(data.economiche)} / anno (sconto ${data.economiche.scontoAnnuale}% — equivalente a ${formatEUR(totaleAnnuale / 12)}/mese)`
+                  : `${formatEUR(totaleAnnuale)} ${taxSuffix(data.economiche)} / anno`
+                : `${formatEUR(data.economiche.canoneMensile)} ${taxSuffix(data.economiche)} / mese`
             }
           />
           <SummaryItem
@@ -219,11 +220,11 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
               <SummaryItem dt="IBAN" dd="NL33BUNQ2063062498 — Massimo Pernozzoli" />
               <SummaryItem
                 dt="Primo pagamento"
-                dd={`${formatEUR(computeFirstPayment(data.economiche))} + IVA`}
+                dd={`${formatEUR(computeFirstPayment(data.economiche))} ${taxSuffix(data.economiche)}`}
               />
               <SummaryItem
                 dt="Pagamenti successivi"
-                dd={`${formatEUR(computeRecurringPayment(data.economiche))} + IVA / ${annuale ? "anno" : "mese"}`}
+                dd={`${formatEUR(computeRecurringPayment(data.economiche))} ${taxSuffix(data.economiche)} / ${annuale ? "anno" : "mese"}`}
               />
             </>
           )}

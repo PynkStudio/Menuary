@@ -83,6 +83,8 @@ export type ContractData = {
     setupRateale: boolean;
     /** Rate del setup. Lunghezza ∈ [2, 6] quando rateale, [1] altrimenti. */
     setupRate: number[];
+    /** Quando true, non applica IVA ma rivalsa INPS 4% + marca da bollo €2. */
+    esenzioneIva: boolean;
   };
   noteAggiuntive: string;
 };
@@ -127,6 +129,7 @@ export function defaultContractData(): ContractData {
       scontoAnnuale: 10,
       setupRateale: false,
       setupRate: [290],
+      esenzioneIva: false,
     },
     noteAggiuntive: "",
   };
@@ -139,6 +142,10 @@ export function normalizeContractData(data: ContractData): ContractData {
     cliente: {
       ...data.cliente,
       tipo: data.cliente.tipo ?? "business",
+    },
+    economiche: {
+      ...data.economiche,
+      esenzioneIva: data.economiche.esenzioneIva ?? false,
     },
   };
 }
@@ -164,6 +171,7 @@ export function formatEUR(value: number): string {
     style: "currency",
     currency: "EUR",
     minimumFractionDigits: 2,
+    useGrouping: true,
   }).format(value);
 }
 
@@ -173,6 +181,18 @@ export function computeYearlyTotal(canoneMensile: number, scontoPct: number): nu
 }
 
 export const MAX_SETUP_RATE = 6;
+export const RIVALSA_INPS_RATE = 0.04;
+export const MARCA_BOLLO = 2;
+
+export function taxSuffix(economiche: ContractData['economiche']): string {
+  if (economiche.esenzioneIva) return "+ 4% rivalsa INPS + €2 marca da bollo";
+  return "+ IVA";
+}
+
+export function taxClauseSuffix(economiche: ContractData['economiche']): string {
+  if (economiche.esenzioneIva) return "con rivalsa INPS del 4% e marca da bollo di €2,00";
+  return "oltre IVA di legge";
+}
 
 /**
  * Divide `total` in `count` rate da 2 decimali, attribuendo l'eventuale resto
@@ -220,7 +240,7 @@ export function paymentMethodLabel(m: PaymentMethod): string {
     case "sdd":
       return "Addebito diretto SEPA (SDD) su IBAN del Cliente";
     case "bonifico":
-      return "Bonifico bancario a 30 giorni data fattura";
+      return "Bonifico bancario — pagamento immediato";
     case "carta":
       return "Addebito ricorrente su carta di credito (circuito Stripe)";
   }
