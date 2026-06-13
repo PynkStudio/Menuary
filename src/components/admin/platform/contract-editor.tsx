@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,6 +15,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Download,
+  X,
 } from "lucide-react";
 import { PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
 import type { PlatformLead } from "@/lib/platform-crm-types";
@@ -96,6 +98,8 @@ export function ContractEditor({ contractId }: Props) {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sendPreviewOpen, setSendPreviewOpen] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [confirmingPayment, setConfirmingPayment] = useState(false);
 
   type ContractDraft = { data: ContractData; overrides: Record<string, string> };
@@ -115,6 +119,15 @@ export function ContractEditor({ contractId }: Props) {
     return !!(data.cliente.ragioneSociale || data.cliente.email || data.cliente.piva);
   }, [data, overrides, stored, serverContract]);
   useUnsavedChangesWarning(isDirty);
+
+  useEffect(() => {
+    if (!sendPreviewOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [sendPreviewOpen]);
 
   useEffect(() => {
     if (contractId) {
@@ -319,13 +332,23 @@ export function ContractEditor({ contractId }: Props) {
     return null;
   }
 
-  async function handleSendViaDocumenso() {
+  function openSendPreview() {
     const rateErr = validateRate();
     if (rateErr) {
       setFeedback(rateErr);
       return;
     }
+    if (!data.cliente.email && !data.cliente.pec) {
+      setFeedback("Inserisci l'email o la PEC del cliente prima dell'invio.");
+      return;
+    }
+    setSendError(null);
+    setSendPreviewOpen(true);
+  }
+
+  async function handleSendViaDocumenso() {
     setSending(true);
+    setSendError(null);
     setFeedback("Salvo, genero il PDF, carico su Documenso e invio la mail…");
     try {
       // Save first
@@ -346,7 +369,9 @@ export function ContractEditor({ contractId }: Props) {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Errore sconosciuto" })) as { error?: string };
-        setFeedback(`Errore: ${err.error ?? res.statusText}`);
+        const message = `Errore: ${err.error ?? res.statusText}`;
+        setFeedback(message);
+        setSendError(message);
         return;
       }
 
@@ -361,8 +386,15 @@ export function ContractEditor({ contractId }: Props) {
           ? `Contratto inviato con link firma elettronica.${result.signingUrl ? "" : " (Link firma non disponibile)"}`
           : "Contratto caricato su Documenso ma errore nell'invio email.",
       );
+      if (result.emailSent) {
+        setSendPreviewOpen(false);
+      } else {
+        setSendError("Il contratto è stato caricato su Documenso, ma l'email non è stata inviata.");
+      }
     } catch {
-      setFeedback("Errore di rete nell'invio del contratto.");
+      const message = "Errore di rete nell'invio del contratto.";
+      setFeedback(message);
+      setSendError(message);
     } finally {
       setSending(false);
     }
@@ -706,26 +738,21 @@ export function ContractEditor({ contractId }: Props) {
         <div className="row">
           <div>
             <label>Canone mensile (€)</label>
-            <input
-              type="number"
-              step="0.01"
+            <LocalizedMoneyInput
               value={data.economiche.canoneMensile}
-              onChange={(e) =>
+              onValueChange={(value) =>
                 setData((d) => ({
                   ...d,
-                  economiche: { ...d.economiche, canoneMensile: Number(e.target.value) },
+                  economiche: { ...d.economiche, canoneMensile: value },
                 }))
               }
             />
           </div>
           <div>
             <label>Setup una tantum (€)</label>
-            <input
-              type="number"
-              step="0.01"
+            <LocalizedMoneyInput
               value={data.economiche.setup}
-              onChange={(e) => {
-                const value = Number(e.target.value);
+              onValueChange={(value) => {
                 setData((d) => ({
                   ...d,
                   economiche: {
@@ -789,18 +816,15 @@ export function ContractEditor({ contractId }: Props) {
               {data.economiche.setupRate.map((rata, i) => (
                 <div key={i} className="rate-row">
                   <span>Rata {i + 1}</span>
-                  <input
-                    type="number"
-                    step="0.01"
+                  <LocalizedMoneyInput
                     value={rata}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
+                    onValueChange={(value) => {
                       setData((d) => ({
                         ...d,
                         economiche: {
                           ...d.economiche,
                           setupRate: d.economiche.setupRate.map((r, idx) =>
-                            idx === i ? v : r,
+                            idx === i ? value : r,
                           ),
                         },
                       }));
@@ -916,7 +940,7 @@ export function ContractEditor({ contractId }: Props) {
           <button
             type="button"
             className="primary"
-            onClick={handleSendViaDocumenso}
+            onClick={openSendPreview}
             disabled={sending || effectiveStatus === "sent" || effectiveStatus === "signed" || effectiveStatus === "countersigned"}
           >
             <Send size={14} /> {sending ? "Invio in corso…" : "Invia con firma elettronica"}
@@ -1119,8 +1143,12 @@ export function ContractEditor({ contractId }: Props) {
             <dd>{paymentMethodLabel(data.economiche.metodoPagamento)}</dd>
             {(data.economiche.metodoPagamento === "bonifico" || data.economiche.metodoPagamento === "bunq") && (
               <>
-                <dt>IBAN</dt>
-                <dd>{FORNITORE.iban} — Massimo Pernozzoli</dd>
+                {data.economiche.metodoPagamento === "bonifico" && (
+                  <>
+                    <dt>IBAN</dt>
+                    <dd>{FORNITORE.iban} — Massimo Pernozzoli</dd>
+                  </>
+                )}
                 <dt>Causale</dt>
                 <dd>{paymentDescription}</dd>
                 <dt>Primo pagamento complessivo</dt>
@@ -1223,7 +1251,142 @@ export function ContractEditor({ contractId }: Props) {
           dall&apos;approvazione specifica delle clausole vessatorie.
         </p>
       </article>
+
+      {sendPreviewOpen &&
+        createPortal(
+          <div
+            className="contract-send-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contract-send-title"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget && !sending) setSendPreviewOpen(false);
+            }}
+          >
+            <div className="contract-send-dialog">
+              <div className="contract-send-header">
+                <div>
+                  <h2 id="contract-send-title">Anteprima messaggio</h2>
+                  <p>Controlla i dati prima di creare la richiesta di firma.</p>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Chiudi anteprima"
+                  onClick={() => setSendPreviewOpen(false)}
+                  disabled={sending}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <dl className="contract-send-meta">
+                <dt>A</dt>
+                <dd>{data.cliente.email || data.cliente.pec}</dd>
+                <dt>Oggetto</dt>
+                <dd>
+                  Contratto {data.numero} {BRAND_INFO[data.brand].platformName} —{" "}
+                  {data.cliente.ragioneSociale || "—"}
+                </dd>
+                <dt>Allegato</dt>
+                <dd>Contratto-{data.numero}.pdf</dd>
+              </dl>
+
+              <div className="contract-send-message">
+                <p>
+                  Gentile{" "}
+                  {(!individualClient ? data.cliente.legaleRappresentante?.trim() : "") ||
+                    data.cliente.ragioneSociale?.trim() ||
+                    "Cliente"},
+                </p>
+                <p>
+                  come da accordi intercorsi, le inviamo la proposta contrattuale n.{" "}
+                  <strong>{data.numero}</strong> per l&apos;attivazione del servizio{" "}
+                  <strong>{data.servizio.pianoNome}</strong> sulla piattaforma{" "}
+                  {BRAND_INFO[data.brand].platformName}.
+                </p>
+                <div className="contract-send-sign-placeholder">
+                  Firma il contratto elettronicamente
+                </div>
+                <p>
+                  Il messaggio includerà il riepilogo economico, il link Documenso e la copia PDF
+                  completa del contratto.
+                </p>
+              </div>
+
+              {sendError && <div className="contract-send-error">{sendError}</div>}
+
+              <div className="contract-send-actions">
+                <button
+                  type="button"
+                  onClick={() => setSendPreviewOpen(false)}
+                  disabled={sending}
+                >
+                  Annulla
+                </button>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={handleSendViaDocumenso}
+                  disabled={sending}
+                >
+                  <Send size={14} />
+                  {sending ? "Invio in corso…" : "Crea firma e invia"}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
+  );
+}
+
+function LocalizedMoneyInput({
+  value,
+  onValueChange,
+}: {
+  value: number;
+  onValueChange: (value: number) => void;
+}) {
+  const [draft, setDraft] = useState(() => String(value).replace(".", ","));
+  const focusedRef = useRef(false);
+
+  useEffect(() => {
+    if (!focusedRef.current) setDraft(String(value).replace(".", ","));
+  }, [value]);
+
+  function commit(raw: string) {
+    const parsed = Number(raw.replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed < 0) return;
+    onValueChange(round2(parsed));
+  }
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={draft}
+      onFocus={() => {
+        focusedRef.current = true;
+      }}
+      onChange={(event) => {
+        const next = event.target.value;
+        if (!/^\d*(?:[.,]\d{0,2})?$/.test(next)) return;
+        setDraft(next);
+        if (next && !/[.,]$/.test(next)) commit(next);
+      }}
+      onBlur={() => {
+        focusedRef.current = false;
+        const parsed = Number(draft.replace(",", "."));
+        if (Number.isFinite(parsed) && parsed >= 0) {
+          const normalized = round2(parsed);
+          onValueChange(normalized);
+          setDraft(String(normalized).replace(".", ","));
+        } else {
+          setDraft(String(value).replace(".", ","));
+        }
+      }}
+    />
   );
 }
 
@@ -1262,6 +1425,7 @@ const CONTRACT_STYLES = `
   display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer;
 }
 .contract-actions button.primary { background: #111827; color: #fff; border-color: #111827; }
+.contract-actions button:disabled { cursor: not-allowed; opacity: 0.45; }
 .signed-box { display: flex; gap: 8px; padding: 10px; border: 1px solid #a7f3d0; background: #ecfdf5; border-radius: 8px; font-size: 12px; color: #065f46; }
 .signed-box a { display: inline-flex; align-items: center; gap: 3px; color: #047857; margin-top: 4px; font-size: 11px; }
 .expiry-warning { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; padding: 6px 8px; background: #fef3c7; color: #92400e; border-radius: 6px; font-size: 11px; }
@@ -1293,6 +1457,24 @@ const CONTRACT_STYLES = `
 .contract-doc .attachment .att-section h3 { font-size: 13px; margin: 0 0 6px; }
 .contract-doc .attachment .att-section p { white-space: pre-wrap; margin: 0; }
 .page-break { page-break-before: always; }
+.contract-send-modal { position: fixed; inset: 0; z-index: 80; display: flex; min-height: 100dvh; align-items: center; justify-content: center; padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); background: rgba(17, 24, 39, 0.55); backdrop-filter: blur(3px); }
+.contract-send-dialog { width: min(640px, 100%); max-height: calc(100dvh - 40px); overflow-y: auto; border-radius: 16px; background: #fff; box-shadow: 0 24px 70px rgba(17, 24, 39, 0.28); }
+.contract-send-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 22px; border-bottom: 1px solid #e5e7eb; }
+.contract-send-header h2 { margin: 0; font-size: 18px; }
+.contract-send-header p { margin: 4px 0 0; color: #6b7280; font-size: 12px; }
+.contract-send-header button { display: inline-flex; align-items: center; justify-content: center; padding: 7px; border: 0; border-radius: 999px; background: #f3f4f6; color: #374151; cursor: pointer; }
+.contract-send-meta { display: grid; grid-template-columns: 72px 1fr; gap: 8px 14px; margin: 0; padding: 18px 22px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+.contract-send-meta dt { color: #6b7280; }
+.contract-send-meta dd { margin: 0; overflow-wrap: anywhere; font-weight: 600; }
+.contract-send-message { margin: 18px 22px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb; color: #374151; font-size: 13px; line-height: 1.6; }
+.contract-send-message p { margin: 0 0 14px; }
+.contract-send-message p:last-child { margin-bottom: 0; }
+.contract-send-sign-placeholder { width: fit-content; margin: 18px auto; padding: 11px 20px; border-radius: 8px; background: #111827; color: #fff; font-weight: 700; text-align: center; }
+.contract-send-error { margin: 0 22px 18px; padding: 10px 12px; border: 1px solid #fecaca; border-radius: 8px; background: #fef2f2; color: #b91c1c; font-size: 12px; }
+.contract-send-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 0 22px 22px; }
+.contract-send-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 9px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #374151; font-size: 12px; font-weight: 600; cursor: pointer; }
+.contract-send-actions button.primary { border-color: #111827; background: #111827; color: #fff; }
+.contract-send-actions button:disabled, .contract-send-header button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 @media (max-width: 768px) {
   .contract-page { grid-template-columns: 1fr; gap: 16px; padding: 12px; }

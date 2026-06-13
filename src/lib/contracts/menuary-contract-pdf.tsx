@@ -218,7 +218,9 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
           />
           {(data.economiche.metodoPagamento === "bonifico" || data.economiche.metodoPagamento === "bunq") && (
             <>
-              <SummaryItem dt="IBAN" dd={`${FORNITORE.iban} — Massimo Pernozzoli`} />
+              {data.economiche.metodoPagamento === "bonifico" && (
+                <SummaryItem dt="IBAN" dd={`${FORNITORE.iban} — Massimo Pernozzoli`} />
+              )}
               <SummaryItem dt="Causale" dd={contractPaymentDescription(data)} />
               <SummaryItem
                 dt="Primo pagamento complessivo"

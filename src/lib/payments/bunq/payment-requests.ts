@@ -2,11 +2,17 @@ import "server-only";
 
 import { bunqRequest, accountPath } from "./client";
 
-export type BunqPaymentRequestResponse = Array<{
+type BunqPaymentRequestCreateResponse = Array<{
   Id: { id: number };
-  share_url: string;
-  status: string;
-  amount_inquired: { value: string; currency: string };
+}>;
+
+type BunqPaymentRequestGetResponse = Array<{
+  RequestInquiry: {
+    id: number;
+    bunqme_share_url: string | null;
+    status: string;
+    amount_inquired: { value: string; currency: string };
+  };
 }>;
 
 export type CreatePaymentRequestInput = {
@@ -19,7 +25,7 @@ export type CreatePaymentRequestInput = {
 export async function createBunqPaymentRequest(
   input: CreatePaymentRequestInput,
 ): Promise<{ id: number; shareUrl: string }> {
-  const result = await bunqRequest<BunqPaymentRequestResponse>(
+  const result = await bunqRequest<BunqPaymentRequestCreateResponse>(
     `${accountPath()}/request-inquiry`,
     {
       method: "POST",
@@ -36,19 +42,18 @@ export async function createBunqPaymentRequest(
         description: input.description,
         allow_bunqme: true,
         redirect_url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://menuary.it"}/admin/contratti?payment=success`,
-        event_type: "REQUEST_INQUIRY",
       },
     },
   );
 
-  const entry = result[0];
-  if (!entry?.Id?.id || !entry.share_url) {
-    throw new Error("bunq_payment_request_no_url");
-  }
+  const requestId = result[0]?.Id?.id;
+  if (!requestId) throw new Error("bunq_payment_request_no_id");
+  const request = await getBunqPaymentRequest(requestId);
+  if (!request.shareUrl) throw new Error("bunq_payment_request_no_url");
 
   return {
-    id: entry.Id.id,
-    shareUrl: entry.share_url,
+    id: requestId,
+    shareUrl: request.shareUrl,
   };
 }
 
@@ -60,15 +65,16 @@ export async function getBunqPaymentRequest(
   amountValue: string;
   shareUrl: string;
 }> {
-  const result = await bunqRequest<BunqPaymentRequestResponse>(
+  const result = await bunqRequest<BunqPaymentRequestGetResponse>(
     `${accountPath()}/request-inquiry/${requestId}`,
   );
 
-  const entry = result[0];
+  const entry = result[0]?.RequestInquiry;
+  if (!entry) throw new Error("bunq_payment_request_not_found");
   return {
-    id: entry.Id.id,
+    id: entry.id,
     status: entry.status,
     amountValue: entry.amount_inquired.value,
-    shareUrl: entry.share_url,
+    shareUrl: entry.bunqme_share_url ?? "",
   };
 }
