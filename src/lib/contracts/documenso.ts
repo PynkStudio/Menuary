@@ -116,22 +116,20 @@ export function buildSignatureFields(
     if (p >= 1 && p <= totalPages) sigPages.push(p);
   }
 
-  let idCounter = 0;
   const fields: DocumensoField[] = [];
 
   for (const page of sigPages) {
-    const id0 = idCounter++;
-    const id1 = idCounter++;
-
+    // identifier = file index (0-based). We always have 1 file, so identifier = 0 for all fields.
+    // Documenso v2: identifier is the file index, NOT a unique field id.
     // Firma vessatorie (destra)
     fields.push(
-      { type: "SIGNATURE", page, positionX: 58, positionY: 68, width: 28, height: 5, identifier: id0 },
-      { type: "DATE", page, positionX: 58, positionY: 75, width: 20, height: 3, identifier: id0 },
+      { type: "SIGNATURE", page, positionX: 58, positionY: 68, width: 28, height: 5, identifier: 0 },
+      { type: "DATE", page, positionX: 58, positionY: 75, width: 20, height: 3, identifier: 0 },
     );
     // Firma principale (destra)
     fields.push(
-      { type: "SIGNATURE", page, positionX: 58, positionY: 83, width: 28, height: 5, identifier: id1 },
-      { type: "DATE", page, positionX: 58, positionY: 90, width: 20, height: 3, identifier: id1 },
+      { type: "SIGNATURE", page, positionX: 58, positionY: 83, width: 28, height: 5, identifier: 0 },
+      { type: "DATE", page, positionX: 58, positionY: 90, width: 20, height: 3, identifier: 0 },
     );
   }
 
@@ -172,7 +170,9 @@ export async function createEnvelope(
     },
   };
 
-  formData.append("payload", JSON.stringify(payload));
+  const payloadStr = JSON.stringify(payload);
+  console.log("[documenso] createEnvelope payload:", payloadStr);
+  formData.append("payload", payloadStr);
 
   const blob = new Blob([input.pdfBuffer], { type: "application/pdf" });
   formData.append("files", blob, input.pdfFileName);
