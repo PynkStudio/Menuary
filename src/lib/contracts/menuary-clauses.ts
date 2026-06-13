@@ -73,7 +73,7 @@ Il recesso non dà diritto ad alcun rimborso, totale o parziale, dei canoni e de
           .join("\n")}\n     Il mancato pagamento anche di una sola rata comporta la decadenza dal beneficio del termine ai sensi dell'art. 1186 c.c. ed il diritto del Fornitore di esigere immediatamente l'intero importo residuo del setup, oltre agli effetti previsti al successivo art. 4.`
       : ", dovuta alla sottoscrizione del Contratto"
   };
-  b) Un canone${annuale ? " annuale anticipato" : " mensile"} pari a ${annuale ? `${formatEUR(totaleAnnuale)} oltre IVA (sconto del ${economiche.scontoAnnuale}% sul totale annuo)` : `${formatEUR(economiche.canoneMensile)} oltre IVA`}, dovuto a fronte dell'erogazione continuativa del servizio.
+  b) Un canone${annuale ? " annuale anticipato" : " mensile"} pari a ${annuale ? (economiche.scontoAnnuale > 0 ? `${formatEUR(totaleAnnuale)} oltre IVA (sconto del ${economiche.scontoAnnuale}% sul totale annuo)` : `${formatEUR(totaleAnnuale)} oltre IVA`) : `${formatEUR(economiche.canoneMensile)} oltre IVA`}, dovuto a fronte dell'erogazione continuativa del servizio.
 
 In caso di configurazione multi-sede, la sede principale è inclusa nel canone del piano sottoscritto. Per ciascuna sede aggiuntiva collegata allo stesso Cliente e allo stesso piano, il Cliente corrisponderà un canone pari al 50% (cinquanta per cento) del canone del piano selezionato, con la medesima periodicità di fatturazione. Eventuali sedi aggiuntive attivate in corso di annualità saranno fatturate pro-rata per il periodo residuo, salvo diverso accordo scritto.
 

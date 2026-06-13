@@ -196,12 +196,31 @@ export function setupRateTotal(rate: number[]): number {
   return round2(rate.reduce((s, n) => s + (Number.isFinite(n) ? n : 0), 0));
 }
 
+export function computeCanoneAmount(economiche: ContractData['economiche']): number {
+  if (economiche.cicloFatturazione === "yearly") {
+    return computeYearlyTotal(economiche.canoneMensile, economiche.scontoAnnuale);
+  }
+  return economiche.canoneMensile;
+}
+
+export function computeFirstPayment(economiche: ContractData['economiche']): number {
+  const canone = computeCanoneAmount(economiche);
+  const setupPortion = economiche.setupRateale && economiche.setupRate.length > 1
+    ? economiche.setupRate[0]
+    : economiche.setup;
+  return round2(canone + setupPortion);
+}
+
+export function computeRecurringPayment(economiche: ContractData['economiche']): number {
+  return computeCanoneAmount(economiche);
+}
+
 export function paymentMethodLabel(m: PaymentMethod): string {
   switch (m) {
     case "sdd":
       return "Addebito diretto SEPA (SDD) su IBAN del Cliente";
     case "bonifico":
-      return "Bonifico bancario a 30 giorni data fattura";
+      return "Bonifico bancario a 30 giorni data fattura — IBAN: NL33BUNQ2063062498 intestato a Massimo Pernozzoli";
     case "carta":
       return "Addebito ricorrente su carta di credito (circuito Stripe)";
   }

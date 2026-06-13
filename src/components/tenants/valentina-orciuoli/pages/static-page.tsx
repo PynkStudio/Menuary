@@ -13,7 +13,6 @@ import {
   tiktokHref,
   valentinaEmail,
   valentinaLinks,
-  linktreeHref,
   valentinaBasePath,
   valentinaCreativeWorks,
   type ValentinaCreativeWork,

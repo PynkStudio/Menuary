@@ -11,6 +11,8 @@ import {
   FORNITORE,
   clientName,
   clientTaxDetails,
+  computeFirstPayment,
+  computeRecurringPayment,
   computeYearlyTotal,
   formatEUR,
   isIndividualClient,
@@ -202,7 +204,9 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
             dt="Canone"
             dd={
               annuale
-                ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% — equivalente a ${formatEUR(totaleAnnuale / 12)}/mese)`
+                ? data.economiche.scontoAnnuale > 0
+                  ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% — equivalente a ${formatEUR(totaleAnnuale / 12)}/mese)`
+                  : `${formatEUR(totaleAnnuale)} + IVA / anno`
                 : `${formatEUR(data.economiche.canoneMensile)} + IVA / mese`
             }
           />
@@ -210,6 +214,19 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
             dt="Modalità di pagamento"
             dd={paymentMethodLabel(data.economiche.metodoPagamento)}
           />
+          {data.economiche.metodoPagamento === "bonifico" && (
+            <>
+              <SummaryItem dt="IBAN" dd="NL33BUNQ2063062498 — Massimo Pernozzoli" />
+              <SummaryItem
+                dt="Primo pagamento"
+                dd={`${formatEUR(computeFirstPayment(data.economiche))} + IVA`}
+              />
+              <SummaryItem
+                dt="Pagamenti successivi"
+                dd={`${formatEUR(computeRecurringPayment(data.economiche))} + IVA / ${annuale ? "anno" : "mese"}`}
+              />
+            </>
+          )}
           <SummaryItem
             dt="Dominio"
             dd="Nuove attivazioni: primo anno incluso; dal secondo anno a costo provider, senza rincaro"

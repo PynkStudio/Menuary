@@ -23,6 +23,8 @@ import {
   MAX_SETUP_RATE,
   clientName,
   clientTaxDetails,
+  computeFirstPayment,
+  computeRecurringPayment,
   computeYearlyTotal,
   defaultContractData,
   formatEUR,
@@ -170,6 +172,8 @@ export function ContractEditor({ contractId }: Props) {
     data.economiche.canoneMensile,
     data.economiche.scontoAnnuale,
   );
+  const firstPayment = computeFirstPayment(data.economiche);
+  const recurringPayment = computeRecurringPayment(data.economiche);
 
   function applyLead(id: string, source = leads) {
     if (!id) return;
@@ -953,11 +957,23 @@ export function ContractEditor({ contractId }: Props) {
             <dt>Canone</dt>
             <dd>
               {annuale
-                ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% — equivalente a ${formatEUR(totaleAnnuale / 12)}/mese)`
+                ? data.economiche.scontoAnnuale > 0
+                  ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% — equivalente a ${formatEUR(totaleAnnuale / 12)}/mese)`
+                  : `${formatEUR(totaleAnnuale)} + IVA / anno`
                 : `${formatEUR(data.economiche.canoneMensile)} + IVA / mese`}
             </dd>
             <dt>Modalità di pagamento</dt>
             <dd>{paymentMethodLabel(data.economiche.metodoPagamento)}</dd>
+            {data.economiche.metodoPagamento === "bonifico" && (
+              <>
+                <dt>IBAN</dt>
+                <dd>NL33BUNQ2063062498 — Massimo Pernozzoli</dd>
+                <dt>Primo pagamento</dt>
+                <dd>{formatEUR(firstPayment)} + IVA</dd>
+                <dt>Pagamenti successivi</dt>
+                <dd>{formatEUR(recurringPayment)} + IVA / {annuale ? "anno" : "mese"}</dd>
+              </>
+            )}
             <dt>Durata</dt>
             <dd>12 mesi con rinnovo tacito · preavviso di recesso 30 giorni</dd>
           </dl>
@@ -1057,8 +1073,12 @@ function buildEmailBody(data: ContractData): string {
     data.economiche.scontoAnnuale,
   );
   const canone = annuale
-    ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% sul listino annuo)`
+    ? data.economiche.scontoAnnuale > 0
+      ? `${formatEUR(totaleAnnuale)} + IVA / anno (sconto ${data.economiche.scontoAnnuale}% sul listino annuo)`
+      : `${formatEUR(totaleAnnuale)} + IVA / anno`
     : `${formatEUR(data.economiche.canoneMensile)} + IVA / mese`;
+  const firstPayment = computeFirstPayment(data.economiche);
+  const recurringPayment = computeRecurringPayment(data.economiche);
 
   const saluto =
     (isIndividualClient(data) ? "" : data.cliente.legaleRappresentante?.trim()) ||
@@ -1077,6 +1097,10 @@ Riepilogo delle condizioni economiche:
       : ""
   }
 • Canone: ${canone}
+• Modalità di pagamento: ${paymentMethodLabel(data.economiche.metodoPagamento)}${data.economiche.metodoPagamento === "bonifico" ? `
+• IBAN: NL33BUNQ2063062498 — Massimo Pernozzoli
+• Primo pagamento: ${formatEUR(firstPayment)} + IVA
+• Pagamenti successivi: ${formatEUR(recurringPayment)} + IVA / ${annuale ? "anno" : "mese"}` : ""}
 • Durata: 12 mesi con rinnovo tacito · preavviso di recesso 30 giorni
 • Foro competente: ${isIndividualClient(data) ? "quello previsto dalla normativa applicabile al consumatore, ove ricorrano i presupposti" : FORNITORE.foro}
 
