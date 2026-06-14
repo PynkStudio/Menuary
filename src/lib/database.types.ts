@@ -70,6 +70,27 @@ export type Database = {
           },
         ]
       }
+      bunq_api_contexts: {
+        Row: {
+          created_at: string
+          encrypted_context: string
+          environment: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_context: string
+          environment: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_context?: string
+          environment?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cash_movements: {
         Row: {
           amount: number
@@ -2129,6 +2150,112 @@ export type Database = {
           },
         ]
       }
+      platform_contracts: {
+        Row: {
+          brand: string
+          clause_overrides: Json
+          contract_data: Json
+          created_at: string
+          documenso_envelope_id: string | null
+          documenso_item_id: string | null
+          expires_at: string | null
+          id: string
+          lead_id: string | null
+          numero: string
+          package_slug: string | null
+          paid_at: string | null
+          payment_method: string | null
+          payment_status: string
+          sent_at: string | null
+          signed_at: string | null
+          signed_document_path: string | null
+          signing_url: string | null
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          subscription_id: string | null
+          tenant_activated_at: string | null
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand?: string
+          clause_overrides?: Json
+          contract_data: Json
+          created_at?: string
+          documenso_envelope_id?: string | null
+          documenso_item_id?: string | null
+          expires_at?: string | null
+          id?: string
+          lead_id?: string | null
+          numero: string
+          package_slug?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          sent_at?: string | null
+          signed_at?: string | null
+          signed_document_path?: string | null
+          signing_url?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subscription_id?: string | null
+          tenant_activated_at?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          clause_overrides?: Json
+          contract_data?: Json
+          created_at?: string
+          documenso_envelope_id?: string | null
+          documenso_item_id?: string | null
+          expires_at?: string | null
+          id?: string
+          lead_id?: string | null
+          numero?: string
+          package_slug?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_status?: string
+          sent_at?: string | null
+          signed_at?: string | null
+          signed_document_path?: string | null
+          signing_url?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          subscription_id?: string | null
+          tenant_activated_at?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_contracts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_contracts_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "platform_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_contracts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_lead_locations: {
         Row: {
           address: string | null
@@ -2207,6 +2334,7 @@ export type Database = {
           contact_last_name: string | null
           contact_name: string | null
           contact_phone: string | null
+          contact_phone_normalized: string | null
           converted_at: string | null
           country: string
           created_at: string
@@ -2217,15 +2345,25 @@ export type Database = {
           has_google_maps: boolean | null
           has_website: boolean | null
           id: string
+          last_whatsapp_at: string | null
           maps_ownership_claimed: boolean | null
           maps_profile_complete: boolean | null
           matching_score: number | null
           notes: string | null
           official_domain: string | null
           official_domain_active: boolean
+          pain_points: string[]
           postal_code: string | null
           priority_score: number | null
+          proposal_updated_at: string | null
+          proposed_addons: string[]
+          proposed_billing_cycle: string | null
+          proposed_extra_modules: string[]
+          proposed_package_slug: string | null
+          proposed_recurring_amount: number | null
+          proposed_setup_amount: number | null
           province: string | null
+          requested_services: string[]
           sales_owner_id: string | null
           sales_owner_name: string | null
           source: string | null
@@ -2239,6 +2377,9 @@ export type Database = {
           website_score_functionality: number | null
           website_score_updated: number | null
           website_url: string | null
+          whatsapp_inferred_vertical: string
+          whatsapp_qualification: Json
+          whatsapp_vertical_confidence: number
         }
         Insert: {
           address?: string | null
@@ -2261,6 +2402,7 @@ export type Database = {
           contact_last_name?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contact_phone_normalized?: string | null
           converted_at?: string | null
           country?: string
           created_at?: string
@@ -2271,15 +2413,25 @@ export type Database = {
           has_google_maps?: boolean | null
           has_website?: boolean | null
           id?: string
+          last_whatsapp_at?: string | null
           maps_ownership_claimed?: boolean | null
           maps_profile_complete?: boolean | null
           matching_score?: number | null
           notes?: string | null
           official_domain?: string | null
           official_domain_active?: boolean
+          pain_points?: string[]
           postal_code?: string | null
           priority_score?: number | null
+          proposal_updated_at?: string | null
+          proposed_addons?: string[]
+          proposed_billing_cycle?: string | null
+          proposed_extra_modules?: string[]
+          proposed_package_slug?: string | null
+          proposed_recurring_amount?: number | null
+          proposed_setup_amount?: number | null
           province?: string | null
+          requested_services?: string[]
           sales_owner_id?: string | null
           sales_owner_name?: string | null
           source?: string | null
@@ -2293,6 +2445,9 @@ export type Database = {
           website_score_functionality?: number | null
           website_score_updated?: number | null
           website_url?: string | null
+          whatsapp_inferred_vertical?: string
+          whatsapp_qualification?: Json
+          whatsapp_vertical_confidence?: number
         }
         Update: {
           address?: string | null
@@ -2315,6 +2470,7 @@ export type Database = {
           contact_last_name?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          contact_phone_normalized?: string | null
           converted_at?: string | null
           country?: string
           created_at?: string
@@ -2325,15 +2481,25 @@ export type Database = {
           has_google_maps?: boolean | null
           has_website?: boolean | null
           id?: string
+          last_whatsapp_at?: string | null
           maps_ownership_claimed?: boolean | null
           maps_profile_complete?: boolean | null
           matching_score?: number | null
           notes?: string | null
           official_domain?: string | null
           official_domain_active?: boolean
+          pain_points?: string[]
           postal_code?: string | null
           priority_score?: number | null
+          proposal_updated_at?: string | null
+          proposed_addons?: string[]
+          proposed_billing_cycle?: string | null
+          proposed_extra_modules?: string[]
+          proposed_package_slug?: string | null
+          proposed_recurring_amount?: number | null
+          proposed_setup_amount?: number | null
           province?: string | null
+          requested_services?: string[]
           sales_owner_id?: string | null
           sales_owner_name?: string | null
           source?: string | null
@@ -2347,6 +2513,9 @@ export type Database = {
           website_score_functionality?: number | null
           website_score_updated?: number | null
           website_url?: string | null
+          whatsapp_inferred_vertical?: string
+          whatsapp_qualification?: Json
+          whatsapp_vertical_confidence?: number
         }
         Relationships: [
           {
@@ -2500,11 +2669,14 @@ export type Database = {
           due_date: string | null
           id: string
           invoice_number: string | null
+          kind: string
           lead_id: string
           notes: string | null
+          paid_at: string | null
           payment_date: string | null
           payment_method: string | null
           payment_provider: string | null
+          reminder_sent_at: string | null
           status: string
           stripe_payment_link: string | null
           subscription_id: string
@@ -2520,11 +2692,14 @@ export type Database = {
           due_date?: string | null
           id?: string
           invoice_number?: string | null
+          kind?: string
           lead_id: string
           notes?: string | null
+          paid_at?: string | null
           payment_date?: string | null
           payment_method?: string | null
           payment_provider?: string | null
+          reminder_sent_at?: string | null
           status?: string
           stripe_payment_link?: string | null
           subscription_id: string
@@ -2540,11 +2715,14 @@ export type Database = {
           due_date?: string | null
           id?: string
           invoice_number?: string | null
+          kind?: string
           lead_id?: string
           notes?: string | null
+          paid_at?: string | null
           payment_date?: string | null
           payment_method?: string | null
           payment_provider?: string | null
+          reminder_sent_at?: string | null
           status?: string
           stripe_payment_link?: string | null
           subscription_id?: string
@@ -2624,66 +2802,100 @@ export type Database = {
       }
       platform_subscriptions: {
         Row: {
+          activated_at: string | null
           billing_cycle: string
           cancelled_at: string | null
+          contract_id: string | null
           created_at: string
           currency: string
           current_period_end: string | null
           current_period_start: string | null
           first_payment_amount: number | null
+          grace_until: string | null
           id: string
+          last_reminder_at: string | null
           lead_id: string
           next_renewal_at: string | null
           notes: string | null
-          package_id: string
+          official_domain: string | null
+          package_id: string | null
+          package_slug: string | null
+          payment_method: string | null
           price_override: number | null
           setup_amount: number
           started_at: string
           status: string
+          suspended_at: string | null
+          tenant_id: string | null
           trial_ends_at: string | null
           updated_at: string
         }
         Insert: {
+          activated_at?: string | null
           billing_cycle?: string
           cancelled_at?: string | null
+          contract_id?: string | null
           created_at?: string
           currency?: string
           current_period_end?: string | null
           current_period_start?: string | null
           first_payment_amount?: number | null
+          grace_until?: string | null
           id?: string
+          last_reminder_at?: string | null
           lead_id: string
           next_renewal_at?: string | null
           notes?: string | null
-          package_id: string
+          official_domain?: string | null
+          package_id?: string | null
+          package_slug?: string | null
+          payment_method?: string | null
           price_override?: number | null
           setup_amount?: number
           started_at?: string
           status?: string
+          suspended_at?: string | null
+          tenant_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
         Update: {
+          activated_at?: string | null
           billing_cycle?: string
           cancelled_at?: string | null
+          contract_id?: string | null
           created_at?: string
           currency?: string
           current_period_end?: string | null
           current_period_start?: string | null
           first_payment_amount?: number | null
+          grace_until?: string | null
           id?: string
+          last_reminder_at?: string | null
           lead_id?: string
           next_renewal_at?: string | null
           notes?: string | null
-          package_id?: string
+          official_domain?: string | null
+          package_id?: string | null
+          package_slug?: string | null
+          payment_method?: string | null
           price_override?: number | null
           setup_amount?: number
           started_at?: string
           status?: string
+          suspended_at?: string | null
+          tenant_id?: string | null
           trial_ends_at?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "platform_subscriptions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "platform_contracts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "platform_subscriptions_lead_id_fkey"
             columns: ["lead_id"]
@@ -2696,6 +2908,104 @@ export type Database = {
             columns: ["package_id"]
             isOneToOne: false
             referencedRelation: "platform_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_whatsapp_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          inferred_vertical: string
+          last_message_at: string
+          lead_id: string | null
+          profile: Json
+          sender_phone_e164: string
+          state: string
+          summary: string | null
+          updated_at: string
+          vertical_confidence: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inferred_vertical?: string
+          last_message_at?: string
+          lead_id?: string | null
+          profile?: Json
+          sender_phone_e164: string
+          state?: string
+          summary?: string | null
+          updated_at?: string
+          vertical_confidence?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inferred_vertical?: string
+          last_message_at?: string
+          lead_id?: string | null
+          profile?: Json
+          sender_phone_e164?: string
+          state?: string
+          summary?: string | null
+          updated_at?: string
+          vertical_confidence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_whatsapp_conversations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "platform_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_whatsapp_messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          direction: string
+          id: string
+          payload: Json
+          provider_message_id: string | null
+          reply_to_provider_message_id: string | null
+        }
+        Insert: {
+          body?: string
+          conversation_id: string
+          created_at?: string
+          direction: string
+          id?: string
+          payload?: Json
+          provider_message_id?: string | null
+          reply_to_provider_message_id?: string | null
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          payload?: Json
+          provider_message_id?: string | null
+          reply_to_provider_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_whatsapp_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "platform_whatsapp_conversations"
             referencedColumns: ["id"]
           },
         ]

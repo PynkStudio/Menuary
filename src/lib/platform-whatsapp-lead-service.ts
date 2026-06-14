@@ -522,7 +522,7 @@ async function updateLead(
   };
   if (placeholderName && profile.businessName) update.business_name = profile.businessName;
 
-  const { error } = await svc.from("platform_leads").update(update).eq("id", lead.id);
+  const { error } = await svc.from("platform_leads").update(update as never).eq("id", lead.id);
   if (error) throw new Error(error.message);
 }
 
@@ -624,7 +624,7 @@ export async function handlePlatformWhatsappLeadMessage(
     provider_message_id: input.messageId ?? null,
     body: input.text.trim(),
     payload: input.payload ?? {},
-  });
+  } as never);
   if (inboundError) throw new Error(inboundError.message);
 
   const { data: recentRows, error: recentError } = await svc
