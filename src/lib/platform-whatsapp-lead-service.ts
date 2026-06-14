@@ -1,6 +1,8 @@
 import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+
+type SupabaseSvc = NonNullable<ReturnType<typeof createSupabaseServiceClient>>;
 import { normalizeWhatsappPhone } from "@/lib/tenant-support/admin-contacts";
 
 type LeadVertical = "unknown" | "food" | "services" | "creative" | "other";
@@ -131,10 +133,10 @@ const QUALIFICATION_SCHEMA = {
   },
 } as const;
 
-function db() {
+function db(): SupabaseSvc {
   const client = createSupabaseServiceClient();
   if (!client) throw new Error("supabase_service_unconfigured");
-  return client as any;
+  return client;
 }
 
 function cleanText(value: unknown, maxLength = 500): string | null {
@@ -398,7 +400,7 @@ async function analyzeWithAi(params: {
   }
 }
 
-async function findConversation(svc: any, phone: string): Promise<ConversationRow | null> {
+async function findConversation(svc: SupabaseSvc, phone: string): Promise<ConversationRow | null> {
   const { data, error } = await svc
     .from("platform_whatsapp_conversations")
     .select("id,lead_id,sender_phone_e164,state,inferred_vertical,vertical_confidence,profile,summary")
@@ -408,7 +410,7 @@ async function findConversation(svc: any, phone: string): Promise<ConversationRo
   return data as ConversationRow | null;
 }
 
-async function createConversation(svc: any, phone: string): Promise<ConversationRow> {
+async function createConversation(svc: SupabaseSvc, phone: string): Promise<ConversationRow> {
   const { data, error } = await svc
     .from("platform_whatsapp_conversations")
     .insert({ sender_phone_e164: phone, profile: EMPTY_PROFILE })
@@ -421,7 +423,7 @@ async function createConversation(svc: any, phone: string): Promise<Conversation
   throw new Error(error?.message ?? "platform_whatsapp_conversation_create_failed");
 }
 
-async function findLead(svc: any, phone: string): Promise<LeadRow | null> {
+async function findLead(svc: SupabaseSvc, phone: string): Promise<LeadRow | null> {
   const { data, error } = await svc
     .from("platform_leads")
     .select("id,business_name,business_vertical,business_type,contact_name,contact_email,contact_phone,city,notes,status,stage,temperature,tenant_id,requested_services,pain_points,whatsapp_qualification")
@@ -433,7 +435,7 @@ async function findLead(svc: any, phone: string): Promise<LeadRow | null> {
   return data as LeadRow | null;
 }
 
-async function createLead(svc: any, phone: string): Promise<LeadRow> {
+async function createLead(svc: SupabaseSvc, phone: string): Promise<LeadRow> {
   const digits = phone.replace(/\D/g, "");
   const { data, error } = await svc
     .from("platform_leads")
@@ -480,7 +482,7 @@ function qualificationNotes(existing: string | null, analysis: QualificationAnal
 }
 
 async function updateLead(
-  svc: any,
+  svc: SupabaseSvc,
   lead: LeadRow,
   phone: string,
   analysis: QualificationAnalysis,

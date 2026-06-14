@@ -12,7 +12,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { CommissionStatus, PlatformCommission, PlatformLead } from "@/lib/platform-crm-types";
+import type { CommissionStatus, PlatformCommission, PlatformSubscription } from "@/lib/platform-crm-types";
 import {
   COMMISSION_STATUS_COLORS,
   COMMISSION_STATUS_LABELS,
@@ -22,7 +22,6 @@ import {
   PLATFORM_COMMISSION_RULES,
   calculateCommissionAmount,
 } from "@/lib/platform-admin-data";
-import { listDerivedSubscriptions } from "@/lib/contracts/contract-to-subscription";
 
 const STATUS_FILTERS: { value: CommissionStatus | "all"; label: string }[] = [
   { value: "all", label: "Tutte" },
@@ -49,18 +48,16 @@ export function PlatformCommissionsPage() {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    const derived = listDerivedSubscriptions();
-    if (!derived.length) return;
-
-    fetch("/api/admin/leads")
+    fetch("/api/admin/subscriptions")
       .then((r) => r.json())
-      .then((data: { leads?: PlatformLead[] }) => {
-        const leads = data.leads ?? [];
+      .then((data: { subscriptions?: PlatformSubscription[] }) => {
+        const subs = data.subscriptions ?? [];
+        if (!subs.length) return;
         const closingRule = PLATFORM_COMMISSION_RULES.find((r) => r.role === "venditore")!;
         const leadInsertRule = PLATFORM_COMMISSION_RULES.find((r) => r.role === "lead_inserter")!;
 
-        const derivedCommissions = derived.flatMap((sub) => {
-          const lead = leads.find((l) => l.id === sub.lead_id);
+        const derivedCommissions = subs.flatMap((sub) => {
+          const lead = sub.lead;
           if (!lead) return [];
 
           const recurring = sub.price_override ?? 0;

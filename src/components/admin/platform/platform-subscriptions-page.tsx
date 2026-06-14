@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { listDerivedSubscriptions } from "@/lib/contracts/contract-to-subscription";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -23,11 +22,7 @@ import {
   PAYMENT_STATUS_COLORS,
   PAYMENT_STATUS_LABELS,
 } from "@/lib/platform-crm-types";
-import {
-  PLATFORM_PAYMENTS,
-  PLATFORM_SUBSCRIPTIONS,
-  calculateSubscriptionTotal,
-} from "@/lib/platform-admin-data";
+import { calculateSubscriptionTotal } from "@/lib/platform-admin-data";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -50,6 +45,7 @@ function daysUntil(dateStr: string | null): number | null {
 
 const STATUS_FILTERS: { value: SubscriptionStatus | "all"; label: string }[] = [
   { value: "all", label: "Tutti" },
+  { value: "pending_payment", label: "Attesa pagamento" },
   { value: "trial", label: "Trial" },
   { value: "active", label: "Attivi" },
   { value: "suspended", label: "Sospesi" },
@@ -57,17 +53,24 @@ const STATUS_FILTERS: { value: SubscriptionStatus | "all"; label: string }[] = [
 ];
 
 export function PlatformSubscriptionsPage() {
-  const [subscriptions, setSubscriptions] = useState<PlatformSubscription[]>(PLATFORM_SUBSCRIPTIONS);
+  const [subscriptions, setSubscriptions] = useState<PlatformSubscription[]>([]);
+  const [payments, setPayments] = useState<PlatformPayment[]>([]);
+  const [activeFilter, setActiveFilter] = useState<SubscriptionStatus | "all">("all");
 
   useEffect(() => {
-    const derived = listDerivedSubscriptions();
-    if (derived.length) {
-      setSubscriptions([...derived, ...PLATFORM_SUBSCRIPTIONS]);
-    }
+    let cancelled = false;
+    fetch("/api/admin/subscriptions")
+      .then((r) => r.json())
+      .then((data: { subscriptions?: PlatformSubscription[]; payments?: PlatformPayment[] }) => {
+        if (cancelled) return;
+        setSubscriptions(data.subscriptions ?? []);
+        setPayments(data.payments ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  const [payments] = useState<PlatformPayment[]>(PLATFORM_PAYMENTS);
-  const [activeFilter, setActiveFilter] = useState<SubscriptionStatus | "all">("all");
 
   const mrr = subscriptions
     .filter((s) => s.status === "active" || s.status === "trial")

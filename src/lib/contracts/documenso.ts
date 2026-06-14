@@ -1,6 +1,7 @@
 import "server-only";
 
 import { timingSafeEqual } from "node:crypto";
+import { inflateSync } from "node:zlib";
 const BASE_URL = process.env.DOCUMENSO_API_URL ?? "https://app.documenso.com/api/v2";
 
 function apiToken(): string {
@@ -128,7 +129,6 @@ function decodeTJText(tjLine: string): string {
 
 function inflateStream(raw: Buffer): Buffer {
   try {
-    const { inflateSync } = require("node:zlib") as typeof import("node:zlib");
     return inflateSync(raw);
   } catch {
     return raw;
