@@ -2,6 +2,17 @@ import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { bunqRequest, accountPath } from "./client";
+import { activateSubscription } from "@/lib/platform/subscription-service";
+
+/** Pagamento riconciliato → se collegato a un abbonamento, attiva tenant + dominio. */
+async function activateIfSubscription(subscriptionId: string | null | undefined) {
+  if (!subscriptionId) return;
+  try {
+    await activateSubscription(subscriptionId);
+  } catch (err) {
+    console.error("[bunq-reconciliation] activateSubscription failed", err);
+  }
+}
 
 type BunqPayment = {
   Payment: {
@@ -61,7 +72,7 @@ async function reconcileByRequestId(
   // bunq_request_id column added by migration 20260622
   const { data: payment } = await db
     .from("platform_payments")
-    .select("id, status")
+    .select("id, status, subscription_id")
     .eq("bunq_request_id", requestId)
     .eq("status", "pending")
     .maybeSingle();
@@ -73,9 +84,12 @@ async function reconcileByRequestId(
     .update({
       status: "paid",
       payment_date: new Date().toISOString(),
+      paid_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    })
+    } as never)
     .eq("id", payment.id);
+
+  await activateIfSubscription((payment as { subscription_id?: string }).subscription_id);
 
   return { matched: true, paymentId: payment.id };
 }
@@ -97,7 +111,7 @@ async function reconcileByPaymentId(
 
   const { data: platformPayment } = await db
     .from("platform_payments")
-    .select("id, status")
+    .select("id, status, subscription_id")
     .eq("invoice_number", reference)
     .eq("status", "pending")
     .maybeSingle();
@@ -109,10 +123,13 @@ async function reconcileByPaymentId(
     .update({
       status: "paid",
       payment_date: p.created,
+      paid_at: new Date().toISOString(),
       notes: `Riconciliato automaticamente da bonifico Bunq #${bunqPaymentId} — ${p.counterparty_alias.display_name}`,
       updated_at: new Date().toISOString(),
-    })
+    } as never)
     .eq("id", platformPayment.id);
+
+  await activateIfSubscription((platformPayment as { subscription_id?: string }).subscription_id);
 
   return { matched: true, paymentId: platformPayment.id };
 }

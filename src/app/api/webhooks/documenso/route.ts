@@ -11,6 +11,10 @@ import {
 } from "@/lib/contracts/contract-queries";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { createContractPayment } from "@/lib/contracts/contract-checkout";
+import {
+  createPendingSubscriptionFromContract,
+  attachPaymentProviderRefs,
+} from "@/lib/platform/subscription-service";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
 import {
   BRAND_INFO,
@@ -44,7 +48,9 @@ export async function POST(req: NextRequest) {
     payload.payload?.status,
   );
 
-  const event = payload.event.toLowerCase();
+  // Documenso invia eventi tipo "DOCUMENT_COMPLETED"/"DOCUMENT_SIGNED":
+  // normalizziamo gli underscore a punto per il confronto.
+  const event = payload.event.toLowerCase().replace(/_/g, ".");
   if (event !== "document.completed" && event !== "document.signed") {
     return NextResponse.json({ received: true, handled: false });
   }
@@ -57,32 +63,78 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, error: "contract_not_found" });
   }
 
-  // Download signed PDF
-  let signedDocPath: string | null = null;
-  if (contract.documenso_item_id) {
+  let status = contract.status;
+
+  // Fase 1 — firma del cliente (primo firmatario): il flusso va avanti.
+  // Scarichiamo il PDF firmato dal cliente, marchiamo "signed" e avviamo
+  // il pagamento. Idempotente: avviene solo una volta, alla transizione
+  // da "sent". La firma del fornitore (secondo firmatario) non rientra qui
+  // perché lo stato è già oltre "sent".
+  if (status === "sent") {
+    const firmatoPath = await downloadAndStore(
+      contract.documenso_item_id,
+      contract.id,
+      `firmato-${contract.numero}.pdf`,
+    );
+    await updateContract(contract.id, {
+      status: "signed",
+      signed_at: new Date().toISOString(),
+      signed_document_path: firmatoPath,
+    });
+    status = "signed";
+    // Abbonamento "in attesa di pagamento" + pagamento pending (canone, scadenza +15gg).
+    // Idempotente: parte solo alla transizione da "sent".
+    let firstPaymentId: string | null = null;
     try {
-      const signedPdf = await downloadSignedDocument(contract.documenso_item_id);
-      signedDocPath = await uploadSignedPdf(
-        contract.id,
-        contract.numero,
-        signedPdf,
-      );
+      const sub = await createPendingSubscriptionFromContract(contract);
+      firstPaymentId = sub?.paymentId ?? null;
     } catch (err) {
-      console.error("[documenso-webhook] Download signed PDF failed", err);
+      console.error("[documenso-webhook] Subscription creation failed", err);
     }
+    await handlePaymentByMethod(contract.id, contract.contract_data, contract.numero, firstPaymentId);
   }
 
-  // Update contract status
-  await updateContract(contract.id, {
-    status: "signed",
-    signed_at: new Date().toISOString(),
-    signed_document_path: signedDocPath,
-  });
+  // Fase 2 — controfirma nostra (documento completato): nessun pagamento.
+  // Salviamo la copia controfirmata e la rendiamo disponibile in
+  // admin/contratti e in gestione/fatturazione del tenant. Idempotente.
+  if (event === "document.completed" && status === "signed") {
+    const controfirmatoPath = await downloadAndStore(
+      contract.documenso_item_id,
+      contract.id,
+      `controfirmato-${contract.numero}.pdf`,
+    );
+    await updateContract(contract.id, {
+      status: "countersigned",
+      signed_document_path: controfirmatoPath ?? contract.signed_document_path,
+      contract_data: {
+        ...contract.contract_data,
+        countersigned: {
+          at: new Date().toISOString(),
+          by: FORNITORE.legaleRappresentante,
+          documentPath:
+            controfirmatoPath ?? contract.signed_document_path ?? "",
+        },
+      },
+    });
+    status = "countersigned";
+  }
 
-  // Route payment based on contract method
-  await handlePaymentByMethod(contract.id, contract.contract_data, contract.numero);
+  return NextResponse.json({ received: true, handled: true, status });
+}
 
-  return NextResponse.json({ received: true, handled: true });
+async function downloadAndStore(
+  itemId: string | null,
+  contractId: string,
+  fileName: string,
+): Promise<string | null> {
+  if (!itemId) return null;
+  try {
+    const pdf = await downloadSignedDocument(itemId);
+    return await uploadSignedPdf(contractId, fileName, pdf);
+  } catch (err) {
+    console.error("[documenso-webhook] Download/store PDF failed", fileName, err);
+    return null;
+  }
 }
 
 async function getContractByEnvelopeIdFallback(
@@ -100,13 +152,13 @@ async function getContractByEnvelopeIdFallback(
 
 async function uploadSignedPdf(
   contractId: string,
-  numero: string,
+  fileName: string,
   pdfBuffer: Buffer,
 ): Promise<string> {
   const db = createSupabaseServiceClient();
   if (!db) throw new Error("supabase_service_unconfigured");
 
-  const path = `contracts/${contractId}/firmato-${numero}.pdf`;
+  const path = `contracts/${contractId}/${fileName}`;
   const { error } = await db.storage
     .from("platform-documents")
     .upload(path, pdfBuffer, {
@@ -121,6 +173,7 @@ async function handlePaymentByMethod(
   contractId: string,
   data: ContractData,
   numero: string,
+  paymentId: string | null,
 ) {
   try {
     const result = await createContractPayment(contractId, data);
@@ -136,6 +189,9 @@ async function handlePaymentByMethod(
             stripe_checkout_session_id: result.sessionId,
           });
         }
+        if (paymentId && result.checkoutUrl) {
+          await attachPaymentProviderRefs(paymentId, { stripePaymentLink: result.checkoutUrl });
+        }
         if (signerEmail && result.checkoutUrl) {
           await sendEmail({
             to: signerEmail,
@@ -148,6 +204,12 @@ async function handlePaymentByMethod(
       }
 
       case "bunq": {
+        if (paymentId) {
+          await attachPaymentProviderRefs(paymentId, {
+            bunqRequestId: result.bunqRequestId,
+            bunqPaymentUrl: result.bunqShareUrl,
+          });
+        }
         if (result.bunqShareUrl && signerEmail) {
           await sendEmail({
             to: signerEmail,

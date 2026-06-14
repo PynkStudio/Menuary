@@ -125,6 +125,44 @@ export async function PATCH(
     update.status = body.status;
   }
   if ("notes" in body) update.notes = body.notes ?? null;
+
+  // ─── Proposta commerciale (alimenta demo, contratto, abbonamento) ──────────────
+  let touchesProposal = false;
+  if ("proposed_package_slug" in body) {
+    update.proposed_package_slug = normalizeNullableText(body.proposed_package_slug);
+    touchesProposal = true;
+  }
+  if ("proposed_addons" in body) {
+    update.proposed_addons = Array.isArray(body.proposed_addons)
+      ? (body.proposed_addons as unknown[]).filter((v): v is string => typeof v === "string")
+      : [];
+    touchesProposal = true;
+  }
+  if ("proposed_extra_modules" in body) {
+    update.proposed_extra_modules = Array.isArray(body.proposed_extra_modules)
+      ? (body.proposed_extra_modules as unknown[]).filter((v): v is string => typeof v === "string")
+      : [];
+    touchesProposal = true;
+  }
+  if ("proposed_billing_cycle" in body) {
+    update.proposed_billing_cycle =
+      body.proposed_billing_cycle === "monthly" || body.proposed_billing_cycle === "yearly"
+        ? body.proposed_billing_cycle
+        : null;
+    touchesProposal = true;
+  }
+  if ("proposed_setup_amount" in body) {
+    update.proposed_setup_amount =
+      typeof body.proposed_setup_amount === "number" ? body.proposed_setup_amount : null;
+    touchesProposal = true;
+  }
+  if ("proposed_recurring_amount" in body) {
+    update.proposed_recurring_amount =
+      typeof body.proposed_recurring_amount === "number" ? body.proposed_recurring_amount : null;
+    touchesProposal = true;
+  }
+  if (touchesProposal) update.proposal_updated_at = new Date().toISOString();
+
   update.last_updated_by_user_id = auth.user!.id;
   update.update_actor_at = new Date().toISOString();
 

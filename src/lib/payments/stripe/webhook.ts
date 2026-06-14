@@ -242,10 +242,16 @@ async function handleContractPaymentCompleted(
     status: "countersigned",
   });
 
-  // Activate tenant if linked
-  const tenantSlug = contract.contract_data?.servizio?.tenantSlug;
-  if (tenantSlug) {
-    await activateTenantForContract(contractId, tenantSlug);
+  // Pagamento ricevuto → attiva l'abbonamento (tenant + dominio + canone). Se non
+  // esiste un abbonamento collegato, fallback all'attivazione diretta del tenant.
+  const { activateSubscriptionByContract } = await import("@/lib/platform/subscription-service");
+  const activated = await activateSubscriptionByContract(contractId).catch((err) => {
+    console.error("[stripe-webhook] activateSubscriptionByContract failed", err);
+    return false;
+  });
+  if (!activated) {
+    const tenantSlug = contract.contract_data?.servizio?.tenantSlug;
+    if (tenantSlug) await activateTenantForContract(contractId, tenantSlug);
   }
 }
 

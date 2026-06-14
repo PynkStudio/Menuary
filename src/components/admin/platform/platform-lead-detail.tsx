@@ -60,8 +60,7 @@ import {
 import {
   PLATFORM_LEADS,
   PLATFORM_PACKAGES,
-  PLATFORM_PAYMENTS,
-  PLATFORM_SUBSCRIPTIONS,
+  PLATFORM_ADDON_PACKAGES,
   PLATFORM_COMMISSION_RULES,
   calculateCommissionAmount,
   calculateFirstPaymentBase,
@@ -70,11 +69,13 @@ import {
   getLocationPlanFactor,
 } from "@/lib/platform-admin-data";
 import { getModuleLabel } from "@/lib/vertical";
+import { getTenantModulesForVertical } from "@/lib/tenant-modules";
+import type { TenantFeatureKey } from "@/lib/tenant";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import { useMailLauncher } from "@/components/admin/inbox/mail-launcher";
 import { getMarket, normalizeMarketCode } from "@/lib/markets";
 
-type Tab = "anagrafica" | "fatturazione" | "abbonamento" | "pagamenti" | "note";
+type Tab = "anagrafica" | "fatturazione" | "proposta" | "abbonamento" | "pagamenti" | "note";
 
 type Venditore = { id: string; user_id: string; name: string; email: string; role: string };
 type CurrentAdmin = { user_id: string; name: string; role: string };
@@ -94,6 +95,7 @@ type LeadProfileDraft = {
 const TABS: { value: Tab; label: string; icon: React.ElementType }[] = [
   { value: "anagrafica", label: "Anagrafica", icon: Building2 },
   { value: "fatturazione", label: "Fatturazione", icon: Receipt },
+  { value: "proposta", label: "Proposta", icon: BadgeEuro },
   { value: "abbonamento", label: "Abbonamento", icon: CreditCard },
   { value: "pagamenti", label: "Pagamenti", icon: FileText },
   { value: "note", label: "Note", icon: FileText },
@@ -175,9 +177,15 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
         const dbLead = data.leads?.find((item) => item.id === leadId);
         if (!dbLead) throw new Error("Lead non trovato.");
         setLead(dbLead);
-        setSubscription(PLATFORM_SUBSCRIPTIONS.find((item) => item.lead_id === dbLead.id) ?? null);
-        setPayments(PLATFORM_PAYMENTS.filter((item) => item.lead_id === dbLead.id));
         setNoteText(dbLead.notes ?? "");
+        // Abbonamento + pagamenti dal DB (fonte unica server).
+        fetch("/api/admin/subscriptions")
+          .then((r2) => r2.json())
+          .then((subData: { subscriptions?: PlatformSubscription[]; payments?: PlatformPayment[] }) => {
+            setSubscription(subData.subscriptions?.find((s) => s.lead_id === dbLead.id) ?? null);
+            setPayments((subData.payments ?? []).filter((p) => p.lead_id === dbLead.id));
+          })
+          .catch(() => {});
       })
       .catch((err) => setLoadError(err instanceof Error ? err.message : "Impossibile caricare il lead."))
       .finally(() => setLoadingLead(false));
@@ -227,6 +235,23 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   async function changeStatus(status: LeadStatus) {
     const ok = await patchLead({ status });
     if (ok) setLead((prev) => prev ? { ...prev, status, updated_at: new Date().toISOString() } : prev);
+  }
+
+  async function saveProposal(proposal: {
+    proposed_package_slug: string | null;
+    proposed_addons: string[];
+    proposed_extra_modules: TenantFeatureKey[];
+    proposed_billing_cycle: BillingCycle;
+    proposed_setup_amount: number;
+    proposed_recurring_amount: number | null;
+  }) {
+    const ok = await patchLead(proposal);
+    if (!ok) return;
+    setLead((prev) =>
+      prev
+        ? { ...prev, ...proposal, proposal_updated_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+        : prev,
+    );
   }
 
   async function changeStage(stage: LeadStage) {
@@ -707,6 +732,9 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
           />
         )}
         {activeTab === "fatturazione" && <TabFatturazione lead={lead} />}
+        {activeTab === "proposta" && (
+          <TabProposta lead={lead} onSave={saveProposal} saving={leadSaving} />
+        )}
         {activeTab === "abbonamento" && (
           <TabAbbonamento subscription={subscription} lead={lead} />
         )}
@@ -758,6 +786,257 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
           onConfirm={confirmSale}
         />
       )}
+    </div>
+  );
+}
+
+// ─── Tab Proposta commerciale ─────────────────────────────────────────────────
+// Si compila prima della demo: pacchetto + addon + moduli sfusi + ciclo + prezzi.
+// Alimenta la creazione della demo, la pre-compilazione del contratto e l'abbonamento.
+
+function TabProposta({
+  lead,
+  onSave,
+  saving,
+}: {
+  lead: PlatformLead;
+  onSave: (proposal: {
+    proposed_package_slug: string | null;
+    proposed_addons: string[];
+    proposed_extra_modules: TenantFeatureKey[];
+    proposed_billing_cycle: BillingCycle;
+    proposed_setup_amount: number;
+    proposed_recurring_amount: number | null;
+  }) => void;
+  saving: boolean;
+}) {
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const usesLocations = lead.business_vertical !== "creative";
+  const availablePackages = PLATFORM_PACKAGES.filter(
+    (p) => p.vertical === "both" || p.vertical === lead.business_vertical,
+  );
+  const defaultPkg =
+    availablePackages.find((p) => p.slug === lead.proposed_package_slug) ?? availablePackages[0];
+
+  const pkgBase = (pkg: (typeof availablePackages)[number], cycle: BillingCycle) =>
+    cycle === "yearly" ? pkg.price_yearly ?? pkg.price_monthly * 12 : pkg.price_monthly;
+  const pkgMulti = (pkg: (typeof availablePackages)[number], cycle: BillingCycle) => {
+    const base = pkgBase(pkg, cycle);
+    return usesLocations ? calculateMultiLocationTotal(base, lead.locations) : base;
+  };
+  const addonsTotal = (addonSlugs: string[], cycle: BillingCycle) =>
+    PLATFORM_ADDON_PACKAGES.filter((a) => addonSlugs.includes(a.slug)).reduce(
+      (sum, a) => sum + (cycle === "yearly" ? a.price_yearly ?? a.price_monthly * 12 : a.price_monthly),
+      0,
+    );
+  const computeRecurring = (
+    pkg: (typeof availablePackages)[number] | undefined,
+    cycle: BillingCycle,
+    addonSlugs: string[],
+  ) => round2((pkg ? pkgMulti(pkg, cycle) : 0) + addonsTotal(addonSlugs, cycle));
+
+  const [packageSlug, setPackageSlug] = useState(defaultPkg?.slug ?? "");
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>(lead.proposed_billing_cycle ?? "monthly");
+  const [addons, setAddons] = useState<string[]>(lead.proposed_addons ?? []);
+  const [extraModules, setExtraModules] = useState<TenantFeatureKey[]>(lead.proposed_extra_modules ?? []);
+  const [setupAmount, setSetupAmount] = useState<number>(
+    lead.proposed_setup_amount ?? defaultPkg?.setup_amount ?? 490,
+  );
+  const [recurringAmount, setRecurringAmount] = useState<number>(
+    lead.proposed_recurring_amount ?? computeRecurring(defaultPkg, lead.proposed_billing_cycle ?? "monthly", lead.proposed_addons ?? []),
+  );
+
+  const selectedPackage = availablePackages.find((p) => p.slug === packageSlug) ?? defaultPkg;
+  const computedRecurring = computeRecurring(selectedPackage, billingCycle, addons);
+  const isOverride = round2(recurringAmount) !== computedRecurring;
+  const firstPayment = round2(setupAmount + recurringAmount);
+
+  function selectPackage(slug: string) {
+    const next = availablePackages.find((p) => p.slug === slug) ?? selectedPackage;
+    setPackageSlug(next?.slug ?? "");
+    setRecurringAmount(computeRecurring(next, billingCycle, addons));
+    if (next?.setup_amount != null) setSetupAmount(next.setup_amount);
+  }
+  function selectCycle(cycle: BillingCycle) {
+    setBillingCycle(cycle);
+    setRecurringAmount(computeRecurring(selectedPackage, cycle, addons));
+  }
+  function toggleAddon(slug: string) {
+    const next = addons.includes(slug) ? addons.filter((s) => s !== slug) : [...addons, slug];
+    setAddons(next);
+    setRecurringAmount(computeRecurring(selectedPackage, billingCycle, next));
+  }
+  function toggleExtraModule(key: TenantFeatureKey) {
+    setExtraModules((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  }
+
+  // Moduli sfusi: quelli del verticale non già inclusi nel pacchetto né negli addon AI.
+  const addonModuleKeys = new Set<TenantFeatureKey>(["aiPhone", "aiWhatsapp"]);
+  const packageModuleKeys = new Set(selectedPackage?.modules ?? []);
+  const extraModuleOptions = getTenantModulesForVertical(lead.business_vertical)
+    .map((m) => m.key)
+    .filter((k) => !packageModuleKeys.has(k) && !addonModuleKeys.has(k));
+
+  function handleSave() {
+    onSave({
+      proposed_package_slug: selectedPackage?.slug ?? null,
+      proposed_addons: addons,
+      proposed_extra_modules: extraModules,
+      proposed_billing_cycle: billingCycle,
+      proposed_setup_amount: setupAmount,
+      // Persistiamo sempre il canone effettivo concordato (multi-sede + addon inclusi),
+      // così alimenta contratto e abbonamento senza ricalcoli.
+      proposed_recurring_amount: recurringAmount,
+    });
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="headline text-xl">Proposta commerciale</h3>
+        <p className="mt-1 text-sm text-pork-ink/55">
+          Scegli pacchetto, add-on e condizioni <strong>prima</strong> di creare la demo. Questa proposta
+          guida demo, contratto e abbonamento.
+        </p>
+        {lead.proposal_updated_at && (
+          <p className="mt-1 text-xs text-pork-ink/40">Ultimo aggiornamento: {fmt(lead.proposal_updated_at)}</p>
+        )}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="block md:col-span-2">
+          <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">Pacchetto</span>
+          <select
+            value={packageSlug}
+            onChange={(e) => selectPackage(e.target.value)}
+            className="mt-2 w-full rounded-2xl border border-pork-ink/10 bg-white px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-pork-red/30"
+          >
+            {availablePackages.map((pkg) => (
+              <option key={pkg.slug} value={pkg.slug}>
+                {pkg.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div>
+          <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">Ciclo</span>
+          <div className="mt-2 grid grid-cols-2 gap-1 rounded-2xl bg-pork-ink/5 p-1">
+            {(["monthly", "yearly"] as BillingCycle[]).map((cycle) => (
+              <button
+                key={cycle}
+                onClick={() => selectCycle(cycle)}
+                className={cn(
+                  "rounded-xl px-3 py-2 text-sm font-black transition",
+                  billingCycle === cycle ? "bg-pork-ink text-pork-cream" : "text-pork-ink/60 hover:text-pork-ink",
+                )}
+              >
+                {cycle === "monthly" ? "Mensile" : "Annuale"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <MoneyInput label="Setup" value={setupAmount} onChange={setSetupAmount} />
+      </div>
+
+      {/* Add-on */}
+      <div>
+        <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">Add-on</span>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {PLATFORM_ADDON_PACKAGES.map((addon) => {
+            const active = addons.includes(addon.slug);
+            return (
+              <button
+                key={addon.slug}
+                onClick={() => toggleAddon(addon.slug)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-sm font-bold transition",
+                  active
+                    ? "border-pork-green bg-pork-green/10 text-pork-green"
+                    : "border-pork-ink/15 text-pork-ink/60 hover:text-pork-ink",
+                )}
+              >
+                {addon.name} · {eur(billingCycle === "yearly" ? addon.price_yearly ?? addon.price_monthly * 12 : addon.price_monthly)}
+                /{billingCycle === "yearly" ? "anno" : "mese"}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Moduli sfusi */}
+      {extraModuleOptions.length > 0 && (
+        <div>
+          <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">
+            Moduli sfusi (oltre il pacchetto)
+          </span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {extraModuleOptions.map((key) => {
+              const active = extraModules.includes(key);
+              return (
+                <button
+                  key={key}
+                  onClick={() => toggleExtraModule(key)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-xs font-bold transition",
+                    active
+                      ? "border-pork-ink bg-pork-ink text-pork-cream"
+                      : "border-pork-ink/15 text-pork-ink/55 hover:text-pork-ink",
+                  )}
+                >
+                  {getModuleLabel(key, lead.business_vertical)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Canone concordato */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <MoneyInput
+          label={billingCycle === "yearly" ? "Canone annuale" : "Canone mensile"}
+          value={recurringAmount}
+          onChange={setRecurringAmount}
+        />
+        <div className="flex flex-col justify-end">
+          <p className="text-xs text-pork-ink/45">
+            Listino calcolato: <strong>{eur(computedRecurring)}</strong>
+            {usesLocations && lead.locations.length > 1 && " (multi-sede incluso)"}
+          </p>
+          {isOverride && (
+            <button
+              onClick={() => setRecurringAmount(computedRecurring)}
+              className="mt-1 w-fit text-xs font-bold text-pork-red hover:underline"
+            >
+              Ripristina da listino
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-3 rounded-2xl bg-pork-cream p-4 sm:grid-cols-3">
+        <SummaryMetric label="Canone ricorrente" value={`${eur(recurringAmount)}/${billingCycle === "yearly" ? "anno" : "mese"}`} strong />
+        <SummaryMetric label="Setup (una tantum)" value={eur(setupAmount)} />
+        <SummaryMetric label="Primo pagamento" value={eur(firstPayment)} />
+      </div>
+
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Link
+          href={`/admin/contratti/nuovo?leadId=${lead.id}`}
+          className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-5 py-2.5 text-sm font-bold text-pork-ink/70 hover:text-pork-ink"
+        >
+          <FileText size={15} /> Crea contratto da questa proposta
+        </Link>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center gap-2 rounded-full bg-pork-green px-5 py-2.5 text-sm font-bold text-white hover:bg-pork-green/90 disabled:opacity-50"
+        >
+          <Save size={15} /> {saving ? "Salvataggio…" : "Salva proposta"}
+        </button>
+      </div>
     </div>
   );
 }

@@ -10,6 +10,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { getCountersignedContractByTenant } from "@/lib/contracts/contract-queries";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { isDemoHost } from "@/lib/platform";
 import { getTenantDemoControl } from "@/lib/demo-controls";
@@ -120,6 +122,39 @@ export default async function FatturazionePage({
   const plan = showDemoBilling ? demoBillingPlan(tenant.vertical) : null;
   const invoices = showDemoBilling ? demoBillingInvoices() : [];
 
+  // Contratto controfirmato reale: disponibile solo fuori dalla demo, quando
+  // esiste un contratto in stato "countersigned" legato a questo tenant.
+  let signedContract: {
+    numero: string;
+    countersignedAt: string | null;
+    url: string;
+  } | null = null;
+  if (!isDemoHostname) {
+    try {
+      const contract = await getCountersignedContractByTenant(tenantSlug);
+      if (contract?.signed_document_path) {
+        const db = createSupabaseServiceClient();
+        const { data: signed } = db
+          ? await db.storage
+              .from("platform-documents")
+              .createSignedUrl(contract.signed_document_path, 3600)
+          : { data: null };
+        if (signed?.signedUrl) {
+          signedContract = {
+            numero: contract.numero,
+            countersignedAt:
+              contract.contract_data?.countersigned?.at ??
+              contract.signed_at ??
+              null,
+            url: signed.signedUrl,
+          };
+        }
+      }
+    } catch {
+      signedContract = null;
+    }
+  }
+
   return (
     <div className="ga-dashboard">
       <header>
@@ -134,6 +169,38 @@ export default async function FatturazionePage({
           </span>
         )}
       </header>
+
+      {signedContract && (
+        <section className="ga-section" aria-labelledby="billing-contract-title">
+          <div className="ga-section-head">
+            <h2 id="billing-contract-title" className="ga-section-title">
+              Contratto
+            </h2>
+          </div>
+          <div className="ga-card">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="font-semibold">
+                  Contratto {signedContract.numero} — controfirmato
+                </p>
+                {signedContract.countersignedAt && (
+                  <p className="text-[11px] text-pork-ink/50">
+                    Controfirmato il {formatDate(signedContract.countersignedAt)}
+                  </p>
+                )}
+              </div>
+              <a
+                href={signedContract.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full bg-pork-ink/5 px-3 py-1 text-xs font-bold text-pork-ink hover:bg-pork-ink hover:text-pork-cream"
+              >
+                <Download size={12} /> Scarica PDF
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
 
       {!plan && !isDemo ? (
         <section className="ga-card">

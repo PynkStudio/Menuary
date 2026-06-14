@@ -86,7 +86,7 @@ export function SupportAdminPage({
   }
 
   useEffect(() => {
-    void refreshWaStatus().catch(() => setWaStatus({ ok: false, remoteConfigured: false, error: "Controllo non disponibile" }));
+    void refreshWaStatus().catch(() => setWaStatus({ ok: false, state: "error", error: "Controllo non disponibile" }));
     const interval = window.setInterval(() => {
       void refreshWaStatus().catch(() => undefined);
     }, 10_000);

@@ -287,6 +287,12 @@ export function buildSignatureFields(
       { type: "DATE", page: totalPages, positionX: 8, positionY: 82, width: 20, height: 3, identifier: 0 },
     );
   } else {
+    // Il marker è emesso subito sopra la riga di firma, ma lo spazio bianco
+    // per firmare sta SOPRA il marker (sigLabel ha marginBottom 50pt).
+    // Documenso usa positionY come bordo superiore del campo che cresce verso
+    // il basso: alziamo la firma di ~la sua altezza così cade nello spazio
+    // bianco previsto invece che sotto la riga. La data resta sulla riga.
+    const SIG_HEIGHT = 5;
     for (const hit of markers) {
       const pos = ptToPercent(hit.xPt, hit.yPt);
       const isFornitore = hit.marker.startsWith("XSIGNF_");
@@ -296,16 +302,16 @@ export function buildSignatureFields(
         type: "SIGNATURE",
         page: hit.page,
         positionX: pos.x,
-        positionY: pos.y,
+        positionY: Math.max(0, pos.y - SIG_HEIGHT - 1),
         width: 30,
-        height: 5,
+        height: SIG_HEIGHT,
         identifier: 0,
       });
       target.push({
         type: "DATE",
         page: hit.page,
         positionX: pos.x,
-        positionY: pos.y + 6,
+        positionY: pos.y,
         width: 20,
         height: 3,
         identifier: 0,

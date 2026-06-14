@@ -91,6 +91,21 @@ export async function getContractByEnvelopeId(
   return (data as unknown as PlatformContract) ?? null;
 }
 
+export async function getCountersignedContractByTenant(
+  tenantId: string,
+): Promise<PlatformContract | null> {
+  const { data, error } = await db()
+    .from("platform_contracts")
+    .select("*")
+    .eq("tenant_id", tenantId)
+    .eq("status", "countersigned")
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as unknown as PlatformContract) ?? null;
+}
+
 export async function getContractByStripeSession(
   sessionId: string,
 ): Promise<PlatformContract | null> {

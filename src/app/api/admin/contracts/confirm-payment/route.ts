@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { getContract, updateContract } from "@/lib/contracts/contract-queries";
+import { activateSubscriptionByContract } from "@/lib/platform/subscription-service";
 
 export const dynamic = "force-dynamic";
 
@@ -59,25 +60,29 @@ export async function POST(req: NextRequest) {
     status: "countersigned",
   });
 
-  // Activate tenant if linked
+  // Pagamento confermato → attiva l'abbonamento collegato (tenant + dominio + canone).
+  // Fallback all'attivazione diretta del tenant se non c'è abbonamento.
+  const activated = await activateSubscriptionByContract(contractId).catch(() => false);
+
   const tenantSlug = contract.contract_data?.servizio?.tenantSlug;
   if (tenantSlug) {
-    const db = createSupabaseServiceClient();
-    if (db) {
-      await db
-        .from("tenants")
-        .update({
-          enabled: true,
-          status: "active",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", tenantSlug);
-
-      await updateContract(contractId, {
-        tenant_id: tenantSlug,
-        tenant_activated_at: new Date().toISOString(),
-      });
+    if (!activated) {
+      const db = createSupabaseServiceClient();
+      if (db) {
+        await db
+          .from("tenants")
+          .update({
+            enabled: true,
+            status: "active",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", tenantSlug);
+      }
     }
+    await updateContract(contractId, {
+      tenant_id: tenantSlug,
+      tenant_activated_at: new Date().toISOString(),
+    });
   }
 
   const updated = await getContract(contractId);

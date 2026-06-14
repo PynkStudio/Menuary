@@ -50,7 +50,7 @@ function providerForMethod(method: string): "manual" | "stripe" | "bunq" {
  */
 export async function createPendingSubscriptionFromContract(
   contract: PlatformContract,
-): Promise<{ id: string } | null> {
+): Promise<{ subscriptionId: string; paymentId: string | null } | null> {
   if (!contract.lead_id) {
     console.warn("[subscription-service] contratto senza lead_id, salto", contract.id);
     return null;
@@ -61,7 +61,16 @@ export async function createPendingSubscriptionFromContract(
     .select("id")
     .eq("contract_id", contract.id)
     .maybeSingle();
-  if (existing.data?.id) return { id: existing.data.id };
+  if (existing.data?.id) {
+    const { data: pay } = await db()
+      .from("platform_payments")
+      .select("id")
+      .eq("subscription_id", existing.data.id)
+      .eq("kind", "first")
+      .eq("status", "pending")
+      .maybeSingle();
+    return { subscriptionId: existing.data.id, paymentId: pay?.id ?? null };
+  }
 
   const economiche = contract.contract_data.economiche;
   const cycle = economiche.cicloFatturazione;
@@ -69,6 +78,7 @@ export async function createPendingSubscriptionFromContract(
   const firstPayment = computeFirstPayment(economiche);
   const method = economiche.metodoPagamento;
   const tenantSlug = contract.contract_data.servizio?.tenantSlug || null;
+  const dominio = contract.contract_data.servizio?.dominio || null;
 
   const start = todayISO();
   const grace = addDays(start, PAYMENT_GRACE_DAYS);
@@ -85,6 +95,7 @@ export async function createPendingSubscriptionFromContract(
       setup_amount: economiche.setup,
       first_payment_amount: firstPayment,
       payment_method: method,
+      official_domain: dominio,
       currency: "EUR",
       status: "pending_payment",
       started_at: start,
@@ -95,17 +106,23 @@ export async function createPendingSubscriptionFromContract(
     .single();
   if (error) throw new Error(error.message);
 
-  const { error: payErr } = await db().from("platform_payments").insert({
-    subscription_id: sub.id,
-    lead_id: contract.lead_id,
-    amount: firstPayment,
-    currency: "EUR",
-    status: "pending",
-    kind: "first",
-    payment_method: method,
-    payment_provider: providerForMethod(method),
-    due_date: grace,
-  });
+  // invoice_number = numero contratto → consente la riconciliazione Bunq per riferimento.
+  const { data: pay, error: payErr } = await db()
+    .from("platform_payments")
+    .insert({
+      subscription_id: sub.id,
+      lead_id: contract.lead_id,
+      amount: firstPayment,
+      currency: "EUR",
+      status: "pending",
+      kind: "first",
+      payment_method: method,
+      payment_provider: providerForMethod(method),
+      invoice_number: contract.numero,
+      due_date: grace,
+    })
+    .select("id")
+    .single();
   if (payErr) throw new Error(payErr.message);
 
   // Collega il contratto all'abbonamento generato.
@@ -114,7 +131,31 @@ export async function createPendingSubscriptionFromContract(
     .update({ subscription_id: sub.id, updated_at: new Date().toISOString() })
     .eq("id", contract.id);
 
-  return { id: sub.id };
+  return { subscriptionId: sub.id, paymentId: pay.id };
+}
+
+/** Aggancia i riferimenti del provider (Bunq/Stripe) al pagamento, per la riconciliazione. */
+export async function attachPaymentProviderRefs(
+  paymentId: string,
+  refs: { bunqRequestId?: number; bunqPaymentUrl?: string; stripePaymentLink?: string },
+): Promise<void> {
+  const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (refs.bunqRequestId != null) update.bunq_request_id = refs.bunqRequestId;
+  if (refs.bunqPaymentUrl) update.bunq_payment_url = refs.bunqPaymentUrl;
+  if (refs.stripePaymentLink) update.stripe_payment_link = refs.stripePaymentLink;
+  await db().from("platform_payments").update(update).eq("id", paymentId);
+}
+
+/** Attiva l'abbonamento collegato a un contratto (path Stripe / conferma manuale). */
+export async function activateSubscriptionByContract(contractId: string): Promise<boolean> {
+  const { data: sub } = await db()
+    .from("platform_subscriptions")
+    .select("id")
+    .eq("contract_id", contractId)
+    .maybeSingle();
+  if (!sub?.id) return false;
+  await activateSubscription(sub.id);
+  return true;
 }
 
 /**
