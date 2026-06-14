@@ -55,7 +55,7 @@ export async function POST() {
       };
 
       const itemId =
-        contract.documenso_item_id ?? envelope.items?.[0]?.id ?? null;
+        contract.documenso_item_id ?? envelope.envelopeItems?.[0]?.id ?? null;
 
       if (itemId && !contract.signed_document_path) {
         try {
@@ -80,8 +80,8 @@ export async function POST() {
         }
       }
 
-      if (!contract.documenso_item_id && envelope.items?.[0]?.id) {
-        updates.documenso_item_id = String(envelope.items[0].id);
+      if (!contract.documenso_item_id && envelope.envelopeItems?.[0]?.id) {
+        updates.documenso_item_id = String(envelope.envelopeItems[0].id);
       }
 
       await updateContract(contract.id, updates);

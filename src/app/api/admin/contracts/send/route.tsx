@@ -120,11 +120,23 @@ export async function POST(req: NextRequest) {
     envelopeId = envelope.envelopeId;
 
     const distributed = await distributeEnvelope(envelopeId);
-    clienteSigningUrl = distributed.signingUrls.find((s) => s.email === signerEmail)?.signingUrl ?? null;
-    fornitoreSigningUrl = distributed.signingUrls.find((s) => s.email === FORNITORE.email)?.signingUrl ?? null;
+    // Selezione per signingOrder, non per email: cliente e fornitore possono
+    // avere la stessa email (es. test con l'email del titolare) e in quel caso
+    // il match per email restituirebbe il link sbagliato → "non è il tuo turno".
+    // Il cliente è sempre il primo firmatario (signingOrder 1), il fornitore il
+    // secondo (signingOrder 2), come definito in buildSignatureFields.
+    const urls = distributed.signingUrls;
+    clienteSigningUrl =
+      urls.find((s) => s.signingOrder === 1)?.signingUrl ??
+      urls.find((s) => s.email === signerEmail)?.signingUrl ??
+      null;
+    fornitoreSigningUrl =
+      urls.find((s) => s.signingOrder === 2)?.signingUrl ??
+      urls.find((s) => s.email === FORNITORE.email)?.signingUrl ??
+      null;
 
     const details = await getEnvelope(envelopeId);
-    documensoItemId = details.items?.[0]?.id ?? null;
+    documensoItemId = details.envelopeItems?.[0]?.id ?? null;
   } catch (err) {
     console.error("[contracts/send] Documenso error", err);
     return NextResponse.json(

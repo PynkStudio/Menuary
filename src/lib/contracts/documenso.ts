@@ -383,7 +383,11 @@ export async function createEnvelope(
 
 export type DistributeResult = {
   envelopeId: string;
-  signingUrls: Array<{ email: string; signingUrl: string }>;
+  signingUrls: Array<{
+    email: string;
+    signingUrl: string;
+    signingOrder: number | null;
+  }>;
 };
 
 export async function distributeEnvelope(
@@ -391,14 +395,22 @@ export async function distributeEnvelope(
 ): Promise<DistributeResult> {
   const result = await request<{
     id: string;
-    recipients?: Array<{ email?: string; signingUrl?: string }>;
+    recipients?: Array<{
+      email?: string;
+      signingUrl?: string;
+      signingOrder?: number | null;
+    }>;
   }>("/envelope/distribute", {
     body: { envelopeId },
   });
 
   const signingUrls = (result.recipients ?? [])
     .filter((r) => r.signingUrl)
-    .map((r) => ({ email: r.email ?? "", signingUrl: r.signingUrl! }));
+    .map((r) => ({
+      email: r.email ?? "",
+      signingUrl: r.signingUrl!,
+      signingOrder: r.signingOrder ?? null,
+    }));
 
   return { envelopeId: result.id, signingUrls };
 }
@@ -415,9 +427,11 @@ export type EnvelopeDetails = {
     id: number;
     email: string;
     signingStatus: string;
+    signingOrder?: number | null;
     signingUrl?: string;
   }>;
-  items: Array<{ id: string }>;
+  // L'API v2 espone i file dell'envelope sotto "envelopeItems" (non "items").
+  envelopeItems: Array<{ id: string }>;
 };
 
 export async function getEnvelope(
