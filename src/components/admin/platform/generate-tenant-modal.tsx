@@ -54,8 +54,10 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
       fd.append("vertical", lead.business_vertical);
       fd.append("businessName", lead.business_name);
       fd.append("primaryColor", primary);
-      fd.append("address", address);
-      fd.append("city", city);
+      if (lead.business_vertical !== "creative") {
+        fd.append("address", address);
+        fd.append("city", city);
+      }
       fd.append("ownerPhone", ownerPhone);
       if (animaFile) fd.append("animaFile", animaFile);
 
@@ -194,24 +196,28 @@ export function GenerateTenantModal({ lead, onClose }: Props) {
                 />
               </FormField>
 
-              <FormField label="Indirizzo sede" hint="Ogni tenant nasce con una sede principale">
-                <input
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full rounded-xl border border-pork-ink/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pork-ink/20"
-                  placeholder="es. Via Roma 12"
-                  required
-                />
-              </FormField>
+              {lead.business_vertical !== "creative" && (
+                <>
+                  <FormField label="Indirizzo sede" hint="Ogni tenant nasce con una sede principale">
+                    <input
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      className="w-full rounded-xl border border-pork-ink/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pork-ink/20"
+                      placeholder="es. Via Roma 12"
+                      required
+                    />
+                  </FormField>
 
-              <FormField label="Città" hint="opzionale">
-                <input
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full rounded-xl border border-pork-ink/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pork-ink/20"
-                  placeholder="es. Milano"
-                />
-              </FormField>
+                  <FormField label="Città" hint="opzionale">
+                    <input
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full rounded-xl border border-pork-ink/15 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pork-ink/20"
+                      placeholder="es. Milano"
+                    />
+                  </FormField>
+                </>
+              )}
 
               <FormField label="WhatsApp admin tenant" hint="Numero abilitato di default per Chatta con Menuary IA">
                 <input

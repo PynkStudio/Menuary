@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Building2,
@@ -29,6 +30,7 @@ import {
   BadgeEuro,
   Figma,
   Palette,
+  Trash2,
 } from "lucide-react";
 import { GenerateTenantModal } from "./generate-tenant-modal";
 import { UpdateAnimaModal } from "./update-anima-modal";
@@ -75,6 +77,7 @@ import { getMarket, normalizeMarketCode } from "@/lib/markets";
 type Tab = "anagrafica" | "fatturazione" | "abbonamento" | "pagamenti" | "note";
 
 type Venditore = { id: string; user_id: string; name: string; email: string; role: string };
+type CurrentAdmin = { user_id: string; name: string; role: string };
 
 type LeadProfileDraft = {
   business_name: string;
@@ -122,25 +125,36 @@ function eur(n: number | null) {
 // ─── Componente principale ────────────────────────────────────────────────────
 
 export function PlatformLeadDetail({ leadId }: { leadId: string }) {
-  const initialLead = PLATFORM_LEADS.find((item) => item.id === leadId) ?? PLATFORM_LEADS[0];
-  const [lead, setLead] = useState<PlatformLead>(initialLead);
-  const [subscription, setSubscription] = useState<PlatformSubscription | null>(
-    PLATFORM_SUBSCRIPTIONS.find((item) => item.lead_id === initialLead.id) ?? null,
+  const router = useRouter();
+  const [lead, setLead] = useState<PlatformLead | null>(
+    PLATFORM_LEADS.find((item) => item.id === leadId) ?? null,
   );
-  const [payments, setPayments] = useState<PlatformPayment[]>(
-    PLATFORM_PAYMENTS.filter((item) => item.lead_id === initialLead.id),
-  );
+  const [subscription, setSubscription] = useState<PlatformSubscription | null>(null);
+  const [payments, setPayments] = useState<PlatformPayment[]>([]);
   const [activeTab, setActiveTab] = useState<Tab>("anagrafica");
   const [editingNote, setEditingNote] = useState(false);
-  const [noteText, setNoteText] = useState(lead.notes ?? "");
+  const [noteText, setNoteText] = useState(lead?.notes ?? "");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [showUpdateAnimaModal, setShowUpdateAnimaModal] = useState(false);
   const [venditori, setVenditori] = useState<Venditore[]>([]);
   const [assignSaving, setAssignSaving] = useState(false);
   const [leadSaving, setLeadSaving] = useState(false);
+  const [deletingLead, setDeletingLead] = useState(false);
+  const [currentAdmin, setCurrentAdmin] = useState<CurrentAdmin | null>(null);
+  const [loadingLead, setLoadingLead] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const market = getMarket(normalizeMarketCode(lead.country) ?? "IT");
+  const market = getMarket(normalizeMarketCode(lead?.country) ?? "IT");
+
+  useEffect(() => {
+    fetch("/api/admin/me", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json() as Promise<CurrentAdmin>;
+      })
+      .then(setCurrentAdmin)
+      .catch(() => null);
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/venditori")
@@ -150,6 +164,7 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   }, []);
 
   useEffect(() => {
+    setLoadingLead(true);
     fetch("/api/admin/leads")
       .then(async (r) => {
         const data = (await r.json().catch(() => ({}))) as {
@@ -164,14 +179,36 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
         setPayments(PLATFORM_PAYMENTS.filter((item) => item.lead_id === dbLead.id));
         setNoteText(dbLead.notes ?? "");
       })
-      .catch((err) => setLoadError(err instanceof Error ? err.message : "Impossibile caricare il lead."));
+      .catch((err) => setLoadError(err instanceof Error ? err.message : "Impossibile caricare il lead."))
+      .finally(() => setLoadingLead(false));
   }, [leadId]);
+
+  useEffect(() => {
+    if (!lead || !currentAdmin || lead.sales_owner_id !== currentAdmin.user_id || !lead.attention_kind) return;
+
+    void fetch(`/api/admin/leads/${lead.id}/attention`, { method: "POST" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const payload = (await response.json()) as { cleared?: boolean };
+        if (!payload.cleared) return;
+        setLead((previous) => previous
+          ? {
+              ...previous,
+              attention_kind: null,
+              attention_for_user_id: null,
+              attention_updated_at: null,
+            }
+          : previous);
+        window.dispatchEvent(new Event("lead-attention:refresh"));
+      })
+      .catch(() => {});
+  }, [currentAdmin, lead]);
 
   async function patchLead(payload: Record<string, unknown>) {
     setLeadSaving(true);
     setLoadError(null);
     try {
-      const res = await fetch(`/api/admin/leads/${lead.id}`, {
+      const res = await fetch(`/api/admin/leads/${leadId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -189,66 +226,98 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
 
   async function changeStatus(status: LeadStatus) {
     const ok = await patchLead({ status });
-    if (ok) setLead((prev) => ({ ...prev, status, updated_at: new Date().toISOString() }));
+    if (ok) setLead((prev) => prev ? { ...prev, status, updated_at: new Date().toISOString() } : prev);
   }
 
   async function changeStage(stage: LeadStage) {
-    const nextStatus = stage === "tenant" ? "active" : stage === "lost" ? "churned" : lead.status;
+    const nextStatus = stage === "tenant" ? "active" : stage === "lost" ? "churned" : lead?.status ?? "lead";
     const ok = await patchLead({ stage, status: nextStatus });
     if (ok) {
-      setLead((prev) => ({
+      setLead((prev) => prev ? {
         ...prev,
         stage,
         status: nextStatus,
         updated_at: new Date().toISOString(),
-      }));
+      } : prev);
     }
   }
 
   async function saveNote() {
     const ok = await patchLead({ notes: noteText });
     if (!ok) return;
-    setLead((prev) => ({ ...prev, notes: noteText, updated_at: new Date().toISOString() }));
+    setLead((prev) => prev ? { ...prev, notes: noteText, updated_at: new Date().toISOString() } : prev);
     setEditingNote(false);
   }
 
+  async function deleteLead() {
+    if (!lead || deletingLead) return;
+    const tenantWarning = lead.tenant_id
+      ? "\n\nIl tenant già creato resterà attivo e non verrà eliminato."
+      : "";
+    const confirmed = window.confirm(
+      `Eliminare definitivamente il lead "${lead.business_name}"? Verranno rimossi anche abbonamenti, pagamenti e dati CRM collegati.${tenantWarning}`,
+    );
+    if (!confirmed) return;
+
+    setDeletingLead(true);
+    setLoadError(null);
+    try {
+      const response = await fetch(`/api/admin/leads/${lead.id}`, { method: "DELETE" });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Impossibile eliminare il lead.");
+      router.replace("/admin/crm");
+      router.refresh();
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Impossibile eliminare il lead.");
+      setDeletingLead(false);
+    }
+  }
+
   async function saveProfile(draft: LeadProfileDraft) {
+    if (!lead) return false;
+    const usesLocations = lead.business_vertical !== "creative";
     const primaryLocation = lead.locations.find((location) => location.is_primary) ?? lead.locations[0];
     const payload = {
       business_name: draft.business_name,
       contact_name: draft.contact_name || null,
       contact_email: draft.contact_email || null,
       contact_phone: draft.contact_phone || null,
-      address: draft.address || null,
-      city: draft.city || null,
-      province: draft.province || null,
-      postal_code: draft.postal_code || null,
       country: draft.country,
-      primary_location: {
-        address: draft.address || null,
-        city: draft.city || null,
-        province: draft.province || null,
-        postal_code: draft.postal_code || null,
-        country: draft.country,
-      },
+      ...(usesLocations
+        ? {
+            address: draft.address || null,
+            city: draft.city || null,
+            province: draft.province || null,
+            postal_code: draft.postal_code || null,
+            primary_location: {
+              address: draft.address || null,
+              city: draft.city || null,
+              province: draft.province || null,
+              postal_code: draft.postal_code || null,
+              country: draft.country,
+            },
+          }
+        : {}),
     };
     const ok = await patchLead(payload);
     if (!ok) return false;
 
     const now = new Date().toISOString();
-    setLead((prev) => ({
+    setLead((prev) => prev ? {
       ...prev,
       business_name: draft.business_name,
       contact_name: draft.contact_name || null,
       contact_email: draft.contact_email || null,
       contact_phone: draft.contact_phone || null,
-      address: draft.address || null,
-      city: draft.city || null,
-      province: draft.province || null,
-      postal_code: draft.postal_code || null,
+      address: usesLocations ? draft.address || null : null,
+      city: usesLocations ? draft.city || null : null,
+      province: usesLocations ? draft.province || null : null,
+      postal_code: usesLocations ? draft.postal_code || null : null,
       country: draft.country,
       updated_at: now,
-      locations: primaryLocation
+      locations: !usesLocations
+        ? []
+        : primaryLocation
         ? prev.locations.map((location) =>
             location.id === primaryLocation.id
               ? {
@@ -273,32 +342,40 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
               is_primary: true,
             },
           ],
-    }));
+    } : prev);
     return true;
   }
 
-  async function assignVenditore(venditore: Venditore | null) {
+  async function assignVenditore(venditore: Venditore) {
     setAssignSaving(true);
     try {
-      await fetch(`/api/admin/leads/${lead.id}`, {
+      const response = await fetch(`/api/admin/leads/${leadId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sales_owner_id: venditore?.user_id ?? null,
-          sales_owner_name: venditore?.name ?? null,
+          sales_owner_id: venditore.user_id,
         }),
       });
-      setLead((prev) => ({
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Impossibile assegnare il lead.");
+      setLead((prev) => prev ? {
         ...prev,
-        sales_owner_id: venditore?.user_id ?? null,
-        sales_owner_name: venditore?.name ?? null,
-      }));
+        sales_owner_id: venditore.user_id,
+        sales_owner_name: venditore.name,
+        attention_kind: "new",
+        attention_for_user_id: venditore.user_id,
+        attention_updated_at: new Date().toISOString(),
+      } : prev);
+      window.dispatchEvent(new Event("lead-attention:refresh"));
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Impossibile assegnare il lead.");
     } finally {
       setAssignSaving(false);
     }
   }
 
   function confirmSale(payload: SalePayload) {
+    if (!lead) return;
     const selectedPackage = PLATFORM_PACKAGES.find((item) => item.id === payload.packageId) ?? PLATFORM_PACKAGES[0];
     const now = new Date().toISOString();
     const tenantId = lead.business_slug ?? lead.business_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -309,10 +386,15 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
       id: subscription?.id ?? `sub-${lead.id}`,
       lead_id: lead.id,
       package_id: selectedPackage.id,
+      package_slug: selectedPackage.slug,
+      contract_id: null,
+      tenant_id: tenantId,
       billing_cycle: payload.billingCycle,
       price_override: payload.recurringAmount,
       setup_amount: payload.setupAmount,
       first_payment_amount: payload.firstPaymentAmount,
+      payment_method: null,
+      official_domain: lead.official_domain,
       currency: "EUR",
       status: "active",
       started_at: now.slice(0, 10),
@@ -320,18 +402,24 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
       current_period_start: now.slice(0, 10),
       current_period_end: nextRenewal.toISOString().slice(0, 10),
       next_renewal_at: nextRenewal.toISOString().slice(0, 10),
+      activated_at: now,
+      suspended_at: null,
+      grace_until: null,
+      last_reminder_at: null,
       cancelled_at: null,
       notes: payload.notes || null,
       created_at: subscription?.created_at ?? now,
       updated_at: now,
       lead: { ...lead, status: "active", stage: "tenant", tenant_id: tenantId, converted_at: now },
       package: selectedPackage,
-      location_plans: lead.locations.map((location, index) => ({
-        ...location,
-        package_slug: selectedPackage.slug,
-        package_name: selectedPackage.name,
-        price_factor: getLocationPlanFactor(location, index),
-      })),
+      location_plans: lead.business_vertical === "creative"
+        ? []
+        : lead.locations.map((location, index) => ({
+            ...location,
+            package_slug: selectedPackage.slug,
+            package_name: selectedPackage.name,
+            price_factor: getLocationPlanFactor(location, index),
+          })),
     };
 
     const newPayment: PlatformPayment = {
@@ -341,9 +429,12 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
       amount: payload.firstPaymentAmount,
       currency: "EUR",
       status: "pending",
+      kind: "first",
       payment_method: null,
       payment_date: null,
+      paid_at: null,
       due_date: now.slice(0, 10),
+      reminder_sent_at: null,
       invoice_number: null,
       notes: "Primo pagamento generato dalla conferma vendita.",
       stripe_payment_link: null,
@@ -361,7 +452,7 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
       updated_at: now,
     };
 
-    setLead((prev) => ({
+    setLead((prev) => prev ? {
       ...prev,
       status: "active",
       stage: "tenant",
@@ -369,10 +460,47 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
       converted_at: now,
       sales_owner_id: prev.sales_owner_id ?? "sales-unassigned",
       sales_owner_name: prev.sales_owner_name ?? "Venditore non assegnato",
-    }));
+    } : prev);
     setSubscription(newSubscription);
     setPayments((prev) => [newPayment, ...prev.filter((item) => item.id !== newPayment.id)]);
     setShowSaleModal(false);
+  }
+
+  if (!lead && loadingLead) {
+    return (
+      <div className="space-y-6">
+        <Link
+          href="/admin/crm"
+          className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 transition hover:border-pork-red/30 hover:text-pork-red"
+        >
+          <ArrowLeft size={15} /> CRM
+        </Link>
+        <div className="rounded-3xl bg-white p-10 text-center ring-1 ring-pork-ink/10">
+          <p className="text-pork-ink/50">Caricamento lead...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!lead) {
+    return (
+      <div className="space-y-6">
+        <Link
+          href="/admin/crm"
+          className="inline-flex items-center gap-2 rounded-full border border-pork-ink/15 px-4 py-2 text-sm font-bold text-pork-ink/70 transition hover:border-pork-red/30 hover:text-pork-red"
+        >
+          <ArrowLeft size={15} /> CRM
+        </Link>
+        {loadError && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+            {loadError}
+          </div>
+        )}
+        <div className="rounded-3xl bg-white p-10 text-center ring-1 ring-pork-ink/10">
+          <p className="text-pork-ink/50">Lead non trovato.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -443,6 +571,17 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
 
         {/* Azioni header */}
         <div className="flex flex-wrap items-center gap-2">
+          {(currentAdmin?.role === "superadmin" || currentAdmin?.role === "admin") && (
+            <button
+              type="button"
+              onClick={deleteLead}
+              disabled={deletingLead}
+              className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-wait disabled:opacity-50"
+            >
+              <Trash2 size={14} />
+              {deletingLead ? "Eliminazione..." : "Elimina lead"}
+            </button>
+          )}
           {!lead.demo_url && !lead.tenant_id && (
             <button
               onClick={() => setShowGenerateModal(true)}
@@ -640,8 +779,10 @@ function ConfirmSaleModal({
     : defaultPackage.price_monthly;
   const [packageId, setPackageId] = useState(defaultPackage.id);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(subscription?.billing_cycle ?? "monthly");
+  const usesLocations = lead.business_vertical !== "creative";
   const [recurringAmount, setRecurringAmount] = useState(
-    subscription?.price_override ?? calculateMultiLocationTotal(defaultBaseAmount, lead.locations),
+    subscription?.price_override ??
+      (usesLocations ? calculateMultiLocationTotal(defaultBaseAmount, lead.locations) : defaultBaseAmount),
   );
   const [setupAmount, setSetupAmount] = useState(subscription?.setup_amount ?? 490);
   const [notes, setNotes] = useState(subscription?.notes ?? "");
@@ -649,7 +790,7 @@ function ConfirmSaleModal({
   const selectedPackage = PLATFORM_PACKAGES.find((item) => item.id === packageId) ?? defaultPackage;
   const sellerRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "venditore")?.commission_rate ?? 30;
   const leadInsertRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "lead_inserter")?.commission_rate ?? 10;
-  const locationsCount = Math.max(lead.locations.length, 1);
+  const locationsCount = usesLocations ? Math.max(lead.locations.length, 1) : 0;
   const extraLocationsCount = Math.max(locationsCount - 1, 0);
   const firstPaymentAmount = setupAmount + recurringAmount;
   const commissionAmount = calculateCommissionAmount(firstPaymentAmount, sellerRate);
@@ -660,7 +801,8 @@ function ConfirmSaleModal({
   }
 
   function packageMultiLocationAmount(pkg = selectedPackage, cycle = billingCycle) {
-    return calculateMultiLocationTotal(packageBaseAmount(pkg, cycle), lead.locations);
+    const baseAmount = packageBaseAmount(pkg, cycle);
+    return usesLocations ? calculateMultiLocationTotal(baseAmount, lead.locations) : baseAmount;
   }
 
   function selectPackage(nextPackageId: string) {
@@ -789,7 +931,7 @@ function TabAnagrafica({
   lead: PlatformLead;
   onStatusChange: (status: LeadStatus) => void | Promise<void>;
   venditori: Venditore[];
-  onAssign: (v: Venditore | null) => void;
+  onAssign: (v: Venditore) => void;
   assignSaving: boolean;
   onSaveProfile: (draft: LeadProfileDraft) => Promise<boolean>;
   saving: boolean;
@@ -890,10 +1032,14 @@ function TabAnagrafica({
           <EditField label="Referente" value={draft.contact_name} onChange={(value) => setDraftField("contact_name", value)} />
           <EditField label="Email" value={draft.contact_email} onChange={(value) => setDraftField("contact_email", value)} type="email" />
           <EditField label="Telefono" value={draft.contact_phone} onChange={(value) => setDraftField("contact_phone", value)} type="tel" />
-          <EditField label="Indirizzo sede principale" value={draft.address} onChange={(value) => setDraftField("address", value)} />
-          <EditField label="Città" value={draft.city} onChange={(value) => setDraftField("city", value)} />
-          <EditField label="Provincia" value={draft.province} onChange={(value) => setDraftField("province", value)} />
-          <EditField label="CAP" value={draft.postal_code} onChange={(value) => setDraftField("postal_code", value)} />
+          {lead.business_vertical !== "creative" && (
+            <>
+              <EditField label="Indirizzo sede principale" value={draft.address} onChange={(value) => setDraftField("address", value)} />
+              <EditField label="Città" value={draft.city} onChange={(value) => setDraftField("city", value)} />
+              <EditField label="Provincia" value={draft.province} onChange={(value) => setDraftField("province", value)} />
+              <EditField label="CAP" value={draft.postal_code} onChange={(value) => setDraftField("postal_code", value)} />
+            </>
+          )}
           <label>
             <span className="text-[10px] font-bold uppercase tracking-wide text-pork-ink/40">Nazione</span>
             <select
@@ -955,24 +1101,67 @@ function TabAnagrafica({
         />
       </FieldGrid>
 
-      <SectionTitle icon={MapPinned}>Sedi operative</SectionTitle>
-      <div className="grid gap-3 lg:grid-cols-2">
-        {lead.locations.map((location) => (
-          <div key={location.id} className="rounded-2xl bg-pork-cream p-4 ring-1 ring-pork-ink/5">
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-black">{location.name}</p>
-              {location.is_primary && (
-                <span className="rounded-full bg-pork-green/15 px-2 py-0.5 text-[10px] font-black uppercase text-pork-green">
-                  sede principale
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-sm text-pork-ink/60">
-              {[location.address, location.postal_code, location.city, location.province].filter(Boolean).join(", ") || "Indirizzo non inserito"}
-            </p>
+      {(lead.business_type ||
+        (lead.requested_services?.length ?? 0) > 0 ||
+        (lead.pain_points?.length ?? 0) > 0 ||
+        lead.last_whatsapp_at) && (
+        <>
+          <SectionTitle icon={MessageCircle}>Qualificazione WhatsApp</SectionTitle>
+          <div className="grid gap-3 rounded-2xl border border-pork-green/15 bg-pork-green/5 p-4 md:grid-cols-2">
+            <Field
+              label="Ambito rilevato"
+              value={
+                lead.whatsapp_inferred_vertical === "food"
+                  ? "Menuary"
+                  : lead.whatsapp_inferred_vertical === "services"
+                    ? "Bizery"
+                    : lead.whatsapp_inferred_vertical === "creative"
+                      ? "Orpheo"
+                      : lead.whatsapp_inferred_vertical === "other"
+                        ? "Studio / altro"
+                        : "Da qualificare"
+              }
+            />
+            <Field
+              label="Confidenza ambito"
+              value={`${Math.round((lead.whatsapp_vertical_confidence ?? 0) * 100)}%`}
+            />
+            <Field label="Tipo attività / progetto" value={lead.business_type} />
+            <Field label="Ultimo contatto WhatsApp" value={lead.last_whatsapp_at ? fmt(lead.last_whatsapp_at) : null} />
+            <Field
+              label="Servizi di interesse"
+              value={lead.requested_services?.length ? lead.requested_services.join(", ") : null}
+            />
+            <Field
+              label="Pain point"
+              value={lead.pain_points?.length ? lead.pain_points.join("; ") : null}
+            />
           </div>
-        ))}
-      </div>
+        </>
+      )}
+
+      {lead.business_vertical !== "creative" && (
+        <>
+          <SectionTitle icon={MapPinned}>Sedi operative</SectionTitle>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {lead.locations.map((location) => (
+              <div key={location.id} className="rounded-2xl bg-pork-cream p-4 ring-1 ring-pork-ink/5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-black">{location.name}</p>
+                  {location.is_primary && (
+                    <span className="rounded-full bg-pork-green/15 px-2 py-0.5 text-[10px] font-black uppercase text-pork-green">
+                      sede principale
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-sm text-pork-ink/60">
+                  {[location.address, location.postal_code, location.city, location.province].filter(Boolean).join(", ") || "Indirizzo non inserito"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <SectionTitle icon={GitBranch}>Pipeline</SectionTitle>
       <FieldGrid>
@@ -989,12 +1178,12 @@ function TabAnagrafica({
         <Field label="Dominio attivo" value={lead.official_domain_active ? "Sì" : "No"} />
       </FieldGrid>
 
-      {/* Assegnazione venditore */}
+      {/* Assegnazione responsabile */}
       <div className="rounded-2xl border border-pork-ink/10 bg-pork-ink/2 p-4">
         <div className="mb-2 flex items-center gap-2">
           <UserCheck size={14} className="text-pork-red" />
           <p className="text-xs font-black uppercase tracking-wide text-pork-ink/50">
-            Venditore assegnato
+            Responsabile assegnato
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -1002,12 +1191,12 @@ function TabAnagrafica({
             disabled={assignSaving}
             value={lead.sales_owner_id ?? ""}
             onChange={(e) => {
-              const v = venditori.find((x) => x.user_id === e.target.value) ?? null;
-              onAssign(v);
+              const v = venditori.find((x) => x.user_id === e.target.value);
+              if (v) onAssign(v);
             }}
             className="flex-1 rounded-xl border border-pork-ink/10 bg-white px-3 py-2.5 text-sm font-semibold text-pork-ink focus:outline-none focus:ring-2 focus:ring-pork-red/25 disabled:opacity-50"
           >
-            <option value="">— Non assegnato —</option>
+            <option value="" disabled>— Seleziona responsabile —</option>
             {venditori.map((v) => (
               <option key={v.user_id} value={v.user_id}>
                 {v.name}
@@ -1017,14 +1206,6 @@ function TabAnagrafica({
           </select>
           {assignSaving && (
             <span className="text-xs text-pork-ink/40">Salvataggio…</span>
-          )}
-          {!assignSaving && lead.sales_owner_id && (
-            <button
-              onClick={() => onAssign(null)}
-              className="rounded-full border border-pork-ink/10 px-3 py-2 text-xs font-bold text-pork-ink/50 hover:border-red-200 hover:text-red-500"
-            >
-              Rimuovi
-            </button>
           )}
         </div>
       </div>
@@ -1146,10 +1327,12 @@ function TabAbbonamento({ subscription, lead }: { subscription: PlatformSubscrip
         <Field label="Fine trial" value={fmt(subscription.trial_ends_at)} />
         <Field label="Periodo corrente" value={`${fmt(subscription.current_period_start)} → ${fmt(subscription.current_period_end)}`} />
         <Field label="Prossimo rinnovo" value={fmt(subscription.next_renewal_at)} />
-        <Field label="Sedi associate" value={String(subscription.location_plans?.length ?? lead.locations.length)} />
+        {lead.business_vertical !== "creative" && (
+          <Field label="Sedi associate" value={String(subscription.location_plans?.length ?? lead.locations.length)} />
+        )}
       </FieldGrid>
 
-      {subscription.location_plans && subscription.location_plans.length > 0 && (
+      {lead.business_vertical !== "creative" && subscription.location_plans && subscription.location_plans.length > 0 && (
         <div>
           <p className="mb-3 text-sm font-bold text-pork-ink/60">Piano per sede</p>
           <div className="grid gap-3 lg:grid-cols-2">

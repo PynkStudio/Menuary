@@ -442,7 +442,7 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     label: "Multi-sede",
     description: "Gestisce menu centralizzato, prezzi per sede, report comparativi e permessi.",
     category: "Gestione",
-    verticals: ["food", "services", "creative"],
+    verticals: ["food", "services"],
     requires: ["website"],
     verticalCopy: {
       services: {

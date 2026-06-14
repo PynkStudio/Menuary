@@ -92,6 +92,7 @@ type PlatformLeadRow = {
   business_name: string;
   business_slug: string | null;
   business_vertical: string | null;
+  business_type: string | null;
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
@@ -114,14 +115,30 @@ type PlatformLeadRow = {
   temperature: string | null;
   source: string | null;
   notes: string | null;
+  requested_services: string[] | null;
+  pain_points: string[] | null;
+  whatsapp_qualification: Record<string, unknown> | null;
+  whatsapp_inferred_vertical: string | null;
+  whatsapp_vertical_confidence: number | null;
+  last_whatsapp_at: string | null;
   demo_url: string | null;
   demo_pr_url: string | null;
   official_domain: string | null;
   official_domain_active: boolean | null;
+  proposed_package_slug: string | null;
+  proposed_addons: string[] | null;
+  proposed_extra_modules: string[] | null;
+  proposed_billing_cycle: string | null;
+  proposed_setup_amount: number | null;
+  proposed_recurring_amount: number | null;
+  proposal_updated_at: string | null;
   tenant_id: string | null;
   converted_at: string | null;
   sales_owner_id: string | null;
   sales_owner_name: string | null;
+  attention_kind: string | null;
+  attention_for_user_id: string | null;
+  attention_updated_at: string | null;
   created_by_id: string | null;
   created_by_name: string | null;
   created_at: string;
@@ -182,6 +199,7 @@ function mapLead(row: PlatformLeadRow, locations: PlatformLeadLocationRow[]): Pl
         : row.business_vertical === "services"
           ? "services"
           : "food",
+    business_type: row.business_type,
     contact_name: row.contact_name,
     contact_email: row.contact_email,
     contact_phone: row.contact_phone,
@@ -204,6 +222,18 @@ function mapLead(row: PlatformLeadRow, locations: PlatformLeadLocationRow[]): Pl
     temperature: normalizeLeadTemperature(row.temperature),
     source: normalizeLeadSource(row.source),
     notes: row.notes,
+    requested_services: row.requested_services ?? [],
+    pain_points: row.pain_points ?? [],
+    whatsapp_qualification: row.whatsapp_qualification ?? {},
+    whatsapp_inferred_vertical:
+      row.whatsapp_inferred_vertical === "food" ||
+      row.whatsapp_inferred_vertical === "services" ||
+      row.whatsapp_inferred_vertical === "creative" ||
+      row.whatsapp_inferred_vertical === "other"
+        ? row.whatsapp_inferred_vertical
+        : "unknown",
+    whatsapp_vertical_confidence: row.whatsapp_vertical_confidence ?? 0,
+    last_whatsapp_at: row.last_whatsapp_at,
     locations: locations.map((loc) => ({
       id: loc.id,
       name: loc.name ?? "Sede",
@@ -218,10 +248,26 @@ function mapLead(row: PlatformLeadRow, locations: PlatformLeadLocationRow[]): Pl
     demo_pr_url: row.demo_pr_url,
     official_domain: row.official_domain,
     official_domain_active: row.official_domain_active ?? false,
+    proposed_package_slug: row.proposed_package_slug,
+    proposed_addons: row.proposed_addons ?? [],
+    proposed_extra_modules: (row.proposed_extra_modules ?? []) as PlatformLead["proposed_extra_modules"],
+    proposed_billing_cycle:
+      row.proposed_billing_cycle === "yearly" || row.proposed_billing_cycle === "monthly"
+        ? row.proposed_billing_cycle
+        : null,
+    proposed_setup_amount: row.proposed_setup_amount,
+    proposed_recurring_amount: row.proposed_recurring_amount,
+    proposal_updated_at: row.proposal_updated_at,
     tenant_id: row.tenant_id,
     converted_at: row.converted_at,
     sales_owner_id: row.sales_owner_id,
     sales_owner_name: row.sales_owner_name,
+    attention_kind:
+      row.attention_kind === "new" || row.attention_kind === "updated"
+        ? row.attention_kind
+        : null,
+    attention_for_user_id: row.attention_for_user_id,
+    attention_updated_at: row.attention_updated_at,
     created_by_id: row.created_by_id,
     created_by_name: row.created_by_name,
     created_at: row.created_at,
@@ -329,9 +375,11 @@ export async function POST(request: Request) {
       .join(" ") || null;
   const contactName = normalizeText(body.contact_name) ?? composedName;
 
-  // Build locations list — prefer new multi-sede format, fall back to legacy single fields
+  // Orpheo represents people/creative identities, not physical venues.
   const locationsInput: LocationInput[] =
-    Array.isArray(body.locations) && body.locations.length > 0
+    vertical === "creative"
+      ? []
+      : Array.isArray(body.locations) && body.locations.length > 0
       ? body.locations
       : [
           {
@@ -348,10 +396,15 @@ export async function POST(request: Request) {
   const firstLoc = locationsInput[0];
   const firstStreet = normalizeText(firstLoc?.street);
   const firstStreetNum = normalizeText(firstLoc?.street_number);
-  const legacyAddress =
-    [firstStreet, firstStreetNum].filter(Boolean).join(" ") || normalizeText(body.address);
-  const legacyCity = normalizeText(firstLoc?.city) ?? normalizeText(body.city);
+  const legacyAddress = vertical === "creative"
+    ? null
+    : [firstStreet, firstStreetNum].filter(Boolean).join(" ") || normalizeText(body.address);
+  const legacyCity = vertical === "creative"
+    ? null
+    : normalizeText(firstLoc?.city) ?? normalizeText(body.city);
   const legacyCountry = normalizeMarketCode(firstLoc?.country ?? body.country) ?? DEFAULT_MARKET;
+  const autoAssignToCreator =
+    auth.siteadmin?.role === "admin" || auth.siteadmin?.role === "venditore";
 
   const admin = createSupabaseAdminClient();
 
@@ -388,9 +441,11 @@ export async function POST(request: Request) {
       // Legacy single-address fields (derived from first location)
       address: legacyAddress,
       city: legacyCity,
-      province: normalizeText(body.province),
-      postal_code: normalizeText(body.postal_code),
+      province: vertical === "creative" ? null : normalizeText(body.province),
+      postal_code: vertical === "creative" ? null : normalizeText(body.postal_code),
       country: legacyCountry,
+      sales_owner_id: autoAssignToCreator ? auth.user?.id ?? null : null,
+      sales_owner_name: autoAssignToCreator ? auth.siteadmin?.name ?? null : null,
       created_by_id: auth.user?.id ?? null,
       created_by_name: auth.siteadmin?.name ?? null,
     } as never)
@@ -418,11 +473,13 @@ export async function POST(request: Request) {
     } as never;
   });
 
-  const { error: locationError } = await admin
-    .from("platform_lead_locations" as never)
-    .insert(locationRows);
+  if (locationRows.length > 0) {
+    const { error: locationError } = await admin
+      .from("platform_lead_locations" as never)
+      .insert(locationRows);
 
-  if (locationError) return NextResponse.json({ error: locationError.message }, { status: 500 });
+    if (locationError) return NextResponse.json({ error: locationError.message }, { status: 500 });
+  }
 
   return NextResponse.json({ id: lead.id }, { status: 201 });
 }

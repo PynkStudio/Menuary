@@ -221,7 +221,7 @@ export default function AdminTenantPage() {
         <h1 className="headline text-4xl">Tenant</h1>
         <p className="mt-2 text-pork-ink/65">
           Lista operativa dei profili cliente. Le righe mostrano solo dati base e azioni rapide;
-          moduli, sedi e integrazioni restano nelle impostazioni avanzate.
+          moduli e integrazioni restano nelle impostazioni avanzate.
         </p>
       </header>
 
@@ -443,9 +443,13 @@ function TenantAdvancedModal({
   onOpenHubrise,
   onOpenStripe,
 }: TenantAdvancedModalProps) {
-  const primaryModules = getTenantModulesForVertical(tenant.vertical);
+  const primaryModules = getTenantModulesForVertical(tenant.vertical)
+    .filter((module) => tenant.vertical !== "creative" || module.key !== "multiLocation");
   const otherModules = getTenantModulesForVertical(tenant.vertical, { includeOtherVerticals: true })
-    .filter((module) => !isTenantModuleVerticalAware(module, tenant.vertical));
+    .filter((module) =>
+      !isTenantModuleVerticalAware(module, tenant.vertical) &&
+      (tenant.vertical !== "creative" || module.key !== "multiLocation")
+    );
   const verticalMeta = getVerticalMeta(tenant.vertical);
 
   return (
@@ -491,12 +495,14 @@ function TenantAdvancedModal({
                     <p className="text-[10px] font-black uppercase text-pork-ink/40">Contatto</p>
                     <p className="mt-1 text-sm font-semibold">{lead.contact_name} · {lead.contact_email}</p>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-pork-ink/40">Sedi</p>
-                    <p className="mt-1 inline-flex items-center gap-1 text-sm font-semibold">
-                      <MapPin size={13} /> {lead.locations.length}
-                    </p>
-                  </div>
+                  {tenant.vertical !== "creative" && (
+                    <div>
+                      <p className="text-[10px] font-black uppercase text-pork-ink/40">Sedi</p>
+                      <p className="mt-1 inline-flex items-center gap-1 text-sm font-semibold">
+                        <MapPin size={13} /> {lead.locations.length}
+                      </p>
+                    </div>
+                  )}
                   {subscription?.package && (
                     <div className="md:col-span-3">
                       <p className="text-[10px] font-black uppercase text-pork-ink/40">Piano ereditato</p>
@@ -553,18 +559,20 @@ function TenantAdvancedModal({
           </div>
 
           <aside className="space-y-5">
-            <section className="rounded-2xl bg-pork-cream p-4">
-              <div className="flex items-center gap-2 text-sm font-bold text-pork-ink">
-                <MapPin size={16} className="text-pork-red" />
-                Sedi
-              </div>
-              <div className="mt-3">
-                <AdminTenantLocationsPanel
-                  tenantId={tenant.id}
-                  multiLocationEnabled={effective.features.multiLocation}
-                />
-              </div>
-            </section>
+            {tenant.vertical !== "creative" && (
+              <section className="rounded-2xl bg-pork-cream p-4">
+                <div className="flex items-center gap-2 text-sm font-bold text-pork-ink">
+                  <MapPin size={16} className="text-pork-red" />
+                  Sedi
+                </div>
+                <div className="mt-3">
+                  <AdminTenantLocationsPanel
+                    tenantId={tenant.id}
+                    multiLocationEnabled={effective.features.multiLocation}
+                  />
+                </div>
+              </section>
+            )}
 
             <section className="rounded-2xl bg-pork-cream p-4">
               <div className="flex items-center gap-2 text-sm font-bold text-pork-ink">

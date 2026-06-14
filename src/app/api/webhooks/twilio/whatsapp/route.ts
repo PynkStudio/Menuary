@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
+import {
+  handlePlatformWhatsappLeadMessage,
+  resolvePlatformWhatsappTenant,
+} from "@/lib/platform-whatsapp-lead-service";
 import { handleTenantSupportWhatsappMessage } from "@/lib/tenant-support/whatsapp-service";
-import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { upsertTenantSupportAdminContact } from "@/lib/tenant-support/admin-contacts";
 import { findTenantById } from "@/lib/tenant-registry";
 import { normalizeE164Address, twilioBasicAuthHeader } from "@/lib/twilio/config";
 import { twimlResponse } from "@/lib/twilio/twiml";
@@ -151,68 +155,31 @@ function detectTenantSimulation(text: string): { tenantId: string; body: string 
   return { tenantId, body };
 }
 
-function detectPlatform(req: NextRequest, text: string): "food" | "services" {
-  const platform = req.nextUrl.searchParams.get("platform")?.toLowerCase();
-  if (platform === "bizery" || platform === "services") return "services";
-  if (platform === "menuary" || platform === "food") return "food";
-  if (/\b(bizery|azienda|professionista|studio|servizi|consulenza|legale|salone|clinica)\b/i.test(text)) return "services";
-  return "food";
-}
-
-async function savePlatformWhatsappLead(params: {
-  vertical: "food" | "services";
-  phone: string;
-  message: string;
-  messageId: string | null;
-}) {
-  const db = createSupabaseServiceClient();
-  if (!db || !params.phone) return;
-  const digits = params.phone.replace(/\D/g, "") || "unknown";
-  await (db as unknown as {
-    from: (table: "platform_leads") => {
-      insert: (row: Record<string, unknown>) => Promise<{ error: unknown }>;
-    };
-  })
-    .from("platform_leads")
-    .insert({
-      business_name: "Contatto WhatsApp",
-      business_vertical: params.vertical === "services" ? "services" : "food",
-      contact_name: "Contatto WhatsApp",
-      contact_email: `whatsapp-${digits}@menuary.local`,
-      contact_phone: params.phone,
-      country: "IT",
-      status: "lead",
-      source: params.vertical === "services" ? "bizery-whatsapp" : "menuary-whatsapp",
-      notes: [
-        `Messaggio WhatsApp: ${params.message}`,
-        params.messageId ? `Twilio message id: ${params.messageId}` : null,
-      ].filter(Boolean).join("\n"),
-    });
-}
-
 async function handlePlatformAssistant(req: NextRequest, payload: TwilioWhatsappWebhookPayload) {
   const simulation = detectTenantSimulation(payload.body);
   if (simulation) {
     return handleCustomerAssistant(req, { ...payload, body: simulation.body }, simulation.tenantId);
   }
 
-  const vertical = detectPlatform(req, payload.body);
-  await savePlatformWhatsappLead({
-    vertical,
-    phone: payload.from,
-    message: payload.body,
-    messageId: payload.messageSid,
-  }).catch((error) => {
-    console.error("[twilio-whatsapp] platform lead save failed", error instanceof Error ? error.message : String(error));
-  });
+  const tenantDestination = await resolvePlatformWhatsappTenant(payload.from);
+  if (tenantDestination) {
+    if (tenantDestination.shouldAuthorizeOwner) {
+      await upsertTenantSupportAdminContact({
+        tenantId: tenantDestination.tenantId,
+        phone: payload.from,
+        displayName: tenantDestination.displayName,
+      });
+    }
+    return handleTenantSupport(payload);
+  }
 
-  const brand = vertical === "services" ? "Bizery" : "Menuary";
-  const audience = vertical === "services"
-    ? "la tua azienda o studio"
-    : "il tuo ristorante, bar o locale";
-  return twimlResponse([
-    `Ciao, sono ${brand}. Ho ricevuto il tuo messaggio per ${audience}. Dimmi pure di cosa hai bisogno: sito, prenotazioni, menu digitale, ordini, CRM o automazioni AI. Se vuoi simulare un cliente su un tenant, scrivi "demo kimos, buonasera vorrei ordinare una margherita".`,
-  ]);
+  const result = await handlePlatformWhatsappLeadMessage({
+    from: payload.from,
+    text: payload.body || (payload.mediaUrls.length ? "Ti invio questo allegato per spiegare la mia richiesta." : ""),
+    messageId: payload.messageSid,
+    payload: payload.raw,
+  });
+  return twimlResponse(result.replies);
 }
 
 export async function POST(req: NextRequest) {

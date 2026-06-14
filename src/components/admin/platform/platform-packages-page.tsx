@@ -107,7 +107,7 @@ const MOCK_ORPHEO_PACKAGES: PlatformPackageExtended[] = ORPHEO_PRICING_PLANS.map
       ? ["website", "pressKit", "worksCatalog", "reviews", "gallery"] as TenantFeatureKey[]
       : p.slug === "orpheo-pro"
         ? ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "reputationReviews", "gallery", "staffRoles"] as TenantFeatureKey[]
-        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation", "mail"] as TenantFeatureKey[],
+        : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "mail"] as TenantFeatureKey[],
   is_active: true,
   sort_order: 201 + i,
   created_at: "2026-01-01T00:00:00Z",

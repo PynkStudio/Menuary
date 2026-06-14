@@ -13,10 +13,11 @@ export type LeadTemperature = "cold" | "warm" | "hot";
 export type LeadStatus = "lead" | "prospect" | "active" | "churned";
 export type LeadSource = "form_web" | "referral" | "diretto" | "evento" | "manuale" | "altro";
 export type BillingCycle = "monthly" | "yearly";
-export type SubscriptionStatus = "trial" | "active" | "suspended" | "cancelled";
+export type SubscriptionStatus = "trial" | "pending_payment" | "active" | "suspended" | "cancelled";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type PaymentMethod = "bonifico" | "carta" | "sepa" | "bunq" | "altro";
 export type CommissionStatus = "pending" | "approved" | "paid";
+export type LeadAttentionKind = "new" | "updated";
 
 export type LeadLocation = {
   id: string;
@@ -67,15 +68,33 @@ export type PlatformLead = {
   temperature: LeadTemperature;
   source: LeadSource | null;
   notes: string | null;
+  business_type?: string | null;
+  requested_services?: string[];
+  pain_points?: string[];
+  whatsapp_qualification?: Record<string, unknown>;
+  whatsapp_inferred_vertical?: "unknown" | "food" | "services" | "creative" | "other";
+  whatsapp_vertical_confidence?: number;
+  last_whatsapp_at?: string | null;
   locations: LeadLocation[];
   demo_url: string | null;
   demo_pr_url: string | null;
   official_domain: string | null;
   official_domain_active: boolean;
+  // Proposta commerciale (scelta prima della demo, alimenta demo/contratto/abbonamento)
+  proposed_package_slug: string | null;
+  proposed_addons: string[];
+  proposed_extra_modules: TenantFeatureKey[];
+  proposed_billing_cycle: BillingCycle | null;
+  proposed_setup_amount: number | null;
+  proposed_recurring_amount: number | null;
+  proposal_updated_at: string | null;
   tenant_id: string | null;
   converted_at: string | null;
   sales_owner_id: string | null;
   sales_owner_name: string | null;
+  attention_kind?: LeadAttentionKind | null;
+  attention_for_user_id?: string | null;
+  attention_updated_at?: string | null;
   created_by_id: string | null;
   created_by_name: string | null;
   created_at: string;
@@ -106,11 +125,16 @@ export type PlatformPackage = {
 export type PlatformSubscription = {
   id: string;
   lead_id: string;
-  package_id: string;
+  package_id: string | null;
+  package_slug: string | null;
+  contract_id: string | null;
+  tenant_id: string | null;
   billing_cycle: BillingCycle;
   price_override: number | null;
   setup_amount: number | null;
   first_payment_amount: number | null;
+  payment_method: PaymentMethod | null;
+  official_domain: string | null;
   currency: string;
   status: SubscriptionStatus;
   started_at: string;
@@ -118,6 +142,10 @@ export type PlatformSubscription = {
   current_period_start: string | null;
   current_period_end: string | null;
   next_renewal_at: string | null;
+  activated_at: string | null;
+  suspended_at: string | null;
+  grace_until: string | null;
+  last_reminder_at: string | null;
   cancelled_at: string | null;
   notes: string | null;
   created_at: string;
@@ -135,9 +163,12 @@ export type PlatformPayment = {
   amount: number;
   currency: string;
   status: PaymentStatus;
+  kind: "first" | "renewal";
   payment_method: PaymentMethod | null;
   payment_date: string | null;
+  paid_at: string | null;
   due_date: string | null;
+  reminder_sent_at: string | null;
   invoice_number: string | null;
   notes: string | null;
   stripe_payment_link: string | null;
@@ -260,6 +291,7 @@ export const LEAD_TEMPERATURE_COLORS: Record<LeadTemperature, string> = {
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
   trial: "Trial",
+  pending_payment: "In attesa di pagamento",
   active: "Attivo",
   suspended: "Sospeso",
   cancelled: "Cancellato",
@@ -267,6 +299,7 @@ export const SUBSCRIPTION_STATUS_LABELS: Record<SubscriptionStatus, string> = {
 
 export const SUBSCRIPTION_STATUS_COLORS: Record<SubscriptionStatus, string> = {
   trial: "bg-pork-mustard/30 text-pork-ink",
+  pending_payment: "bg-amber-100 text-amber-800",
   active: "bg-pork-green/20 text-pork-green",
   suspended: "bg-pork-ink/10 text-pork-ink/60",
   cancelled: "bg-pork-red/10 text-pork-red",

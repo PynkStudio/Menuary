@@ -104,6 +104,7 @@ export function ContractEditor({ contractId }: Props) {
   const [sendError, setSendError] = useState<string | null>(null);
   const [confirmingPayment, setConfirmingPayment] = useState(false);
   const [countersigning, setCountersigning] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   type ContractDraft = { data: ContractData; overrides: Record<string, string> };
   const draftKey = `draft:contract:${contractId ?? "new"}`;
@@ -467,6 +468,49 @@ export function ContractEditor({ contractId }: Props) {
     } finally {
       setConfirmingPayment(false);
     }
+  }
+
+  async function handleSyncDocumenso() {
+    if (!serverContract) return;
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/admin/contracts/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contractId: serverContract.id }),
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({ error: "Errore" }))) as { error?: string };
+        setFeedback(`Errore: ${err.error}`);
+        return;
+      }
+      const { contract, synced, envelopeStatus } = (await res.json()) as {
+        contract: ServerContract;
+        synced: boolean;
+        envelopeStatus: string;
+      };
+      setServerContract(contract);
+      if (synced) {
+        setData(normalizeContractData(contract.contract_data));
+        setFeedback("Stato sincronizzato: contratto firmato.");
+      } else {
+        setFeedback(`Nessuna modifica. Stato Documenso: ${envelopeStatus}`);
+      }
+    } catch {
+      setFeedback("Errore di rete nella sincronizzazione.");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  function handleDownloadSigned() {
+    if (!serverContract?.signed_document_path) return;
+    const link = document.createElement("a");
+    link.href = `/api/admin/contracts/download-signed?id=${serverContract.id}`;
+    link.download = `Firmato-${serverContract.numero}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 
   async function handleDownloadPdf(): Promise<Blob | null> {
@@ -1014,7 +1058,7 @@ export function ContractEditor({ contractId }: Props) {
         {serverContract && (
           <>
             {/* Signing status */}
-            {serverContract.signing_url && effectiveStatus === "sent" && (
+            {effectiveStatus === "sent" && (
               <div style={{ marginTop: 12 }}>
                 <h3>Firma elettronica</h3>
                 <div style={{ fontSize: 12, padding: "8px 10px", background: "#dbeafe", border: "1px solid #93c5fd", borderRadius: 6, color: "#1e40af" }}>
@@ -1025,6 +1069,19 @@ export function ContractEditor({ contractId }: Props) {
                       Scadenza: {new Date(serverContract.expires_at).toLocaleDateString("it-IT")}
                     </span>
                   )}
+                  <button
+                    type="button"
+                    onClick={handleSyncDocumenso}
+                    disabled={syncing}
+                    style={{
+                      display: "block", marginTop: 8, padding: "6px 12px",
+                      background: "#1e40af", color: "#fff", border: "none",
+                      borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    }}
+                  >
+                    <RotateCcw size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                    {syncing ? "Controllo…" : "Controlla stato su Documenso"}
+                  </button>
                 </div>
               </div>
             )}
@@ -1042,10 +1099,31 @@ export function ContractEditor({ contractId }: Props) {
                         Firmato il {new Date(serverContract.signed_at).toLocaleString("it-IT")}
                       </div>
                     )}
-                    {serverContract.signed_document_path && (
-                      <div style={{ fontSize: 11, color: "#047857", marginTop: 4 }}>
-                        <Download size={12} style={{ display: "inline", verticalAlign: "middle" }} /> PDF firmato salvato
-                      </div>
+                    {serverContract.signed_document_path ? (
+                      <button
+                        type="button"
+                        onClick={handleDownloadSigned}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6,
+                          padding: "4px 10px", background: "#047857", color: "#fff", border: "none",
+                          borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                        }}
+                      >
+                        <Download size={12} /> Scarica PDF firmato
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleSyncDocumenso}
+                        disabled={syncing}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6,
+                          padding: "4px 10px", background: "#1e40af", color: "#fff", border: "none",
+                          borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                        }}
+                      >
+                        <RotateCcw size={12} /> {syncing ? "Recupero…" : "Recupera PDF firmato"}
+                      </button>
                     )}
                     <button
                       type="button"
@@ -1084,9 +1162,17 @@ export function ContractEditor({ contractId }: Props) {
                       </div>
                     )}
                     {serverContract.signed_document_path && (
-                      <div style={{ fontSize: 11, color: "#047857", marginTop: 4 }}>
-                        <Download size={12} style={{ display: "inline", verticalAlign: "middle" }} /> PDF controfirmato salvato
-                      </div>
+                      <button
+                        type="button"
+                        onClick={handleDownloadSigned}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6,
+                          padding: "4px 10px", background: "#047857", color: "#fff", border: "none",
+                          borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                        }}
+                      >
+                        <Download size={12} /> Scarica PDF firmato
+                      </button>
                     )}
                   </div>
                 </div>

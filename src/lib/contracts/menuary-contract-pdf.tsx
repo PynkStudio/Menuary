@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
   sigBox: { flex: 1 },
   sigLabel: { fontSize: 9.5, marginBottom: 50 },
   sigLine: { borderTop: "1px solid #111827", paddingTop: 4, fontSize: 9 },
+  sigMarker: { fontSize: 1, color: "#ffffff", opacity: 0 },
   attachmentCode: {
     fontSize: 8,
     color: "#6b7280",
@@ -270,23 +271,27 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
         <View style={styles.signaturesRow} wrap={false}>
           <View style={styles.sigBox}>
             <Text style={styles.sigLabel}>Per il Fornitore — {FORNITORE.ragioneSociale}</Text>
+            <Text style={styles.sigMarker}>{"XSIGNF_MAINX"}</Text>
             <Text style={styles.sigLine}>Timbro e firma</Text>
           </View>
           <View style={styles.sigBox}>
             <Text style={styles.sigLabel}>
               Per il Cliente — {clientName(data)}
             </Text>
+            <Text style={styles.sigMarker}>{"XSIGNC_MAINX"}</Text>
             <Text style={styles.sigLine}>{individualClient ? "Firma" : "Timbro e firma"}</Text>
           </View>
         </View>
 
         <View style={styles.signaturesRow} wrap={false}>
           <View style={styles.sigBox}>
+            <Text style={styles.sigMarker}>{"XSIGNF_VESSX"}</Text>
             <Text style={styles.sigLine}>
               Firma per accettazione specifica delle clausole vessatorie (Fornitore)
             </Text>
           </View>
           <View style={styles.sigBox}>
+            <Text style={styles.sigMarker}>{"XSIGNC_VESSX"}</Text>
             <Text style={styles.sigLine}>
               Firma per accettazione specifica delle clausole vessatorie (Cliente)
             </Text>
@@ -296,7 +301,7 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
         <PageFooter data={data} />
       </Page>
 
-      {attachments.map((a) => (
+      {attachments.map((a, idx) => (
         <Page key={a.id} size="A4" style={styles.page} wrap>
           <Text style={styles.attachmentCode}>Allegato {a.code}</Text>
           <Text style={styles.attachmentTitle}>{a.title}</Text>
@@ -311,9 +316,11 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
 
           <View style={styles.signaturesRow} wrap={false}>
             <View style={styles.sigBox}>
+              <Text style={styles.sigMarker}>{`XSIGNF_ATT${idx}X`}</Text>
               <Text style={styles.sigLine}>Fornitore</Text>
             </View>
             <View style={styles.sigBox}>
+              <Text style={styles.sigMarker}>{`XSIGNC_ATT${idx}X`}</Text>
               <Text style={styles.sigLine}>Cliente</Text>
             </View>
           </View>

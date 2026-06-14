@@ -77,61 +77,243 @@ export type CreateEnvelopeResult = {
   envelopeId: string;
 };
 
+// ─── PDF marker parser ─────────────────────────────────────────────────────
+// I marker XSIGNC_...X sono inseriti nel PDF da menuary-contract-pdf.tsx
+// come testo invisibile (1pt, bianco, opacity 0). Il parser li trova nei
+// content stream decompressi decodificando gli hex string dei TJ operator
+// e ne estrae pagina + coordinate.
+
+const A4_WIDTH = 595.28;
+const A4_HEIGHT = 841.89;
+const MARKER_RE = /XSIGN[CF]_[A-Z0-9_]+X/;
+
+type MarkerHit = {
+  marker: string;
+  page: number;
+  xPt: number;
+  yPt: number;
+};
+
 export function countPdfPages(buffer: Buffer): number {
   const str = buffer.toString("latin1");
   const match = str.match(/\/Count\s+(\d+)/);
   return match ? Math.max(1, parseInt(match[1], 10)) : 1;
 }
 
-/**
- * Genera campi firma + data per il Cliente (unico firmatario su Documenso)
- * su tutte le pagine dove compaiono blocchi firma.
- *
- * Il contratto ha questa struttura:
- *   - corpo principale (clausole + vessatorie + firme: entrambe le parti)
- *   - N allegati, ciascuno con firme Cliente + Fornitore in calce
- *
- * Il Cliente firma:
- *   1. Firma principale + vessatorie sul corpo (ultima pagina prima degli allegati)
- *   2. Firma su ogni allegato (pagina dell'allegato)
- *
- * Le pagine di firma sono le ultime (1 + attachmentCount) pagine del PDF.
- *
- * Posizionamento (coordinate percentuali 0-100):
- *   - Firma vessatorie: colonna destra, Y ~68
- *   - Firma principale: colonna destra, Y ~83
- *   - Data sotto ogni firma: Y +7
- */
+function decodeHexString(hex: string): string {
+  let result = "";
+  for (let i = 0; i < hex.length; i += 2) {
+    result += String.fromCharCode(parseInt(hex.substring(i, i + 2), 16));
+  }
+  return result;
+}
+
+function decodeTJText(tjLine: string): string {
+  let decoded = "";
+  const hexParts = tjLine.match(/<([0-9a-fA-F]+)>/g);
+  if (hexParts) {
+    for (const part of hexParts) {
+      const hex = part.slice(1, -1);
+      decoded += decodeHexString(hex);
+    }
+  }
+  const parenParts = tjLine.match(/\(([^)]*)\)/g);
+  if (parenParts) {
+    for (const part of parenParts) {
+      decoded += part.slice(1, -1);
+    }
+  }
+  return decoded;
+}
+
+function inflateStream(raw: Buffer): Buffer {
+  try {
+    const { inflateSync } = require("node:zlib") as typeof import("node:zlib");
+    return inflateSync(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function extractStreams(pdf: Buffer): Buffer[] {
+  const streams: Buffer[] = [];
+  let pos = 0;
+
+  while (pos < pdf.length) {
+    const si1 = pdf.indexOf(Buffer.from("stream\r\n"), pos);
+    const si2 = pdf.indexOf(Buffer.from("stream\n"), pos);
+    let streamStart: number;
+    let offset: number;
+    if (si1 === -1 && si2 === -1) break;
+    if (si1 === -1) { streamStart = si2; offset = 7; }
+    else if (si2 === -1) { streamStart = si1; offset = 8; }
+    else if (si1 < si2) { streamStart = si1; offset = 8; }
+    else { streamStart = si2; offset = 7; }
+
+    const dataStart = streamStart + offset;
+    const ei1 = pdf.indexOf(Buffer.from("\nendstream"), dataStart);
+    const ei2 = pdf.indexOf(Buffer.from("\r\nendstream"), dataStart);
+    let dataEnd: number;
+    if (ei1 === -1 && ei2 === -1) break;
+    if (ei1 === -1) dataEnd = ei2;
+    else if (ei2 === -1) dataEnd = ei1;
+    else dataEnd = Math.min(ei1, ei2);
+
+    streams.push(inflateStream(pdf.subarray(dataStart, dataEnd)));
+    pos = dataEnd + 10;
+  }
+  return streams;
+}
+
+// Matrice affine 2D: [a, b, c, d, tx, ty]
+type M = [number, number, number, number, number, number];
+const IDENTITY: M = [1, 0, 0, 1, 0, 0];
+
+function mulMatrix(m1: M, m2: M): M {
+  return [
+    m1[0] * m2[0] + m1[2] * m2[1],
+    m1[1] * m2[0] + m1[3] * m2[1],
+    m1[0] * m2[2] + m1[2] * m2[3],
+    m1[1] * m2[2] + m1[3] * m2[3],
+    m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+    m1[1] * m2[4] + m1[3] * m2[5] + m1[5],
+  ];
+}
+
+function transformPoint(m: M, x: number, y: number): [number, number] {
+  return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
+}
+
+function findMarkersInPdf(pdfBuffer: Buffer): MarkerHit[] {
+  const streams = extractStreams(pdfBuffer);
+  const hits: MarkerHit[] = [];
+  let pageNumber = 0;
+
+  for (const stream of streams) {
+    const text = stream.toString("latin1");
+    if (!text.includes("Tj") && !text.includes("TJ")) continue;
+
+    pageNumber++;
+
+    let ctm: M = [...IDENTITY];
+    const ctmStack: M[] = [];
+    let lastTmTx = 0;
+    let lastTmTy = 0;
+
+    const lines = text.split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      if (trimmed === "q") {
+        ctmStack.push([...ctm]);
+        continue;
+      }
+      if (trimmed === "Q") {
+        if (ctmStack.length > 0) ctm = ctmStack.pop()!;
+        continue;
+      }
+
+      // cm: "a b c d tx ty cm" — CTM' = cm_matrix × CTM
+      const cmMatch = trimmed.match(
+        /^(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+cm$/,
+      );
+      if (cmMatch) {
+        const cm: M = [
+          parseFloat(cmMatch[1]), parseFloat(cmMatch[2]),
+          parseFloat(cmMatch[3]), parseFloat(cmMatch[4]),
+          parseFloat(cmMatch[5]), parseFloat(cmMatch[6]),
+        ];
+        ctm = mulMatrix(cm, ctm);
+        continue;
+      }
+
+      // Tm: "a b c d tx ty Tm"
+      const tmMatch = trimmed.match(
+        /^(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+Tm$/,
+      );
+      if (tmMatch) {
+        lastTmTx = parseFloat(tmMatch[5]);
+        lastTmTy = parseFloat(tmMatch[6]);
+        continue;
+      }
+
+      // TJ/Tj: decodifica il testo e cerca il marker
+      if (trimmed.endsWith(" TJ") || trimmed.endsWith(" Tj")) {
+        const decoded = decodeTJText(trimmed);
+        const m = decoded.match(MARKER_RE);
+        if (m) {
+          const [absX, absY] = transformPoint(ctm, lastTmTx, lastTmTy);
+          hits.push({
+            marker: m[0],
+            page: pageNumber,
+            xPt: absX,
+            yPt: absY,
+          });
+        }
+      }
+    }
+  }
+  return hits;
+}
+
+function ptToPercent(xPt: number, yPt: number): { x: number; y: number } {
+  return {
+    x: (xPt / A4_WIDTH) * 100,
+    y: (1 - yPt / A4_HEIGHT) * 100,
+  };
+}
+
 export function buildSignatureFields(
-  totalPages: number,
+  pdfBuffer: Buffer,
   clienteEmail: string,
   clienteName: string,
-  attachmentPageCount: number,
+  fornitoreEmail: string,
+  fornitoreName: string,
 ): EnvelopeRecipient[] {
-  const sigCount = 1 + attachmentPageCount;
-  const startPage = Math.max(1, totalPages - sigCount + 1);
-  const sigPages: number[] = [];
-  for (let i = 0; i < sigCount; i++) {
-    const p = startPage + i;
-    if (p >= 1 && p <= totalPages) sigPages.push(p);
+  const markers = findMarkersInPdf(pdfBuffer);
+
+  const clienteFields: DocumensoField[] = [];
+  const fornitoreFields: DocumensoField[] = [];
+
+  if (markers.length === 0) {
+    console.warn("[documenso] No XSIGN markers found in PDF, using fallback");
+    const totalPages = countPdfPages(pdfBuffer);
+    clienteFields.push(
+      { type: "SIGNATURE", page: totalPages, positionX: 55, positionY: 75, width: 30, height: 5, identifier: 0 },
+      { type: "DATE", page: totalPages, positionX: 55, positionY: 82, width: 20, height: 3, identifier: 0 },
+    );
+    fornitoreFields.push(
+      { type: "SIGNATURE", page: totalPages, positionX: 8, positionY: 75, width: 30, height: 5, identifier: 0 },
+      { type: "DATE", page: totalPages, positionX: 8, positionY: 82, width: 20, height: 3, identifier: 0 },
+    );
+  } else {
+    for (const hit of markers) {
+      const pos = ptToPercent(hit.xPt, hit.yPt);
+      const isFornitore = hit.marker.startsWith("XSIGNF_");
+      const target = isFornitore ? fornitoreFields : clienteFields;
+
+      target.push({
+        type: "SIGNATURE",
+        page: hit.page,
+        positionX: pos.x,
+        positionY: pos.y,
+        width: 30,
+        height: 5,
+        identifier: 0,
+      });
+      target.push({
+        type: "DATE",
+        page: hit.page,
+        positionX: pos.x,
+        positionY: pos.y + 6,
+        width: 20,
+        height: 3,
+        identifier: 0,
+      });
+    }
   }
 
-  const fields: DocumensoField[] = [];
-
-  for (const page of sigPages) {
-    // identifier = file index (0-based). We always have 1 file, so identifier = 0 for all fields.
-    // Documenso v2: identifier is the file index, NOT a unique field id.
-    // Firma vessatorie (destra)
-    fields.push(
-      { type: "SIGNATURE", page, positionX: 58, positionY: 68, width: 28, height: 5, identifier: 0 },
-      { type: "DATE", page, positionX: 58, positionY: 75, width: 20, height: 3, identifier: 0 },
-    );
-    // Firma principale (destra)
-    fields.push(
-      { type: "SIGNATURE", page, positionX: 58, positionY: 83, width: 28, height: 5, identifier: 0 },
-      { type: "DATE", page, positionX: 58, positionY: 90, width: 20, height: 3, identifier: 0 },
-    );
-  }
+  console.log("[documenso] Cliente fields:", clienteFields.length, "Fornitore fields:", fornitoreFields.length);
 
   return [
     {
@@ -139,7 +321,14 @@ export function buildSignatureFields(
       name: clienteName,
       role: "SIGNER",
       signingOrder: 1,
-      fields,
+      fields: clienteFields,
+    },
+    {
+      email: fornitoreEmail,
+      name: fornitoreName,
+      role: "SIGNER",
+      signingOrder: 2,
+      fields: fornitoreFields,
     },
   ];
 }
@@ -188,7 +377,7 @@ export async function createEnvelope(
 
 export type DistributeResult = {
   envelopeId: string;
-  signingUrl: string | null;
+  signingUrls: Array<{ email: string; signingUrl: string }>;
 };
 
 export async function distributeEnvelope(
@@ -196,13 +385,16 @@ export async function distributeEnvelope(
 ): Promise<DistributeResult> {
   const result = await request<{
     id: string;
-    recipients?: Array<{ signingUrl?: string }>;
+    recipients?: Array<{ email?: string; signingUrl?: string }>;
   }>("/envelope/distribute", {
     body: { envelopeId },
   });
 
-  const signingUrl = result.recipients?.[0]?.signingUrl ?? null;
-  return { envelopeId: result.id, signingUrl };
+  const signingUrls = (result.recipients ?? [])
+    .filter((r) => r.signingUrl)
+    .map((r) => ({ email: r.email ?? "", signingUrl: r.signingUrl! }));
+
+  return { envelopeId: result.id, signingUrls };
 }
 
 // ─── Get envelope ────────────────────────────────────────────────────────────

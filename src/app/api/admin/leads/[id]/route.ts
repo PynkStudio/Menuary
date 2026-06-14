@@ -22,7 +22,7 @@ async function requireCrmPermission(permission: Parameters<typeof hasAdminPermis
 
   const { data: siteadmin } = await supabase
     .from("siteadmin")
-    .select("role")
+    .select("id,role")
     .eq("user_id", user.id)
     .eq("enabled", true)
     .maybeSingle();
@@ -31,7 +31,12 @@ async function requireCrmPermission(permission: Parameters<typeof hasAdminPermis
   if (!hasAdminPermission(role, permission)) {
     return { error: "Non autorizzato.", status: 403 as const };
   }
-  return { error: null, status: 200 as const };
+  return {
+    error: null,
+    status: 200 as const,
+    user: { id: user.id },
+    siteadmin: { id: siteadmin!.id, role },
+  };
 }
 
 // PATCH /api/admin/leads/[id]
@@ -49,10 +54,42 @@ export async function PATCH(
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body) return NextResponse.json({ error: "Body non valido." }, { status: 400 });
 
+  const admin = createSupabaseAdminClient();
+  const { data: currentLead, error: currentLeadError } = await admin
+    .from("platform_leads")
+    .select("business_vertical, sales_owner_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (currentLeadError) return NextResponse.json({ error: currentLeadError.message }, { status: 500 });
+  if (!currentLead) return NextResponse.json({ error: "Lead non trovato." }, { status: 404 });
+  const usesLocations = currentLead.business_vertical !== "creative";
+
   const update: Record<string, unknown> = {};
 
-  if ("sales_owner_id" in body) update.sales_owner_id = body.sales_owner_id ?? null;
-  if ("sales_owner_name" in body) update.sales_owner_name = body.sales_owner_name ?? null;
+  if ("sales_owner_id" in body) {
+    const ownerId = normalizeNullableText(body.sales_owner_id);
+    if (!ownerId) {
+      return NextResponse.json(
+        { error: "Ogni lead deve essere assegnato a un responsabile operativo." },
+        { status: 400 },
+      );
+    }
+    const { data: owner, error: ownerError } = await admin
+      .from("siteadmin")
+      .select("user_id, display_name, email, role")
+      .eq("user_id", ownerId)
+      .eq("enabled", true)
+      .maybeSingle();
+    if (ownerError) return NextResponse.json({ error: ownerError.message }, { status: 500 });
+    if (!owner || (owner.role !== "admin" && owner.role !== "venditore")) {
+      return NextResponse.json(
+        { error: "Il responsabile deve essere un admin o venditore operativo." },
+        { status: 400 },
+      );
+    }
+    update.sales_owner_id = owner.user_id;
+    update.sales_owner_name = owner.display_name ?? owner.email;
+  }
   if ("business_name" in body) {
     const businessName = normalizeText(body.business_name);
     if (!businessName) {
@@ -65,10 +102,10 @@ export async function PATCH(
   if ("contact_last_name" in body) update.contact_last_name = normalizeNullableText(body.contact_last_name);
   if ("contact_email" in body) update.contact_email = normalizeNullableText(body.contact_email)?.toLowerCase();
   if ("contact_phone" in body) update.contact_phone = normalizeNullableText(body.contact_phone);
-  if ("address" in body) update.address = normalizeNullableText(body.address);
-  if ("city" in body) update.city = normalizeNullableText(body.city);
-  if ("province" in body) update.province = normalizeNullableText(body.province);
-  if ("postal_code" in body) update.postal_code = normalizeNullableText(body.postal_code);
+  if (usesLocations && "address" in body) update.address = normalizeNullableText(body.address);
+  if (usesLocations && "city" in body) update.city = normalizeNullableText(body.city);
+  if (usesLocations && "province" in body) update.province = normalizeNullableText(body.province);
+  if (usesLocations && "postal_code" in body) update.postal_code = normalizeNullableText(body.postal_code);
   if ("country" in body) update.country = normalizeMarketCode(body.country) ?? DEFAULT_MARKET;
   if ("temperature" in body && ["cold", "warm", "hot"].includes(body.temperature as string)) {
     update.temperature = body.temperature;
@@ -88,17 +125,18 @@ export async function PATCH(
     update.status = body.status;
   }
   if ("notes" in body) update.notes = body.notes ?? null;
+  update.last_updated_by_user_id = auth.user!.id;
+  update.update_actor_at = new Date().toISOString();
 
   const primaryLocation = body.primary_location as Record<string, unknown> | undefined;
   const hasPrimaryLocation = primaryLocation && typeof primaryLocation === "object";
 
-  if (Object.keys(update).length === 0 && !hasPrimaryLocation) {
+  if (Object.keys(update).length === 2 && !hasPrimaryLocation) {
     return NextResponse.json({ error: "Nessun campo aggiornabile nel body." }, { status: 400 });
   }
 
   update.updated_at = new Date().toISOString();
 
-  const admin = createSupabaseAdminClient();
   if (Object.keys(update).length > 1) {
     const { error } = await admin
       .from("platform_leads")
@@ -109,6 +147,15 @@ export async function PATCH(
   }
 
   if (hasPrimaryLocation) {
+    if (!usesLocations) {
+      const { error } = await admin
+        .from("platform_lead_locations" as never)
+        .delete()
+        .eq("lead_id", id);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ ok: true });
+    }
+
     const street = normalizeNullableText(primaryLocation.street);
     const streetNumber = normalizeNullableText(primaryLocation.street_number);
     const address = [street, streetNumber].filter(Boolean).join(" ") || normalizeNullableText(primaryLocation.address);
@@ -163,4 +210,40 @@ export async function PATCH(
   }
 
   return NextResponse.json({ ok: true });
+}
+
+// DELETE /api/admin/leads/[id]
+// Elimina il lead e i record CRM collegati tramite le foreign key in cascata.
+// Un eventuale tenant convertito resta intatto.
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const auth = await requireCrmPermission("crm:delete");
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const { id } = await params;
+  if (!id) return NextResponse.json({ error: "ID lead mancante." }, { status: 400 });
+
+  const admin = createSupabaseAdminClient();
+  const { data: lead, error: findError } = await admin
+    .from("platform_leads")
+    .select("id, tenant_id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (findError) return NextResponse.json({ error: findError.message }, { status: 500 });
+  if (!lead) return NextResponse.json({ error: "Lead non trovato." }, { status: 404 });
+
+  const { error } = await admin
+    .from("platform_leads")
+    .delete()
+    .eq("id", id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({
+    ok: true,
+    tenantPreserved: Boolean(lead.tenant_id),
+  });
 }

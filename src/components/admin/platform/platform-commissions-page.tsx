@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BadgeEuro,
@@ -12,7 +12,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { CommissionStatus, PlatformCommission } from "@/lib/platform-crm-types";
+import type { CommissionStatus, PlatformCommission, PlatformLead } from "@/lib/platform-crm-types";
 import {
   COMMISSION_STATUS_COLORS,
   COMMISSION_STATUS_LABELS,
@@ -20,7 +20,9 @@ import {
 import {
   PLATFORM_COMMISSIONS,
   PLATFORM_COMMISSION_RULES,
+  calculateCommissionAmount,
 } from "@/lib/platform-admin-data";
+import { listDerivedSubscriptions } from "@/lib/contracts/contract-to-subscription";
 
 const STATUS_FILTERS: { value: CommissionStatus | "all"; label: string }[] = [
   { value: "all", label: "Tutte" },
@@ -45,6 +47,70 @@ export function PlatformCommissionsPage() {
   const [commissions, setCommissions] = useState<PlatformCommission[]>(PLATFORM_COMMISSIONS);
   const [statusFilter, setStatusFilter] = useState<CommissionStatus | "all">("all");
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const derived = listDerivedSubscriptions();
+    if (!derived.length) return;
+
+    fetch("/api/admin/leads")
+      .then((r) => r.json())
+      .then((data: { leads?: PlatformLead[] }) => {
+        const leads = data.leads ?? [];
+        const closingRule = PLATFORM_COMMISSION_RULES.find((r) => r.role === "venditore")!;
+        const leadInsertRule = PLATFORM_COMMISSION_RULES.find((r) => r.role === "lead_inserter")!;
+
+        const derivedCommissions = derived.flatMap((sub) => {
+          const lead = leads.find((l) => l.id === sub.lead_id);
+          if (!lead) return [];
+
+          const recurring = sub.price_override ?? 0;
+          const firstPaymentBase = (sub.setup_amount ?? 0) + recurring;
+
+          const closing: PlatformCommission = {
+            id: `comm-d-${sub.id}`,
+            lead_id: lead.id,
+            tenant_id: lead.tenant_id,
+            subscription_id: sub.id,
+            payment_id: `pay-d-${sub.id}`,
+            seller_id: lead.sales_owner_id ?? "sales-unassigned",
+            seller_name: lead.sales_owner_name ?? "Venditore non assegnato",
+            seller_role: "venditore",
+            commission_kind: "closing",
+            business_name: lead.business_name,
+            package_name: sub.package?.name ?? "Piano personalizzato",
+            billing_cycle: sub.billing_cycle,
+            recurring_amount: recurring,
+            setup_amount: sub.setup_amount ?? 0,
+            first_payment_amount: firstPaymentBase,
+            commission_rate: closingRule.commission_rate,
+            commission_amount: calculateCommissionAmount(firstPaymentBase, closingRule.commission_rate),
+            status: "pending",
+            closed_at: lead.converted_at ?? sub.started_at,
+            paid_at: null,
+          };
+
+          if (!lead.created_by_id) return [closing];
+
+          const leadInsert: PlatformCommission = {
+            ...closing,
+            id: `comm-d-li-${sub.id}`,
+            seller_id: lead.created_by_id,
+            seller_name: lead.created_by_name ?? "Inseritore lead",
+            seller_role: "lead_inserter",
+            commission_kind: "lead_insert",
+            commission_rate: leadInsertRule.commission_rate,
+            commission_amount: calculateCommissionAmount(firstPaymentBase, leadInsertRule.commission_rate),
+          };
+
+          return [closing, leadInsert];
+        });
+
+        if (derivedCommissions.length) {
+          setCommissions((prev) => [...derivedCommissions, ...prev]);
+        }
+      })
+      .catch(() => null);
+  }, []);
 
   const sellerRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "venditore")?.commission_rate ?? 30;
   const leadInsertRate = PLATFORM_COMMISSION_RULES.find((rule) => rule.role === "lead_inserter")?.commission_rate ?? 10;

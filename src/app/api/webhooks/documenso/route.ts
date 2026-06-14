@@ -36,9 +36,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
-  console.log("[documenso-webhook]", payload.event, payload.payload?.id);
+  console.log(
+    "[documenso-webhook] event=%s id=%s externalId=%s status=%s",
+    payload.event,
+    payload.payload?.id,
+    payload.payload?.externalId,
+    payload.payload?.status,
+  );
 
-  if (payload.event !== "DOCUMENT_COMPLETED") {
+  const event = payload.event.toLowerCase();
+  if (event !== "document.completed" && event !== "document.signed") {
     return NextResponse.json({ received: true, handled: false });
   }
 

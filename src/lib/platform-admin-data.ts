@@ -6,7 +6,7 @@ import type {
   PlatformPackage,
   PlatformPayment,
   PlatformSubscription,
-  TenantLocationPlan,
+
 } from "@/lib/platform-crm-types";
 import type { TenantFeatureKey } from "@/lib/tenant";
 import { BIZERY_PRICING_PLANS, ORPHEO_PRICING_PLANS, PRICING_PLANS } from "@/lib/platform-pricing";
@@ -83,7 +83,7 @@ export const ORPHEO_PLATFORM_PACKAGES: PlatformPackage[] = ORPHEO_PRICING_PLANS.
         ? ["website", "pressKit", "worksCatalog", "reviews", "gallery"]
         : plan.slug === "orpheo-pro"
           ? ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "reputationReviews", "gallery", "staffRoles"]
-          : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "multiLocation", "mail"],
+          : ["website", "pressKit", "worksCatalog", "crm", "analytics", "creativeBooking", "rightsRoyalties", "reputationReviews", "fanbaseCommunity", "gallery", "staffRoles", "mail"],
     is_active: true,
     sort_order: 201 + index,
     created_at: "2026-01-01T00:00:00Z",
@@ -141,47 +141,6 @@ function primaryLocation(
 
 export const PLATFORM_LEADS: PlatformLead[] = [
   {
-    id: "2",
-    business_name: "BePork",
-    business_slug: "bepork",
-    business_vertical: "food",
-    contact_name: "Luca Bianchi",
-    contact_email: "luca@bepork.it",
-    contact_phone: "+39 338 9876543",
-    address: "Via Veneto 5",
-    city: "Roma",
-    province: "RM",
-    postal_code: "00187",
-    country: "IT",
-    billing_name: "BePork S.r.l.",
-    billing_vat: "IT12345678901",
-    billing_cf: "12345678901",
-    billing_address: "Via Veneto 5",
-    billing_city: "Roma",
-    billing_province: "RM",
-    billing_postal_code: "00187",
-    billing_sdi: "M5UXCR1",
-    billing_pec: "bepork@pec.it",
-    status: "active",
-    stage: "tenant",
-    temperature: "hot",
-    source: "diretto",
-    notes: null,
-    locations: [primaryLocation("loc-2a", "Bari centro", "Via Veneto 5", "Roma", "RM", "00187")],
-    demo_url: "https://demo.menuary.it/bepork-demo",
-    demo_pr_url: null,
-    official_domain: "bepork.it",
-    official_domain_active: true,
-    tenant_id: "bepork",
-    converted_at: "2026-02-01T00:00:00Z",
-    sales_owner_id: "sales-matteo",
-    sales_owner_name: "Matteo Serra",
-    created_by_id: "lead-giulia",
-    created_by_name: "Giulia Ferri",
-    created_at: "2026-01-15T09:00:00Z",
-    updated_at: "2026-05-01T12:00:00Z",
-  },
-  {
     id: "kam",
     business_name: "Officina KAM",
     business_slug: "officinakam",
@@ -213,6 +172,13 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     demo_pr_url: null,
     official_domain: "officinakam.it",
     official_domain_active: false,
+    proposed_package_slug: null,
+    proposed_addons: [],
+    proposed_extra_modules: [],
+    proposed_billing_cycle: null,
+    proposed_setup_amount: null,
+    proposed_recurring_amount: null,
+    proposal_updated_at: null,
     tenant_id: "officinakam",
     converted_at: null,
     sales_owner_id: null,
@@ -254,6 +220,13 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     demo_pr_url: null,
     official_domain: null,
     official_domain_active: false,
+    proposed_package_slug: null,
+    proposed_addons: [],
+    proposed_extra_modules: [],
+    proposed_billing_cycle: null,
+    proposed_setup_amount: null,
+    proposed_recurring_amount: null,
+    proposal_updated_at: null,
     tenant_id: "doca",
     converted_at: null,
     sales_owner_id: null,
@@ -295,6 +268,13 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     demo_pr_url: null,
     official_domain: null,
     official_domain_active: false,
+    proposed_package_slug: null,
+    proposed_addons: [],
+    proposed_extra_modules: [],
+    proposed_billing_cycle: null,
+    proposed_setup_amount: null,
+    proposed_recurring_amount: null,
+    proposal_updated_at: null,
     tenant_id: "nom-sushi",
     converted_at: null,
     sales_owner_id: null,
@@ -336,6 +316,13 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     demo_pr_url: null,
     official_domain: null,
     official_domain_active: false,
+    proposed_package_slug: null,
+    proposed_addons: [],
+    proposed_extra_modules: [],
+    proposed_billing_cycle: null,
+    proposed_setup_amount: null,
+    proposed_recurring_amount: null,
+    proposal_updated_at: null,
     tenant_id: "junior-food",
     converted_at: null,
     sales_owner_id: null,
@@ -377,6 +364,13 @@ export const PLATFORM_LEADS: PlatformLead[] = [
     demo_pr_url: null,
     official_domain: "studiolegalearanzulla.it",
     official_domain_active: false,
+    proposed_package_slug: null,
+    proposed_addons: [],
+    proposed_extra_modules: [],
+    proposed_billing_cycle: null,
+    proposed_setup_amount: null,
+    proposed_recurring_amount: null,
+    proposal_updated_at: null,
     tenant_id: null,
     converted_at: null,
     sales_owner_id: null,
@@ -388,9 +382,6 @@ export const PLATFORM_LEADS: PlatformLead[] = [
   },
 ];
 
-function locationPlan(location: LeadLocation, packageSlug: string, packageName: string, priceFactor: number): TenantLocationPlan {
-  return { ...location, package_slug: packageSlug, package_name: packageName, price_factor: priceFactor };
-}
 
 export function getLocationPlanFactor(location: LeadLocation, index: number): number {
   return location.is_primary || index === 0 ? 1 : 0.5;
@@ -403,60 +394,9 @@ export function calculateMultiLocationTotal(baseAmount: number, locations: LeadL
   return baseAmount * planFactor;
 }
 
-export const PLATFORM_SUBSCRIPTIONS: PlatformSubscription[] = [
-  {
-    id: "sub-2",
-    lead_id: "2",
-    package_id: "pkg-operativita",
-    billing_cycle: "yearly",
-    price_override: null,
-    setup_amount: 690,
-    first_payment_amount: 2718,
-    currency: "EUR",
-    status: "active",
-    started_at: "2026-02-01",
-    trial_ends_at: null,
-    current_period_start: "2026-02-01",
-    current_period_end: "2027-01-31",
-    next_renewal_at: "2027-02-01",
-    cancelled_at: null,
-    notes: null,
-    created_at: "2026-02-01T10:00:00Z",
-    updated_at: "2026-02-01T10:00:00Z",
-    lead: PLATFORM_LEADS[0],
-    package: PLATFORM_PACKAGES[2],
-    location_plans: PLATFORM_LEADS[0].locations.map((loc, index) => locationPlan(loc, "operativita", "Operatività", getLocationPlanFactor(loc, index))),
-  },
-];
+export const PLATFORM_SUBSCRIPTIONS: PlatformSubscription[] = [];
 
-export const PLATFORM_PAYMENTS: PlatformPayment[] = [
-  {
-    id: "pay-2",
-    subscription_id: "sub-2",
-    lead_id: "2",
-    amount: 2718,
-    currency: "EUR",
-    status: "paid",
-    payment_method: "bonifico",
-    payment_date: "2026-02-05",
-    due_date: "2026-02-01",
-    invoice_number: "FT-2026-001",
-    notes: null,
-    stripe_payment_link: "https://buy.stripe.com/test_bepork",
-    bunq_request_id: null,
-    bunq_payment_url: null,
-    payment_provider: "manual",
-    billing_payload: {
-      plan: "Operatività",
-      billing_cycle: "yearly",
-      setup_amount: 690,
-      recurring_amount: 2028,
-      first_payment_amount: 2718,
-    },
-    created_at: "2026-02-01T10:00:00Z",
-    updated_at: "2026-02-05T10:00:00Z",
-  },
-];
+export const PLATFORM_PAYMENTS: PlatformPayment[] = [];
 
 export function calculateSubscriptionTotal(sub: PlatformSubscription): number {
   if (!sub.package) return sub.price_override ?? 0;

@@ -14,6 +14,7 @@ export type SiteadminRole = (typeof SITEADMIN_ROLES)[number];
 export type AdminPermission =
   | "crm:view"
   | "crm:create"
+  | "crm:delete"
   | "crm:demo"
   | "packages:manage"
   | "subscriptions:view"
@@ -54,6 +55,7 @@ export const DEFAULT_COMMISSION_BY_SITEADMIN_ROLE: Record<SiteadminRole, number>
 const ALL_PERMISSIONS: AdminPermission[] = [
   "crm:view",
   "crm:create",
+  "crm:delete",
   "crm:demo",
   "packages:manage",
   "subscriptions:view",

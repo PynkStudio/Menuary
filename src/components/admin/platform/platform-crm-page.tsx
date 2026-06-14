@@ -133,7 +133,7 @@ export function PlatformCrmPage() {
           <p className="impact-title text-xs text-pork-red">Piattaforma</p>
           <h1 className="headline text-4xl">CRM Lead</h1>
           <p className="mt-1 text-pork-ink/60">
-            Pipeline commerciale completa: demo, trattativa, venduto, sedi e conversione a tenant.
+            Pipeline commerciale completa: demo, trattativa, venduto e conversione a tenant.
           </p>
         </div>
         <Link
@@ -283,9 +283,9 @@ export function PlatformCrmPage() {
             <p className="text-pork-ink/50">Nessun lead trovato.</p>
           </div>
         )}
-        {filtered.map((lead) => (
-          <LeadRow key={lead.id} lead={lead} />
-        ))}
+          {filtered.map((lead) => (
+            <LeadRow key={lead.id} lead={lead} currentUserId={currentUser?.user_id ?? null} />
+          ))}
       </div>
     </div>
   );
@@ -359,12 +359,18 @@ function VerticalSplitCard({
 
 // ─── Riga lead ────────────────────────────────────────────────────────────────
 
-function LeadRow({ lead }: { lead: PlatformLead }) {
+function LeadRow({ lead, currentUserId }: { lead: PlatformLead; currentUserId: string | null }) {
   const phoneHref = lead.contact_phone ? `tel:${lead.contact_phone.replace(/\s/g, "")}` : undefined;
   const whatsappHref = lead.contact_phone
     ? `https://wa.me/${lead.contact_phone.replace(/[^\d]/g, "")}`
     : undefined;
   const market = getMarket(normalizeMarketCode(lead.country) ?? "IT");
+  const attentionKind =
+    lead.sales_owner_id === null
+      ? lead.attention_kind
+      : lead.attention_for_user_id === currentUserId
+        ? lead.attention_kind
+        : null;
 
   return (
     <article className="flex items-center justify-between gap-4 rounded-2xl bg-white p-5 ring-1 ring-pork-ink/10 transition hover:ring-pork-red/30">
@@ -384,6 +390,19 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
         <div className="flex flex-wrap items-center gap-2">
           <Building2 size={15} className="shrink-0 text-pork-ink/40" />
           <span className="font-bold">{lead.business_name}</span>
+
+          {attentionKind && (
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide",
+                attentionKind === "new"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-sky-100 text-sky-700",
+              )}
+            >
+              {attentionKind === "new" ? "Nuovo" : "Aggiornato"}
+            </span>
+          )}
 
           {/* Badge verticale */}
           <span
@@ -459,21 +478,23 @@ function LeadRow({ lead }: { lead: PlatformLead }) {
               WA
             </a>
           )}
-          <span className="inline-flex items-center gap-1">
-            <MapPin size={12} />
-            {lead.locations.length} {lead.locations.length === 1 ? "sede" : "sedi"}
-            {lead.city && (
-              <>
-                {" · "}
-                {lead.city}
-                {lead.province && ` (${lead.province})`}
-              </>
-            )}
-          </span>
+          {lead.business_vertical !== "creative" && (
+            <span className="inline-flex items-center gap-1">
+              <MapPin size={12} />
+              {lead.locations.length} {lead.locations.length === 1 ? "sede" : "sedi"}
+              {lead.city && (
+                <>
+                  {" · "}
+                  {lead.city}
+                  {lead.province && ` (${lead.province})`}
+                </>
+              )}
+            </span>
+          )}
           <span className="rounded-full bg-pork-ink/5 px-2 py-0.5 text-xs font-bold text-pork-ink/55">
             {market.flag} {market.code}
           </span>
-          {lead.locations.length > 1 && (
+          {lead.business_vertical !== "creative" && lead.locations.length > 1 && (
             <span className="rounded-full bg-pork-ink/5 px-2 py-0.5 text-xs font-bold text-pork-ink/50">
               multi-sede
             </span>

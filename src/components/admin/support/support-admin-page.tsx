@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, Clock, Mail, MessageCircle, RefreshCw, Send, Server, UserRound } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import { AlertCircle, CheckCircle2, Clock, Mail, MessageCircle, RefreshCw, Send, UserRound } from "lucide-react";
 import type { SupportTicketMessageRow, SupportTicketPriority, SupportTicketRow, SupportTicketStatus } from "@/lib/support/admin";
 import { cn } from "@/lib/utils";
 
 type WaStatus = {
   ok: boolean;
-  remoteConfigured: boolean;
-  state?: "starting" | "qr" | "ready" | "disconnected" | "error";
+  provider?: "twilio";
   ready?: boolean;
-  qrDataUrl?: string | null;
-  qrText?: string | null;
+  from?: string | null;
+  state?: "ready" | "not_configured" | "error";
   updatedAt?: string | null;
   error?: string | null;
 };
@@ -314,32 +312,26 @@ export function SupportAdminPage({
         <aside className="space-y-4">
           <section className="rounded-2xl border border-[var(--ma-line)] bg-white p-4">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-[var(--ma-ink)]">WhatsApp remoto</h2>
+              <h2 className="text-sm font-bold text-[var(--ma-ink)]">WhatsApp · Twilio</h2>
               {waStatus?.ready ? <CheckCircle2 className="text-emerald-600" size={18} /> : <AlertCircle className="text-amber-600" size={18} />}
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-2 text-[var(--ma-muted)]">
-                <Server size={15} />
-                <span>{waStatus?.remoteConfigured ? "Endpoint configurato" : "Endpoint non configurato"}</span>
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold",
+                  waStatus?.ready
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-amber-50 text-amber-700",
+                )}>
+                  {waStatus?.ready ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+                  {waStatus?.ready ? "Attivo" : (waStatus?.state === "not_configured" ? "Non configurato" : "Errore")}
+                </span>
               </div>
-              <p className="font-semibold text-[var(--ma-ink)]">
-                Stato: {waStatus?.state ?? (waStatus?.ok ? "online" : "non disponibile")}
-              </p>
-              <p className="text-xs text-[var(--ma-muted)]">Ultimo ping: {formatDate(waStatus?.updatedAt)}</p>
-              {waStatus?.error && <p className="rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">{waStatus.error}</p>}
-              {(waStatus?.qrDataUrl || waStatus?.qrText) && (
-                <div className="rounded-xl border border-[var(--ma-line)] bg-[var(--ma-surface)] p-3">
-                  <p className="mb-3 text-xs font-bold uppercase text-[var(--ma-muted)]">Inquadra QR</p>
-                  {waStatus.qrDataUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={waStatus.qrDataUrl} alt="QR WhatsApp" className="mx-auto h-48 w-48 rounded-lg bg-white p-2" />
-                  ) : waStatus.qrText ? (
-                    <div className="mx-auto flex h-48 w-48 items-center justify-center rounded-lg bg-white p-2">
-                      <QRCodeSVG value={waStatus.qrText} size={176} />
-                    </div>
-                  ) : null}
-                </div>
+              {waStatus?.from && (
+                <p className="font-semibold text-[var(--ma-ink)]">{waStatus.from.replace("whatsapp:", "")}</p>
               )}
+              <p className="text-xs text-[var(--ma-muted)]">Aggiornato: {formatDate(waStatus?.updatedAt)}</p>
+              {waStatus?.error && <p className="rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">{waStatus.error}</p>}
             </div>
           </section>
         </aside>

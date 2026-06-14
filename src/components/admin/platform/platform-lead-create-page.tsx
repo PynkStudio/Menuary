@@ -664,7 +664,7 @@ function StepContacts({ data, set, step, total }: StepProps) {
       <StepHeader
         step={step}
         total={total}
-        title="Chi contattare e dove si trova?"
+        title={data.business_vertical === "creative" ? "Chi contattare?" : "Chi contattare e dove si trova?"}
         subtitle="Tutti i campi sono facoltativi — inserisci quello che sai."
       />
 
@@ -711,83 +711,85 @@ function StepContacts({ data, set, step, total }: StepProps) {
           </div>
         </div>
 
-        <div>
-          <p className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-pork-ink/40">
-            <MapPin size={14} /> Sedi
-          </p>
+        {data.business_vertical !== "creative" && (
+          <div>
+            <p className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-pork-ink/40">
+              <MapPin size={14} /> Sedi
+            </p>
 
-          <div className="space-y-3">
-            {data.locations.map((loc, idx) => (
-              <div key={loc.id} className="rounded-2xl border border-pork-ink/10 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-black text-pork-ink/50">
-                    {idx === 0 ? "Sede principale" : `Sede ${idx + 1}`}
-                  </span>
-                  {idx > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => removeLocation(loc.id)}
-                      className="rounded-full p-1 text-pork-ink/30 hover:bg-red-50 hover:text-red-500"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </div>
+            <div className="space-y-3">
+              {data.locations.map((loc, idx) => (
+                <div key={loc.id} className="rounded-2xl border border-pork-ink/10 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-sm font-black text-pork-ink/50">
+                      {idx === 0 ? "Sede principale" : `Sede ${idx + 1}`}
+                    </span>
+                    {idx > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLocation(loc.id)}
+                        className="rounded-full p-1 text-pork-ink/30 hover:bg-red-50 hover:text-red-500"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
 
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                  <Field label="Via / Viale / Piazza">
-                    <input
-                      value={loc.street}
-                      onChange={(e) => updateLocation(loc.id, "street", e.target.value)}
-                      placeholder="Via Roma"
-                      className={FIELD}
-                    />
-                  </Field>
-                  <Field label="Civico">
-                    <input
-                      value={loc.street_number}
-                      onChange={(e) => updateLocation(loc.id, "street_number", e.target.value)}
-                      placeholder="42"
-                      className={`${FIELD} w-24`}
-                    />
-                  </Field>
-                </div>
+                  <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                    <Field label="Via / Viale / Piazza">
+                      <input
+                        value={loc.street}
+                        onChange={(e) => updateLocation(loc.id, "street", e.target.value)}
+                        placeholder="Via Roma"
+                        className={FIELD}
+                      />
+                    </Field>
+                    <Field label="Civico">
+                      <input
+                        value={loc.street_number}
+                        onChange={(e) => updateLocation(loc.id, "street_number", e.target.value)}
+                        placeholder="42"
+                        className={`${FIELD} w-24`}
+                      />
+                    </Field>
+                  </div>
 
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <Field label="Comune">
-                    <input
-                      value={loc.city}
-                      onChange={(e) => updateLocation(loc.id, "city", e.target.value)}
-                      placeholder="Milano"
-                      className={FIELD}
-                    />
-                  </Field>
-                  <Field label="Nazione">
-                    <select
-                      value={loc.country}
-                      onChange={(e) => updateLocation(loc.id, "country", e.target.value)}
-                      className={FIELD}
-                    >
-                      {COUNTRY_OPTIONS.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <Field label="Comune">
+                      <input
+                        value={loc.city}
+                        onChange={(e) => updateLocation(loc.id, "city", e.target.value)}
+                        placeholder="Milano"
+                        className={FIELD}
+                      />
+                    </Field>
+                    <Field label="Nazione">
+                      <select
+                        value={loc.country}
+                        onChange={(e) => updateLocation(loc.id, "country", e.target.value)}
+                        className={FIELD}
+                      >
+                        {COUNTRY_OPTIONS.map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={addLocation}
+              className="mt-3 inline-flex items-center gap-2 rounded-full border border-dashed border-pork-ink/20 px-4 py-2 text-sm font-bold text-pork-ink/50 hover:border-pork-red/40 hover:text-pork-red"
+            >
+              <Plus size={14} /> Aggiungi un&apos;altra sede
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={addLocation}
-            className="mt-3 inline-flex items-center gap-2 rounded-full border border-dashed border-pork-ink/20 px-4 py-2 text-sm font-bold text-pork-ink/50 hover:border-pork-red/40 hover:text-pork-red"
-          >
-            <Plus size={14} /> Aggiungi un&apos;altra sede
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -856,16 +858,18 @@ function StepReview({ data, set, step, total }: StepProps) {
             {data.contact_email && ` · ${data.contact_email}`}
           </SummaryRow>
 
-          <SummaryRow label={data.locations.length > 1 ? `${data.locations.length} sedi` : "Sede"}>
-            {data.locations
-              .map(
-                (l) =>
-                  [l.street, l.street_number, l.city]
-                    .filter(Boolean)
-                    .join(" ") || "Sede senza indirizzo",
-              )
-              .join(" · ")}
-          </SummaryRow>
+          {data.business_vertical !== "creative" && (
+            <SummaryRow label={data.locations.length > 1 ? `${data.locations.length} sedi` : "Sede"}>
+              {data.locations
+                .map(
+                  (l) =>
+                    [l.street, l.street_number, l.city]
+                      .filter(Boolean)
+                      .join(" ") || "Sede senza indirizzo",
+                )
+                .join(" · ")}
+            </SummaryRow>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -1058,14 +1062,16 @@ export function PlatformLeadCreatePage() {
       source: "manuale",
       matching_score: matchingScore,
       priority_score: priorityScore,
-      locations: data.locations.map((l, idx) => ({
-        name: idx === 0 ? "Sede principale" : `Sede ${idx + 1}`,
-        street: l.street || null,
-        street_number: l.street_number || null,
-        city: l.city || null,
-        country: l.country || "IT",
-        is_primary: idx === 0,
-      })),
+      locations: data.business_vertical === "creative"
+        ? []
+        : data.locations.map((l, idx) => ({
+            name: idx === 0 ? "Sede principale" : `Sede ${idx + 1}`,
+            street: l.street || null,
+            street_number: l.street_number || null,
+            city: l.city || null,
+            country: l.country || "IT",
+            is_primary: idx === 0,
+          })),
     };
 
     try {

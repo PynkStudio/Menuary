@@ -30,6 +30,7 @@ export async function GET() {
     .from("siteadmin")
     .select("id, user_id, email, display_name, role")
     .eq("enabled", true)
+    .in("role", ["admin", "venditore"])
     .order("display_name", { ascending: true, nullsFirst: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

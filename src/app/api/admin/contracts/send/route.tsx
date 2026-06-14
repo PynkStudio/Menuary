@@ -3,7 +3,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { MenuaryContractPdf } from "@/lib/contracts/menuary-contract-pdf";
-import { buildAttachments } from "@/lib/contracts/menuary-attachments";
+
 import {
   normalizeContractData,
   BRAND_INFO,
@@ -23,7 +23,6 @@ import {
   createEnvelope,
   distributeEnvelope,
   getEnvelope,
-  countPdfPages,
   buildSignatureFields,
 } from "@/lib/contracts/documenso";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
@@ -92,17 +91,17 @@ export async function POST(req: NextRequest) {
 
   // 2. Carica su Documenso e ottieni link firma
   let envelopeId: string;
-  let signingUrl: string | null = null;
+  let clienteSigningUrl: string | null = null;
+  let fornitoreSigningUrl: string | null = null;
   let documensoItemId: string | null = null;
 
-  // Conta pagine PDF e allegati per posizionare i campi firma su tutte le pagine
-  const totalPages = countPdfPages(pdfBuffer);
-  const attachmentCount = buildAttachments(data).length;
+  // Trova i marker XSIGN nel PDF per posizionare i campi firma di entrambe le parti
   const recipients = buildSignatureFields(
-    totalPages,
+    pdfBuffer,
     signerEmail,
     signerName,
-    attachmentCount,
+    FORNITORE.email,
+    FORNITORE.legaleRappresentante,
   );
 
   const subject = `Firma contratto ${data.numero} ${BRAND_INFO[data.brand].platformName}`;
@@ -121,7 +120,8 @@ export async function POST(req: NextRequest) {
     envelopeId = envelope.envelopeId;
 
     const distributed = await distributeEnvelope(envelopeId);
-    signingUrl = distributed.signingUrl;
+    clienteSigningUrl = distributed.signingUrls.find((s) => s.email === signerEmail)?.signingUrl ?? null;
+    fornitoreSigningUrl = distributed.signingUrls.find((s) => s.email === FORNITORE.email)?.signingUrl ?? null;
 
     const details = await getEnvelope(envelopeId);
     documensoItemId = details.items?.[0]?.id ?? null;
@@ -133,10 +133,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 3. Invia email con link firma + copia PDF allegata
+  // 3. Invia email al cliente con link firma + copia PDF allegata
   const pdfBase64 = pdfBuffer.toString("base64");
   const brand = data.brand;
-  const emailHtml = buildContractEmailHtml(data, signingUrl);
+  const emailHtml = buildContractEmailHtml(data, clienteSigningUrl);
 
   const sender = resolveSenderForVertical(BRAND_INFO[brand].vertical);
   const emailResult = await sendEmail({
@@ -168,13 +168,14 @@ export async function POST(req: NextRequest) {
     expires_at: expires.toISOString(),
     documenso_envelope_id: envelopeId,
     documenso_item_id: documensoItemId,
-    signing_url: signingUrl,
+    signing_url: clienteSigningUrl,
     payment_method: data.economiche.metodoPagamento,
   });
 
   return NextResponse.json({
     contract: updated,
-    signingUrl,
+    signingUrl: clienteSigningUrl,
+    fornitoreSigningUrl,
     emailSent: emailResult.ok,
   });
 }

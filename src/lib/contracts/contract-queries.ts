@@ -57,6 +57,16 @@ export async function listContracts(): Promise<PlatformContract[]> {
   return (data ?? []) as unknown as PlatformContract[];
 }
 
+export async function listSentContracts(): Promise<PlatformContract[]> {
+  const { data, error } = await db()
+    .from("platform_contracts")
+    .select("*")
+    .eq("status", "sent")
+    .not("documenso_envelope_id", "is", null);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as PlatformContract[];
+}
+
 export async function getContract(
   id: string,
 ): Promise<PlatformContract | null> {

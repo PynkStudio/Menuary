@@ -33,14 +33,18 @@ export function ContractsList() {
 
   function loadContracts() {
     setLoading(true);
-    fetch("/api/admin/contracts", { cache: "no-store" })
-      .then(async (res) => {
-        if (!res.ok) return;
-        const { contracts } = (await res.json()) as { contracts: ServerContract[] };
-        setItems(contracts ?? []);
-      })
+    fetch("/api/admin/contracts/sync-all", { method: "POST" })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        fetch("/api/admin/contracts", { cache: "no-store" })
+          .then(async (res) => {
+            if (!res.ok) return;
+            const { contracts } = (await res.json()) as { contracts: ServerContract[] };
+            setItems(contracts ?? []);
+          })
+          .catch(() => {})
+          .finally(() => setLoading(false));
+      });
   }
 
   function handleDelete(id: string) {

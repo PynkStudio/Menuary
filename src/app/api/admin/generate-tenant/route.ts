@@ -338,7 +338,7 @@ export async function POST(req: NextRequest) {
   if (!tenantSlug || !domain || !vertical || !businessName) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
-  if (!address.trim()) {
+  if (vertical !== "creative" && !address.trim()) {
     return NextResponse.json(
       { error: "Indirizzo della sede obbligatorio: ogni tenant nasce con una sede." },
       { status: 400 },
@@ -471,43 +471,61 @@ export async function POST(req: NextRequest) {
       ].join("\n"),
     });
 
-    // 8. INSERT tenant + prima sede in DB (atomico via RPC)
-    //    La PR sopra modifica il registry in codice; qui creiamo la riga DB
-    //    che alimenta le query runtime (hours, locations, admin_users, ecc.).
-    //    Un tenant non può esistere senza almeno una sede → indirizzo richiesto.
+    // 8. INSERT tenant nel DB. Food e services includono la prima sede;
+    //    Orpheo crea esclusivamente il tenant perché il verticale non usa sedi.
     let dbTenantCreated = false;
     let dbLocationId: string | null = null;
     let dbError: string | null = null;
     const db = createSupabaseServiceClient();
     if (db) {
-      // Cast RPC: i tipi vengono dalla migrazione 20260526; rigenera con `supabase gen types`.
-      const rpcCall = db.rpc as unknown as (
-        fn: string,
-        args: Record<string, unknown>,
-      ) => Promise<{ data: { tenant_id: string; location_id: string }[] | null; error: { message: string } | null }>;
-      const { data: rpcData, error: rpcErr } = await rpcCall("create_tenant_with_location", {
-        p_tenant_id:      tenantSlug,
-        p_name:           businessName,
-        p_label:          businessName,
-        p_vertical:       vertical,
-        p_status:         "trattativa",
-        p_domains:        [],
-        p_preview_slug:   tenantSlug,
-        p_theme:          buildTheme(primaryColor),
-        p_features:       buildFeatures(vertical),
-        p_location_slug:  "principale",
-        p_location_name:  "Sede principale",
-        p_address:        address.trim(),
-        p_city:           city.trim() || null,
-        p_phone:          null,
-        p_email:          null,
-      });
-      if (rpcErr) {
-        dbError = rpcErr.message;
+      if (vertical === "creative") {
+        const { error } = await db.from("tenants").insert({
+          id: tenantSlug,
+          name: businessName,
+          label: businessName,
+          vertical,
+          status: "trattativa",
+          domains: [],
+          preview_slug: tenantSlug,
+          enabled: true,
+          theme: buildTheme(primaryColor),
+          features: buildFeatures(vertical),
+          hours: [],
+        });
+        if (error) dbError = error.message;
+        else dbTenantCreated = true;
       } else {
-        dbTenantCreated = true;
-        const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
-        dbLocationId = row?.location_id ?? null;
+        // Cast RPC: i tipi vengono dalla migrazione 20260526; rigenera con `supabase gen types`.
+        const rpcCall = db.rpc as unknown as (
+          fn: string,
+          args: Record<string, unknown>,
+        ) => Promise<{ data: { tenant_id: string; location_id: string }[] | null; error: { message: string } | null }>;
+        const { data: rpcData, error: rpcErr } = await rpcCall("create_tenant_with_location", {
+          p_tenant_id:      tenantSlug,
+          p_name:           businessName,
+          p_label:          businessName,
+          p_vertical:       vertical,
+          p_status:         "trattativa",
+          p_domains:        [],
+          p_preview_slug:   tenantSlug,
+          p_theme:          buildTheme(primaryColor),
+          p_features:       buildFeatures(vertical),
+          p_location_slug:  "principale",
+          p_location_name:  "Sede principale",
+          p_address:        address.trim(),
+          p_city:           city.trim() || null,
+          p_phone:          null,
+          p_email:          null,
+        });
+        if (rpcErr) {
+          dbError = rpcErr.message;
+        } else {
+          dbTenantCreated = true;
+          const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+          dbLocationId = row?.location_id ?? null;
+        }
+      }
+      if (dbTenantCreated) {
         try {
           await upsertTenantDemoControl({
             tenantId: tenantSlug,

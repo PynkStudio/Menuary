@@ -121,6 +121,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [platformRole, setPlatformRole] = useState<SiteadminRole | null>(null);
   const [inboxUnread, setInboxUnread] = useState(0);
+  const [leadAttentionCount, setLeadAttentionCount] = useState(0);
   const mode = usePlatformMode();
 
   const tenant = useTenant();
@@ -147,6 +148,27 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       active = false;
     };
   }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "platform-admin" || !hasAdminPermission(platformRole, "crm:view")) return;
+
+    function fetchLeadAttention() {
+      void fetch("/api/admin/leads/attention", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data: { count?: number }) => setLeadAttentionCount(data.count ?? 0))
+        .catch(() => {});
+    }
+
+    fetchLeadAttention();
+    const interval = setInterval(fetchLeadAttention, 25_000);
+    window.addEventListener("focus", fetchLeadAttention);
+    window.addEventListener("lead-attention:refresh", fetchLeadAttention as EventListener);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchLeadAttention);
+      window.removeEventListener("lead-attention:refresh", fetchLeadAttention as EventListener);
+    };
+  }, [mode, platformRole]);
 
   useEffect(() => {
     if (mode !== "platform-admin") return;
@@ -273,6 +295,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       active ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
                     )}>
                       {inboxUnread}
+                    </span>
+                  )}
+                  {it.href === "/admin/crm" && leadAttentionCount > 0 && (
+                    <span className={cn(
+                      "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      active ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
+                    )}>
+                      {leadAttentionCount}
                     </span>
                   )}
                 </Link>
