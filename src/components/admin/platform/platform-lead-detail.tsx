@@ -70,6 +70,7 @@ import {
 } from "@/lib/platform-admin-data";
 import { getModuleLabel } from "@/lib/vertical";
 import { getTenantModulesForVertical } from "@/lib/tenant-modules";
+import { nextLeadAction, NEXT_ACTION_TONE_CLASSES } from "@/lib/platform/lead-next-action";
 import type { TenantFeatureKey } from "@/lib/tenant";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import { useMailLauncher } from "@/components/admin/inbox/mail-launcher";
@@ -698,6 +699,23 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
           ))}
         </div>
       </div>
+
+      {/* Prossima azione consigliata */}
+      {(() => {
+        const action = nextLeadAction(lead, subscription, payments);
+        return (
+          <div className={cn("flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3 ring-1", NEXT_ACTION_TONE_CLASSES[action.tone])}>
+            <span className="text-[11px] font-black uppercase tracking-wide opacity-70">Prossima azione</span>
+            <span className="font-bold">{action.label}</span>
+            <span className="text-sm opacity-80">{action.detail}</span>
+            {action.href && (
+              <Link href={action.href} className="ml-auto rounded-full bg-white/70 px-3 py-1 text-xs font-bold ring-1 ring-black/10 hover:bg-white">
+                Vai →
+              </Link>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Tabs */}
       <div className="flex gap-1 overflow-x-auto rounded-2xl bg-pork-ink/5 p-1">

@@ -11,6 +11,8 @@ import {
   type PricingPlan,
 } from "@/lib/platform-pricing";
 import { formatSetupFrom } from "@/lib/pricing-format";
+import type { AppLocale } from "@/i18n";
+import { localizedPath } from "@/lib/marketing-seo";
 
 type Row = {
   label: string;
@@ -64,10 +66,12 @@ export function OrpheoPricingPage({
   plans = ORPHEO_PRICING_PLANS,
   aiAddon = AI_ADDON,
   priceLocale = "it-IT",
+  locale = "it",
 }: {
   plans?: PricingPlan[];
   aiAddon?: PricingAddon;
   priceLocale?: string;
+  locale?: AppLocale;
 }) {
   const [billing, setBilling] = useState<"annual" | "monthly">("annual");
   const maxSaving = Math.max(...plans.map(annualSaving));

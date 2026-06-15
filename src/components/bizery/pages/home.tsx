@@ -24,6 +24,7 @@ import { DEFAULT_MARKET, MARKET_HEADER, formatMarketLanguageBadge, getMarket, no
 import { getMockupCopy, localizePricingPlanName } from "@/lib/localized-commercial-copy";
 import { formatPricingAmount, formatSetupFrom, replacePriceToken } from "@/lib/pricing-format";
 import { getLocale, getTranslations } from "@/i18n";
+import { localizedPath } from "@/lib/marketing-seo";
 
 const AI_ICONS: Record<string, typeof PhoneCall> = {
   "Telefono in": PhoneCall,
@@ -113,7 +114,7 @@ export async function BizeryHomePage() {
                 {t.heroSub}
               </p>
               <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
-                <Link href="/contatti" className="menuary-button menuary-button-accent">
+                <Link href={localizedPath("/contatti", locale)} className="menuary-button menuary-button-accent">
                   {t.ctaDemo}
                 </Link>
                 <Link href="#google" className="menuary-link">
@@ -361,7 +362,7 @@ export async function BizeryHomePage() {
               <p className="mt-7 max-w-lg text-[17px] leading-[1.7] text-[var(--menuary-muted)]">
                 {t.localSub}
               </p>
-              <Link href="/contatti" className="menuary-link mt-8 inline-flex">
+              <Link href={localizedPath("/contatti", locale)} className="menuary-link mt-8 inline-flex">
                 {t.localCta}
                 <ArrowUpRight size={14} strokeWidth={1.6} />
               </Link>
@@ -581,7 +582,7 @@ export async function BizeryHomePage() {
                   </ul>
                   <div className="mt-auto pt-8">
                     <Link
-                      href="/contatti"
+                      href={localizedPath("/contatti", locale)}
                       className={
                         "menuary-button " +
                         (highlighted ? "menuary-button-accent" : "menuary-button-light")
@@ -617,7 +618,7 @@ export async function BizeryHomePage() {
             <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">
               {t.pricingAiDesc}
             </p>
-            <Link href="/pricing" className="menuary-button menuary-button-light shrink-0 text-sm">
+            <Link href={localizedPath("/pricing", locale)} className="menuary-button menuary-button-light shrink-0 text-sm">
               {t.pricingDiscover}
             </Link>
           </div>
@@ -672,10 +673,10 @@ export async function BizeryHomePage() {
           </div>
 
           <div className="mt-16 flex flex-wrap items-center gap-4">
-            <Link href="/contatti" className="menuary-button menuary-button-accent">
+            <Link href={localizedPath("/contatti", locale)} className="menuary-button menuary-button-accent">
               {t.aiCta}
             </Link>
-            <Link href="/pricing" className="menuary-link menuary-link-light">
+            <Link href={localizedPath("/pricing", locale)} className="menuary-link menuary-link-light">
               {t.aiCtaPlans}
               <ArrowUpRight size={16} strokeWidth={1.6} />
             </Link>
@@ -709,7 +710,7 @@ export async function BizeryHomePage() {
             </div>
             <p className="mt-10 text-[14px] text-[var(--menuary-muted)]">
               {t.faqNotFound}{" "}
-              <Link href="/contatti" className="menuary-link">
+              <Link href={localizedPath("/contatti", locale)} className="menuary-link">
                 {t.faqCtaLink}
                 <ArrowUpRight size={13} strokeWidth={1.8} />
               </Link>
@@ -738,10 +739,10 @@ export async function BizeryHomePage() {
             {t.finalCtaSub}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/contatti" className="menuary-button menuary-button-accent">
+            <Link href={localizedPath("/contatti", locale)} className="menuary-button menuary-button-accent">
               {t.finalCtaDemo}
             </Link>
-            <Link href="/pricing" className="menuary-link menuary-link-light">
+            <Link href={localizedPath("/pricing", locale)} className="menuary-link menuary-link-light">
               {t.finalCtaPlans}
               <ArrowUpRight size={16} strokeWidth={1.6} />
             </Link>

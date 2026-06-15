@@ -2,10 +2,12 @@ import Link from "next/link";
 import { ArrowUpRight, Check } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { FAQSection, FinalCTASection } from "@/components/marketing/marketing-sections";
-import { getTranslations } from "@/i18n";
+import { getLocale, getTranslations } from "@/i18n";
+import { localizedPath } from "@/lib/marketing-seo";
 
 export async function MarketingAboutPage() {
   const t = (await getTranslations("marketing")).about;
+  const locale = await getLocale();
 
   return (
     <MarketingShell>
@@ -78,7 +80,7 @@ export async function MarketingAboutPage() {
               <p className="mt-7 max-w-md text-[15px] leading-[1.75] text-[var(--menuary-muted)]">
                 {t.why.sub}
               </p>
-              <Link href="/contatti" className="menuary-link mt-8 inline-flex">
+              <Link href={localizedPath("/contatti", locale)} className="menuary-link mt-8 inline-flex">
                 {t.why.cta}
                 <ArrowUpRight size={14} strokeWidth={1.6} />
               </Link>

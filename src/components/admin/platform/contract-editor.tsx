@@ -438,6 +438,7 @@ export function ContractEditor({ contractId }: Props) {
       );
       if (result.emailSent) {
         setSendPreviewOpen(false);
+        router.push('/admin/contratti');
       } else {
         setSendError("Il contratto è stato caricato su Documenso, ma l'email non è stata inviata.");
       }

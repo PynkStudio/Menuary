@@ -6,6 +6,7 @@ import { getTranslations } from "@/i18n";
 import { headers } from "next/headers";
 import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
 import { LOCALE_HEADER, DEFAULT_LOCALE, isAppLocale } from "@/i18n/locales";
+import { localizedPath } from "@/lib/marketing-seo";
 import { MarketSelector } from "@/components/marketing/market-selector";
 
 const PRICING_PATH = "/pricing";
@@ -13,7 +14,7 @@ const PRICING_PATH = "/pricing";
 async function getLocaleHref(path: string): Promise<string> {
   const value = (await headers()).get(LOCALE_HEADER);
   const locale = isAppLocale(value) ? value : DEFAULT_LOCALE;
-  return `/${locale}${path}`;
+  return localizedPath(path, locale);
 }
 
 export async function MarketingShell({ children }: { children: ReactNode }) {
@@ -29,17 +30,20 @@ export async function MarketingShell({ children }: { children: ReactNode }) {
 async function MarketingHeader() {
   const t = (await getTranslations("marketing")).shell;
   const currentMarket = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const homeHref = await getLocaleHref("");
+  const aboutHref = await getLocaleHref("/chi-siamo");
+  const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
     <header className="border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70 sticky top-0 z-40">
       <div className="menuary-container flex items-center justify-between py-5">
-        <Link href="/" className="menuary-wordmark" aria-label="Menuary home">
+        <Link href={homeHref} className="menuary-wordmark" aria-label="Menuary home">
           menuary
           <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
           <Link href={pricingHref} className="menuary-nav-link">{t.nav.offer}</Link>
-          <Link href="/chi-siamo" className="menuary-nav-link">{t.nav.about}</Link>
+          <Link href={aboutHref} className="menuary-nav-link">{t.nav.about}</Link>
           <a href={`${CLIENTS_PUBLIC_ORIGIN}/login`} className="menuary-nav-link">
             {t.nav.myAccount}
           </a>
@@ -54,7 +58,7 @@ async function MarketingHeader() {
           >
             {t.nav.signIn}
           </a>
-          <Link href="/contatti" className="menuary-button menuary-button-dark">
+          <Link href={contactHref} className="menuary-button menuary-button-dark">
             {t.nav.contact}
           </Link>
         </div>
@@ -69,6 +73,9 @@ async function MarketingHeader() {
 async function MarketingFooter() {
   const t = (await getTranslations("marketing")).shell;
   const year = new Date().getFullYear();
+  const homeHref = await getLocaleHref("");
+  const aboutHref = await getLocaleHref("/chi-siamo");
+  const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
@@ -100,10 +107,10 @@ async function MarketingFooter() {
           <FooterColumn
             title={t.footer.nav}
             links={[
-              { href: "/", label: "Home" },
-              { href: "/chi-siamo", label: t.nav.about },
+              { href: homeHref, label: "Home" },
+              { href: aboutHref, label: t.nav.about },
               { href: pricingHref, label: t.nav.offer },
-              { href: "/contatti", label: "Contatti" },
+              { href: contactHref, label: "Contatti" },
             ]}
           />
           <FooterColumn
@@ -111,7 +118,7 @@ async function MarketingFooter() {
             links={[
               { href: "mailto:hello@menuary.it", label: "hello@menuary.it" },
               { href: "tel:+393513768607", label: "+39 351 3768607" },
-              { href: "/contatti", label: t.footer.requestProposal },
+              { href: contactHref, label: t.footer.requestProposal },
             ]}
           />
           <FooterColumn

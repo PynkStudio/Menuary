@@ -29,6 +29,7 @@ import { formatEuro } from "@/lib/price-utils";
 import { useHydrated } from "@/components/core/providers";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
+import { PlatformCockpitAlerts } from "@/components/admin/platform/platform-cockpit-alerts";
 import type { TenantFeatureKey } from "@/lib/tenant";
 
 type ConfirmState = {
@@ -192,6 +193,8 @@ export default function AdminHome() {
             commerciali in attesa del dominio definitivo.
           </p>
         </header>
+
+        <PlatformCockpitAlerts />
 
         <div className="grid gap-5 md:grid-cols-2">
           <Quick

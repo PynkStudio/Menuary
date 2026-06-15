@@ -11,6 +11,7 @@ import {
   type PricingPlan,
 } from "@/lib/platform-pricing";
 import type { AppLocale } from "@/i18n";
+import { localizedPath } from "@/lib/marketing-seo";
 import { getPlanLabels, localizePricingPlanName } from "@/lib/localized-commercial-copy";
 
 type CompareRow = { label: string; presence: string; booking: string; ops: string };
@@ -176,7 +177,7 @@ export function MarketingPricingPage({
               <p className="mt-3 max-w-sm text-sm leading-[1.65] text-[var(--menuary-muted)]">
                 {aiAddon.minutesNote}
               </p>
-              <Link href="/contatti" className="menuary-link mt-7 inline-flex">
+              <Link href={localizedPath("/contatti", locale)} className="menuary-link mt-7 inline-flex">
                 {copy.ai.cta}
                 <ArrowRight size={14} strokeWidth={1.8} className="ml-1" />
               </Link>
@@ -373,7 +374,7 @@ function PlanCard({
       </ul>
 
       <Link
-        href="/contatti"
+        href={localizedPath("/contatti", locale)}
         className={
           "mt-2 inline-flex items-center justify-center gap-2 " +
           (plan.is_featured

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { SUPPORTED_LOCALES, type AppLocale } from "@/i18n/locales";
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE, type AppLocale } from "@/i18n/locales";
+import { localizedSegmentForPath } from "@/lib/marketing-slugs";
 
 export const MENUARY_ORIGIN = "https://menuary.it";
 export const BIZERY_ORIGIN = "https://bizery.it";
@@ -67,8 +68,10 @@ export function brandOrigin(brand: Brand): string {
 }
 
 export function localizedPath(path: string, locale: AppLocale): string {
-  if (locale === "it") return path || "/";
-  return `/${locale}${path}`;
+  const segment = localizedSegmentForPath(path, locale);
+  const sub = segment ? `/${segment}` : "";
+  if (locale === DEFAULT_LOCALE) return sub || "/";
+  return `/${locale}${sub}`;
 }
 
 export function marketingLanguageAlternates(origin: string, path = ""): Record<string, string> {

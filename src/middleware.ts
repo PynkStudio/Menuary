@@ -40,6 +40,12 @@ import {
   tenantLocaleCookieName,
   type TenantLocaleConfig,
 } from "@/lib/tenant-locales";
+import {
+  MARKETING_ROUTE_KEYS,
+  localizedSlug,
+  resolveLocalizedSegment,
+  type MarketingRouteKey,
+} from "@/lib/marketing-slugs";
 
 const LOCALE_SET = new Set<string>(SUPPORTED_LOCALES);
 const TENANT_LOCALE_REWRITE_HEADER = "x-tenant-locale-rewrite";
@@ -136,14 +142,35 @@ function handleMarketingLocale(
   const { pathname } = request.nextUrl;
   const { locale, rest } = extractLocaleFromPath(pathname);
 
+  // /it/* è un duplicato del path nudo (default = it): consolida con 301.
   if (locale === DEFAULT_LOCALE) {
     const url = request.nextUrl.clone();
     url.pathname = rest;
     return NextResponse.redirect(url, 301);
   }
+
   if (locale) {
+    const seg = rest.replace(/^\//, "").split("/").filter(Boolean)[0] ?? "";
+    if (seg === "") {
+      return rewriteWithLocale(request, mapPath("/"), locale, mode);
+    }
+    // Slug localizzato valido (es. /de/ueber-uns) → route interna italiana.
+    const key = resolveLocalizedSegment(locale, seg);
+    if (key) {
+      return rewriteWithLocale(request, mapPath(`/${key}`), locale, mode);
+    }
+    // Vecchio slug italiano sotto lingua estera (es. /de/chi-siamo) → 301 allo slug localizzato.
+    if ((MARKETING_ROUTE_KEYS as readonly string[]).includes(seg)) {
+      const localized = localizedSlug(seg as MarketingRouteKey, locale);
+      if (localized && localized !== seg) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/${locale}/${localized}`;
+        return NextResponse.redirect(url, 301);
+      }
+    }
     return rewriteWithLocale(request, mapPath(rest), locale, mode);
   }
+
   const detected = isCrawler(request) ? DEFAULT_LOCALE : detectLocaleFromRequest(request);
   if (detected === DEFAULT_LOCALE) {
     return rewriteWithLocale(request, mapPath(pathname), DEFAULT_LOCALE, mode);

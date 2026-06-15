@@ -33,6 +33,7 @@ import {
   VERTICAL_BADGE_CLASSES,
   VERTICAL_SHORT_LABELS,
 } from "@/lib/platform-crm-types";
+import { nextLeadAction, NEXT_ACTION_TONE_CLASSES } from "@/lib/platform/lead-next-action";
 import { cn } from "@/lib/utils";
 import { MailLink } from "@/components/admin/inbox/mail-launcher";
 
@@ -451,6 +452,20 @@ function LeadRow({ lead, currentUserId }: { lead: PlatformLead; currentUserId: s
               {SOURCE_LABELS[lead.source]}
             </span>
           )}
+          {(() => {
+            const action = nextLeadAction(lead);
+            return (
+              <span
+                className={cn(
+                  "rounded-full px-2.5 py-0.5 text-[10px] font-bold ring-1",
+                  NEXT_ACTION_TONE_CLASSES[action.tone],
+                )}
+                title={action.detail}
+              >
+                → {action.label}
+              </span>
+            );
+          })()}
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-pork-ink/60">

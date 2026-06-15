@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight, Check } from "lucide-react";
 import { BizeryShell } from "@/components/bizery/bizery-shell";
+import { getLocale } from "@/i18n";
+import { localizedPath } from "@/lib/marketing-seo";
 
 // ─── Principi ─────────────────────────────────────────────────────────────────
 
@@ -125,7 +127,8 @@ const STUDIO_FAQ = [
 
 // ─── Componente principale ────────────────────────────────────────────────────
 
-export function BizeryAboutPage() {
+export async function BizeryAboutPage() {
+  const locale = await getLocale();
   return (
     <BizeryShell>
       {/* Hero */}
@@ -221,7 +224,7 @@ export function BizeryAboutPage() {
                 come vieni percepito e quanti appuntamenti passano per piattaforme
                 che prendono la commissione invece di arrivare direttamente da te.
               </p>
-              <Link href="/contatti" className="menuary-link mt-8 inline-flex">
+              <Link href={localizedPath("/contatti", locale)} className="menuary-link mt-8 inline-flex">
                 Parliamone
                 <ArrowUpRight size={14} strokeWidth={1.6} />
               </Link>
@@ -421,7 +424,7 @@ export function BizeryAboutPage() {
               </h2>
               <p className="mt-6 max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
                 Non hai trovato quello che cercavi?{" "}
-                <Link href="/contatti" className="menuary-link">
+                <Link href={localizedPath("/contatti", locale)} className="menuary-link">
                   Scrivici
                   <ArrowUpRight size={13} strokeWidth={1.8} />
                 </Link>
@@ -457,10 +460,10 @@ export function BizeryAboutPage() {
               <span className="italic text-[var(--menuary-copper)]">Parla con lo studio.</span>
             </h2>
             <div className="flex flex-wrap items-center gap-x-7 gap-y-4">
-              <Link href="/contatti" className="menuary-button menuary-button-accent">
+              <Link href={localizedPath("/contatti", locale)} className="menuary-button menuary-button-accent">
                 Richiedi una proposta
               </Link>
-              <Link href="/pricing" className="menuary-link menuary-link-light">
+              <Link href={localizedPath("/pricing", locale)} className="menuary-link menuary-link-light">
                 Vedi l&apos;offerta
                 <ArrowUpRight size={16} strokeWidth={1.6} />
               </Link>

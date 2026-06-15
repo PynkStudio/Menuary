@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
 import { LOCALE_HEADER, DEFAULT_LOCALE, isAppLocale } from "@/i18n/locales";
+import { localizedPath } from "@/lib/marketing-seo";
 import { MarketSelector } from "@/components/marketing/market-selector";
 
 const PRICING_PATH = "/pricing";
@@ -23,7 +24,7 @@ const ORPHEO_VARS: Record<string, string> = {
 async function getLocaleHref(path: string): Promise<string> {
   const value = (await headers()).get(LOCALE_HEADER);
   const locale = isAppLocale(value) ? value : DEFAULT_LOCALE;
-  return `/${locale}${path}`;
+  return localizedPath(path, locale);
 }
 
 export async function OrpheoShell({ children }: { children: ReactNode }) {
@@ -41,11 +42,13 @@ export async function OrpheoShell({ children }: { children: ReactNode }) {
 
 async function OrpheoHeader() {
   const currentMarket = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const homeHref = await getLocaleHref("");
+  const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)] shadow-[0_1rem_2.5rem_rgba(23,17,31,0.08)]">
       <div className="menuary-container flex items-center justify-between py-5">
-        <Link href="/" className="flex items-baseline gap-0.5" aria-label="Orpheo home">
+        <Link href={homeHref} className="flex items-baseline gap-0.5" aria-label="Orpheo home">
           <span className="text-2xl font-medium tracking-[-0.02em]" style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}>
             orpheo
           </span>
@@ -53,13 +56,13 @@ async function OrpheoHeader() {
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
           <Link href={pricingHref} className="menuary-nav-link">Prezzi</Link>
-          <Link href="/contatti" className="menuary-nav-link">Contatti</Link>
+          <Link href={contactHref} className="menuary-nav-link">Contatti</Link>
         </nav>
         <div className="flex items-center gap-2">
           <div className="hidden sm:block">
             <MarketSelector currentMarket={currentMarket} />
           </div>
-          <Link href="/contatti" className="menuary-button menuary-button-dark">
+          <Link href={contactHref} className="menuary-button menuary-button-dark">
             Richiedi una demo
           </Link>
         </div>
@@ -73,6 +76,8 @@ async function OrpheoHeader() {
 
 async function OrpheoFooter() {
   const year = new Date().getFullYear();
+  const homeHref = await getLocaleHref("");
+  const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
@@ -87,9 +92,9 @@ async function OrpheoFooter() {
             </p>
           </div>
           <FooterCol title="Prodotto" links={[
-            { href: "/", label: "Home" },
+            { href: homeHref, label: "Home" },
             { href: pricingHref, label: "Prezzi" },
-            { href: "/contatti", label: "Contatti" },
+            { href: contactHref, label: "Contatti" },
           ]} />
           <FooterCol title="Contatti" links={[
             { href: "mailto:hello@weuseorpheo.com", label: "hello@weuseorpheo.com" },

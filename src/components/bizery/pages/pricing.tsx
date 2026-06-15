@@ -11,6 +11,7 @@ import {
   type PricingPlan,
 } from "@/lib/platform-pricing";
 import type { AppLocale } from "@/i18n";
+import { localizedPath } from "@/lib/marketing-seo";
 import { getPlanLabels, localizePricingPlanName } from "@/lib/localized-commercial-copy";
 import { formatSetupFrom } from "@/lib/pricing-format";
 
@@ -213,7 +214,7 @@ export function BizeryPricingPage({
               <p className="mt-3 max-w-sm text-sm leading-[1.65] text-[var(--menuary-muted)]">
                 {aiAddon.minutesNote}
               </p>
-              <Link href="/contatti" className="menuary-link mt-7 inline-flex">
+              <Link href={localizedPath("/contatti", locale)} className="menuary-link mt-7 inline-flex">
                 Scopri l&apos;integrazione IA
                 <ArrowRight size={14} strokeWidth={1.8} className="ml-1" />
               </Link>
@@ -336,7 +337,7 @@ export function BizeryPricingPage({
               </h2>
               <p className="mt-6 max-w-sm text-[15px] leading-7 text-[var(--menuary-muted)]">
                 Non hai trovato quello che cercavi?{" "}
-                <Link href="/contatti" className="menuary-link">
+                <Link href={localizedPath("/contatti", locale)} className="menuary-link">
                   Scrivici
                   <ArrowRight size={13} strokeWidth={1.8} className="ml-0.5" />
                 </Link>
@@ -379,7 +380,7 @@ export function BizeryPricingPage({
             Prima chiamata gratuita. Proposta su misura in 48 ore.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/contatti" className="menuary-button menuary-button-accent">
+            <Link href={localizedPath("/contatti", locale)} className="menuary-button menuary-button-accent">
               Richiedi una proposta
             </Link>
             <Link href="/" className="menuary-link menuary-link-light">
@@ -477,7 +478,7 @@ function PlanCard({
       </ul>
 
       <Link
-        href="/contatti"
+        href={localizedPath("/contatti", locale)}
         className={
           "mt-2 inline-flex items-center justify-center gap-2 " +
           (plan.is_featured ? "menuary-button menuary-button-accent" : "menuary-button menuary-button-light")

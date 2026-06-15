@@ -4,6 +4,7 @@ import { getTranslations } from "@/i18n";
 import { headers } from "next/headers";
 import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
 import { LOCALE_HEADER, DEFAULT_LOCALE, isAppLocale } from "@/i18n/locales";
+import { localizedPath } from "@/lib/marketing-seo";
 import { MarketSelector } from "@/components/marketing/market-selector";
 
 const PRICING_PATH = "/pricing";
@@ -11,7 +12,7 @@ const PRICING_PATH = "/pricing";
 async function getLocaleHref(path: string): Promise<string> {
   const value = (await headers()).get(LOCALE_HEADER);
   const locale = isAppLocale(value) ? value : DEFAULT_LOCALE;
-  return `/${locale}${path}`;
+  return localizedPath(path, locale);
 }
 
 const BIZERY_VARS: Record<string, string> = {
@@ -48,11 +49,14 @@ export async function BizeryShell({ children }: { children: ReactNode }) {
 async function BizeryHeader() {
   const t = (await getTranslations("bizery")).shell;
   const currentMarket = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;
+  const homeHref = await getLocaleHref("");
+  const aboutHref = await getLocaleHref("/chi-siamo");
+  const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
     <header className="border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70 sticky top-0 z-40">
       <div className="menuary-container flex items-center justify-between py-5">
-        <Link href="/" className="flex items-baseline gap-0.5" aria-label="Bizery home">
+        <Link href={homeHref} className="flex items-baseline gap-0.5" aria-label="Bizery home">
           <span
             className="text-2xl font-medium tracking-[-0.02em]"
             style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
@@ -63,7 +67,7 @@ async function BizeryHeader() {
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
           <Link href={pricingHref} className="menuary-nav-link">{t.nav.offer}</Link>
-          <Link href="/chi-siamo" className="menuary-nav-link">{t.nav.about}</Link>
+          <Link href={aboutHref} className="menuary-nav-link">{t.nav.about}</Link>
           <a href={GESTIONE_URL} className="menuary-nav-link">{t.nav.access}</a>
         </nav>
         <div className="flex items-center gap-2">
@@ -76,7 +80,7 @@ async function BizeryHeader() {
           >
             {t.nav.access}
           </a>
-          <Link href="/contatti" className="menuary-button menuary-button-dark">
+          <Link href={contactHref} className="menuary-button menuary-button-dark">
             {t.nav.contact}
           </Link>
         </div>
@@ -91,6 +95,8 @@ async function BizeryHeader() {
 async function BizeryFooter() {
   const t = (await getTranslations("bizery")).shell;
   const year = new Date().getFullYear();
+  const homeHref = await getLocaleHref("");
+  const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
@@ -123,14 +129,14 @@ async function BizeryFooter() {
           </div>
 
           <FooterCol title={t.footer.nav} links={[
-            { href: "/", label: "Home" },
+            { href: homeHref, label: "Home" },
             { href: pricingHref, label: t.nav.offer },
-            { href: "/contatti", label: t.nav.contact },
+            { href: contactHref, label: t.nav.contact },
           ]} />
           <FooterCol title={t.footer.contacts} links={[
             { href: "mailto:hello@bizery.it", label: "hello@bizery.it" },
             { href: "tel:+393513768607", label: "+39 351 3768607" },
-            { href: "/contatti", label: t.footer.requestProposal },
+            { href: contactHref, label: t.footer.requestProposal },
           ]} />
           <FooterCol title={t.footer.forCompanies} links={[
             { href: GESTIONE_URL, label: t.footer.access, external: true },

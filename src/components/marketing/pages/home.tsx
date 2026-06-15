@@ -27,6 +27,7 @@ import { getMarketingHomeData } from "@/lib/marketing-data";
 import { DEFAULT_MARKET, MARKET_HEADER, formatMarketLanguageBadge, normalizeMarketCode } from "@/lib/markets";
 import { getMockupCopy } from "@/lib/localized-commercial-copy";
 import { getLocale, getTranslations } from "@/i18n";
+import { localizedPath } from "@/lib/marketing-seo";
 import { headers } from "next/headers";
 
 const MENUARY_SEO_VERTICALS = {
@@ -119,7 +120,7 @@ export async function MarketingHomePage() {
               </p>
               <div className="menuary-fade-up menuary-fade-up-d3 mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
                 <Link
-                  href="/contatti"
+                  href={localizedPath("/contatti", locale)}
                   className="menuary-button menuary-button-accent"
                 >
                   {h.ctaDemo}
