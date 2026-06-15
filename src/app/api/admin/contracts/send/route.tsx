@@ -26,6 +26,7 @@ import {
   buildSignatureFields,
   rewriteDocumensoPublicUrl,
   resolveDocumensoProviderForSend,
+  resolveDocumensoSignerEmail,
   type DocumensoProvider,
 } from "@/lib/contracts/documenso";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
@@ -99,20 +100,22 @@ export async function POST(req: NextRequest) {
   let documensoItemId: string | null = null;
   let documensoProvider: DocumensoProvider = "cloud";
 
-  // Trova i marker XSIGN nel PDF per posizionare i campi firma di entrambe le parti
-  const recipients = buildSignatureFields(
-    pdfBuffer,
-    signerEmail,
-    signerName,
-    FORNITORE.email,
-    FORNITORE.legaleRappresentante,
-  );
-
   const subject = `Firma contratto ${data.numero} ${BRAND_INFO[data.brand].platformName}`;
   const message = `Gentile ${signerName}, clicchi il link per visionare e firmare elettronicamente il contratto ${data.numero}.`;
 
   try {
     documensoProvider = await resolveDocumensoProviderForSend();
+    const fornitoreSignerEmail = resolveDocumensoSignerEmail(
+      documensoProvider,
+      FORNITORE.email,
+    );
+    const recipients = buildSignatureFields(
+      pdfBuffer,
+      signerEmail,
+      signerName,
+      fornitoreSignerEmail,
+      FORNITORE.legaleRappresentante,
+    );
     const envelope = await createEnvelope({
       title: `Contratto ${data.numero} — ${data.cliente.ragioneSociale}`,
       pdfBuffer,
@@ -137,7 +140,7 @@ export async function POST(req: NextRequest) {
       null;
     fornitoreSigningUrl =
       urls.find((s) => s.signingOrder === 2)?.signingUrl ??
-      urls.find((s) => s.email === FORNITORE.email)?.signingUrl ??
+      urls.find((s) => s.email === fornitoreSignerEmail)?.signingUrl ??
       null;
     clienteSigningUrl = rewriteDocumensoPublicUrl(clienteSigningUrl, data.brand, documensoProvider);
     fornitoreSigningUrl = rewriteDocumensoPublicUrl(fornitoreSigningUrl, data.brand, documensoProvider);
@@ -188,6 +191,7 @@ export async function POST(req: NextRequest) {
     documenso_envelope_id: envelopeId,
     documenso_item_id: documensoItemId,
     signing_url: clienteSigningUrl,
+    counterparty_signing_url: fornitoreSigningUrl,
     payment_method: data.economiche.metodoPagamento,
     contract_data: {
       ...contract.contract_data,

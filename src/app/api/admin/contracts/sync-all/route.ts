@@ -3,13 +3,15 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import {
-  listSentContracts,
+  listContractsNeedingDocumensoSync,
   updateContract,
 } from "@/lib/contracts/contract-queries";
 import {
   getEnvelope,
   downloadSignedDocument,
 } from "@/lib/contracts/documenso";
+import { ensureCustomerSignatureFulfillment } from "@/lib/contracts/customer-signature";
+import { FORNITORE } from "@/lib/contracts/menuary-contract";
 
 export const dynamic = "force-dynamic";
 
@@ -35,14 +37,14 @@ export async function POST() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const sentContracts = await listSentContracts();
-  if (sentContracts.length === 0) {
+  const contracts = await listContractsNeedingDocumensoSync();
+  if (contracts.length === 0) {
     return NextResponse.json({ synced: 0 });
   }
 
   let syncedCount = 0;
 
-  for (const contract of sentContracts) {
+  for (const contract of contracts) {
     if (!contract.documenso_envelope_id) continue;
 
     try {
@@ -50,13 +52,61 @@ export async function POST() {
         contract.documenso_envelope_id,
         contract.contract_data.documenso_provider ?? undefined,
       );
-      if (envelope.status !== "COMPLETED") continue;
+      const customerSigningUrl =
+        envelope.recipients.find((recipient) => recipient.signingOrder === 1)
+          ?.signingUrl ?? null;
+      const counterpartySigningUrl =
+        envelope.recipients.find((recipient) => recipient.signingOrder === 2)
+          ?.signingUrl ?? null;
+      const linkUpdates: Record<string, unknown> = {};
+      if (!contract.signing_url && customerSigningUrl) {
+        linkUpdates.signing_url = customerSigningUrl;
+      }
+      if (!contract.counterparty_signing_url && counterpartySigningUrl) {
+        linkUpdates.counterparty_signing_url = counterpartySigningUrl;
+      }
+
+      if (contract.status === "signed") {
+        await ensureCustomerSignatureFulfillment(contract);
+        const signedUpdates: Record<string, unknown> = { ...linkUpdates };
+        if (envelope.status === "COMPLETED") {
+          signedUpdates.status = "countersigned";
+          signedUpdates.contract_data = {
+            ...contract.contract_data,
+            countersigned: {
+              at: envelope.completedAt ?? new Date().toISOString(),
+              by: FORNITORE.legaleRappresentante,
+              documentPath: contract.signed_document_path ?? "",
+            },
+          };
+        }
+        if (Object.keys(signedUpdates).length > 0) {
+          await updateContract(contract.id, signedUpdates);
+        }
+        syncedCount++;
+        continue;
+      }
+      const firstSigner =
+        envelope.recipients.find((recipient) => recipient.signingOrder === 1) ??
+        envelope.recipients[0];
+      const customerSigned =
+        firstSigner?.signingStatus === "SIGNED" ||
+        envelope.status === "COMPLETED";
+      if (!customerSigned) {
+        if (Object.keys(linkUpdates).length > 0) {
+          await updateContract(contract.id, linkUpdates);
+        }
+        continue;
+      }
 
       const updates: Record<string, unknown> = {
+        ...linkUpdates,
         status: "signed",
-        signed_at: envelope.completedAt ?? new Date().toISOString(),
+        signed_at:
+          firstSigner?.signedAt ??
+          envelope.completedAt ??
+          new Date().toISOString(),
       };
-
       const itemId =
         contract.documenso_item_id ?? envelope.envelopeItems?.[0]?.id ?? null;
 
@@ -90,7 +140,8 @@ export async function POST() {
         updates.documenso_item_id = String(envelope.envelopeItems[0].id);
       }
 
-      await updateContract(contract.id, updates);
+      const updatedContract = await updateContract(contract.id, updates);
+      await ensureCustomerSignatureFulfillment(updatedContract);
       syncedCount++;
     } catch (err) {
       console.error(
@@ -101,5 +152,5 @@ export async function POST() {
     }
   }
 
-  return NextResponse.json({ synced: syncedCount, checked: sentContracts.length });
+  return NextResponse.json({ synced: syncedCount, checked: contracts.length });
 }

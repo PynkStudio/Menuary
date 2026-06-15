@@ -2158,6 +2158,7 @@ export type Database = {
           created_at: string
           documenso_envelope_id: string | null
           documenso_item_id: string | null
+          counterparty_signing_url: string | null
           expires_at: string | null
           id: string
           lead_id: string | null
@@ -2185,6 +2186,7 @@ export type Database = {
           created_at?: string
           documenso_envelope_id?: string | null
           documenso_item_id?: string | null
+          counterparty_signing_url?: string | null
           expires_at?: string | null
           id?: string
           lead_id?: string | null
@@ -2212,6 +2214,7 @@ export type Database = {
           created_at?: string
           documenso_envelope_id?: string | null
           documenso_item_id?: string | null
+          counterparty_signing_url?: string | null
           expires_at?: string | null
           id?: string
           lead_id?: string | null

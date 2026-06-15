@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import {
   listContracts,
@@ -35,7 +36,26 @@ export async function GET(req: NextRequest) {
   if (id) {
     const contract = await getContract(id);
     if (!contract) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json({ contract });
+    const db = createSupabaseServiceClient();
+    const { data: payment } =
+      db && contract.subscription_id
+        ? await db
+            .from("platform_payments")
+            .select("id, stripe_payment_link, bunq_payment_url, payment_method")
+            .eq("subscription_id", contract.subscription_id)
+            .eq("status", "pending")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : { data: null };
+    return NextResponse.json({
+      contract: {
+        ...contract,
+        payment_id: payment?.id ?? null,
+        payment_link:
+          payment?.bunq_payment_url ?? payment?.stripe_payment_link ?? null,
+      },
+    });
   }
   const contracts = await listContracts();
   return NextResponse.json({ contracts });

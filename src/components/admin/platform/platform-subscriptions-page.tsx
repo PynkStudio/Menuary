@@ -9,6 +9,8 @@ import {
   ArrowRight,
   CreditCard,
   Euro,
+  Mail,
+  Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -56,6 +58,8 @@ export function PlatformSubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<PlatformSubscription[]>([]);
   const [payments, setPayments] = useState<PlatformPayment[]>([]);
   const [activeFilter, setActiveFilter] = useState<SubscriptionStatus | "all">("all");
+  const [paymentActionId, setPaymentActionId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +95,49 @@ export function PlatformSubscriptionsPage() {
     (s) => activeFilter === "all" || s.status === activeFilter,
   );
 
+  async function communicatePayment(payment: PlatformPayment, send: boolean) {
+    setPaymentActionId(payment.id);
+    setFeedback(null);
+    try {
+      const res = await fetch("/api/admin/payments/communicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentId: payment.id, send }),
+      });
+      const result = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        url?: string | null;
+      };
+      if (!res.ok) {
+        setFeedback(`Errore: ${result.error ?? "operazione non riuscita"}`);
+        return;
+      }
+      if (result.url) {
+        setPayments((current) =>
+          current.map((item) =>
+            item.id === payment.id
+              ? {
+                  ...item,
+                  bunq_payment_url:
+                    item.payment_method === "bunq" ? result.url ?? null : item.bunq_payment_url,
+                  stripe_payment_link:
+                    item.payment_method === "carta" ? result.url ?? null : item.stripe_payment_link,
+                }
+              : item,
+          ),
+        );
+      }
+      if (!send && result.url) {
+        await navigator.clipboard.writeText(result.url);
+        setFeedback("Link pagamento copiato.");
+      } else {
+        setFeedback(send ? "Email pagamento inviata." : "Questo metodo non prevede un link.");
+      }
+    } finally {
+      setPaymentActionId(null);
+    }
+  }
+
   return (
     <div className="space-y-8">
       <header>
@@ -100,6 +147,11 @@ export function PlatformSubscriptionsPage() {
           Panoramica rinnovi, scadenze e pagamenti.
         </p>
       </header>
+      {feedback && (
+        <div className="rounded-xl bg-pork-green/10 px-4 py-3 text-sm font-semibold text-pork-green">
+          {feedback}
+        </div>
+      )}
 
       {/* KPI */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -203,7 +255,7 @@ export function PlatformSubscriptionsPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-bold">{sub?.lead?.business_name ?? "—"}</p>
                     <p className="mt-0.5 text-sm text-pork-ink/55">
-                      {sub?.package?.name} · {eur(p.amount)} · scade {fmt(p.due_date)}
+                      {p.kind === "renewal" ? "Rinnovo" : "Primo pagamento"} · {sub?.package?.name} · {eur(p.amount)} · scade {fmt(p.due_date)}
                       {days !== null && days <= 0 && (
                         <span className="ml-2 font-bold text-pork-red">SCADUTO</span>
                       )}
@@ -223,6 +275,24 @@ export function PlatformSubscriptionsPage() {
                   <button className="shrink-0 rounded-full bg-pork-green px-3 py-1.5 text-xs font-bold text-white">
                     Segna pagato
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => communicatePayment(p, true)}
+                    disabled={paymentActionId === p.id}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-pork-ink px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+                  >
+                    <Mail size={12} /> Rimanda
+                  </button>
+                  {(p.payment_method === "bunq" || p.payment_method === "carta") && (
+                    <button
+                      type="button"
+                      onClick={() => communicatePayment(p, false)}
+                      disabled={paymentActionId === p.id}
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-pork-ink ring-1 ring-pork-ink/15 disabled:opacity-50"
+                    >
+                      <Copy size={12} /> Copia link
+                    </button>
+                  )}
                 </div>
               );
             })}
