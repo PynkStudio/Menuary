@@ -107,6 +107,7 @@ export function PlatformSubscriptionsPage() {
       const result = (await res.json().catch(() => ({}))) as {
         error?: string;
         url?: string | null;
+        checkoutUrl?: string | null;
       };
       if (!res.ok) {
         setFeedback(`Errore: ${result.error ?? "operazione non riuscita"}`);
@@ -127,8 +128,8 @@ export function PlatformSubscriptionsPage() {
           ),
         );
       }
-      if (!send && result.url) {
-        await navigator.clipboard.writeText(result.url);
+      if (!send && result.checkoutUrl) {
+        await navigator.clipboard.writeText(result.checkoutUrl);
         setFeedback("Link pagamento copiato.");
       } else {
         setFeedback(send ? "Email pagamento inviata." : "Questo metodo non prevede un link.");

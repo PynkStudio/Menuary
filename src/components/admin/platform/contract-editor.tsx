@@ -561,15 +561,16 @@ export function ContractEditor({ contractId }: Props) {
     const result = (await res.json().catch(() => ({}))) as {
       error?: string;
       url?: string | null;
+      checkoutUrl?: string | null;
     };
     if (!res.ok) {
       setFeedback(`Errore: ${result.error ?? "operazione non riuscita"}`);
       return;
     }
-    if (!send && result.url) {
-      await navigator.clipboard.writeText(result.url);
+    if (!send && result.checkoutUrl) {
+      await navigator.clipboard.writeText(result.checkoutUrl);
       setServerContract((current) =>
-        current ? { ...current, payment_link: result.url ?? null } : current,
+        current ? { ...current, payment_link: result.checkoutUrl ?? null } : current,
       );
       setFeedback("Link pagamento copiato.");
       return;

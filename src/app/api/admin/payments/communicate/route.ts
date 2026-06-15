@@ -186,12 +186,13 @@ export async function POST(req: NextRequest) {
     await attachPaymentProviderRefs(payment.id, { stripePaymentLink: url });
   }
 
+  const paymentRef = payment.invoice_number ?? payment.id;
+  const checkoutUrl = method === "bonifico" ? null : pynkCheckoutUrl(paymentRef);
+
   if (send) {
     if (!recipient) {
       return NextResponse.json({ error: "Email cliente mancante" }, { status: 409 });
     }
-    const paymentRef = payment.invoice_number ?? payment.id;
-    const checkoutUrl = method === "bonifico" ? null : pynkCheckoutUrl(paymentRef);
     const result = await sendEmail({
       to: recipient,
       subject: `${payment.kind === "renewal" ? "Rinnovo" : "Pagamento"} — ${brand.name}`,
@@ -209,7 +210,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent: send, url, method });
+  return NextResponse.json({ sent: send, url, checkoutUrl, method });
 }
 
 function buildPaymentEmail(

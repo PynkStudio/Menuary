@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Plus, FileText, Trash2, ExternalLink, MoreHorizontal, Loader2, Edit3, Pen, RefreshCw, CreditCard } from "lucide-react";
+import { Plus, FileText, Trash2, ExternalLink, MoreHorizontal, Loader2, Edit3, Pen, RefreshCw, Mail, Copy } from "lucide-react";
 import {
   CONTRACT_STATUS_COLORS,
   CONTRACT_STATUS_LABELS,
@@ -128,12 +128,29 @@ export function ContractsList() {
     closeDropdown();
   }
 
-  function handleResendPayment(contractId: string) {
+  function handleSendPaymentLink(contractId: string) {
     fetch("/api/admin/payments/communicate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contractId, send: true }),
     }).catch(() => {});
+    closeDropdown();
+  }
+
+  async function handleCopyPaymentLink(contractId: string) {
+    try {
+      const res = await fetch("/api/admin/payments/communicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contractId, send: false }),
+      });
+      const result = (await res.json().catch(() => ({}))) as { checkoutUrl?: string | null };
+      if (result.checkoutUrl) {
+        await navigator.clipboard.writeText(result.checkoutUrl);
+      } else {
+        // bonifico — copy not applicable
+      }
+    } catch { /* ignore */ }
     closeDropdown();
   }
 
@@ -380,8 +397,13 @@ export function ContractsList() {
               </a>
             )}
             {c.payment_status !== "paid" && (
-              <button type="button" className="dropdown-item" onClick={() => handleResendPayment(c.id)} style={dropdownItemStyle}>
-                <CreditCard size={13} /> Reinvia pagamento
+              <button type="button" className="dropdown-item" onClick={() => handleSendPaymentLink(c.id)} style={dropdownItemStyle}>
+                <Mail size={13} /> Invia link pagamento
+              </button>
+            )}
+            {c.payment_status !== "paid" && (c.payment_method === "bunq" || c.payment_method === "carta") && (
+              <button type="button" className="dropdown-item" onClick={() => handleCopyPaymentLink(c.id)} style={dropdownItemStyle}>
+                <Copy size={13} /> Copia link pagamento
               </button>
             )}
             <div style={dropdownDividerStyle} />
