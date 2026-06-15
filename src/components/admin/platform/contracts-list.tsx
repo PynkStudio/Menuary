@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Plus, FileText, Trash2, ExternalLink, MoreHorizontal, Loader2, Send, Edit3, Pen, RefreshCw, CreditCard } from "lucide-react";
+import { Plus, FileText, Trash2, ExternalLink, MoreHorizontal, Loader2, Edit3, Pen, RefreshCw, CreditCard } from "lucide-react";
 import {
   CONTRACT_STATUS_COLORS,
   CONTRACT_STATUS_LABELS,
