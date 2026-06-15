@@ -192,6 +192,18 @@ const ADMIN_PUBLIC = new Set(["/admin/login", "/admin/set-password"]);
 
 const LOGIN_BASE = "https://login.menuary.it";
 
+/** Path interni di piattaforma che non devono essere accessibili dai siti marketing. */
+function isInternalPlatformPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/gestione") ||
+    pathname.startsWith("/k/") ||
+    pathname === "/cucina" ||
+    pathname.startsWith("/cucina/") ||
+    pathname.startsWith("/admin-pynkstudio")
+  );
+}
+
 function allowStaticAssets(pathname: string) {
   if (pathname.startsWith("/_next")) return true;
   if (pathname.startsWith("/api")) return true;
@@ -785,16 +797,25 @@ export async function middleware(request: NextRequest) {
 
   // ── Marketing Menuary (menuary.it) ────────────────────────────────────────
   if (mode === "marketing") {
+    if (isInternalPlatformPath(pathname)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
     return handleMarketingLocale(request, mode, (p) => p);
   }
 
   // ── Marketing Bizery (bizery.it) ─────────────────────────────────────────
   if (mode === "marketing-bizery") {
+    if (isInternalPlatformPath(pathname)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
     return handleMarketingLocale(request, mode, (p) => "/bizery" + (p === "/" ? "" : p));
   }
 
   // ── Marketing Orpheo (weuseorpheo.com) ───────────────────────────────────
   if (mode === "marketing-orpheo") {
+    if (isInternalPlatformPath(pathname)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
     return handleMarketingLocale(request, mode, (p) => "/orpheo" + (p === "/" ? "" : p));
   }
 

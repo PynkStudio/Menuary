@@ -174,16 +174,16 @@ function cryptoRandomId(): string {
 export const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
   draft: "Bozza",
   sent: "Inviato",
-  signed: "Firmato (in attesa di controparte)",
-  countersigned: "Controfirmato",
-  expired: "Scaduto (>5gg)",
+  signed: "Da controfirmare",
+  countersigned: "Completato",
+  expired: "Scaduto",
   cancelled: "Annullato",
 };
 
 export const CONTRACT_STATUS_COLORS: Record<ContractStatus, string> = {
   draft: "bg-gray-100 text-gray-700",
   sent: "bg-blue-100 text-blue-800",
-  signed: "bg-amber-100 text-amber-800",
+  signed: "bg-purple-100 text-purple-800",
   countersigned: "bg-green-100 text-green-800",
   expired: "bg-red-100 text-red-800",
   cancelled: "bg-gray-100 text-gray-500",
