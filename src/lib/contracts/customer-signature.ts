@@ -93,13 +93,26 @@ async function handlePaymentByMethod(
     }
 
     case "bonifico": {
-      await sendEmail({
-        to: FORNITORE.email,
-        subject: `[${emailBrand.name}] Contratto ${numero} firmato — in attesa di bonifico`,
-        html: `<p>Il contratto <strong>${numero}</strong> di <strong>${data.cliente.ragioneSociale}</strong> è stato firmato elettronicamente.</p>
-               <p>Metodo di pagamento: <strong>bonifico</strong>. Il webhook Bunq aggiornerà lo stato automaticamente quando il pagamento verrà ricevuto.</p>`,
-        fromOverride: sender.from,
-      });
+      if (signerEmail) {
+        const firstPayment = computeFirstPaymentTotal(data.economiche);
+        await sendEmail({
+          to: signerEmail,
+          subject: `Pagamento contratto ${numero} — ${emailBrand.name}`,
+          html: buildMarketingEmail({
+            brand: emailBrand,
+            preheader: `Istruzioni bonifico — contratto ${numero}`,
+            title: "Contratto firmato — procedi al pagamento",
+            body: `<p>Grazie per aver firmato il contratto <strong>${numero}</strong>!</p>
+<p>Per completare l'attivazione del servizio, effettua un bonifico di <strong>${formatEUR(firstPayment)}</strong> con i seguenti dati:</p>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;font-size:14px;margin:16px 0">
+  <strong>Intestatario:</strong> ${FORNITORE.ragioneSociale}<br>
+  <strong>IBAN:</strong> ${FORNITORE.iban}<br>
+  <strong>Causale:</strong> Contratto ${numero} — ${data.cliente.ragioneSociale}
+</div>`,
+          }),
+          fromOverride: sender.from,
+        });
+      }
       break;
     }
   }
