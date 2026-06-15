@@ -86,12 +86,12 @@ function formatEUR(value: number): string {
 export function PaymentStatusPage({
   status,
   brand,
-  ref: reference,
+  contractRef: reference,
   paymentAction,
 }: {
   status: PaymentStatus;
   brand: PaymentBrand;
-  ref?: string;
+  contractRef?: string;
   paymentAction?: PaymentAction | null;
 }) {
   const s = BRAND_STYLES[brand];

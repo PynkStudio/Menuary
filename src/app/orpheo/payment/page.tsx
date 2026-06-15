@@ -39,7 +39,7 @@ export default async function OrpheoPaymentPage({ searchParams }: Props) {
     <PaymentStatusPage
       status={status}
       brand={brand}
-      ref={p.ref}
+      contractRef={p.ref}
       paymentAction={paymentAction}
     />
   );

@@ -132,7 +132,7 @@ export function ContractsList() {
     fetch("/api/admin/payments/communicate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paymentId: contractId, send: true }),
+      body: JSON.stringify({ contractId, send: true }),
     }).catch(() => {});
     closeDropdown();
   }

@@ -45,9 +45,10 @@ export async function POST(req: NextRequest) {
   }
   const body = await req.json().catch(() => null);
   const paymentId = body?.paymentId as string | undefined;
+  const contractId = body?.contractId as string | undefined;
   const send = body?.send !== false;
-  if (!paymentId) {
-    return NextResponse.json({ error: "paymentId obbligatorio" }, { status: 400 });
+  if (!paymentId && !contractId) {
+    return NextResponse.json({ error: "paymentId o contractId obbligatorio" }, { status: 400 });
   }
 
   const db = createSupabaseServiceClient();
@@ -55,13 +56,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Servizio non configurato" }, { status: 503 });
   }
 
-  const { data: paymentData } = await db
-    .from("platform_payments")
-    .select("*")
-    .eq("id", paymentId)
-    .maybeSingle();
-  const payment = paymentData as unknown as PaymentRow | null;
-  if (!payment || payment.status !== "pending") {
+  let payment: PaymentRow | null = null;
+
+  if (paymentId) {
+    const { data } = await db
+      .from("platform_payments")
+      .select("*")
+      .eq("id", paymentId)
+      .eq("status", "pending")
+      .maybeSingle();
+    payment = data as unknown as PaymentRow | null;
+  } else if (contractId) {
+    // Resolve contract → subscription → pending payment
+    const { data: contract } = await db
+      .from("platform_contracts")
+      .select("subscription_id")
+      .eq("id", contractId)
+      .maybeSingle();
+    const subscriptionId = (contract as unknown as { subscription_id?: string } | null)?.subscription_id;
+    if (subscriptionId) {
+      const { data } = await db
+        .from("platform_payments")
+        .select("*")
+        .eq("subscription_id", subscriptionId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      payment = data as unknown as PaymentRow | null;
+    }
+  }
+
+  if (!payment) {
     return NextResponse.json({ error: "Pagamento pending non trovato" }, { status: 404 });
   }
 
