@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { CheckCircle2, XCircle, AlertTriangle, Clock, Mail } from "lucide-react";
 import { lookupPaymentByContractRef } from "@/lib/payments/payment-lookup";
 import { FORNITORE } from "@/lib/contracts/menuary-contract";
 import { PynkPaymentRight } from "./pynk-payment-right";
+import { PopupStatusForwarder } from "./popup-status-forwarder";
+import { PaymentPopupListener } from "./payment-popup-listener";
 
 export const metadata: Metadata = {
   robots: "noindex",
   title: "Pagamento — Pynk Studio",
+  icons: { icon: "/favicons/pynkstudio/favicon.ico" },
 };
 
 type Status = "success" | "failed" | "cancelled" | "processing";
@@ -34,9 +38,9 @@ const BRAND_LABEL: Record<string, string> = {
   orpheo:  "Orpheo",
 };
 
-const BILLING_LABEL: Record<string, string> = {
-  monthly: "al mese",
-  yearly:  "all'anno",
+const CYCLE_LABEL: Record<string, string> = {
+  monthly: "mese",
+  yearly:  "anno",
 };
 
 function formatEUR(n: number) {
@@ -152,10 +156,17 @@ export default async function PynkCheckoutPage({ searchParams }: Props) {
                   <SummaryRow label="Piano" value={data.planName} />
                 )}
                 <SummaryRow
-                  label="Importo"
-                  value={`${formatEUR(data.amount)} ${BILLING_LABEL[data.cicloFatturazione] ?? ""}`}
+                  label={data.kind === "renewal" ? "Rinnovo" : "Primo pagamento"}
+                  value={`${formatEUR(data.grossAmount)}`}
                   highlight
                 />
+                <SummaryRow
+                  label="Canone"
+                  value={`${formatEUR(data.canoneNetto)} / ${CYCLE_LABEL[data.cicloFatturazione] ?? ""}`}
+                />
+                {data.kind === "first" && data.setupNetto > 0 && (
+                  <SummaryRow label="Setup" value={formatEUR(data.setupNetto)} />
+                )}
                 {data.contractNumber && (
                   <SummaryRow label="Contratto" value={data.contractNumber} mono />
                 )}
@@ -218,7 +229,9 @@ export default async function PynkCheckoutPage({ searchParams }: Props) {
               ) : (
                 <PynkPaymentRight
                   method={data.method}
-                  amount={data.amount}
+                  amount={data.grossAmount}
+                  canoneLabel={`${formatEUR(data.canoneNetto)} / ${CYCLE_LABEL[data.cicloFatturazione] ?? ""}`}
+                  kind={data.kind}
                   actionUrl={data.actionUrl}
                   bonificoDetails={data.bonificoDetails}
                 />
@@ -227,6 +240,13 @@ export default async function PynkCheckoutPage({ searchParams }: Props) {
           )}
         </div>
       </div>
+
+      <Suspense fallback={null}>
+        <PaymentPopupListener />
+      </Suspense>
+      <Suspense fallback={null}>
+        <PopupStatusForwarder />
+      </Suspense>
 
       <style>{`
         @media (max-width: 768px) {

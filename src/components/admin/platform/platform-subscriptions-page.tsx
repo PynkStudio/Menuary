@@ -95,6 +95,31 @@ export function PlatformSubscriptionsPage() {
     (s) => activeFilter === "all" || s.status === activeFilter,
   );
 
+  async function markPaid(payment: PlatformPayment) {
+    setPaymentActionId(payment.id);
+    setFeedback(null);
+    try {
+      const res = await fetch("/api/admin/payments/mark-paid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentId: payment.id }),
+      });
+      const result = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setFeedback(`Errore: ${result.error ?? "operazione non riuscita"}`);
+        return;
+      }
+      setPayments((current) =>
+        current.map((item) =>
+          item.id === payment.id ? { ...item, status: "paid" as const, paid_at: new Date().toISOString() } : item,
+        ),
+      );
+      setFeedback("Pagamento segnato come pagato.");
+    } finally {
+      setPaymentActionId(null);
+    }
+  }
+
   async function communicatePayment(payment: PlatformPayment, send: boolean) {
     setPaymentActionId(payment.id);
     setFeedback(null);
@@ -273,7 +298,12 @@ export function PlatformSubscriptionsPage() {
                   >
                     {PAYMENT_STATUS_LABELS[p.status]}
                   </span>
-                  <button className="shrink-0 rounded-full bg-pork-green px-3 py-1.5 text-xs font-bold text-white">
+                  <button
+                    type="button"
+                    onClick={() => markPaid(p)}
+                    disabled={paymentActionId === p.id}
+                    className="shrink-0 rounded-full bg-pork-green px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+                  >
                     Segna pagato
                   </button>
                   <button

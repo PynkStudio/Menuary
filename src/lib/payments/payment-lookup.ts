@@ -1,13 +1,17 @@
 import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { FORNITORE } from "@/lib/contracts/menuary-contract";
+import { FORNITORE, IVA_RATE, RIVALSA_INPS_RATE, MARCA_BOLLO, round2 } from "@/lib/contracts/menuary-contract";
 
 export type PaymentLookupResult = {
   found: true;
   status: "pending" | "paid" | "failed";
   method: "bunq" | "carta" | "bonifico";
+  /** Importo netto (IVA esclusa) come salvato nel DB */
   amount: number;
+  /** Importo lordo (IVA inclusa) — quanto il cliente deve pagare */
+  grossAmount: number;
+  kind: "first" | "renewal";
   invoiceNumber: string | null;
   brand: "menuary" | "bizery" | "orpheo";
   actionUrl: string | null;
@@ -20,6 +24,8 @@ export type PaymentLookupResult = {
   contractNumber: string;
   planName: string;
   cicloFatturazione: "monthly" | "yearly";
+  canoneNetto: number;
+  setupNetto: number;
   dueDate: string | null;
 } | {
   found: false;
@@ -153,8 +159,9 @@ function buildRow(
 ): PaymentLookupResult {
   const brand = contract.brand as string;
   const pStatus = payment.status as string;
+  const kind = (payment.kind as string) === "renewal" ? "renewal" : "first";
   const method = (payment.payment_method as string) ?? "bonifico";
-  const amount = Number(payment.amount ?? 0);
+  const rawAmount = Number(payment.amount ?? 0);
   const invoiceNumber = (payment.invoice_number as string) ?? null;
   const bunqUrl = (payment.bunq_payment_url as string) ?? null;
   const stripeUrl = (payment.stripe_payment_link as string) ?? null;
@@ -173,6 +180,28 @@ function buildRow(
   const ragioneSociale = (cliente?.ragioneSociale as string) ?? "";
   const planName = (servizio?.pianoNome as string) ?? "";
   const cicloFatturazione = (economiche?.cicloFatturazione as "monthly" | "yearly") ?? "monthly";
+  const canoneMensile = Number(economiche?.canoneMensile ?? 0);
+  const scontoAnnuale = Number(economiche?.scontoAnnuale ?? 0);
+  const setup = Number(economiche?.setup ?? 0);
+  const setupRateale = Boolean(economiche?.setupRateale);
+  const setupRate = (economiche?.setupRate as number[]) ?? [setup];
+  const esenzioneIva = Boolean(economiche?.esenzioneIva);
+
+  // Calcola canone netto (mese o anno con eventuale sconto)
+  const canoneNetto = cicloFatturazione === "yearly"
+    ? round2(canoneMensile * 12 * (1 - scontoAnnuale / 100))
+    : canoneMensile;
+
+  // Setup da pagare ora (prima rata se rateale, altrimenti tutto)
+  const setupNetto = kind === "first"
+    ? (setupRateale && setupRate.length > 1 ? setupRate[0] : setup)
+    : 0;
+
+  // Importo lordo (IVA inclusa) — quanto il cliente deve effettivamente pagare
+  const netAmount = rawAmount; // rawAmount è già canone + setup (senza IVA)
+  const grossAmount = esenzioneIva
+    ? round2((netAmount + MARCA_BOLLO) * (1 + RIVALSA_INPS_RATE))
+    : round2(netAmount * (1 + IVA_RATE));
 
   const bonificoDetails = method === "bonifico" ? {
     iban: FORNITORE.iban,
@@ -186,8 +215,10 @@ function buildRow(
   return {
     found: true,
     status,
+    kind,
     method: method === "carta" ? "carta" : method === "bunq" ? "bunq" : "bonifico",
-    amount,
+    amount: rawAmount,
+    grossAmount,
     invoiceNumber,
     brand: typedBrand,
     actionUrl,
@@ -196,6 +227,8 @@ function buildRow(
     contractNumber: (contract.numero as string) ?? "",
     planName,
     cicloFatturazione,
+    canoneNetto,
+    setupNetto,
     dueDate: (payment.due_date as string) ?? null,
   };
 }

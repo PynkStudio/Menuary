@@ -14,6 +14,8 @@ type BonificoDetails = {
 type Props = {
   method: Method;
   amount: number;
+  canoneLabel: string;
+  kind: "first" | "renewal";
   actionUrl: string | null;
   bonificoDetails: BonificoDetails | null;
 };
@@ -108,7 +110,7 @@ function CopyLink({ url }: { url: string }) {
   );
 }
 
-export function PynkPaymentRight({ method, amount, actionUrl, bonificoDetails }: Props) {
+export function PynkPaymentRight({ method, amount, canoneLabel, kind, actionUrl, bonificoDetails }: Props) {
   if (method === "bonifico" && bonificoDetails) {
     return (
       <div>
@@ -147,9 +149,9 @@ export function PynkPaymentRight({ method, amount, actionUrl, bonificoDetails }:
             background: "#00896822",
             border: "1px solid #00896844",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 900, fontSize: 14, color: "#008968",
+            padding: 6, boxSizing: "border-box",
           }}>
-            b
+            <img src="/bunq/logo.svg" alt="bunq" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </div>
           <div>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: PYNK.fg }}>bunq</p>
@@ -157,12 +159,16 @@ export function PynkPaymentRight({ method, amount, actionUrl, bonificoDetails }:
           </div>
         </div>
 
-        <p style={{ fontSize: 36, fontWeight: 800, color: PYNK.fg, margin: "0 0 28px", letterSpacing: "-0.02em" }}>
+        <p style={{ fontSize: 36, fontWeight: 800, color: PYNK.fg, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
           {formatEUR(amount)}
         </p>
+        <p style={{ fontSize: 13, color: PYNK.muted, margin: "0 0 28px" }}>
+          {kind === "renewal" ? "Rinnovo" : "Primo pagamento"} · {canoneLabel}
+        </p>
 
-        <a
-          href={actionUrl}
+        <button
+          type="button"
+          onClick={() => window.open(actionUrl, "payment_popup", "width=800,height=700,popup=1")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -171,18 +177,19 @@ export function PynkPaymentRight({ method, amount, actionUrl, bonificoDetails }:
             padding: "16px 24px",
             background: "#008968",
             color: "#fff",
-            textDecoration: "none",
+            border: "none",
             borderRadius: 12,
             fontWeight: 700,
             fontSize: 16,
             width: "100%",
             boxSizing: "border-box",
+            cursor: "pointer",
           }}
         >
           <CreditCard size={18} strokeWidth={1.7} />
           Paga ora con bunq
           <ExternalLink size={14} strokeWidth={1.7} />
-        </a>
+        </button>
 
         <CopyLink url={actionUrl} />
       </div>
@@ -207,12 +214,16 @@ export function PynkPaymentRight({ method, amount, actionUrl, bonificoDetails }:
           </div>
         </div>
 
-        <p style={{ fontSize: 36, fontWeight: 800, color: PYNK.fg, margin: "0 0 28px", letterSpacing: "-0.02em" }}>
+        <p style={{ fontSize: 36, fontWeight: 800, color: PYNK.fg, margin: "0 0 4px", letterSpacing: "-0.02em" }}>
           {formatEUR(amount)}
         </p>
+        <p style={{ fontSize: 13, color: PYNK.muted, margin: "0 0 28px" }}>
+          {kind === "renewal" ? "Rinnovo" : "Primo pagamento"} · {canoneLabel}
+        </p>
 
-        <a
-          href={actionUrl}
+        <button
+          type="button"
+          onClick={() => window.open(actionUrl, "payment_popup", "width=800,height=700,popup=1")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -221,18 +232,19 @@ export function PynkPaymentRight({ method, amount, actionUrl, bonificoDetails }:
             padding: "16px 24px",
             background: "#6366f1",
             color: "#fff",
-            textDecoration: "none",
+            border: "none",
             borderRadius: 12,
             fontWeight: 700,
             fontSize: 16,
             width: "100%",
             boxSizing: "border-box",
+            cursor: "pointer",
           }}
         >
           <CreditCard size={18} strokeWidth={1.7} />
           Paga con carta
           <ExternalLink size={14} strokeWidth={1.7} />
-        </a>
+        </button>
       </div>
     );
   }
