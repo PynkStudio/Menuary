@@ -613,7 +613,7 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned, mo
             srcDoc={buildEmailSrcDoc(email.html_body)}
             className="w-full rounded-lg border border-[var(--ma-line)]"
             style={{ minHeight: "400px", height: "400px" }}
-            sandbox="allow-same-origin"
+            sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             title="Corpo email"
           />
         ) : email.text_body ? (

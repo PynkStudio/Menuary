@@ -35,12 +35,15 @@ function styleTag(): string {
   return `<style>${EMAIL_VIEW_STYLES}</style>`;
 }
 
-export function buildEmailSrcDoc(html: string): string {
-  if (/<html[\s>]/i.test(html)) {
-    if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${styleTag()}</head>`);
-    return html.replace(/<html([^>]*)>/i, `<html$1><head>${styleTag()}</head>`);
-  }
-
-  return `<!doctype html><html><head><meta charset="utf-8">${styleTag()}</head><body>${html}</body></html>`;
+function headExtras(): string {
+  return `<base target="_blank">${styleTag()}`;
 }
 
+export function buildEmailSrcDoc(html: string): string {
+  if (/<html[\s>]/i.test(html)) {
+    if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${headExtras()}</head>`);
+    return html.replace(/<html([^>]*)>/i, `<html$1><head>${headExtras()}</head>`);
+  }
+
+  return `<!doctype html><html><head><meta charset="utf-8">${headExtras()}</head><body>${html}</body></html>`;
+}
