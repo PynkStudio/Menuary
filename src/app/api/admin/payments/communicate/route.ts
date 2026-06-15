@@ -118,9 +118,9 @@ export async function POST(req: NextRequest) {
     | null;
 
   const recipient =
-    (lead?.contact_email as string | null) ??
     contractData?.cliente?.email ??
     contractData?.cliente?.pec ??
+    (lead?.contact_email as string | null) ??
     null;
   const vertical = (
     lead?.business_vertical ??
