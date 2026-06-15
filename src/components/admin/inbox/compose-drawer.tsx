@@ -81,7 +81,9 @@ type Props = {
   tenantId?: string;
   fromAddress?: string;
   fromName?: string;
+  currentUserEmail?: string | null;
   lockBrand?: boolean;
+  preferredFromAddress?: string;
   initialTo?: string;
   initialSubject?: string;
   initialBody?: string;
@@ -111,6 +113,55 @@ const BRAND_PILL_ACTIVE: Record<InboundEmailBrand, string> = {
   pynkstudio: "bg-[#d946a8] text-white shadow-sm",
 };
 
+const DEFAULT_LOCAL_PARTS = ["hello", "amministrazione", "pagamenti", "support"];
+
+function splitEmailAddress(address?: string | null): { localPart: string; domain: string } | null {
+  const clean = address?.trim().toLowerCase();
+  if (!clean) return null;
+  const match = clean.match(/^([^@\s]+)@([^@\s]+\.[^@\s]+)$/);
+  return match ? { localPart: match[1], domain: match[2] } : null;
+}
+
+function normalizeLocalPart(value: string): string {
+  return value.trim().toLowerCase().replace(/^@+/, "");
+}
+
+function isValidLocalPart(value: string): boolean {
+  return /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(value) && !value.includes("..");
+}
+
+function uniqueLocalParts(values: string[]): string[] {
+  const seen = new Set<string>();
+  return values
+    .map(normalizeLocalPart)
+    .filter((value) => value && isValidLocalPart(value))
+    .filter((value) => {
+      if (seen.has(value)) return false;
+      seen.add(value);
+      return true;
+    });
+}
+
+function savedLocalPartsKey(domain: string): string {
+  return `mailapp:from-local-parts:${domain}`;
+}
+
+function readSavedLocalParts(domain: string): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(savedLocalPartsKey(domain));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? uniqueLocalParts(parsed.filter((v) => typeof v === "string")) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeSavedLocalParts(domain: string, values: string[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(savedLocalPartsKey(domain), JSON.stringify(uniqueLocalParts(values)));
+}
+
 export function ComposeDrawer({
   open,
   canCompose,
@@ -120,7 +171,9 @@ export function ComposeDrawer({
   tenantId,
   fromAddress,
   fromName,
+  currentUserEmail,
   lockBrand = false,
+  preferredFromAddress,
   initialTo,
   initialSubject,
   initialBody,
@@ -129,6 +182,10 @@ export function ComposeDrawer({
   const [brand, setBrand]       = useState<InboundEmailBrand>(defaultBrand);
   const [to, setTo]             = useState(initialTo ?? "");
   const [subject, setSubject]   = useState(initialSubject ?? "");
+  const [localPart, setLocalPart] = useState("");
+  const [customLocalPart, setCustomLocalPart] = useState("");
+  const [saveCustomLocalPart, setSaveCustomLocalPart] = useState(false);
+  const [savedLocalParts, setSavedLocalParts] = useState<string[]>([]);
   // L'editor del corpo è uncontrolled: il contenuto vive nel DOM e in bodyHtmlRef,
   // mai in uno state che React possa riapplicare al contenteditable durante un
   // re-render (es. il polling inbox) cancellando quanto digitato.
@@ -141,6 +198,39 @@ export function ComposeDrawer({
   const [error, setError]       = useState<string | null>(null);
   const [isPending, start]      = useTransition();
   const toRef = useRef<HTMLInputElement>(null);
+  const previousDomainRef = useRef<string | null>(null);
+  const domain = useMemo(() => {
+    const locked = splitEmailAddress(fromAddress);
+    const branded = splitEmailAddress(BRAND_FROM[brand]);
+    return locked?.domain ?? branded?.domain ?? "";
+  }, [brand, fromAddress]);
+  const userLocalPart = useMemo(() => {
+    const parsed = splitEmailAddress(currentUserEmail);
+    return parsed && parsed.domain === domain ? parsed.localPart : null;
+  }, [currentUserEmail, domain]);
+  const preferredLocalPart = useMemo(() => {
+    const parsed = splitEmailAddress(preferredFromAddress);
+    return parsed && parsed.domain === domain ? parsed.localPart : null;
+  }, [preferredFromAddress, domain]);
+  const baseLocalPart = useMemo(() => {
+    if (preferredLocalPart) return preferredLocalPart;
+    if (userLocalPart) return userLocalPart;
+    const locked = splitEmailAddress(fromAddress);
+    if (locked?.domain === domain) return locked.localPart;
+    return "hello";
+  }, [domain, fromAddress, preferredLocalPart, userLocalPart]);
+  const localPartOptions = useMemo(
+    () => uniqueLocalParts([
+      baseLocalPart,
+      ...(userLocalPart ? [userLocalPart] : []),
+      ...(preferredLocalPart ? [preferredLocalPart] : []),
+      ...DEFAULT_LOCAL_PARTS,
+      ...savedLocalParts,
+    ]),
+    [baseLocalPart, preferredLocalPart, savedLocalParts, userLocalPart],
+  );
+  const effectiveLocalPart = localPart === "__custom__" ? normalizeLocalPart(customLocalPart) : localPart;
+  const effectiveFromAddress = domain && effectiveLocalPart ? `${effectiveLocalPart}@${domain}` : fromAddress ?? BRAND_FROM[brand];
 
   const isDirty = useMemo(() => open && (to.trim() !== "" || subject.trim() !== ""), [open, to, subject]);
   useUnsavedChangesWarning(isDirty);
@@ -184,6 +274,19 @@ export function ComposeDrawer({
       });
   }, [brand, open, canCompose]);
 
+  useEffect(() => {
+    if (!open || !domain) return;
+    const saved = readSavedLocalParts(domain);
+    setSavedLocalParts(saved);
+    const domainChanged = previousDomainRef.current !== domain;
+    previousDomainRef.current = domain;
+    setLocalPart((current) => {
+      if (domainChanged) return baseLocalPart;
+      if (current && current !== "__custom__") return current;
+      return baseLocalPart;
+    });
+  }, [baseLocalPart, domain, open]);
+
   // All'apertura applica i prefill (To / Oggetto / Brand) e gestisce il focus
   useEffect(() => {
     if (!open) return;
@@ -199,6 +302,8 @@ export function ComposeDrawer({
     if (editorRef.current) editorRef.current.innerHTML = nextBodyHtml;
     if (initialAttachments !== undefined) setAttachments(initialAttachments);
     setBrand(defaultBrand);
+    setCustomLocalPart("");
+    setSaveCustomLocalPart(false);
     setError(null);
     setTimeout(() => {
       if (initialTo) {
@@ -215,6 +320,8 @@ export function ComposeDrawer({
   function reset() {
     bodyHtmlRef.current = EMPTY_EDITOR_HTML;
     setTo(""); setSubject(""); setError(null); setAttachments([]);
+    setCustomLocalPart("");
+    setSaveCustomLocalPart(false);
     if (editorRef.current) editorRef.current.innerHTML = EMPTY_EDITOR_HTML;
     composeDraft.clearDraft();
     setShowDraftBanner(false);
@@ -291,8 +398,11 @@ export function ComposeDrawer({
     if (!subject.trim()) { setError("L'oggetto è obbligatorio."); return; }
     const editorText = editorRef.current?.textContent?.trim() ?? "";
     if (!editorText) { setError("Scrivi il corpo del messaggio."); return; }
+    if (!effectiveLocalPart || !isValidLocalPart(effectiveLocalPart)) {
+      setError("Inserisci una local-part valida per il mittente.");
+      return;
+    }
 
-    const effectiveFromAddress = fromAddress ?? BRAND_FROM[brand];
     const effectiveFromName = fromName || signatureFromName || BRAND_LABELS[brand];
     const fromOverride = `${effectiveFromName} <${effectiveFromAddress}>`;
     const replyTo = effectiveFromAddress;
@@ -324,6 +434,11 @@ export function ComposeDrawer({
         if (!res.ok || !data.ok) {
           setError(data.error ?? "Errore invio.");
           return;
+        }
+        if (localPart === "__custom__" && saveCustomLocalPart && domain) {
+          const nextSaved = uniqueLocalParts([...savedLocalParts, effectiveLocalPart]);
+          writeSavedLocalParts(domain, nextSaved);
+          setSavedLocalParts(nextSaved);
         }
         reset();
         onSent();
@@ -379,41 +494,120 @@ export function ComposeDrawer({
           {/* Da: picker brand sempre visibile, preselezionato in base al contesto. */}
           <div className="flex items-center gap-3 px-5 py-3">
             <span className="w-14 shrink-0 text-sm text-[var(--ma-muted)]">Da</span>
-            {lockBrand ? (
-              <span className="rounded-full bg-[var(--ma-surface)] px-3 py-1 text-xs font-semibold text-[var(--ma-ink)]">
-                {fromName || BRAND_LABELS[brand]} · {fromAddress ?? BRAND_FROM[brand]}
-              </span>
-            ) : (
-              <div
-                role="radiogroup"
-                aria-label="Casella di invio"
-                className="inline-flex rounded-full bg-[var(--ma-surface)] p-1"
-              >
-                {BRAND_ORDER.map((b) => {
-                  const active = brand === b;
+            <div className="min-w-0 flex-1 space-y-2">
+              {!lockBrand && (
+                <div
+                  role="radiogroup"
+                  aria-label="Verticale di invio"
+                  className="flex flex-wrap gap-1 rounded-lg bg-[var(--ma-surface)] p-1"
+                >
+                  {BRAND_ORDER.map((b) => {
+                    const active = brand === b;
+                    const brandDomain = splitEmailAddress(BRAND_FROM[b])?.domain ?? "";
+                    return (
+                      <button
+                        key={b}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setBrand(b)}
+                        className={cn(
+                          "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+                          active
+                            ? BRAND_PILL_ACTIVE[b]
+                            : "text-[var(--ma-muted)] hover:text-[var(--ma-ink)]",
+                        )}
+                      >
+                        {BRAND_LABELS[b]}{" "}
+                        <span className={cn("font-normal", active ? "opacity-80" : "opacity-60")}>
+                          @{brandDomain}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {localPartOptions.map((option) => {
+                  const active = localPart === option;
+                  const removable = savedLocalParts.includes(option) && !DEFAULT_LOCAL_PARTS.includes(option);
                   return (
-                    <button
-                      key={b}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      onClick={() => setBrand(b)}
+                    <span
+                      key={option}
                       className={cn(
-                        "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                        "inline-flex items-center overflow-hidden rounded-full border text-xs font-semibold",
                         active
-                          ? BRAND_PILL_ACTIVE[b]
-                          : "text-[var(--ma-muted)] hover:text-[var(--ma-ink)]",
+                          ? "border-[var(--ma-accent)] bg-[var(--ma-accent)] text-white"
+                          : "border-[var(--ma-line)] bg-white text-[var(--ma-ink)]",
                       )}
                     >
-                      {BRAND_LABELS[b]}{" "}
-                      <span className={cn("font-normal", active ? "opacity-80" : "opacity-60")}>
-                        · {BRAND_FROM[b]}
-                      </span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => setLocalPart(option)}
+                        className="px-2.5 py-1"
+                      >
+                        {option}
+                      </button>
+                      {removable && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextSaved = savedLocalParts.filter((value) => value !== option);
+                            writeSavedLocalParts(domain, nextSaved);
+                            setSavedLocalParts(nextSaved);
+                            if (localPart === option) setLocalPart(baseLocalPart);
+                          }}
+                          className={cn(
+                            "border-l px-1.5 py-1",
+                            active ? "border-white/30 hover:bg-white/15" : "border-[var(--ma-line)] text-[var(--ma-muted)] hover:text-red-600",
+                          )}
+                          aria-label={`Rimuovi ${option}`}
+                        >
+                          <X size={11} />
+                        </button>
+                      )}
+                    </span>
                   );
                 })}
+                <button
+                  type="button"
+                  onClick={() => setLocalPart("__custom__")}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-xs font-semibold",
+                    localPart === "__custom__"
+                      ? "border-[var(--ma-accent)] bg-[var(--ma-accent)] text-white"
+                      : "border-[var(--ma-line)] bg-white text-[var(--ma-ink)]",
+                  )}
+                >
+                  Personalizzata
+                </button>
               </div>
-            )}
+              {localPart === "__custom__" && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex min-w-[260px] flex-1 items-center rounded-lg border border-[var(--ma-line)] bg-white px-3 py-1.5 text-sm">
+                    <input
+                      value={customLocalPart}
+                      onChange={(e) => setCustomLocalPart(e.target.value)}
+                      placeholder="nome-casella"
+                      className="min-w-0 flex-1 bg-transparent text-[var(--ma-ink)] placeholder:text-[var(--ma-muted)] focus:outline-none"
+                    />
+                    <span className="shrink-0 text-[var(--ma-muted)]">@{domain}</span>
+                  </div>
+                  <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--ma-muted)]">
+                    <input
+                      type="checkbox"
+                      checked={saveCustomLocalPart}
+                      onChange={(e) => setSaveCustomLocalPart(e.target.checked)}
+                      className="h-3.5 w-3.5 accent-[var(--ma-accent)]"
+                    />
+                    Salva
+                  </label>
+                </div>
+              )}
+              <p className="text-[11px] font-medium text-[var(--ma-muted)]">
+                Mittente: <span className="text-[var(--ma-ink)]">{effectiveFromAddress}</span>
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center px-5 py-2.5">

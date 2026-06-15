@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
+import { activateSubscription } from "@/lib/platform/subscription-service";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,10 @@ export async function POST(req: NextRequest) {
   }
   if (!data) {
     return NextResponse.json({ error: "Pagamento non trovato" }, { status: 404 });
+  }
+
+  if ((data as { kind?: string; subscription_id?: string }).kind === "first") {
+    await activateSubscription((data as { subscription_id: string }).subscription_id).catch(() => undefined);
   }
 
   return NextResponse.json({ payment: data });

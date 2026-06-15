@@ -4,6 +4,7 @@ import { stripeRequest } from "@/lib/payments/stripe/client";
 import { createBunqPaymentRequest } from "@/lib/payments/bunq/payment-requests";
 import {
   paymentRedirectUrlWithRef,
+  pynkCheckoutUrl,
   stripeSuccessUrl,
   stripeCancelUrl,
 } from "@/lib/payments/payment-urls";
@@ -39,7 +40,7 @@ export async function createContractPayment(
     case "bunq":
       return createBunqCheckout(contractId, data);
     case "bonifico":
-      return { provider: "bonifico" };
+      return { provider: "bonifico", checkoutUrl: pynkCheckoutUrl(contractId) };
   }
 }
 

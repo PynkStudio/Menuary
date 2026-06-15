@@ -7,7 +7,7 @@ import { pynkCheckoutUrl, pynkPaymentUrl } from "@/lib/payments/payment-urls";
 import { stripeRequest } from "@/lib/payments/stripe/client";
 import { attachPaymentProviderRefs } from "@/lib/platform/subscription-service";
 import { PLATFORM_BRANDS, resolveSenderForVertical, sendEmail } from "@/lib/email/sender";
-import { FORNITORE, formatEUR } from "@/lib/contracts/menuary-contract";
+import { formatEUR } from "@/lib/contracts/menuary-contract";
 import type { TenantVertical } from "@/lib/tenant";
 import { buildMarketingEmail } from "@/lib/email/templates/marketing";
 
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
   }
 
   const paymentRef = payment.invoice_number ?? payment.id;
-  const checkoutUrl = method === "bonifico" ? null : pynkCheckoutUrl(paymentRef);
+  const checkoutUrl = url ?? pynkCheckoutUrl(paymentRef);
 
   if (send) {
     if (!recipient) {
@@ -217,7 +217,7 @@ function buildPaymentEmail(
   businessName: string,
   amount: number,
   dueDate: string | null,
-  url: string | null,
+  url: string,
   brand: (typeof PLATFORM_BRANDS)[TenantVertical],
 ) {
   return buildMarketingEmail({
@@ -225,17 +225,6 @@ function buildPaymentEmail(
     preheader: `Pagamento in attesa — ${formatEUR(amount)}`,
     title: "Pagamento in attesa",
     body: `<p>Gentile ${businessName || "cliente"}, è in attesa un pagamento di <strong>${formatEUR(amount)}</strong>${dueDate ? ` con scadenza il ${new Date(dueDate).toLocaleDateString("it-IT")}` : ""}.</p>`,
-    cta: url ? { label: "Procedi al pagamento", url } : undefined,
-    extraSections: !url
-      ? `<table role="presentation" width="100%">
-          <tr>
-            <td style="padding:16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:24px;">
-              <p style="margin:0;font-size:14px;color:#374151;">Effettui il bonifico di <strong>${formatEUR(amount)}</strong> sul conto:</p>
-              <p style="margin:8px 0 0;font-size:14px;color:#374151;"><strong>IBAN:</strong> ${FORNITORE.iban}</p>
-              <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">Intestato a Massimo Pernozzoli</p>
-            </td>
-          </tr>
-        </table>`
-      : undefined,
+    cta: { label: "Procedi al pagamento", url },
   });
 }

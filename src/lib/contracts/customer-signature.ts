@@ -7,19 +7,18 @@ import {
 } from "@/lib/contracts/contract-queries";
 import {
   BRAND_INFO,
-  FORNITORE,
   computeFirstPaymentTotal,
   formatEUR,
   type ContractBrand,
   type ContractData,
 } from "@/lib/contracts/menuary-contract";
 import { paymentRedirectUrlWithRef } from "@/lib/payments/payment-urls";
+import { buildMarketingEmail } from "@/lib/email/templates/marketing";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
 import {
   attachPaymentProviderRefs,
   createPendingSubscriptionFromContract,
 } from "@/lib/platform/subscription-service";
-import { buildMarketingEmail } from "@/lib/email/templates/marketing";
 
 export async function ensureCustomerSignatureFulfillment(
   contract: PlatformContract,
@@ -93,23 +92,11 @@ async function handlePaymentByMethod(
     }
 
     case "bonifico": {
-      if (signerEmail) {
-        const firstPayment = computeFirstPaymentTotal(data.economiche);
+      if (signerEmail && result.checkoutUrl) {
         await sendEmail({
           to: signerEmail,
           subject: `Pagamento contratto ${numero} — ${emailBrand.name}`,
-          html: buildMarketingEmail({
-            brand: emailBrand,
-            preheader: `Istruzioni bonifico — contratto ${numero}`,
-            title: "Contratto firmato — procedi al pagamento",
-            body: `<p>Grazie per aver firmato il contratto <strong>${numero}</strong>!</p>
-<p>Per completare l'attivazione del servizio, effettua un bonifico di <strong>${formatEUR(firstPayment)}</strong> con i seguenti dati:</p>
-<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;font-size:14px;margin:16px 0">
-  <strong>Intestatario:</strong> ${FORNITORE.ragioneSociale}<br>
-  <strong>IBAN:</strong> ${FORNITORE.iban}<br>
-  <strong>Causale:</strong> Contratto ${numero} — ${data.cliente.ragioneSociale}
-</div>`,
-          }),
+          html: buildPaymentEmailHtml(data, result.checkoutUrl, numero),
           fromOverride: sender.from,
         });
       }

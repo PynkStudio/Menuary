@@ -59,7 +59,7 @@ export default async function GestioneMailPage({
     supabase.from("siteadmin").select("id").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
     supabase
       .from("tenantadmin")
-      .select("id")
+      .select("id,email")
       .eq("user_id", user.id)
       .eq("tenant_id", tenantSlug)
       .eq("enabled", true)
@@ -97,6 +97,7 @@ export default async function GestioneMailPage({
         tenantId={tenant.id}
         tenantName={tenant.name}
         tenantFromAddress={tenantFromAddress(tenant.id, tenant.domains)}
+        currentUserEmail={(ta?.email as string | null | undefined) ?? user.email ?? null}
       />
     </div>
   );

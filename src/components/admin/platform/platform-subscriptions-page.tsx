@@ -1,16 +1,18 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  ArrowRight,
   CreditCard,
   Euro,
   Mail,
   Copy,
+  MoreVertical,
+  FileUp,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
@@ -115,6 +117,7 @@ export function PlatformSubscriptionsPage() {
         ),
       );
       setFeedback("Pagamento segnato come pagato.");
+      window.dispatchEvent(new Event("payments:refresh"));
     } finally {
       setPaymentActionId(null);
     }
@@ -159,6 +162,33 @@ export function PlatformSubscriptionsPage() {
       } else {
         setFeedback(send ? "Email pagamento inviata." : "Questo metodo non prevede un link.");
       }
+    } finally {
+      setPaymentActionId(null);
+    }
+  }
+
+  async function uploadInvoice(payment: PlatformPayment, formData: FormData) {
+    setPaymentActionId(payment.id);
+    setFeedback(null);
+    try {
+      formData.set("paymentId", payment.id);
+      const res = await fetch("/api/admin/payments/invoice", {
+        method: "POST",
+        body: formData,
+      });
+      const result = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        payment?: PlatformPayment;
+      };
+      if (!res.ok || !result.payment) {
+        setFeedback(`Errore: ${result.error ?? "upload non riuscito"}`);
+        return;
+      }
+      setPayments((current) =>
+        current.map((item) => (item.id === payment.id ? result.payment! : item)),
+      );
+      setFeedback("Fattura caricata.");
+      window.dispatchEvent(new Event("payments:refresh"));
     } finally {
       setPaymentActionId(null);
     }
@@ -256,7 +286,15 @@ export function PlatformSubscriptionsPage() {
       {/* Tabella abbonamenti */}
       <div className="space-y-3">
         {filtered.map((sub) => (
-          <SubscriptionRow key={sub.id} sub={sub} payments={payments.filter((p) => p.subscription_id === sub.id)} />
+          <SubscriptionRow
+            key={sub.id}
+            sub={sub}
+            payments={payments.filter((p) => p.subscription_id === sub.id)}
+            busyPaymentId={paymentActionId}
+            onMarkPaid={markPaid}
+            onCommunicatePayment={communicatePayment}
+            onUploadInvoice={uploadInvoice}
+          />
         ))}
         {filtered.length === 0 && (
           <div className="rounded-3xl bg-white p-10 text-center ring-1 ring-pork-ink/10">
@@ -298,32 +336,13 @@ export function PlatformSubscriptionsPage() {
                   >
                     {PAYMENT_STATUS_LABELS[p.status]}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => markPaid(p)}
-                    disabled={paymentActionId === p.id}
-                    className="shrink-0 rounded-full bg-pork-green px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
-                  >
-                    Segna pagato
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => communicatePayment(p, true)}
-                    disabled={paymentActionId === p.id}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-pork-ink px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
-                  >
-                    <Mail size={12} /> Rimanda
-                  </button>
-                  {(p.payment_method === "bunq" || p.payment_method === "carta") && (
-                    <button
-                      type="button"
-                      onClick={() => communicatePayment(p, false)}
-                      disabled={paymentActionId === p.id}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-pork-ink ring-1 ring-pork-ink/15 disabled:opacity-50"
-                    >
-                      <Copy size={12} /> Copia link
-                    </button>
-                  )}
+                  <PaymentActions
+                    payment={p}
+                    busy={paymentActionId === p.id}
+                    onMarkPaid={markPaid}
+                    onCommunicatePayment={communicatePayment}
+                    onUploadInvoice={uploadInvoice}
+                  />
                 </div>
               );
             })}
@@ -339,9 +358,17 @@ export function PlatformSubscriptionsPage() {
 function SubscriptionRow({
   sub,
   payments,
+  busyPaymentId,
+  onMarkPaid,
+  onCommunicatePayment,
+  onUploadInvoice,
 }: {
   sub: PlatformSubscription;
   payments: PlatformPayment[];
+  busyPaymentId: string | null;
+  onMarkPaid: (payment: PlatformPayment) => Promise<void>;
+  onCommunicatePayment: (payment: PlatformPayment, send: boolean) => Promise<void>;
+  onUploadInvoice: (payment: PlatformPayment, formData: FormData) => Promise<void>;
 }) {
   const effectivePrice =
     sub.price_override ??
@@ -355,12 +382,9 @@ function SubscriptionRow({
       <div className="flex flex-wrap items-start gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/admin/crm/${sub.lead_id}`}
-              className="font-bold hover:text-pork-red"
-            >
+            <span className="font-bold">
               {sub.lead?.business_name ?? sub.lead_id}
-            </Link>
+            </span>
             <span
               className={cn(
                 "rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide",
@@ -383,29 +407,166 @@ function SubscriptionRow({
           </div>
         </div>
 
-        {/* Pagamenti rapidi */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           {payments.slice(0, 2).map((p) => (
-            <span
-              key={p.id}
-              className={cn(
-                "rounded-full px-2 py-1 text-[10px] font-bold",
-                PAYMENT_STATUS_COLORS[p.status],
+            <div key={p.id} className="flex items-center gap-2 rounded-xl bg-pork-ink/[0.03] px-2 py-1">
+              <span
+                className={cn(
+                  "rounded-full px-2 py-1 text-[10px] font-bold",
+                  PAYMENT_STATUS_COLORS[p.status],
+                )}
+              >
+                {eur(p.amount)} · {PAYMENT_STATUS_LABELS[p.status]}
+              </span>
+              {p.status === "paid" && !p.invoice_file_path && (
+                <span className="rounded-full bg-pork-mustard/25 px-2 py-1 text-[10px] font-bold text-pork-ink">
+                  fattura da caricare
+                </span>
               )}
-            >
-              {eur(p.amount)} · {PAYMENT_STATUS_LABELS[p.status]}
-            </span>
+              <PaymentActions
+                payment={p}
+                busy={busyPaymentId === p.id}
+                compact
+                onMarkPaid={onMarkPaid}
+                onCommunicatePayment={onCommunicatePayment}
+                onUploadInvoice={onUploadInvoice}
+              />
+            </div>
           ))}
         </div>
-
-        <Link
-          href={`/admin/crm/${sub.lead_id}`}
-          className="shrink-0 text-pork-ink/30 hover:text-pork-ink"
-        >
-          <ArrowRight size={16} />
-        </Link>
       </div>
     </div>
+  );
+}
+
+function PaymentActions({
+  payment,
+  busy,
+  compact,
+  onMarkPaid,
+  onCommunicatePayment,
+  onUploadInvoice,
+}: {
+  payment: PlatformPayment;
+  busy: boolean;
+  compact?: boolean;
+  onMarkPaid: (payment: PlatformPayment) => Promise<void>;
+  onCommunicatePayment: (payment: PlatformPayment, send: boolean) => Promise<void>;
+  onUploadInvoice: (payment: PlatformPayment, formData: FormData) => Promise<void>;
+}) {
+  const canCopyLink = payment.status === "pending" && (payment.payment_method === "bunq" || payment.payment_method === "carta");
+  const invoiceUrl = payment.invoice_file_path
+    ? `/api/admin/payments/invoice?paymentId=${encodeURIComponent(payment.id)}`
+    : null;
+
+  function submitInvoice(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void onUploadInvoice(payment, new FormData(event.currentTarget));
+  }
+
+  return (
+    <details className="relative shrink-0">
+      <summary
+        className={cn(
+          "inline-flex cursor-pointer list-none items-center gap-1 rounded-full font-bold ring-1 ring-pork-ink/15 transition hover:bg-pork-ink hover:text-white",
+          compact ? "px-2 py-1 text-[10px]" : "px-3 py-1.5 text-xs",
+          busy ? "pointer-events-none opacity-50" : "bg-white text-pork-ink",
+        )}
+      >
+        <MoreVertical size={compact ? 12 : 14} />
+        {!compact && "Azioni"}
+      </summary>
+      <div className="absolute right-0 z-20 mt-2 w-72 rounded-2xl bg-white p-3 text-sm shadow-xl ring-1 ring-pork-ink/10">
+        <p className="mb-2 text-[11px] font-black uppercase tracking-wide text-pork-ink/45">
+          Pagamento {payment.kind === "renewal" ? "rinnovo" : "iniziale"}
+        </p>
+        <div className="space-y-2">
+          {payment.status === "pending" && (
+            <>
+              <button
+                type="button"
+                onClick={() => void onMarkPaid(payment)}
+                disabled={busy}
+                className="flex w-full items-center gap-2 rounded-xl bg-pork-green px-3 py-2 text-left text-xs font-bold text-white disabled:opacity-50"
+              >
+                <CheckCircle2 size={14} /> Conferma ricezione
+              </button>
+              {canCopyLink && (
+                <button
+                  type="button"
+                  onClick={() => void onCommunicatePayment(payment, false)}
+                  disabled={busy}
+                  className="flex w-full items-center gap-2 rounded-xl bg-pork-ink/5 px-3 py-2 text-left text-xs font-bold text-pork-ink disabled:opacity-50"
+                >
+                  <Copy size={14} /> Copia link pagamento
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => void onCommunicatePayment(payment, true)}
+                disabled={busy}
+                className="flex w-full items-center gap-2 rounded-xl bg-pork-ink px-3 py-2 text-left text-xs font-bold text-white disabled:opacity-50"
+              >
+                <Mail size={14} /> Reinvia richiesta
+              </button>
+            </>
+          )}
+          {payment.status === "paid" && (
+            <>
+              {payment.invoice_file_path ? (
+                <a
+                  href={invoiceUrl ?? "#"}
+                  className="flex w-full items-center gap-2 rounded-xl bg-pork-ink/5 px-3 py-2 text-xs font-bold text-pork-ink"
+                >
+                  <Download size={14} /> Scarica fattura
+                </a>
+              ) : (
+                <form className="space-y-2 rounded-xl bg-pork-mustard/10 p-2" onSubmit={submitInvoice}>
+                  <label className="block text-[11px] font-bold text-pork-ink/60">
+                    Numero fattura
+                    <input
+                      name="invoiceNumber"
+                      className="mt-1 w-full rounded-lg border border-pork-ink/10 px-2 py-1 text-xs"
+                      placeholder={payment.invoice_number ?? "Es. FPA-2026-001"}
+                    />
+                  </label>
+                  <label className="block text-[11px] font-bold text-pork-ink/60">
+                    Data fattura
+                    <input
+                      name="invoiceDate"
+                      type="date"
+                      className="mt-1 w-full rounded-lg border border-pork-ink/10 px-2 py-1 text-xs"
+                    />
+                  </label>
+                  <label className="block text-[11px] font-bold text-pork-ink/60">
+                    PDF fattura
+                    <input
+                      name="file"
+                      type="file"
+                      accept="application/pdf"
+                      required
+                      className="mt-1 w-full text-xs"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-pork-ink px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+                  >
+                    <FileUp size={14} /> Aggiungi fattura
+                  </button>
+                </form>
+              )}
+            </>
+          )}
+          {payment.status !== "pending" && payment.status !== "paid" && (
+            <p className="rounded-xl bg-pork-ink/5 px-3 py-2 text-xs font-semibold text-pork-ink/55">
+              Nessuna azione disponibile per questo stato.
+            </p>
+          )}
+        </div>
+      </div>
+    </details>
   );
 }
 

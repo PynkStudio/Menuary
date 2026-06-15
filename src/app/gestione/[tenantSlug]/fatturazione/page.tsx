@@ -17,6 +17,8 @@ import { isDemoHost } from "@/lib/platform";
 import { getTenantDemoControl } from "@/lib/demo-controls";
 import { TENANTS } from "@/lib/tenant-registry";
 import { getVerticalMeta } from "@/lib/vertical";
+import { PLATFORM_ADDON_PACKAGES, PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
+import type { PlatformPayment, PlatformSubscription } from "@/lib/platform-crm-types";
 import {
   demoBillingPlan,
   demoBillingInvoices,
@@ -34,6 +36,14 @@ function formatDate(iso: string) {
 
 function formatEuroAmount(amount: number) {
   return `€ ${amount.toFixed(2).replace(".", ",")}`;
+}
+
+function paymentLabel(method: string | null) {
+  if (method === "carta") return "Carta / Stripe";
+  if (method === "bunq") return "Bunq";
+  if (method === "sepa") return "SEPA";
+  if (method === "bonifico") return "Bonifico bancario";
+  return "Metodo manuale";
 }
 
 function InvoiceStatusBadge({ status }: { status: BillingInvoice["status"] }) {
@@ -121,34 +131,57 @@ export default async function FatturazionePage({
   const showDemoBilling = isDemoHostname;
   const plan = showDemoBilling ? demoBillingPlan(tenant.vertical) : null;
   const invoices = showDemoBilling ? demoBillingInvoices() : [];
+  let subscription: PlatformSubscription | null = null;
+  let realPayments: PlatformPayment[] = [];
+
+  if (!showDemoBilling) {
+    const db = createSupabaseServiceClient();
+    if (db) {
+      const { data: sub } = await db
+        .from("platform_subscriptions")
+        .select("*")
+        .eq("tenant_id", tenantSlug)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      subscription = (sub as PlatformSubscription | null) ?? null;
+      if (subscription?.id) {
+        const { data: payments } = await db
+          .from("platform_payments")
+          .select("*")
+          .eq("subscription_id", subscription.id)
+          .order("due_date", { ascending: false });
+        realPayments = (payments ?? []) as PlatformPayment[];
+      }
+    }
+  }
+
+  const packageInfo = subscription
+    ? [...PLATFORM_PACKAGES, ...PLATFORM_ADDON_PACKAGES].find((pkg) => pkg.slug === subscription?.package_slug)
+    : null;
+  const nextPayment = realPayments
+    .filter((payment) => payment.status === "pending")
+    .sort((a, b) => String(a.due_date ?? "").localeCompare(String(b.due_date ?? "")))[0] ?? null;
+  const paidPayments = realPayments.filter((payment) => payment.status === "paid");
+  const payNowUrl = nextPayment?.bunq_payment_url ?? nextPayment?.stripe_payment_link ?? null;
 
   // Contratto controfirmato reale: disponibile solo fuori dalla demo, quando
   // esiste un contratto in stato "countersigned" legato a questo tenant.
   let signedContract: {
     numero: string;
     countersignedAt: string | null;
-    url: string;
   } | null = null;
   if (!isDemoHostname) {
     try {
       const contract = await getCountersignedContractByTenant(tenantSlug);
       if (contract?.signed_document_path) {
-        const db = createSupabaseServiceClient();
-        const { data: signed } = db
-          ? await db.storage
-              .from("platform-documents")
-              .createSignedUrl(contract.signed_document_path, 3600)
-          : { data: null };
-        if (signed?.signedUrl) {
-          signedContract = {
-            numero: contract.numero,
-            countersignedAt:
-              contract.contract_data?.countersigned?.at ??
-              contract.signed_at ??
-              null,
-            url: signed.signedUrl,
-          };
-        }
+        signedContract = {
+          numero: contract.numero,
+          countersignedAt:
+            contract.contract_data?.countersigned?.at ??
+            contract.signed_at ??
+            null,
+        };
       }
     } catch {
       signedContract = null;
@@ -190,9 +223,7 @@ export default async function FatturazionePage({
                 )}
               </div>
               <a
-                href={signedContract.url}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/api/gestione/billing/contract?tenant=${encodeURIComponent(tenantSlug)}`}
                 className="inline-flex items-center gap-1 rounded-full bg-pork-ink/5 px-3 py-1 text-xs font-bold text-pork-ink hover:bg-pork-ink hover:text-pork-cream"
               >
                 <Download size={12} /> Scarica PDF
@@ -202,7 +233,7 @@ export default async function FatturazionePage({
         </section>
       )}
 
-      {!plan && !isDemo ? (
+      {!plan && !isDemo && !subscription ? (
         <section className="ga-card">
           <p className="ga-card-hint">
             I dati di fatturazione non sono ancora disponibili. Contatta{" "}
@@ -215,6 +246,130 @@ export default async function FatturazionePage({
             per assistenza.
           </p>
         </section>
+      ) : subscription ? (
+        <>
+          <section className="ga-section" aria-labelledby="billing-plan-title">
+            <div className="ga-section-head">
+              <h2 id="billing-plan-title" className="ga-section-title">
+                Piano attivo
+              </h2>
+              <span className="ga-section-hint">{subscription.status.replaceAll("_", " ")}</span>
+            </div>
+            <div className="ga-card">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="impact-title text-2xl text-pork-ink">
+                    {packageInfo?.name ?? subscription.package_slug ?? "Abbonamento"}
+                  </p>
+                  <p className="mt-1 text-sm text-pork-ink/60">
+                    {formatEuroAmount(Number(subscription.price_override ?? 0))} /{" "}
+                    {subscription.billing_cycle === "yearly" ? "anno" : "mese"}
+                    {subscription.next_renewal_at ? (
+                      <> · prossimo rinnovo il <strong>{formatDate(subscription.next_renewal_at)}</strong></>
+                    ) : null}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-bold uppercase tracking-wide text-pork-ink/45">
+                    Metodo pagamento
+                  </p>
+                  <p className="text-sm font-semibold">{paymentLabel(subscription.payment_method)}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 border-t border-pork-ink/10 pt-4">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-pork-ink/50">
+                  Prossimo pagamento previsto
+                </p>
+                {nextPayment ? (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-pork-ink/[0.03] p-3">
+                    <div>
+                      <p className="font-semibold">
+                        {formatEuroAmount(Number(nextPayment.amount))} · scadenza{" "}
+                        {nextPayment.due_date ? formatDate(nextPayment.due_date) : "da definire"}
+                      </p>
+                      <p className="text-[11px] text-pork-ink/50">
+                        {paymentLabel(nextPayment.payment_method)} · pagamento in attesa
+                      </p>
+                    </div>
+                    {payNowUrl && (
+                      <a
+                        href={payNowUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-full bg-pork-ink px-4 py-2 text-xs font-bold text-pork-cream"
+                      >
+                        Paga adesso
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <p className="ga-card-hint">
+                    Nessun pagamento in attesa. Il prossimo rinnovo è previsto per{" "}
+                    {subscription.next_renewal_at ? formatDate(subscription.next_renewal_at) : "una data da definire"}.
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section className="ga-section" aria-labelledby="billing-invoices-title">
+            <div className="ga-section-head">
+              <h2 id="billing-invoices-title" className="ga-section-title">
+                Fatture
+              </h2>
+              <span className="ga-section-hint">{paidPayments.length} pagamenti confermati</span>
+            </div>
+            {paidPayments.length === 0 ? (
+              <div className="ga-empty">Nessuna fattura disponibile.</div>
+            ) : (
+              <div className="overflow-hidden rounded-2xl border border-pork-ink/10">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[560px] text-sm">
+                    <thead>
+                      <tr className="border-b border-pork-ink/10 bg-pork-ink/[0.03]">
+                        <th className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-wide text-pork-ink/50">Fattura</th>
+                        <th className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-wide text-pork-ink/50">Data</th>
+                        <th className="px-4 py-3 text-left text-[11px] font-black uppercase tracking-wide text-pork-ink/50">Importo</th>
+                        <th className="px-4 py-3 text-right text-[11px] font-black uppercase tracking-wide text-pork-ink/50">PDF</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paidPayments.map((payment, i) => (
+                        <tr key={payment.id} className={`border-b border-pork-ink/5 last:border-0 ${i % 2 === 0 ? "bg-white" : "bg-pork-cream/30"}`}>
+                          <td className="px-4 py-3">
+                            <p className="font-semibold">{payment.invoice_number ?? `Pagamento ${payment.id.slice(0, 8)}`}</p>
+                            <p className="text-[11px] text-pork-ink/50">
+                              {payment.kind === "renewal" ? "Rinnovo abbonamento" : "Primo pagamento"}
+                            </p>
+                          </td>
+                          <td className="px-4 py-3 text-pork-ink/70">
+                            {formatDate(payment.invoice_date ?? payment.paid_at ?? payment.created_at)}
+                          </td>
+                          <td className="px-4 py-3 font-bold">{formatEuroAmount(Number(payment.amount))}</td>
+                          <td className="px-4 py-3 text-right">
+                            {payment.invoice_file_path ? (
+                              <a
+                                href={`/api/gestione/billing/invoice?tenant=${encodeURIComponent(tenantSlug)}&payment=${encodeURIComponent(payment.id)}`}
+                                className="inline-flex items-center gap-1 rounded-full bg-pork-ink/5 px-3 py-1 text-xs font-bold text-pork-ink hover:bg-pork-ink hover:text-pork-cream"
+                              >
+                                <Download size={12} /> PDF
+                              </a>
+                            ) : (
+                              <span className="inline-flex cursor-default items-center gap-1 rounded-full bg-pork-ink/5 px-3 py-1 text-xs font-bold text-pork-ink/30">
+                                <Download size={12} /> In preparazione
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </section>
+        </>
       ) : (
         plan && (
           <>

@@ -32,6 +32,7 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clearAdminSession } from "@/lib/admin-auth";
 import { MailLauncherProvider } from "@/components/admin/inbox/mail-launcher";
+import { AdminPushNotifications } from "@/components/admin/platform/admin-push-notifications";
 import { hasAdminPermission, type AdminPermission, type SiteadminRole } from "@/lib/admin-permissions";
 import { cn } from "@/lib/utils";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
@@ -120,9 +121,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [platformRole, setPlatformRole] = useState<SiteadminRole | null>(null);
+  const [platformSiteadminId, setPlatformSiteadminId] = useState<string | null>(null);
   const [inboxUnread, setInboxUnread] = useState(0);
   const [leadAttentionCount, setLeadAttentionCount] = useState(0);
   const [contractsAttention, setContractsAttention] = useState(0);
+  const [invoiceTasks, setInvoiceTasks] = useState(0);
   const mode = usePlatformMode();
 
   const tenant = useTenant();
@@ -139,11 +142,17 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     let active = true;
     void fetch("/api/admin/me", { cache: "no-store" })
       .then((res) => res.json())
-      .then((data: { role?: SiteadminRole }) => {
-        if (active) setPlatformRole(data.role ?? null);
+      .then((data: { id?: string; role?: SiteadminRole }) => {
+        if (active) {
+          setPlatformRole(data.role ?? null);
+          setPlatformSiteadminId(data.id ?? null);
+        }
       })
       .catch(() => {
-        if (active) setPlatformRole(null);
+        if (active) {
+          setPlatformRole(null);
+          setPlatformSiteadminId(null);
+        }
       });
     return () => {
       active = false;
@@ -210,6 +219,27 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       clearInterval(interval);
       window.removeEventListener("focus", fetchContractsAttention);
       window.removeEventListener("contracts:refresh", fetchContractsAttention as EventListener);
+    };
+  }, [mode, platformRole]);
+
+  useEffect(() => {
+    if (mode !== "platform-admin" || !hasAdminPermission(platformRole, "subscriptions:view")) return;
+
+    function fetchInvoiceTasks() {
+      void fetch("/api/admin/payments/invoice-tasks", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data: { count?: number }) => setInvoiceTasks(data.count ?? 0))
+        .catch(() => {});
+    }
+
+    fetchInvoiceTasks();
+    const interval = setInterval(fetchInvoiceTasks, 25_000);
+    window.addEventListener("focus", fetchInvoiceTasks);
+    window.addEventListener("payments:refresh", fetchInvoiceTasks as EventListener);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchInvoiceTasks);
+      window.removeEventListener("payments:refresh", fetchInvoiceTasks as EventListener);
     };
   }, [mode, platformRole]);
 
@@ -335,6 +365,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       {contractsAttention}
                     </span>
                   )}
+                  {it.href === "/admin/abbonamenti" && invoiceTasks > 0 && (
+                    <span className={cn(
+                      "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      active ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
+                    )}>
+                      {invoiceTasks}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -348,6 +386,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <UserCircle size={18} />
             Profilo
           </Link>
+          <AdminPushNotifications role={platformRole} siteadminId={platformSiteadminId} />
           <button onClick={logout} className="menuary-admin-logout">
             <LogOut size={18} /> Esci
           </button>
