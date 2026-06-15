@@ -20,7 +20,7 @@ export type TenantVertical = "food" | "services" | "creative";
 // "trial"      → tenant in prova: solo il primo sync di popolamento, poi stop
 // "offline"    → tenant disattivato: nessun job automatico eseguito
 // "trattativa" → prospect in fase commerciale: demo disponibile, nessun job automatico
-export type TenantStatus = "active" | "trial" | "offline" | "trattativa";
+export type TenantStatus = "active" | "trial" | "offline" | "trattativa" | "suspended";
 
 // ─── Google integration ───────────────────────────────────────────────────────
 // Il Place ID e il resource name della location Google non sono hardcodati qui:

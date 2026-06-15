@@ -46,6 +46,7 @@ import {
   marketingWebsiteSchema,
 } from "@/lib/marketing-seo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getTenantById } from "@/lib/data/tenant";
 import { fetchLocations } from "@/lib/location";
 import { LocationProvider } from "@/components/core/location-provider";
 import { Suspense } from "react";
@@ -514,9 +515,19 @@ export default async function RootLayout({
   const tenant = findTenantById(reqHeaders.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(host);
   const mode = getPlatformModeFromHeaderValue(reqHeaders.get(PLATFORM_MODE_HEADER), host);
   const themeVars = tenantThemeCssVars(tenant.theme);
+
+  // Su dominio di produzione lo stato di abilitazione/sospensione vive sul DB
+  // (la sospensione per mancato pagamento aggiorna tenants.enabled/status).
+  // Fail-open: se la lettura fallisce usiamo il profilo statico → un sito che
+  // paga non va offline per un errore DB transitorio.
+  const liveTenant = mode === "tenant" ? await getTenantById(tenant.id).catch(() => null) : null;
+  const effectiveEnabled = liveTenant?.enabled ?? tenant.enabled;
+  const effectiveStatus = liveTenant?.status ?? tenant.status;
   const tenantSiteDisabled =
     (mode === "tenant" || mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") &&
-    (!tenant.enabled || tenant.status === "offline");
+    (!effectiveEnabled || effectiveStatus === "offline" || effectiveStatus === "suspended");
+  const unavailableReason: "suspended" | "offline" =
+    effectiveStatus === "suspended" ? "suspended" : "offline";
 
   // Fetch sedi solo per tenant con multiLocation abilitato in modalità tenant site.
   // In tutti gli altri mode (marketing, admin, gestione…) le sedi non servono al root layout.
@@ -598,7 +609,7 @@ export default async function RootLayout({
               <LocationProvider locations={locations} activeSlug={locationSlug}>
                 <Providers>
                   {tenantSiteDisabled ? (
-                    <TenantUnavailable vertical={tenant.vertical} />
+                    <TenantUnavailable vertical={tenant.vertical} reason={unavailableReason} />
                   ) : (
                     <>
                       <SiteChrome />
@@ -619,19 +630,32 @@ export default async function RootLayout({
   );
 }
 
-function TenantUnavailable({ vertical }: { vertical: "food" | "services" | "creative" }) {
+function TenantUnavailable({
+  vertical,
+  reason = "offline",
+}: {
+  vertical: "food" | "services" | "creative";
+  reason?: "offline" | "suspended";
+}) {
   const isCreative = vertical === "creative";
   const isServices = vertical === "services";
   const support = isCreative ? "support@weuseorpheo.com" : isServices ? "support@bizery.it" : "support@menuary.it";
   const brand = isCreative ? "Orpheo" : isServices ? "Bizery" : "Menuary";
+  const suspended = reason === "suspended";
 
+  // Colori e font sono token di tema per-tenant (pork-* → rgb(var(--tenant-*)),
+  // font-* → var(--font-*)): la pagina assume automaticamente l'identità del tenant.
   return (
     <main className="flex min-h-screen items-center justify-center bg-pork-cream px-5 py-16 text-pork-ink">
       <div className="w-full max-w-xl rounded-3xl bg-white p-8 text-center ring-1 ring-pork-ink/10">
         <p className="impact-title text-xs text-pork-red">{brand}</p>
-        <h1 className="headline mt-2 text-4xl">Sito non disponibile</h1>
+        <h1 className="headline mt-2 text-4xl">
+          {suspended ? "Servizio temporaneamente sospeso" : "Sito non disponibile"}
+        </h1>
         <p className="mt-4 text-pork-ink/65">
-          Questo sito non è al momento disponibile. Per informazioni o assistenza contatta il servizio clienti.
+          {suspended
+            ? "Il servizio è momentaneamente sospeso. Per riattivarlo o per assistenza contatta il supporto."
+            : "Questo sito non è al momento disponibile. Per informazioni o assistenza contatta il servizio clienti."}
         </p>
         <a
           href={`mailto:${support}`}

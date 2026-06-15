@@ -2,6 +2,17 @@ import type { ContractBrand } from "@/lib/contracts/menuary-contract";
 
 type PaymentStatus = "success" | "failed" | "cancelled" | "processing";
 
+const PYNK_PAYMENT_BASE = "https://pagamenti.pynkstudio.it";
+
+export function pynkCheckoutUrl(ref: string): string {
+  return `${PYNK_PAYMENT_BASE}?ref=${encodeURIComponent(ref)}`;
+}
+
+export function pynkPaymentUrl(status: PaymentStatus, ref?: string): string {
+  const url = `${PYNK_PAYMENT_BASE}?status=${status}`;
+  return ref ? `${url}&ref=${encodeURIComponent(ref)}` : url;
+}
+
 export function paymentRedirectUrl(
   status: PaymentStatus,
   brand: ContractBrand,

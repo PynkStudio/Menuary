@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import { createBunqPaymentRequest } from "@/lib/payments/bunq/payment-requests";
-import { paymentRedirectUrl, stripeSuccessUrl, stripeCancelUrl } from "@/lib/payments/payment-urls";
+import { pynkCheckoutUrl, pynkPaymentUrl } from "@/lib/payments/payment-urls";
 import { stripeRequest } from "@/lib/payments/stripe/client";
 import { attachPaymentProviderRefs } from "@/lib/platform/subscription-service";
 import { PLATFORM_BRANDS, resolveSenderForVertical, sendEmail } from "@/lib/email/sender";
@@ -116,12 +116,13 @@ export async function POST(req: NextRequest) {
     if (!recipient) {
       return NextResponse.json({ error: "Email cliente mancante" }, { status: 409 });
     }
+    const bunqRef = payment.invoice_number ?? `PAY-${payment.id.slice(0, 8)}`;
     const bunq = await createBunqPaymentRequest({
       amountEur: Number(payment.amount),
       description,
       counterpartyEmail: recipient,
-      reference: payment.invoice_number ?? `PAY-${payment.id.slice(0, 8)}`,
-      redirectUrl: paymentRedirectUrl("processing", verticalToContractBrand(vertical)),
+      reference: bunqRef,
+      redirectUrl: pynkPaymentUrl("success", bunqRef),
     });
     url = bunq.shareUrl;
     await attachPaymentProviderRefs(payment.id, {
@@ -135,8 +136,8 @@ export async function POST(req: NextRequest) {
         mode: "payment",
         "payment_method_types[0]": "card",
         customer_email: recipient ?? undefined,
-        success_url: stripeSuccessUrl(verticalToContractBrand(vertical)),
-        cancel_url: stripeCancelUrl(verticalToContractBrand(vertical)),
+        success_url: pynkPaymentUrl("success", payment.invoice_number ?? payment.id),
+        cancel_url: pynkPaymentUrl("cancelled", payment.invoice_number ?? payment.id),
         metadata: {
           payment_id: payment.id,
           subscription_id: payment.subscription_id,
@@ -163,8 +164,8 @@ export async function POST(req: NextRequest) {
     if (!recipient) {
       return NextResponse.json({ error: "Email cliente mancante" }, { status: 409 });
     }
-    const ref = payment.invoice_number ?? payment.id;
-    const emailUrl = paymentRedirectUrl("processing", verticalToContractBrand(vertical)) + `&ref=${encodeURIComponent(ref)}`;
+    const paymentRef = payment.invoice_number ?? payment.id;
+    const checkoutUrl = method === "bonifico" ? null : pynkCheckoutUrl(paymentRef);
     const result = await sendEmail({
       to: recipient,
       subject: `${payment.kind === "renewal" ? "Rinnovo" : "Pagamento"} — ${brand.name}`,
@@ -172,7 +173,7 @@ export async function POST(req: NextRequest) {
         lead?.business_name ?? "",
         Number(payment.amount),
         payment.due_date,
-        emailUrl,
+        checkoutUrl,
         brand,
       ),
       fromOverride: sender.from,

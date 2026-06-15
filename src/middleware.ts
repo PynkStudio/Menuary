@@ -692,6 +692,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── Pagamenti PynkStudio (pagamenti.pynkstudio.it) ────────────────────────
+  if (mode === "pagamenti-pynkstudio") {
+    if (!pathname.startsWith("/pagamenti-pynkstudio")) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = "/pagamenti-pynkstudio" + (pathname === "/" ? "" : pathname);
+      return NextResponse.rewrite(rewritten);
+    }
+    return NextResponse.next();
+  }
+
   // ── Platform admin (admin.menuary.it) ─────────────────────────────────────
   if (mode === "platform-admin") {
     const effectivePath = pathname.startsWith("/admin")

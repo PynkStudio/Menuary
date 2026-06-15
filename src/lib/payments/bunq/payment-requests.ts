@@ -37,8 +37,10 @@ export async function createBunqPaymentRequest(
         },
         counterparty_alias: {
           type: "EMAIL",
-          value: input.counterpartyEmail,
-          name: input.counterpartyEmail,
+          value: process.env.BUNQ_REQUEST_COUNTERPARTY_EMAIL ?? input.counterpartyEmail,
+          name: process.env.BUNQ_REQUEST_COUNTERPARTY_EMAIL
+            ? "Menuary Pagamenti"
+            : input.counterpartyEmail,
         },
         description: input.description,
         allow_bunqme: true,

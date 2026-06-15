@@ -16,6 +16,11 @@ export type PaymentLookupResult = {
     intestatario: string;
     causale: string;
   } | null;
+  businessName: string;
+  contractNumber: string;
+  planName: string;
+  cicloFatturazione: "monthly" | "yearly";
+  dueDate: string | null;
 } | {
   found: false;
   status: "not_found";
@@ -163,7 +168,11 @@ function buildRow(
 
   const cd = contract.contract_data as Record<string, unknown> | null;
   const cliente = cd?.cliente as Record<string, unknown> | null;
+  const servizio = cd?.servizio as Record<string, unknown> | null;
+  const economiche = cd?.economiche as Record<string, unknown> | null;
   const ragioneSociale = (cliente?.ragioneSociale as string) ?? "";
+  const planName = (servizio?.pianoNome as string) ?? "";
+  const cicloFatturazione = (economiche?.cicloFatturazione as "monthly" | "yearly") ?? "monthly";
 
   const bonificoDetails = method === "bonifico" ? {
     iban: FORNITORE.iban,
@@ -183,5 +192,10 @@ function buildRow(
     brand: typedBrand,
     actionUrl,
     bonificoDetails,
+    businessName: ragioneSociale,
+    contractNumber: (contract.numero as string) ?? "",
+    planName,
+    cicloFatturazione,
+    dueDate: (payment.due_date as string) ?? null,
   };
 }
