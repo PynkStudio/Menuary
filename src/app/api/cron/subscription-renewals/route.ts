@@ -80,7 +80,7 @@ async function runRenewals(req: Request) {
 
   const today = todayISO();
   const remindDate = addDays(today, REMINDER_DAYS_AHEAD);
-  const result = { reminders: 0, renewals: 0, suspensions: 0, errors: [] as string[] };
+  const result = { reminders: 0, renewals: 0, suspensions: 0, expirations: 0, errors: [] as string[] };
 
   // ─── A. Promemoria −7gg (primo pagamento o rinnovo ancora pending) ────────────
   const { data: dueSoon } = await db
@@ -190,6 +190,36 @@ async function runRenewals(req: Request) {
       result.suspensions++;
     } catch (err) {
       result.errors.push(`suspend ${subId}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  // ─── D. Abbonamenti cancellati con periodo pagato scaduto → tenant offline ────
+  const { data: expired } = await db
+    .from("platform_subscriptions")
+    .select("id, tenant_id, lead_id")
+    .eq("status", "cancelled")
+    .not("tenant_id", "is", null)
+    .not("next_renewal_at", "is", null)
+    .lt("next_renewal_at", today);
+
+  for (const s of (expired ?? []) as { id: string; tenant_id: string | null; lead_id: string | null }[]) {
+    try {
+      const now = new Date().toISOString();
+      if (s.tenant_id) {
+        await db
+          .from("tenants")
+          .update({ enabled: false, status: "offline", updated_at: now })
+          .eq("id", s.tenant_id);
+      }
+      if (s.lead_id) {
+        await db
+          .from("platform_leads")
+          .update({ status: "churned", updated_at: now })
+          .eq("id", s.lead_id);
+      }
+      result.expirations++;
+    } catch (err) {
+      result.errors.push(`expire ${s.id}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 

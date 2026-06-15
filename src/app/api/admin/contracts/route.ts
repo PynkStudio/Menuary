@@ -12,6 +12,7 @@ import {
 } from "@/lib/contracts/contract-queries";
 import { normalizeContractData, type ContractData } from "@/lib/contracts/menuary-contract";
 import { voidEnvelope } from "@/lib/contracts/documenso";
+import { cancelSubscription } from "@/lib/platform/subscription-service";
 
 export const dynamic = "force-dynamic";
 
@@ -120,6 +121,14 @@ export async function DELETE(req: NextRequest) {
   if (contract.status === "draft") {
     await deleteContractById(id);
     return NextResponse.json({ deleted: true });
+  }
+
+  if (contract.subscription_id) {
+    try {
+      await cancelSubscription(contract.subscription_id, "Contratto annullato");
+    } catch (err) {
+      console.warn("[DELETE] Failed to cancel subscription:", err);
+    }
   }
 
   const cancelled = await setContractCancelled(id);
