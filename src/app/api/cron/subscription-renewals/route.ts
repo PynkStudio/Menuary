@@ -6,6 +6,7 @@ import {
   attachPaymentProviderRefs,
 } from "@/lib/platform/subscription-service";
 import { createBunqPaymentRequest } from "@/lib/payments/bunq/payment-requests";
+import { paymentRedirectUrl } from "@/lib/payments/payment-urls";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
 import { FORNITORE, formatEUR } from "@/lib/contracts/menuary-contract";
 import type { TenantVertical } from "@/lib/tenant";
@@ -134,20 +135,24 @@ async function runRenewals(req: Request) {
 
       if (method === "bunq" && email) {
         // Bunq → nuovo link di pagamento il giorno del rinnovo.
+        const vertical: TenantVertical = s.platform_leads?.business_vertical ?? "food";
+        const contractBrand = vertical === "creative" ? "orpheo" : vertical === "services" ? "bizery" : "menuary";
         const bunq = await createBunqPaymentRequest({
           amountEur: renewal.amount,
           description: `Rinnovo abbonamento ${brand.name} — ${s.platform_leads?.business_name ?? ""}`.trim(),
           counterpartyEmail: email,
           reference: `RNW-${s.id.slice(0, 8)}`,
+          redirectUrl: paymentRedirectUrl("processing", contractBrand),
         });
         await attachPaymentProviderRefs(renewal.paymentId, {
           bunqRequestId: bunq.id,
           bunqPaymentUrl: bunq.shareUrl,
         });
+        const emailUrl = paymentRedirectUrl("processing", contractBrand) + `&ref=${encodeURIComponent(renewal.paymentId)}`;
         await sendEmail({
           to: email,
           subject: `Rinnovo abbonamento — ${brand.name}`,
-          html: payLinkHtml(s.platform_leads?.business_name ?? "", renewal.amount, bunq.shareUrl, brand),
+          html: payLinkHtml(s.platform_leads?.business_name ?? "", renewal.amount, emailUrl, brand),
           fromOverride: sender.from,
         });
       } else if (method === "carta" || method === "sdd") {

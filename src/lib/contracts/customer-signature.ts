@@ -13,6 +13,7 @@ import {
   type ContractBrand,
   type ContractData,
 } from "@/lib/contracts/menuary-contract";
+import { paymentRedirectUrlWithRef } from "@/lib/payments/payment-urls";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
 import {
   attachPaymentProviderRefs,
@@ -46,6 +47,9 @@ async function handlePaymentByMethod(
   const sender = resolveSenderForVertical(brandMeta.vertical);
   const signerEmail = data.cliente.email || data.cliente.pec;
 
+  const brand = data.brand as ContractBrand;
+  const paymentUrl = paymentRedirectUrlWithRef("processing", brand, contractId);
+
   switch (result.provider) {
     case "stripe": {
       if (result.sessionId) {
@@ -62,7 +66,7 @@ async function handlePaymentByMethod(
         await sendEmail({
           to: signerEmail,
           subject: `Pagamento contratto ${numero} — ${emailBrand.name}`,
-          html: buildPaymentEmailHtml(data, result.checkoutUrl, numero),
+          html: buildPaymentEmailHtml(data, paymentUrl, numero),
           fromOverride: sender.from,
         });
       }
@@ -80,7 +84,7 @@ async function handlePaymentByMethod(
         await sendEmail({
           to: signerEmail,
           subject: `Pagamento contratto ${numero} — ${emailBrand.name}`,
-          html: buildPaymentEmailHtml(data, result.bunqShareUrl, numero),
+          html: buildPaymentEmailHtml(data, paymentUrl, numero),
           fromOverride: sender.from,
         });
       }
@@ -121,7 +125,7 @@ function buildPaymentEmailHtml(
   <div style="margin:24px 0;text-align:center">
     <a href="${checkoutUrl}" style="display:inline-block;padding:14px 32px;background:${brand.primary};color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px">Procedi al pagamento</a>
   </div>
-  <p style="font-size:12px;color:${brand.muted}">Il link di pagamento è valido per 2 ore.</p>
+  <p style="font-size:12px;color:${brand.muted}">Il pagamento verrà elaborato automaticamente alla conferma.</p>
   <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
   <p style="font-size:11px;color:${brand.muted}">${brand.name} · ${FORNITORE.ragioneSociale}</p>
 </div>

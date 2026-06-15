@@ -223,3 +223,14 @@ export async function deleteContractById(id: string): Promise<void> {
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+export async function setContractCancelled(id: string): Promise<PlatformContract> {
+  const { data, error } = await db()
+    .from("platform_contracts")
+    .update({ status: "cancelled", updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as unknown as PlatformContract;
+}

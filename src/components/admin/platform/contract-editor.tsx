@@ -632,6 +632,7 @@ export function ContractEditor({ contractId }: Props) {
   const effectiveStatus = (serverContract?.status ?? stored?.status ?? "draft") as keyof typeof CONTRACT_STATUS_LABELS;
   const statusLabel = CONTRACT_STATUS_LABELS[effectiveStatus] ?? "Nuova bozza";
   const statusColor = CONTRACT_STATUS_COLORS[effectiveStatus] ?? "bg-gray-100 text-gray-700";
+  const readOnly = effectiveStatus !== "draft";
   const individualClient = isIndividualClient(data);
   const availablePackages = PLATFORM_PACKAGES.filter(
     (pkg) =>
@@ -670,6 +671,13 @@ export function ContractEditor({ contractId }: Props) {
           <span className={`status-pill ${statusColor}`}>{statusLabel}</span>
         </div>
 
+        {readOnly && (
+          <div style={{ background: "#f3f4f6", border: "1px solid #d1d5db", color: "#374151", padding: "8px 10px", borderRadius: 6, fontSize: 12, marginBottom: 12 }}>
+            <AlertTriangle size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+            Contratto in sola lettura. Non è possibile modificare i dati del contratto una volta inviato.
+          </div>
+        )}
+
         {contractDraft.draftDate && (
           <div className="contract-feedback" style={{ background: "#fffbeb", borderColor: "#f59e0b", color: "#92400e" }}>
             <span style={{ fontSize: 13 }}>
@@ -698,6 +706,7 @@ export function ContractEditor({ contractId }: Props) {
 
         {feedback && <div className="contract-feedback">{feedback}</div>}
 
+        <div className={readOnly ? "contract-form-readonly" : ""}>
         <h3>Brand</h3>
         <div className="brand-picker">
           {(Object.keys(BRAND_INFO) as ContractBrand[]).map((b) => (
@@ -1105,28 +1114,35 @@ export function ContractEditor({ contractId }: Props) {
           value={data.dataStipula}
           onChange={(e) => setData((d) => ({ ...d, dataStipula: e.target.value }))}
         />
+        </div>
 
         <div className="contract-actions">
-          <button type="button" onClick={handleSave}>
-            <Save size={14} /> Salva
-          </button>
+          {!readOnly && (
+            <button type="button" onClick={handleSave}>
+              <Save size={14} /> Salva
+            </button>
+          )}
           <button type="button" onClick={handleDownloadPdf} disabled={generatingPdf}>
             <Printer size={14} /> {generatingPdf ? "..." : "PDF"}
           </button>
-          <button
-            type="button"
-            className="primary"
-            onClick={openSendPreview}
-            disabled={sending || effectiveStatus === "sent" || effectiveStatus === "signed" || effectiveStatus === "countersigned"}
-          >
-            <Send size={14} /> {sending ? "Invio in corso…" : "Invia con firma elettronica"}
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              className="primary"
+              onClick={openSendPreview}
+              disabled={sending || readOnly}
+            >
+              <Send size={14} /> {sending ? "Invio in corso…" : "Invia con firma elettronica"}
+            </button>
+          )}
         </div>
+        {!readOnly && (
         <div className="contract-actions">
           <button type="button" onClick={reset}>
             <RotateCcw size={14} /> Nuovo
           </button>
         </div>
+        )}
 
         {serverContract && (
           <>
@@ -1347,12 +1363,14 @@ export function ContractEditor({ contractId }: Props) {
           </>
         )}
 
-        <p style={{ fontSize: 11, color: "#6b7280", marginTop: 12, lineHeight: 1.4 }}>
-          Le clausole nel documento sono modificabili: clicca un paragrafo per editarlo.
-          Il bottone PDF genera un file lato server con grafica vettoriale, allegati e
-          numerazione delle pagine. L&apos;invio carica il contratto su Documenso per la
-          firma elettronica e invia l&apos;email al cliente.
-        </p>
+        {!readOnly && (
+          <p style={{ fontSize: 11, color: "#6b7280", marginTop: 12, lineHeight: 1.4 }}>
+            Le clausole nel documento sono modificabili: clicca un paragrafo per editarlo.
+            Il bottone PDF genera un file lato server con grafica vettoriale, allegati e
+            numerazione delle pagine. L&apos;invio carica il contratto su Documenso per la
+            firma elettronica e invia l&apos;email al cliente.
+          </p>
+        )}
       </aside>
 
       <article className="contract-doc">
@@ -1465,15 +1483,19 @@ export function ContractEditor({ contractId }: Props) {
         {clauses.map((c) => (
           <section key={c.id} className="clause">
             <h2>{c.title}</h2>
-            <div
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) =>
-                setOverrides((o) => ({ ...o, [c.id]: e.currentTarget.innerText }))
-              }
-            >
-              {overrides[c.id] ?? c.body}
-            </div>
+            {readOnly ? (
+              <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>{overrides[c.id] ?? c.body}</p>
+            ) : (
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) =>
+                  setOverrides((o) => ({ ...o, [c.id]: e.currentTarget.innerText }))
+                }
+              >
+                {overrides[c.id] ?? c.body}
+              </div>
+            )}
           </section>
         ))}
 
@@ -1705,6 +1727,10 @@ const CONTRACT_STYLES = `
 .contract-form label { display: block; font-size: 12px; color: #374151; margin-bottom: 4px; }
 .contract-form input, .contract-form select, .contract-form textarea {
   width: 100%; padding: 6px 8px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 8px; box-sizing: border-box;
+}
+.contract-form-readonly input, .contract-form-readonly select, .contract-form-readonly textarea,
+.contract-form-readonly .brand-picker button, .contract-form-readonly .rate-toggle {
+  pointer-events: none; opacity: 0.6;
 }
 .contract-field-error { margin: -2px 0 8px; color: #b91c1c; font-size: 11px; line-height: 1.4; }
 .contract-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

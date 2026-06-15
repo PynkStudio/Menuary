@@ -8,8 +8,10 @@ import {
   createContract,
   updateContract,
   deleteContractById,
+  setContractCancelled,
 } from "@/lib/contracts/contract-queries";
 import { normalizeContractData, type ContractData } from "@/lib/contracts/menuary-contract";
+import { voidEnvelope } from "@/lib/contracts/documenso";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +105,23 @@ export async function DELETE(req: NextRequest) {
   }
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id obbligatorio" }, { status: 400 });
-  await deleteContractById(id);
-  return NextResponse.json({ deleted: true });
+
+  const contract = await getContract(id);
+  if (!contract) return NextResponse.json({ error: "Contratto non trovato" }, { status: 404 });
+
+  if (contract.documenso_envelope_id && contract.status !== "draft") {
+    try {
+      await voidEnvelope(contract.documenso_envelope_id);
+    } catch (err) {
+      console.warn("[DELETE] Failed to void Documenso envelope:", err);
+    }
+  }
+
+  if (contract.status === "draft") {
+    await deleteContractById(id);
+    return NextResponse.json({ deleted: true });
+  }
+
+  const cancelled = await setContractCancelled(id);
+  return NextResponse.json({ cancelled: true, contract: cancelled });
 }

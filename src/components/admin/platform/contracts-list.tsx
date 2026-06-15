@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Plus, FileText, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { Plus, FileText, Trash2, ExternalLink, MoreHorizontal, Loader2, Send, Copy } from "lucide-react";
 import {
   CONTRACT_STATUS_COLORS,
   CONTRACT_STATUS_LABELS,
@@ -17,6 +17,7 @@ type ServerContract = {
   status: ContractStatus;
   contract_data: ContractData;
   payment_status: string;
+  signing_url: string | null;
   signed_at: string | null;
   tenant_activated_at: string | null;
   created_at: string;
@@ -26,6 +27,18 @@ type ServerContract = {
 export function ContractsList() {
   const [items, setItems] = useState<ServerContract[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     loadContracts();
@@ -71,10 +84,24 @@ export function ContractsList() {
       });
   }
 
-  function handleDelete(id: string) {
-    if (!window.confirm("Eliminare definitivamente questo contratto?")) return;
+  function handleDelete(id: string, status: string) {
+    const isDraft = status === "draft";
+    const msg = isDraft
+      ? "Eliminare definitivamente questo contratto?"
+      : "Annullare il contratto? Verrà cancellato il link di firma e il contratto sarà archiviato come annullato.";
+    if (!window.confirm(msg)) return;
     fetch(`/api/admin/contracts?id=${id}`, { method: "DELETE" })
       .then((res) => { if (res.ok) loadContracts(); });
+    setOpenDropdown(null);
+  }
+
+  function toggleDropdown(id: string) {
+    setOpenDropdown((prev) => (prev === id ? null : id));
+  }
+
+  function copyToClipboard(url: string | null | undefined) {
+    if (!url) return;
+    navigator.clipboard.writeText(url);
   }
 
   if (loading) {
@@ -88,6 +115,7 @@ export function ContractsList() {
 
   return (
     <div style={{ padding: "16px 12px" }}>
+      <style>{`.dropdown-item:hover { background: #f3f4f6; } .dropdown-item-danger:hover { background: #fef2f2; }`}</style>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontSize: 24, margin: 0 }}>Storico contratti</h1>
@@ -238,19 +266,45 @@ export function ContractsList() {
                     </td>
                     <td style={td}>{new Date(c.created_at).toLocaleDateString("it-IT")}</td>
                     <td style={{ ...td, textAlign: "right" }}>
-                      <div style={{ display: "inline-flex", gap: 6 }}>
-                        <Link href={`/admin/contratti/${c.id}`} style={iconBtn} title="Apri">
-                          <ExternalLink size={14} />
-                        </Link>
-                        {c.status === "draft" && (
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(c.id)}
-                            style={{ ...iconBtn, color: "#dc2626" }}
-                            title="Elimina"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                      <div ref={dropdownRef} style={{ position: "relative", display: "inline-block" }}>
+                        <button
+                          type="button"
+                          onClick={() => toggleDropdown(c.id)}
+                          style={iconBtn}
+                          title="Azioni"
+                        >
+                          <MoreHorizontal size={14} />
+                        </button>
+                        {openDropdown === c.id && (
+                          <div style={dropdownMenuStyle}>
+                            <Link href={`/admin/contratti/${c.id}`} className="dropdown-item" style={dropdownItemStyle}>
+                              <ExternalLink size={13} /> Apri contratto
+                            </Link>
+                            {c.status === "draft" && (
+                              <Link href={`/admin/contratti/${c.id}#send`} className="dropdown-item" style={dropdownItemStyle}>
+                                <Send size={13} /> Invia per firma
+                              </Link>
+                            )}
+                            {c.status === "sent" && c.signing_url && (
+                              <button
+                                type="button"
+                                className="dropdown-item"
+                                onClick={() => { copyToClipboard(c.signing_url); setOpenDropdown(null); }}
+                                style={dropdownItemStyle}
+                              >
+                                <Copy size={13} /> Copia link firma
+                              </button>
+                            )}
+                            <div style={dropdownDividerStyle} />
+                            <button
+                              type="button"
+                              className="dropdown-item-danger"
+                              onClick={() => handleDelete(c.id, c.status)}
+                              style={{ ...dropdownItemStyle, color: "#dc2626" }}
+                            >
+                              <Trash2 size={13} /> Elimina contratto
+                            </button>
+                          </div>
                         )}
                       </div>
                     </td>
@@ -286,4 +340,37 @@ const iconBtn: React.CSSProperties = {
   color: "#374151",
   textDecoration: "none",
   cursor: "pointer",
+};
+const dropdownMenuStyle: React.CSSProperties = {
+  position: "absolute",
+  right: 0,
+  top: "100%",
+  marginTop: 4,
+  zIndex: 50,
+  minWidth: 200,
+  background: "#fff",
+  border: "1px solid #e5e7eb",
+  borderRadius: 8,
+  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+  padding: "4px 0",
+};
+const dropdownItemStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  width: "100%",
+  padding: "8px 12px",
+  border: "none",
+  background: "none",
+  fontSize: 13,
+  color: "#374151",
+  textAlign: "left",
+  textDecoration: "none",
+  cursor: "pointer",
+  boxSizing: "border-box",
+};
+const dropdownDividerStyle: React.CSSProperties = {
+  height: 1,
+  background: "#e5e7eb",
+  margin: "4px 0",
 };

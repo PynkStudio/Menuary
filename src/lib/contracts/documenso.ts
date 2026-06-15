@@ -669,6 +669,15 @@ export async function distributeEnvelope(
   return { envelopeId: result.id, signingUrls };
 }
 
+// ─── Void envelope ────────────────────────────────────────────────────────────
+
+export async function voidEnvelope(
+  envelopeId: string,
+  provider = defaultProviderForDirectCall(),
+): Promise<void> {
+  await request<void>(`/envelope/${envelopeId}`, { method: "DELETE" }, provider);
+}
+
 // ─── Get envelope ────────────────────────────────────────────────────────────
 
 export type EnvelopeStatus = "DRAFT" | "PENDING" | "COMPLETED" | "REJECTED";
