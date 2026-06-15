@@ -1,6 +1,6 @@
 // ─── Payload Resend Inbound ───────────────────────────────────────────────────
 // Resend invia questo payload via POST al webhook quando riceve un'email
-// sui domini configurati (menuary.it, bizery.it, weuseorpheo.com).
+// sui domini configurati (menuary.it, bizery.it, weuseorpheo.com, pynkstudio.*).
 
 export type ResendInboundHeader = {
   name: string;
@@ -77,7 +77,9 @@ export function parseEmailAddress(raw: string): { name: string | null; address: 
  */
 export function detectBrandFromRecipients(toAddresses: string[]): InboundEmailBrand {
   const addresses = toAddresses.join(" ").toLowerCase();
-  if (addresses.includes("@pynkstudio.it")) return "pynkstudio";
+  if (addresses.includes("@pynkstudio.it") || addresses.includes("@pynkstudio.com")) {
+    return "pynkstudio";
+  }
   if (addresses.includes("@weuseorpheo.com")) return "orpheo";
   if (addresses.includes("@bizery.it")) return "bizery";
   return "menuary";

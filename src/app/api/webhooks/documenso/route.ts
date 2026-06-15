@@ -27,6 +27,27 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function hasConfiguredDocumensoWebhookSecret(): boolean {
+  return Boolean(
+    process.env.DOCUMENSO_WEBHOOK_SECRET_SH ||
+      process.env.DOCUMENSO_SELF_HOSTED_WEBHOOK_SECRET ||
+      process.env.DOCUMENSO_WEBHOOK_SECRET_CLOUD ||
+      process.env.DOCUMENSO_CLOUD_WEBHOOK_SECRET ||
+      process.env.DOCUMENSO_WEBHOOK_SECRET,
+  );
+}
+
+function longestConfiguredDocumensoWebhookSecretLength(): number {
+  return Math.max(
+    0,
+    process.env.DOCUMENSO_WEBHOOK_SECRET_SH?.length ?? 0,
+    process.env.DOCUMENSO_SELF_HOSTED_WEBHOOK_SECRET?.length ?? 0,
+    process.env.DOCUMENSO_WEBHOOK_SECRET_CLOUD?.length ?? 0,
+    process.env.DOCUMENSO_CLOUD_WEBHOOK_SECRET?.length ?? 0,
+    process.env.DOCUMENSO_WEBHOOK_SECRET?.length ?? 0,
+  );
+}
+
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-documenso-secret");
   if (!verifyDocumensoWebhook(secret)) {
@@ -35,8 +56,8 @@ export async function POST(req: NextRequest) {
       "[documenso-webhook] secret check FAILED — headerPresent=%s receivedLen=%d expectedConfigured=%s expectedLen=%d headers=%s",
       secret != null,
       secret?.length ?? 0,
-      Boolean(process.env.DOCUMENSO_WEBHOOK_SECRET),
-      process.env.DOCUMENSO_WEBHOOK_SECRET?.length ?? 0,
+      hasConfiguredDocumensoWebhookSecret(),
+      longestConfiguredDocumensoWebhookSecretLength(),
       JSON.stringify([...req.headers.keys()]),
     );
     return NextResponse.json({ error: "invalid_secret" }, { status: 401 });
@@ -102,6 +123,7 @@ export async function POST(req: NextRequest) {
       contract.documenso_item_id,
       contract.id,
       `firmato-${contract.numero}.pdf`,
+      contract.contract_data.documenso_provider ?? undefined,
     );
     await updateContract(contract.id, {
       status: "signed",
@@ -129,6 +151,7 @@ export async function POST(req: NextRequest) {
       contract.documenso_item_id,
       contract.id,
       `controfirmato-${contract.numero}.pdf`,
+      contract.contract_data.documenso_provider ?? undefined,
     );
     await updateContract(contract.id, {
       status: "countersigned",
@@ -153,10 +176,11 @@ async function downloadAndStore(
   itemId: string | null,
   contractId: string,
   fileName: string,
+  provider?: "cloud" | "sh" | null,
 ): Promise<string | null> {
   if (!itemId) return null;
   try {
-    const pdf = await downloadSignedDocument(itemId);
+    const pdf = await downloadSignedDocument(itemId, provider ?? undefined);
     return await uploadSignedPdf(contractId, fileName, pdf);
   } catch (err) {
     console.error("[documenso-webhook] Download/store PDF failed", fileName, err);

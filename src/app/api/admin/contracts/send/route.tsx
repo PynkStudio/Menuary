@@ -24,6 +24,9 @@ import {
   distributeEnvelope,
   getEnvelope,
   buildSignatureFields,
+  rewriteDocumensoPublicUrl,
+  resolveDocumensoProviderForSend,
+  type DocumensoProvider,
 } from "@/lib/contracts/documenso";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
 
@@ -94,6 +97,7 @@ export async function POST(req: NextRequest) {
   let clienteSigningUrl: string | null = null;
   let fornitoreSigningUrl: string | null = null;
   let documensoItemId: string | null = null;
+  let documensoProvider: DocumensoProvider = "cloud";
 
   // Trova i marker XSIGN nel PDF per posizionare i campi firma di entrambe le parti
   const recipients = buildSignatureFields(
@@ -108,6 +112,7 @@ export async function POST(req: NextRequest) {
   const message = `Gentile ${signerName}, clicchi il link per visionare e firmare elettronicamente il contratto ${data.numero}.`;
 
   try {
+    documensoProvider = await resolveDocumensoProviderForSend();
     const envelope = await createEnvelope({
       title: `Contratto ${data.numero} — ${data.cliente.ragioneSociale}`,
       pdfBuffer,
@@ -116,10 +121,10 @@ export async function POST(req: NextRequest) {
       externalId: contractId,
       subject,
       message,
-    });
+    }, documensoProvider);
     envelopeId = envelope.envelopeId;
 
-    const distributed = await distributeEnvelope(envelopeId);
+    const distributed = await distributeEnvelope(envelopeId, documensoProvider);
     // Selezione per signingOrder, non per email: cliente e fornitore possono
     // avere la stessa email (es. test con l'email del titolare) e in quel caso
     // il match per email restituirebbe il link sbagliato → "non è il tuo turno".
@@ -134,8 +139,10 @@ export async function POST(req: NextRequest) {
       urls.find((s) => s.signingOrder === 2)?.signingUrl ??
       urls.find((s) => s.email === FORNITORE.email)?.signingUrl ??
       null;
+    clienteSigningUrl = rewriteDocumensoPublicUrl(clienteSigningUrl, data.brand, documensoProvider);
+    fornitoreSigningUrl = rewriteDocumensoPublicUrl(fornitoreSigningUrl, data.brand, documensoProvider);
 
-    const details = await getEnvelope(envelopeId);
+    const details = await getEnvelope(envelopeId, documensoProvider);
     documensoItemId = details.envelopeItems?.[0]?.id ?? null;
   } catch (err) {
     console.error("[contracts/send] Documenso error", err);
@@ -182,6 +189,10 @@ export async function POST(req: NextRequest) {
     documenso_item_id: documensoItemId,
     signing_url: clienteSigningUrl,
     payment_method: data.economiche.metodoPagamento,
+    contract_data: {
+      ...contract.contract_data,
+      documenso_provider: documensoProvider,
+    },
   });
 
   return NextResponse.json({
@@ -189,6 +200,7 @@ export async function POST(req: NextRequest) {
     signingUrl: clienteSigningUrl,
     fornitoreSigningUrl,
     emailSent: emailResult.ok,
+    documensoProvider,
   });
 }
 

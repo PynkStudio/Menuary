@@ -67,7 +67,10 @@ export async function POST(req: NextRequest) {
   // Download signed PDF from Documenso
   let countersignedPath: string;
   try {
-    const signedPdf = await downloadSignedDocument(contract.documenso_item_id);
+    const signedPdf = await downloadSignedDocument(
+      contract.documenso_item_id,
+      contract.contract_data.documenso_provider ?? undefined,
+    );
     const db = createSupabaseServiceClient();
     if (!db) {
       return NextResponse.json(

@@ -46,7 +46,10 @@ export async function POST() {
     if (!contract.documenso_envelope_id) continue;
 
     try {
-      const envelope = await getEnvelope(contract.documenso_envelope_id);
+      const envelope = await getEnvelope(
+        contract.documenso_envelope_id,
+        contract.contract_data.documenso_provider ?? undefined,
+      );
       if (envelope.status !== "COMPLETED") continue;
 
       const updates: Record<string, unknown> = {
@@ -59,7 +62,10 @@ export async function POST() {
 
       if (itemId && !contract.signed_document_path) {
         try {
-          const signedPdf = await downloadSignedDocument(String(itemId));
+          const signedPdf = await downloadSignedDocument(
+            String(itemId),
+            contract.contract_data.documenso_provider ?? undefined,
+          );
           const path = `contracts/${contract.id}/firmato-${contract.numero}.pdf`;
           const db = createSupabaseServiceClient();
           if (db) {

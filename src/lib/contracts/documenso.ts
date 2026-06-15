@@ -2,20 +2,133 @@ import "server-only";
 
 import { timingSafeEqual } from "node:crypto";
 import { inflateSync } from "node:zlib";
-const BASE_URL = process.env.DOCUMENSO_API_URL ?? "https://app.documenso.com/api/v2";
 
-function apiToken(): string {
-  const token = process.env.DOCUMENSO_API_TOKEN;
-  if (!token) throw new Error("DOCUMENSO_API_TOKEN non configurato");
+export type DocumensoProvider = "cloud" | "sh";
+type DocumensoProviderSetting = DocumensoProvider | "auto";
+
+function configuredProvider(): DocumensoProviderSetting {
+  const raw =
+    process.env.DOCUMENSO_PROVIDER ??
+    process.env.DOCUMENSO_ACTIVE_PROVIDER ??
+    "";
+  const normalized = raw.trim().toLowerCase();
+  if (
+    normalized === "cloud" ||
+    normalized === "documenso_cloud" ||
+    normalized === "documenso-cloud"
+  ) {
+    return "cloud";
+  }
+  if (
+    normalized === "sh" ||
+    normalized === "self_hosted" ||
+    normalized === "self-hosted" ||
+    normalized === "selfhosted"
+  ) {
+    return "sh";
+  }
+  if (normalized === "auto") return "auto";
+  return process.env.DOCUMENSO_API_TOKEN_SH ||
+    process.env.DOCUMENSO_SELF_HOSTED_API_TOKEN
+    ? "auto"
+    : "cloud";
+}
+
+function defaultProviderForDirectCall(): DocumensoProvider {
+  const setting = configuredProvider();
+  if (setting === "auto") {
+    return process.env.DOCUMENSO_API_TOKEN_SH ||
+      process.env.DOCUMENSO_SELF_HOSTED_API_TOKEN
+      ? "sh"
+      : "cloud";
+  }
+  return setting;
+}
+
+function documensoApiBaseUrl(
+  provider = defaultProviderForDirectCall(),
+): string {
+  const raw =
+    provider === "sh"
+      ? process.env.DOCUMENSO_API_URL_SH ??
+        process.env.DOCUMENSO_SELF_HOSTED_API_URL ??
+        process.env.DOCUMENSO_API_URL ??
+        "https://firma.pynkstudio.com"
+      : process.env.DOCUMENSO_API_URL_CLOUD ??
+        process.env.DOCUMENSO_CLOUD_API_URL ??
+        process.env.DOCUMENSO_API_URL ??
+        "https://app.documenso.com/api/v2";
+  const trimmed = raw.trim().replace(/\/+$/, "");
+  return trimmed.endsWith("/api/v2") ? trimmed : `${trimmed}/api/v2`;
+}
+
+function normalizeOrigin(url: string): string {
+  return url.trim().replace(/\/+$/, "");
+}
+
+function documensoPublicBaseUrl(brand?: string): string | null {
+  const brandUrl =
+    brand === "menuary"
+      ? process.env.DOCUMENSO_PUBLIC_URL_MENUARY
+      : brand === "bizery"
+        ? process.env.DOCUMENSO_PUBLIC_URL_BIZERY
+        : brand === "orpheo"
+          ? process.env.DOCUMENSO_PUBLIC_URL_ORPHEO
+          : undefined;
+  const raw =
+    brandUrl ??
+    process.env.DOCUMENSO_PUBLIC_URL_FALLBACK ??
+    process.env.DOCUMENSO_PUBLIC_URL;
+  return raw ? normalizeOrigin(raw) : null;
+}
+
+export function rewriteDocumensoPublicUrl(
+  signingUrl: string | null,
+  brand?: string,
+  provider = defaultProviderForDirectCall(),
+): string | null {
+  if (!signingUrl) return null;
+  if (provider !== "sh") return signingUrl;
+  const publicBase = documensoPublicBaseUrl(brand);
+  if (!publicBase) return signingUrl;
+
+  try {
+    const original = new URL(signingUrl);
+    const replacement = new URL(publicBase);
+    original.protocol = replacement.protocol;
+    original.host = replacement.host;
+    return original.toString();
+  } catch {
+    return signingUrl;
+  }
+}
+
+function apiToken(provider = defaultProviderForDirectCall()): string {
+  const token =
+    provider === "sh"
+      ? process.env.DOCUMENSO_API_TOKEN_SH ??
+        process.env.DOCUMENSO_SELF_HOSTED_API_TOKEN ??
+        process.env.DOCUMENSO_API_TOKEN
+      : process.env.DOCUMENSO_API_TOKEN_CLOUD ??
+        process.env.DOCUMENSO_CLOUD_API_TOKEN ??
+        process.env.DOCUMENSO_API_TOKEN;
+  if (!token) {
+    throw new Error(
+      provider === "sh"
+        ? "DOCUMENSO_API_TOKEN_SH non configurato"
+        : "DOCUMENSO_API_TOKEN_CLOUD non configurato",
+    );
+  }
   return token;
 }
 
 async function request<T>(
   path: string,
   opts: { method?: string; body?: unknown; formData?: FormData } = {},
+  provider = defaultProviderForDirectCall(),
 ): Promise<T> {
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${apiToken()}`,
+    Authorization: `Bearer ${apiToken(provider)}`,
   };
   let body: BodyInit | undefined;
 
@@ -26,7 +139,7 @@ async function request<T>(
     body = JSON.stringify(opts.body);
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${documensoApiBaseUrl(provider)}${path}`, {
     method: opts.method ?? (body ? "POST" : "GET"),
     headers,
     body,
@@ -42,6 +155,69 @@ async function request<T>(
     return (await res.json()) as T;
   }
   return res as unknown as T;
+}
+
+function documensoPublicRoot(provider: DocumensoProvider): string {
+  const raw =
+    provider === "sh"
+      ? process.env.DOCUMENSO_PUBLIC_URL ??
+        process.env.DOCUMENSO_PUBLIC_URL_FALLBACK ??
+        process.env.DOCUMENSO_API_URL_SH ??
+        process.env.DOCUMENSO_SELF_HOSTED_API_URL ??
+        process.env.DOCUMENSO_API_URL ??
+        "https://firma.pynkstudio.com"
+      : process.env.DOCUMENSO_API_URL_CLOUD ??
+        process.env.DOCUMENSO_CLOUD_API_URL ??
+        "https://app.documenso.com";
+  return normalizeOrigin(raw.replace(/\/api\/v2\/?$/, ""));
+}
+
+async function providerResponds(provider: DocumensoProvider): Promise<boolean> {
+  try {
+    const res = await fetch(documensoPublicRoot(provider), {
+      method: "HEAD",
+      signal: AbortSignal.timeout(3500),
+      cache: "no-store",
+    });
+    return res.status < 500;
+  } catch {
+    try {
+      const res = await fetch(documensoPublicRoot(provider), {
+        method: "GET",
+        signal: AbortSignal.timeout(3500),
+        cache: "no-store",
+      });
+      return res.status < 500;
+    } catch {
+      return false;
+    }
+  }
+}
+
+export async function resolveDocumensoProviderForSend(): Promise<DocumensoProvider> {
+  const setting = configuredProvider();
+  if (setting === "cloud") return "cloud";
+
+  const hasSelfHostedToken = Boolean(
+    process.env.DOCUMENSO_API_TOKEN_SH ||
+      process.env.DOCUMENSO_SELF_HOSTED_API_TOKEN ||
+      (setting === "sh" ? process.env.DOCUMENSO_API_TOKEN : undefined),
+  );
+  if (hasSelfHostedToken && (await providerResponds("sh"))) {
+    return "sh";
+  }
+
+  const hasCloudToken = Boolean(
+    process.env.DOCUMENSO_API_TOKEN_CLOUD ||
+      process.env.DOCUMENSO_CLOUD_API_TOKEN ||
+      process.env.DOCUMENSO_API_TOKEN,
+  );
+  if (hasCloudToken) {
+    console.warn("[documenso] Self-hosted unavailable, falling back to cloud");
+    return "cloud";
+  }
+
+  return setting === "sh" ? "sh" : "cloud";
 }
 
 // ─── Create envelope ────────────────────────────────────────────────────────
@@ -408,6 +584,7 @@ export function buildSignatureFields(
 
 export async function createEnvelope(
   input: CreateEnvelopeInput,
+  provider = defaultProviderForDirectCall(),
 ): Promise<CreateEnvelopeResult> {
   const formData = new FormData();
 
@@ -441,7 +618,7 @@ export async function createEnvelope(
 
   const result = await request<{ id: string }>("/envelope/create", {
     formData,
-  });
+  }, provider);
 
   return { envelopeId: result.id };
 }
@@ -459,6 +636,7 @@ export type DistributeResult = {
 
 export async function distributeEnvelope(
   envelopeId: string,
+  provider = defaultProviderForDirectCall(),
 ): Promise<DistributeResult> {
   const result = await request<{
     id: string;
@@ -469,7 +647,7 @@ export async function distributeEnvelope(
     }>;
   }>("/envelope/distribute", {
     body: { envelopeId },
-  });
+  }, provider);
 
   const signingUrls = (result.recipients ?? [])
     .filter((r) => r.signingUrl)
@@ -503,20 +681,22 @@ export type EnvelopeDetails = {
 
 export async function getEnvelope(
   envelopeId: string,
+  provider = defaultProviderForDirectCall(),
 ): Promise<EnvelopeDetails> {
-  return request<EnvelopeDetails>(`/envelope/${envelopeId}`);
+  return request<EnvelopeDetails>(`/envelope/${envelopeId}`, {}, provider);
 }
 
 // ─── Download signed document ────────────────────────────────────────────────
 
 export async function downloadSignedDocument(
   envelopeItemId: string,
+  provider = defaultProviderForDirectCall(),
 ): Promise<Buffer> {
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${apiToken()}`,
+    Authorization: `Bearer ${apiToken(provider)}`,
   };
   const res = await fetch(
-    `${BASE_URL}/envelope/item/${envelopeItemId}/download`,
+    `${documensoApiBaseUrl(provider)}/envelope/item/${envelopeItemId}/download`,
     { headers },
   );
   if (!res.ok) {
@@ -531,12 +711,19 @@ export async function downloadSignedDocument(
 export function verifyDocumensoWebhook(
   receivedSecret: string | null,
 ): boolean {
-  const expectedSecret = process.env.DOCUMENSO_WEBHOOK_SECRET;
-  if (!expectedSecret || !receivedSecret) return false;
-  const a = Buffer.from(receivedSecret);
-  const b = Buffer.from(expectedSecret);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
+  if (!receivedSecret) return false;
+  const secrets = [
+    process.env.DOCUMENSO_WEBHOOK_SECRET_SH,
+    process.env.DOCUMENSO_SELF_HOSTED_WEBHOOK_SECRET,
+    process.env.DOCUMENSO_WEBHOOK_SECRET_CLOUD,
+    process.env.DOCUMENSO_CLOUD_WEBHOOK_SECRET,
+    process.env.DOCUMENSO_WEBHOOK_SECRET,
+  ].filter((secret): secret is string => Boolean(secret));
+  const received = Buffer.from(receivedSecret);
+  return secrets.some((expectedSecret) => {
+    const expected = Buffer.from(expectedSecret);
+    return received.length === expected.length && timingSafeEqual(received, expected);
+  });
 }
 
 export type DocumensoWebhookPayload = {

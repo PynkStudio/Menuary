@@ -58,7 +58,10 @@ export async function POST(req: NextRequest) {
 
   let envelope;
   try {
-    envelope = await getEnvelope(contract.documenso_envelope_id);
+    envelope = await getEnvelope(
+      contract.documenso_envelope_id,
+      contract.contract_data.documenso_provider ?? undefined,
+    );
   } catch (err) {
     console.error("[contracts/sync] getEnvelope failed", err);
     return NextResponse.json(
@@ -86,7 +89,10 @@ export async function POST(req: NextRequest) {
 
     if (itemId && !contract.signed_document_path) {
       try {
-        const signedPdf = await downloadSignedDocument(String(itemId));
+        const signedPdf = await downloadSignedDocument(
+          String(itemId),
+          contract.contract_data.documenso_provider ?? undefined,
+        );
         const path = `contracts/${contract.id}/firmato-${contract.numero}.pdf`;
         const db = createSupabaseServiceClient();
         if (db) {

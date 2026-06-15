@@ -96,6 +96,8 @@ export type ContractData = {
   noteAggiuntive: string;
   /** Primo momento in cui il cliente ha aperto il documento su Documenso. */
   opened_at?: string | null;
+  /** Provider Documenso usato per l'envelope, necessario per sync/download fallback. */
+  documenso_provider?: "cloud" | "sh" | null;
   countersigned?: {
     at: string;
     by: string;

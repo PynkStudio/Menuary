@@ -637,7 +637,7 @@ export const TENANTS: TenantProfile[] = [
     name: "PynkStudio",
     label: "Tenant · PynkStudio",
     vertical: "services",
-    domains: ["pynkstudio.it", "www.pynkstudio.it"],
+    domains: ["pynkstudio.it", "www.pynkstudio.it", "pynkstudio.com", "www.pynkstudio.com"],
     previewSlug: "pynkstudio",
     enabled: true,
     status: "active",
