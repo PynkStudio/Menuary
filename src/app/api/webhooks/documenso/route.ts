@@ -30,6 +30,15 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-documenso-secret");
   if (!verifyDocumensoWebhook(secret)) {
+    // Diagnostica sicura: lunghezze e nomi header, MAI il valore del secret.
+    console.warn(
+      "[documenso-webhook] secret check FAILED — headerPresent=%s receivedLen=%d expectedConfigured=%s expectedLen=%d headers=%s",
+      secret != null,
+      secret?.length ?? 0,
+      Boolean(process.env.DOCUMENSO_WEBHOOK_SECRET),
+      process.env.DOCUMENSO_WEBHOOK_SECRET?.length ?? 0,
+      JSON.stringify([...req.headers.keys()]),
+    );
     return NextResponse.json({ error: "invalid_secret" }, { status: 401 });
   }
 

@@ -469,6 +469,7 @@ export function ContractEditor({ contractId }: Props) {
       setServerContract(contract);
       setData(normalizeContractData(contract.contract_data));
       setFeedback("Contratto controfirmato con successo.");
+      window.dispatchEvent(new Event("contracts:refresh"));
     } catch {
       setFeedback("Errore di rete nella controfirma.");
     } finally {
@@ -524,6 +525,7 @@ export function ContractEditor({ contractId }: Props) {
       if (synced) {
         setData(normalizeContractData(contract.contract_data));
         setFeedback("Stato sincronizzato: contratto firmato.");
+        window.dispatchEvent(new Event("contracts:refresh"));
       } else {
         setFeedback(`Nessuna modifica. Stato Documenso: ${envelopeStatus}`);
       }

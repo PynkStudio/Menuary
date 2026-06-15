@@ -31,6 +31,29 @@ export function ContractsList() {
     loadContracts();
   }, []);
 
+  // Auto-refresh: lettura leggera dal DB (no sync-all, che interroga Documenso
+  // per ogni contratto). Il webhook aggiorna il DB; qui basta rileggerlo.
+  useEffect(() => {
+    const interval = setInterval(refreshContracts, 25_000);
+    window.addEventListener("focus", refreshContracts);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", refreshContracts);
+    };
+  }, []);
+
+  async function refreshContracts() {
+    try {
+      const res = await fetch("/api/admin/contracts", { cache: "no-store" });
+      if (!res.ok) return;
+      const { contracts } = (await res.json()) as { contracts: ServerContract[] };
+      setItems(contracts ?? []);
+      window.dispatchEvent(new Event("contracts:refresh"));
+    } catch {
+      // ignora errori transitori di rete
+    }
+  }
+
   function loadContracts() {
     setLoading(true);
     fetch("/api/admin/contracts/sync-all", { method: "POST" })
@@ -41,6 +64,7 @@ export function ContractsList() {
             if (!res.ok) return;
             const { contracts } = (await res.json()) as { contracts: ServerContract[] };
             setItems(contracts ?? []);
+            window.dispatchEvent(new Event("contracts:refresh"));
           })
           .catch(() => {})
           .finally(() => setLoading(false));

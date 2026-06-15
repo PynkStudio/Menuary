@@ -122,6 +122,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [platformRole, setPlatformRole] = useState<SiteadminRole | null>(null);
   const [inboxUnread, setInboxUnread] = useState(0);
   const [leadAttentionCount, setLeadAttentionCount] = useState(0);
+  const [contractsAttention, setContractsAttention] = useState(0);
   const mode = usePlatformMode();
 
   const tenant = useTenant();
@@ -190,6 +191,27 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       window.removeEventListener("inbox:refresh", fetchUnread as EventListener);
     };
   }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "platform-admin" || !hasAdminPermission(platformRole, "subscriptions:view")) return;
+
+    function fetchContractsAttention() {
+      void fetch("/api/admin/contracts/attention", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data: { count?: number }) => setContractsAttention(data.count ?? 0))
+        .catch(() => {});
+    }
+
+    fetchContractsAttention();
+    const interval = setInterval(fetchContractsAttention, 25_000);
+    window.addEventListener("focus", fetchContractsAttention);
+    window.addEventListener("contracts:refresh", fetchContractsAttention as EventListener);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchContractsAttention);
+      window.removeEventListener("contracts:refresh", fetchContractsAttention as EventListener);
+    };
+  }, [mode, platformRole]);
 
   const advancedServicesEnabled = Boolean(
     modules.orderKiosk ||
@@ -303,6 +325,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       active ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
                     )}>
                       {leadAttentionCount}
+                    </span>
+                  )}
+                  {it.href === "/admin/contratti" && contractsAttention > 0 && (
+                    <span className={cn(
+                      "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      active ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
+                    )}>
+                      {contractsAttention}
                     </span>
                   )}
                 </Link>
