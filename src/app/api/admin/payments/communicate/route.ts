@@ -8,7 +8,6 @@ import { stripeRequest } from "@/lib/payments/stripe/client";
 import { attachPaymentProviderRefs } from "@/lib/platform/subscription-service";
 import { PLATFORM_BRANDS, resolveSenderForVertical, sendEmail } from "@/lib/email/sender";
 import { FORNITORE, formatEUR } from "@/lib/contracts/menuary-contract";
-import type { ContractBrand } from "@/lib/contracts/menuary-contract";
 import type { TenantVertical } from "@/lib/tenant";
 
 type PaymentRow = {
@@ -184,15 +183,6 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ sent: send, url, method });
-}
-
-function verticalToContractBrand(vertical: TenantVertical): ContractBrand {
-  const map: Record<TenantVertical, ContractBrand> = {
-    food: "menuary",
-    services: "bizery",
-    creative: "orpheo",
-  };
-  return map[vertical];
 }
 
 function buildPaymentEmail(

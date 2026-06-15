@@ -314,7 +314,7 @@ function CancelledState() {
         Pagamento annullato
       </h2>
       <p style={{ fontSize: 14, color: PYNK.muted, lineHeight: 1.7, margin: 0 }}>
-        Hai annullato l'operazione. Puoi chiudere questa finestra o contattarci per riprogrammare il pagamento.
+        Hai annullato l&apos;operazione. Puoi chiudere questa finestra o contattarci per riprogrammare il pagamento.
       </p>
       <a
         href="mailto:amministrazione@pynkstudio.it"
