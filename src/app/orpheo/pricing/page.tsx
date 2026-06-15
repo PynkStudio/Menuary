@@ -21,13 +21,19 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function OrpheoPricing() {
   const market = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;
-  const [plans, addons] = await Promise.all([
+  const [plans, addons, locale] = await Promise.all([
     fetchOrpheoPricingPlans(market),
     fetchPricingAddons(market),
+    getLocale(),
   ]);
   return (
     <OrpheoShell>
-      <OrpheoPricingPage plans={plans} aiAddon={addons[0]} priceLocale={getMarket(market).locale} />
+      <OrpheoPricingPage
+        plans={plans}
+        aiAddon={addons[0]}
+        priceLocale={getMarket(market).locale}
+        locale={locale}
+      />
     </OrpheoShell>
   );
 }

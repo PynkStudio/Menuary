@@ -76,6 +76,7 @@ export function OrpheoPricingPage({
   const [billing, setBilling] = useState<"annual" | "monthly">("annual");
   const maxSaving = Math.max(...plans.map(annualSaving));
   const displayCurrency = plans[0]?.currency ?? "EUR";
+  const contactHref = localizedPath("/contatti", locale);
 
   return (
     <>
@@ -117,7 +118,13 @@ export function OrpheoPricingPage({
 
           <div className="grid items-stretch gap-6 lg:grid-cols-3">
             {plans.map((plan) => (
-              <PlanCard key={plan.slug} plan={plan} billing={billing} priceLocale={priceLocale} />
+              <PlanCard
+                key={plan.slug}
+                plan={plan}
+                billing={billing}
+                priceLocale={priceLocale}
+                contactHref={contactHref}
+              />
             ))}
           </div>
 
@@ -251,10 +258,12 @@ function PlanCard({
   plan,
   billing,
   priceLocale,
+  contactHref,
 }: {
   plan: PricingPlan;
   billing: "annual" | "monthly";
   priceLocale: string;
+  contactHref: string;
 }) {
   const price = billing === "annual" ? plan.price_annual : plan.price_monthly;
   return (
@@ -291,7 +300,7 @@ function PlanCard({
         ))}
       </ul>
       <div className="mt-auto pt-9">
-        <Link href="/contatti" className={plan.is_featured ? "menuary-button menuary-button-dark w-full justify-center" : "menuary-button menuary-button-light w-full justify-center"}>
+        <Link href={contactHref} className={plan.is_featured ? "menuary-button menuary-button-dark w-full justify-center" : "menuary-button menuary-button-light w-full justify-center"}>
           {plan.cta_label ?? "Richiedi una demo"}
           <ArrowRight size={15} strokeWidth={1.8} className="ml-1" />
         </Link>
