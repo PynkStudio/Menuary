@@ -10,7 +10,11 @@ export type LeadStage =
   | "tenant"
   | "lost";
 export type LeadTemperature = "cold" | "warm" | "hot";
-export type LeadStatus = "lead" | "prospect" | "active" | "churned";
+// Due cicli reali: pipeline commerciale (lead→prospect→won/lost) e ciclo cliente
+// (active→suspended→churned). `lost` = potenziale mai convertito; `churned` = ex
+// cliente che ha fatto recesso (abbonamento cancelled); `suspended` = cliente
+// offline per mancato pagamento (dunning, recuperabile).
+export type LeadStatus = "lead" | "prospect" | "active" | "suspended" | "churned" | "lost";
 export type LeadSource = "form_web" | "referral" | "diretto" | "evento" | "manuale" | "altro";
 export type BillingCycle = "monthly" | "yearly";
 export type SubscriptionStatus = "trial" | "pending_payment" | "active" | "suspended" | "cancelled";
@@ -245,14 +249,18 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
   lead: "Lead",
   prospect: "Prospect",
   active: "Attivo",
+  suspended: "Sospeso",
   churned: "Churned",
+  lost: "Perso",
 };
 
 export const LEAD_STATUS_COLORS: Record<LeadStatus, string> = {
   lead: "bg-pork-ink/10 text-pork-ink/70",
   prospect: "bg-pork-mustard/30 text-pork-ink",
   active: "bg-pork-green/20 text-pork-green",
+  suspended: "bg-orange-100 text-orange-700",
   churned: "bg-pork-red/10 text-pork-red",
+  lost: "bg-pork-ink/5 text-pork-ink/45",
 };
 
 export const LEAD_STAGE_LABELS: Record<LeadStage, string> = {

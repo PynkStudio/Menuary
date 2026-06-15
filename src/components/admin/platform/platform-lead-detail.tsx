@@ -255,7 +255,10 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
   }
 
   async function changeStage(stage: LeadStage) {
-    const nextStatus = stage === "tenant" ? "active" : stage === "lost" ? "churned" : lead?.status ?? "lead";
+    // Perso (lost) = potenziale mai convertito → status "lost", NON "churned"
+    // (churned è solo per chi era cliente e ha fatto recesso). Tenant = cliente attivo.
+    const nextStatus: LeadStatus =
+      stage === "tenant" ? "active" : stage === "lost" ? "lost" : lead?.status ?? "lead";
     const ok = await patchLead({ stage, status: nextStatus });
     if (ok) {
       setLead((prev) => prev ? {
@@ -1489,7 +1492,7 @@ function TabAnagrafica({
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        {(["lead", "prospect", "active", "churned"] as LeadStatus[]).map((status) => (
+        {(["lead", "prospect", "active", "suspended", "churned", "lost"] as LeadStatus[]).map((status) => (
           <button
             key={status}
             onClick={() => onStatusChange(status)}

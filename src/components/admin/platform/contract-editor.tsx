@@ -1034,10 +1034,9 @@ export function ContractEditor({ contractId }: Props) {
             }))
           }
         >
-          <option value="sdd">SDD SEPA</option>
+          <option value="bunq">Link di pagamento Bunq</option>
           <option value="bonifico">Bonifico 30gg</option>
           <option value="carta">Carta ricorrente (Stripe)</option>
-          <option value="bunq">Link di pagamento Bunq</option>
         </select>
         <label className="rate-toggle">
           <input

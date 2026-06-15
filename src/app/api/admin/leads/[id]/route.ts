@@ -120,7 +120,7 @@ export async function PATCH(
   }
   if (
     "status" in body &&
-    ["lead", "prospect", "active", "churned"].includes(body.status as string)
+    ["lead", "prospect", "active", "suspended", "churned", "lost"].includes(body.status as string)
   ) {
     update.status = body.status;
   }

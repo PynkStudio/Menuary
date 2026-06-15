@@ -129,8 +129,10 @@ export function ComposeDrawer({
   const [brand, setBrand]       = useState<InboundEmailBrand>(defaultBrand);
   const [to, setTo]             = useState(initialTo ?? "");
   const [subject, setSubject]   = useState(initialSubject ?? "");
-  const [bodyHtml, setBodyHtml] = useState(plainTextToHtml(initialBody ?? ""));
-  const bodyHtmlRef = useRef(bodyHtml);
+  // L'editor del corpo è uncontrolled: il contenuto vive nel DOM e in bodyHtmlRef,
+  // mai in uno state che React possa riapplicare al contenteditable durante un
+  // re-render (es. il polling inbox) cancellando quanto digitato.
+  const bodyHtmlRef = useRef(plainTextToHtml(initialBody ?? ""));
   const [attachments, setAttachments] = useState<ComposeAttachment[]>(initialAttachments ?? []);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
@@ -194,7 +196,6 @@ export function ComposeDrawer({
     if (initialSubject !== undefined) setSubject(initialSubject);
     const nextBodyHtml = plainTextToHtml(initialBody ?? "");
     bodyHtmlRef.current = nextBodyHtml;
-    setBodyHtml(nextBodyHtml);
     if (editorRef.current) editorRef.current.innerHTML = nextBodyHtml;
     if (initialAttachments !== undefined) setAttachments(initialAttachments);
     setBrand(defaultBrand);
@@ -213,7 +214,7 @@ export function ComposeDrawer({
 
   function reset() {
     bodyHtmlRef.current = EMPTY_EDITOR_HTML;
-    setTo(""); setSubject(""); setBodyHtml(EMPTY_EDITOR_HTML); setError(null); setAttachments([]);
+    setTo(""); setSubject(""); setError(null); setAttachments([]);
     if (editorRef.current) editorRef.current.innerHTML = EMPTY_EDITOR_HTML;
     composeDraft.clearDraft();
     setShowDraftBanner(false);
@@ -225,7 +226,6 @@ export function ComposeDrawer({
     setTo(d.to);
     setSubject(d.subject);
     bodyHtmlRef.current = d.bodyHtml;
-    setBodyHtml(d.bodyHtml);
     if (editorRef.current) editorRef.current.innerHTML = d.bodyHtml;
     composeDraft.clearDraft();
     setShowDraftBanner(false);
@@ -478,7 +478,6 @@ export function ComposeDrawer({
           suppressContentEditableWarning
           onInput={syncEditor}
           className="compose-rich-editor min-h-0 flex-1 overflow-y-auto px-5 py-4 text-sm text-[var(--ma-ink)] focus:outline-none"
-          dangerouslySetInnerHTML={{ __html: bodyHtml }}
           data-placeholder="Scrivi il tuo messaggio..."
         />
 

@@ -29,7 +29,6 @@ export async function createContractPayment(
 
   switch (method) {
     case "carta":
-    case "sdd":
       return createStripeCheckout(contractId, data);
     case "bunq":
       return createBunqCheckout(contractId, data);

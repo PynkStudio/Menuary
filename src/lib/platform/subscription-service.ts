@@ -39,7 +39,7 @@ function addCycle(isoDate: string, cycle: BillingCycle): string {
 /** Mappa il metodo di pagamento del contratto sul provider di riconciliazione. */
 function providerForMethod(method: string): "manual" | "stripe" | "bunq" {
   if (method === "bunq") return "bunq";
-  if (method === "carta" || method === "sdd") return "stripe";
+  if (method === "carta") return "stripe";
   return "manual"; // bonifico / IBAN
 }
 
@@ -276,11 +276,14 @@ export async function createRenewalPayment(
   return { paymentId: pay.id, amount };
 }
 
-/** Pagamento non arrivato entro i 15gg → sospende abbonamento e mette offline il tenant. */
+/**
+ * Pagamento non arrivato entro i 15gg → sospende abbonamento e mette offline il tenant.
+ * Stato cliente recuperabile: a pagamento ricevuto torna `active`. Lead → `suspended`.
+ */
 export async function suspendSubscription(subscriptionId: string): Promise<void> {
   const { data: sub } = await db()
     .from("platform_subscriptions")
-    .select("tenant_id")
+    .select("tenant_id, lead_id")
     .eq("id", subscriptionId)
     .maybeSingle();
 
@@ -295,6 +298,52 @@ export async function suspendSubscription(subscriptionId: string): Promise<void>
       .from("tenants")
       .update({ enabled: false, status: "suspended", updated_at: now })
       .eq("id", sub.tenant_id);
+  }
+  if (sub?.lead_id) {
+    await db()
+      .from("platform_leads")
+      .update({ status: "suspended", updated_at: now })
+      .eq("id", sub.lead_id);
+  }
+}
+
+/**
+ * Recesso del cliente → abbonamento `cancelled`, tenant offline, lead `churned`.
+ * Distinto da `lost` (potenziale mai convertito): churned è un ex cliente.
+ */
+export async function cancelSubscription(
+  subscriptionId: string,
+  reason?: string,
+): Promise<void> {
+  const { data: sub } = await db()
+    .from("platform_subscriptions")
+    .select("tenant_id, lead_id, notes")
+    .eq("id", subscriptionId)
+    .maybeSingle();
+
+  const now = new Date().toISOString();
+  await db()
+    .from("platform_subscriptions")
+    .update({
+      status: "cancelled",
+      cancelled_at: now,
+      grace_until: null,
+      notes: reason ? `${sub?.notes ?? ""}\nRecesso: ${reason}`.trim() : sub?.notes,
+      updated_at: now,
+    })
+    .eq("id", subscriptionId);
+
+  if (sub?.tenant_id) {
+    await db()
+      .from("tenants")
+      .update({ enabled: false, status: "offline", updated_at: now })
+      .eq("id", sub.tenant_id);
+  }
+  if (sub?.lead_id) {
+    await db()
+      .from("platform_leads")
+      .update({ status: "churned", updated_at: now })
+      .eq("id", sub.lead_id);
   }
 }
 

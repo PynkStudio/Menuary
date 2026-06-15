@@ -43,7 +43,9 @@ const STATUS_TABS: { value: LeadStatus | "all"; label: string }[] = [
   { value: "lead", label: "Lead" },
   { value: "prospect", label: "Prospect" },
   { value: "active", label: "Attivi" },
+  { value: "suspended", label: "Sospesi" },
   { value: "churned", label: "Churned" },
+  { value: "lost", label: "Persi" },
 ];
 
 const VERTICAL_FILTERS: { value: LeadVertical | "all"; label: string; icon: React.ElementType }[] = [

@@ -218,6 +218,11 @@ export function ContractsList() {
                           Scaduto
                         </span>
                       )}
+                      {c.status === "sent" && d.opened_at && (
+                        <span style={{ display: "block", fontSize: 10, color: "#2563eb", marginTop: 2 }}>
+                          Aperto dal cliente
+                        </span>
+                      )}
                     </td>
                     <td style={td}>
                       <span style={{

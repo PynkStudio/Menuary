@@ -158,7 +158,13 @@ type PlatformLeadLocationRow = {
 };
 
 function normalizeLeadStatus(value: string | null): LeadStatus {
-  return value === "prospect" || value === "active" || value === "churned" ? value : "lead";
+  return value === "prospect" ||
+    value === "active" ||
+    value === "suspended" ||
+    value === "churned" ||
+    value === "lost"
+    ? value
+    : "lead";
 }
 
 function normalizeLeadStage(value: string | null): LeadStage {

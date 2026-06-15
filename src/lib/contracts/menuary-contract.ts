@@ -11,7 +11,7 @@ export const FORNITORE = {
 } as const;
 
 export type BillingCycle = "monthly" | "yearly";
-export type PaymentMethod = "sdd" | "bonifico" | "carta" | "bunq";
+export type PaymentMethod = "bunq" | "bonifico" | "carta";
 export type ContractBrand = "menuary" | "bizery" | "orpheo";
 export type ContractClientType = "business" | "individual";
 
@@ -94,6 +94,8 @@ export type ContractData = {
     esenzioneIva: boolean;
   };
   noteAggiuntive: string;
+  /** Primo momento in cui il cliente ha aperto il documento su Documenso. */
+  opened_at?: string | null;
   countersigned?: {
     at: string;
     by: string;
@@ -142,7 +144,7 @@ export function freshContractData(brand: ContractBrand): ContractData {
       canoneMensile: 89,
       setup: 290,
       cicloFatturazione: "monthly",
-      metodoPagamento: "sdd",
+      metodoPagamento: "bunq",
       scontoAnnuale: 10,
       setupRateale: false,
       setupRate: [290],
@@ -292,8 +294,6 @@ export function contractPaymentDescription(data: ContractData): string {
 
 export function paymentMethodLabel(m: PaymentMethod): string {
   switch (m) {
-    case "sdd":
-      return "Addebito diretto SEPA (SDD) su IBAN del Cliente";
     case "bonifico":
       return "Bonifico bancario — pagamento immediato";
     case "carta":

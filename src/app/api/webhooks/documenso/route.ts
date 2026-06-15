@@ -60,7 +60,11 @@ export async function POST(req: NextRequest) {
   // Documenso invia eventi tipo "DOCUMENT_COMPLETED"/"DOCUMENT_SIGNED":
   // normalizziamo gli underscore a punto per il confronto.
   const event = payload.event.toLowerCase().replace(/_/g, ".");
-  if (event !== "document.completed" && event !== "document.signed") {
+  if (
+    event !== "document.completed" &&
+    event !== "document.signed" &&
+    event !== "document.opened"
+  ) {
     return NextResponse.json({ received: true, handled: false });
   }
 
@@ -70,6 +74,20 @@ export async function POST(req: NextRequest) {
   if (!contract) {
     console.warn("[documenso-webhook] Contract not found for envelope", payload.payload?.id);
     return NextResponse.json({ received: true, error: "contract_not_found" });
+  }
+
+  // Apertura del documento da parte del cliente: registriamo il momento senza
+  // cambiare stato (resta "sent"), per mostrarlo in admin/contratti.
+  if (event === "document.opened") {
+    if (contract.status === "sent" && !contract.contract_data.opened_at) {
+      await updateContract(contract.id, {
+        contract_data: {
+          ...contract.contract_data,
+          opened_at: new Date().toISOString(),
+        },
+      });
+    }
+    return NextResponse.json({ received: true, handled: true, status: contract.status });
   }
 
   let status = contract.status;
