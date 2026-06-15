@@ -184,74 +184,141 @@ function transformPoint(m: M, x: number, y: number): [number, number] {
   return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
 }
 
-function findMarkersInPdf(pdfBuffer: Buffer): MarkerHit[] {
-  const streams = extractStreams(pdfBuffer);
-  const hits: MarkerHit[] = [];
-  let pageNumber = 0;
+function scanStreamForMarkers(
+  stream: Buffer,
+  pageNumber: number,
+  hits: MarkerHit[],
+): void {
+  const text = stream.toString("latin1");
+  if (!text.includes("Tj") && !text.includes("TJ")) return;
 
-  for (const stream of streams) {
-    const text = stream.toString("latin1");
-    if (!text.includes("Tj") && !text.includes("TJ")) continue;
+  let ctm: M = [...IDENTITY];
+  const ctmStack: M[] = [];
+  let lastTmTx = 0;
+  let lastTmTy = 0;
 
-    pageNumber++;
+  const lines = text.split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
 
-    let ctm: M = [...IDENTITY];
-    const ctmStack: M[] = [];
-    let lastTmTx = 0;
-    let lastTmTy = 0;
+    if (trimmed === "q") {
+      ctmStack.push([...ctm]);
+      continue;
+    }
+    if (trimmed === "Q") {
+      if (ctmStack.length > 0) ctm = ctmStack.pop()!;
+      continue;
+    }
 
-    const lines = text.split(/\r?\n/);
-    for (const line of lines) {
-      const trimmed = line.trim();
+    // cm: "a b c d tx ty cm" — CTM' = cm_matrix × CTM
+    const cmMatch = trimmed.match(
+      /^(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+cm$/,
+    );
+    if (cmMatch) {
+      const cm: M = [
+        parseFloat(cmMatch[1]), parseFloat(cmMatch[2]),
+        parseFloat(cmMatch[3]), parseFloat(cmMatch[4]),
+        parseFloat(cmMatch[5]), parseFloat(cmMatch[6]),
+      ];
+      ctm = mulMatrix(cm, ctm);
+      continue;
+    }
 
-      if (trimmed === "q") {
-        ctmStack.push([...ctm]);
-        continue;
-      }
-      if (trimmed === "Q") {
-        if (ctmStack.length > 0) ctm = ctmStack.pop()!;
-        continue;
-      }
+    // Tm: "a b c d tx ty Tm"
+    const tmMatch = trimmed.match(
+      /^(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+Tm$/,
+    );
+    if (tmMatch) {
+      lastTmTx = parseFloat(tmMatch[5]);
+      lastTmTy = parseFloat(tmMatch[6]);
+      continue;
+    }
 
-      // cm: "a b c d tx ty cm" — CTM' = cm_matrix × CTM
-      const cmMatch = trimmed.match(
-        /^(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+cm$/,
-      );
-      if (cmMatch) {
-        const cm: M = [
-          parseFloat(cmMatch[1]), parseFloat(cmMatch[2]),
-          parseFloat(cmMatch[3]), parseFloat(cmMatch[4]),
-          parseFloat(cmMatch[5]), parseFloat(cmMatch[6]),
-        ];
-        ctm = mulMatrix(cm, ctm);
-        continue;
-      }
-
-      // Tm: "a b c d tx ty Tm"
-      const tmMatch = trimmed.match(
-        /^(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+(-?[\d.e+-]+)\s+Tm$/,
-      );
-      if (tmMatch) {
-        lastTmTx = parseFloat(tmMatch[5]);
-        lastTmTy = parseFloat(tmMatch[6]);
-        continue;
-      }
-
-      // TJ/Tj: decodifica il testo e cerca il marker
-      if (trimmed.endsWith(" TJ") || trimmed.endsWith(" Tj")) {
-        const decoded = decodeTJText(trimmed);
-        const m = decoded.match(MARKER_RE);
-        if (m) {
-          const [absX, absY] = transformPoint(ctm, lastTmTx, lastTmTy);
-          hits.push({
-            marker: m[0],
-            page: pageNumber,
-            xPt: absX,
-            yPt: absY,
-          });
-        }
+    // TJ/Tj: decodifica il testo e cerca il marker
+    if (trimmed.endsWith(" TJ") || trimmed.endsWith(" Tj")) {
+      const decoded = decodeTJText(trimmed);
+      const m = decoded.match(MARKER_RE);
+      if (m) {
+        const [absX, absY] = transformPoint(ctm, lastTmTx, lastTmTy);
+        hits.push({ marker: m[0], page: pageNumber, xPt: absX, yPt: absY });
       }
     }
+  }
+}
+
+// react-pdf scrive i content stream in un ordine di byte che NON corrisponde
+// all'ordine visivo delle pagine (es. la copertina è l'ultimo stream). Per
+// assegnare a ogni marker la pagina giusta dobbiamo seguire l'albero pagine:
+// /Pages /Kids [...] dà l'ordine visivo, e ogni /Page punta al suo /Contents.
+function getObjBody(latin: string, objNum: number): string {
+  const re = new RegExp(`(?:^|[^0-9])${objNum}\\s+0\\s+obj([\\s\\S]*?)endobj`);
+  const m = latin.match(re);
+  return m ? m[1] : "";
+}
+
+function inflateContentByObj(
+  pdf: Buffer,
+  latin: string,
+  objNum: number,
+): Buffer | null {
+  const re = new RegExp(`(?:^|[^0-9])${objNum}\\s+0\\s+obj`);
+  const m = re.exec(latin);
+  if (!m) return null;
+  const sIdx = latin.indexOf("stream", m.index + m[0].length);
+  if (sIdx === -1) return null;
+  let ds = sIdx + 6;
+  if (latin[ds] === "\r") ds++;
+  if (latin[ds] === "\n") ds++;
+  const eIdx = latin.indexOf("endstream", ds);
+  if (eIdx === -1) return null;
+  return inflateStream(pdf.subarray(ds, eIdx));
+}
+
+function getOrderedPageStreams(pdf: Buffer): Buffer[] | null {
+  const latin = pdf.toString("latin1");
+  const pagesNode = latin.match(
+    /\/Type\s*\/Pages\b[\s\S]*?\/Kids\s*\[([\s\S]*?)\]/,
+  );
+  if (!pagesNode) return null;
+  const pageObjs = [...pagesNode[1].matchAll(/(\d+)\s+\d+\s+R/g)].map((m) =>
+    parseInt(m[1], 10),
+  );
+  if (pageObjs.length === 0) return null;
+
+  const streams: Buffer[] = [];
+  for (const pageObj of pageObjs) {
+    const body = getObjBody(latin, pageObj);
+    const c = body.match(/\/Contents\s+(\d+)\s+0\s+R/);
+    if (!c) {
+      streams.push(Buffer.alloc(0));
+      continue;
+    }
+    streams.push(inflateContentByObj(pdf, latin, parseInt(c[1], 10)) ?? Buffer.alloc(0));
+  }
+  return streams;
+}
+
+function findMarkersInPdf(pdfBuffer: Buffer): MarkerHit[] {
+  const hits: MarkerHit[] = [];
+
+  // Percorso corretto: pagine nell'ordine visivo dato dal page tree.
+  const orderedStreams = getOrderedPageStreams(pdfBuffer);
+  if (orderedStreams) {
+    orderedStreams.forEach((stream, idx) =>
+      scanStreamForMarkers(stream, idx + 1, hits),
+    );
+    if (hits.length > 0) return hits;
+  }
+
+  // Fallback (struttura PDF inattesa): conteggio per stream con testo.
+  // Le pagine potrebbero non essere accurate, ma è meglio del nulla; in caso
+  // di 0 marker, buildSignatureFields userà comunque le posizioni di riserva.
+  let pageNumber = 0;
+  for (const stream of extractStreams(pdfBuffer)) {
+    const text = stream.toString("latin1");
+    if (!text.includes("Tj") && !text.includes("TJ")) continue;
+    pageNumber++;
+    scanStreamForMarkers(stream, pageNumber, hits);
   }
   return hits;
 }
@@ -287,12 +354,12 @@ export function buildSignatureFields(
       { type: "DATE", page: totalPages, positionX: 8, positionY: 82, width: 20, height: 3, identifier: 0 },
     );
   } else {
-    // Il marker è emesso subito sopra la riga di firma, ma lo spazio bianco
-    // per firmare sta SOPRA il marker (sigLabel ha marginBottom 50pt).
-    // Documenso usa positionY come bordo superiore del campo che cresce verso
-    // il basso: alziamo la firma di ~la sua altezza così cade nello spazio
-    // bianco previsto invece che sotto la riga. La data resta sulla riga.
-    const SIG_HEIGHT = 5;
+    // Misure reali (pagina firme): label ~26%, marker ~33%, riga "Timbro e
+    // firma" ~36%. Lo spazio bianco per firmare sta SOPRA il marker. Documenso
+    // usa positionY come bordo superiore del campo che cresce verso il basso:
+    // alziamo la firma così riempie il riquadro bianco fermandosi appena sopra
+    // la riga (marker). La data resta sulla riga, sotto la firma.
+    const SIG_HEIGHT = 4;
     for (const hit of markers) {
       const pos = ptToPercent(hit.xPt, hit.yPt);
       const isFornitore = hit.marker.startsWith("XSIGNF_");
@@ -302,7 +369,7 @@ export function buildSignatureFields(
         type: "SIGNATURE",
         page: hit.page,
         positionX: pos.x,
-        positionY: Math.max(0, pos.y - SIG_HEIGHT - 1),
+        positionY: Math.max(0, pos.y - SIG_HEIGHT - 0.5),
         width: 30,
         height: SIG_HEIGHT,
         identifier: 0,
