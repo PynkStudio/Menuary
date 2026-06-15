@@ -105,7 +105,9 @@ export function PlatformCrmPage() {
     lead: leads.filter((l) => l.status === "lead").length,
     prospect: leads.filter((l) => l.status === "prospect").length,
     active: leads.filter((l) => l.status === "active").length,
+    suspended: leads.filter((l) => l.status === "suspended").length,
     churned: leads.filter((l) => l.status === "churned").length,
+    lost: leads.filter((l) => l.status === "lost").length,
     hot: leads.filter((l) => l.temperature === "hot").length,
   };
 

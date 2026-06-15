@@ -4,21 +4,18 @@ import {
   BIZERY_MARKETING_DESCRIPTION,
   BIZERY_ORIGIN,
   BIZERY_KEYWORDS,
-  marketingLanguageAlternates,
+  marketingAlternates,
 } from "@/lib/marketing-seo";
+import { getLocale } from "@/i18n";
 
-export const metadata: Metadata = {
-  title: "Bizery - siti web per studi, saloni e aziende di servizi",
-  description: BIZERY_MARKETING_DESCRIPTION,
-  keywords: BIZERY_KEYWORDS,
-  alternates: {
-    canonical: BIZERY_ORIGIN,
-    languages: {
-      ...marketingLanguageAlternates(BIZERY_ORIGIN),
-      "x-default": BIZERY_ORIGIN,
-    },
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Bizery - siti web per studi, saloni e aziende di servizi",
+    description: BIZERY_MARKETING_DESCRIPTION,
+    keywords: BIZERY_KEYWORDS,
+    alternates: marketingAlternates(BIZERY_ORIGIN, "", await getLocale()),
+  };
+}
 
 export default function BizeryHome() {
   return <BizeryHomePage />;

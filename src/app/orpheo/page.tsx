@@ -18,21 +18,18 @@ import {
   ORPHEO_MARKETING_DESCRIPTION,
   ORPHEO_ORIGIN,
   ORPHEO_KEYWORDS,
-  marketingLanguageAlternates,
+  marketingAlternates,
 } from "@/lib/marketing-seo";
+import { getLocale } from "@/i18n";
 
-export const metadata: Metadata = {
-  title: "Orpheo - piattaforma per artisti e professionisti creativi",
-  description: ORPHEO_MARKETING_DESCRIPTION,
-  keywords: ORPHEO_KEYWORDS,
-  alternates: {
-    canonical: ORPHEO_ORIGIN,
-    languages: {
-      ...marketingLanguageAlternates(ORPHEO_ORIGIN),
-      "x-default": ORPHEO_ORIGIN,
-    },
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Orpheo - piattaforma per artisti e professionisti creativi",
+    description: ORPHEO_MARKETING_DESCRIPTION,
+    keywords: ORPHEO_KEYWORDS,
+    alternates: marketingAlternates(ORPHEO_ORIGIN, "", await getLocale()),
+  };
+}
 
 const heroStats = [
   { value: "01", label: "press kit sempre pronto" },

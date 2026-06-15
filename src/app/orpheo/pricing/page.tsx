@@ -7,20 +7,17 @@ import { OrpheoShell } from "@/components/orpheo/orpheo-shell";
 import {
   ORPHEO_MARKETING_DESCRIPTION,
   ORPHEO_ORIGIN,
-  marketingLanguageAlternates,
+  marketingAlternates,
 } from "@/lib/marketing-seo";
+import { getLocale } from "@/i18n";
 
-export const metadata: Metadata = {
-  title: "Prezzi Orpheo per artisti, autori e creativi",
-  description: `Piani Orpheo per artisti, autori, musicisti, attori, registi e professionisti creativi: press kit, catalogo opere, booking, diritti, royalty, recensioni e fanbase. ${ORPHEO_MARKETING_DESCRIPTION}`,
-  alternates: {
-    canonical: `${ORPHEO_ORIGIN}/pricing`,
-    languages: {
-      ...marketingLanguageAlternates(ORPHEO_ORIGIN, "/pricing"),
-      "x-default": `${ORPHEO_ORIGIN}/pricing`,
-    },
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Prezzi Orpheo per artisti, autori e creativi",
+    description: `Piani Orpheo per artisti, autori, musicisti, attori, registi e professionisti creativi: press kit, catalogo opere, booking, diritti, royalty, recensioni e fanbase. ${ORPHEO_MARKETING_DESCRIPTION}`,
+    alternates: marketingAlternates(ORPHEO_ORIGIN, "/pricing", await getLocale()),
+  };
+}
 
 export default async function OrpheoPricing() {
   const market = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;

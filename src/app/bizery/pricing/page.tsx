@@ -8,20 +8,16 @@ import { getLocale } from "@/i18n";
 import {
   BIZERY_MARKETING_DESCRIPTION,
   BIZERY_ORIGIN,
-  marketingLanguageAlternates,
+  marketingAlternates,
 } from "@/lib/marketing-seo";
 
-export const metadata: Metadata = {
-  title: "Prezzi siti web per studi, saloni e aziende",
-  description: `Piani Bizery per studi medici, saloni di bellezza, barbieri, studi legali, commercialisti e aziende di servizi: sito, appuntamenti, listino e CRM. ${BIZERY_MARKETING_DESCRIPTION}`,
-  alternates: {
-    canonical: `${BIZERY_ORIGIN}/pricing`,
-    languages: {
-      ...marketingLanguageAlternates(BIZERY_ORIGIN, "/pricing"),
-      "x-default": `${BIZERY_ORIGIN}/pricing`,
-    },
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Prezzi siti web per studi, saloni e aziende",
+    description: `Piani Bizery per studi medici, saloni di bellezza, barbieri, studi legali, commercialisti e aziende di servizi: sito, appuntamenti, listino e CRM. ${BIZERY_MARKETING_DESCRIPTION}`,
+    alternates: marketingAlternates(BIZERY_ORIGIN, "/pricing", await getLocale()),
+  };
+}
 
 export default async function BizeryPricing() {
   const market = normalizeMarketCode((await headers()).get(MARKET_HEADER)) ?? DEFAULT_MARKET;

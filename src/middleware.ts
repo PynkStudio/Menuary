@@ -20,6 +20,7 @@ import {
   SUPPORTED_LOCALES,
   LOCALE_HEADER,
   LOCALE_COOKIE,
+  DEFAULT_LOCALE,
   isAppLocale,
   detectLocaleFromAcceptLanguage,
   type AppLocale,
@@ -111,6 +112,43 @@ function rewriteWithLocale(
   res.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   res.cookies.set(MARKET_COOKIE, market, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   return res;
+}
+
+const CRAWLER_UA =
+  /bot|crawl|spider|slurp|mediapartners|google-inspectiontool|lighthouse|facebookexternalhit|facebot|whatsapp|telegrambot|twitterbot|linkedinbot|pinterest|applebot|yandex|baidu|duckduck|petalbot|embedly|quora|outbrain/i;
+
+function isCrawler(request: NextRequest): boolean {
+  return CRAWLER_UA.test(request.headers.get("user-agent") ?? "");
+}
+
+/**
+ * Routing lingua dei siti marketing. Il path nudo (es. /chi-siamo) è la lingua
+ * di default (it) e DEVE restare 200 per i crawler: è l'URL canonico/x-default.
+ * Gli umani non-italiani vengono rediretti alla loro lingua; i crawler no, così
+ * il canonical non punta mai a un redirect. /it/* è un duplicato del path nudo e
+ * viene consolidato con un 301.
+ */
+function handleMarketingLocale(
+  request: NextRequest,
+  mode: PlatformMode,
+  mapPath: (publicPath: string) => string,
+): NextResponse {
+  const { pathname } = request.nextUrl;
+  const { locale, rest } = extractLocaleFromPath(pathname);
+
+  if (locale === DEFAULT_LOCALE) {
+    const url = request.nextUrl.clone();
+    url.pathname = rest;
+    return NextResponse.redirect(url, 301);
+  }
+  if (locale) {
+    return rewriteWithLocale(request, mapPath(rest), locale, mode);
+  }
+  const detected = isCrawler(request) ? DEFAULT_LOCALE : detectLocaleFromRequest(request);
+  if (detected === DEFAULT_LOCALE) {
+    return rewriteWithLocale(request, mapPath(pathname), DEFAULT_LOCALE, mode);
+  }
+  return localeRedirect(request, detected, pathname);
 }
 
 /** Portale clienti B2C — path pubblici */
@@ -720,34 +758,17 @@ export async function middleware(request: NextRequest) {
 
   // ── Marketing Menuary (menuary.it) ────────────────────────────────────────
   if (mode === "marketing") {
-    const { locale, rest } = extractLocaleFromPath(pathname);
-    if (locale) {
-      return rewriteWithLocale(request, rest, locale, mode);
-    }
-    const detected = detectLocaleFromRequest(request);
-    return localeRedirect(request, detected, pathname);
+    return handleMarketingLocale(request, mode, (p) => p);
   }
 
   // ── Marketing Bizery (bizery.it) ─────────────────────────────────────────
   if (mode === "marketing-bizery") {
-    const { locale, rest } = extractLocaleFromPath(pathname);
-    if (locale) {
-      const bizeryPath = "/bizery" + (rest === "/" ? "" : rest);
-      return rewriteWithLocale(request, bizeryPath, locale, mode);
-    }
-    const detected = detectLocaleFromRequest(request);
-    return localeRedirect(request, detected, pathname);
+    return handleMarketingLocale(request, mode, (p) => "/bizery" + (p === "/" ? "" : p));
   }
 
   // ── Marketing Orpheo (weuseorpheo.com) ───────────────────────────────────
   if (mode === "marketing-orpheo") {
-    const { locale, rest } = extractLocaleFromPath(pathname);
-    if (locale) {
-      const orpheoPath = "/orpheo" + (rest === "/" ? "" : rest);
-      return rewriteWithLocale(request, orpheoPath, locale, mode);
-    }
-    const detected = detectLocaleFromRequest(request);
-    return localeRedirect(request, detected, pathname);
+    return handleMarketingLocale(request, mode, (p) => "/orpheo" + (p === "/" ? "" : p));
   }
 
   // ── Studio (deprecato) → reindirizza tutto su gestione.menuary.it ──────

@@ -4,8 +4,9 @@ import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/plat
 import {
   BIZERY_ORIGIN,
   MENUARY_ORIGIN,
-  marketingLanguageAlternates,
+  marketingAlternates,
 } from "@/lib/marketing-seo";
+import { getLocale } from "@/i18n";
 import { MarketingAboutPage } from "@/components/marketing/pages/chi-siamo";
 import { BizeryAboutPage } from "@/components/bizery/pages/chi-siamo";
 import { BeporkAboutPage } from "@/components/tenants/bepork/pages/chi-siamo";
@@ -18,13 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "Studio per siti web ristoranti",
       description:
         "Menuary è uno studio digitale per ristoranti, bar, pizzerie e locali. Disegniamo siti web su misura e li teniamo vivi nel tempo.",
-      alternates: {
-        canonical: `${MENUARY_ORIGIN}/chi-siamo`,
-        languages: {
-          ...marketingLanguageAlternates(MENUARY_ORIGIN, "/chi-siamo"),
-          "x-default": `${MENUARY_ORIGIN}/chi-siamo`,
-        },
-      },
+      alternates: marketingAlternates(MENUARY_ORIGIN, "/chi-siamo", await getLocale()),
     };
   }
   if (mode === "marketing-bizery") {
@@ -32,13 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "Studio per siti web aziende di servizi",
       description:
         "Bizery è la piattaforma digitale per studi medici, saloni, barbieri, studi legali, commercialisti e aziende di servizi. Siti su misura, appuntamenti e presenza locale in un posto solo.",
-      alternates: {
-        canonical: `${BIZERY_ORIGIN}/chi-siamo`,
-        languages: {
-          ...marketingLanguageAlternates(BIZERY_ORIGIN, "/chi-siamo"),
-          "x-default": `${BIZERY_ORIGIN}/chi-siamo`,
-        },
-      },
+      alternates: marketingAlternates(BIZERY_ORIGIN, "/chi-siamo", await getLocale()),
     };
   }
   return {

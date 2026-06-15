@@ -739,7 +739,15 @@ export function PlatformLeadDetail({ leadId }: { leadId: string }) {
           <TabProposta lead={lead} onSave={saveProposal} saving={leadSaving} />
         )}
         {activeTab === "abbonamento" && (
-          <TabAbbonamento subscription={subscription} lead={lead} />
+          <TabAbbonamento
+            subscription={subscription}
+            lead={lead}
+            onCancelled={() => {
+              const now = new Date().toISOString();
+              setSubscription((prev) => (prev ? { ...prev, status: "cancelled", cancelled_at: now } : prev));
+              setLead((prev) => (prev ? { ...prev, status: "churned", updated_at: now } : prev));
+            }}
+          />
         )}
         {activeTab === "pagamenti" && (
           <TabPagamenti payments={payments} />
@@ -1560,7 +1568,47 @@ function TabFatturazione({ lead }: { lead: PlatformLead }) {
 
 // ─── Tab Abbonamento ──────────────────────────────────────────────────────────
 
-function TabAbbonamento({ subscription, lead }: { subscription: PlatformSubscription | null; lead: PlatformLead }) {
+function TabAbbonamento({
+  subscription,
+  lead,
+  onCancelled,
+}: {
+  subscription: PlatformSubscription | null;
+  lead: PlatformLead;
+  onCancelled: () => void;
+}) {
+  const [showCancel, setShowCancel] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
+  async function submitCancel() {
+    if (!subscription) return;
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      const res = await fetch("/api/admin/subscriptions/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId: subscription.id, reason: cancelReason }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Errore durante il recesso.");
+      setShowCancel(false);
+      setCancelReason("");
+      onCancelled();
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : "Errore durante il recesso.");
+    } finally {
+      setCancelling(false);
+    }
+  }
+
+  const canCancel =
+    subscription !== null &&
+    subscription.status !== "cancelled" &&
+    subscription.status !== "trial";
+
   if (!subscription) {
     return (
       <div className="py-10 text-center">
@@ -1583,14 +1631,24 @@ function TabAbbonamento({ subscription, lead }: { subscription: PlatformSubscrip
           <p className="text-sm text-pork-ink/50">Pacchetto</p>
           <p className="mt-0.5 text-2xl font-black">{pkg?.name ?? "—"}</p>
         </div>
-        <span
-          className={cn(
-            "rounded-full px-3 py-1.5 text-sm font-bold",
-            SUBSCRIPTION_STATUS_COLORS[subscription.status],
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "rounded-full px-3 py-1.5 text-sm font-bold",
+              SUBSCRIPTION_STATUS_COLORS[subscription.status],
+            )}
+          >
+            {SUBSCRIPTION_STATUS_LABELS[subscription.status]}
+          </span>
+          {canCancel && (
+            <button
+              onClick={() => setShowCancel(true)}
+              className="rounded-full border border-pork-red/30 px-3 py-1.5 text-sm font-bold text-pork-red hover:bg-pork-red/5"
+            >
+              Registra recesso
+            </button>
           )}
-        >
-          {SUBSCRIPTION_STATUS_LABELS[subscription.status]}
-        </span>
+        </div>
       </div>
 
       <FieldGrid>
@@ -1653,6 +1711,47 @@ function TabAbbonamento({ subscription, lead }: { subscription: PlatformSubscrip
         <p className="rounded-2xl bg-pork-cream p-4 text-sm text-pork-ink/70">
           {subscription.notes}
         </p>
+      )}
+
+      {showCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-pork-ink/55 p-4">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <p className="impact-title text-xs text-pork-red">Recesso cliente</p>
+            <h3 className="headline text-2xl">{lead.business_name}</h3>
+            <p className="mt-2 text-sm text-pork-ink/60">
+              Registri il <strong>recesso</strong> del cliente. L&apos;abbonamento passa a
+              <strong> cancellato</strong>, il tenant va offline e il lead diventa
+              <strong> churned</strong>. L&apos;azione non è automaticamente reversibile.
+            </p>
+            <label className="mt-4 block">
+              <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">Motivo (opzionale)</span>
+              <textarea
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={3}
+                className="mt-2 w-full rounded-2xl border border-pork-ink/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-pork-red/30"
+                placeholder="Es. disdetta a fine periodo, passaggio a concorrente, chiusura attività…"
+              />
+            </label>
+            {cancelError && <p className="mt-2 text-sm font-semibold text-pork-red">{cancelError}</p>}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => { setShowCancel(false); setCancelError(null); }}
+                disabled={cancelling}
+                className="rounded-full border border-pork-ink/15 px-5 py-2.5 text-sm font-bold text-pork-ink/60 disabled:opacity-50"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={submitCancel}
+                disabled={cancelling}
+                className="rounded-full bg-pork-red px-5 py-2.5 text-sm font-bold text-white hover:bg-pork-red/90 disabled:opacity-50"
+              >
+                {cancelling ? "Registrazione…" : "Conferma recesso"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

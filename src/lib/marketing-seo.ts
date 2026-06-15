@@ -80,6 +80,24 @@ export function marketingLanguageAlternates(origin: string, path = ""): Record<s
   );
 }
 
+/**
+ * Canonical auto-referenziante per locale + cluster hreflang completo.
+ * Ogni variante di lingua deve puntare il canonical a sé stessa (non all'italiano),
+ * altrimenti Google consolida tutte le lingue sulla sola italiana e le altre
+ * restano "rilevate ma non indicizzate". x-default e hreflang="it" puntano al
+ * path nudo (servito a 200 anche ai crawler dal middleware).
+ */
+export function marketingAlternates(origin: string, path: string, locale: AppLocale) {
+  const self = localizedPath(path, locale);
+  return {
+    canonical: `${origin}${self === "/" ? "" : self}`,
+    languages: {
+      ...marketingLanguageAlternates(origin, path),
+      "x-default": `${origin}${path}`,
+    },
+  };
+}
+
 export function marketingSitemap(origin: string): MetadataRoute.Sitemap {
   const now = new Date();
   return MARKETING_ROUTES.flatMap((path) =>

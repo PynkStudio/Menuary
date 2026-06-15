@@ -6,8 +6,9 @@ import {
   BIZERY_ORIGIN,
   MENUARY_MARKETING_DESCRIPTION,
   MENUARY_ORIGIN,
-  marketingLanguageAlternates,
+  marketingAlternates,
 } from "@/lib/marketing-seo";
+import { getLocale } from "@/i18n";
 import { MarketingContactsPage } from "@/components/marketing/pages/contatti";
 import { BeporkContactsPage } from "@/components/tenants/bepork/pages/contatti";
 
@@ -18,25 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
     ? {
         title: "Contatti per siti web ristoranti",
         description: `Raccontaci il tuo ristorante, bar o pizzeria e scopri come Menuary può trasformarlo in un sito su misura. ${MENUARY_MARKETING_DESCRIPTION}`,
-        alternates: {
-          canonical: `${MENUARY_ORIGIN}/contatti`,
-          languages: {
-            ...marketingLanguageAlternates(MENUARY_ORIGIN, "/contatti"),
-            "x-default": `${MENUARY_ORIGIN}/contatti`,
-          },
-        },
+        alternates: marketingAlternates(MENUARY_ORIGIN, "/contatti", await getLocale()),
       }
     : mode === "marketing-bizery"
       ? {
         title: "Contatti per siti web aziende",
         description: `Raccontaci il tuo studio, salone o azienda di servizi e scopri come Bizery può trasformarlo in un sito su misura. ${BIZERY_MARKETING_DESCRIPTION}`,
-        alternates: {
-          canonical: `${BIZERY_ORIGIN}/contatti`,
-          languages: {
-            ...marketingLanguageAlternates(BIZERY_ORIGIN, "/contatti"),
-            "x-default": `${BIZERY_ORIGIN}/contatti`,
-          },
-        },
+        alternates: marketingAlternates(BIZERY_ORIGIN, "/contatti", await getLocale()),
       }
     : {
         title: "Contatti & Prenotazioni",

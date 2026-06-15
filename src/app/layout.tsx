@@ -28,7 +28,7 @@ import { getTenantContent } from "@/lib/tenant-content";
 import { buildIconSet, buildTenantIconSet, themeColor } from "@/lib/favicon";
 import { CLIENTS_PUBLIC_ORIGIN, clientsSite } from "@/lib/clients-config";
 import { STUDIO_PUBLIC_ORIGIN, studioSite } from "@/lib/studio-config";
-import { isAppLocale, LOCALE_HEADER } from "@/i18n/locales";
+import { isAppLocale, DEFAULT_LOCALE, LOCALE_HEADER } from "@/i18n/locales";
 import {
   BIZERY_MARKETING_DESCRIPTION,
   BIZERY_ORIGIN,
@@ -39,8 +39,8 @@ import {
   ORPHEO_MARKETING_DESCRIPTION,
   ORPHEO_ORIGIN,
   ORPHEO_KEYWORDS,
+  marketingAlternates,
   marketingFaqSchema,
-  marketingLanguageAlternates,
   marketingOrganizationSchema,
   marketingServiceSchema,
   marketingWebsiteSchema,
@@ -176,13 +176,11 @@ export async function generateMetadata(): Promise<Metadata> {
         title: "Bizery - siti web per aziende di servizi",
         description: BIZERY_MARKETING_DESCRIPTION,
       },
-      alternates: {
-        canonical: BIZERY_ORIGIN,
-        languages: {
-          ...marketingLanguageAlternates(BIZERY_ORIGIN),
-          "x-default": BIZERY_ORIGIN,
-        },
-      },
+      alternates: marketingAlternates(
+        BIZERY_ORIGIN,
+        "",
+        isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE,
+      ),
       icons: buildIconSet(mode, tenant),
     };
   }
@@ -209,13 +207,11 @@ export async function generateMetadata(): Promise<Metadata> {
         title: "Orpheo - artisti, autori e creativi",
         description: ORPHEO_MARKETING_DESCRIPTION,
       },
-      alternates: {
-        canonical: ORPHEO_ORIGIN,
-        languages: {
-          ...marketingLanguageAlternates(ORPHEO_ORIGIN),
-          "x-default": ORPHEO_ORIGIN,
-        },
-      },
+      alternates: marketingAlternates(
+        ORPHEO_ORIGIN,
+        "",
+        isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE,
+      ),
       icons: buildIconSet(mode, tenant),
     };
   }
@@ -403,16 +399,21 @@ export async function generateMetadata(): Promise<Metadata> {
       : {}),
     alternates: {
       canonical: mode === "marketing"
-        ? MENUARY_ORIGIN
+        ? marketingAlternates(
+            MENUARY_ORIGIN,
+            "",
+            isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE,
+          ).canonical
         : tenantLocaleConfig && tenantLocale
           ? `${tenantOrigin}${tenantPublicPath}`
           : content.url,
       ...(mode === "marketing"
         ? {
-            languages: {
-              ...marketingLanguageAlternates(MENUARY_ORIGIN),
-              "x-default": MENUARY_ORIGIN,
-            },
+            languages: marketingAlternates(
+              MENUARY_ORIGIN,
+              "",
+              isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE,
+            ).languages,
           }
         : tenantLocaleConfig && tenantLocale
           ? {

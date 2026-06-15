@@ -8,7 +8,7 @@ import { getLocale, getTranslations } from "@/i18n";
 import {
   MENUARY_MARKETING_DESCRIPTION,
   MENUARY_ORIGIN,
-  marketingLanguageAlternates,
+  marketingAlternates,
 } from "@/lib/marketing-seo";
 import { MarketingPricingPage } from "@/components/marketing/pages/pricing";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
@@ -17,18 +17,14 @@ import {
   FinalCTASection,
 } from "@/components/marketing/marketing-sections";
 
-export const metadata: Metadata = {
-  title: "Prezzi siti web per ristoranti",
-  description:
-    `Tre piani Menuary per ristoranti, bar e pizzerie: sito su misura, menu digitale, prenotazioni e gestionale completo. ${MENUARY_MARKETING_DESCRIPTION}`,
-  alternates: {
-    canonical: `${MENUARY_ORIGIN}/pricing`,
-    languages: {
-      ...marketingLanguageAlternates(MENUARY_ORIGIN, "/pricing"),
-      "x-default": `${MENUARY_ORIGIN}/pricing`,
-    },
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Prezzi siti web per ristoranti",
+    description:
+      `Tre piani Menuary per ristoranti, bar e pizzerie: sito su misura, menu digitale, prenotazioni e gestionale completo. ${MENUARY_MARKETING_DESCRIPTION}`,
+    alternates: marketingAlternates(MENUARY_ORIGIN, "/pricing", await getLocale()),
+  };
+}
 
 export default async function PricingPage() {
   const h = await headers();
