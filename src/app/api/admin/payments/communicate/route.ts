@@ -9,6 +9,7 @@ import { attachPaymentProviderRefs } from "@/lib/platform/subscription-service";
 import { PLATFORM_BRANDS, resolveSenderForVertical, sendEmail } from "@/lib/email/sender";
 import { FORNITORE, formatEUR } from "@/lib/contracts/menuary-contract";
 import type { TenantVertical } from "@/lib/tenant";
+import { buildMarketingEmail } from "@/lib/email/templates/marketing";
 
 type PaymentRow = {
   id: string;
@@ -218,13 +219,22 @@ function buildPaymentEmail(
   url: string | null,
   brand: (typeof PLATFORM_BRANDS)[TenantVertical],
 ) {
-  const action = url
-    ? `<p><a href="${url}" style="display:inline-block;padding:12px 20px;background:${brand.primary};color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Procedi al pagamento</a></p>`
-    : `<p>Effettui il bonifico di <strong>${formatEUR(amount)}</strong> sul conto IBAN <strong>${FORNITORE.iban}</strong>.</p>`;
-  return `<!DOCTYPE html><html lang="it"><body style="font-family:-apple-system,system-ui,sans-serif">
-    <h2>Pagamento ${brand.name}</h2>
-    <p>Gentile ${businessName || "cliente"}, è in attesa un pagamento di <strong>${formatEUR(amount)}</strong>${dueDate ? ` con scadenza ${new Date(dueDate).toLocaleDateString("it-IT")}` : ""}.</p>
-    ${action}
-    <p style="font-size:12px;color:${brand.muted}">${brand.name} · ${FORNITORE.ragioneSociale}</p>
-  </body></html>`;
+  return buildMarketingEmail({
+    brand,
+    preheader: `Pagamento in attesa — ${formatEUR(amount)}`,
+    title: "Pagamento in attesa",
+    body: `<p>Gentile ${businessName || "cliente"}, è in attesa un pagamento di <strong>${formatEUR(amount)}</strong>${dueDate ? ` con scadenza il ${new Date(dueDate).toLocaleDateString("it-IT")}` : ""}.</p>`,
+    cta: url ? { label: "Procedi al pagamento", url } : undefined,
+    extraSections: !url
+      ? `<table role="presentation" width="100%">
+          <tr>
+            <td style="padding:16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:24px;">
+              <p style="margin:0;font-size:14px;color:#374151;">Effettui il bonifico di <strong>${formatEUR(amount)}</strong> sul conto:</p>
+              <p style="margin:8px 0 0;font-size:14px;color:#374151;"><strong>IBAN:</strong> ${FORNITORE.iban}</p>
+              <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">Intestato a Massimo Pernozzoli</p>
+            </td>
+          </tr>
+        </table>`
+      : undefined,
+  });
 }

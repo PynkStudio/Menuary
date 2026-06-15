@@ -9,6 +9,7 @@ import {
 } from "@/lib/contracts/menuary-contract";
 import { PLATFORM_BRANDS, resolveSenderForVertical, sendEmail } from "@/lib/email/sender";
 import { resolveDocumensoSignerEmail } from "@/lib/contracts/documenso";
+import { buildMarketingEmail } from "@/lib/email/templates/marketing";
 
 async function requireSiteAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -59,12 +60,13 @@ export async function POST(req: NextRequest) {
   const result = await sendEmail({
     to: recipient,
     subject: `${isSupplier ? "Controfirma" : "Firma"} contratto ${contract.numero} — ${brand.name}`,
-    html: `<!DOCTYPE html><html lang="it"><body style="font-family:-apple-system,system-ui,sans-serif">
-      <h2>${isSupplier ? "Contratto da controfirmare" : "Contratto da firmare"}</h2>
-      <p>È disponibile il contratto <strong>${contract.numero}</strong>.</p>
-      <p><a href="${url}" style="display:inline-block;padding:12px 20px;background:${brand.primary};color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Apri e firma il contratto</a></p>
-      <p style="font-size:12px;color:${brand.muted}">${brand.name} · ${FORNITORE.ragioneSociale}</p>
-    </body></html>`,
+    html: buildMarketingEmail({
+      brand,
+      preheader: `Documento da ${isSupplier ? "controfirmare" : "firmare"} — ${contract.numero}`,
+      title: isSupplier ? "Contratto da controfirmare" : "Contratto da firmare",
+      body: `<p>È disponibile il contratto <strong>${contract.numero}</strong> per la firma elettronica.</p>`,
+      cta: { label: "Apri e firma il contratto", url },
+    }),
     fromOverride: sender.from,
   });
   if (!result.ok) {

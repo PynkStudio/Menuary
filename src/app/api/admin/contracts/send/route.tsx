@@ -30,6 +30,7 @@ import {
   type DocumensoProvider,
 } from "@/lib/contracts/documenso";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
+import { buildMarketingEmail } from "@/lib/email/templates/marketing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -233,71 +234,48 @@ function buildContractEmailHtml(
     data.cliente.ragioneSociale?.trim() ||
     "Cliente";
 
-  const signingBlock = signingUrl
-    ? `<div style="margin:24px 0;text-align:center">
-        <a href="${signingUrl}" style="display:inline-block;padding:14px 32px;background:${brand.primary};color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px">
-          Firma il contratto elettronicamente
-        </a>
-        <p style="margin-top:8px;font-size:12px;color:${brand.muted}">
-          Cliccando il bottone sarà indirizzato alla piattaforma di firma elettronica Documenso.
-        </p>
-      </div>`
-    : "";
-
   const bonificoBlock =
     data.economiche.metodoPagamento === "bonifico"
-      ? `<li><strong>IBAN:</strong> ${FORNITORE.iban} — Massimo Pernozzoli</li>
-         <li><strong>Causale:</strong> ${paymentDescription}</li>
-         <li><strong>Primo pagamento complessivo:</strong> ${formatEUR(firstPayment)}</li>
-         <li><strong>Pagamenti successivi complessivi:</strong> ${formatEUR(recurringPayment)} / ${annuale ? "anno" : "mese"}</li>`
+      ? `<table role="presentation" width="100%" style="margin:16px 0;">
+          <tr>
+            <td style="padding:12px 16px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;">
+              <p style="margin:0;font-size:13px;color:#92400e;"><strong>Bonifico</strong></p>
+              <p style="margin:4px 0 0;font-size:13px;color:#92400e;"><strong>IBAN:</strong> ${FORNITORE.iban} — Massimo Pernozzoli</p>
+              <p style="margin:2px 0 0;font-size:13px;color:#92400e;"><strong>Causale:</strong> ${paymentDescription}</p>
+              <p style="margin:2px 0 0;font-size:13px;color:#92400e;"><strong>Primo pagamento:</strong> ${formatEUR(firstPayment)}</p>
+              <p style="margin:2px 0 0;font-size:13px;color:#92400e;"><strong>Pagamenti successivi:</strong> ${formatEUR(recurringPayment)} / ${annuale ? "anno" : "mese"}</p>
+            </td>
+          </tr>
+        </table>`
       : "";
 
-  return `<!DOCTYPE html>
-<html lang="it">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
-<body style="margin:0;padding:0;font-family:-apple-system,system-ui,sans-serif;background:${brand.bg};color:${brand.text}">
-<div style="max-width:600px;margin:0 auto;padding:32px 20px">
-  <div style="margin-bottom:24px">
-    <span style="display:inline-block;padding:4px 12px;background:${brand.primary};color:#fff;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">
-      ${brand.name}
-    </span>
-  </div>
+  const economicSummary = `<table role="presentation" width="100%" style="margin:24px 0;">
+    <tr>
+      <td style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">
+        <h3 style="margin:0 0 12px;font-size:14px;color:${brand.text};">Riepilogo condizioni economiche</h3>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:13px;line-height:1.8;">
+          <tr><td style="padding:2px 0;color:#6b7280;width:120px;">Piano</td><td style="padding:2px 0;font-weight:600;">${data.servizio.pianoNome}</td></tr>
+          <tr><td style="padding:2px 0;color:#6b7280;">Setup</td><td style="padding:2px 0;">${formatEUR(data.economiche.setup)} ${sTax}${data.economiche.setupRateale && data.economiche.setupRate.length > 1 ? ` (rateizzato in ${data.economiche.setupRate.length} mensilità)` : ""}</td></tr>
+          <tr><td style="padding:2px 0;color:#6b7280;">Canone</td><td style="padding:2px 0;">${canone}</td></tr>
+          <tr><td style="padding:2px 0;color:#6b7280;">Pagamento</td><td style="padding:2px 0;">${paymentMethodLabel(data.economiche.metodoPagamento)}</td></tr>
+          <tr><td style="padding:2px 0;color:#6b7280;">Durata</td><td style="padding:2px 0;">12 mesi con rinnovo tacito</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  ${bonificoBlock}`;
 
-  <p>Gentile ${saluto},</p>
+  const body = `<p>Gentile ${saluto},</p>
+<p>come da accordi intercorsi, le inviamo la proposta contrattuale n. <strong>${data.numero}</strong> per l'attivazione del servizio "<strong>${data.servizio.pianoNome}</strong>" sulla piattaforma ${brand.name}.</p>
+<p>In allegato trova la copia PDF completa del contratto, comprensiva degli allegati tecnici e regolamentari.</p>
+<p style="font-size:13px;color:${brand.muted};">Il link di firma elettronica è valido per <strong>5 giorni lavorativi</strong>. Trascorso il termine, la proposta decadrà automaticamente.</p>`;
 
-  <p>come da accordi intercorsi, le inviamo la proposta contrattuale n. <strong>${data.numero}</strong> per l'attivazione del servizio "<strong>${data.servizio.pianoNome}</strong>" sulla piattaforma ${brand.name}.</p>
-
-  ${signingBlock}
-
-  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:20px 0">
-    <h3 style="margin:0 0 12px;font-size:14px;color:${brand.text}">Riepilogo condizioni economiche</h3>
-    <ul style="margin:0;padding:0 0 0 18px;font-size:13px;line-height:1.8">
-      <li><strong>Piano:</strong> ${data.servizio.pianoNome}</li>
-      <li><strong>Setup:</strong> ${formatEUR(data.economiche.setup)} ${sTax}${
-        data.economiche.setupRateale && data.economiche.setupRate.length > 1
-          ? ` (rateizzato in ${data.economiche.setupRate.length} mensilità)`
-          : ""
-      }</li>
-      <li><strong>Canone:</strong> ${canone}</li>
-      <li><strong>Pagamento:</strong> ${paymentMethodLabel(data.economiche.metodoPagamento)}</li>
-      ${bonificoBlock}
-      <li><strong>Durata:</strong> 12 mesi con rinnovo tacito</li>
-    </ul>
-  </div>
-
-  <p style="font-size:13px">In allegato trova anche la copia PDF completa del contratto, comprensiva degli allegati tecnici e regolamentari.</p>
-
-  <p style="font-size:13px">Il link di firma elettronica è valido per <strong>5 giorni lavorativi</strong> dalla ricezione. Trascorso il termine, la proposta decadrà automaticamente.</p>
-
-  <p style="font-size:13px;margin-top:24px">Per qualsiasi chiarimento rimaniamo a completa disposizione.</p>
-
-  <p style="font-size:13px">Cordialmente,<br><strong>${FORNITORE.legaleRappresentante}</strong><br>${FORNITORE.ragioneSociale}<br>PEC: ${FORNITORE.pec}</p>
-
-  <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
-  <p style="font-size:11px;color:${brand.muted}">
-    Questa email è stata inviata da ${brand.name}. Se non è destinata a lei, la preghiamo di ignorarla.
-  </p>
-</div>
-</body>
-</html>`;
+  return buildMarketingEmail({
+    brand,
+    preheader: `Contratto ${data.numero} da firmare — ${data.servizio.pianoNome}`,
+    title: `Proposta contrattuale n. ${data.numero}`,
+    body,
+    cta: signingUrl ? { label: "Firma il contratto elettronicamente", url: signingUrl } : undefined,
+    extraSections: economicSummary,
+  });
 }
