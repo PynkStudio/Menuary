@@ -62,6 +62,10 @@ export async function createPendingSubscriptionFromContract(
     .eq("contract_id", contract.id)
     .maybeSingle();
   if (existing.data?.id) {
+    await db()
+      .from("platform_contracts")
+      .update({ subscription_id: existing.data.id, updated_at: new Date().toISOString() })
+      .eq("id", contract.id);
     const { data: pay } = await db()
       .from("platform_payments")
       .select("id")

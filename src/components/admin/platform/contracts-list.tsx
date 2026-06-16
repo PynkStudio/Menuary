@@ -311,11 +311,12 @@ export function ContractsList() {
                           {CONTRACT_STATUS_LABELS[c.status] ?? c.status}
                         </span>
                       )}
-                      {c.status === "sent" && (
-                        <span style={{ display: "block", fontSize: 10, color: "#6b7280", marginTop: 2 }}>
-                          {isOverdue ? "Scaduto" : "In attesa firma"}
-                        </span>
-                      )}
+                      {c.status === "sent" && (() => {
+                        const openedAt = (c.contract_data as Record<string, unknown>).opened_at as string | undefined;
+                        if (isOverdue) return <span style={{ display: "block", fontSize: 10, color: "#b45309", marginTop: 2 }}>Scaduto</span>;
+                        if (openedAt) return <span style={{ display: "block", fontSize: 10, color: "#0369a1", marginTop: 2 }}>Aperto</span>;
+                        return <span style={{ display: "block", fontSize: 10, color: "#6b7280", marginTop: 2 }}>In attesa firma</span>;
+                      })()}
                     </td>
                     <td style={td}>
                       <span style={{

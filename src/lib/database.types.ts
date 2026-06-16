@@ -341,6 +341,48 @@ export type Database = {
           },
         ]
       }
+      consultation_bookings: {
+        Row: {
+          created_at: string
+          email: string
+          ends_at: string
+          id: string
+          name: string
+          phone: string
+          reminder_sent_at: string | null
+          starts_at: string
+          status: string
+          tenant_id: string
+          topic: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          ends_at: string
+          id?: string
+          name: string
+          phone: string
+          reminder_sent_at?: string | null
+          starts_at: string
+          status?: string
+          tenant_id: string
+          topic: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          ends_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          reminder_sent_at?: string | null
+          starts_at?: string
+          status?: string
+          tenant_id?: string
+          topic?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           created_at: string

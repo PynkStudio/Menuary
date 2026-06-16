@@ -26,6 +26,8 @@ export type PaymentLookupResult = {
   cicloFatturazione: "monthly" | "yearly";
   canoneNetto: number;
   setupNetto: number;
+  /** Importo lordo del solo canone (senza setup) — da mostrare come "Rinnovi successivi" */
+  recurringGrossAmount: number;
   dueDate: string | null;
 } | {
   found: false;
@@ -203,6 +205,11 @@ function buildRow(
     ? round2((netAmount + MARCA_BOLLO) * (1 + RIVALSA_INPS_RATE))
     : round2(netAmount * (1 + IVA_RATE));
 
+  // Importo lordo del solo canone (senza setup) — per mostrare i rinnovi successivi
+  const recurringGrossAmount = esenzioneIva
+    ? round2((canoneNetto + MARCA_BOLLO) * (1 + RIVALSA_INPS_RATE))
+    : round2(canoneNetto * (1 + IVA_RATE));
+
   const bonificoDetails = method === "bonifico" ? {
     iban: FORNITORE.iban,
     intestatario: FORNITORE.ragioneSociale,
@@ -229,6 +236,7 @@ function buildRow(
     cicloFatturazione,
     canoneNetto,
     setupNetto,
+    recurringGrossAmount,
     dueDate: (payment.due_date as string) ?? null,
   };
 }

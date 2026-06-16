@@ -298,6 +298,49 @@ const it = {
       "Attività reali che gestiamo sulla nostra piattaforma. Clienti già pubblicati sul proprio dominio — clicca per visitare il sito live.",
     sitesVisit: "Visita il sito",
   },
+  // Prenotazione call di consulenza (flusso /prenota-call, stile Calendly).
+  prenotaCallPage: {
+    metaTitle: "Prenota una call di 20 minuti — PYNK STUDIO",
+    metaDescription:
+      "Scegli giorno e orario per una call gratuita di 20 minuti con PYNK STUDIO. Lun-ven, 10:00-18:00.",
+    eyebrow: "Call gratuita · 20 minuti",
+    titleLead: "Prenota la tua",
+    titleAccent: "call",
+    subtitle:
+      "Scegli il momento che preferisci: lun-ven, 10:00–18:00. Bastano 20 minuti per capire come possiamo aiutarti.",
+    stepDate: "1 · Scegli il giorno",
+    stepTime: "2 · Scegli l'orario",
+    stepDetails: "3 · I tuoi dati",
+    noSlots: "Nessuno slot disponibile in questo giorno.",
+    loadingSlots: "Carico gli orari…",
+    slotTaken: "Questo orario è appena stato prenotato. Scegline un altro.",
+    backToDate: "← Cambia giorno",
+    backToTime: "← Cambia orario",
+    selectedLabel: "Hai scelto:",
+    form: {
+      name: "Nome e cognome *",
+      namePlaceholder: "Il tuo nome",
+      email: "Email *",
+      emailPlaceholder: "email@azienda.it",
+      phone: "Telefono *",
+      phonePlaceholder: "+39 ...",
+      topic: "Argomento della call *",
+      topicPlaceholder: "Di cosa vuoi parlare? (es. organizzazione ufficio, nuovo gestionale…)",
+      submit: "Conferma prenotazione",
+      sending: "Prenoto…",
+      errorRequired: "Compila tutti i campi obbligatori.",
+      errorEmail: "Inserisci un indirizzo email valido.",
+      errorGeneric: "Si è verificato un errore. Riprova.",
+    },
+    successTitle: "Call confermata!",
+    successBody: "Ti abbiamo inviato un'email di conferma. A presto!",
+    successAgain: "Prenota un'altra call",
+    weekdays: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+    months: [
+      "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
+      "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
+    ],
+  },
   consulenzaPage: {
     eyebrow: "Oltre allo sviluppo",
     titleLead: "Consulenza operativa per",
@@ -346,6 +389,79 @@ const it = {
     finalTitleLead: "Volete partire da",
     finalTitleAccent: "qui",
     finalCta: "Contattaci",
+  },
+  // Landing dedicata alle campagne Google Ads (organizzazione interna PMI/uffici).
+  // Pagina chromeless e noindex: non compete con /consulenza, serve solo a convertire.
+  organizzazionePage: {
+    metaTitle: "Organizzazione interna PMI e uffici — Check-up in 7 giorni | PYNK STUDIO",
+    metaDescription:
+      "Troppe email, scadenze perse, ruoli confusi? Mettiamo ordine nei processi del tuo ufficio in 7 giorni: criticità prioritarie e piano operativo a 30/60/90 giorni. Prima call gratuita.",
+    badge: "Check-up Operativo · 7 giorni",
+    heroTitleLead: "Il tuo ufficio è sempre in",
+    heroTitleAccent: "emergenza?",
+    heroSubtitle:
+      "Email infinite, scadenze che saltano e nessuno che sa chi fa cosa. Rimettiamo ordine nei processi interni della tua PMI in 7 giorni — senza stravolgere il team e senza comprare software inutili.",
+    heroCtaPrimary: "Richiedi la call gratuita",
+    heroCtaSecondary: "Chiama ora",
+    heroReassurance: "Call di 20 minuti, senza impegno · Risposta in 24h",
+    painTitleLead: "Riconosci questi",
+    painTitleAccent: "segnali?",
+    pains: [
+      "Le informazioni importanti si perdono tra email, chat e fogli sparsi.",
+      "Le scadenze saltano perché nessuno ha una visione d'insieme.",
+      "Tutti fanno tutto: responsabilità confuse, niente viene mai chiuso davvero.",
+      "Il carico quotidiano non lascia tempo per capire cosa non funziona.",
+    ],
+    benefitsTitleLead: "Cosa cambia dopo il",
+    benefitsTitleAccent: "check-up",
+    benefits: [
+      { title: "Processi chiari", desc: "Workflow e procedure esplicite: ognuno sa cosa fare e quando." },
+      { title: "Ruoli definiti", desc: "Responsabilità assegnate, decisioni che non rimbalzano più." },
+      { title: "Meno caos digitale", desc: "Comunicazioni e scadenze in un posto solo, non in dieci." },
+      { title: "Priorità sulle cose giuste", desc: "Sai dove intervenire prima per il massimo impatto." },
+    ],
+    processTitleLead: "Come funziona il",
+    processTitleAccent: "check-up in 7 giorni",
+    process: [
+      { number: "1", title: "Call preliminare", desc: "20 minuti per capire se il check-up è lo strumento giusto per te." },
+      { number: "2", title: "Raccolta e osservazione", desc: "Analizziamo documenti e flussi reali insieme a chi lavora ogni giorno." },
+      { number: "3", title: "Analisi", desc: "Individuiamo criticità, colli di bottiglia e sovrapposizioni di ruoli." },
+      { number: "4", title: "Restituzione", desc: "Report con priorità e piano operativo a 30, 60 e 90 giorni." },
+    ],
+    deliverTitleLead: "Cosa",
+    deliverTitleAccent: "ricevi",
+    deliverables: [
+      "3–5 criticità prioritarie ordinate per impatto reale.",
+      "Piano operativo concreto a 30, 60 e 90 giorni.",
+      "Indicazioni sugli strumenti digitali solo se servono davvero.",
+    ],
+    deliverNote:
+      "Non è consulenza legale o HR disciplinare, né una lista di software da comprare. È un metodo per far funzionare meglio il lavoro che già fai.",
+    faqTitleLead: "Domande",
+    faqTitleAccent: "frequenti",
+    faq: [
+      {
+        q: "Dovremo cambiare gestionale o comprare software?",
+        a: "No. Prima mettiamo ordine nei processi. Gli strumenti digitali arrivano dopo, solo se il check-up dimostra che servono — e in quel caso possiamo realizzarli noi.",
+      },
+      {
+        q: "Quanto tempo dobbiamo dedicarci?",
+        a: "Pochissimo: una call iniziale, la condivisione di alcune informazioni e una breve sessione operativa. Il grosso del lavoro lo facciamo noi.",
+      },
+      {
+        q: "Va bene anche per un ufficio piccolo?",
+        a: "Sì. Il check-up è pensato per PMI e uffici dove poche persone gestiscono molte cose: è lì che l'ordine nei processi fa la differenza più grande.",
+      },
+      {
+        q: "Cosa succede dopo la call gratuita?",
+        a: "Nessun impegno. Se il check-up è utile te lo proponiamo; altrimenti te lo diciamo chiaramente. La call serve a capirlo insieme.",
+      },
+    ],
+    finalTitleLead: "Basta lavorare nel",
+    finalTitleAccent: "caos.",
+    finalSubtitle:
+      "Lascia i tuoi dati: ti ricontattiamo entro 24 ore per fissare una call gratuita di 20 minuti.",
+    formTitle: "Richiedi la call gratuita",
   },
   contattiPage: {
     titleLine1: "Parliamo del vostro",

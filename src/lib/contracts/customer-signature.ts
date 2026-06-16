@@ -27,6 +27,8 @@ export async function ensureCustomerSignatureFulfillment(
 
   const sub = await createPendingSubscriptionFromContract(contract);
   const paymentId = sub?.paymentId ?? null;
+  if (!paymentId) return;
+
   await handlePaymentByMethod(
     contract.id,
     contract.contract_data,

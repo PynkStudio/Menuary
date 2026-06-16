@@ -156,16 +156,36 @@ export default async function PynkCheckoutPage({ searchParams }: Props) {
                   <SummaryRow label="Piano" value={data.planName} />
                 )}
                 <SummaryRow
-                  label={data.kind === "renewal" ? "Rinnovo" : "Primo pagamento"}
-                  value={`${formatEUR(data.grossAmount)}`}
-                  highlight
+                  label="Tipo"
+                  value={data.kind === "renewal" ? "Rinnovo" : "Primo pagamento"}
                 />
+                {data.kind === "first" && (
+                  <>
+                    <SummaryRow
+                      label={`Canone ${data.cicloFatturazione === "yearly" ? "annuale" : "mensile"}`}
+                      value={`${formatEUR(data.canoneNetto)} / ${CYCLE_LABEL[data.cicloFatturazione] ?? "mese"}`}
+                    />
+                    {data.setupNetto > 0 && (
+                      <SummaryRow label="Setup (una tantum)" value={formatEUR(data.setupNetto)} />
+                    )}
+                  </>
+                )}
                 <SummaryRow
-                  label="Canone"
-                  value={`${formatEUR(data.canoneNetto)} / ${CYCLE_LABEL[data.cicloFatturazione] ?? ""}`}
+                  label="Da pagare adesso"
+                  value={
+                    data.kind === "renewal"
+                      ? `${formatEUR(data.grossAmount)} / ${CYCLE_LABEL[data.cicloFatturazione] ?? "mese"}`
+                      : formatEUR(data.grossAmount)
+                  }
+                  highlight
+                  sub="IVA inclusa"
                 />
-                {data.kind === "first" && data.setupNetto > 0 && (
-                  <SummaryRow label="Setup" value={formatEUR(data.setupNetto)} />
+                {data.kind === "first" && (
+                  <SummaryRow
+                    label="Rinnovi successivi"
+                    value={`${formatEUR(data.recurringGrossAmount)} / ${CYCLE_LABEL[data.cicloFatturazione] ?? "mese"}`}
+                    sub="IVA inclusa"
+                  />
                 )}
                 {data.contractNumber && (
                   <SummaryRow label="Contratto" value={data.contractNumber} mono />
@@ -259,11 +279,12 @@ export default async function PynkCheckoutPage({ searchParams }: Props) {
   );
 }
 
-function SummaryRow({ label, value, highlight, mono }: {
+function SummaryRow({ label, value, highlight, mono, sub }: {
   label: string;
   value: string;
   highlight?: boolean;
   mono?: boolean;
+  sub?: string;
 }) {
   return (
     <div style={{
@@ -275,16 +296,23 @@ function SummaryRow({ label, value, highlight, mono }: {
       borderBottom: `1px solid ${PYNK.divider}`,
     }}>
       <span style={{ fontSize: 13, color: PYNK.muted, flexShrink: 0 }}>{label}</span>
-      <span style={{
-        fontSize: highlight ? 17 : 14,
-        fontWeight: highlight ? 700 : 500,
-        color: highlight ? PYNK.fg : "hsl(0 0% 88%)",
-        textAlign: "right",
-        fontFamily: mono ? "monospace" : "inherit",
-        letterSpacing: highlight ? "-0.01em" : "inherit",
-      }}>
-        {value}
-      </span>
+      <div style={{ textAlign: "right" }}>
+        <span style={{
+          display: "block",
+          fontSize: highlight ? 17 : 14,
+          fontWeight: highlight ? 700 : 500,
+          color: highlight ? PYNK.fg : "hsl(0 0% 88%)",
+          fontFamily: mono ? "monospace" : "inherit",
+          letterSpacing: highlight ? "-0.01em" : "inherit",
+        }}>
+          {value}
+        </span>
+        {sub && (
+          <span style={{ display: "block", fontSize: 10, color: PYNK.muted, marginTop: 2 }}>
+            {sub}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
