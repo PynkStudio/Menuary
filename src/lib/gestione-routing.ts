@@ -60,5 +60,7 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     canManageFidelity: modules.crm || Boolean(modules.fanbaseCommunity),
     canManageLinktree: Boolean(modules.linktree),
     canManageBlog: Boolean(modules.blog),
+    canManagePynkAgenda: Boolean(features.pynkAgenda),
+    canManagePatrimoniale: Boolean(features.companyPatrimoniale),
   };
 }

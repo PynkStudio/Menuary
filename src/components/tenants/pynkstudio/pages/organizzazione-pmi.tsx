@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -11,15 +11,13 @@ import {
   ListChecks,
   Phone,
   Search,
-  Send,
   ShieldCheck,
   Users,
   Workflow,
 } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
-
-type Feedback = { kind: "success" | "error"; text: string } | null;
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 const benefitIcons = [Workflow, Users, ListChecks, Search] as const;
 const processIcons = [Phone, ClipboardList, Search, CalendarClock] as const;
@@ -50,62 +48,9 @@ function MinimalHeader({ phoneHref, phoneLabel, cta }: { phoneHref: string; phon
 function OrganizzazioneInner() {
   const copy = usePynkCopy();
   const c = copy.organizzazionePage;
-  const f = copy.contattiPage.form;
   const phoneHref = copy.contattiPage.phoneHref;
   const phoneLabel = copy.contattiPage.phoneLabel;
-
-  const [formData, setFormData] = useState({ name: "", company: "", email: "", phone: "", message: "" });
-  const [sending, setSending] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback>(null);
-
-  const scrollToForm = () => {
-    document.getElementById("pynk-lp-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFeedback(null);
-
-    if (!formData.name || !formData.email) {
-      setFeedback({ kind: "error", text: f.errorRequired });
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setFeedback({ kind: "error", text: f.errorEmail });
-      return;
-    }
-
-    setSending(true);
-    try {
-      const details = [
-        formData.company && `Azienda: ${formData.company}`,
-        formData.phone && `Telefono: ${formData.phone}`,
-      ]
-        .filter(Boolean)
-        .join("\n");
-      const message = formData.message.trim() || "Richiesta call gratuita dalla landing organizzazione PMI.";
-
-      const res = await fetch("/api/tenant/pynkstudio/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          // Tag della sorgente: distingue i lead della campagna Google nelle email in arrivo.
-          subject: "Landing organizzazione PMI — richiesta call",
-          message: details ? `${details}\n\n${message}` : message,
-        }),
-      });
-      if (!res.ok) throw new Error("send_failed");
-
-      setFeedback({ kind: "success", text: f.success });
-      setFormData({ name: "", company: "", email: "", phone: "", message: "" });
-    } catch {
-      setFeedback({ kind: "error", text: f.errorGeneric });
-    } finally {
-      setSending(false);
-    }
-  };
+  const href = useTenantLocalizedHref();
 
   return (
     <div className="pynk-page">
@@ -146,10 +91,10 @@ function OrganizzazioneInner() {
             transition={{ duration: 0.7, delay: 0.4 }}
             className="pynk-hero-ctas"
           >
-            <button type="button" onClick={scrollToForm} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
+            <Link href={href("/prenota-call")} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
               {c.heroCtaPrimary}
               <ArrowRight className="pynk-icon-sm pynk-arrow" />
-            </button>
+            </Link>
             <a href={phoneHref} className="pynk-btn pynk-btn-outline pynk-btn-lg pynk-group">
               <Phone className="pynk-icon-sm" />
               {c.heroCtaSecondary}
@@ -320,8 +265,8 @@ function OrganizzazioneInner() {
         </div>
       </section>
 
-      {/* ── Lead form ────────────────────────────────────────── */}
-      <section id="pynk-lp-form" className="pynk-section pynk-section-alt">
+      {/* ── CTA finale ───────────────────────────────────────── */}
+      <section className="pynk-section pynk-section-alt">
         <div className="pynk-container pynk-narrow">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -335,90 +280,22 @@ function OrganizzazioneInner() {
             <p className="pynk-hero-subtitle">{c.finalSubtitle}</p>
           </motion.div>
 
-          <motion.form
-            initial={{ opacity: 0, y: 24 }}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            onSubmit={handleSubmit}
-            autoComplete="on"
-            className="pynk-form"
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="pynk-center pynk-mt-24"
           >
-            <div className="pynk-form-row">
-              <div className="pynk-field">
-                <label htmlFor="lp-name">{f.name}</label>
-                <input
-                  id="lp-name"
-                  name="name"
-                  autoComplete="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder={f.namePlaceholder}
-                />
-              </div>
-              <div className="pynk-field">
-                <label htmlFor="lp-company">{f.company}</label>
-                <input
-                  id="lp-company"
-                  name="company"
-                  autoComplete="organization"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  placeholder={f.companyPlaceholder}
-                />
-              </div>
-            </div>
-
-            <div className="pynk-form-row">
-              <div className="pynk-field">
-                <label htmlFor="lp-email">{f.email}</label>
-                <input
-                  id="lp-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder={f.emailPlaceholder}
-                />
-              </div>
-              <div className="pynk-field">
-                <label htmlFor="lp-phone">
-                  {f.phone} <span className="pynk-muted">{f.phoneOptional}</span>
-                </label>
-                <input
-                  id="lp-phone"
-                  name="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder={f.phonePlaceholder}
-                />
-              </div>
-            </div>
-
-            <div className="pynk-field">
-              <label htmlFor="lp-message">{f.message}</label>
-              <textarea
-                id="lp-message"
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                placeholder={f.messagePlaceholder}
-              />
-            </div>
-
-            {feedback && <p className={`pynk-feedback pynk-feedback-${feedback.kind}`}>{feedback.text}</p>}
-
-            <button type="submit" disabled={sending} className="pynk-btn pynk-btn-primary pynk-btn-block pynk-group">
-              <Send className="pynk-icon-sm pynk-arrow" />
+            <Link href={href("/prenota-call")} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
               {c.formTitle}
-            </button>
-            <p className="pynk-note pynk-center pynk-lp-reassurance">
+              <ArrowRight className="pynk-icon-sm pynk-arrow" />
+            </Link>
+            <p className="pynk-note pynk-center pynk-lp-reassurance pynk-mt-16">
               <ShieldCheck className="pynk-icon-xs pynk-accent" />
               {c.heroReassurance}
             </p>
-          </motion.form>
+          </motion.div>
         </div>
       </section>
     </div>

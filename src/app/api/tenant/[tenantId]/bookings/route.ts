@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
 import { findTenantById } from "@/lib/tenant-registry";
-import { getTenantContent } from "@/lib/tenant-content";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sendEmail } from "@/lib/email/sender";
 import { sendWebPush } from "@/lib/push/send";
+import { sendWhatsApp } from "@/lib/whatsapp/send";
 import { isValidSlot, slotEnd, formatSlotLabel } from "@/lib/pynkstudio/booking";
+import { bookingConfirmHtml } from "@/lib/pynkstudio/email-templates";
 
 export const dynamic = "force-dynamic";
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+const PYNK_FROM = "PYNK STUDIO <amministrazione@pynkstudio.it>";
 
 type Body = {
   name?: string;
@@ -87,28 +81,26 @@ export async function POST(
 
   // Email di conferma al cliente (best-effort: non blocca la prenotazione).
   try {
-    const tenantEmail = getTenantContent(tenantId).contact.email?.trim();
     await sendEmail({
-      tenantId,
       to: email,
-      replyTo: tenantEmail,
+      fromOverride: PYNK_FROM,
+      replyTo: "amministrazione@pynkstudio.it",
       subject: `Call confermata — ${slotLabel}`,
-      html: `
-        <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#17111f;line-height:1.6">
-          <h1 style="font-size:22px;margin:0 0 12px">La tua call è confermata ✅</h1>
-          <p>Ciao ${escapeHtml(name)}, abbiamo prenotato la tua call di consulenza.</p>
-          <table style="margin:16px 0;border-collapse:collapse">
-            <tr><td style="padding:4px 12px 4px 0;color:#6b6472">Quando</td><td style="font-weight:600">${escapeHtml(slotLabel)} (Italia)</td></tr>
-            <tr><td style="padding:4px 12px 4px 0;color:#6b6472">Durata</td><td>20 minuti</td></tr>
-            <tr><td style="padding:4px 12px 4px 0;color:#6b6472">Argomento</td><td>${escapeHtml(topic)}</td></tr>
-          </table>
-          <p style="color:#6b6472;font-size:14px">Ti chiameremo al numero ${escapeHtml(phone)}. Se devi spostare l'orario, rispondi a questa email.</p>
-          <p style="margin-top:18px">A presto,<br/>Il team PYNK STUDIO</p>
-        </div>
-      `,
+      html: bookingConfirmHtml({ name, slotLabel, topic, phone }),
     });
   } catch (e) {
     console.warn("[bookings] email conferma fallita:", e);
+  }
+
+  // WhatsApp di conferma al cliente (best-effort).
+  try {
+    await sendWhatsApp(phone, "booking_confirm", {
+      "1": name,
+      "2": slotLabel,
+      "3": topic,
+    });
+  } catch (e) {
+    console.warn("[bookings] whatsapp conferma fallita:", e);
   }
 
   // Push all'admin (best-effort).

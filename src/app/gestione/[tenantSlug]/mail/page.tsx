@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { MailApp } from "@/components/admin/inbox/mail-app";
-import { getInboundEmails, getTenantInboxUnreadCount } from "@/lib/email/inbound-queries";
+import { getInboundEmails, getInboxUnreadCounts, getTenantInboxUnreadCount } from "@/lib/email/inbound-queries";
 import { getSentEmails } from "@/lib/email/sent-queries";
 import { buildTenantEmailScope } from "@/lib/email/tenant-email-scope";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
@@ -68,12 +68,17 @@ export default async function GestioneMailPage({
 
   if (!sa && !ta) notFound();
 
-  const scope = buildTenantEmailScope(tenant);
-  const [inbox, sent, unread] = await Promise.all([
+  // pynkstudio con companyPatrimoniale vede l'inbox globale (tutti i domini aziendali),
+  // non solo la casella del tenant.
+  const scope = access.canManagePatrimoniale ? undefined : buildTenantEmailScope(tenant);
+  const [inbox, sent, unreadResult] = await Promise.all([
     getInboundEmails({ archived: false, scope }),
     getSentEmails("all", 1, scope),
-    getTenantInboxUnreadCount(scope),
+    scope ? getTenantInboxUnreadCount(scope) : getInboxUnreadCounts().then((c) => c.unread_total),
   ]);
+  const unread = unreadResult;
+
+  const isGlobalInbox = !scope;
 
   return (
     <div>
@@ -81,7 +86,9 @@ export default async function GestioneMailPage({
         <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-50">Comunicazioni</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight">Mail</h1>
         <p className="mt-3 max-w-2xl opacity-70">
-          Casella interna di {tenant.name}.
+          {isGlobalInbox
+            ? "Email di @pynkstudio.it e dei verticali (@menuary.it, @bizery.it, @weuseorpheo.com)"
+            : `Casella interna di ${tenant.name}.`}
         </p>
       </div>
 
@@ -90,13 +97,13 @@ export default async function GestioneMailPage({
         initialSent={sent}
         unreadTotal={unread}
         unreadMine={0}
-        currentSiteadminId={null}
+        currentSiteadminId={isGlobalInbox ? (sa?.id as string | null ?? null) : null}
         canCompose={Boolean(ta || sa)}
-        mode="tenant"
+        mode={isGlobalInbox ? undefined : "tenant"}
         scope={scope}
-        tenantId={tenant.id}
-        tenantName={tenant.name}
-        tenantFromAddress={tenantFromAddress(tenant.id, tenant.domains)}
+        tenantId={isGlobalInbox ? undefined : tenant.id}
+        tenantName={isGlobalInbox ? undefined : tenant.name}
+        tenantFromAddress={isGlobalInbox ? undefined : tenantFromAddress(tenant.id, tenant.domains)}
         currentUserEmail={(ta?.email as string | null | undefined) ?? user.email ?? null}
       />
     </div>

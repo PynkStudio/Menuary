@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { resolveDestination, type LoginFrom } from "@/lib/login-url";
@@ -50,6 +50,16 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(initialError ?? null);
   const [loading, setLoading] = useState(false);
+
+  // Reset loading se il browser ripristina la pagina dalla bfcache (tasto Back).
+  // Senza questo, il bottone resta bloccato su "Accesso in corso…" indefinitamente.
+  useEffect(() => {
+    const handler = (e: PageTransitionEvent) => {
+      if (e.persisted) setLoading(false);
+    };
+    window.addEventListener("pageshow", handler);
+    return () => window.removeEventListener("pageshow", handler);
+  }, []);
 
   const slug = tenantSlugFromFrom(from);
   const tenant = slug ? TENANTS.find((t) => t.id === slug) : null;
@@ -138,6 +148,13 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
       } catch {
         // Non bloccante: il redirect avviene comunque
       }
+      // Rimuove i cookie browser-scoped a login.menuary.it per evitare che
+      // convivano con quelli .menuary.it appena scritti da elevate-session.
+      // signOut({ scope: "local" }) cancella solo i cookie del host corrente
+      // (login.menuary.it) senza toccare i cookie Domain=.menuary.it e senza
+      // chiamare il server Supabase.
+      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+      setLoading(false);
       window.location.href = destination;
     }
   }

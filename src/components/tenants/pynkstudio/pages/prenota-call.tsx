@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CalendarDays, CheckCircle2, Clock, Send } from "lucide-react";
+import { ArrowRight, CalendarDays, Clock, Send } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 
@@ -31,6 +32,7 @@ function toISODate(d: Date): string {
 function PrenotaCallInner() {
   const copy = usePynkCopy();
   const c = copy.prenotaCallPage;
+  const router = useRouter();
 
   const [days] = useState<Date[]>(() => upcomingWorkingDays(WORKING_DAYS_AHEAD));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -41,7 +43,6 @@ function PrenotaCallInner() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", topic: "" });
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
-  const [done, setDone] = useState(false);
 
   useEffect(() => {
     if (!selectedDate) return;
@@ -97,21 +98,13 @@ function PrenotaCallInner() {
         return;
       }
       if (!res.ok) throw new Error("failed");
-      setDone(true);
+      const slotLabel = selectedSlotLabel;
+      router.push(`/prenota-call/grazie?slot=${encodeURIComponent(slotLabel)}`);
     } catch {
       setFeedback({ kind: "error", text: c.form.errorGeneric });
     } finally {
       setSending(false);
     }
-  };
-
-  const resetAll = () => {
-    setDone(false);
-    setSelectedDate(null);
-    setSelectedSlot(null);
-    setSlots(null);
-    setForm({ name: "", email: "", phone: "", topic: "" });
-    setFeedback(null);
   };
 
   const selectedSlotLabel = (() => {
@@ -140,24 +133,7 @@ function PrenotaCallInner() {
       <section className="pynk-section">
         <div className="pynk-container pynk-narrow">
           <AnimatePresence mode="wait">
-            {done ? (
-              <motion.div
-                key="done"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="pynk-cal-success"
-              >
-                <CheckCircle2 className="pynk-icon-lg pynk-check" />
-                <h2 className="pynk-section-title">{c.successTitle}</h2>
-                <p className="pynk-note pynk-center">{selectedSlotLabel}</p>
-                <p className="pynk-hero-subtitle">{c.successBody}</p>
-                <button type="button" onClick={resetAll} className="pynk-btn pynk-btn-outline pynk-mt-24">
-                  {c.successAgain}
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div key="flow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="flow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 {/* Step 1 — giorno */}
                 <h2 className="pynk-cal-step-title">
                   <CalendarDays className="pynk-icon-sm pynk-accent" /> {c.stepDate}
@@ -249,7 +225,6 @@ function PrenotaCallInner() {
                   </motion.div>
                 )}
               </motion.div>
-            )}
           </AnimatePresence>
         </div>
       </section>

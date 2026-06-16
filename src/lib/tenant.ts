@@ -85,6 +85,10 @@ export type TenantFeatureFlags = {
   fanbaseCommunity?: boolean;
   /** Linktree proprietario: pagina link pubblica e gestione autonoma dei link. */
   linktree?: boolean;
+  /** Agenda call di consulenza (pynkstudio-specific): calendario prenotazioni call inbound da prenota-call. */
+  pynkAgenda?: boolean;
+  /** Vista patrimoniale aziendale: raccoglie gli introiti di tutti i verticali + attività diretta (pynkstudio-specific). */
+  companyPatrimoniale?: boolean;
   // TODO(google-reserve): aggiungere flag `googleReserve: boolean` una volta approvati come partner Actions Center.
   // Abilita il pulsante "Prenota" direttamente su Google Maps/Search per il tenant.
   // Prerequisito: tenant deve avere `reservations: true` e una location Google collegata.
