@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requirePynkstudioTenant } from "@/components/tenants/pynkstudio/resolve-tenant";
 import { PynkStudioOrganizzazionePmiPage } from "@/components/tenants/pynkstudio/pages/organizzazione-pmi";
+import { PynkGAScript } from "@/components/tenants/pynkstudio/pynk-ga";
 
 export const metadata: Metadata = {
   title: { absolute: "Organizzazione interna PMI e uffici — Check-up in 7 giorni | PYNK STUDIO" },
@@ -12,5 +13,10 @@ export const metadata: Metadata = {
 
 export default async function OrganizzazionePmiRoute() {
   await requirePynkstudioTenant();
-  return <PynkStudioOrganizzazionePmiPage />;
+  return (
+    <>
+      <PynkGAScript />
+      <PynkStudioOrganizzazionePmiPage />
+    </>
+  );
 }

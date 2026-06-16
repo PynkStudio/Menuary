@@ -1,5 +1,12 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { PynkCrm } from "@/components/admin-pynkstudio/pynk-crm";
+
+export const metadata: Metadata = {
+  title: "CRM · PynkStudio Admin",
+};
+
+export const dynamic = "force-dynamic";
 
 export default function PynkAdminCrmPage() {
-  redirect("/gestione/pynkstudio/fidelity");
+  return <PynkCrm />;
 }

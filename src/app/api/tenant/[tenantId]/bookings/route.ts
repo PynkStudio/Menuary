@@ -79,6 +79,43 @@ export async function POST(
 
   const slotLabel = formatSlotLabel(startUtc);
 
+  // Upsert CRM: crea il contatto se nuovo, aggiorna l'ultima call se già presente (best-effort).
+  if (tenantId === "pynkstudio") {
+    try {
+      const { data: existing } = await svc
+        .from("pynkstudio_crm")
+        .select("id, bookings_count")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (existing) {
+        await svc
+          .from("pynkstudio_crm")
+          .update({
+            name,
+            phone,
+            last_booking_id: inserted.id,
+            last_booking_at: startUtc.toISOString(),
+            bookings_count: existing.bookings_count + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+      } else {
+        await svc.from("pynkstudio_crm").insert({
+          name,
+          email,
+          phone,
+          source: "booking",
+          last_booking_id: inserted.id,
+          last_booking_at: startUtc.toISOString(),
+          bookings_count: 1,
+        });
+      }
+    } catch (e) {
+      console.warn("[bookings] crm upsert fallito:", e);
+    }
+  }
+
   // Email di conferma al cliente (best-effort: non blocca la prenotazione).
   try {
     await sendEmail({

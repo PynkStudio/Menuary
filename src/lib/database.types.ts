@@ -341,6 +341,69 @@ export type Database = {
           },
         ]
       }
+      pynkstudio_crm: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string
+          company: string | null
+          employees_count: number | null
+          industry: string | null
+          address: string | null
+          work_hours: string | null
+          notes: string | null
+          tags: string[]
+          status: string
+          source: string
+          last_booking_id: string | null
+          last_booking_at: string | null
+          bookings_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string
+          company?: string | null
+          employees_count?: number | null
+          industry?: string | null
+          address?: string | null
+          work_hours?: string | null
+          notes?: string | null
+          tags?: string[]
+          status?: string
+          source?: string
+          last_booking_id?: string | null
+          last_booking_at?: string | null
+          bookings_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string
+          company?: string | null
+          employees_count?: number | null
+          industry?: string | null
+          address?: string | null
+          work_hours?: string | null
+          notes?: string | null
+          tags?: string[]
+          status?: string
+          source?: string
+          last_booking_id?: string | null
+          last_booking_at?: string | null
+          bookings_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       consultation_bookings: {
         Row: {
           created_at: string
