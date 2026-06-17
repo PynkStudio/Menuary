@@ -135,27 +135,13 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
         refreshToken: data.session.refresh_token,
       });
     } else {
-      // Eleva il cookie a Domain=.menuary.it prima di navigare su un sottodominio.
-      try {
-        await fetch("/api/auth/elevate-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            access_token: data.session.access_token,
-            refresh_token: data.session.refresh_token,
-          }),
-        });
-      } catch {
-        // Non bloccante: il redirect avviene comunque
-      }
-      // Rimuove i cookie browser-scoped a login.menuary.it per evitare che
-      // convivano con quelli .menuary.it appena scritti da elevate-session.
-      // signOut({ scope: "local" }) cancella solo i cookie del host corrente
-      // (login.menuary.it) senza toccare i cookie Domain=.menuary.it e senza
-      // chiamare il server Supabase.
-      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+      // Naviga via GET /api/auth/elevate-session che legge la sessione
+      // dai cookie appena impostati da signInWithPassword (su login.menuary.it),
+      // li promuove a cookie con Domain=.menuary.it via refreshSession(),
+      // e redirige alla destinazione.
       setLoading(false);
-      window.location.href = destination;
+      window.location.href =
+        `/api/auth/elevate-session?destination=${encodeURIComponent(destination)}`;
     }
   }
 
