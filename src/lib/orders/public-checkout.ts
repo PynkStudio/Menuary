@@ -32,6 +32,8 @@ export type PublicCheckoutOrder = {
     unitPrice: number;
     total: number;
     notes: string | null;
+    addedExtras: Array<{ name: string; price: number }>;
+    removedIngredients: string[];
   }>;
 };
 
@@ -54,7 +56,7 @@ export async function getPublicCheckoutOrder(input: {
   const { data, error } = await db
     .from("orders")
     .select(
-      "id, tenant_id, code, status, type, table_id, total, dine_option, customer_name, customer_phone, pickup_time, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(item_id, name, qty, unit_price, line_total, notes)",
+      "id, tenant_id, code, status, type, table_id, total, dine_option, customer_name, customer_phone, pickup_time, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(item_id, name, qty, unit_price, line_total, notes, added_extras, removed_ingredients)",
     )
     .eq("tenant_id", input.tenantId)
     .eq("code", input.code)
@@ -89,6 +91,8 @@ export async function getPublicCheckoutOrder(input: {
       unit_price: number | string;
       line_total: number | string;
       notes: string | null;
+      added_extras: unknown;
+      removed_ingredients: unknown;
     }>;
   };
 
@@ -120,8 +124,28 @@ export async function getPublicCheckoutOrder(input: {
       unitPrice: Number(l.unit_price),
       total: Number(l.line_total),
       notes: l.notes,
+      addedExtras: parseAddedExtras(l.added_extras),
+      removedIngredients: parseRemovedIngredients(l.removed_ingredients),
     })),
   };
+}
+
+function parseAddedExtras(value: unknown): Array<{ name: string; price: number }> {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") return null;
+      const e = entry as Record<string, unknown>;
+      const name = typeof e.name === "string" ? e.name : null;
+      if (!name) return null;
+      return { name, price: Number(e.price) || 0 };
+    })
+    .filter((x): x is { name: string; price: number } => x !== null);
+}
+
+function parseRemovedIngredients(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((x): x is string => typeof x === "string" && x.trim().length > 0);
 }
 
 /** Risolve un ordine dal solo public_token (usato dallo short-link /c/[token]). */
