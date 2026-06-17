@@ -1,7 +1,23 @@
-import { menu as beporkMenu, type MenuCategory, type PriceFormat } from "./menu-data";
+import { menu as beporkMenu, type MenuCategory, type MenuVariantGroup, type PriceFormat } from "./menu-data";
 import type { MenuAllergen } from "./allergens";
+import { sortAllergens } from "./allergens";
+import { ingList } from "./ingredients";
+import { LIST_ID_KIMOS_PIZZA } from "./extra-lists";
 
 const s = (value: number): PriceFormat => ({ kind: "single", value });
+const ix = (...a: MenuAllergen[]): MenuAllergen[] => sortAllergens(a);
+
+const KIMOS_IMPASTO: MenuVariantGroup = {
+  id: "kimos-impasto",
+  name: "Tipo di impasto",
+  required: false,
+  options: [
+    { id: "kimos-imp-classico", name: "Classico" },
+    { id: "kimos-imp-doppia-pasta", name: "Doppia pasta", price: 1 },
+    { id: "kimos-imp-integrale", name: "Integrale" },
+    { id: "kimos-imp-pinsa", name: "Pinsa romana", price: 1.5 },
+  ],
+};
 
 export const faakMenu: MenuCategory[] = [
   {
@@ -546,6 +562,10 @@ export const kimosMenu: MenuCategory[] = [
         description: "Pomodoro e mozzarella.",
         price: kimosPrice("Normale", 7, "Gigante", 20),
         image: "/kimos/menu-board-spread.png",
+        ingredients: ingList("kimos-margherita", ["Pomodoro", "Mozzarella"]),
+        allergens: ix("glutine", "latte"),
+        extraListId: LIST_ID_KIMOS_PIZZA,
+        variantGroups: [KIMOS_IMPASTO],
       },
       {
         id: "kimos-diavola",
@@ -554,36 +574,81 @@ export const kimosMenu: MenuCategory[] = [
         price: kimosPrice("Normale", 9, "Gigante", 25),
         tags: ["piccante"],
         piccanteLevel: 1,
+        ingredients: ingList("kimos-diavola", ["Pomodoro", "Mozzarella", "Salame piccante"]),
+        allergens: ix("glutine", "latte"),
+        extraListId: LIST_ID_KIMOS_PIZZA,
+        variantGroups: [KIMOS_IMPASTO],
       },
       {
         id: "kimos-quattro-stagioni",
         name: "Quattro stagioni",
         description: "Pomodoro, mozzarella, prosciutto, funghi, carciofi e olive.",
         price: kimosPrice("Normale", 10, "Gigante", 26),
+        ingredients: ingList("kimos-quattro-stagioni", [
+          "Pomodoro",
+          "Mozzarella",
+          "Prosciutto cotto",
+          "Funghi",
+          "Carciofi",
+          "Olive",
+        ]),
+        allergens: ix("glutine", "latte"),
+        extraListId: LIST_ID_KIMOS_PIZZA,
+        variantGroups: [KIMOS_IMPASTO],
       },
       {
         id: "kimos-panna-salmone",
         name: "Panna e salmone",
         description: "Mozzarella, salmone affumicato e panna.",
         price: kimosPrice("Normale", 11, "Gigante", 30),
+        ingredients: ingList("kimos-panna-salmone", [
+          "Mozzarella",
+          "Salmone affumicato",
+          "Panna",
+        ]),
+        allergens: ix("glutine", "pesce", "latte"),
+        extraListId: LIST_ID_KIMOS_PIZZA,
+        variantGroups: [KIMOS_IMPASTO],
       },
       {
         id: "kimos-napoli",
         name: "Napoli",
         description: "Pomodoro, mozzarella, origano e acciughe.",
         price: kimosPrice("Normale", 9, "Gigante", 26),
+        ingredients: ingList("kimos-napoli", [
+          "Pomodoro",
+          "Mozzarella",
+          "Origano",
+          "Acciughe",
+        ]),
+        allergens: ix("glutine", "pesce", "latte"),
+        extraListId: LIST_ID_KIMOS_PIZZA,
+        variantGroups: [KIMOS_IMPASTO],
       },
       {
         id: "kimos-funghi",
         name: "Funghi",
         description: "Pomodoro, mozzarella e funghi freschi.",
         price: kimosPrice("Normale", 9.5, "Gigante", 27),
+        ingredients: ingList("kimos-funghi", ["Pomodoro", "Mozzarella", "Funghi freschi"]),
+        allergens: ix("glutine", "latte"),
+        extraListId: LIST_ID_KIMOS_PIZZA,
+        variantGroups: [KIMOS_IMPASTO],
       },
       {
         id: "kimos-pugliese",
         name: "Pugliese",
         description: "Pomodoro, mozzarella, cipolla e origano.",
         price: s(8.5),
+        ingredients: ingList("kimos-pugliese", [
+          "Pomodoro",
+          "Mozzarella",
+          "Cipolla",
+          "Origano",
+        ]),
+        allergens: ix("glutine", "latte"),
+        extraListId: LIST_ID_KIMOS_PIZZA,
+        variantGroups: [KIMOS_IMPASTO],
       },
     ],
   },

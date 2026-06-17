@@ -73,9 +73,18 @@ export type MenuItem = {
    */
   extraListId?: string;
   extras?: MenuExtra[];
+  /** Gruppi di varianti a scelta singola (es. tipo di impasto). Con `required: true` il cliente deve scegliere. */
+  variantGroups?: MenuVariantGroup[];
 };
 
 export type MenuExtra = { id: string; name: string; price: number };
+
+export type MenuVariantGroup = {
+  id: string;
+  name: string;
+  required?: boolean;
+  options: { id: string; name: string; price?: number }[];
+};
 
 /** Allergeni in ordine Allegato II. */
 const ix = (...a: MenuAllergen[]): MenuAllergen[] => sortAllergens(a);

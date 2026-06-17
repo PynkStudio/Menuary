@@ -40,10 +40,28 @@ const EX_LIST_CLUB: ExtraRow[] = [
   { id: "cl-mayo", name: "Mayo extra", price: 0.5 },
 ];
 
+const EX_LIST_KIMOS_PIZZA: ExtraRow[] = [
+  { id: "kpz-pomodoro", name: "Pomodoro", price: 0.5 },
+  { id: "kpz-mozzarella", name: "Mozzarella", price: 1 },
+  { id: "kpz-funghi", name: "Funghi", price: 1 },
+  { id: "kpz-prosciutto-cotto", name: "Prosciutto cotto", price: 1 },
+  { id: "kpz-salame", name: "Salame", price: 1 },
+  { id: "kpz-piccante", name: "Salame piccante", price: 1 },
+  { id: "kpz-olive", name: "Olive", price: 0.5 },
+  { id: "kpz-cipolla", name: "Cipolla", price: 0.5 },
+  { id: "kpz-acciughe", name: "Acciughe", price: 1 },
+  { id: "kpz-salmone", name: "Salmone affumicato", price: 1.5 },
+  { id: "kpz-wurstel", name: "Wurstel", price: 0.5 },
+  { id: "kpz-panna", name: "Panna", price: 0.5 },
+  { id: "kpz-grana", name: "Grana / grattugiato", price: 0.5 },
+  { id: "kpz-rucola", name: "Rucola", price: 0.5 },
+];
+
 /** Ids fissi usati dal menu seed BePork: aggiornando la lista in admin si propagano tutti i piatti collegati. */
 export const LIST_ID_PIZZA = "lista-pizze" as const;
 export const LIST_ID_BURGER = "lista-burger" as const;
 export const LIST_ID_CLUB = "lista-club" as const;
+export const LIST_ID_KIMOS_PIZZA = "kimos-lista-pizze" as const;
 
 const BEPORK_EXTRA_LISTS: readonly ExtraList[] = [
   { id: LIST_ID_PIZZA, name: "Aggiunte pizze", extras: [...EX_LIST_PIZZA] },
@@ -51,12 +69,18 @@ const BEPORK_EXTRA_LISTS: readonly ExtraList[] = [
   { id: LIST_ID_CLUB, name: "Aggiunte club sandwich", extras: [...EX_LIST_CLUB] },
 ] as const;
 
+const KIMOS_EXTRA_LISTS: readonly ExtraList[] = [
+  { id: LIST_ID_KIMOS_PIZZA, name: "Aggiunte pizze Kimos", extras: [...EX_LIST_KIMOS_PIZZA] },
+] as const;
+
 /** @deprecated usa getTenantDefaultExtraLists(tenantId) */
 export const DEFAULT_EXTRA_LISTS = BEPORK_EXTRA_LISTS;
 
-/** Restituisce le liste aggiunte predefinite per il tenant. Solo BePork ha un seed; gli altri partono vuoti. */
+/** Restituisce le liste aggiunte predefinite per il tenant. Solo BePork e Kimos hanno un seed; gli altri partono vuoti. */
 export function getTenantDefaultExtraLists(tenantId: string): readonly ExtraList[] {
-  return tenantId === "bepork" ? BEPORK_EXTRA_LISTS : [];
+  if (tenantId === "bepork") return BEPORK_EXTRA_LISTS;
+  if (tenantId === "kimos") return KIMOS_EXTRA_LISTS;
+  return [];
 }
 
 export function resolveExtrasForItem(
