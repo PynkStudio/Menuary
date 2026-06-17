@@ -946,16 +946,39 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     source: input.source ?? "retell",
   });
   if (input.lines.length === 0) throw new Error("empty_order");
-  const codes = input.lines.map((line) => line.itemCode);
+  const requestedCodes = input.lines.map((line) => line.itemCode);
+  // L'assistente AI a volte invia il codice senza prefisso tenant (es. "margherita"
+  // invece di "kimos-margherita") o con case diverso. Allarghiamo la query alle varianti
+  // plausibili e risolviamo tollerando prefisso/maiuscole. Resta retrocompatibile: il
+  // match esatto (caso normale degli altri tenant) vince comunque per primo.
+  const codeCandidates = new Set<string>();
+  const tenantPrefix = `${input.tenantId}-`;
+  for (const code of requestedCodes) {
+    codeCandidates.add(code);
+    codeCandidates.add(`${tenantPrefix}${code}`);
+    if (code.startsWith(tenantPrefix)) codeCandidates.add(code.slice(tenantPrefix.length));
+  }
   const { data: items, error: itemsError } = await db
     .from("menu_items")
     .select("id,code,category_id,name,price,available,extra_list_id,location_id")
     .eq("tenant_id", input.tenantId)
-    .in("code", codes);
+    .in("code", [...codeCandidates]);
   if (itemsError) throw new Error(itemsError.message);
 
-  const byCode = new Map((items ?? []).map((item) => [item.code, item]));
-  const missing = codes.filter((code) => !byCode.has(code));
+  const byExactCode = new Map((items ?? []).map((item) => [item.code, item]));
+  const byLowerCode = new Map((items ?? []).map((item) => [item.code.toLocaleLowerCase("it-IT"), item]));
+  const resolveItem = (code: string) => {
+    const prefixed = `${tenantPrefix}${code}`;
+    return (
+      byExactCode.get(code) ??
+      byExactCode.get(prefixed) ??
+      byLowerCode.get(code.toLocaleLowerCase("it-IT")) ??
+      byLowerCode.get(prefixed.toLocaleLowerCase("it-IT")) ??
+      null
+    );
+  };
+  const resolvedByRequested = new Map(requestedCodes.map((code) => [code, resolveItem(code)] as const));
+  const missing = requestedCodes.filter((code) => !resolvedByRequested.get(code));
   if (missing.length > 0) throw new Error(`missing_items:${missing.join(",")}`);
 
   const itemIds = (items ?? []).map((item) => item.id);
@@ -974,7 +997,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   const listItemsByListId = groupBy((extraListItems ?? []) as ExtraListItemRow[], (item) => item.list_id);
 
   const rows = input.lines.map((line, index) => {
-    const item = byCode.get(line.itemCode)!;
+    const item = resolvedByRequested.get(line.itemCode)!;
     if (!item.available) throw new Error(`item_unavailable:${line.itemCode}`);
     const category = categoriesById.get(item.category_id);
     const isWrongLocation = input.locationId && (
