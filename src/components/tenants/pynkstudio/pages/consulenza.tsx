@@ -54,7 +54,7 @@ function ConsulenzaInner() {
             {c.intro2}
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4 }}>
-            <Link href={href("/contattaci")} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group pynk-mt-12">
+            <Link href={href("/prenota-call")} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group pynk-mt-12">
               {c.heroCta}
               <ArrowRight className="pynk-icon-sm pynk-arrow" />
             </Link>
@@ -185,7 +185,7 @@ function ConsulenzaInner() {
             <h2 className="pynk-section-title">
               {c.finalTitleLead} <span className="pynk-accent">{c.finalTitleAccent}</span>?
             </h2>
-            <Link href={href("/contattaci")} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
+            <Link href={href("/prenota-call")} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
               {c.finalCta}
               <ArrowRight className="pynk-icon-sm pynk-arrow" />
             </Link>

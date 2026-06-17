@@ -14,7 +14,8 @@
 // "gestione"          → gestione.menuary.it     pannello gestione tenant food
 // "gestione-bizery"   → gestione.bizery.it      pannello gestione tenant bizery (cross-domain popup auth)
 // "gestione-custom"   → gestione.[dominio]      pannello gestione sul dominio del tenant
-// "admin-pynkstudio"  → admin.pynkstudio.it      pannello controllo PynkStudio (azienda madre)
+// "admin-pynkstudio"      → admin.pynkstudio.it         pannello controllo PynkStudio (azienda madre)
+// "pagamenti-pynkstudio"  → pagamenti.pynkstudio.it     portale pagamenti unificato (tutti i verticali)
 export type PlatformMode =
   | "tenant"
   | "marketing"
@@ -22,6 +23,7 @@ export type PlatformMode =
   | "marketing-orpheo"
   | "platform-admin"
   | "admin-pynkstudio"
+  | "pagamenti-pynkstudio"
   | "preview"
   | "preview-bizery"
   | "preview-orpheo"
@@ -40,7 +42,8 @@ export const PLATFORM_HOSTS = {
   "marketing-bizery": ["bizery.it", "www.bizery.it", "bizery.localhost"],
   "marketing-orpheo": ["weuseorpheo.com", "www.weuseorpheo.com", "orpheo.localhost"],
   admin:              ["admin.menuary.it", "admin.menuary.localhost"],
-  "admin-pynkstudio": ["admin.pynkstudio.it", "admin.pynkstudio.localhost"],
+  "admin-pynkstudio":     ["admin.pynkstudio.it", "admin.pynkstudio.localhost"],
+  "pagamenti-pynkstudio": ["pagamenti.pynkstudio.it", "pagamenti.pynkstudio.localhost"],
   preview:            ["demo.menuary.it", "demo.menuary.localhost"],
   "preview-bizery":   ["demo.bizery.it", "demo.bizery.localhost"],
   "preview-orpheo":   ["demo.weuseorpheo.com", "demo.weuseorpheo.localhost"],
@@ -59,6 +62,7 @@ const PLATFORM_MODES: PlatformMode[] = [
   "marketing-orpheo",
   "platform-admin",
   "admin-pynkstudio",
+  "pagamenti-pynkstudio",
   "preview",
   "preview-bizery",
   "preview-orpheo",
@@ -87,7 +91,8 @@ export function getPlatformModeFromHost(
   if (PLATFORM_HOSTS["marketing-bizery"].includes(normalized as never)) return "marketing-bizery";
   if (PLATFORM_HOSTS["marketing-orpheo"].includes(normalized as never)) return "marketing-orpheo";
   if (PLATFORM_HOSTS.admin.includes(normalized as never))              return "platform-admin";
-  if (PLATFORM_HOSTS["admin-pynkstudio"].includes(normalized as never)) return "admin-pynkstudio";
+  if (PLATFORM_HOSTS["admin-pynkstudio"].includes(normalized as never))     return "admin-pynkstudio";
+  if (PLATFORM_HOSTS["pagamenti-pynkstudio"].includes(normalized as never)) return "pagamenti-pynkstudio";
   if (PLATFORM_HOSTS.preview.includes(normalized as never))            return "preview";
   if (PLATFORM_HOSTS["preview-bizery"].includes(normalized as never))  return "preview-bizery";
   if (PLATFORM_HOSTS["preview-orpheo"].includes(normalized as never))  return "preview-orpheo";

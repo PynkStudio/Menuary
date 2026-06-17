@@ -56,6 +56,7 @@ const STATUS_BADGE: Record<TenantStatus, { label: string; className: string }> =
   trial: { label: "Trial", className: "bg-pork-mustard text-pork-ink" },
   offline: { label: "Offline", className: "bg-pork-ink/20 text-pork-ink/60" },
   trattativa: { label: "Trattativa", className: "bg-amber-100 text-amber-800" },
+  suspended: { label: "Sospeso", className: "bg-orange-100 text-orange-700" },
 };
 
 const VERTICAL_FILTERS: Array<{ value: "all" | TenantVertical; label: string }> = [

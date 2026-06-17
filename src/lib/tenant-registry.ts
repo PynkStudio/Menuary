@@ -334,6 +334,8 @@ export const PYNKSTUDIO_MODULE_FLAGS: TenantFeatureFlags = {
   hubriseSync: false,
   payments: false,
   mail: true,
+  pynkAgenda: true,
+  companyPatrimoniale: true,
 };
 
 /** Orpheo: tenant tecnico/demo per il verticale creative. */

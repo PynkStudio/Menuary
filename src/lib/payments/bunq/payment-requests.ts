@@ -20,6 +20,7 @@ export type CreatePaymentRequestInput = {
   description: string;
   counterpartyEmail: string;
   reference: string;
+  redirectUrl?: string;
 };
 
 export async function createBunqPaymentRequest(
@@ -36,12 +37,14 @@ export async function createBunqPaymentRequest(
         },
         counterparty_alias: {
           type: "EMAIL",
-          value: input.counterpartyEmail,
-          name: input.counterpartyEmail,
+          value: process.env.BUNQ_REQUEST_COUNTERPARTY_EMAIL ?? input.counterpartyEmail,
+          name: process.env.BUNQ_REQUEST_COUNTERPARTY_EMAIL
+            ? "Menuary Pagamenti"
+            : input.counterpartyEmail,
         },
         description: input.description,
         allow_bunqme: true,
-        redirect_url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://menuary.it"}/admin/contratti?payment=success`,
+        redirect_url: input.redirectUrl ?? `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://menuary.it"}/payment?status=processing&brand=menuary`,
       },
     },
   );

@@ -3,8 +3,15 @@ import "server-only";
 import { stripeRequest } from "@/lib/payments/stripe/client";
 import { createBunqPaymentRequest } from "@/lib/payments/bunq/payment-requests";
 import {
+  paymentRedirectUrlWithRef,
+  pynkCheckoutUrl,
+  stripeSuccessUrl,
+  stripeCancelUrl,
+} from "@/lib/payments/payment-urls";
+import {
   computeFirstPaymentTotal,
   contractPaymentDescription,
+  type ContractBrand,
   type ContractData,
 } from "./menuary-contract";
 
@@ -33,7 +40,7 @@ export async function createContractPayment(
     case "bunq":
       return createBunqCheckout(contractId, data);
     case "bonifico":
-      return { provider: "bonifico" };
+      return { provider: "bonifico", checkoutUrl: pynkCheckoutUrl(contractId) };
   }
 }
 
@@ -47,8 +54,7 @@ async function createStripeCheckout(
   const amountCents = Math.round(total * 100);
   const description = contractPaymentDescription(data);
   const customerEmail = data.cliente.email || data.cliente.pec;
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://menuary.it";
+  const brand = data.brand as ContractBrand;
 
   const session = await stripeRequest<StripeSession>("/checkout/sessions", {
     method: "POST",
@@ -57,8 +63,8 @@ async function createStripeCheckout(
       mode: "payment",
       "payment_method_types[0]": "card",
       customer_email: customerEmail || undefined,
-      success_url: `${siteUrl}/admin/contratti/${contractId}?payment=success`,
-      cancel_url: `${siteUrl}/admin/contratti/${contractId}?payment=cancelled`,
+      success_url: stripeSuccessUrl(brand, contractId),
+      cancel_url: stripeCancelUrl(brand, contractId),
       expires_at: Math.floor(Date.now() / 1000) + 7200,
       metadata: {
         contract_id: contractId,
@@ -104,6 +110,7 @@ async function createBunqCheckout(
 ): Promise<PlatformCheckoutResult> {
   const totalWithTax = computeFirstPaymentTotal(data.economiche);
   const description = contractPaymentDescription(data);
+  const brand = data.brand as ContractBrand;
 
   const customerEmail = data.cliente.email || data.cliente.pec;
   if (!customerEmail) throw new Error("bunq_no_customer_email");
@@ -113,6 +120,7 @@ async function createBunqCheckout(
     description,
     counterpartyEmail: customerEmail,
     reference: data.numero,
+    redirectUrl: paymentRedirectUrlWithRef("processing", brand, contractId),
   });
 
   return {

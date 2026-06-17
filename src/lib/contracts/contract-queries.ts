@@ -25,6 +25,7 @@ export type PlatformContract = {
   documenso_envelope_id: string | null;
   documenso_item_id: string | null;
   signing_url: string | null;
+  counterparty_signing_url: string | null;
   signed_at: string | null;
   signed_document_path: string | null;
   payment_method: string | null;
@@ -57,11 +58,11 @@ export async function listContracts(): Promise<PlatformContract[]> {
   return (data ?? []) as unknown as PlatformContract[];
 }
 
-export async function listSentContracts(): Promise<PlatformContract[]> {
+export async function listContractsNeedingDocumensoSync(): Promise<PlatformContract[]> {
   const { data, error } = await db()
     .from("platform_contracts")
     .select("*")
-    .eq("status", "sent")
+    .in("status", ["sent", "signed"])
     .not("documenso_envelope_id", "is", null);
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as PlatformContract[];
@@ -86,6 +87,18 @@ export async function getContractByEnvelopeId(
     .from("platform_contracts")
     .select("*")
     .eq("documenso_envelope_id", envelopeId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as unknown as PlatformContract) ?? null;
+}
+
+export async function getContractByNumero(
+  numero: string,
+): Promise<PlatformContract | null> {
+  const { data, error } = await db()
+    .from("platform_contracts")
+    .select("*")
+    .eq("numero", numero)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return (data as unknown as PlatformContract) ?? null;
@@ -162,6 +175,7 @@ export async function updateContract(
       | "documenso_envelope_id"
       | "documenso_item_id"
       | "signing_url"
+      | "counterparty_signing_url"
       | "signed_at"
       | "signed_document_path"
       | "payment_method"
@@ -208,4 +222,15 @@ export async function deleteContractById(id: string): Promise<void> {
     .delete()
     .eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+export async function setContractCancelled(id: string): Promise<PlatformContract> {
+  const { data, error } = await db()
+    .from("platform_contracts")
+    .update({ status: "cancelled", updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as unknown as PlatformContract;
 }

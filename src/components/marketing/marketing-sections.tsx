@@ -27,6 +27,8 @@ import { fetchPricingAddons, fetchPricingPlans, type MarketingReview, type Marke
 import { DEFAULT_MARKET, MARKET_HEADER, getMarket, normalizeMarketCode } from "@/lib/markets";
 import { formatPricingAmount, formatSetupFrom, replacePriceToken } from "@/lib/pricing-format";
 import { headers } from "next/headers";
+import { getLocale } from "@/i18n";
+import { localizedPath } from "@/lib/marketing-seo";
 
 /* ============================================================
    FEATURES
@@ -300,7 +302,8 @@ export function ProductLevelsSection() {
    AI PHONE RECEPTIONIST — coming soon showcase
    ============================================================ */
 
-export function AIPhoneSection() {
+export async function AIPhoneSection() {
+  const locale = await getLocale();
   return (
     <section
       id="ia"
@@ -363,12 +366,12 @@ export function AIPhoneSection() {
 
             <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4">
               <Link
-                href="/contatti"
+                href={localizedPath("/contatti", locale)}
                 className="menuary-button menuary-button-accent"
               >
                 Attiva l&apos;IA per il tuo locale
               </Link>
-              <Link href="/pricing" className="menuary-link menuary-link-light">
+              <Link href={localizedPath("/pricing", locale)} className="menuary-link menuary-link-light">
                 Vedi i piani
                 <ArrowUpRight size={16} strokeWidth={1.6} />
               </Link>
@@ -714,6 +717,7 @@ export async function FAQSection({
 }) {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.faq;
   const resolvedKicker = kicker ?? t.kicker;
+  const locale = await getLocale();
   return (
     <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-24 lg:py-32">
@@ -725,7 +729,7 @@ export async function FAQSection({
             </h2>
             <p className="mt-6 max-w-sm text-[15px] leading-7 text-[var(--menuary-ink)]/75">
               {t.notFound}{" "}
-              <Link href="/contatti" className="menuary-link">
+              <Link href={localizedPath("/contatti", locale)} className="menuary-link">
                 {t.ctaLink}
                 <ArrowUpRight size={14} strokeWidth={1.6} />
               </Link>
@@ -800,7 +804,8 @@ const PRICING_TEASER: {
   },
 ];
 
-export function PricingTeaserSection() {
+export async function PricingTeaserSection() {
+  const locale = await getLocale();
   return (
     <section
       id="prezzi"
@@ -870,7 +875,7 @@ export function PricingTeaserSection() {
               </ul>
 
               <Link
-                href="/pricing"
+                href={localizedPath("/pricing", locale)}
                 className={
                   "mt-2 " +
                   (p.featured
@@ -979,6 +984,7 @@ export function ProcessSection() {
 
 export async function FinalCTASection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.finalCta;
+  const locale = await getLocale();
   return (
     <section className="menuary-beat">
       <div className="menuary-container relative py-24 lg:py-32">
@@ -1000,7 +1006,7 @@ export async function FinalCTASection() {
           </div>
           <div className="flex flex-col items-start gap-5">
             <Link
-              href="/contatti"
+              href={localizedPath("/contatti", locale)}
               className="menuary-button menuary-button-accent"
             >
               {t.cta}
@@ -1704,6 +1710,7 @@ export async function GoogleSyncSection() {
 
 export async function LocalPresenceSection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.localPresence;
+  const locale = await getLocale();
   return (
     <section className="menuary-beat border-t border-[var(--menuary-line)]">
       <div className="menuary-container relative py-24 lg:py-32">
@@ -1720,7 +1727,7 @@ export async function LocalPresenceSection() {
             <p className="mt-7 max-w-lg text-[17px] leading-[1.7] text-white/70">
               {t.sub}
             </p>
-            <Link href="/contatti" className="menuary-link menuary-link-light mt-8 inline-flex">
+            <Link href={localizedPath("/contatti", locale)} className="menuary-link menuary-link-light mt-8 inline-flex">
               {t.cta}
               <ArrowUpRight size={14} strokeWidth={1.6} />
             </Link>
@@ -1906,6 +1913,7 @@ export async function BenefitsEditorialSection() {
 
 export async function HomePricingSection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.homePricing;
+  const locale = await getLocale();
   const h = await headers();
   const marketCode = normalizeMarketCode(h.get(MARKET_HEADER)) ?? DEFAULT_MARKET;
   const market = getMarket(marketCode);
@@ -2027,7 +2035,7 @@ export async function HomePricingSection() {
 
                 <div className="mt-auto pt-8">
                   <Link
-                    href="/contatti"
+                    href={localizedPath("/contatti", locale)}
                     className={
                       "menuary-button " +
                       (highlighted
@@ -2086,6 +2094,7 @@ export async function HomePricingSection() {
 
 export async function AIIntegrationsTeaserSection() {
   const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.aiTeaser;
+  const locale = await getLocale();
   return (
     <section className="menuary-beat-copper border-t border-[var(--menuary-line)]">
       <div className="menuary-container relative py-20 lg:py-28">
@@ -2098,7 +2107,7 @@ export async function AIIntegrationsTeaserSection() {
             <p className="mt-6 max-w-lg text-[16px] leading-[1.7] text-[#fff7ef]/85">
               {t.sub}
             </p>
-            <Link href="/contatti" className="menuary-link menuary-link-light mt-8 inline-flex">
+            <Link href={localizedPath("/contatti", locale)} className="menuary-link menuary-link-light mt-8 inline-flex">
               {t.cta}
               <ArrowUpRight size={14} strokeWidth={1.6} />
             </Link>

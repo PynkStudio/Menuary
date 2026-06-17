@@ -93,6 +93,10 @@ export type ContractData = {
     /** Quando true, non applica IVA ma rivalsa INPS 4% + marca da bollo €2. */
     esenzioneIva: boolean;
   };
+  fornitore: {
+    ragioneSociale: string;
+    iban: string;
+  };
   noteAggiuntive: string;
   /** Primo momento in cui il cliente ha aperto il documento su Documenso. */
   opened_at?: string | null;
@@ -153,6 +157,10 @@ export function freshContractData(brand: ContractBrand): ContractData {
       // TODO: impostare false quando il fornitore passerà al regime ordinario/SRL.
       esenzioneIva: true,
     },
+    fornitore: {
+      ragioneSociale: FORNITORE.ragioneSociale,
+      iban: FORNITORE.iban,
+    },
     noteAggiuntive: "",
   };
 }
@@ -168,6 +176,10 @@ export function normalizeContractData(data: ContractData): ContractData {
     economiche: {
       ...data.economiche,
       esenzioneIva: data.economiche.esenzioneIva ?? true,
+    },
+    fornitore: {
+      ragioneSociale: data.fornitore?.ragioneSociale ?? FORNITORE.ragioneSociale,
+      iban: data.fornitore?.iban ?? FORNITORE.iban,
     },
     countersigned: data.countersigned ?? null,
   };

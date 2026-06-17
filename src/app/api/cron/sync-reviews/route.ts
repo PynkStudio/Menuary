@@ -69,8 +69,8 @@ export async function GET(req: Request) {
   for (const tenant of TENANTS) {
     const tenantId = tenant.id;
 
-    // Tenant offline o in trattativa: nessun job, non ancora in produzione.
-    if (tenant.status === "offline" || tenant.status === "trattativa") {
+    // Tenant offline, sospeso o in trattativa: nessun job (non in produzione attiva).
+    if (tenant.status === "offline" || tenant.status === "trattativa" || tenant.status === "suspended") {
       results.push({ tenantId, outcome: `skipped:${tenant.status}` });
       continue;
     }

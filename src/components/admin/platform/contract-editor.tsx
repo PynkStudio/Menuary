@@ -15,6 +15,9 @@ import {
   AlertTriangle,
   ArrowLeft,
   Download,
+  ExternalLink,
+  Mail,
+  Copy,
   X,
 } from "lucide-react";
 import { PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
@@ -66,10 +69,13 @@ type ServerContract = {
   clause_overrides: Record<string, string>;
   documenso_envelope_id: string | null;
   signing_url: string | null;
+  counterparty_signing_url: string | null;
   signed_at: string | null;
   signed_document_path: string | null;
   payment_method: string | null;
   payment_status: string;
+  payment_id?: string | null;
+  payment_link?: string | null;
   paid_at: string | null;
   tenant_id: string | null;
   tenant_activated_at: string | null;
@@ -103,7 +109,6 @@ export function ContractEditor({ contractId }: Props) {
   const [sendPreviewOpen, setSendPreviewOpen] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [confirmingPayment, setConfirmingPayment] = useState(false);
-  const [countersigning, setCountersigning] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
   type ContractDraft = { data: ContractData; overrides: Record<string, string> };
@@ -451,33 +456,6 @@ export function ContractEditor({ contractId }: Props) {
     }
   }
 
-  async function handleCountersign() {
-    if (!serverContract) return;
-    if (!window.confirm("Confermi la controfirma del contratto? Il PDF firmato verrà scaricato da Documenso e salvato come controfirmato.")) return;
-    setCountersigning(true);
-    try {
-      const res = await fetch("/api/admin/contracts/countersign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contractId: serverContract.id }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Errore" })) as { error?: string };
-        setFeedback(`Errore: ${err.error}`);
-        return;
-      }
-      const { contract } = await res.json() as { contract: ServerContract };
-      setServerContract(contract);
-      setData(normalizeContractData(contract.contract_data));
-      setFeedback("Contratto controfirmato con successo.");
-      window.dispatchEvent(new Event("contracts:refresh"));
-    } catch {
-      setFeedback("Errore di rete nella controfirma.");
-    } finally {
-      setCountersigning(false);
-    }
-  }
-
   async function handleConfirmPayment() {
     if (!serverContract) return;
     if (!window.confirm("Confermi la ricezione del pagamento per questo contratto?")) return;
@@ -523,6 +501,13 @@ export function ContractEditor({ contractId }: Props) {
         envelopeStatus: string;
       };
       setServerContract(contract);
+      const refreshed = await fetch(`/api/admin/contracts?id=${contract.id}`, {
+        cache: "no-store",
+      });
+      if (refreshed.ok) {
+        const payload = (await refreshed.json()) as { contract: ServerContract };
+        setServerContract(payload.contract);
+      }
       if (synced) {
         setData(normalizeContractData(contract.contract_data));
         setFeedback("Stato sincronizzato: contratto firmato.");
@@ -535,6 +520,62 @@ export function ContractEditor({ contractId }: Props) {
     } finally {
       setSyncing(false);
     }
+  }
+
+  async function copyUrl(url: string | null | undefined, label: string) {
+    if (!url) {
+      setFeedback(`${label} non disponibile.`);
+      return;
+    }
+    await navigator.clipboard.writeText(url);
+    setFeedback(`${label} copiato.`);
+  }
+
+  async function handleResendContract(audience: "customer" | "supplier") {
+    if (!serverContract) return;
+    const res = await fetch("/api/admin/contracts/resend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contractId: serverContract.id, audience }),
+    });
+    const result = (await res.json().catch(() => ({}))) as { error?: string };
+    setFeedback(
+      res.ok
+        ? audience === "supplier"
+          ? "Email di controfirma inviata."
+          : "Email contratto reinviata."
+        : `Errore: ${result.error ?? "invio non riuscito"}`,
+    );
+  }
+
+  async function handlePaymentCommunication(send: boolean) {
+    if (!serverContract?.payment_id) {
+      setFeedback("Pagamento pending non ancora disponibile. Sincronizza prima il contratto.");
+      return;
+    }
+    const res = await fetch("/api/admin/payments/communicate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentId: serverContract.payment_id, send }),
+    });
+    const result = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      url?: string | null;
+      checkoutUrl?: string | null;
+    };
+    if (!res.ok) {
+      setFeedback(`Errore: ${result.error ?? "operazione non riuscita"}`);
+      return;
+    }
+    if (!send && result.checkoutUrl) {
+      await navigator.clipboard.writeText(result.checkoutUrl);
+      setServerContract((current) =>
+        current ? { ...current, payment_link: result.checkoutUrl ?? null } : current,
+      );
+      setFeedback("Link pagamento copiato.");
+      return;
+    }
+    setFeedback(send ? "Email pagamento reinviata." : "Nessun link previsto per questo metodo.");
   }
 
   function handleDownloadSigned() {
@@ -592,6 +633,7 @@ export function ContractEditor({ contractId }: Props) {
   const effectiveStatus = (serverContract?.status ?? stored?.status ?? "draft") as keyof typeof CONTRACT_STATUS_LABELS;
   const statusLabel = CONTRACT_STATUS_LABELS[effectiveStatus] ?? "Nuova bozza";
   const statusColor = CONTRACT_STATUS_COLORS[effectiveStatus] ?? "bg-gray-100 text-gray-700";
+  const readOnly = effectiveStatus !== "draft";
   const individualClient = isIndividualClient(data);
   const availablePackages = PLATFORM_PACKAGES.filter(
     (pkg) =>
@@ -630,6 +672,13 @@ export function ContractEditor({ contractId }: Props) {
           <span className={`status-pill ${statusColor}`}>{statusLabel}</span>
         </div>
 
+        {readOnly && (
+          <div style={{ background: "#f3f4f6", border: "1px solid #d1d5db", color: "#374151", padding: "8px 10px", borderRadius: 6, fontSize: 12, marginBottom: 12 }}>
+            <AlertTriangle size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+            Contratto in sola lettura. Non è possibile modificare i dati del contratto una volta inviato.
+          </div>
+        )}
+
         {contractDraft.draftDate && (
           <div className="contract-feedback" style={{ background: "#fffbeb", borderColor: "#f59e0b", color: "#92400e" }}>
             <span style={{ fontSize: 13 }}>
@@ -658,6 +707,7 @@ export function ContractEditor({ contractId }: Props) {
 
         {feedback && <div className="contract-feedback">{feedback}</div>}
 
+        <div className={readOnly ? "contract-form-readonly" : ""}>
         <h3>Brand</h3>
         <div className="brand-picker">
           {(Object.keys(BRAND_INFO) as ContractBrand[]).map((b) => (
@@ -1065,28 +1115,35 @@ export function ContractEditor({ contractId }: Props) {
           value={data.dataStipula}
           onChange={(e) => setData((d) => ({ ...d, dataStipula: e.target.value }))}
         />
+        </div>
 
         <div className="contract-actions">
-          <button type="button" onClick={handleSave}>
-            <Save size={14} /> Salva
-          </button>
+          {!readOnly && (
+            <button type="button" onClick={handleSave}>
+              <Save size={14} /> Salva
+            </button>
+          )}
           <button type="button" onClick={handleDownloadPdf} disabled={generatingPdf}>
             <Printer size={14} /> {generatingPdf ? "..." : "PDF"}
           </button>
-          <button
-            type="button"
-            className="primary"
-            onClick={openSendPreview}
-            disabled={sending || effectiveStatus === "sent" || effectiveStatus === "signed" || effectiveStatus === "countersigned"}
-          >
-            <Send size={14} /> {sending ? "Invio in corso…" : "Invia con firma elettronica"}
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              className="primary"
+              onClick={openSendPreview}
+              disabled={sending || readOnly}
+            >
+              <Send size={14} /> {sending ? "Invio in corso…" : "Invia con firma elettronica"}
+            </button>
+          )}
         </div>
+        {!readOnly && (
         <div className="contract-actions">
           <button type="button" onClick={reset}>
             <RotateCcw size={14} /> Nuovo
           </button>
         </div>
+        )}
 
         {serverContract && (
           <>
@@ -1115,6 +1172,16 @@ export function ContractEditor({ contractId }: Props) {
                     <RotateCcw size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
                     {syncing ? "Controllo…" : "Controlla stato su Documenso"}
                   </button>
+                  {serverContract.signing_url && (
+                    <div className="contract-actions">
+                      <button type="button" onClick={() => handleResendContract("customer")}>
+                        <Mail size={12} /> Rimanda email
+                      </button>
+                      <button type="button" onClick={() => copyUrl(serverContract.signing_url, "Link contratto")}>
+                        <Copy size={12} /> Copia link
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1158,19 +1225,28 @@ export function ContractEditor({ contractId }: Props) {
                         <RotateCcw size={12} /> {syncing ? "Recupero…" : "Recupera PDF firmato"}
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={handleCountersign}
-                      disabled={countersigning}
-                      style={{
-                        display: "block", marginTop: 8, padding: "6px 12px",
-                        background: "#1d4ed8", color: "#fff", border: "none",
-                        borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                      }}
-                    >
-                      <CheckCircle2 size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
-                      {countersigning ? "Controfirmo…" : "Controfirma"}
-                    </button>
+                    {serverContract.counterparty_signing_url ? (
+                      <div className="contract-actions">
+                        <a
+                          href={serverContract.counterparty_signing_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ ...actionLinkStyle, background: "#1d4ed8", color: "#fff" }}
+                        >
+                          <ExternalLink size={12} /> Firma
+                        </a>
+                        <button type="button" onClick={() => copyUrl(serverContract.counterparty_signing_url, "Link controfirma")}>
+                          <Copy size={12} /> Copia link
+                        </button>
+                        <button type="button" onClick={() => handleResendContract("supplier")}>
+                          <Mail size={12} /> Invia a noi
+                        </button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={handleSyncDocumenso} disabled={syncing}>
+                        <RotateCcw size={12} /> Recupera link firma
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1213,13 +1289,22 @@ export function ContractEditor({ contractId }: Props) {
             )}
 
             {/* Payment status */}
-            {effectiveStatus === "signed" && serverContract.payment_status !== "paid" && (
+            {(effectiveStatus === "signed" || effectiveStatus === "countersigned") &&
+              serverContract.payment_status !== "paid" && (
               <div style={{ marginTop: 12 }}>
                 <h3>Pagamento</h3>
-                {serverContract.payment_method === "carta" ? (
+                {serverContract.payment_method === "carta" || serverContract.payment_method === "bunq" ? (
                   <div style={{ fontSize: 12, padding: "8px 10px", background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 6, color: "#92400e" }}>
                     <AlertTriangle size={12} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
-                    Link checkout Stripe inviato al cliente. In attesa di pagamento.
+                    Link pagamento inviato al cliente. In attesa di pagamento.
+                    <div className="contract-actions">
+                      <button type="button" onClick={() => handlePaymentCommunication(true)} disabled={!serverContract.payment_id}>
+                        <Mail size={12} /> Rimanda email
+                      </button>
+                      <button type="button" onClick={() => handlePaymentCommunication(false)} disabled={!serverContract.payment_id}>
+                        <Copy size={12} /> Copia link
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div style={{ fontSize: 12, padding: "8px 10px", background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 6, color: "#92400e" }}>
@@ -1279,12 +1364,14 @@ export function ContractEditor({ contractId }: Props) {
           </>
         )}
 
-        <p style={{ fontSize: 11, color: "#6b7280", marginTop: 12, lineHeight: 1.4 }}>
-          Le clausole nel documento sono modificabili: clicca un paragrafo per editarlo.
-          Il bottone PDF genera un file lato server con grafica vettoriale, allegati e
-          numerazione delle pagine. L&apos;invio carica il contratto su Documenso per la
-          firma elettronica e invia l&apos;email al cliente.
-        </p>
+        {!readOnly && (
+          <p style={{ fontSize: 11, color: "#6b7280", marginTop: 12, lineHeight: 1.4 }}>
+            Le clausole nel documento sono modificabili: clicca un paragrafo per editarlo.
+            Il bottone PDF genera un file lato server con grafica vettoriale, allegati e
+            numerazione delle pagine. L&apos;invio carica il contratto su Documenso per la
+            firma elettronica e invia l&apos;email al cliente.
+          </p>
+        )}
       </aside>
 
       <article className="contract-doc">
@@ -1397,15 +1484,19 @@ export function ContractEditor({ contractId }: Props) {
         {clauses.map((c) => (
           <section key={c.id} className="clause">
             <h2>{c.title}</h2>
-            <div
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) =>
-                setOverrides((o) => ({ ...o, [c.id]: e.currentTarget.innerText }))
-              }
-            >
-              {overrides[c.id] ?? c.body}
-            </div>
+            {readOnly ? (
+              <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>{overrides[c.id] ?? c.body}</p>
+            ) : (
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) =>
+                  setOverrides((o) => ({ ...o, [c.id]: e.currentTarget.innerText }))
+                }
+              >
+                {overrides[c.id] ?? c.body}
+              </div>
+            )}
           </section>
         ))}
 
@@ -1616,6 +1707,19 @@ function LocalizedMoneyInput({
   );
 }
 
+const actionLinkStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  flex: 1,
+  padding: "8px 10px",
+  borderRadius: 8,
+  fontSize: 12,
+  fontWeight: 600,
+  textDecoration: "none",
+};
+
 const CONTRACT_STYLES = `
 .contract-page { display: grid; grid-template-columns: 380px 1fr; gap: 24px; padding: 24px; }
 .contract-form { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; height: fit-content; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
@@ -1624,6 +1728,10 @@ const CONTRACT_STYLES = `
 .contract-form label { display: block; font-size: 12px; color: #374151; margin-bottom: 4px; }
 .contract-form input, .contract-form select, .contract-form textarea {
   width: 100%; padding: 6px 8px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 8px; box-sizing: border-box;
+}
+.contract-form-readonly input, .contract-form-readonly select, .contract-form-readonly textarea,
+.contract-form-readonly .brand-picker button, .contract-form-readonly .rate-toggle {
+  pointer-events: none; opacity: 0.6;
 }
 .contract-field-error { margin: -2px 0 8px; color: #b91c1c; font-size: 11px; line-height: 1.4; }
 .contract-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

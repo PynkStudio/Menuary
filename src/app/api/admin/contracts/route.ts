@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
 import {
   listContracts,
@@ -7,8 +8,11 @@ import {
   createContract,
   updateContract,
   deleteContractById,
+  setContractCancelled,
 } from "@/lib/contracts/contract-queries";
 import { normalizeContractData, type ContractData } from "@/lib/contracts/menuary-contract";
+import { voidEnvelope } from "@/lib/contracts/documenso";
+import { cancelSubscription } from "@/lib/platform/subscription-service";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +39,26 @@ export async function GET(req: NextRequest) {
   if (id) {
     const contract = await getContract(id);
     if (!contract) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json({ contract });
+    const db = createSupabaseServiceClient();
+    const { data: payment } =
+      db && contract.subscription_id
+        ? await db
+            .from("platform_payments")
+            .select("id, stripe_payment_link, bunq_payment_url, payment_method")
+            .eq("subscription_id", contract.subscription_id)
+            .eq("status", "pending")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : { data: null };
+    return NextResponse.json({
+      contract: {
+        ...contract,
+        payment_id: payment?.id ?? null,
+        payment_link:
+          payment?.bunq_payment_url ?? payment?.stripe_payment_link ?? null,
+      },
+    });
   }
   const contracts = await listContracts();
   return NextResponse.json({ contracts });
@@ -83,6 +106,31 @@ export async function DELETE(req: NextRequest) {
   }
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id obbligatorio" }, { status: 400 });
-  await deleteContractById(id);
-  return NextResponse.json({ deleted: true });
+
+  const contract = await getContract(id);
+  if (!contract) return NextResponse.json({ error: "Contratto non trovato" }, { status: 404 });
+
+  if (contract.documenso_envelope_id && contract.status !== "draft") {
+    try {
+      await voidEnvelope(contract.documenso_envelope_id);
+    } catch (err) {
+      console.warn("[DELETE] Failed to void Documenso envelope:", err);
+    }
+  }
+
+  if (contract.status === "draft") {
+    await deleteContractById(id);
+    return NextResponse.json({ deleted: true });
+  }
+
+  if (contract.subscription_id) {
+    try {
+      await cancelSubscription(contract.subscription_id, "Contratto annullato");
+    } catch (err) {
+      console.warn("[DELETE] Failed to cancel subscription:", err);
+    }
+  }
+
+  const cancelled = await setContractCancelled(id);
+  return NextResponse.json({ cancelled: true, contract: cancelled });
 }

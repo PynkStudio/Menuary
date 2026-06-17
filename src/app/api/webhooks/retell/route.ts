@@ -57,6 +57,10 @@ async function buildInboundDynamicVariables(
   const settings = await getAiPhoneSettings(tenantId);
   const variables: Record<string, string> = {
     tenant_id: tenantId,
+    // Autentica i custom tool (search_menu/create_order): Retell rimanda questo
+    // valore nell'header x-retell-secret quando chiama /api/retell/inbound.
+    // Iniettato per-chiamata, così non va salvato in chiaro nella config Retell.
+    retell_webhook_secret: process.env.RETELL_WEBHOOK_SECRET ?? "",
     daily_notes: (settings.quickSettings.notesForAssistant ?? "").trim(),
     caller_phone: (inbound.fromNumber ?? "").trim(),
     called_number: (inbound.toNumber ?? "").trim(),
@@ -156,11 +160,14 @@ export async function POST(req: NextRequest) {
 
   const eventType = typeof payload.event === "string" ? payload.event : null;
   const tenantIdParam = req.nextUrl.searchParams.get("tenant_id");
+  // Webhook generico di piattaforma: senza tenant_id nel query, risolviamo il tenant
+  // dal payload (to_number → agent_id) per OGNI evento — call_inbound e ciclo vita
+  // (call_ended/analyzed) — così una sola URL condivisa attribuisce tutto correttamente.
+  const tenantId = tenantIdParam || (await resolveTenantFromInbound(payload));
 
   // call_inbound: Retell aspetta una risposta sincrona con eventuali dynamic_variables/override_agent_id.
   // Qui iniettiamo le "Note del giorno" del ristoratore (quickSettings.notesForAssistant) + orari aggiornati.
   if (eventType === "call_inbound") {
-    const tenantId = tenantIdParam || (await resolveTenantFromInbound(payload));
     const inbound = (payload.call_inbound ?? payload.call ?? {}) as Record<string, unknown>;
     const dynamicVariables = tenantId
       ? await buildInboundDynamicVariables(tenantId, {
@@ -190,7 +197,7 @@ export async function POST(req: NextRequest) {
   }
   await svc.from("channel_webhook_events").insert({
     channel: "retell",
-    tenant_id: tenantIdParam,
+    tenant_id: tenantId,
     payload: payload as Json,
   });
   return NextResponse.json({ ok: true, stored: true });

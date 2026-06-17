@@ -220,6 +220,15 @@ export async function resolveDocumensoProviderForSend(): Promise<DocumensoProvid
   return setting === "sh" ? "sh" : "cloud";
 }
 
+export function resolveDocumensoSignerEmail(
+  provider: DocumensoProvider,
+  cloudFallback: string,
+): string {
+  return provider === "sh"
+    ? process.env.DOCUMENSO_SIGNER_EMAIL_SH ?? "amministrazione@pynkstudio.com"
+    : process.env.DOCUMENSO_SIGNER_EMAIL_CLOUD ?? cloudFallback;
+}
+
 // ─── Create envelope ────────────────────────────────────────────────────────
 
 export type DocumensoField = {
@@ -660,6 +669,15 @@ export async function distributeEnvelope(
   return { envelopeId: result.id, signingUrls };
 }
 
+// ─── Void envelope ────────────────────────────────────────────────────────────
+
+export async function voidEnvelope(
+  envelopeId: string,
+  provider = defaultProviderForDirectCall(),
+): Promise<void> {
+  await request<void>(`/envelope/${envelopeId}`, { method: "DELETE" }, provider);
+}
+
 // ─── Get envelope ────────────────────────────────────────────────────────────
 
 export type EnvelopeStatus = "DRAFT" | "PENDING" | "COMPLETED" | "REJECTED";
@@ -674,6 +692,7 @@ export type EnvelopeDetails = {
     signingStatus: string;
     signingOrder?: number | null;
     signingUrl?: string;
+    signedAt?: string | null;
   }>;
   // L'API v2 espone i file dell'envelope sotto "envelopeItems" (non "items").
   envelopeItems: Array<{ id: string }>;
@@ -729,7 +748,7 @@ export function verifyDocumensoWebhook(
 export type DocumensoWebhookPayload = {
   event: string;
   payload: {
-    id: number;
+    id: number | string;
     externalId?: string | null;
     title: string;
     status: string;
@@ -738,6 +757,8 @@ export type DocumensoWebhookPayload = {
       id: number;
       email: string;
       signingStatus: string;
+      signingOrder?: number | null;
+      signedAt?: string | null;
     }>;
   };
   createdAt: string;

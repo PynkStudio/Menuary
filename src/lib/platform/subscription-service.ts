@@ -62,6 +62,10 @@ export async function createPendingSubscriptionFromContract(
     .eq("contract_id", contract.id)
     .maybeSingle();
   if (existing.data?.id) {
+    await db()
+      .from("platform_contracts")
+      .update({ subscription_id: existing.data.id, updated_at: new Date().toISOString() })
+      .eq("id", contract.id);
     const { data: pay } = await db()
       .from("platform_payments")
       .select("id")
@@ -308,7 +312,8 @@ export async function suspendSubscription(subscriptionId: string): Promise<void>
 }
 
 /**
- * Recesso del cliente → abbonamento `cancelled`, tenant offline, lead `churned`.
+ * Recesso del cliente → abbonamento `cancelled`, pagamenti pendenti annullati.
+ * Tenant e lead restano attivi fino alla scadenza del periodo pagato (gestita dal cron).
  * Distinto da `lost` (potenziale mai convertito): churned è un ex cliente.
  */
 export async function cancelSubscription(
@@ -333,18 +338,18 @@ export async function cancelSubscription(
     })
     .eq("id", subscriptionId);
 
-  if (sub?.tenant_id) {
-    await db()
-      .from("tenants")
-      .update({ enabled: false, status: "offline", updated_at: now })
-      .eq("id", sub.tenant_id);
-  }
-  if (sub?.lead_id) {
-    await db()
-      .from("platform_leads")
-      .update({ status: "churned", updated_at: now })
-      .eq("id", sub.lead_id);
-  }
+  await db()
+    .from("platform_payments")
+    .update({
+      status: "failed",
+      notes: `Annullato per recesso contratto (${now.slice(0, 10)})`,
+      updated_at: now,
+    })
+    .eq("subscription_id", subscriptionId)
+    .eq("status", "pending");
+
+  // Tenant e lead restano attivi fino alla scadenza del periodo pagato
+  // (next_renewal_at). La messa offline è gestita dal cron giornaliero.
 }
 
 export async function getSubscriptionByContract(

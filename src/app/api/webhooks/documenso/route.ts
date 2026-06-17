@@ -7,22 +7,13 @@ import {
 import {
   getContract,
   getContractByEnvelopeId,
+  getContractByNumero,
   updateContract,
 } from "@/lib/contracts/contract-queries";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { createContractPayment } from "@/lib/contracts/contract-checkout";
+import { ensureCustomerSignatureFulfillment } from "@/lib/contracts/customer-signature";
 import {
-  createPendingSubscriptionFromContract,
-  attachPaymentProviderRefs,
-} from "@/lib/platform/subscription-service";
-import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
-import {
-  BRAND_INFO,
   FORNITORE,
-  computeFirstPaymentTotal,
-  formatEUR,
-  type ContractBrand,
-  type ContractData,
 } from "@/lib/contracts/menuary-contract";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +40,9 @@ function longestConfiguredDocumensoWebhookSecretLength(): number {
 }
 
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get("x-documenso-secret");
+  const secret =
+    req.headers.get("x-documenso-secret") ??
+    req.headers.get("x-pynkstudio-secret");
   if (!verifyDocumensoWebhook(secret)) {
     // Diagnostica sicura: lunghezze e nomi header, MAI il valore del secret.
     console.warn(
@@ -84,6 +77,7 @@ export async function POST(req: NextRequest) {
   if (
     event !== "document.completed" &&
     event !== "document.signed" &&
+    event !== "document.recipient.completed" &&
     event !== "document.opened"
   ) {
     return NextResponse.json({ received: true, handled: false });
@@ -91,7 +85,7 @@ export async function POST(req: NextRequest) {
 
   const contract = payload.payload?.externalId
     ? await getContract(payload.payload.externalId)
-    : await getContractByEnvelopeIdFallback(payload);
+    : await getContractByWebhookPayload(payload);
   if (!contract) {
     console.warn("[documenso-webhook] Contract not found for envelope", payload.payload?.id);
     return NextResponse.json({ received: true, error: "contract_not_found" });
@@ -131,16 +125,14 @@ export async function POST(req: NextRequest) {
       signed_document_path: firmatoPath,
     });
     status = "signed";
-    // Abbonamento "in attesa di pagamento" + pagamento pending (canone, scadenza +15gg).
-    // Idempotente: parte solo alla transizione da "sent".
-    let firstPaymentId: string | null = null;
+  }
+
+  if (status === "signed" && !contract.subscription_id) {
     try {
-      const sub = await createPendingSubscriptionFromContract(contract);
-      firstPaymentId = sub?.paymentId ?? null;
+      await ensureCustomerSignatureFulfillment(contract);
     } catch (err) {
-      console.error("[documenso-webhook] Subscription creation failed", err);
+      console.error("[documenso-webhook] Signature fulfillment failed", err);
     }
-    await handlePaymentByMethod(contract.id, contract.contract_data, contract.numero, firstPaymentId);
   }
 
   // Fase 2 — controfirma nostra (documento completato): nessun pagamento.
@@ -201,6 +193,18 @@ async function getContractByEnvelopeIdFallback(
   return getContractByEnvelopeId(withPrefix);
 }
 
+async function getContractByWebhookPayload(
+  payload: DocumensoWebhookPayload,
+) {
+  const byEnvelope = await getContractByEnvelopeIdFallback(payload);
+  if (byEnvelope) return byEnvelope;
+
+  const numero = payload.payload?.title?.match(
+    /\b(?:MEN|BIZ|ORP)-\d{4}-\d+\b/i,
+  )?.[0];
+  return numero ? getContractByNumero(numero.toUpperCase()) : null;
+}
+
 async function uploadSignedPdf(
   contractId: string,
   fileName: string,
@@ -218,111 +222,4 @@ async function uploadSignedPdf(
     });
   if (error) throw new Error(error.message);
   return path;
-}
-
-async function handlePaymentByMethod(
-  contractId: string,
-  data: ContractData,
-  numero: string,
-  paymentId: string | null,
-) {
-  try {
-    const result = await createContractPayment(contractId, data);
-    const brandMeta = BRAND_INFO[data.brand as ContractBrand];
-    const emailBrand = PLATFORM_BRANDS[brandMeta.vertical];
-    const sender = resolveSenderForVertical(brandMeta.vertical);
-    const signerEmail = data.cliente.email || data.cliente.pec;
-
-    switch (result.provider) {
-      case "stripe": {
-        if (result.sessionId) {
-          await updateContract(contractId, {
-            stripe_checkout_session_id: result.sessionId,
-          });
-        }
-        if (paymentId && result.checkoutUrl) {
-          await attachPaymentProviderRefs(paymentId, { stripePaymentLink: result.checkoutUrl });
-        }
-        if (signerEmail && result.checkoutUrl) {
-          await sendEmail({
-            to: signerEmail,
-            subject: `Pagamento contratto ${numero} — ${emailBrand.name}`,
-            html: buildPaymentEmailHtml(data, result.checkoutUrl, numero),
-            fromOverride: sender.from,
-          });
-        }
-        break;
-      }
-
-      case "bunq": {
-        if (paymentId) {
-          await attachPaymentProviderRefs(paymentId, {
-            bunqRequestId: result.bunqRequestId,
-            bunqPaymentUrl: result.bunqShareUrl,
-          });
-        }
-        if (result.bunqShareUrl && signerEmail) {
-          await sendEmail({
-            to: signerEmail,
-            subject: `Pagamento contratto ${numero} — ${emailBrand.name}`,
-            html: buildPaymentEmailHtml(data, result.bunqShareUrl, numero),
-            fromOverride: sender.from,
-          });
-        }
-        break;
-      }
-
-      case "bonifico": {
-        await sendEmail({
-          to: FORNITORE.email,
-          subject: `[${emailBrand.name}] Contratto ${numero} firmato — in attesa di bonifico`,
-          html: `<p>Il contratto <strong>${numero}</strong> di <strong>${data.cliente.ragioneSociale}</strong> è stato firmato elettronicamente.</p>
-                 <p>Metodo di pagamento: <strong>bonifico</strong>. Il webhook Bunq aggiornerà lo stato automaticamente quando il pagamento verrà ricevuto.</p>`,
-          fromOverride: sender.from,
-        });
-        break;
-      }
-    }
-  } catch (err) {
-    console.error("[documenso-webhook] Payment creation failed", err);
-  }
-}
-
-function buildPaymentEmailHtml(
-  data: ContractData,
-  checkoutUrl: string,
-  numero: string,
-): string {
-  const brandMeta = BRAND_INFO[data.brand as ContractBrand];
-  const brand = PLATFORM_BRANDS[brandMeta.vertical];
-  const firstPayment = computeFirstPaymentTotal(data.economiche);
-
-  return `<!DOCTYPE html>
-<html lang="it">
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;font-family:-apple-system,system-ui,sans-serif;background:${brand.bg};color:${brand.text}">
-<div style="max-width:600px;margin:0 auto;padding:32px 20px">
-  <span style="display:inline-block;padding:4px 12px;background:${brand.primary};color:#fff;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase">${brand.name}</span>
-
-  <h2 style="margin-top:20px">Contratto firmato — procedi al pagamento</h2>
-
-  <p>Grazie per aver firmato il contratto <strong>${numero}</strong>!</p>
-
-  <p>Per completare l'attivazione del servizio, proceda al pagamento del primo importo complessivo di <strong>${formatEUR(firstPayment)}</strong>.</p>
-
-  <div style="margin:24px 0;text-align:center">
-    <a href="${checkoutUrl}" style="display:inline-block;padding:14px 32px;background:${brand.primary};color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px">
-      Procedi al pagamento
-    </a>
-  </div>
-
-  <p style="font-size:12px;color:${brand.muted}">Il link di pagamento è valido per 2 ore.</p>
-
-  <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
-  <p style="font-size:11px;color:${brand.muted}">
-    ${brand.name} · ${FORNITORE.ragioneSociale}
-  </p>
-</div>
-</body>
-</html>`;
 }

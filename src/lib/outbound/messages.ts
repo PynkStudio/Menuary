@@ -3,7 +3,7 @@ import "server-only";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Json } from "@/lib/database.types";
 import { findTenantById } from "@/lib/tenant-registry";
-import { isTwilioOutboundReady, sendTwilioTextMessage } from "@/lib/twilio/messages";
+import { isTwilioOutboundReady, sendTwilioTextMessage, sendTwilioTemplateMessage } from "@/lib/twilio/messages";
 
 export type OutboundChannel = "whatsapp" | "sms";
 export type OutboundKind = "payment_link" | "order_summary" | "menu_link" | "custom";
@@ -21,6 +21,11 @@ export type EnqueueOutboundMessageInput = {
   channelPaymentRequestId?: string | null;
   metadata?: Record<string, Json>;
   scheduledAt?: Date | null;
+  /** Se valorizzato e canale whatsapp → invio via Content API (template Meta) invece del testo libero. */
+  contentSid?: string | null;
+  contentVariables?: Record<string, string> | null;
+  /** Override mittente (numero WA del tenant). Se assente usa il numero condiviso di piattaforma. */
+  fromOverride?: string | null;
 };
 
 export type EnqueuedOutboundMessage = {
@@ -102,13 +107,23 @@ export async function enqueueOutboundMessage(
 
   if (error || !data) throw new Error(error?.message ?? "enqueue_failed");
 
+  const useTemplate = Boolean(input.contentSid) && input.channel === "whatsapp";
   if (isTwilioOutboundReady(input.channel)) {
     try {
-      const sent = await sendTwilioTextMessage({
-        channel: input.channel,
-        to: phone,
-        body: twilioBody,
-      });
+      const sent = useTemplate
+        ? await sendTwilioTemplateMessage({
+            channel: input.channel,
+            to: phone,
+            from: input.fromOverride ?? null,
+            contentSid: input.contentSid as string,
+            contentVariables: input.contentVariables ?? {},
+          })
+        : await sendTwilioTextMessage({
+            channel: input.channel,
+            to: phone,
+            body: twilioBody,
+            from: input.fromOverride ?? null,
+          });
       await (db as unknown as {
         from: (t: "outbound_text_messages") => {
           update: (row: Record<string, unknown>) => {

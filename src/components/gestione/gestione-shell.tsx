@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Building2, CreditCard, Globe2, KeyRound, LogOut, MapPin, Newspaper, Settings, UserRound } from "lucide-react";
+import { Building2, CreditCard, ExternalLink, Globe2, KeyRound, LogOut, MapPin, Newspaper, Settings, UserRound } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
 import {
@@ -151,6 +151,8 @@ function GestioneShellInner({
     { label: "Linktree", href: sectionHref("linktree"), visible: () => isAdmin && access.canManageLinktree },
     { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: t.nav.locations, href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
+    { label: "Agenda call", href: sectionHref("agenda"), visible: () => isAdmin && access.canManagePynkAgenda },
+    { label: "Patrimoniale", href: sectionHref("patrimoniale"), visible: () => isAdmin && access.canManagePatrimoniale },
   ];
 
   const visibleItems = items.filter((i) => i.visible(cap));
@@ -223,6 +225,12 @@ function GestioneShellInner({
                       <Building2 size={14} />
                       <span>Dati attività</span>
                     </Link>
+                  )}
+                  {access.canManagePatrimoniale && (
+                    <a href="https://admin.menuary.it" role="menuitem" target="_blank" rel="noopener noreferrer" onClick={() => setSettingsOpen(false)}>
+                      <ExternalLink size={14} />
+                      <span>Controllo verticali</span>
+                    </a>
                   )}
                   <button type="button" role="menuitem" onClick={handleLogout} className="ga-settings-popover-danger">
                     <LogOut size={14} />

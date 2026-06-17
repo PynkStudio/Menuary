@@ -90,17 +90,21 @@ export function buildAutoSignature(
   const roleLabel =
     (profile.role && ROLE_LABEL_IT[profile.role]) || (profile.role ?? "");
 
+  // L'indirizzo mostrato è SEMPRE quello aziendale del brand da cui si scrive,
+  // mai la mail di login personale del profilo (es. un indirizzo gmail privato).
+  // Si costruisce come nome.cognome@<dominio-brand>; in assenza di nome si
+  // ricade sull'indirizzo generico del brand (hello@…).
+  const companyEmail = companyEmailForBrand(profile, t.website) ?? t.email;
+
   const contactLine: string[] = [];
   if (profile.phone) {
     contactLine.push(
       `<a href="tel:${escape(profile.phone)}" style="color:${t.accentInk};text-decoration:none">${escape(profile.phone)}</a>`,
     );
   }
-  if (profile.email) {
-    contactLine.push(
-      `<a href="mailto:${escape(profile.email)}" style="color:${t.accentInk};text-decoration:none">${escape(profile.email)}</a>`,
-    );
-  }
+  contactLine.push(
+    `<a href="mailto:${escape(companyEmail)}" style="color:${t.accentInk};text-decoration:none">${escape(companyEmail)}</a>`,
+  );
 
   const html = `
 <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Helvetica,Arial,sans-serif;color:#1f2a26;font-size:13px;line-height:1.55">
@@ -125,6 +129,38 @@ export function buildAutoSignature(
   const fromName = fullName || t.label;
 
   return { html, fromName };
+}
+
+/**
+ * Indirizzo aziendale da mostrare in firma per il brand corrente.
+ * - Se la mail di profilo è già sul dominio del brand, ne riusa il local part.
+ * - Altrimenti compone nome.cognome@<dominio>.
+ * - Restituisce null se non c'è abbastanza per costruire un local part valido
+ *   (il chiamante ricade sull'indirizzo generico hello@<dominio>).
+ */
+function companyEmailForBrand(
+  profile: AutoSignatureProfile,
+  domain: string,
+): string | null {
+  const profileLocal = profile.email?.split("@");
+  if (profileLocal && profileLocal.length === 2 && profileLocal[1].toLowerCase() === domain.toLowerCase()) {
+    return `${profileLocal[0]}@${domain}`;
+  }
+
+  const local = localPartFromName(profile.first_name, profile.last_name)
+    || localPartFromName(profile.display_name, null);
+  return local ? `${local}@${domain}` : null;
+}
+
+function localPartFromName(a: string | null, b: string | null): string | null {
+  const parts = [a, b]
+    .filter(Boolean)
+    .join(" ")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "") // togli accenti
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.+|\.+$/g, "");
+  return parts || null;
 }
 
 function escape(s: string): string {

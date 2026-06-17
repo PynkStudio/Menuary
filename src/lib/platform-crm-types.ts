@@ -174,6 +174,10 @@ export type PlatformPayment = {
   due_date: string | null;
   reminder_sent_at: string | null;
   invoice_number: string | null;
+  invoice_date?: string | null;
+  invoice_file_path?: string | null;
+  invoice_file_name?: string | null;
+  invoice_uploaded_at?: string | null;
   notes: string | null;
   stripe_payment_link: string | null;
   bunq_request_id: number | null;

@@ -341,6 +341,111 @@ export type Database = {
           },
         ]
       }
+      pynkstudio_crm: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string
+          company: string | null
+          employees_count: number | null
+          industry: string | null
+          address: string | null
+          work_hours: string | null
+          notes: string | null
+          tags: string[]
+          status: string
+          source: string
+          last_booking_id: string | null
+          last_booking_at: string | null
+          bookings_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string
+          company?: string | null
+          employees_count?: number | null
+          industry?: string | null
+          address?: string | null
+          work_hours?: string | null
+          notes?: string | null
+          tags?: string[]
+          status?: string
+          source?: string
+          last_booking_id?: string | null
+          last_booking_at?: string | null
+          bookings_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string
+          company?: string | null
+          employees_count?: number | null
+          industry?: string | null
+          address?: string | null
+          work_hours?: string | null
+          notes?: string | null
+          tags?: string[]
+          status?: string
+          source?: string
+          last_booking_id?: string | null
+          last_booking_at?: string | null
+          bookings_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      consultation_bookings: {
+        Row: {
+          created_at: string
+          email: string
+          ends_at: string
+          id: string
+          name: string
+          phone: string
+          reminder_sent_at: string | null
+          starts_at: string
+          status: string
+          tenant_id: string
+          topic: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          ends_at: string
+          id?: string
+          name: string
+          phone: string
+          reminder_sent_at?: string | null
+          starts_at: string
+          status?: string
+          tenant_id: string
+          topic: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          ends_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          reminder_sent_at?: string | null
+          starts_at?: string
+          status?: string
+          tenant_id?: string
+          topic?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           created_at: string
@@ -2158,6 +2263,7 @@ export type Database = {
           created_at: string
           documenso_envelope_id: string | null
           documenso_item_id: string | null
+          counterparty_signing_url: string | null
           expires_at: string | null
           id: string
           lead_id: string | null
@@ -2185,6 +2291,7 @@ export type Database = {
           created_at?: string
           documenso_envelope_id?: string | null
           documenso_item_id?: string | null
+          counterparty_signing_url?: string | null
           expires_at?: string | null
           id?: string
           lead_id?: string | null
@@ -2212,6 +2319,7 @@ export type Database = {
           created_at?: string
           documenso_envelope_id?: string | null
           documenso_item_id?: string | null
+          counterparty_signing_url?: string | null
           expires_at?: string | null
           id?: string
           lead_id?: string | null

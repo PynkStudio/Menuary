@@ -6,6 +6,7 @@ import {
   attachPaymentProviderRefs,
 } from "@/lib/platform/subscription-service";
 import { createBunqPaymentRequest } from "@/lib/payments/bunq/payment-requests";
+import { paymentRedirectUrl } from "@/lib/payments/payment-urls";
 import { sendEmail, PLATFORM_BRANDS, resolveSenderForVertical } from "@/lib/email/sender";
 import { FORNITORE, formatEUR } from "@/lib/contracts/menuary-contract";
 import type { TenantVertical } from "@/lib/tenant";
@@ -79,7 +80,7 @@ async function runRenewals(req: Request) {
 
   const today = todayISO();
   const remindDate = addDays(today, REMINDER_DAYS_AHEAD);
-  const result = { reminders: 0, renewals: 0, suspensions: 0, errors: [] as string[] };
+  const result = { reminders: 0, renewals: 0, suspensions: 0, expirations: 0, errors: [] as string[] };
 
   // ─── A. Promemoria −7gg (primo pagamento o rinnovo ancora pending) ────────────
   const { data: dueSoon } = await db
@@ -134,20 +135,24 @@ async function runRenewals(req: Request) {
 
       if (method === "bunq" && email) {
         // Bunq → nuovo link di pagamento il giorno del rinnovo.
+        const vertical: TenantVertical = s.platform_leads?.business_vertical ?? "food";
+        const contractBrand = vertical === "creative" ? "orpheo" : vertical === "services" ? "bizery" : "menuary";
         const bunq = await createBunqPaymentRequest({
           amountEur: renewal.amount,
           description: `Rinnovo abbonamento ${brand.name} — ${s.platform_leads?.business_name ?? ""}`.trim(),
           counterpartyEmail: email,
           reference: `RNW-${s.id.slice(0, 8)}`,
+          redirectUrl: paymentRedirectUrl("processing", contractBrand),
         });
         await attachPaymentProviderRefs(renewal.paymentId, {
           bunqRequestId: bunq.id,
           bunqPaymentUrl: bunq.shareUrl,
         });
+        const emailUrl = paymentRedirectUrl("processing", contractBrand) + `&ref=${encodeURIComponent(renewal.paymentId)}`;
         await sendEmail({
           to: email,
           subject: `Rinnovo abbonamento — ${brand.name}`,
-          html: payLinkHtml(s.platform_leads?.business_name ?? "", renewal.amount, bunq.shareUrl, brand),
+          html: payLinkHtml(s.platform_leads?.business_name ?? "", renewal.amount, emailUrl, brand),
           fromOverride: sender.from,
         });
       } else if (method === "carta" || method === "sdd") {
@@ -185,6 +190,36 @@ async function runRenewals(req: Request) {
       result.suspensions++;
     } catch (err) {
       result.errors.push(`suspend ${subId}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  // ─── D. Abbonamenti cancellati con periodo pagato scaduto → tenant offline ────
+  const { data: expired } = await db
+    .from("platform_subscriptions")
+    .select("id, tenant_id, lead_id")
+    .eq("status", "cancelled")
+    .not("tenant_id", "is", null)
+    .not("next_renewal_at", "is", null)
+    .lt("next_renewal_at", today);
+
+  for (const s of (expired ?? []) as { id: string; tenant_id: string | null; lead_id: string | null }[]) {
+    try {
+      const now = new Date().toISOString();
+      if (s.tenant_id) {
+        await db
+          .from("tenants")
+          .update({ enabled: false, status: "offline", updated_at: now })
+          .eq("id", s.tenant_id);
+      }
+      if (s.lead_id) {
+        await db
+          .from("platform_leads")
+          .update({ status: "churned", updated_at: now })
+          .eq("id", s.lead_id);
+      }
+      result.expirations++;
+    } catch (err) {
+      result.errors.push(`expire ${s.id}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 

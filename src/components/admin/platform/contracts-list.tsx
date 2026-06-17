@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Plus, FileText, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { Plus, FileText, Trash2, ExternalLink, MoreHorizontal, Loader2, Edit3, Pen, RefreshCw, Mail, Copy } from "lucide-react";
 import {
   CONTRACT_STATUS_COLORS,
   CONTRACT_STATUS_LABELS,
@@ -17,7 +18,11 @@ type ServerContract = {
   status: ContractStatus;
   contract_data: ContractData;
   payment_status: string;
+  payment_method: string | null;
+  signing_url: string | null;
+  counterparty_signing_url: string | null;
   signed_at: string | null;
+  signed_document_path: string | null;
   tenant_activated_at: string | null;
   created_at: string;
   expires_at: string | null;
@@ -26,6 +31,23 @@ type ServerContract = {
 export function ContractsList() {
   const [items, setItems] = useState<ServerContract[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [dropdownRect, setDropdownRect] = useState<{ top: number; right: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (!openDropdown) return;
+      const target = e.target as Node;
+      if (menuRef.current?.contains(target)) return;
+      const trigger = (target as HTMLElement).closest("[data-dropdown-trigger]");
+      if (trigger) return;
+      setOpenDropdown(null);
+      setDropdownRect(null);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [openDropdown]);
 
   useEffect(() => {
     loadContracts();
@@ -71,10 +93,65 @@ export function ContractsList() {
       });
   }
 
-  function handleDelete(id: string) {
-    if (!window.confirm("Eliminare definitivamente questo contratto?")) return;
+  function handleDelete(id: string, status: string) {
+    const isDraft = status === "draft";
+    const msg = isDraft
+      ? "Eliminare definitivamente questo contratto?"
+      : "Annullare il contratto? Verrà cancellato il link di firma e il contratto sarà archiviato come annullato.";
+    if (!window.confirm(msg)) return;
     fetch(`/api/admin/contracts?id=${id}`, { method: "DELETE" })
       .then((res) => { if (res.ok) loadContracts(); });
+    closeDropdown();
+  }
+
+  function closeDropdown() {
+    setOpenDropdown(null);
+    setDropdownRect(null);
+  }
+
+  function toggleDropdown(id: string, e: React.MouseEvent) {
+    if (openDropdown === id) {
+      closeDropdown();
+      return;
+    }
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setDropdownRect({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    setOpenDropdown(id);
+  }
+
+  function handleResend(contractId: string) {
+    fetch("/api/admin/contracts/resend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contractId, audience: "customer" }),
+    }).catch(() => {});
+    closeDropdown();
+  }
+
+  function handleSendPaymentLink(contractId: string) {
+    fetch("/api/admin/payments/communicate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contractId, send: true }),
+    }).catch(() => {});
+    closeDropdown();
+  }
+
+  async function handleCopyPaymentLink(contractId: string) {
+    try {
+      const res = await fetch("/api/admin/payments/communicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contractId, send: false }),
+      });
+      const result = (await res.json().catch(() => ({}))) as { checkoutUrl?: string | null };
+      if (result.checkoutUrl) {
+        await navigator.clipboard.writeText(result.checkoutUrl);
+      } else {
+        // bonifico — copy not applicable
+      }
+    } catch { /* ignore */ }
+    closeDropdown();
   }
 
   if (loading) {
@@ -88,6 +165,7 @@ export function ContractsList() {
 
   return (
     <div style={{ padding: "16px 12px" }}>
+      <style>{`.dropdown-item:hover { background: #f3f4f6; } .dropdown-item-danger:hover { background: #fef2f2; }`}</style>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontSize: 24, margin: 0 }}>Storico contratti</h1>
@@ -202,27 +280,43 @@ export function ContractsList() {
                       </span>
                     </td>
                     <td style={td}>
-                      <span
-                        className={CONTRACT_STATUS_COLORS[c.status] ?? "bg-gray-100 text-gray-700"}
-                        style={{
-                          padding: "2px 8px",
-                          borderRadius: 999,
-                          fontSize: 11,
-                          fontWeight: 600,
-                        }}
-                      >
-                        {CONTRACT_STATUS_LABELS[c.status] ?? c.status}
-                      </span>
-                      {isOverdue && (
-                        <span style={{ display: "block", fontSize: 10, color: "#dc2626", marginTop: 2 }}>
-                          Scaduto
+                      {c.status === "signed" && c.counterparty_signing_url ? (
+                        <a
+                          href={c.counterparty_signing_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={CONTRACT_STATUS_COLORS[c.status] ?? "bg-gray-100 text-gray-700"}
+                          style={{
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                            fontSize: 11,
+                            fontWeight: 600,
+                            textDecoration: "none",
+                            display: "inline-block",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {CONTRACT_STATUS_LABELS[c.status] ?? c.status}
+                        </a>
+                      ) : (
+                        <span
+                          className={CONTRACT_STATUS_COLORS[c.status] ?? "bg-gray-100 text-gray-700"}
+                          style={{
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                            fontSize: 11,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {CONTRACT_STATUS_LABELS[c.status] ?? c.status}
                         </span>
                       )}
-                      {c.status === "sent" && d.opened_at && (
-                        <span style={{ display: "block", fontSize: 10, color: "#2563eb", marginTop: 2 }}>
-                          Aperto dal cliente
-                        </span>
-                      )}
+                      {c.status === "sent" && (() => {
+                        const openedAt = (c.contract_data as Record<string, unknown>).opened_at as string | undefined;
+                        if (isOverdue) return <span style={{ display: "block", fontSize: 10, color: "#b45309", marginTop: 2 }}>Scaduto</span>;
+                        if (openedAt) return <span style={{ display: "block", fontSize: 10, color: "#0369a1", marginTop: 2 }}>Aperto</span>;
+                        return <span style={{ display: "block", fontSize: 10, color: "#6b7280", marginTop: 2 }}>In attesa firma</span>;
+                      })()}
                     </td>
                     <td style={td}>
                       <span style={{
@@ -238,20 +332,16 @@ export function ContractsList() {
                     </td>
                     <td style={td}>{new Date(c.created_at).toLocaleDateString("it-IT")}</td>
                     <td style={{ ...td, textAlign: "right" }}>
-                      <div style={{ display: "inline-flex", gap: 6 }}>
-                        <Link href={`/admin/contratti/${c.id}`} style={iconBtn} title="Apri">
-                          <ExternalLink size={14} />
-                        </Link>
-                        {c.status === "draft" && (
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(c.id)}
-                            style={{ ...iconBtn, color: "#dc2626" }}
-                            title="Elimina"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
+                      <div style={{ position: "relative", display: "inline-block" }}>
+                        <button
+                          type="button"
+                          data-dropdown-trigger
+                          onClick={(e) => toggleDropdown(c.id, e)}
+                          style={iconBtn}
+                          title="Azioni"
+                        >
+                          <MoreHorizontal size={14} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -261,6 +351,75 @@ export function ContractsList() {
           </table>
         </div>
       )}
+
+      {openDropdown && dropdownRect && (() => {
+        const c = items.find((x) => x.id === openDropdown);
+        if (!c) return null;
+        const needFirma = c.status === "signed" && c.counterparty_signing_url;
+        return createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              ...dropdownMenuStyle,
+              position: "fixed",
+              top: dropdownRect.top,
+              right: dropdownRect.right,
+            }}
+          >
+            {c.status === "draft" && (
+              <Link href={`/admin/contratti/${c.id}`} className="dropdown-item" style={dropdownItemStyle}>
+                <Edit3 size={13} /> Modifica contratto
+              </Link>
+            )}
+            {c.status !== "draft" && (
+              <Link
+                href={needFirma ? c.counterparty_signing_url! : (c.signing_url ?? `/admin/contratti/${c.id}`)}
+                target={needFirma || c.signing_url ? "_blank" : undefined}
+                className="dropdown-item"
+                style={dropdownItemStyle}
+              >
+                <ExternalLink size={13} /> Apri contratto
+              </Link>
+            )}
+            {c.status === "sent" && (
+              <button type="button" className="dropdown-item" onClick={() => handleResend(c.id)} style={dropdownItemStyle}>
+                <RefreshCw size={13} /> Reinvia contratto
+              </button>
+            )}
+            {needFirma && (
+              <a
+                href={c.counterparty_signing_url!}
+                target="_blank"
+                rel="noreferrer"
+                className="dropdown-item"
+                style={dropdownItemStyle}
+              >
+                <Pen size={13} /> Firma
+              </a>
+            )}
+            {c.payment_status !== "paid" && (
+              <button type="button" className="dropdown-item" onClick={() => handleSendPaymentLink(c.id)} style={dropdownItemStyle}>
+                <Mail size={13} /> Invia link pagamento
+              </button>
+            )}
+            {c.payment_status !== "paid" && (c.payment_method === "bunq" || c.payment_method === "carta") && (
+              <button type="button" className="dropdown-item" onClick={() => handleCopyPaymentLink(c.id)} style={dropdownItemStyle}>
+                <Copy size={13} /> Copia link pagamento
+              </button>
+            )}
+            <div style={dropdownDividerStyle} />
+            <button
+              type="button"
+              className="dropdown-item-danger"
+              onClick={() => handleDelete(c.id, c.status)}
+              style={{ ...dropdownItemStyle, color: "#dc2626" }}
+            >
+              <Trash2 size={13} /> Elimina contratto
+            </button>
+          </div>,
+          document.body,
+        );
+      })()}
     </div>
   );
 }
@@ -286,4 +445,37 @@ const iconBtn: React.CSSProperties = {
   color: "#374151",
   textDecoration: "none",
   cursor: "pointer",
+};
+const dropdownMenuStyle: React.CSSProperties = {
+  position: "absolute",
+  right: 0,
+  top: "100%",
+  marginTop: 4,
+  zIndex: 50,
+  minWidth: 200,
+  background: "#fff",
+  border: "1px solid #e5e7eb",
+  borderRadius: 8,
+  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+  padding: "4px 0",
+};
+const dropdownItemStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  width: "100%",
+  padding: "8px 12px",
+  border: "none",
+  background: "none",
+  fontSize: 13,
+  color: "#374151",
+  textAlign: "left",
+  textDecoration: "none",
+  cursor: "pointer",
+  boxSizing: "border-box",
+};
+const dropdownDividerStyle: React.CSSProperties = {
+  height: 1,
+  background: "#e5e7eb",
+  margin: "4px 0",
 };

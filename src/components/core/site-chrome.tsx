@@ -28,6 +28,8 @@ const EXCLUDED_MODES = new Set([
   "gestione",
   "gestione-bizery",
   "gestione-custom",
+  "pagamenti-pynkstudio",
+  "admin-pynkstudio",
 ] as const);
 
 function isInternal(pathname: string | null): boolean {

@@ -20,7 +20,7 @@ export type TenantVertical = "food" | "services" | "creative";
 // "trial"      → tenant in prova: solo il primo sync di popolamento, poi stop
 // "offline"    → tenant disattivato: nessun job automatico eseguito
 // "trattativa" → prospect in fase commerciale: demo disponibile, nessun job automatico
-export type TenantStatus = "active" | "trial" | "offline" | "trattativa";
+export type TenantStatus = "active" | "trial" | "offline" | "trattativa" | "suspended";
 
 // ─── Google integration ───────────────────────────────────────────────────────
 // Il Place ID e il resource name della location Google non sono hardcodati qui:
@@ -85,6 +85,10 @@ export type TenantFeatureFlags = {
   fanbaseCommunity?: boolean;
   /** Linktree proprietario: pagina link pubblica e gestione autonoma dei link. */
   linktree?: boolean;
+  /** Agenda call di consulenza (pynkstudio-specific): calendario prenotazioni call inbound da prenota-call. */
+  pynkAgenda?: boolean;
+  /** Vista patrimoniale aziendale: raccoglie gli introiti di tutti i verticali + attività diretta (pynkstudio-specific). */
+  companyPatrimoniale?: boolean;
   // TODO(google-reserve): aggiungere flag `googleReserve: boolean` una volta approvati come partner Actions Center.
   // Abilita il pulsante "Prenota" direttamente su Google Maps/Search per il tenant.
   // Prerequisito: tenant deve avere `reservations: true` e una location Google collegata.

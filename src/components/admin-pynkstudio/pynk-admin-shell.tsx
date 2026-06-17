@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BadgeEuro,
+  BookUser,
+  CalendarClock,
   ExternalLink,
-  FolderKanban,
   LogOut,
   Mail,
   Menu as MenuIcon,
@@ -25,7 +26,8 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin-pynkstudio/inbox",        label: "Posta",          icon: Mail },
-  { href: "/admin-pynkstudio/crm",          label: "Progetti",       icon: FolderKanban },
+  { href: "/admin-pynkstudio/agenda",       label: "Agenda",         icon: CalendarClock },
+  { href: "/admin-pynkstudio/crm",          label: "CRM",            icon: BookUser },
   { href: "/admin-pynkstudio/patrimoniale", label: "Patrimoniale",   icon: BadgeEuro },
   { href: "https://admin.menuary.it",       label: "Controllo verticali", icon: ExternalLink, external: true },
 ];

@@ -33,6 +33,7 @@ type Props = {
   tenantId?: string;
   tenantName?: string;
   tenantFromAddress?: string;
+  currentUserEmail?: string | null;
 };
 
 type ComposePrefill = {
@@ -40,6 +41,7 @@ type ComposePrefill = {
   subject?: string;
   body?: string;
   brand?: InboundEmail["brand"];
+  preferredFromAddress?: string;
   attachments?: ComposeAttachment[];
 };
 
@@ -104,7 +106,30 @@ function buildReplyBody(email: InboundEmail): string {
 
 function composeBrandFromFilter(filter: BrandFilter): InboundEmail["brand"] {
   if (filter === "bizery" || filter === "orpheo") return filter;
+  if (filter === "pynkstudio") return filter;
   return "menuary";
+}
+
+const BRAND_DOMAINS: Record<InboundEmail["brand"], string[]> = {
+  menuary:    ["menuary.it"],
+  bizery:     ["bizery.it"],
+  orpheo:     ["weuseorpheo.com"],
+  pynkstudio: ["pynkstudio.it", "pynkstudio.com"],
+};
+
+function pickReplyFromAddress(email: InboundEmail, tenantFromAddress?: string): string | undefined {
+  const tenantDomain = tenantFromAddress?.split("@")[1]?.toLowerCase();
+  if (tenantDomain) {
+    const tenantMatch = email.to_addresses.find((address) => address.toLowerCase().endsWith(`@${tenantDomain}`));
+    if (tenantMatch) return tenantMatch;
+  }
+
+  const brandDomains = BRAND_DOMAINS[email.brand] ?? [];
+  const brandMatch = email.to_addresses.find((address) => {
+    const lower = address.toLowerCase();
+    return brandDomains.some((domain) => lower.endsWith(`@${domain}`));
+  });
+  return brandMatch ?? email.to_addresses[0];
 }
 
 export function MailApp({
@@ -119,6 +144,7 @@ export function MailApp({
   tenantId,
   tenantName,
   tenantFromAddress,
+  currentUserEmail,
 }: Props) {
   const [view, setView]         = useState<MailView>("inbox");
   const [brand, setBrand]       = useState<BrandFilter>("all");
@@ -260,6 +286,7 @@ export function MailApp({
       subject: replySubject(email.subject),
       body: buildReplyBody(email),
       brand: email.brand,
+      preferredFromAddress: pickReplyFromAddress(email, tenantFromAddress),
     });
     setComposeOpen(true);
   }
@@ -403,7 +430,9 @@ export function MailApp({
         tenantId={tenantId}
         fromAddress={tenantFromAddress}
         fromName={tenantName}
+        currentUserEmail={currentUserEmail}
         lockBrand={mode === "tenant"}
+        preferredFromAddress={composePrefill.preferredFromAddress}
         initialTo={composePrefill.to}
         initialSubject={composePrefill.subject}
         initialBody={composePrefill.body}

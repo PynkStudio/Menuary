@@ -17,6 +17,7 @@ const COMPOSE_ROLES = new Set(["superadmin", "admin", "amministrazione", "vendit
 export default async function AdminInboxPage() {
   // Risolve utente corrente e poi carica tutto in parallelo
   let currentSiteadminId: string | null = null;
+  let currentUserEmail: string | null = null;
   let canCompose = false;
 
   try {
@@ -26,6 +27,7 @@ export default async function AdminInboxPage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
+      currentUserEmail = user.email ?? null;
       const admin = createSupabaseAdminClient();
       const { data: sa } = await admin
         .from("siteadmin")
@@ -66,6 +68,7 @@ export default async function AdminInboxPage() {
         unreadMine={unreadMine}
         currentSiteadminId={currentSiteadminId}
         canCompose={canCompose}
+        currentUserEmail={currentUserEmail}
       />
     </div>
   );

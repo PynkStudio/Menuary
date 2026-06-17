@@ -7,8 +7,10 @@ import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { applicationFeeCents, type PaymentSource } from "@/lib/payments/stripe/fees";
 import { getStripeSecretKey, isLikelyDemoTenant } from "@/lib/payments/stripe/config";
 import { getOrderPublicTokenById } from "@/lib/orders/public-checkout";
+import { tenantCheckoutUrl } from "@/lib/orders/checkout-url";
 import { enqueueOutboundMessage, type OutboundChannel } from "@/lib/outbound/messages";
 import { getAiPhoneSettings } from "@/lib/retell/settings";
+import { findTenantById } from "@/lib/tenant-registry";
 
 export type PaymentLinkChannel = "retell" | "whatsapp" | "sms" | "manual";
 
@@ -81,7 +83,7 @@ async function createCheckoutPageLink(
   if (!input.orderId) return null;
   const token = await getOrderPublicTokenById(input.orderId);
   if (!token) return null;
-  const url = `${baseUrl()}/checkout/${encodeURIComponent(token.code)}?t=${encodeURIComponent(token.token)}`;
+  const url = tenantCheckoutUrl(input.tenantId, token.code, token.token);
   return {
     providerSessionId: null,
     paymentUrl: url,
@@ -302,6 +304,19 @@ export async function createChannelPaymentRequest(
         ? `Riepilogo del tuo ordine: ${stripe.paymentUrl}`
         : `Per completare l'ordine paga qui: ${stripe.paymentUrl}`;
 
+      // Su WhatsApp i messaggi business-initiated richiedono un template Meta approvato.
+      // Scegliamo il template in base al metodo di pagamento (online vs ritiro/consegna);
+      // il bottone CTA punta allo short-link /c/<token> (prefisso fisso nel template).
+      // {{1}}=nome locale, {{2}}=codice ordine, {{3}}=token (suffisso del bottone).
+      const tok = input.orderId ? await getOrderPublicTokenById(input.orderId) : null;
+      const tenantName = findTenantById(input.tenantId)?.name ?? input.tenantId;
+      const waContentSid = input.paymentRequired === false
+        ? process.env.TWILIO_WA_ORDER_ONSITE_SID
+        : process.env.TWILIO_WA_ORDER_PAYMENT_SID;
+      const waContentVariables = tok
+        ? { "1": tenantName, "2": tok.code, "3": tok.token }
+        : null;
+
       await enqueueOutboundMessage({
         tenantId: input.tenantId,
         kind,
@@ -312,6 +327,8 @@ export async function createChannelPaymentRequest(
         source: input.channel === "retell" ? "retell" : input.channel === "whatsapp" ? "whatsapp" : "system",
         orderId: input.orderId ?? null,
         channelPaymentRequestId: data.id,
+        contentSid: primaryChannel === "whatsapp" ? (waContentSid ?? null) : null,
+        contentVariables: primaryChannel === "whatsapp" ? waContentVariables : null,
         metadata: {
           payment_url: stripe.paymentUrl,
           payment_required: input.paymentRequired !== false,

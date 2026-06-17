@@ -91,6 +91,8 @@ function isSupportRecipient(toAddresses: string[]): boolean {
   });
 }
 
+const SHARED_MENUARY_INBOX = "hello@menuary.it";
+
 // ─── Auto-assign all'utente corrispondente ────────────────────────────────────
 
 async function resolveEmailAssignment(
@@ -103,14 +105,28 @@ async function resolveEmailAssignment(
   if (parsed.length === 0) return null;
 
   // 1. Match esatto sull'email dell'utente (massimo@menuary.it → siteadmin.email)
+  const directRecipients = parsed.filter((address) => address !== SHARED_MENUARY_INBOX);
   const { data: exactUser } = await svc
     .from("siteadmin")
-    .select("id")
-    .in("email", parsed)
+    .select("id,role")
+    .in("email", directRecipients.length > 0 ? directRecipients : parsed)
     .eq("enabled", true)
     .limit(1)
     .maybeSingle();
-  if (exactUser) return exactUser.id;
+  if (exactUser && (exactUser as { role?: string | null }).role !== "superadmin") return exactUser.id;
+
+  if (parsed.includes(SHARED_MENUARY_INBOX)) {
+    const { data: operativeAdmin } = await svc
+      .from("siteadmin")
+      .select("id")
+      .in("role", ["admin", "amministrazione"])
+      .eq("enabled", true)
+      .order("role", { ascending: true })
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    return operativeAdmin?.id ?? null;
+  }
 
   // 2. Match sugli alias (parte locale dell'indirizzo: "massimo", "mpernozzoli", ecc.)
   const localParts = parsed.map((a) => a.split("@")[0]).filter(Boolean);
