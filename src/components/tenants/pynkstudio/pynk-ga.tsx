@@ -5,7 +5,7 @@ export function PynkGAScript() {
     <>
       <Script
         src="https://www.googletagmanager.com/gtag/js?id=G-3RNKC5BYHH"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
       <Script id="pynk-ga" strategy="afterInteractive">
         {`

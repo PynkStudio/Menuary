@@ -32,7 +32,7 @@ export default async function StripeConfigurationPage({ searchParams }: Props) {
           </div>
           <h1 className="mt-6 text-3xl font-black">Link non valido</h1>
           <p className="mt-3 text-sm leading-6 text-black/60">
-            Il link di configurazione Stripe e' scaduto o non e' corretto. Chiedi al team Menuary
+            Il link di configurazione Stripe e&rsquo; scaduto o non e&rsquo; corretto. Chiedi al team Menuary
             di inviarti un nuovo link.
           </p>
         </section>
@@ -61,7 +61,7 @@ export default async function StripeConfigurationPage({ searchParams }: Props) {
         <h1 className="mt-2 text-3xl font-black md:text-4xl">Collega Stripe per {tenantName}</h1>
         <p className="mt-4 text-sm leading-7 text-black/62">
           Verrai reindirizzato a Stripe per accedere o creare un account aziendale. Al termine,
-          Stripe rimandera' a {brand} e abiliteremo i pagamenti online per il tenant.
+          Stripe rimandera&rsquo; a {brand} e abiliteremo i pagamenti online per il tenant.
         </p>
 
         <div className="mt-6 rounded-xl bg-[#f7f4ef] p-4">
@@ -69,7 +69,7 @@ export default async function StripeConfigurationPage({ searchParams }: Props) {
             <ShieldCheck className="mt-0.5 shrink-0 text-emerald-700" size={18} />
             <p className="text-sm leading-6 text-black/60">
               Non gestiamo i numeri di carta e non conserviamo le credenziali del tuo account
-              Stripe. Salviamo solo l'identificativo tecnico dell'account collegato.
+              Stripe. Salviamo solo l&rsquo;identificativo tecnico dell&rsquo;account collegato.
             </p>
           </div>
         </div>

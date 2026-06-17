@@ -16,7 +16,7 @@ export async function sendTenantSetupEmail(input: {
   vertical: TenantVertical;
   modules?: TenantSetupModule[];
 }): Promise<{ ok: true; messageId: string; setupUrl: string } | { ok: false; error: string; setupUrl?: string }> {
-  const modules = input.modules?.length ? input.modules : ["stripe"];
+  const modules: TenantSetupModule[] = input.modules?.length ? input.modules : ["stripe"];
   const setupUrl = buildStripeSetupUrl({
     tenantId: input.tenantId,
     email: input.email,

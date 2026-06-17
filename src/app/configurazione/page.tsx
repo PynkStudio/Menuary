@@ -31,7 +31,7 @@ export default async function TenantConfigurationPage({ searchParams }: Props) {
           </div>
           <h1 className="mt-6 text-3xl font-black">Link non valido</h1>
           <p className="mt-3 text-sm leading-6 text-[#5f6b63]">
-            Il link di configurazione e' scaduto o non e' corretto. Chiedi al team Menuary di inviarti un nuovo link.
+            Il link di configurazione e&rsquo; scaduto o non e&rsquo; corretto. Chiedi al team Menuary di inviarti un nuovo link.
           </p>
         </section>
       </ConfigShell>
