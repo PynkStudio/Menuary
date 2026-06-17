@@ -1,6 +1,7 @@
 import {
   findTenantByDomain,
   findTenantByManagementHost,
+  findTenantByPrefixedHost,
   findTenantByPreviewSlug,
   getDefaultTenantForVertical,
 } from "./tenant-registry";
@@ -32,6 +33,14 @@ export function resolveTenantFromManagementHost(
   return findTenantByManagementHost(host);
 }
 
+export function resolveTenantFromPrefixedHost(
+  host: string | null | undefined,
+  prefix: "gestione" | "ordini" | "cassa" | "kiosk",
+): TenantProfile | undefined {
+  if (!host) return undefined;
+  return findTenantByPrefixedHost(host, prefix);
+}
+
 export function resolveTenantFromPreviewSlug(
   slug: string | null | undefined,
   host?: string | null,
@@ -61,7 +70,7 @@ export function resolveLocationSlugFromHost(
   tenantDomains: string[],
 ): string | null {
   if (!host) return null;
-  const RESERVED = new Set(["www", "app", "api", "mail", "smtp", "ftp", "admin", "demo", "gestione", "clienti", "login", "studio"]);
+  const RESERVED = new Set(["www", "app", "api", "mail", "smtp", "ftp", "admin", "demo", "gestione", "ordini", "cassa", "kiosk", "clienti", "login", "studio"]);
   const normalized = host.split(":")[0].toLowerCase();
   for (const domain of tenantDomains) {
     const d = domain.toLowerCase();

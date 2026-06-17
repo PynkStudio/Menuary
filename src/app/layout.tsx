@@ -269,6 +269,8 @@ export async function generateMetadata(): Promise<Metadata> {
       ? `${tenant.name} - cibo e vino a ribellione naturale`
       : tenant.id === "doca"
         ? "Doca - Pane, Caffè, Saudade · Milano"
+      : tenant.id === "cascina-errante"
+        ? "Cascina Errante - Ristorante demo Menuary"
       : tenant.id === "junior-food"
         ? "Junior Food - Cucina sudamericana a Bergamo"
       : tenant.vertical === "creative"
@@ -323,6 +325,16 @@ export async function generateMetadata(): Promise<Metadata> {
                 "pão de queijo Milano",
                 "caffè filtro Cafezal",
                 "Via Breno 2 Milano",
+              ]
+          : tenant.id === "cascina-errante"
+            ? [
+                "Cascina Errante",
+                "ristorante demo Menuary",
+                "cucina a vista",
+                "ristorante laboratorio",
+                "microgreens",
+                "food truck premium",
+                "cascinaerrante.it",
               ]
           : tenant.id === "pynkstudio"
             ? [

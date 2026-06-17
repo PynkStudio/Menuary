@@ -10,7 +10,10 @@ import {
 } from "@/lib/marketing-seo";
 import { getLocale } from "@/i18n";
 import { MarketingContactsPage } from "@/components/marketing/pages/contatti";
+import { BizeryContattiPage } from "@/components/bizery/pages/contatti";
 import { BeporkContactsPage } from "@/components/tenants/bepork/pages/contatti";
+import { CascinaErranteContactsPage } from "@/components/tenants/cascina-errante/pages/contatti";
+import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
@@ -37,5 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ContattiPage() {
   const h = await headers();
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
-  return mode === "marketing" ? <MarketingContactsPage /> : <BeporkContactsPage />;
+  if (mode === "marketing") return <MarketingContactsPage />;
+  if (mode === "marketing-bizery") return <BizeryContattiPage />;
+  const tenant = resolveTenantFromHost(h.get("host"));
+  if (tenant.id === "cascina-errante") return <CascinaErranteContactsPage />;
+  return <BeporkContactsPage />;
 }

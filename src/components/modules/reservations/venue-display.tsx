@@ -51,6 +51,9 @@ function usePublicHours(): DaySchedule[] {
   if (tenant.id === "kimos") {
     return defaultHoursWeekForTenant(tenant.id);
   }
+  if (tenant.id === "cascina-errante") {
+    return defaultHoursWeekForTenant(tenant.id);
+  }
   if (tenant.id === "officinakam") {
     return [
       { label: "Lunedì", closed: false, slots: ["08:30 – 13:00", "14:30 – 18:30"] },

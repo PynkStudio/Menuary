@@ -13,6 +13,7 @@ import {
   resolveLocationSlugFromHost,
   resolveTenantFromHost,
   resolveTenantFromManagementHost,
+  resolveTenantFromPrefixedHost,
   resolveTenantFromPreviewSlug,
 } from "@/lib/tenant-runtime";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
@@ -783,6 +784,39 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── Portali operativi tenant (ordini/cassa/kiosk.[dominio]) ──────────────
+  if (mode === "ordini-custom" || mode === "cassa-custom" || mode === "kiosk-custom") {
+    const section =
+      mode === "ordini-custom"
+        ? "ordini"
+        : mode === "cassa-custom"
+          ? "cassa"
+          : "kiosk";
+    const tenant = resolveTenantFromPrefixedHost(host, section);
+    if (!tenant) return NextResponse.next();
+
+    const rewrittenPath = `/operativo/${tenant.id}/${section}${pathname === "/" ? "" : pathname}`;
+    if (!pathname.startsWith(`/operativo/${tenant.id}/${section}`)) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = rewrittenPath;
+      const rh = new Headers(request.headers);
+      rh.set("x-operational-portal", section);
+      rh.set("x-tenant-public-path", pathname);
+
+      if (section !== "kiosk") {
+        const response = NextResponse.rewrite(rewritten, { request: { headers: rh } });
+        const user = await getSessionUser(request, response, cookieDomain);
+        if (!user) {
+          return loginRedirect(request, `${section}.${tenant.id}`, pathname || "/");
+        }
+        return response;
+      }
+
+      return NextResponse.rewrite(rewritten, { request: { headers: rh } });
+    }
+    return NextResponse.next();
+  }
+
   // ── Demo gestione (demo.menuary.it/[tenant]/gestione) ────────────────────
   if (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") {
     const match = pathname.match(/^\/([a-z0-9-]+)\/gestione(\/.*)?$/);
@@ -793,6 +827,20 @@ export async function middleware(request: NextRequest) {
       rewritten.pathname = `/gestione/${tenant.id}${rest}`;
       const rh = new Headers(request.headers);
       rh.set("x-preview-tenant-id", tenant.id);
+      rh.set("x-tenant-public-path", pathname);
+      return NextResponse.rewrite(rewritten, { request: { headers: rh } });
+    }
+    // Demo portali operativi: demo.menuary.it/[slug]/ordini|cassa|kiosk.
+    const operationalMatch = pathname.match(/^\/([a-z0-9-]+)\/(ordini|cassa|kiosk)(\/.*)?$/);
+    if (operationalMatch) {
+      const tenant = findTenantById(operationalMatch[1]) ?? resolveTenantFromPreviewSlug(operationalMatch[1], host);
+      const section = operationalMatch[2];
+      const rest = operationalMatch[3] ?? "";
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = `/operativo/${tenant.id}/${section}${rest}`;
+      const rh = new Headers(request.headers);
+      rh.set("x-preview-tenant-id", tenant.id);
+      rh.set("x-operational-portal", section);
       rh.set("x-tenant-public-path", pathname);
       return NextResponse.rewrite(rewritten, { request: { headers: rh } });
     }

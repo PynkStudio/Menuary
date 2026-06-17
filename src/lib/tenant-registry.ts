@@ -31,6 +31,11 @@ export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = {
   fanbaseCommunity: false,
 };
 
+/** Cascina Errante: ristorante demo Menuary con tutte le feature attive. */
+export const CASCINA_ERRANTE_MODULE_FLAGS: TenantFeatureFlags = {
+  ...allTenantFeatures(true),
+};
+
 /** LibriTech: libreria tech/startup demo su verticale services. */
 export const LIBRITECH_MODULE_FLAGS: TenantFeatureFlags = {
   website: true,
@@ -439,6 +444,29 @@ export const TENANTS: TenantProfile[] = [
       fanbaseCommunity: false,
     },
   },
+  {
+    id: "cascina-errante",
+    name: "Cascina Errante",
+    label: "Demo · Cascina Errante",
+    vertical: "food",
+    domains: ["cascinaerrante.it", "www.cascinaerrante.it"],
+    previewSlug: "cascina-errante",
+    enabled: true,
+    status: "active",
+    theme: {
+      red: "#9E4F32",
+      redDark: "#153D2A",
+      peach: "#F5EDDC",
+      cream: "#F5EDDC",
+      ink: "#132019",
+      brick: "#0B2117",
+      mustard: "#DAC18A",
+      mustardSoft: "#EFE1C7",
+      green: "#54724D",
+      pink: "#C87938",
+    },
+    features: CASCINA_ERRANTE_MODULE_FLAGS,
+  },
 
   {
     id: "doca",
@@ -702,6 +730,16 @@ export function findTenantByManagementHost(hostname: string): TenantProfile | un
   if (!normalized.startsWith(prefix)) return undefined;
   const tenantDomain = normalized.slice(prefix.length);
   return findTenantByDomain(tenantDomain);
+}
+
+export function findTenantByPrefixedHost(
+  hostname: string,
+  prefix: "gestione" | "ordini" | "cassa" | "kiosk",
+): TenantProfile | undefined {
+  const normalized = hostname.toLowerCase().split(":")[0] ?? hostname;
+  const hostPrefix = `${prefix}.`;
+  if (!normalized.startsWith(hostPrefix)) return undefined;
+  return findTenantByDomain(normalized.slice(hostPrefix.length));
 }
 
 export function findTenantByPreviewSlug(slug: string): TenantProfile | undefined {

@@ -64,11 +64,24 @@ export function kimosHoursWeek(): DaySchedule[] {
   ];
 }
 
+export function cascinaErranteHoursWeek(): DaySchedule[] {
+  return [
+    { label: "Lunedì", closed: true, slots: [] },
+    { label: "Martedì", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:00"] },
+    { label: "Mercoledì", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:00"] },
+    { label: "Giovedì", closed: false, slots: ["12:00 – 15:00", "19:00 – 23:00"] },
+    { label: "Venerdì", closed: false, slots: ["12:00 – 15:00", "19:00 – 00:00"] },
+    { label: "Sabato", closed: false, slots: ["11:30 – 15:30", "19:00 – 00:00"] },
+    { label: "Domenica", closed: false, slots: ["11:30 – 16:00"] },
+  ];
+}
+
 export function defaultHoursWeekForTenant(tenantId: string): DaySchedule[] {
   if (tenantId === "doca") return docaHoursWeek();
   if (tenantId === "junior-food") return juniorFoodHoursWeek();
   if (tenantId === "nom-sushi") return nomSushiHoursWeek();
   if (tenantId === "kimos") return kimosHoursWeek();
+  if (tenantId === "cascina-errante") return cascinaErranteHoursWeek();
   return defaultHoursWeek();
 }
 

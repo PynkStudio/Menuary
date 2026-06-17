@@ -6,6 +6,11 @@ export type TenantLocaleConfig = {
 };
 
 const TENANT_LOCALES: Record<string, TenantLocaleConfig> = {
+  // Predisposto per multilingua: pubblicare nuove lingue solo con copy completi.
+  "cascina-errante": {
+    defaultLocale: "it",
+    locales: ["it"],
+  },
   doca: {
     defaultLocale: "it",
     locales: ["it", "pt", "en"],
@@ -50,4 +55,3 @@ export function detectTenantLocaleFromAcceptLanguage(
   }
   return config.defaultLocale;
 }
-

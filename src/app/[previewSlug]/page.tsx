@@ -19,6 +19,7 @@ import { StudioAranzullaHomePage } from "@/components/tenants/studioaranzulla/pa
 import { PynkStudioHomePage } from "@/components/tenants/pynkstudio/pages/home";
 import { JuniorFoodHomePage } from "@/components/tenants/junior-food/pages/home";
 import { KimosHomePage } from "@/components/tenants/kimos/pages/home";
+import { CascinaErranteHomePage } from "@/components/tenants/cascina-errante/pages/home";
 import { OrpheoShell } from "@/components/orpheo/orpheo-shell";
 import { Footer } from "@/components/tenant-shell/footer";
 import { DocaAbout } from "@/components/tenants/doca/doca-about";
@@ -75,6 +76,8 @@ export async function generateMetadata({
               ? "Nøm sushi vibes - All you can eat sushi fusion a Genova"
             : tenant.id === "kimos"
               ? "Pizzeria Kimos - Pizza, kebab e ordini online a Milano"
+            : tenant.id === "cascina-errante"
+              ? "Cascina Errante - Ristorante demo Menuary"
             : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
 
   return {
@@ -210,6 +213,11 @@ export default async function PreviewTenantHome({
           <JuniorFoodHomePage />
         ) : tenant.id === "kimos" ? (
           <KimosHomePage />
+        ) : tenant.id === "cascina-errante" ? (
+          <>
+            <CascinaErranteHomePage />
+            <Footer />
+          </>
         ) : (
           <>
             <Hero />

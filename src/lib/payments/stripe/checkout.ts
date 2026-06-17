@@ -4,6 +4,7 @@ import { stripeRequest } from "./client";
 import { getTenantPaymentAccount } from "./accounts";
 import { applicationFeeCents, type PaymentSource } from "./fees";
 import { getDemoSandboxStripeAccount, type StripeAccountMode } from "./config";
+import { tenantUsesStripeDemoSandbox } from "./sandbox-policy";
 
 export type CheckoutLineItemInput = {
   name: string;
@@ -68,9 +69,10 @@ export async function createCheckoutSession(
   input: CreateCheckoutInput,
 ): Promise<CheckoutSession> {
   if (!input.items.length) throw new Error("checkout_no_items");
+  const useDemoSandbox = input.demoSandbox || tenantUsesStripeDemoSandbox(input.tenantId);
 
   const account = await getTenantPaymentAccount(input.tenantId, {
-    demoSandbox: input.demoSandbox,
+    demoSandbox: useDemoSandbox,
   });
   if (!account) {
     throw new Error("tenant_stripe_not_connected");
@@ -79,7 +81,7 @@ export async function createCheckoutSession(
     throw new Error("tenant_stripe_charges_disabled");
   }
 
-  const demoAccount = input.demoSandbox ? getDemoSandboxStripeAccount() : null;
+  const demoAccount = useDemoSandbox ? getDemoSandboxStripeAccount() : null;
   const secretKey = demoAccount?.secretKey;
   const stripeAccount = account.stripeAccountId ?? undefined;
 

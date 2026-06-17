@@ -1,0 +1,423 @@
+@layer components {
+  [data-tenant-surface="cascina-errante"],
+  html[data-tenant="cascina-errante"] {
+    --cascina-forest: #153d2a;
+    --cascina-forest-deep: #0b2117;
+    --cascina-moss: #54724d;
+    --cascina-linen: #f5eddc;
+    --cascina-straw: #dac18a;
+    --cascina-copper: #c87938;
+    --cascina-clay: #9e4f32;
+    --cascina-ink: #132019;
+    --cascina-muted: #647066;
+    --cascina-line: rgba(19, 32, 25, 0.16);
+    font-family: var(--font-menuary-body), Inter, system-ui, sans-serif;
+    color: var(--cascina-ink);
+  }
+
+  html[data-tenant="cascina-errante"] body,
+  [data-tenant-surface="cascina-errante"] {
+    background: var(--cascina-linen);
+  }
+
+  html[data-tenant="cascina-errante"] .headline,
+  html[data-tenant="cascina-errante"] .impact-title,
+  [data-tenant-surface="cascina-errante"] .headline,
+  [data-tenant-surface="cascina-errante"] .impact-title {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  html[data-tenant="cascina-errante"] .tenant-site-footer {
+    background: var(--cascina-forest-deep);
+  }
+
+  .cascina-page {
+    background:
+      linear-gradient(180deg, rgba(245, 237, 220, 0.96), rgba(245, 237, 220, 1)),
+      repeating-linear-gradient(90deg, rgba(21, 61, 42, 0.035) 0 1px, transparent 1px 72px);
+    color: var(--cascina-ink);
+  }
+
+  .cascina-hero {
+    min-height: calc(100svh - 76px);
+    padding: clamp(4rem, 9vw, 7rem) clamp(1rem, 4vw, 3rem) clamp(3rem, 7vw, 5rem);
+    background:
+      linear-gradient(135deg, rgba(11, 33, 23, 0.98), rgba(21, 61, 42, 0.92)),
+      linear-gradient(90deg, var(--cascina-forest), var(--cascina-copper));
+    color: var(--cascina-linen);
+  }
+
+  .cascina-hero-inner,
+  .cascina-production,
+  .cascina-band,
+  .cascina-static-hero,
+  .cascina-values,
+  .cascina-contact-grid {
+    width: min(1160px, calc(100vw - 2rem));
+    margin-inline: auto;
+  }
+
+  .cascina-hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+
+  .cascina-hero-logo {
+    width: min(520px, 88vw);
+    height: auto;
+    margin-block: 1.25rem 1.5rem;
+    object-fit: contain;
+  }
+
+  .cascina-kicker {
+    color: var(--cascina-copper);
+    font-size: 0.75rem;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .cascina-hero h1,
+  .cascina-section-head h2,
+  .cascina-production h2,
+  .cascina-demo-panel h2,
+  .cascina-static h1 {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-weight: 680;
+    letter-spacing: 0;
+    line-height: 0.95;
+  }
+
+  .cascina-hero h1 {
+    max-width: 760px;
+    font-size: clamp(3.6rem, 8vw, 7.8rem);
+  }
+
+  .cascina-lead,
+  .cascina-production p,
+  .cascina-static p {
+    max-width: 700px;
+    color: color-mix(in srgb, currentColor 74%, transparent);
+    font-size: clamp(1rem, 1.45vw, 1.25rem);
+    line-height: 1.75;
+  }
+
+  .cascina-actions,
+  .cascina-contact-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 2rem;
+  }
+
+  .cascina-btn {
+    display: inline-flex;
+    min-height: 3.1rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border-radius: 999px;
+    padding: 0.8rem 1.15rem;
+    font-weight: 850;
+    line-height: 1;
+    transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+  }
+
+  .cascina-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .cascina-btn-primary {
+    background: var(--cascina-straw);
+    color: var(--cascina-forest-deep);
+  }
+
+  .cascina-btn-secondary {
+    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+    color: currentColor;
+  }
+
+  .cascina-hero-board {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .cascina-board-main,
+  .cascina-board-stat,
+  .cascina-experience,
+  .cascina-values article,
+  .cascina-demo-panel {
+    border: 1px solid rgba(245, 237, 220, 0.2);
+    border-radius: 8px;
+  }
+
+  .cascina-board-main {
+    grid-column: 1 / -1;
+    min-height: 20rem;
+    padding: 1.4rem;
+    background:
+      linear-gradient(180deg, rgba(218, 193, 138, 0.16), rgba(200, 121, 56, 0.1)),
+      var(--cascina-forest);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .cascina-board-main p,
+  .cascina-board-stat strong {
+    font-family: var(--font-menuary-display), Georgia, serif;
+    font-size: clamp(2rem, 4vw, 3.8rem);
+    line-height: 0.95;
+  }
+
+  .cascina-board-main span,
+  .cascina-board-stat span {
+    color: rgba(245, 237, 220, 0.72);
+  }
+
+  .cascina-board-stat {
+    min-height: 9rem;
+    padding: 1rem;
+    background: rgba(245, 237, 220, 0.08);
+  }
+
+  .cascina-board-stat strong,
+  .cascina-board-stat span {
+    display: block;
+  }
+
+  .cascina-band {
+    padding-block: clamp(4rem, 8vw, 6rem);
+  }
+
+  .cascina-section-head {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .cascina-section-head h2,
+  .cascina-production h2,
+  .cascina-demo-panel h2,
+  .cascina-static h1 {
+    color: var(--cascina-forest);
+    font-size: clamp(2.8rem, 6vw, 5.4rem);
+  }
+
+  .cascina-experience-grid,
+  .cascina-values {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .cascina-experience,
+  .cascina-values article {
+    min-height: 19rem;
+    padding: 1.2rem;
+    background: color-mix(in srgb, white 58%, var(--cascina-linen));
+    border-color: var(--cascina-line);
+    color: var(--cascina-ink);
+  }
+
+  .cascina-experience h3,
+  .cascina-values h2 {
+    margin-top: 1rem;
+    color: var(--cascina-forest);
+    font-size: 1.35rem;
+    font-weight: 850;
+  }
+
+  .cascina-experience p,
+  .cascina-values p {
+    margin-top: 0.7rem;
+    color: var(--cascina-muted);
+    line-height: 1.65;
+  }
+
+  .cascina-experience span {
+    margin-top: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--cascina-clay);
+    font-weight: 850;
+  }
+
+  .cascina-production {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+    padding-block: clamp(4rem, 8vw, 6rem);
+  }
+
+  .cascina-production ul {
+    display: grid;
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cascina-production li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border-left: 3px solid var(--cascina-copper);
+    background: rgba(255, 255, 255, 0.48);
+    padding: 1rem;
+    font-weight: 800;
+  }
+
+  .cascina-band-dark {
+    width: 100%;
+    max-width: none;
+    background: var(--cascina-forest-deep);
+    color: var(--cascina-linen);
+  }
+
+  .cascina-demo-panel {
+    width: min(980px, calc(100vw - 2rem));
+    margin-inline: auto;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    background: linear-gradient(135deg, rgba(218, 193, 138, 0.13), rgba(84, 114, 77, 0.16));
+  }
+
+  .cascina-demo-panel h2 {
+    color: var(--cascina-straw);
+  }
+
+  .cascina-demo-panel p {
+    max-width: 760px;
+    color: rgba(245, 237, 220, 0.76);
+    line-height: 1.75;
+  }
+
+  .cascina-static {
+    padding-block: clamp(4rem, 8vw, 7rem);
+  }
+
+  .cascina-static-hero {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .cascina-static-hero img {
+    width: min(360px, 78vw);
+    height: auto;
+  }
+
+  .cascina-values {
+    margin-top: 2rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cascina-contact-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+
+  .cascina-map-wrap {
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--cascina-line);
+    border-radius: 8px;
+    background: var(--cascina-forest);
+  }
+
+  .cascina-address-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.2rem;
+    color: var(--cascina-clay);
+    font-weight: 850;
+  }
+
+  .gestione-admin[data-gestione-tenant="cascina-errante"] {
+    --ga-bg: #f5eddc;
+    --ga-surface: #fffaf0;
+    --ga-surface-2: #efe1c7;
+    --ga-surface-3: #e6d1a8;
+    --ga-border: rgba(19, 32, 25, 0.16);
+    --ga-border-strong: rgba(19, 32, 25, 0.28);
+    --ga-ink: #132019;
+    --ga-muted: #637064;
+    --ga-accent: #153d2a;
+    --ga-accent-2: #c87938;
+    --ga-accent-ring: rgba(200, 121, 56, 0.34);
+    --ga-danger: #9e4f32;
+    --ga-success: #54724d;
+    --ga-warning: #dac18a;
+    --ga-font-display: var(--font-menuary-display), Georgia, serif;
+    --ga-font-body: var(--font-menuary-body), system-ui, sans-serif;
+  }
+
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-header,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-card,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-panel,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-table-wrap,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-empty,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-error,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-success {
+    border-radius: 8px;
+  }
+
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-btn-primary,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-tab-active {
+    background: var(--ga-accent);
+    color: #f5eddc;
+  }
+
+  .gestione-admin[data-gestione-tenant="cascina-errante"] input,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] textarea,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] select {
+    border-color: var(--ga-border);
+    background: #fffaf0;
+    color: var(--ga-ink);
+  }
+
+  .gestione-admin[data-gestione-tenant="cascina-errante"] input:focus,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] textarea:focus,
+  .gestione-admin[data-gestione-tenant="cascina-errante"] select:focus {
+    border-color: var(--ga-accent-2);
+    box-shadow: 0 0 0 3px var(--ga-accent-ring);
+  }
+
+  @media (max-width: 920px) {
+    .cascina-hero-inner,
+    .cascina-production,
+    .cascina-contact-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cascina-experience-grid,
+    .cascina-values {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 620px) {
+    .cascina-hero {
+      min-height: auto;
+      padding-top: 3rem;
+    }
+
+    .cascina-hero h1 {
+      font-size: clamp(3rem, 16vw, 4.6rem);
+    }
+
+    .cascina-hero-board,
+    .cascina-experience-grid,
+    .cascina-values {
+      grid-template-columns: 1fr;
+    }
+  }
+}

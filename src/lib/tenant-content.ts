@@ -1597,9 +1597,143 @@ const pynkstudioContent: TenantContent = {
   },
 };
 
+const cascinaErranteContent: TenantContent = {
+  logoSrc: "/cascina-errante/logo-square.png",
+  logoAlt: "Cascina Errante",
+  showcaseLogoSrc: "/cascina-errante/logo-horizontal.png",
+  showcaseLogoAlt: "Cascina Errante - Poesia e Fantasia",
+  description:
+    "Cascina Errante e il ristorante demo Menuary: cucina a vista, bottega, adventure food, eventi e tutte le feature della piattaforma attive per test e presentazioni.",
+  url: "https://cascinaerrante.it",
+  social: {
+    instagram: "https://www.instagram.com/cascinaerrante/",
+    facebook: "https://www.facebook.com/cascinaerrante/",
+    instagramLabel: "Instagram Cascina Errante",
+    facebookLabel: "Facebook Cascina Errante",
+  },
+  contact: {
+    phone: "+39 030 000 0000",
+    email: "demo@cascinaerrante.it",
+    whatsappDigits: "393000000000",
+    whatsappMessage:
+      "Ciao Cascina Errante! Vorrei prenotare un tavolo/demo. Siamo in ___ persone, per il giorno ___ alle ___. Grazie!",
+  },
+  address: {
+    street: "Strada della Cascina, 1",
+    zip: "25030",
+    city: "Franciacorta",
+    province: "BS",
+    full: "Strada della Cascina, 1 - 25030 Franciacorta (BS)",
+  },
+  maps: {
+    searchUrl:
+      "https://www.google.com/maps/search/?api=1&query=Cascina+Errante+Franciacorta",
+    embedUrl:
+      "https://www.google.com/maps?q=Cascina+Errante+Franciacorta&output=embed",
+  },
+  hero: {
+    eyebrow: "Ristorante demo Menuary - Lombardia",
+    titleLead: "Poesia agricola,",
+    titleAccent: "fantasia operativa.",
+    body:
+      "Cucina a vista, produzione idroponica, bottega, adventure food ed eventi: un tenant demo per provare tutta Menuary in un solo racconto.",
+    backdrop: "/cascina-errante/logo.png",
+    ctaLabel: "Prenota la demo",
+  },
+  soulsIntro: {
+    eyebrow: "Quattro anime, una cascina",
+    titleLead: "Tutto quello che serve,",
+    titleAccent: "in un ristorante laboratorio.",
+    body:
+      "Cascina Errante tiene insieme cucina, bottega, outdoor food ed eventi per stressare ogni feature della piattaforma.",
+  },
+  souls: [
+    {
+      id: "cascina",
+      kicker: "Cucina teatro",
+      title: "La Cascina",
+      desc: "Chef table, sala panoramica e produzione a vista per un servizio scenografico ma operativo.",
+      href: "/chi-siamo",
+      image: "/cascina-errante/logo.png",
+    },
+    {
+      id: "bottega",
+      kicker: "Prodotti e conserve",
+      title: "La Bottega",
+      desc: "Prodotti freschi, liofilizzati, mieli aromatici e conserve da gestire come catalogo e shop.",
+      href: "/menu",
+      image: "/cascina-errante/logo-horizontal.png",
+    },
+    {
+      id: "eventi",
+      kicker: "Itinerante",
+      title: "Eventi e prive",
+      desc: "Food truck premium, esperienze aziendali e cene speciali con prenotazioni e CRM.",
+      href: "/prenota",
+      image: "/cascina-errante/logo-square.png",
+    },
+  ],
+  dishesIntro: {
+    eyebrow: "Demo menu",
+    title: "Piatti e prodotti pensati per testare tutto.",
+    subtitle:
+      "Dalla sala al delivery, dal carrello al food cost: il menu Cascina Errante copre casi d'uso reali.",
+  },
+  dishes: [
+    {
+      name: "Chef table idroponico",
+      desc: "Percorso degustazione con microgreens, erbe raccolte a vista e servizio narrato.",
+      price: "Demo",
+      image: "/cascina-errante/logo.png",
+      variant: "green",
+      href: "/menu",
+    },
+    {
+      name: "Box Errante Adventure",
+      desc: "Kit outdoor con liofilizzati gourmet e prodotti della cascina.",
+      price: "Shop",
+      image: "/cascina-errante/logo-horizontal.png",
+      variant: "mustard",
+      href: "/menu",
+    },
+    {
+      name: "Food truck prive",
+      desc: "Evento itinerante con menu personalizzato, prenotazioni e pagamento anticipato.",
+      price: "Eventi",
+      image: "/cascina-errante/logo-square.png",
+      variant: "red",
+      href: "/prenota",
+    },
+  ],
+  findUs: {
+    eyebrow: "Dove testiamo",
+    titleLead: "Una cascina demo,",
+    titleAccent: "con dominio reale.",
+    body:
+      "Cascina Errante e attiva su cascinaerrante.it e usa il backend Menuary completo con pagamenti Stripe in sandbox.",
+    mapTitle: "Mappa Cascina Errante",
+  },
+  footer: {
+    tagline: "Poesia e fantasia.",
+    body:
+      "Ristorante demo Menuary con tutte le feature attive: sito, menu, ordini, prenotazioni, gestione, AI, pagamenti sandbox e moduli di crescita.",
+  },
+  delivery: {
+    title: "Ordini, tavoli, eventi: tutto testabile.",
+    body:
+      "Cascina Errante usa tutti i canali Menuary per demo, QA e presentazioni commerciali.",
+    partners: [
+      { name: "Delivery proprietario", url: "/ordina", active: true },
+      { name: "Tavolo QR", url: "/tavolo", active: true },
+      { name: "Kiosk", url: "/kiosk", active: false },
+    ],
+  },
+};
+
 import { findTenantById } from "./tenant-registry";
 
 export function getTenantContent(tenantId: string): TenantContent {
+  if (tenantId === "cascina-errante") return cascinaErranteContent;
   if (tenantId === "faak") return faakContent;
   if (tenantId === "libritech") return libritechContent;
   if (tenantId === "valentina-orciuoli") return valentinaOrciuoliContent;

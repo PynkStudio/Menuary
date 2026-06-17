@@ -14,6 +14,9 @@
 // "gestione"          → gestione.menuary.it     pannello gestione tenant food
 // "gestione-bizery"   → gestione.bizery.it      pannello gestione tenant bizery (cross-domain popup auth)
 // "gestione-custom"   → gestione.[dominio]      pannello gestione sul dominio del tenant
+// "ordini-custom"     → ordini.[dominio]        console operativa ordini del tenant/sede
+// "cassa-custom"      → cassa.[dominio]         POS/cassa operativa del tenant/sede
+// "kiosk-custom"      → kiosk.[dominio]         runtime kiosk operativo del tenant/sede
 // "admin-pynkstudio"      → admin.pynkstudio.it         pannello controllo PynkStudio (azienda madre)
 // "pagamenti-pynkstudio"  → pagamenti.pynkstudio.it     portale pagamenti unificato (tutti i verticali)
 export type PlatformMode =
@@ -33,7 +36,10 @@ export type PlatformMode =
   | "login"
   | "gestione"
   | "gestione-bizery"
-  | "gestione-custom";
+  | "gestione-custom"
+  | "ordini-custom"
+  | "cassa-custom"
+  | "kiosk-custom";
 
 export const PLATFORM_MODE_HEADER = "x-platform-mode";
 
@@ -73,6 +79,9 @@ const PLATFORM_MODES: PlatformMode[] = [
   "gestione",
   "gestione-bizery",
   "gestione-custom",
+  "ordini-custom",
+  "cassa-custom",
+  "kiosk-custom",
 ];
 
 export function isPlatformMode(value: unknown): value is PlatformMode {
@@ -103,6 +112,9 @@ export function getPlatformModeFromHost(
   if (PLATFORM_HOSTS.gestione.includes(normalized as never))           return "gestione";
   if (PLATFORM_HOSTS["gestione-bizery"].includes(normalized as never)) return "gestione-bizery";
   if (normalized.startsWith("gestione."))                              return "gestione-custom";
+  if (normalized.startsWith("ordini."))                                return "ordini-custom";
+  if (normalized.startsWith("cassa."))                                 return "cassa-custom";
+  if (normalized.startsWith("kiosk."))                                 return "kiosk-custom";
   return "tenant";
 }
 

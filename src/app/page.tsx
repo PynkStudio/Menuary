@@ -10,6 +10,7 @@ import { BizeryStudioHomePage } from "@/components/bizery-studio/bizery-studio-h
 import { BizeryStudioShell } from "@/components/bizery-studio/bizery-studio-shell";
 import { PreviewNoSlug } from "@/components/preview/preview-no-slug";
 import { PynkStudioHomePage } from "@/components/tenants/pynkstudio/pages/home";
+import { CascinaErranteHomePage } from "@/components/tenants/cascina-errante/pages/home";
 import { findTenantById } from "@/lib/tenant-registry";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 
@@ -47,6 +48,7 @@ export default async function HomePage() {
   const tenant =
     findTenantById(h.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(h.get("host"));
   if (tenant.id === "pynkstudio") return <PynkStudioHomePage />;
+  if (tenant.id === "cascina-errante") return <CascinaErranteHomePage />;
 
   return <TenantHomePage />;
 }

@@ -10,6 +10,8 @@ import { getLocale } from "@/i18n";
 import { MarketingAboutPage } from "@/components/marketing/pages/chi-siamo";
 import { BizeryAboutPage } from "@/components/bizery/pages/chi-siamo";
 import { BeporkAboutPage } from "@/components/tenants/bepork/pages/chi-siamo";
+import { CascinaErranteAboutPage } from "@/components/tenants/cascina-errante/pages/chi-siamo";
+import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
@@ -32,8 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
   return {
     title: "Chi siamo",
-    description:
-      "Be Pork è un ristorante, pizzeria e burger house nel centro di Bari. Tre anime, una casa: Burger House, Pizza House e cucina pugliese.",
+    description: "Scopri il tenant ristorante attivo su Menuary.",
   };
 }
 
@@ -42,5 +43,7 @@ export default async function ChiSiamoPage() {
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
   if (mode === "marketing") return <MarketingAboutPage />;
   if (mode === "marketing-bizery") return <BizeryAboutPage />;
+  const tenant = resolveTenantFromHost(h.get("host"));
+  if (tenant.id === "cascina-errante") return <CascinaErranteAboutPage />;
   return <BeporkAboutPage />;
 }
