@@ -151,7 +151,7 @@ export function CascinaErranteHomePage() {
           <ChefHat size={34} />
           <h2>Demo attiva con tutte le feature accese.</h2>
           <p>
-            Usa Cascina Errante per provare l'intero stack operativo Menuary:
+            Usa Cascina Errante per provare l&apos;intero stack operativo Menuary:
             ordini al tavolo e asporto, kiosk, sala, cassa, CRM, fidelity,
             analytics, AI phone, AI WhatsApp, HubRise, newsletter, blog,
             linktree, pagamenti Stripe in sandbox e gestione completa.
