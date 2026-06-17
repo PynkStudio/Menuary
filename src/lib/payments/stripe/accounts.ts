@@ -86,27 +86,26 @@ export async function getTenantPaymentAccount(
 ): Promise<TenantPaymentAccount | null> {
   if (opts.demoSandbox) {
     const demo = getDemoSandboxStripeAccount();
-    if (demo) {
-      return {
-        id: `demo-sandbox:${tenantId}`,
-        tenantId,
-        provider: "stripe",
-        stripeAccountId: demo.stripeAccountId,
-        accountType: "standard",
-        chargesEnabled: demo.chargesEnabled,
-        payoutsEnabled: demo.payoutsEnabled,
-        detailsSubmitted: demo.detailsSubmitted,
-        accountEmail: demo.accountEmail,
-        accountCountry: demo.accountCountry,
-        oauthScope: null,
-        status: demo.status,
-        lastSyncedAt: null,
-        connectedAt: null,
-        disconnectedAt: null,
-        metadata: { demoSandbox: true },
-        mode: demo.mode,
-      };
-    }
+    if (!demo) return null;
+    return {
+      id: `demo-sandbox:${tenantId}`,
+      tenantId,
+      provider: "stripe",
+      stripeAccountId: demo.stripeAccountId,
+      accountType: "standard",
+      chargesEnabled: demo.chargesEnabled,
+      payoutsEnabled: demo.payoutsEnabled,
+      detailsSubmitted: demo.detailsSubmitted,
+      accountEmail: demo.accountEmail,
+      accountCountry: demo.accountCountry,
+      oauthScope: null,
+      status: demo.status,
+      lastSyncedAt: null,
+      connectedAt: null,
+      disconnectedAt: null,
+      metadata: { demoSandbox: true },
+      mode: demo.mode,
+    };
   }
 
   const db = serviceDb() as unknown as {

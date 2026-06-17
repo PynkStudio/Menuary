@@ -14,11 +14,13 @@ export async function GET(req: NextRequest) {
   const errorDescription = url.searchParams.get("error_description");
 
   const baseRedirect = "/admin/tenant";
+  const parsed = state ? parseOAuthState(state) : null;
+  const redirectPath = parsed?.valid ? (parsed.redirectPath ?? baseRedirect) : baseRedirect;
 
   if (error) {
     return NextResponse.redirect(
       new URL(
-        `${baseRedirect}?status=error&reason=${encodeURIComponent(errorDescription ?? error)}`,
+        `${redirectPath}?status=error&reason=${encodeURIComponent(errorDescription ?? error)}`,
         url,
       ),
     );
@@ -27,10 +29,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL(`${baseRedirect}?status=error&reason=missing_params`, url));
   }
 
-  const parsed = parseOAuthState(state);
-  if (!parsed.valid) {
+  if (!parsed?.valid) {
     return NextResponse.redirect(
-      new URL(`${baseRedirect}?status=error&reason=${parsed.reason ?? "bad_state"}`, url),
+      new URL(`${baseRedirect}?status=error&reason=${parsed?.reason ?? "bad_state"}`, url),
     );
   }
 
@@ -39,14 +40,14 @@ export async function GET(req: NextRequest) {
     const status = account.chargesEnabled ? "connected" : "pending";
     return NextResponse.redirect(
       new URL(
-        `${baseRedirect}?status=${status}&tenant=${encodeURIComponent(parsed.tenantId)}`,
+        `${redirectPath}?status=${status}&tenant=${encodeURIComponent(parsed.tenantId)}`,
         url,
       ),
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : "callback_failed";
     return NextResponse.redirect(
-      new URL(`${baseRedirect}?status=error&reason=${encodeURIComponent(message)}`, url),
+      new URL(`${redirectPath}?status=error&reason=${encodeURIComponent(message)}`, url),
     );
   }
 }

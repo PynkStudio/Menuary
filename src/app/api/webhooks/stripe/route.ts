@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 //   - account.updated
 //   - account.application.deauthorized (futuro)
 //
-// Il segreto del webhook va salvato in STRIPE_WEBHOOK_SECRET (Connect).
+// Il segreto del webhook tenant Connect va salvato in STRIPE_TENANT_WEBHOOK_SECRET.
 // Per uno webhook "Account" piattaforma usare STRIPE_WEBHOOK_SECRET_PLATFORM.
 // Per la sandbox demo condivisa usare STRIPE_DEMO_WEBHOOK_SECRET.
 export async function POST(req: NextRequest) {
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get("stripe-signature");
 
   const secrets = [
-    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_TENANT_WEBHOOK_SECRET,
     process.env.STRIPE_WEBHOOK_SECRET_PLATFORM,
     process.env.STRIPE_DEMO_WEBHOOK_SECRET,
   ].filter((value): value is string => Boolean(value));

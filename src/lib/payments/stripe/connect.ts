@@ -35,35 +35,52 @@ function stateSecret(): string {
 
 // Lo "state" OAuth è firmato HMAC: contiene tenant_id + nonce + scadenza.
 // Evita CSRF e collegamento dell'account al tenant sbagliato senza serverside session.
-export function buildOAuthState(tenantId: string): string {
+function safeRedirectPath(path: string | undefined): string | null {
+  if (!path) return null;
+  if (!path.startsWith("/") || path.startsWith("//")) return null;
+  return path;
+}
+
+export function buildOAuthState(tenantId: string, redirectPath?: string): string {
   const nonce = randomBytes(12).toString("hex");
   const exp = Math.floor(Date.now() / 1000) + 60 * 15; // 15 minuti
-  const payload = `${tenantId}.${nonce}.${exp}`;
+  const returnPath = safeRedirectPath(redirectPath);
+  const payload = returnPath
+    ? `${tenantId}.${nonce}.${exp}.${Buffer.from(returnPath).toString("base64url")}`
+    : `${tenantId}.${nonce}.${exp}`;
   const sig = createHmac("sha256", stateSecret()).update(payload).digest("hex");
   return Buffer.from(`${payload}.${sig}`).toString("base64url");
 }
 
 export function parseOAuthState(
   state: string,
-): { tenantId: string; valid: boolean; reason?: string } {
+): { tenantId: string; valid: boolean; reason?: string; redirectPath?: string } {
   try {
     const decoded = Buffer.from(state, "base64url").toString("utf8");
     const parts = decoded.split(".");
-    if (parts.length !== 4) return { tenantId: "", valid: false, reason: "malformed" };
-    const [tenantId, nonce, expStr, sig] = parts;
+    if (parts.length !== 4 && parts.length !== 5) {
+      return { tenantId: "", valid: false, reason: "malformed" };
+    }
+    const [tenantId, nonce, expStr] = parts;
+    const encodedReturnPath = parts.length === 5 ? parts[3] : null;
+    const sig = parts[parts.length - 1];
     const exp = Number(expStr);
     if (!Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) {
       return { tenantId, valid: false, reason: "expired" };
     }
-    const expected = createHmac("sha256", stateSecret())
-      .update(`${tenantId}.${nonce}.${expStr}`)
-      .digest("hex");
+    const payload = encodedReturnPath
+      ? `${tenantId}.${nonce}.${expStr}.${encodedReturnPath}`
+      : `${tenantId}.${nonce}.${expStr}`;
+    const expected = createHmac("sha256", stateSecret()).update(payload).digest("hex");
     const a = Buffer.from(sig, "hex");
     const b = Buffer.from(expected, "hex");
     if (a.length !== b.length || !timingSafeEqual(a, b)) {
       return { tenantId, valid: false, reason: "bad_signature" };
     }
-    return { tenantId, valid: true };
+    const redirectPath = encodedReturnPath
+      ? safeRedirectPath(Buffer.from(encodedReturnPath, "base64url").toString("utf8")) ?? undefined
+      : undefined;
+    return { tenantId, valid: true, redirectPath };
   } catch {
     return { tenantId: "", valid: false, reason: "decode_error" };
   }
@@ -74,7 +91,7 @@ export function buildAuthorizeUrl(opts: {
   email?: string;
   redirectPath?: string;
 }): string {
-  const state = buildOAuthState(opts.tenantId);
+  const state = buildOAuthState(opts.tenantId, opts.redirectPath);
   const redirectUri = `${baseUrl()}/api/payments/stripe/callback`;
   const params = new URLSearchParams({
     response_type: "code",

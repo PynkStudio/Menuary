@@ -423,6 +423,7 @@ export default function AdminTenantPage() {
         <StripeIntegrationModal
           tenantId={stripeOpenFor}
           tenantName={TENANTS.find((t) => t.id === stripeOpenFor)?.label ?? stripeOpenFor}
+          demoSandbox={demoControls[stripeOpenFor]?.enabled === true}
           open
           onClose={() => setStripeOpenFor(null)}
         />

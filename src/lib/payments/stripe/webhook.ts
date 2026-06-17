@@ -297,5 +297,59 @@ async function activateTenantForContract(
     tenant_activated_at: new Date().toISOString(),
   });
 
+  await sendSetupEmailForActivatedContract(tenant.id, contractId).catch((err) => {
+    console.error("[stripe-webhook] tenant_setup_email_failed", err instanceof Error ? err.message : String(err));
+  });
+
   console.log("[stripe-webhook] Tenant activated:", tenant.id, "for contract:", contractId);
+}
+
+async function sendSetupEmailForActivatedContract(
+  tenantId: string,
+  contractId: string,
+): Promise<void> {
+  const db = serviceDb();
+  const { data: control } = await (db as unknown as {
+    from: (t: "tenant_demo_controls") => {
+      select: (s: string) => {
+        eq: (k: string, v: string) => {
+          maybeSingle: () => Promise<{ data: { enabled: boolean } | null }>;
+        };
+      };
+    };
+  }).from("tenant_demo_controls").select("enabled").eq("tenant_id", tenantId).maybeSingle();
+  if (control?.enabled !== true) return;
+
+  const { data: tenant } = await (db as unknown as {
+    from: (t: "tenants") => {
+      select: (s: string) => {
+        eq: (k: string, v: string) => {
+          maybeSingle: () => Promise<{
+            data: {
+              id: string;
+              name: string | null;
+              label: string | null;
+              vertical: "food" | "services" | "creative";
+              features: Record<string, unknown> | null;
+            } | null;
+          }>;
+        };
+      };
+    };
+  }).from("tenants").select("id,name,label,vertical,features").eq("id", tenantId).maybeSingle();
+  if (tenant?.features?.payments !== true) return;
+
+  const { getContract } = await import("@/lib/contracts/contract-queries");
+  const contract = await getContract(contractId);
+  const email = contract?.contract_data?.cliente?.email || contract?.contract_data?.cliente?.pec;
+  if (!email) return;
+
+  const { sendTenantSetupEmail } = await import("@/lib/tenant-setup/email");
+  await sendTenantSetupEmail({
+    tenantId,
+    tenantName: tenant.name ?? tenant.label ?? contract?.contract_data?.cliente?.ragioneSociale ?? tenantId,
+    email,
+    vertical: tenant.vertical,
+    modules: ["stripe"],
+  });
 }

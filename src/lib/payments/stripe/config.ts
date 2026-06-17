@@ -1,7 +1,5 @@
 import "server-only";
 
-import { findTenantById } from "@/lib/tenant-registry";
-
 export const STRIPE_API_VERSION = "2026-02-25.clover";
 
 export type StripeCredentialScope =
@@ -79,11 +77,4 @@ export function getDemoSandboxStripeAccount(): StripeResolvedAccount | null {
     accountCountry: "IT",
     status: "connected",
   };
-}
-
-export function isLikelyDemoTenant(tenantId: string): boolean {
-  const tenant = findTenantById(tenantId);
-  if (!tenant) return false;
-  if (tenant.status === "trattativa" || tenant.status === "trial") return true;
-  return tenant.domains.length === 0;
 }

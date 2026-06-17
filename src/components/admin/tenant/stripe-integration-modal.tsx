@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, RefreshCw, Plug, Unplug, CheckCircle2, AlertTriangle } from "lucide-react";
+import { X, RefreshCw, Plug, Unplug, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 
 type AccountResponse = {
   account: {
@@ -23,6 +23,7 @@ type AccountResponse = {
 };
 
 type AccountStatus = "pending" | "connected" | "restricted" | "disconnected";
+type SetupUiStatus = "active_demo" | "pending" | "active" | "failed";
 
 function StatusBadge({ status }: { status: AccountStatus }) {
   const map: Record<string, { label: string; cls: string; Icon: typeof CheckCircle2 }> = {
@@ -40,31 +41,61 @@ function StatusBadge({ status }: { status: AccountStatus }) {
   );
 }
 
+function SetupStatusBadge({
+  status,
+  error,
+}: {
+  status: SetupUiStatus;
+  error?: string | null;
+}) {
+  const map: Record<SetupUiStatus, { label: string; cls: string; Icon: typeof CheckCircle2 }> = {
+    active_demo: { label: "Attivo - demo", cls: "bg-sky-100 text-sky-800", Icon: CheckCircle2 },
+    pending: { label: "Pending", cls: "bg-amber-100 text-amber-800", Icon: Clock },
+    active: { label: "Attivo", cls: "bg-emerald-100 text-emerald-700", Icon: CheckCircle2 },
+    failed: { label: "Attivazione fallita", cls: "bg-rose-100 text-rose-700", Icon: AlertTriangle },
+  };
+  const v = map[status];
+  const { Icon } = v;
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${v.cls}`}
+      title={status === "failed" ? (error ?? "Errore non disponibile") : undefined}
+    >
+      <Icon size={13} /> {v.label}
+    </span>
+  );
+}
+
 export function StripeIntegrationModal({
   tenantId,
   tenantName,
+  demoSandbox = false,
   open,
   onClose,
 }: {
   tenantId: string;
   tenantName: string;
+  demoSandbox?: boolean;
   open: boolean;
   onClose: () => void;
 }) {
   const [account, setAccount] = useState<AccountResponse["account"]>(null);
   const [loading, setLoading] = useState(false);
-  const [busy, setBusy] = useState<"connect" | "refresh" | "disconnect" | null>(null);
+  const [busy, setBusy] = useState<"setup-email" | "refresh" | "disconnect" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [setupEmail, setSetupEmail] = useState("");
+  const [setupSentTo, setSetupSentTo] = useState<string | null>(null);
 
   const reload = async (refresh = false) => {
     setLoading(true);
     setError(null);
     try {
-      const url = `/api/admin/integrations/stripe?tenantId=${encodeURIComponent(tenantId)}${refresh ? "&refresh=1" : ""}`;
+      const url = `/api/admin/integrations/stripe?tenantId=${encodeURIComponent(tenantId)}${refresh ? "&refresh=1" : ""}${demoSandbox ? "&demoSandbox=1" : ""}`;
       const res = await fetch(url);
       const json = (await res.json()) as AccountResponse & { error?: string };
       if (!res.ok) throw new Error(json.error ?? "lookup_failed");
       setAccount(json.account);
+      setSetupEmail((prev) => prev || json.account?.accountEmail || "");
     } catch (e) {
       setError(e instanceof Error ? e.message : "errore");
     } finally {
@@ -79,20 +110,22 @@ export function StripeIntegrationModal({
 
   if (!open) return null;
 
-  const connect = async () => {
-    setBusy("connect");
+  const sendSetupEmail = async () => {
+    setBusy("setup-email");
     setError(null);
+    setSetupSentTo(null);
     try {
-      const res = await fetch("/api/payments/stripe/connect", {
+      const res = await fetch("/api/admin/integrations/stripe/setup-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId, email: account?.accountEmail ?? undefined }),
+        body: JSON.stringify({ tenantId, email: setupEmail, modules: ["stripe"] }),
       });
-      const json = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !json.url) throw new Error(json.error ?? "connect_failed");
-      window.location.href = json.url;
+      const json = (await res.json()) as { ok?: boolean; email?: string; error?: string };
+      if (!res.ok || !json.ok) throw new Error(json.error ?? "setup_email_failed");
+      setSetupSentTo(json.email ?? setupEmail);
     } catch (e) {
       setError(e instanceof Error ? e.message : "errore");
+    } finally {
       setBusy(null);
     }
   };
@@ -127,6 +160,13 @@ export function StripeIntegrationModal({
   const isConnected = account?.status === "connected" && account.chargesEnabled;
   const hasAccount = Boolean(account);
   const isDemoSandbox = account?.mode === "demo_sandbox_connect" || account?.mode === "demo_sandbox_platform";
+  const setupStatus: SetupUiStatus = error
+    ? "failed"
+    : isDemoSandbox
+      ? "active_demo"
+      : isConnected
+        ? "active"
+        : "pending";
 
   return (
     <div
@@ -151,6 +191,9 @@ export function StripeIntegrationModal({
             Integrazione · {isDemoSandbox ? "Stripe sandbox demo" : "Stripe (Connect Standard)"}
           </p>
           <h2 className="headline mt-1 text-2xl">{tenantName}</h2>
+          <div className="mt-2">
+            <SetupStatusBadge status={setupStatus} error={error} />
+          </div>
           <p className="mt-2 text-sm text-pork-ink/60">
             {isDemoSandbox
               ? "Questo tenant demo usa la sandbox Stripe condivisa della piattaforma. I pagamenti sono test mode e non producono incassi reali."
@@ -167,20 +210,37 @@ export function StripeIntegrationModal({
         <div className="mt-5 rounded-2xl bg-pork-cream p-4">
           {loading && !account ? (
             <p className="text-sm text-pork-ink/50">Caricamento…</p>
-          ) : !hasAccount ? (
+          ) : !hasAccount && !isDemoSandbox ? (
             <div>
               <div className="flex items-center gap-2 text-sm text-pork-ink/70">
                 <Unplug size={16} /> Nessun account Stripe collegato per questo tenant.
               </div>
+              <div className="mt-4">
+                <label className="text-xs font-black uppercase tracking-wide text-pork-ink/45">
+                  Email titolare
+                  <input
+                    type="email"
+                    value={setupEmail}
+                    onChange={(event) => setSetupEmail(event.target.value)}
+                    placeholder="titolare@azienda.it"
+                    className="mt-1 block w-full rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2.5 text-sm font-semibold normal-case tracking-normal text-pork-ink outline-none transition focus:border-pork-red/50"
+                  />
+                </label>
+              </div>
               <button
                 type="button"
-                onClick={connect}
-                disabled={busy === "connect"}
+                onClick={sendSetupEmail}
+                disabled={busy === "setup-email" || !setupEmail.trim()}
                 className="mt-4 inline-flex items-center gap-2 rounded-full bg-pork-red px-5 py-2.5 text-sm font-bold text-white hover:bg-pork-red/90 disabled:opacity-50"
               >
                 <Plug size={15} />
-                {busy === "connect" ? "Apertura Stripe…" : "Collega account Stripe"}
+                {busy === "setup-email" ? "Invio email…" : "Invia email configurazione"}
               </button>
+              {setupSentTo && (
+                <p className="mt-3 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-700">
+                  Email di configurazione inviata a {setupSentTo}.
+                </p>
+              )}
             </div>
           ) : (
             <div>
@@ -235,34 +295,53 @@ export function StripeIntegrationModal({
               )}
 
               {!isDemoSandbox && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={refresh}
-                    disabled={busy !== null}
-                    className="inline-flex items-center gap-2 rounded-full border-2 border-pork-ink/15 px-4 py-2 text-sm font-bold hover:bg-pork-ink/5 disabled:opacity-50"
-                  >
-                    <RefreshCw size={14} className={busy === "refresh" ? "animate-spin" : ""} />
-                    Aggiorna stato
-                  </button>
-                  <button
-                    type="button"
-                    onClick={connect}
-                    disabled={busy !== null}
-                    className="inline-flex items-center gap-2 rounded-full border-2 border-pork-ink/15 px-4 py-2 text-sm font-bold hover:bg-pork-ink/5 disabled:opacity-50"
-                  >
-                    <Plug size={14} />
-                    Ricollega
-                  </button>
-                  <button
-                    type="button"
-                    onClick={disconnect}
-                    disabled={busy !== null}
-                    className="inline-flex items-center gap-2 rounded-full border-2 border-rose-200 px-4 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
-                  >
-                    <Unplug size={14} />
-                    Disconnetti
-                  </button>
+                <div className="mt-4 space-y-3">
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-wide text-pork-ink/45">
+                      Email titolare
+                      <input
+                        type="email"
+                        value={setupEmail}
+                        onChange={(event) => setSetupEmail(event.target.value)}
+                        placeholder="titolare@azienda.it"
+                        className="mt-1 block w-full rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2.5 text-sm font-semibold normal-case tracking-normal text-pork-ink outline-none transition focus:border-pork-red/50"
+                      />
+                    </label>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={sendSetupEmail}
+                      disabled={busy !== null || !setupEmail.trim()}
+                      className="inline-flex items-center gap-2 rounded-full bg-pork-red px-4 py-2 text-sm font-bold text-white hover:bg-pork-red/90 disabled:opacity-50"
+                    >
+                      <Plug size={14} />
+                      {busy === "setup-email" ? "Invio email…" : "Invia email configurazione"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={refresh}
+                      disabled={busy !== null}
+                      className="inline-flex items-center gap-2 rounded-full border-2 border-pork-ink/15 px-4 py-2 text-sm font-bold hover:bg-pork-ink/5 disabled:opacity-50"
+                    >
+                      <RefreshCw size={14} className={busy === "refresh" ? "animate-spin" : ""} />
+                      Aggiorna stato
+                    </button>
+                    <button
+                      type="button"
+                      onClick={disconnect}
+                      disabled={busy !== null}
+                      className="inline-flex items-center gap-2 rounded-full border-2 border-rose-200 px-4 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                    >
+                      <Unplug size={14} />
+                      Disconnetti
+                    </button>
+                  </div>
+                  {setupSentTo && (
+                    <p className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-700">
+                      Email di configurazione inviata a {setupSentTo}.
+                    </p>
+                  )}
                 </div>
               )}
             </div>

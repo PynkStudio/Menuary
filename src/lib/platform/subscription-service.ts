@@ -7,6 +7,8 @@ import {
   computeFirstPayment,
 } from "@/lib/contracts/menuary-contract";
 import type { BillingCycle } from "@/lib/platform-crm-types";
+import { sendTenantSetupEmail } from "@/lib/tenant-setup/email";
+import type { TenantFeatureFlags, TenantVertical } from "@/lib/tenant";
 
 /** Giorni di tolleranza dal contratto: oltre la due_date il tenant viene sospeso. */
 export const PAYMENT_GRACE_DAYS = 15;
@@ -201,6 +203,12 @@ export async function activateSubscription(subscriptionId: string): Promise<void
     .eq("status", "pending");
 
   await activateTenant(sub.tenant_id as string | null, sub.lead_id as string | null);
+  await sendActivationSetupEmailIfNeeded(
+    sub.tenant_id as string | null,
+    sub.lead_id as string | null,
+  ).catch((err) => {
+    console.error("[subscription-service] tenant_setup_email_failed", err instanceof Error ? err.message : String(err));
+  });
 }
 
 /** Attiva il tenant sul dominio indicato e segna il lead come convertito/attivo. */
@@ -227,6 +235,48 @@ async function activateTenant(
       })
       .eq("id", leadId);
   }
+}
+
+async function sendActivationSetupEmailIfNeeded(
+  tenantId: string | null,
+  leadId: string | null,
+): Promise<void> {
+  if (!tenantId) return;
+
+  const { data: control } = await db()
+    .from("tenant_demo_controls")
+    .select("enabled")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if (control?.enabled !== true) return;
+
+  const { data: tenant } = await db()
+    .from("tenants")
+    .select("id,name,label,vertical,features")
+    .eq("id", tenantId)
+    .maybeSingle();
+  const features = tenant?.features && typeof tenant.features === "object" && !Array.isArray(tenant.features)
+    ? (tenant.features as Partial<TenantFeatureFlags>)
+    : null;
+  if (!features?.payments) return;
+
+  const { data: lead } = leadId
+    ? await db()
+        .from("platform_leads")
+        .select("contact_email,business_name,business_vertical")
+        .eq("id", leadId)
+        .maybeSingle()
+    : { data: null };
+  const email = lead?.contact_email;
+  if (!email) return;
+
+  await sendTenantSetupEmail({
+    tenantId,
+    tenantName: tenant?.name ?? tenant?.label ?? lead?.business_name ?? tenantId,
+    email,
+    vertical: ((tenant?.vertical as TenantVertical | undefined) ?? "food"),
+    modules: ["stripe"],
+  });
 }
 
 /**
