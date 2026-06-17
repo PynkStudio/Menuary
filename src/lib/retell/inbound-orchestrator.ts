@@ -15,6 +15,7 @@ import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer
 import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes } from "@/lib/orders/order-settings";
 import type { MenuOrderChannel } from "@/lib/types";
 import { isMenuOrderChannel } from "@/lib/menu-channels";
+import { euroToItalianWords, orderCodeToSpoken } from "@/lib/retell/number-speech";
 
 type Db = SupabaseClient<Database>;
 
@@ -1125,5 +1126,13 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     });
   }
 
-  return { ...order, payment, paymentMethod: effectivePaymentMethod };
+  // Versioni "parlate" per l'agente vocale: il codice letto cifra per cifra e il
+  // totale in lettere evitano la pronuncia errata del TTS.
+  return {
+    ...order,
+    code_spoken: orderCodeToSpoken(order.code),
+    total_spoken: euroToItalianWords(order.total),
+    payment,
+    paymentMethod: effectivePaymentMethod,
+  };
 }

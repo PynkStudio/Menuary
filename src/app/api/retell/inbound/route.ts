@@ -30,6 +30,33 @@ type RetellActionBody =
   | ({ action: "create_reservation" } & CreateRetellReservationInput)
   | ({ action: "create_order" } & CreateRetellOrderInput);
 
+// Errori "di input" (codice prodotto inesistente, voce fuori menu, prezzo da
+// confermare, canale non in accettazione, ecc.): non sono guasti del server, ma
+// condizioni che l'agente AI deve gestire conversazionalmente. Li mappiamo su 422
+// così Retell non mostra un "errore tecnico" generico e l'assistente può proporre
+// alternative. Tutto il resto resta 500.
+const CLIENT_ERROR_PREFIXES = [
+  "tenant_not_found",
+  "tenant_required",
+  "orders_not_accepting",
+  "reservations_not_accepting",
+  "empty_order",
+  "missing_items:",
+  "item_unavailable:",
+  "item_not_in_active_menu:",
+  "missing_extra:",
+  "price_to_confirm:",
+  "price_option_required:",
+  "delivery_address_required",
+  "payment_phone_required",
+  "recipient_phone_required",
+  "invalid_amount",
+];
+
+function statusForError(message: string): number {
+  return CLIENT_ERROR_PREFIXES.some((prefix) => message.startsWith(prefix)) ? 422 : 500;
+}
+
 function tenantFrom(req: NextRequest, body?: RetellActionBody | null): string {
   return (
     req.nextUrl.searchParams.get("tenant_id") ||
@@ -135,10 +162,10 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json(context);
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "retell_context_failed" },
-      { status: 500 },
-    );
+    const message = error instanceof Error ? error.message : "retell_context_failed";
+    const status = statusForError(message);
+    console.error(`[retell/inbound] GET tenant=${tenantId} status=${status} error=${message}`, error);
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -191,9 +218,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "unsupported_action" }, { status: 400 });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "retell_action_failed" },
-      { status: 500 },
+    const message = error instanceof Error ? error.message : "retell_action_failed";
+    const status = statusForError(message);
+    const action = body && "action" in body ? body.action : "unknown";
+    console.error(
+      `[retell/inbound] POST action=${action} tenant=${tenantFrom(req, body)} status=${status} error=${message}`,
+      error,
     );
+    return NextResponse.json({ error: message }, { status });
   }
 }
