@@ -1102,9 +1102,10 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   // Inviamo solo se abbiamo un telefono; in caso contrario l'agente comunicherà
   // verbalmente che l'ordine è registrato.
   let payment: ChannelPaymentRequest | null = null;
-  const canSendLink =
-    settings.paymentControls.enabled &&
-    Boolean(input.customerPhone?.trim());
+  // Inviamo SEMPRE il messaggio di checkout quando abbiamo un telefono, a prescindere
+  // dal metodo di pagamento: il template WhatsApp usato dipende poi da effectivePaymentMethod
+  // (online → "paga ora", on_site → "vedi riepilogo"), gestito in createChannelPaymentRequest.
+  const canSendLink = Boolean(input.customerPhone?.trim());
   if (canSendLink) {
     payment = await createChannelPaymentRequest({
       tenantId: input.tenantId,

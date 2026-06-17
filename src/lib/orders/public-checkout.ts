@@ -124,6 +124,26 @@ export async function getPublicCheckoutOrder(input: {
   };
 }
 
+/** Risolve un ordine dal solo public_token (usato dallo short-link /c/[token]). */
+export async function getOrderByPublicToken(token: string): Promise<{
+  tenantId: string;
+  code: string;
+  token: string;
+} | null> {
+  if (!token || token.length < 16) return null;
+  const db = createSupabaseServiceClient();
+  if (!db) throw new Error("supabase_service_unconfigured");
+  const { data, error } = await db
+    .from("orders")
+    .select("tenant_id, code, public_token")
+    .eq("public_token", token)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const row = data as unknown as { tenant_id: string; code: string; public_token: string };
+  return { tenantId: row.tenant_id, code: row.code, token: row.public_token };
+}
+
 export async function getOrderPublicTokenById(orderId: string): Promise<{
   tenantId: string;
   code: string;

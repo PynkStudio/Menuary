@@ -55,3 +55,46 @@ export async function sendTwilioTextMessage(
     channel: input.channel,
   };
 }
+
+export type SendTwilioTemplateMessageInput = {
+  channel: TwilioChannel;
+  to: string;
+  contentSid: string;
+  contentVariables: Record<string, string>;
+  from?: string | null;
+};
+
+/**
+ * Invio via Twilio Content API (template approvati Meta). Necessario per i
+ * messaggi WhatsApp business-initiated (fuori dalla finestra 24h), dove il
+ * testo libero verrebbe rifiutato.
+ */
+export async function sendTwilioTemplateMessage(
+  input: SendTwilioTemplateMessageInput,
+): Promise<SendTwilioTextMessageResult> {
+  const from = input.channel === "whatsapp"
+    ? normalizeTwilioWhatsappAddress(input.from ?? configuredTwilioFrom("whatsapp"))
+    : normalizeE164Address(input.from ?? configuredTwilioFrom("sms"));
+  const to = input.channel === "whatsapp"
+    ? normalizeTwilioWhatsappAddress(input.to)
+    : normalizeE164Address(input.to);
+
+  if (!from) throw new Error(`twilio_${input.channel}_from_unconfigured`);
+  if (!to) throw new Error("twilio_recipient_required");
+  if (!input.contentSid) throw new Error("twilio_content_sid_required");
+
+  const client = createTwilioClient();
+  const message = await client.messages.create({
+    from,
+    to,
+    contentSid: input.contentSid,
+    contentVariables: JSON.stringify(input.contentVariables),
+  });
+
+  return {
+    provider: "twilio",
+    sid: message.sid,
+    status: message.status,
+    channel: input.channel,
+  };
+}

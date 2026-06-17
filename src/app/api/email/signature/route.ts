@@ -21,7 +21,9 @@ export async function GET(request: Request) {
 
   const rawBrand = new URL(request.url).searchParams.get("brand");
   const brand: InboundEmailBrand =
-    rawBrand === "bizery" || rawBrand === "orpheo" ? rawBrand : "menuary";
+    rawBrand === "bizery" || rawBrand === "orpheo" || rawBrand === "pynkstudio"
+      ? rawBrand
+      : "menuary";
   const auto  = buildAutoSignature(profile, brand);
 
   return NextResponse.json({
