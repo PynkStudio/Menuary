@@ -1,5 +1,11 @@
 import "server-only";
 
+import {
+  getStripeSecretKey,
+  STRIPE_API_VERSION,
+  type StripeCredentialScope,
+} from "./config";
+
 // Wrapper minimale fetch-based per Stripe API. Nessuna dipendenza esterna
 // (in linea con channel-payment-links.ts esistente). Supporta header
 // `Stripe-Account` per agire sull'account collegato del tenant.
@@ -9,17 +15,15 @@ export type StripeRequestInit = {
   body?: Record<string, unknown>;
   /** Account Stripe Connect su cui agire (acct_xxx). Omettere per chiamate piattaforma. */
   stripeAccount?: string;
+  /** Secret esplicito, utile per demo sandbox/test mode. */
+  secretKey?: string;
+  /** Scope credenziali quando non viene passato secretKey. */
+  credentialScope?: StripeCredentialScope;
   /** Idempotency key (consigliata su POST). */
   idempotencyKey?: string;
 };
 
 const STRIPE_API = "https://api.stripe.com/v1";
-
-function platformSecret(): string {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error("stripe_platform_secret_unset");
-  return key;
-}
 
 // Serializza un oggetto annidato nel formato form-url-encoded che Stripe attende
 // (es. `payment_intent_data[metadata][order_id]=...`).
@@ -56,8 +60,8 @@ export async function stripeRequest<T>(
   init: StripeRequestInit = {},
 ): Promise<T> {
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${platformSecret()}`,
-    "Stripe-Version": "2024-12-18.acacia",
+    Authorization: `Bearer ${init.secretKey ?? getStripeSecretKey(init.credentialScope)}`,
+    "Stripe-Version": STRIPE_API_VERSION,
   };
   if (init.stripeAccount) headers["Stripe-Account"] = init.stripeAccount;
   if (init.idempotencyKey) headers["Idempotency-Key"] = init.idempotencyKey;

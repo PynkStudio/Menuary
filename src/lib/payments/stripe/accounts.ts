@@ -2,6 +2,10 @@ import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Json } from "@/lib/database.types";
+import {
+  getDemoSandboxStripeAccount,
+  type StripeAccountMode,
+} from "./config";
 
 export type TenantPaymentAccountStatus =
   | "pending"
@@ -26,6 +30,7 @@ export type TenantPaymentAccount = {
   connectedAt: string | null;
   disconnectedAt: string | null;
   metadata: Record<string, unknown>;
+  mode: StripeAccountMode;
 };
 
 type Row = {
@@ -65,6 +70,7 @@ function mapRow(row: Row): TenantPaymentAccount {
     connectedAt: row.connected_at,
     disconnectedAt: row.disconnected_at,
     metadata: row.metadata ?? {},
+    mode: "tenant_connect",
   };
 }
 
@@ -76,7 +82,33 @@ function serviceDb() {
 
 export async function getTenantPaymentAccount(
   tenantId: string,
+  opts: { demoSandbox?: boolean } = {},
 ): Promise<TenantPaymentAccount | null> {
+  if (opts.demoSandbox) {
+    const demo = getDemoSandboxStripeAccount();
+    if (demo) {
+      return {
+        id: `demo-sandbox:${tenantId}`,
+        tenantId,
+        provider: "stripe",
+        stripeAccountId: demo.stripeAccountId,
+        accountType: "standard",
+        chargesEnabled: demo.chargesEnabled,
+        payoutsEnabled: demo.payoutsEnabled,
+        detailsSubmitted: demo.detailsSubmitted,
+        accountEmail: demo.accountEmail,
+        accountCountry: demo.accountCountry,
+        oauthScope: null,
+        status: demo.status,
+        lastSyncedAt: null,
+        connectedAt: null,
+        disconnectedAt: null,
+        metadata: { demoSandbox: true },
+        mode: demo.mode,
+      };
+    }
+  }
+
   const db = serviceDb() as unknown as {
     from: (t: "tenant_payment_accounts") => {
       select: (c: string) => {

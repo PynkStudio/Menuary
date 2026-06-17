@@ -3,6 +3,7 @@ import { getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { PaymentSource } from "@/lib/payments/stripe/fees";
+import { isDemoHostname } from "@/lib/demo-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export async function POST(
 
   const url = new URL(req.url);
   const origin = `${url.protocol}//${url.host}`;
+  const demoSandbox = isDemoHostname(url.hostname);
   const returnPath = `/checkout/${encodeURIComponent(code)}?t=${encodeURIComponent(body.token)}`;
 
   try {
@@ -59,6 +61,7 @@ export async function POST(
       successUrl: `${origin}${returnPath}&status=success`,
       cancelUrl: `${origin}${returnPath}&status=cancel`,
       expiresInMinutes: 60,
+      demoSandbox,
     });
     const db = createSupabaseServiceClient();
     if (db) {

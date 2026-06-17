@@ -13,24 +13,35 @@ export const dynamic = "force-dynamic";
 //
 // Il segreto del webhook va salvato in STRIPE_WEBHOOK_SECRET (Connect).
 // Per uno webhook "Account" piattaforma usare STRIPE_WEBHOOK_SECRET_PLATFORM.
+// Per la sandbox demo condivisa usare STRIPE_DEMO_WEBHOOK_SECRET.
 export async function POST(req: NextRequest) {
   const payload = await req.text();
   const signature = req.headers.get("stripe-signature");
 
-  const connectSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const platformSecret = process.env.STRIPE_WEBHOOK_SECRET_PLATFORM;
-  const secret = connectSecret ?? platformSecret;
-  if (!secret) {
+  const secrets = [
+    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_WEBHOOK_SECRET_PLATFORM,
+    process.env.STRIPE_DEMO_WEBHOOK_SECRET,
+  ].filter((value): value is string => Boolean(value));
+  if (!secrets.length) {
     return NextResponse.json({ error: "webhook_secret_unset" }, { status: 503 });
   }
 
   let event;
+  let verifyError = "signature_verification_failed";
   try {
-    event = verifyStripeSignature({ payload, signatureHeader: signature, secret });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "signature_verification_failed";
+    for (const secret of secrets) {
+      try {
+        event = verifyStripeSignature({ payload, signatureHeader: signature, secret });
+        break;
+      } catch (err) {
+        verifyError = err instanceof Error ? err.message : verifyError;
+      }
+    }
+    if (!event) throw new Error(verifyError);
+  } catch {
     // Stripe richiede 4xx per firme invalide, altrimenti continua a ritentare.
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: verifyError }, { status: 400 });
   }
 
   try {

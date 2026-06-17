@@ -3,6 +3,7 @@ import "server-only";
 import { stripeRequest } from "./client";
 import { getTenantPaymentAccount } from "./accounts";
 import { applicationFeeCents, type PaymentSource } from "./fees";
+import { getDemoSandboxStripeAccount, type StripeAccountMode } from "./config";
 
 export type CheckoutLineItemInput = {
   name: string;
@@ -26,6 +27,8 @@ export type CreateCheckoutInput = {
   /** Scadenza sessione (minuti). Default 120 (max 24h da Stripe; min 30). */
   expiresInMinutes?: number;
   metadata?: Record<string, string>;
+  /** Usa la sandbox condivisa Menuary/Bizery sui tenant demo. */
+  demoSandbox?: boolean;
 };
 
 export type CheckoutSession = {
@@ -35,7 +38,8 @@ export type CheckoutSession = {
   expiresAt: number;
   amountTotalCents: number;
   applicationFeeCents: number;
-  stripeAccountId: string;
+  stripeAccountId: string | null;
+  accountMode: StripeAccountMode;
 };
 
 type StripeSession = {
@@ -65,13 +69,19 @@ export async function createCheckoutSession(
 ): Promise<CheckoutSession> {
   if (!input.items.length) throw new Error("checkout_no_items");
 
-  const account = await getTenantPaymentAccount(input.tenantId);
-  if (!account || !account.stripeAccountId) {
+  const account = await getTenantPaymentAccount(input.tenantId, {
+    demoSandbox: input.demoSandbox,
+  });
+  if (!account) {
     throw new Error("tenant_stripe_not_connected");
   }
   if (!account.chargesEnabled) {
     throw new Error("tenant_stripe_charges_disabled");
   }
+
+  const demoAccount = input.demoSandbox ? getDemoSandboxStripeAccount() : null;
+  const secretKey = demoAccount?.secretKey;
+  const stripeAccount = account.stripeAccountId ?? undefined;
 
   const currency = (input.currency ?? "eur").toLowerCase();
   const amountTotal = totalCents(input.items);
@@ -102,7 +112,7 @@ export async function createCheckoutSession(
       ...(input.paymentIntentDescription
         ? { description: trim(input.paymentIntentDescription, 1000) }
         : {}),
-      ...(feeCents > 0 ? { application_fee_amount: feeCents } : {}),
+      ...(feeCents > 0 && stripeAccount ? { application_fee_amount: feeCents } : {}),
     },
   };
 
@@ -127,9 +137,10 @@ export async function createCheckoutSession(
   const session = await stripeRequest<StripeSession>("/checkout/sessions", {
     method: "POST",
     body,
-    stripeAccount: account.stripeAccountId,
+    stripeAccount,
+    secretKey,
     idempotencyKey: input.orderId
-      ? `checkout:${input.tenantId}:${input.orderId}`
+      ? `checkout:${account.mode}:${input.tenantId}:${input.orderId}`
       : undefined,
   });
 
@@ -141,7 +152,8 @@ export async function createCheckoutSession(
     paymentIntentId: session.payment_intent,
     expiresAt: session.expires_at,
     amountTotalCents: session.amount_total ?? amountTotal,
-    applicationFeeCents: feeCents,
+    applicationFeeCents: stripeAccount ? feeCents : 0,
     stripeAccountId: account.stripeAccountId,
+    accountMode: account.mode,
   };
 }

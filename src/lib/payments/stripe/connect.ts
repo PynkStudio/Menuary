@@ -3,6 +3,11 @@ import "server-only";
 import { randomBytes, createHmac, timingSafeEqual } from "node:crypto";
 import { stripeRequest } from "./client";
 import { upsertTenantPaymentAccount } from "./accounts";
+import {
+  getStripeConnectClientId,
+  getStripeConnectStateSecret,
+  getStripeSecretKey,
+} from "./config";
 
 // Stripe Connect Standard: il tenant viene reindirizzato a Stripe per autorizzare
 // la connessione del proprio account. Al ritorno scambiamo il code per ottenere
@@ -13,9 +18,7 @@ import { upsertTenantPaymentAccount } from "./accounts";
 const STRIPE_OAUTH_AUTHORIZE = "https://connect.stripe.com/oauth/authorize";
 
 function clientId(): string {
-  const id = process.env.STRIPE_CONNECT_CLIENT_ID;
-  if (!id) throw new Error("stripe_connect_client_id_unset");
-  return id;
+  return getStripeConnectClientId();
 }
 
 function baseUrl(): string {
@@ -27,9 +30,7 @@ function baseUrl(): string {
 }
 
 function stateSecret(): string {
-  const s = process.env.STRIPE_CONNECT_STATE_SECRET ?? process.env.STRIPE_SECRET_KEY;
-  if (!s) throw new Error("stripe_state_secret_unset");
-  return s;
+  return getStripeConnectStateSecret();
 }
 
 // Lo "state" OAuth è firmato HMAC: contiene tenant_id + nonce + scadenza.
@@ -99,8 +100,7 @@ type OAuthTokenResponse = {
 // Scambia il code OAuth con stripe_user_id (l'account collegato).
 // Endpoint OAuth è su /oauth/token (form root), non sotto /v1/.
 async function exchangeOAuthCode(code: string): Promise<OAuthTokenResponse> {
-  const secret = process.env.STRIPE_SECRET_KEY;
-  if (!secret) throw new Error("stripe_platform_secret_unset");
+  const secret = getStripeSecretKey("tenant_connect");
   const params = new URLSearchParams({
     grant_type: "authorization_code",
     code,
@@ -158,8 +158,7 @@ export async function completeConnectOAuth(input: {
 
 /** Disconnetti l'account dall'app piattaforma (revoca OAuth lato Stripe). */
 export async function revokeConnectedAccount(stripeAccountId: string): Promise<void> {
-  const secret = process.env.STRIPE_SECRET_KEY;
-  if (!secret) throw new Error("stripe_platform_secret_unset");
+  const secret = getStripeSecretKey("tenant_connect");
   const params = new URLSearchParams({
     client_id: clientId(),
     stripe_user_id: stripeAccountId,

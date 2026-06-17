@@ -18,6 +18,7 @@ type AccountResponse = {
     status: "pending" | "connected" | "restricted" | "disconnected";
     connectedAt: string | null;
     lastSyncedAt: string | null;
+    mode?: "tenant_connect" | "demo_sandbox_connect" | "demo_sandbox_platform";
   } | null;
 };
 
@@ -124,7 +125,8 @@ export function StripeIntegrationModal({
   };
 
   const isConnected = account?.status === "connected" && account.chargesEnabled;
-  const hasAccount = Boolean(account?.stripeAccountId);
+  const hasAccount = Boolean(account);
+  const isDemoSandbox = account?.mode === "demo_sandbox_connect" || account?.mode === "demo_sandbox_platform";
 
   return (
     <div
@@ -145,11 +147,20 @@ export function StripeIntegrationModal({
         </button>
 
         <header>
-          <p className="impact-title text-xs text-pork-red">Integrazione · Stripe (Connect Standard)</p>
+          <p className="impact-title text-xs text-pork-red">
+            Integrazione · {isDemoSandbox ? "Stripe sandbox demo" : "Stripe (Connect Standard)"}
+          </p>
           <h2 className="headline mt-1 text-2xl">{tenantName}</h2>
           <p className="mt-2 text-sm text-pork-ink/60">
-            Ogni tenant collega il proprio account Stripe. I pagamenti vanno direttamente sull&apos;account del locale.
-            Fee piattaforma: <strong>0%</strong> per ordini al tavolo e online, <strong>3%</strong> per ordini AI (WhatsApp, voce Retell).
+            {isDemoSandbox
+              ? "Questo tenant demo usa la sandbox Stripe condivisa della piattaforma. I pagamenti sono test mode e non producono incassi reali."
+              : "Ogni tenant collega il proprio account Stripe. I pagamenti vanno direttamente sull'account del locale."}
+            {!isDemoSandbox && (
+              <>
+                {" "}
+                Fee piattaforma: <strong>0%</strong> per ordini al tavolo e online, <strong>3%</strong> per ordini AI (WhatsApp, voce Retell).
+              </>
+            )}
           </p>
         </header>
 
@@ -176,7 +187,9 @@ export function StripeIntegrationModal({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-xs text-pork-ink/50">Account Stripe</div>
-                  <div className="font-mono text-sm">{account!.stripeAccountId}</div>
+                  <div className="font-mono text-sm">
+                    {account!.stripeAccountId ?? "Sandbox piattaforma test"}
+                  </div>
                   {account?.accountEmail && (
                     <div className="mt-1 text-xs text-pork-ink/60">{account.accountEmail} · {account.accountCountry ?? "—"}</div>
                   )}
@@ -194,7 +207,11 @@ export function StripeIntegrationModal({
                 <div className="rounded-xl bg-white p-2.5">
                   <dt className="text-pork-ink/50">Payout</dt>
                   <dd className={account!.payoutsEnabled ? "font-bold text-emerald-600" : "font-bold text-amber-600"}>
-                    {account!.payoutsEnabled ? "Attivi" : "Non attivi"}
+                    {isDemoSandbox && account!.mode === "demo_sandbox_platform"
+                      ? "N/A test"
+                      : account!.payoutsEnabled
+                        ? "Attivi"
+                        : "Non attivi"}
                   </dd>
                 </div>
                 <div className="rounded-xl bg-white p-2.5">
@@ -205,41 +222,49 @@ export function StripeIntegrationModal({
                 </div>
               </dl>
 
-              {!isConnected && (
+              {isDemoSandbox && (
+                <p className="mt-3 rounded-lg bg-sky-50 p-3 text-xs text-sky-800">
+                  Sandbox condivisa: usa carte test Stripe. In produzione questo tenant dovrà collegare il proprio account Stripe.
+                </p>
+              )}
+
+              {!isDemoSandbox && !isConnected && (
                 <p className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
                   L&apos;account è collegato ma non ancora pronto a incassare. Il tenant deve completare l&apos;onboarding su Stripe (dati attività, conto bancario, verifica identità).
                 </p>
               )}
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={refresh}
-                  disabled={busy !== null}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-pork-ink/15 px-4 py-2 text-sm font-bold hover:bg-pork-ink/5 disabled:opacity-50"
-                >
-                  <RefreshCw size={14} className={busy === "refresh" ? "animate-spin" : ""} />
-                  Aggiorna stato
-                </button>
-                <button
-                  type="button"
-                  onClick={connect}
-                  disabled={busy !== null}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-pork-ink/15 px-4 py-2 text-sm font-bold hover:bg-pork-ink/5 disabled:opacity-50"
-                >
-                  <Plug size={14} />
-                  Ricollega
-                </button>
-                <button
-                  type="button"
-                  onClick={disconnect}
-                  disabled={busy !== null}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-rose-200 px-4 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
-                >
-                  <Unplug size={14} />
-                  Disconnetti
-                </button>
-              </div>
+              {!isDemoSandbox && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={refresh}
+                    disabled={busy !== null}
+                    className="inline-flex items-center gap-2 rounded-full border-2 border-pork-ink/15 px-4 py-2 text-sm font-bold hover:bg-pork-ink/5 disabled:opacity-50"
+                  >
+                    <RefreshCw size={14} className={busy === "refresh" ? "animate-spin" : ""} />
+                    Aggiorna stato
+                  </button>
+                  <button
+                    type="button"
+                    onClick={connect}
+                    disabled={busy !== null}
+                    className="inline-flex items-center gap-2 rounded-full border-2 border-pork-ink/15 px-4 py-2 text-sm font-bold hover:bg-pork-ink/5 disabled:opacity-50"
+                  >
+                    <Plug size={14} />
+                    Ricollega
+                  </button>
+                  <button
+                    type="button"
+                    onClick={disconnect}
+                    disabled={busy !== null}
+                    className="inline-flex items-center gap-2 rounded-full border-2 border-rose-200 px-4 py-2 text-sm font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                  >
+                    <Unplug size={14} />
+                    Disconnetti
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -249,7 +274,9 @@ export function StripeIntegrationModal({
         </div>
 
         <p className="mt-4 text-xs text-pork-ink/45">
-          Stripe Connect Standard: il tenant è proprietario dell&apos;account, ha la propria dashboard Stripe per fatture, rimborsi e dispute. Menuary preleva solo l&apos;application fee configurata per la sorgente dell&apos;ordine.
+          {isDemoSandbox
+            ? "Produzione: TODO configurare Stripe live della piattaforma per contratti Menuary/Bizery/PynkStudio e completare il flusso Connect per account tenant reali."
+            : "Stripe Connect Standard: il tenant è proprietario dell'account, ha la propria dashboard Stripe per fatture, rimborsi e dispute. Menuary preleva solo l'application fee configurata per la sorgente dell'ordine."}
         </p>
       </div>
     </div>

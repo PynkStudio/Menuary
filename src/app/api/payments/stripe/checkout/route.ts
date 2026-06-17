@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import type { PaymentSource } from "@/lib/payments/stripe/fees";
+import { isDemoHostname } from "@/lib/demo-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
   });
 
   try {
+    const url = new URL(req.url);
     const session = await createCheckoutSession({
       tenantId: body.tenantId,
       orderId: body.orderId,
@@ -71,6 +73,7 @@ export async function POST(req: NextRequest) {
       cancelUrl: body.cancelUrl,
       expiresInMinutes: body.expiresInMinutes,
       metadata: body.metadata,
+      demoSandbox: isDemoHostname(url.hostname),
     });
     return NextResponse.json({ session });
   } catch (err) {

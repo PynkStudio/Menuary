@@ -7,6 +7,7 @@ import {
   refreshAccountStatus,
   revokeConnectedAccount,
 } from "@/lib/payments/stripe/connect";
+import { isLikelyDemoTenant } from "@/lib/payments/stripe/config";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,9 @@ export async function GET(req: NextRequest) {
   if (!tenantId) return NextResponse.json({ error: "tenantId_required" }, { status: 400 });
 
   try {
-    let account = await getTenantPaymentAccount(tenantId);
-    if (refresh && account?.stripeAccountId) {
+    const demoSandbox = isLikelyDemoTenant(tenantId);
+    let account = await getTenantPaymentAccount(tenantId, { demoSandbox });
+    if (refresh && account?.stripeAccountId && account.mode === "tenant_connect") {
       account = await refreshAccountStatus({
         tenantId,
         stripeAccountId: account.stripeAccountId,
@@ -43,7 +45,7 @@ export async function DELETE(req: NextRequest) {
 
   try {
     const account = await getTenantPaymentAccount(tenantId);
-    if (account?.stripeAccountId) {
+    if (account?.stripeAccountId && account.mode === "tenant_connect") {
       // Best-effort: se Stripe risponde "already revoked" lo ignoriamo.
       try {
         await revokeConnectedAccount(account.stripeAccountId);

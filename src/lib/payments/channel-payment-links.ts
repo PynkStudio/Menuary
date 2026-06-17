@@ -5,6 +5,7 @@ import type { Json } from "@/lib/database.types";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { applicationFeeCents, type PaymentSource } from "@/lib/payments/stripe/fees";
+import { getStripeSecretKey, isLikelyDemoTenant } from "@/lib/payments/stripe/config";
 import { getOrderPublicTokenById } from "@/lib/orders/public-checkout";
 import { enqueueOutboundMessage, type OutboundChannel } from "@/lib/outbound/messages";
 import { getAiPhoneSettings } from "@/lib/retell/settings";
@@ -103,8 +104,9 @@ async function createCheckoutPageLink(
 async function createStripeDirect(
   input: CreateChannelPaymentRequestInput,
 ): Promise<StripeAttempt | null> {
-  const account = await getTenantPaymentAccount(input.tenantId);
-  if (!account?.stripeAccountId || !account.chargesEnabled) return null;
+  const demoSandbox = isLikelyDemoTenant(input.tenantId);
+  const account = await getTenantPaymentAccount(input.tenantId, { demoSandbox });
+  if (!account?.chargesEnabled) return null;
 
   const source = sourceForChannel(input.channel);
   const url = baseUrl();
@@ -126,6 +128,7 @@ async function createStripeDirect(
       channel: input.channel,
       ...(input.reservationId ? { reservation_id: input.reservationId } : {}),
     },
+    demoSandbox,
   });
 
   return {
@@ -143,7 +146,13 @@ async function createStripeDirect(
 async function createWithPlatform(
   input: CreateChannelPaymentRequestInput,
 ): Promise<StripeAttempt> {
-  const secret = process.env.STRIPE_SECRET_KEY;
+  const secret = (() => {
+    try {
+      return getStripeSecretKey("tenant_connect");
+    } catch {
+      return null;
+    }
+  })();
   const url = baseUrl();
   if (!secret) {
     return {

@@ -41,6 +41,8 @@ async function createStripeCheckout(
   contractId: string,
   data: ContractData,
 ): Promise<PlatformCheckoutResult> {
+  // TODO(stripe-production): separare e configurare l'account Stripe live piattaforma
+  // per contratti Menuary/Bizery/PynkStudio prima di abilitare incassi reali.
   const total = computeFirstPaymentTotal(data.economiche);
   const amountCents = Math.round(total * 100);
   const description = contractPaymentDescription(data);
@@ -50,6 +52,7 @@ async function createStripeCheckout(
 
   const session = await stripeRequest<StripeSession>("/checkout/sessions", {
     method: "POST",
+    credentialScope: "platform_contract",
     body: {
       mode: "payment",
       "payment_method_types[0]": "card",
