@@ -130,31 +130,51 @@ export function PriceEditor({
       )}
 
       {value.kind === "sized" && (
-        <div className="grid grid-cols-2 gap-3">
-          <NumberField
-            label="Small (€)"
-            value={value.small}
-            onChange={(v) => onChange({ ...value, small: v })}
-          />
-          <NumberField
-            label="Big (€)"
-            value={value.big}
-            onChange={(v) => onChange({ ...value, big: v })}
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField
+              label="Small (€)"
+              value={value.small}
+              onChange={(v) => onChange({ ...value, small: v })}
+            />
+            <NumberField
+              label="Big (€)"
+              value={value.big}
+              onChange={(v) => onChange({ ...value, big: v })}
+            />
+          </div>
+          <DefaultKeyPicker
+            options={[
+              { key: "small", label: "Small" },
+              { key: "big", label: "Big" },
+            ]}
+            value={value.defaultKey ?? "small"}
+            onChange={(k) => onChange({ ...value, defaultKey: k as "small" | "big" })}
           />
         </div>
       )}
 
       {value.kind === "persone" && (
-        <div className="grid grid-cols-2 gap-3">
-          <NumberField
-            label="2 persone (€)"
-            value={value.per2}
-            onChange={(v) => onChange({ ...value, per2: v })}
-          />
-          <NumberField
-            label="4 persone (€)"
-            value={value.per4}
-            onChange={(v) => onChange({ ...value, per4: v })}
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField
+              label="2 persone (€)"
+              value={value.per2}
+              onChange={(v) => onChange({ ...value, per2: v })}
+            />
+            <NumberField
+              label="4 persone (€)"
+              value={value.per4}
+              onChange={(v) => onChange({ ...value, per4: v })}
+            />
+          </div>
+          <DefaultKeyPicker
+            options={[
+              { key: "per2", label: "2 persone" },
+              { key: "per4", label: "4 persone" },
+            ]}
+            value={value.defaultKey ?? "per2"}
+            onChange={(k) => onChange({ ...value, defaultKey: k as "per2" | "per4" })}
           />
         </div>
       )}
@@ -163,10 +183,11 @@ export function PriceEditor({
         <div className="space-y-2">
           {volumeVariants().map((variant, index) => {
             const variants = volumeVariants();
+            const isDefault = (value.defaultKey ?? variants[0]?.id) === variant.id;
             return (
             <div
               key={variant.id}
-              className="grid gap-2 rounded-xl border border-pork-ink/10 bg-white p-3 sm:grid-cols-[auto_1fr_130px_auto]"
+              className="grid gap-2 rounded-xl border border-pork-ink/10 bg-white p-3 sm:grid-cols-[auto_1fr_130px_auto_auto]"
             >
               <div className="flex flex-col gap-1 self-end pb-2">
                 <button
@@ -211,6 +232,20 @@ export function PriceEditor({
               />
               <button
                 type="button"
+                title={isDefault ? "Variante di default" : "Imposta come default"}
+                onClick={() => onChange({ ...value, defaultKey: variant.id })}
+                className={
+                  "self-end rounded-xl border p-2 transition-colors " +
+                  (isDefault
+                    ? "border-pork-ink bg-pork-ink text-pork-cream"
+                    : "border-pork-ink/10 text-pork-ink/30 hover:border-pork-ink/40 hover:text-pork-ink/60")
+                }
+                aria-label={`${isDefault ? "Variante di default" : "Imposta come default"} variante ${index + 1}`}
+              >
+                <span className="text-[11px] font-bold">DEF</span>
+              </button>
+              <button
+                type="button"
                 onClick={() =>
                   setVolumeVariants(volumeVariants().filter((item) => item.id !== variant.id))
                 }
@@ -242,6 +277,37 @@ export function PriceEditor({
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function DefaultKeyPicker({
+  options,
+  value,
+  onChange,
+}: {
+  options: { key: string; label: string }[];
+  value: string;
+  onChange: (key: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-bold uppercase tracking-wide text-pork-ink/40">Default</span>
+      {options.map((opt) => (
+        <button
+          key={opt.key}
+          type="button"
+          onClick={() => onChange(opt.key)}
+          className={
+            "rounded-full px-2.5 py-1 text-xs font-bold transition-colors " +
+            (value === opt.key
+              ? "bg-pork-ink text-pork-cream"
+              : "bg-pork-ink/5 text-pork-ink/50 hover:bg-pork-ink/10")
+          }
+        >
+          {opt.label}
+        </button>
+      ))}
     </div>
   );
 }

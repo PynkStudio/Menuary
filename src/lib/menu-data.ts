@@ -12,13 +12,14 @@ export type { MenuAllergen };
 
 export type PriceFormat =
   | { kind: "single"; value: number }
-  | { kind: "sized"; big: number; small: number }
-  | { kind: "persone"; per2: number; per4: number }
+  | { kind: "sized"; big: number; small: number; defaultKey?: "small" | "big" }
+  | { kind: "persone"; per2: number; per4: number; defaultKey?: "per2" | "per4" }
   | {
       kind: "volume";
       small: { label: string; price: number };
       large: { label: string; price: number };
       variants?: Array<{ id: string; label: string; price: number }>;
+      defaultKey?: string;
     };
 
 export type BuiltInMenuTag = "firma" | "piccante" | "veg" | "novita";

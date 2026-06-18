@@ -271,42 +271,47 @@ function formatPrice(price: Json): string {
   return "Prezzo da confermare";
 }
 
-function listPriceOptions(price: Json): { code: string; label: string; value: number }[] {
-  if (typeof price === "number") return [{ code: "standard", label: "Standard", value: price }];
+function listPriceOptions(price: Json): { code: string; label: string; value: number; isDefault: boolean }[] {
+  if (typeof price === "number") return [{ code: "standard", label: "Standard", value: price, isDefault: true }];
   if (!price || Array.isArray(price) || typeof price !== "object") return [];
   const p = price as Record<string, Json | undefined>;
+  const defaultKey = typeof p.defaultKey === "string" ? p.defaultKey : null;
   if (p.kind === "single" && typeof p.value === "number") {
-    return [{ code: "standard", label: "Standard", value: p.value }];
+    return [{ code: "standard", label: "Standard", value: p.value, isDefault: true }];
   }
   if (p.kind === "sized" && typeof p.small === "number" && typeof p.big === "number") {
-    return [
+    const opts = [
       { code: "small", label: "Small", value: p.small },
       { code: "big", label: "Big", value: p.big },
     ];
+    return opts.map((o, i) => ({ ...o, isDefault: defaultKey ? o.code === defaultKey : i === 0 }));
   }
   if (p.kind === "persone" && typeof p.per2 === "number" && typeof p.per4 === "number") {
-    return [
+    const opts = [
       { code: "per2", label: "2 persone", value: p.per2 },
       { code: "per4", label: "4 persone", value: p.per4 },
     ];
+    return opts.map((o, i) => ({ ...o, isDefault: defaultKey ? o.code === defaultKey : i === 0 }));
   }
   if (p.kind === "volume" && p.small && p.large) {
     if (Array.isArray(p.variants)) {
-      return p.variants.flatMap((variant, index) => {
+      const opts = p.variants.flatMap((variant, index) => {
         if (!variant || typeof variant !== "object" || Array.isArray(variant)) return [];
         const v = variant as Record<string, Json | undefined>;
         return typeof v.label === "string" && typeof v.price === "number"
           ? [{ code: typeof v.id === "string" ? v.id : `volume-${index}`, label: v.label, value: v.price }]
           : [];
       });
+      return opts.map((o, i) => ({ ...o, isDefault: defaultKey ? o.code === defaultKey : i === 0 }));
     }
     const small = p.small as Record<string, Json | undefined>;
     const large = p.large as Record<string, Json | undefined>;
     if (typeof small.label === "string" && typeof small.price === "number" && typeof large.label === "string" && typeof large.price === "number") {
-      return [
+      const opts = [
         { code: "small", label: small.label, value: small.price },
         { code: "large", label: large.label, value: large.price },
       ];
+      return opts.map((o, i) => ({ ...o, isDefault: defaultKey ? o.code === defaultKey : i === 0 }));
     }
   }
   return [];
@@ -317,12 +322,15 @@ function resolveNumericPrice(itemCode: string, price: Json, selectedOption?: str
   if (options.length === 0) throw new Error(`price_to_confirm:${itemCode}`);
   if (options.length === 1) return options[0].value;
 
-  const selected = selectedOption?.trim().toLocaleLowerCase("it-IT");
-  const option = options.find((candidate) => candidate.code.toLocaleLowerCase("it-IT") === selected);
-  if (!option) {
-    throw new Error(`price_option_required:${itemCode}:${options.map((candidate) => candidate.code).join(",")}`);
+  if (selectedOption) {
+    const selected = selectedOption.trim().toLocaleLowerCase("it-IT");
+    const option = options.find((candidate) => candidate.code.toLocaleLowerCase("it-IT") === selected);
+    if (option) return option.value;
   }
-  return option.value;
+
+  // Nessuna selezione esplicita: usa la variante di default configurata nel menu,
+  // oppure la prima disponibile come fallback.
+  return (options.find((o) => o.isDefault) ?? options[0]).value;
 }
 
 function money(value: number): string {
@@ -729,6 +737,7 @@ export async function buildRetellInboundContext(
                 code: option.code,
                 label: option.label,
                 price: formatEuro(option.value),
+                isDefault: option.isDefault,
               })),
               tags: item.tags ?? [],
               allergens: item.allergens ?? [],
