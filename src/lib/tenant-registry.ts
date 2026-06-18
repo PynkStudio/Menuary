@@ -271,7 +271,7 @@ export const KIMOS_MODULE_FLAGS: TenantFeatureFlags = {
   aiPhone: true,
   aiWhatsapp: true,
   hubriseSync: false,
-  payments: false,
+  payments: true,
 };
 
 /** Officina KAM: primo tenant reale Bizery — officina auto e moto. */

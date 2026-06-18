@@ -10,6 +10,7 @@ import type { Database, Json } from "@/lib/database.types";
 import { getAiPhoneSettings, isAiPhoneControlAccepting, type AiPhoneSettings } from "@/lib/retell/settings";
 import { createChannelPaymentRequest, type ChannelPaymentRequest, type PaymentLinkChannel } from "@/lib/payments/channel-payment-links";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
+import { tenantUsesStripeDemoSandbox } from "@/lib/payments/stripe/sandbox-policy";
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
 import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes } from "@/lib/orders/order-settings";
@@ -218,6 +219,8 @@ type ExtraListItemRow = Database["public"]["Tables"]["extra_list_items"]["Row"];
 type ItemExtraRow = ExtraListItemRow & { item_id: string };
 
 const MENU_TIMEZONE = "Europe/Rome";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function svc(): Db {
   const client = createSupabaseServiceClient();
@@ -836,6 +839,8 @@ export async function getRetellAvailability(input: RetellAvailabilityInput) {
 
 export async function createRetellReservation(input: CreateRetellReservationInput) {
   const db = svc();
+  if (!findTenantById(input.tenantId)) throw new Error("tenant_not_found");
+  const locationId = input.locationId && UUID_RE.test(input.locationId) ? input.locationId : null;
   const settings = await getAiPhoneSettings(input.tenantId);
   if (!settings.enabled || !isAiPhoneControlAccepting(settings.quickSettings.acceptReservations)) {
     throw new Error("reservations_not_accepting");
@@ -859,7 +864,7 @@ export async function createRetellReservation(input: CreateRetellReservationInpu
     .from("reservation_requests")
     .insert({
       tenant_id: input.tenantId,
-      location_id: input.locationId ?? null,
+      location_id: locationId,
       customer_id: identity?.customerId ?? null,
       customer_name: input.customerName,
       customer_phone: identity?.phone ?? input.customerPhone,
@@ -897,6 +902,12 @@ export async function createRetellReservation(input: CreateRetellReservationInpu
 
 export async function createRetellOrder(input: CreateRetellOrderInput) {
   const db = svc();
+  // L'assistente AI a volte inventa il tenantId (es. il placeholder "kimos_tenant_id")
+  // invece di usare {{tenant_id}}: senza questo guard finiva in un 500 da FK su customers.
+  if (!findTenantById(input.tenantId)) throw new Error("tenant_not_found");
+  // Idem per il locationId (es. "kimos_main"): le sedi reali sono UUID, altrimenti
+  // la usiamo come sede di default (null) per non rompere le foreign key.
+  const locationId = input.locationId && UUID_RE.test(input.locationId) ? input.locationId : null;
   const settings = await getAiPhoneSettings(input.tenantId);
   if (!settings.enabled || !isAiPhoneControlAccepting(settings.quickSettings.acceptNewOrders)) {
     throw new Error("orders_not_accepting");
@@ -912,8 +923,9 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   //   4) fallback storico ai flag requireForTakeaway/Delivery quando policy="both"
   //      e nessuna scelta esplicita è stata raccolta.
   const tenantProfile = findTenantById(input.tenantId);
+  const useDemoSandbox = tenantUsesStripeDemoSandbox(input.tenantId);
   const stripeAccount = tenantProfile?.features.payments
-    ? await getTenantPaymentAccount(input.tenantId).catch(() => null)
+    ? await getTenantPaymentAccount(input.tenantId, { demoSandbox: useDemoSandbox }).catch(() => null)
     : null;
   const stripeReady = Boolean(stripeAccount?.chargesEnabled);
   const policy = settings.paymentControls.acceptedMethods;
@@ -1000,9 +1012,9 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     const item = resolvedByRequested.get(line.itemCode)!;
     if (!item.available) throw new Error(`item_unavailable:${line.itemCode}`);
     const category = categoriesById.get(item.category_id);
-    const isWrongLocation = input.locationId && (
-      (item.location_id && item.location_id !== input.locationId) ||
-      (category?.location_id && category.location_id !== input.locationId)
+    const isWrongLocation = locationId && (
+      (item.location_id && item.location_id !== locationId) ||
+      (category?.location_id && category.location_id !== locationId)
     );
     if (
       !category ||
@@ -1034,7 +1046,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     };
   });
   const total = rows.reduce((sum, row) => sum + row.row.line_total, 0);
-  const orderSettings = await loadOrderSettings(db, input.tenantId, input.locationId ?? null);
+  const orderSettings = await loadOrderSettings(db, input.tenantId, locationId);
   const hasNotes =
     Boolean(input.notes?.trim()) ||
     Boolean(input.delivery?.notes?.trim()) ||
@@ -1081,7 +1093,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       notes: [input.notes, identity?.phone || input.customerPhone ? `Telefono: ${identity?.phone ?? input.customerPhone}` : null]
         .filter(Boolean)
         .join("\n") || null,
-      location_id: input.locationId ?? null,
+      location_id: locationId,
       status: initialStatus,
       customer_phone: identity?.phone ?? input.customerPhone ?? null,
       fulfillment_type: fulfillmentType,
