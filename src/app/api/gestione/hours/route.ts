@@ -4,6 +4,8 @@ import { triggerGoogleHoursSync } from "@/lib/google/hours-sync";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sanitizeHoursWeek, type DaySchedule } from "@/lib/venue-hours";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
+import { authorizeGestione } from "@/lib/gestione-auth";
 
 const SLOT_RE = /^([01]\d|2[0-3]):[0-5]\d\s–\s([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -53,25 +55,20 @@ export async function POST(request: Request) {
   const db = createSupabaseServiceClient();
   if (!db) return NextResponse.json({ error: "DB non disponibile" }, { status: 500 });
 
-  // Risolvi la location: esplicita oppure default del tenant
-  let locationId = body.locationId;
-  if (!locationId) {
-    const { data: defLoc } = await db
-      .from("locations")
-      .select("id")
-      .eq("tenant_id", body.tenantId)
-      .order("is_default", { ascending: false })
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-    locationId = defLoc?.id;
-  }
+  const auth = await authorizeGestione(body.tenantId);
+  if (!auth.ok) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const locationId = auth.isDemo
+    ? body.locationId
+    : (await requireActiveGestioneLocation(body.tenantId)).id;
 
   if (!locationId) {
     return NextResponse.json(
       { error: "Nessuna sede trovata per il tenant" },
       { status: 404 },
     );
+  }
+  if (!auth.isDemo && body.locationId && body.locationId !== locationId) {
+    return NextResponse.json({ error: "Sede non attiva" }, { status: 403 });
   }
 
   // Verifica che la location appartenga al tenant (evita scritture cross-tenant)

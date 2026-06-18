@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 export const runtime = "nodejs";
+
+async function findItemDbId(tenantId: string, locationId: string, itemId: string) {
+  const svc = createSupabaseServiceClient();
+  if (!svc) return null;
+  const { data } = await svc
+    .from("menu_items")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .eq("location_id", locationId)
+    .eq("code", itemId)
+    .maybeSingle();
+  return data?.id ?? null;
+}
 
 // GET ?tenantId=xxx&itemId=yyy  → tutte le traduzioni di un piatto
 export async function GET(req: NextRequest) {
@@ -16,16 +30,20 @@ export async function GET(req: NextRequest) {
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (auth.isDemo) return NextResponse.json([]);
+  const location = await requireActiveGestioneLocation(tenantId);
 
   const svc = createSupabaseServiceClient();
   if (!svc) return NextResponse.json([]);
 
-  // menu_item_id è uuid nel DB, itemId è la stringa dell'ID client
+  const itemDbId = await findItemDbId(tenantId, location.id, itemId);
+  if (!itemDbId) return NextResponse.json([]);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (svc as any)
     .from("menu_item_translations")
     .select("locale, name, description, ingredients")
-    .eq("menu_item_id", itemId)
+    .eq("menu_item_id", itemDbId)
     .eq("tenant_id", tenantId);
 
   if (error) return NextResponse.json([], { status: 200 });
@@ -57,16 +75,20 @@ export async function POST(req: NextRequest) {
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (auth.isDemo) return NextResponse.json({ ok: true });
+  const location = await requireActiveGestioneLocation(tenantId);
 
   const svc = createSupabaseServiceClient();
   if (!svc) return NextResponse.json({ error: "db_unavailable" }, { status: 503 });
+  const itemDbId = await findItemDbId(tenantId, location.id, itemId);
+  if (!itemDbId) return NextResponse.json({ error: "item_not_found" }, { status: 404 });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (svc as any)
     .from("menu_item_translations")
     .upsert(
       {
-        menu_item_id: itemId,
+        menu_item_id: itemDbId,
         tenant_id: tenantId,
         locale,
         name: body.name ?? "",

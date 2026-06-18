@@ -16,6 +16,7 @@ import { demoReservations } from "@/lib/demo-fixtures";
 import { ReservationSettingsPanel } from "@/components/gestione/reservation-settings-panel";
 import { ReservationPhoneActions } from "@/components/gestione/reservation-phone-actions";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
+import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Filter = "today" | "upcoming" | "pending" | "confirmed" | "history" | "all";
 const FILTERS: { id: Filter; labelKey: keyof GestioneMessages["reservations"]["filters"] }[] = [
@@ -56,7 +57,7 @@ function inDays(days: number): string {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0, 10);
 }
 
-async function fetchReservations(tenantSlug: string, filter: Filter): Promise<ReservationRow[]> {
+async function fetchReservations(tenantSlug: string, locationId: string, filter: Filter): Promise<ReservationRow[]> {
   const svc = createSupabaseServiceClient();
   if (!svc) return [];
 
@@ -65,7 +66,8 @@ async function fetchReservations(tenantSlug: string, filter: Filter): Promise<Re
     .select(
       "id, customer_name, customer_phone, covers, reservation_date, reservation_time, notes, status, table_id, assigned_area, special_request_tags, channel, service_id, duration_minutes, service:menu_items!reservation_requests_service_id_fkey(name, duration_minutes)",
     )
-    .eq("tenant_id", tenantSlug);
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", locationId);
 
   const today = todayIso();
   switch (filter) {
@@ -159,7 +161,12 @@ export default async function PrenotazioniPage({
 
   const filter: Filter = FILTERS.some((x) => x.id === f) ? (f as Filter) : "today";
   const demoVertical = tenant.vertical === "food" ? "food" : "services";
-  const reservations = auth.isDemo ? filterDemoReservations(demoReservations(demoVertical), filter) : await fetchReservations(tenantSlug, filter);
+  const activeLocation = auth.isDemo ? null : await getActiveGestioneLocation(tenantSlug);
+  const reservations = auth.isDemo
+    ? filterDemoReservations(demoReservations(demoVertical), filter)
+    : activeLocation
+      ? await fetchReservations(tenantSlug, activeLocation.id, filter)
+      : [];
   const isServicesVertical = tenant.vertical === "services" || tenant.vertical === "creative";
 
   const vertical = getVerticalMeta(tenant.vertical);

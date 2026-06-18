@@ -19,6 +19,7 @@ function rowToLocation(row: LocationRow): TenantLocation {
     city: row.city ?? null,
     phone: row.phone ?? null,
     email: row.email ?? null,
+    hours: row.hours,
     isDefault: row.is_default,
     routingMode: (row.routing_mode as LocationRoutingMode) ?? "both",
   };

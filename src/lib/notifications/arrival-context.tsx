@@ -34,13 +34,13 @@ const ZERO: Counters = { orders: 0, reservations: 0, ready: 0 };
 
 const Ctx = createContext<ArrivalContextValue | null>(null);
 
-const COUNTER_STORAGE_KEY = (tenantId: string) =>
-  `menuary:arrival-counters:${tenantId}`;
+const COUNTER_STORAGE_KEY = (tenantId: string, locationId?: string) =>
+  `menuary:arrival-counters:${tenantId}:${locationId ?? "all"}`;
 
-function readStored(tenantId: string): Counters {
+function readStored(tenantId: string, locationId?: string): Counters {
   if (typeof window === "undefined") return { ...ZERO };
   try {
-    const raw = window.sessionStorage.getItem(COUNTER_STORAGE_KEY(tenantId));
+    const raw = window.sessionStorage.getItem(COUNTER_STORAGE_KEY(tenantId, locationId));
     if (!raw) return { ...ZERO };
     const parsed = JSON.parse(raw) as Partial<Counters>;
     return {
@@ -53,11 +53,11 @@ function readStored(tenantId: string): Counters {
   }
 }
 
-function writeStored(tenantId: string, counters: Counters): void {
+function writeStored(tenantId: string, locationId: string | undefined, counters: Counters): void {
   if (typeof window === "undefined") return;
   try {
     window.sessionStorage.setItem(
-      COUNTER_STORAGE_KEY(tenantId),
+      COUNTER_STORAGE_KEY(tenantId, locationId),
       JSON.stringify(counters),
     );
   } catch {
@@ -67,6 +67,7 @@ function writeStored(tenantId: string, counters: Counters): void {
 
 type ArrivalAlertsProviderProps = {
   tenantId: string;
+  locationId?: string;
   /** Se true, refresha i Server Components su evento (gestione). KDS = false (legge da store). */
   refreshOnChange?: boolean;
   /** Se true, ribadisce status changes a 'pronto' come canale autonomo. */
@@ -76,13 +77,18 @@ type ArrivalAlertsProviderProps = {
 
 export function ArrivalAlertsProvider({
   tenantId,
+  locationId,
   refreshOnChange = false,
   enableReadyChannel = true,
   children,
 }: ArrivalAlertsProviderProps) {
   const router = useRouter();
-  const [counters, setCounters] = useState<Counters>(() => readStored(tenantId));
+  const [counters, setCounters] = useState<Counters>(() => readStored(tenantId, locationId));
   const [muted, setMutedState] = useState<boolean>(() => isMuted());
+
+  useEffect(() => {
+    setCounters(readStored(tenantId, locationId));
+  }, [locationId, tenantId]);
 
   // Throttle refresh: pattern già usato da OrdersLiveRefresh.
   const refreshPendingRef = useRef<number | null>(null);
@@ -99,12 +105,12 @@ export function ArrivalAlertsProvider({
     (kind: ArrivalKind, chime: ChimeKind) => {
       setCounters((c) => {
         const next = { ...c, [kind]: c[kind] + 1 };
-        writeStored(tenantId, next);
+        writeStored(tenantId, locationId, next);
         return next;
       });
       playChime(chime);
     },
-    [tenantId],
+    [locationId, tenantId],
   );
 
   const acknowledge = useCallback(
@@ -112,11 +118,11 @@ export function ArrivalAlertsProvider({
       setCounters((c) => {
         if (c[kind] === 0) return c;
         const next = { ...c, [kind]: 0 };
-        writeStored(tenantId, next);
+        writeStored(tenantId, locationId, next);
         return next;
       });
     },
-    [tenantId],
+    [locationId, tenantId],
   );
 
   const toggleMute = useCallback(() => {
@@ -152,6 +158,8 @@ export function ArrivalAlertsProvider({
       if (Number.isNaN(ts)) return true;
       return ts >= mountedAt - 5_000;
     };
+    const isActiveLocation = (row: Record<string, unknown> | null | undefined) =>
+      !locationId || row?.location_id === locationId;
 
     const channel = supabase
       .channel(`arrival-alerts-${tenantId}`)
@@ -165,6 +173,7 @@ export function ArrivalAlertsProvider({
         },
         (payload) => {
           const row = payload.new as Record<string, unknown> | undefined;
+          if (!isActiveLocation(row)) return;
           if (!isFresh(row)) {
             scheduleRefresh();
             return;
@@ -188,6 +197,7 @@ export function ArrivalAlertsProvider({
         (payload) => {
           const oldRow = payload.old as Record<string, unknown> | undefined;
           const newRow = payload.new as Record<string, unknown> | undefined;
+          if (!isActiveLocation(newRow)) return;
           const prev = oldRow?.status;
           const next = newRow?.status;
           // pending_confirmation -> nuovo: ordine appena confermato (auto o manuale)
@@ -218,6 +228,7 @@ export function ArrivalAlertsProvider({
         },
         (payload) => {
           const row = payload.new as Record<string, unknown> | undefined;
+          if (!isActiveLocation(row)) return;
           if (!isFresh(row)) {
             scheduleRefresh();
             return;
@@ -239,7 +250,7 @@ export function ArrivalAlertsProvider({
       }
       void supabase.removeChannel(channel);
     };
-  }, [tenantId, bump, scheduleRefresh, enableReadyChannel]);
+  }, [tenantId, locationId, bump, scheduleRefresh, enableReadyChannel]);
 
   const value = useMemo<ArrivalContextValue>(
     () => ({ counters, acknowledge, muted, toggleMute }),

@@ -4,6 +4,7 @@ import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { createShift, deleteShift } from "./actions";
 import { demoTurni } from "@/lib/demo-fixtures";
+import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Shift = {
   id: string;
@@ -30,7 +31,7 @@ function weekRange(): { from: Date; to: Date } {
   return { from, to };
 }
 
-async function fetchTurni(tenantSlug: string): Promise<{ shifts: Shift[]; employees: Employee[] }> {
+async function fetchTurni(tenantSlug: string, locationId: string): Promise<{ shifts: Shift[]; employees: Employee[] }> {
   const svc = createSupabaseServiceClient();
   if (!svc) return { shifts: [], employees: [] };
   const { from, to } = weekRange();
@@ -39,6 +40,7 @@ async function fetchTurni(tenantSlug: string): Promise<{ shifts: Shift[]; employ
       .from("shifts")
       .select("id, employee_id, start_at, end_at, role, status, note")
       .eq("tenant_id", tenantSlug)
+      .eq("location_id", locationId)
       .gte("start_at", from.toISOString())
       .lt("start_at", to.toISOString())
       .order("start_at"),
@@ -75,7 +77,12 @@ export default async function TurniPage({
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) notFound();
 
-  const data = auth.isDemo ? demoTurni() : await fetchTurni(tenantSlug);
+  const activeLocation = auth.isDemo ? null : await getActiveGestioneLocation(tenantSlug);
+  const data = auth.isDemo
+    ? demoTurni()
+    : activeLocation
+      ? await fetchTurni(tenantSlug, activeLocation.id)
+      : { shifts: [], employees: [] };
   const { from } = weekRange();
   const employeesById = new Map(data.employees.map((e) => [e.user_id, e]));
 

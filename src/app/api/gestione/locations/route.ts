@@ -24,14 +24,15 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: access } = await supabase
-    .from("admin_users")
+  const { data: siteadmin } = await supabase
+    .from("siteadmin")
     .select("id")
-    .eq("auth_user_id", user.id)
-    .eq("tenant_id", tenantId)
+    .eq("user_id", user.id)
     .eq("enabled", true)
     .maybeSingle();
-  if (!access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!siteadmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { data, error } = await supabase
     .from("locations")
@@ -71,12 +72,13 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Solo tenantadmin o siteadmin possono creare sedi
-  const [{ data: ta }, { data: sa }] = await Promise.all([
-    supabase.from("tenantadmin").select("id").eq("user_id", user.id).eq("tenant_id", tenantId).eq("enabled", true).maybeSingle(),
-    supabase.from("siteadmin").select("id").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
-  ]);
-  if (!ta && !sa) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const { data: siteadmin } = await supabase
+    .from("siteadmin")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("enabled", true)
+    .maybeSingle();
+  if (!siteadmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   // Unicità slug per tenant
   const { count } = await supabase

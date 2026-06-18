@@ -11,10 +11,10 @@ import type { DaySchedule } from "@/lib/venue-hours";
 import { defaultHoursWeekForTenant } from "@/lib/venue-hours";
 import { headers } from "next/headers";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 interface Props {
   params: Promise<{ tenantSlug: string }>;
-  searchParams: Promise<{ loc?: string; location?: string }>;
 }
 
 type LocationRow = {
@@ -25,10 +25,8 @@ type LocationRow = {
   hours: unknown;
 };
 
-export default async function OrariPage({ params, searchParams }: Props) {
+export default async function OrariPage({ params }: Props) {
   const { tenantSlug } = await params;
-  const { loc, location } = await searchParams;
-  const activeSlug = loc ?? location ?? null;
 
   const tenant = await getTenantById(tenantSlug);
   if (!tenant || !getGestioneModuleAccess(tenant.features).canManageReservations) notFound();
@@ -47,11 +45,10 @@ export default async function OrariPage({ params, searchParams }: Props) {
 
   const locations: LocationRow[] = locationsRaw ?? [];
 
-  // Risolvi sede attiva: query param → default → prima sede
-  const activeLocation: LocationRow | undefined =
-    (activeSlug && locations.find((l) => l.slug === activeSlug)) ||
-    locations.find((l) => l.is_default) ||
-    locations[0];
+  const selectedLocation = await getActiveGestioneLocation(tenantSlug);
+  const activeLocation = selectedLocation
+    ? locations.find((location) => location.id === selectedLocation.id)
+    : undefined;
 
   // Fallback orari: location.hours → tenants.hours → default
   let hours: DaySchedule[] = [];
@@ -70,7 +67,7 @@ export default async function OrariPage({ params, searchParams }: Props) {
   }
 
   const [googleLoc, specialHours] = await Promise.all([
-    getPrimaryLocation(tenantSlug),
+    getPrimaryLocation(tenantSlug, activeLocation?.id),
     getSpecialHours(tenantSlug, activeLocation?.id),
   ]);
   const googleConnected = !!googleLoc;
@@ -91,30 +88,6 @@ export default async function OrariPage({ params, searchParams }: Props) {
           <h1 className="headline text-2xl">Orari</h1>
         </div>
       </div>
-
-      {/* Selettore sede (solo se multi-location) */}
-      {isMulti && activeLocation && (
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl border-2 border-pork-ink/10 bg-white px-4 py-3">
-          <span className="text-xs font-bold uppercase tracking-wide text-pork-ink/50">
-            Sede
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {locations.map((l) => (
-              <Link
-                key={l.id}
-                href={`?loc=${encodeURIComponent(l.slug)}`}
-                className={
-                  l.id === activeLocation.id
-                    ? "rounded-full bg-pork-ink px-3 py-1 text-xs font-bold text-pork-cream"
-                    : "rounded-full border-2 border-pork-ink/15 px-3 py-1 text-xs font-bold text-pork-ink/70 hover:border-pork-ink/40"
-                }
-              >
-                {l.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
 
       {googleConnected && (
         <div className="flex items-center justify-end">

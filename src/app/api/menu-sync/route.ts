@@ -9,6 +9,8 @@ import { getTenantLocaleConfig, matchTenantLocale } from "@/lib/tenant-locales";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, MenuDay, MenuOrderChannel, PriceFormat } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
+import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 type SupabaseAdmin = ReturnType<typeof createSupabaseAdminClient>;
 type MenuListRow = {
@@ -28,21 +30,31 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const tenantId = url.searchParams.get("tenantId")?.trim();
   if (!tenantId) return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
+  const supabase = createSupabaseAdminClient();
+  const locationId = await resolveMenuLocationId(supabase, tenantId, url.searchParams.get("locationId"));
   const locale = resolveMenuLocale(tenantId, url.searchParams.get("locale") ?? url.searchParams.get("language"));
 
-  const supabase = createSupabaseAdminClient();
-  await ensureSeeded(supabase, tenantId);
-  const bundle = await readBundle(supabase, tenantId, locale);
+  await ensureSeeded(supabase, tenantId, locationId);
+  const bundle = await readBundle(supabase, tenantId, locationId, locale);
   return NextResponse.json(bundle);
 }
 
 export async function PUT(req: Request) {
-  const tenantId = new URL(req.url).searchParams.get("tenantId")?.trim();
+  const url = new URL(req.url);
+  const tenantId = url.searchParams.get("tenantId")?.trim();
   if (!tenantId) return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
+  const auth = await authorizeGestione(tenantId);
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const supabase = createSupabaseAdminClient();
+  const locationId = auth.isDemo
+    ? await resolveMenuLocationId(supabase, tenantId, url.searchParams.get("locationId"))
+    : (await requireActiveGestioneLocation(tenantId)).id;
+  if (!auth.isDemo && url.searchParams.get("locationId") && url.searchParams.get("locationId") !== locationId) {
+    return NextResponse.json({ error: "location_mismatch" }, { status: 403 });
+  }
 
   const bundle = (await req.json()) as MenuSyncBundle;
-  const supabase = createSupabaseAdminClient();
-  await writeBundle(supabase, tenantId, bundle);
+  await writeBundle(supabase, tenantId, locationId, bundle);
 
   // Push asincrono verso HubRise (no-op se feature off o nessuna location collegata).
   after(async () => {
@@ -61,7 +73,7 @@ export async function PUT(req: Request) {
   return NextResponse.json({ ok: true });
 }
 
-async function readBundle(supabase: SupabaseAdmin, tenantId: string, locale?: string | null): Promise<MenuSyncBundle> {
+async function readBundle(supabase: SupabaseAdmin, tenantId: string, locationId: string | null, locale?: string | null): Promise<MenuSyncBundle> {
   const [
     { data: categories, error: catErr },
     { data: items, error: itemErr },
@@ -72,26 +84,26 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string, locale?: st
     menuListsResult,
     menuListItemsResult,
   ] = await Promise.all([
-    supabase
+    scopeLocation(supabase
       .from("menu_categories")
       .select("id,code,title,subtitle,description,position,availability")
-      .eq("tenant_id", tenantId)
+      .eq("tenant_id", tenantId), locationId)
       .order("position"),
-    supabase
+    scopeLocation(supabase
       .from("menu_items")
       .select(
         "id,code,category_id,name,description,price,tags,tag_meta,piccante_level,allergens,abv,image,service_notes,bundle_slots,extra_list_id,available,position",
       )
-      .eq("tenant_id", tenantId)
+      .eq("tenant_id", tenantId), locationId)
       .order("position"),
     supabase.from("menu_item_ingredients").select("item_id,code,name,position").order("position"),
     supabase.from("menu_item_extras").select("item_id,code,name,price,position").order("position"),
-    supabase.from("extra_lists").select("id,code,name").eq("tenant_id", tenantId).order("name"),
+    scopeLocation(supabase.from("extra_lists").select("id,code,name").eq("tenant_id", tenantId), locationId).order("name"),
     supabase.from("extra_list_items").select("list_id,code,name,price,position").order("position"),
-    supabase
-      .from("menu_lists" as never)
+    scopeLocation(supabase
+      .from("menu_lists")
       .select("id,code,name,description,position,enabled,visibility")
-      .eq("tenant_id", tenantId)
+      .eq("tenant_id", tenantId), locationId)
       .order("position"),
     supabase
       .from("menu_list_items" as never)
@@ -202,6 +214,31 @@ function resolveMenuLocale(tenantId: string, requestedLocale: string | null) {
   return locale;
 }
 
+async function resolveMenuLocationId(
+  supabase: SupabaseAdmin,
+  tenantId: string,
+  requestedLocationId: string | null,
+): Promise<string | null> {
+  let query = supabase
+    .from("locations")
+    .select("id")
+    .eq("tenant_id", tenantId);
+  if (requestedLocationId) query = query.eq("id", requestedLocationId);
+  else query = query.order("is_default", { ascending: false }).order("created_at").limit(1);
+  const { data } = await query.maybeSingle();
+  if (requestedLocationId && !data) throw new Error("menu_location_not_found");
+  return data?.id ?? null;
+}
+
+function scopeLocation<T extends {
+  eq: (column: string, value: string) => T;
+  is: (column: string, value: null) => T;
+}>(query: T, locationId: string | null): T {
+  return locationId
+    ? query.eq("location_id", locationId)
+    : query.is("location_id", null);
+}
+
 function localizedMenuListFallback(tenantId: string, locale?: string | null) {
   const isCatalog = tenantId === "libritech";
   switch (locale) {
@@ -302,11 +339,12 @@ function normalizeTranslatedIngredients(itemCode: string, value: unknown) {
     .filter((ingredient): ingredient is { id: string; name: string } => Boolean(ingredient));
 }
 
-async function writeBundle(supabase: SupabaseAdmin, tenantId: string, bundle: MenuSyncBundle) {
+async function writeBundle(supabase: SupabaseAdmin, tenantId: string, locationId: string | null, bundle: MenuSyncBundle) {
   await ensureTenantExists(supabase, tenantId);
 
   const categoryRows = bundle.categories.map((cat) => ({
     tenant_id: tenantId,
+    location_id: locationId,
     code: cat.id,
     title: cat.title,
     subtitle: cat.subtitle ?? null,
@@ -316,24 +354,31 @@ async function writeBundle(supabase: SupabaseAdmin, tenantId: string, bundle: Me
     updated_at: new Date().toISOString(),
   }));
   if (categoryRows.length > 0) {
-    const { error } = await supabase.from("menu_categories").upsert(categoryRows, { onConflict: "tenant_id,code" });
+    const { error } = await supabase.from("menu_categories").upsert(categoryRows, { onConflict: "tenant_id,location_id,code" });
     if (error) throw error;
   }
 
-  const { data: dbCategories } = await supabase.from("menu_categories").select("id,code").eq("tenant_id", tenantId);
+  const { data: dbCategories } = await scopeLocation(
+    supabase.from("menu_categories").select("id,code").eq("tenant_id", tenantId),
+    locationId,
+  );
   const catIdByCode = new Map((dbCategories ?? []).map((cat) => [cat.code, cat.id]));
 
   const extraRows = bundle.extraLists.map((list) => ({
     tenant_id: tenantId,
+    location_id: locationId,
     code: list.id,
     name: list.name,
     updated_at: new Date().toISOString(),
   }));
   if (extraRows.length > 0) {
-    const { error } = await supabase.from("extra_lists").upsert(extraRows, { onConflict: "tenant_id,code" });
+    const { error } = await supabase.from("extra_lists").upsert(extraRows, { onConflict: "tenant_id,location_id,code" });
     if (error) throw error;
   }
-  const { data: dbExtraLists } = await supabase.from("extra_lists").select("id,code").eq("tenant_id", tenantId);
+  const { data: dbExtraLists } = await scopeLocation(
+    supabase.from("extra_lists").select("id,code").eq("tenant_id", tenantId),
+    locationId,
+  );
   const extraIdByCode = new Map((dbExtraLists ?? []).map((list) => [list.code, list.id]));
 
   const itemRows = bundle.items.flatMap((item) => {
@@ -341,6 +386,7 @@ async function writeBundle(supabase: SupabaseAdmin, tenantId: string, bundle: Me
     if (!categoryId) return [];
     return [{
       tenant_id: tenantId,
+      location_id: locationId,
       code: item.id,
       category_id: categoryId,
       name: item.name,
@@ -362,26 +408,33 @@ async function writeBundle(supabase: SupabaseAdmin, tenantId: string, bundle: Me
     }];
   });
   if (itemRows.length > 0) {
-    const { error } = await supabase.from("menu_items").upsert(itemRows, { onConflict: "tenant_id,code" });
+    const { error } = await supabase.from("menu_items").upsert(itemRows, { onConflict: "tenant_id,location_id,code" });
     if (error) throw error;
   }
 
-  const { data: dbItems } = await supabase.from("menu_items").select("id,code").eq("tenant_id", tenantId);
+  const { data: dbItems } = await scopeLocation(
+    supabase.from("menu_items").select("id,code").eq("tenant_id", tenantId),
+    locationId,
+  );
   const itemIdByCode = new Map((dbItems ?? []).map((item) => [item.code, item.id]));
 
-  await replaceChildRows(supabase, tenantId, bundle, itemIdByCode, extraIdByCode);
-  await replaceMenuLists(supabase, tenantId, bundle, itemIdByCode);
-  await deleteMissing(supabase, tenantId, bundle);
+  await replaceChildRows(supabase, tenantId, locationId, bundle, itemIdByCode, extraIdByCode);
+  await replaceMenuLists(supabase, tenantId, locationId, bundle, itemIdByCode);
+  await deleteMissing(supabase, tenantId, locationId, bundle);
 }
 
 async function replaceChildRows(
   supabase: SupabaseAdmin,
   tenantId: string,
+  locationId: string | null,
   bundle: MenuSyncBundle,
   itemIdByCode: Map<string, string>,
   extraIdByCode: Map<string, string>,
 ) {
-  const { data: dbItems } = await supabase.from("menu_items").select("id").eq("tenant_id", tenantId);
+  const { data: dbItems } = await scopeLocation(
+    supabase.from("menu_items").select("id").eq("tenant_id", tenantId),
+    locationId,
+  );
   const itemDbIds = (dbItems ?? []).map((item) => item.id);
   if (itemDbIds.length > 0) {
     await supabase.from("menu_item_ingredients").delete().in("item_id", itemDbIds);
@@ -434,11 +487,13 @@ async function replaceChildRows(
 async function replaceMenuLists(
   supabase: SupabaseAdmin,
   tenantId: string,
+  locationId: string | null,
   bundle: MenuSyncBundle,
   itemIdByCode: Map<string, string>,
 ) {
   const listRows = bundle.menuLists.map((list) => ({
     tenant_id: tenantId,
+    location_id: locationId,
     code: list.id,
     name: list.name,
     description: list.description ?? null,
@@ -448,15 +503,15 @@ async function replaceMenuLists(
     updated_at: new Date().toISOString(),
   }));
   if (listRows.length > 0) {
-    const { error } = await supabase.from("menu_lists" as never).upsert(listRows as never, { onConflict: "tenant_id,code" });
+    const { error } = await supabase.from("menu_lists").upsert(listRows, { onConflict: "tenant_id,location_id,code" });
     if (isMissingMenuListsError(error)) return;
     if (error) throw error;
   }
 
-  const { data: dbLists } = await supabase
-    .from("menu_lists" as never)
-    .select("id,code")
-    .eq("tenant_id", tenantId);
+  const { data: dbLists } = await scopeLocation(
+    supabase.from("menu_lists").select("id,code").eq("tenant_id", tenantId),
+    locationId,
+  );
   const listIdByCode = new Map(((dbLists ?? []) as unknown as Array<{ id: string; code: string }>).map((list) => [list.code, list.id]));
   const dbListIds = [...listIdByCode.values()];
   if (dbListIds.length > 0) {
@@ -478,37 +533,37 @@ async function replaceMenuLists(
   }
 }
 
-async function deleteMissing(supabase: SupabaseAdmin, tenantId: string, bundle: MenuSyncBundle) {
+async function deleteMissing(supabase: SupabaseAdmin, tenantId: string, locationId: string | null, bundle: MenuSyncBundle) {
   const keepItems = bundle.items.map((item) => item.id);
   const keepCategories = bundle.categories.map((cat) => cat.id);
   const keepExtraLists = bundle.extraLists.map((list) => list.id);
   const keepMenuLists = bundle.menuLists.map((list) => list.id);
 
-  if (keepItems.length > 0) await supabase.from("menu_items").delete().eq("tenant_id", tenantId).not("code", "in", `(${keepItems.map(sqlQuote).join(",")})`);
-  if (keepCategories.length > 0) await supabase.from("menu_categories").delete().eq("tenant_id", tenantId).not("code", "in", `(${keepCategories.map(sqlQuote).join(",")})`);
-  if (keepExtraLists.length > 0) await supabase.from("extra_lists").delete().eq("tenant_id", tenantId).not("code", "in", `(${keepExtraLists.map(sqlQuote).join(",")})`);
-  else await supabase.from("extra_lists").delete().eq("tenant_id", tenantId);
-  if (keepMenuLists.length > 0) await supabase.from("menu_lists" as never).delete().eq("tenant_id", tenantId).not("code", "in", `(${keepMenuLists.map(sqlQuote).join(",")})`);
+  if (keepItems.length > 0) await scopeLocation(supabase.from("menu_items").delete().eq("tenant_id", tenantId), locationId).not("code", "in", `(${keepItems.map(sqlQuote).join(",")})`);
+  if (keepCategories.length > 0) await scopeLocation(supabase.from("menu_categories").delete().eq("tenant_id", tenantId), locationId).not("code", "in", `(${keepCategories.map(sqlQuote).join(",")})`);
+  if (keepExtraLists.length > 0) await scopeLocation(supabase.from("extra_lists").delete().eq("tenant_id", tenantId), locationId).not("code", "in", `(${keepExtraLists.map(sqlQuote).join(",")})`);
+  else await scopeLocation(supabase.from("extra_lists").delete().eq("tenant_id", tenantId), locationId);
+  if (keepMenuLists.length > 0) await scopeLocation(supabase.from("menu_lists").delete().eq("tenant_id", tenantId), locationId).not("code", "in", `(${keepMenuLists.map(sqlQuote).join(",")})`);
 }
 
-async function ensureSeeded(supabase: SupabaseAdmin, tenantId: string) {
-  const { count } = await supabase
+async function ensureSeeded(supabase: SupabaseAdmin, tenantId: string, locationId: string | null) {
+  const { count } = await scopeLocation(supabase
     .from("menu_categories")
     .select("id", { count: "exact", head: true })
-    .eq("tenant_id", tenantId);
+    .eq("tenant_id", tenantId), locationId);
   if ((count ?? 0) === 0) {
-    await writeBundle(supabase, tenantId, seedBundle(tenantId));
+    await writeBundle(supabase, tenantId, locationId, seedBundle(tenantId));
     return;
   }
 
   if (tenantId === "junior-food") {
-    const { data } = await supabase
+    const { data } = await scopeLocation(supabase
       .from("menu_items")
       .select("id")
       .eq("tenant_id", tenantId)
-      .eq("code", "jf-chicharron-de-cerdo")
+      .eq("code", "jf-chicharron-de-cerdo"), locationId)
       .maybeSingle();
-    if (!data) await writeBundle(supabase, tenantId, seedBundle(tenantId));
+    if (!data) await writeBundle(supabase, tenantId, locationId, seedBundle(tenantId));
   }
 }
 

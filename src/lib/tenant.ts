@@ -146,6 +146,7 @@ export type TenantLocation = {
   city: string | null;
   phone: string | null;
   email: string | null;
+  hours?: unknown;
   isDefault: boolean;
   routingMode: LocationRoutingMode;
 };

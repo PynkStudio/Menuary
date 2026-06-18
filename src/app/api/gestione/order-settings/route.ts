@@ -3,6 +3,7 @@ import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { DEFAULT_ORDER_SETTINGS, loadOrderSettings } from "@/lib/orders/order-settings";
 import type { TenantOrderSettings } from "@/lib/types";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 type SettingsPatch = {
   tenantId?: string;
@@ -38,11 +39,17 @@ function locationFrom(req: NextRequest, body?: SettingsPatch | null): string | n
 
 export async function GET(req: NextRequest) {
   const tenantId = tenantFrom(req);
-  const locationId = locationFrom(req);
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const requestedLocationId = locationFrom(req);
+  const locationId = auth.isDemo
+    ? requestedLocationId
+    : (await requireActiveGestioneLocation(tenantId)).id;
+  if (!auth.isDemo && requestedLocationId && requestedLocationId !== locationId) {
+    return NextResponse.json({ error: "location_mismatch" }, { status: 403 });
+  }
 
   const supabase = createSupabaseServiceClient();
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
@@ -54,11 +61,17 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as SettingsPatch | null;
   const tenantId = tenantFrom(req, body);
-  const locationId = locationFrom(req, body);
   if (!tenantId || !body) return NextResponse.json({ error: "invalid_request" }, { status: 400 });
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const requestedLocationId = locationFrom(req, body);
+  const locationId = auth.isDemo
+    ? requestedLocationId
+    : (await requireActiveGestioneLocation(tenantId)).id;
+  if (!auth.isDemo && requestedLocationId && requestedLocationId !== locationId) {
+    return NextResponse.json({ error: "location_mismatch" }, { status: 403 });
+  }
 
   // Sanity check sui valori numerici (no negativi, range ragionevole).
   const pendingTimeout = body.pendingTimeoutSeconds;

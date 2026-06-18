@@ -1,14 +1,27 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { Gallery } from "@/components/modules/gallery/gallery";
 import { whatsappUrl } from "@/lib/site-config";
+import { resolveTenantFromHost } from "@/lib/tenant-runtime";
+import { CascinaErranteGalleryPage } from "@/components/tenants/cascina-errante/pages/galleria";
 
-export const metadata: Metadata = {
-  title: "Galleria",
-  description:
-    "Foto dei piatti firma di Be Pork: burger smashati, pizze speciali, tagliata Angus, spaghetti all'Assassina, bombette in fonduta.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const tenant = resolveTenantFromHost((await headers()).get("host"));
+  if (tenant.id === "cascina-errante") {
+    return {
+      title: "Galleria",
+      description:
+        "Il teatro della cucina, la produzione a vista e gli eventi realizzati da Cascina Errante.",
+    };
+  }
+  return {
+    title: "Galleria",
+    description:
+      "Foto dei piatti firma di Be Pork: burger smashati, pizze speciali, tagliata Angus, spaghetti all'Assassina, bombette in fonduta.",
+  };
+}
 
 const photos = [
   { src: "/photos/burger-esagerato.png", alt: "The King Burger / Esagerato Pork", caption: "Esagerato Pork" },
@@ -24,7 +37,9 @@ const photos = [
   { src: "/photos/orecchiette-padella.png", alt: "Orecchiette con le brasciole in padella", caption: "La domenica, ogni sera" },
 ];
 
-export default function GalleriaPage() {
+export default async function GalleriaPage() {
+  const tenant = resolveTenantFromHost((await headers()).get("host"));
+  if (tenant.id === "cascina-errante") return <CascinaErranteGalleryPage />;
   return (
     <>
       <section className="bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Building2, CreditCard, ExternalLink, Globe2, KeyRound, LogOut, MapPin, Newspaper, Settings, UserRound } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
@@ -13,7 +13,6 @@ import {
 } from "@/lib/store-roles";
 import type { TenantFeatureFlags, TenantLocation } from "@/lib/tenant";
 import type { TenantVertical } from "@/lib/tenant";
-import { isMultiLocation } from "@/lib/location";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 import type { GestioneMessages } from "@/i18n/gestione";
@@ -26,6 +25,7 @@ import {
   ArrivalBadge,
   NotificationMuteToggle,
 } from "@/components/gestione/notification-controls";
+import { useGestioneLocation } from "@/components/gestione/gestione-location-provider";
 
 interface Tenant {
   id: string;
@@ -61,8 +61,13 @@ export function GestioneShell(props: {
   children: React.ReactNode;
   messages: GestioneMessages;
 }) {
+  const { activeLocation } = useGestioneLocation();
   return (
-    <ArrivalAlertsProvider tenantId={props.tenant.id} refreshOnChange>
+    <ArrivalAlertsProvider
+      tenantId={props.tenant.id}
+      locationId={activeLocation?.id}
+      refreshOnChange
+    >
       <GestioneShellInner {...props} />
     </ArrivalAlertsProvider>
   );
@@ -90,18 +95,8 @@ function GestioneShellInner({
   const t = messages.shell;
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [settingsOpen, setSettingsOpen] = useState(false);
-
-  const isMulti = isMultiLocation(locations);
-  const activeLocationSlug = searchParams.get("loc") ?? locations.find((l) => l.isDefault)?.slug ?? locations[0]?.slug;
-  const activeLocation = locations.find((l) => l.slug === activeLocationSlug) ?? locations[0];
-
-  function handleLocationChange(slug: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("loc", slug);
-    router.push(`${pathname}?${params.toString()}`);
-  }
+  const { activeLocation, isMulti, changing, setLocation } = useGestioneLocation();
 
   const cap = getEffectiveCapabilities(
     currentUser.isTenantAdmin ? null : (currentUser.role ?? "personale_cucina"),
@@ -150,7 +145,6 @@ function GestioneShellInner({
     { label: t.nav.blog, href: sectionHref("blog"), visible: () => isAdmin && access.canManageBlog },
     { label: "Linktree", href: sectionHref("linktree"), visible: () => isAdmin && access.canManageLinktree },
     { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
-    { label: t.nav.locations, href: sectionHref("sedi"), visible: () => isAdmin && access.canManageLocations },
     { label: "Agenda call", href: sectionHref("agenda"), visible: () => isAdmin && access.canManagePynkAgenda },
     { label: "Patrimoniale", href: sectionHref("patrimoniale"), visible: () => isAdmin && access.canManagePatrimoniale },
   ];
@@ -247,13 +241,14 @@ function GestioneShellInner({
             <div className="flex items-center gap-2">
               <MapPin size={14} style={{ opacity: 0.5 }} />
               <select
-                value={activeLocation?.slug ?? ""}
-                onChange={(e) => handleLocationChange(e.target.value)}
+                value={activeLocation?.id ?? ""}
+                onChange={(e) => void setLocation(e.target.value)}
                 className="ga-location-select"
                 aria-label={t.activeLocation}
+                disabled={changing}
               >
                 {locations.map((loc) => (
-                  <option key={loc.id} value={loc.slug}>
+                  <option key={loc.id} value={loc.id}>
                     {loc.name}
                   </option>
                 ))}

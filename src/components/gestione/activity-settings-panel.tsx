@@ -42,6 +42,8 @@ import {
   type SocialLinks,
 } from "@/store/settings-store";
 import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
+import { useGestioneLocation } from "@/components/gestione/gestione-location-provider";
+import { useRouter } from "next/navigation";
 
 const SOCIAL_FIELDS: Array<{
   key: SocialLinkKey;
@@ -96,11 +98,19 @@ const EMPTY_VOICE: VoiceState = { tone: "", audience: "", keywords: "", do_examp
 
 export function ActivitySettingsPanel() {
   const hydrated = useHydrated();
+  const router = useRouter();
   const tenant = useTenant();
+  const { activeLocation } = useGestioneLocation();
   const content = getTenantContent(tenant.id);
   const settings = useSettingsStore();
   const setSettings = useSettingsStore((state) => state.set);
   const tenantDefaultHours = useMemo(() => defaultHoursWeekForTenant(tenant.id), [tenant.id]);
+  const locationHours = useMemo(() => {
+    const hours = activeLocation?.hours;
+    return Array.isArray(hours) && hours.length === 7
+      ? hours as DaySchedule[]
+      : null;
+  }, [activeLocation]);
 
   const [addressDraft, setAddressDraft] = useState(settings.addressOverride);
   const [phoneDraft, setPhoneDraft] = useState(settings.phoneOverride);
@@ -155,13 +165,13 @@ export function ActivitySettingsPanel() {
 
   useEffect(() => {
     if (!hydrated) return;
-    const hours =
-      tenant.id === "doca" && hoursWeekEquals(settings.hoursWeek, defaultHoursWeek())
+    const hours = locationHours ??
+      (tenant.id === "doca" && hoursWeekEquals(settings.hoursWeek, defaultHoursWeek())
         ? tenantDefaultHours
-        : settings.hoursWeek;
-    setAddressDraft(settings.addressOverride);
-    setPhoneDraft(settings.phoneOverride);
-    setMainEmailDraft(settings.mainEmailOverride);
+        : settings.hoursWeek);
+    setAddressDraft(activeLocation?.address ?? settings.addressOverride);
+    setPhoneDraft(activeLocation?.phone ?? settings.phoneOverride);
+    setMainEmailDraft(activeLocation?.email ?? settings.mainEmailOverride);
     setWorkWithUsEnabled(settings.workWithUsEnabled);
     setWorkWithUsEmailDraft(settings.workWithUsEmailOverride);
     setCollaborationsEnabled(settings.collaborationsEnabled);
@@ -170,6 +180,8 @@ export function ActivitySettingsPanel() {
     setHoursDraft(cloneHoursWeek(hours));
   }, [
     hydrated,
+    activeLocation,
+    locationHours,
     settings.addressOverride,
     settings.collaborationsEmailOverride,
     settings.collaborationsEnabled,
@@ -185,22 +197,24 @@ export function ActivitySettingsPanel() {
 
   const settingsDirty = useMemo(
     () =>
-      addressDraft !== settings.addressOverride ||
-      phoneDraft !== settings.phoneOverride ||
-      mainEmailDraft !== settings.mainEmailOverride ||
+      addressDraft !== (activeLocation?.address ?? settings.addressOverride) ||
+      phoneDraft !== (activeLocation?.phone ?? settings.phoneOverride) ||
+      mainEmailDraft !== (activeLocation?.email ?? settings.mainEmailOverride) ||
       workWithUsEnabled !== settings.workWithUsEnabled ||
       workWithUsEmailDraft !== settings.workWithUsEmailOverride ||
       collaborationsEnabled !== settings.collaborationsEnabled ||
       collaborationsEmailDraft !== settings.collaborationsEmailOverride ||
       JSON.stringify(normalizeSocialLinks(socialLinksDraft)) !==
         JSON.stringify({ ...EMPTY_SOCIAL_LINKS, ...settings.socialLinks }) ||
-      !hoursWeekEquals(hoursDraft, settings.hoursWeek),
+      !hoursWeekEquals(hoursDraft, locationHours ?? settings.hoursWeek),
     [
       addressDraft,
+      activeLocation,
       collaborationsEmailDraft,
       collaborationsEnabled,
       hoursDraft,
       mainEmailDraft,
+      locationHours,
       phoneDraft,
       settings.addressOverride,
       settings.collaborationsEmailOverride,
@@ -237,11 +251,28 @@ export function ActivitySettingsPanel() {
     setSaveError(null);
 
     try {
+      if (activeLocation) {
+        const locationResponse = await fetch("/api/gestione/location-profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tenantId: tenant.id,
+            address: addressDraft,
+            phone: phoneDraft,
+            email: mainEmailDraft,
+          }),
+        });
+        if (!locationResponse.ok) {
+          const json = (await locationResponse.json().catch(() => ({}))) as { error?: string };
+          throw new Error(json.error ?? "Errore nel salvataggio dei dati della sede");
+        }
+      }
+
       if (hoursChanged) {
         const res = await fetch("/api/gestione/hours", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tenantId: tenant.id, hours: nextHours }),
+          body: JSON.stringify({ tenantId: tenant.id, locationId: activeLocation?.id, hours: nextHours }),
         });
         if (!res.ok) {
           const json = (await res.json().catch(() => ({}))) as { error?: string };
@@ -273,6 +304,7 @@ export function ActivitySettingsPanel() {
       }
 
       setSaveMessage("Tutto salvato.");
+      router.refresh();
       setTimeout(() => setSaveMessage(null), 3000);
     } catch (e) {
       setSaveError((e as Error).message);

@@ -789,6 +789,7 @@ export type Database = {
           code: string
           created_at: string
           id: string
+          location_id: string | null
           name: string
           tenant_id: string
           updated_at: string
@@ -797,6 +798,7 @@ export type Database = {
           code: string
           created_at?: string
           id?: string
+          location_id?: string | null
           name: string
           tenant_id: string
           updated_at?: string
@@ -805,11 +807,19 @@ export type Database = {
           code?: string
           created_at?: string
           id?: string
+          location_id?: string | null
           name?: string
           tenant_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "extra_lists_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "extra_lists_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -1719,6 +1729,7 @@ export type Database = {
           description: string | null
           enabled: boolean
           id: string
+          location_id: string | null
           name: string
           position: number
           tenant_id: string
@@ -1731,6 +1742,7 @@ export type Database = {
           description?: string | null
           enabled?: boolean
           id?: string
+          location_id?: string | null
           name: string
           position?: number
           tenant_id: string
@@ -1743,6 +1755,7 @@ export type Database = {
           description?: string | null
           enabled?: boolean
           id?: string
+          location_id?: string | null
           name?: string
           position?: number
           tenant_id?: string
@@ -1750,6 +1763,13 @@ export type Database = {
           visibility?: Json
         }
         Relationships: [
+          {
+            foreignKeyName: "menu_lists_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "menu_lists_tenant_id_fkey"
             columns: ["tenant_id"]

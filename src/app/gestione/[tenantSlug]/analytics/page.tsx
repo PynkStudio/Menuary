@@ -5,6 +5,7 @@ import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { demoAnalytics } from "@/lib/demo-fixtures";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
+import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 type OrderRow = {
   total: number;
@@ -30,7 +31,7 @@ function channelLabel(source: string | null, platform: string | null, t: Gestion
   return PLATFORM_LABELS[platform] ?? platform.charAt(0).toUpperCase() + platform.slice(1);
 }
 
-async function fetchAnalytics(tenantSlug: string, t: GestioneMessages["analytics"]) {
+async function fetchAnalytics(tenantSlug: string, locationId: string, t: GestioneMessages["analytics"]) {
   const svc = createSupabaseServiceClient();
   if (!svc) return null;
 
@@ -43,22 +44,26 @@ async function fetchAnalytics(tenantSlug: string, t: GestioneMessages["analytics
       .from("orders")
       .select("total, created_at, status, source, external_platform")
       .eq("tenant_id", tenantSlug)
+      .eq("location_id", locationId)
       .gte("created_at", from30)
       .not("status", "eq", "annullato"),
     svc
       .from("reservation_requests")
       .select("id", { count: "exact", head: true })
       .eq("tenant_id", tenantSlug)
+      .eq("location_id", locationId)
       .gte("reservation_date", from30.slice(0, 10)),
     svc
       .from("reviews")
       .select("rating")
       .eq("tenant_id", tenantSlug)
+      .eq("location_id", locationId)
       .gte("created_at", from30),
     svc
       .from("order_lines")
-      .select("name, qty, order:orders!inner(tenant_id, created_at, status)")
+      .select("name, qty, order:orders!inner(tenant_id, location_id, created_at, status)")
       .eq("order.tenant_id", tenantSlug)
+      .eq("order.location_id", locationId)
       .gte("order.created_at", from7)
       .not("order.status", "eq", "annullato")
       .limit(1000),
@@ -203,7 +208,12 @@ export default async function AnalyticsPage({
   }
 
   const demoVertical = tenant.vertical === "food" ? "food" : "services";
-  const data = auth.isDemo ? demoAnalytics(demoVertical) : await fetchAnalytics(tenantSlug, t);
+  const activeLocation = auth.isDemo ? null : await getActiveGestioneLocation(tenantSlug);
+  const data = auth.isDemo
+    ? demoAnalytics(demoVertical)
+    : activeLocation
+      ? await fetchAnalytics(tenantSlug, activeLocation.id, t)
+      : null;
   const isServices = tenant.vertical === "services";
 
   return (

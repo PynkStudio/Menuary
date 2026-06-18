@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Status = "confirmed" | "rejected" | "seated" | "no_show" | "pending_manual";
 
@@ -16,12 +17,14 @@ async function update(tenantSlug: string, reservationId: string, status: Status)
 
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
   const { error } = await svc
     .from("reservation_requests")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", reservationId)
-    .eq("tenant_id", tenantSlug);
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id);
 
   if (error) throw new Error(error.message);
 

@@ -18,6 +18,14 @@ import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
+  const tenant = resolveTenantFromHost(h.get("host"));
+  if (mode !== "marketing" && mode !== "marketing-bizery" && tenant.id === "cascina-errante") {
+    return {
+      title: "Contatti & Prenotazioni",
+      description:
+        "Contatta Cascina Errante per visite, tavoli, eventi, catering e prodotti della bottega.",
+    };
+  }
   return mode === "marketing"
     ? {
         title: "Contatti per siti web ristoranti",

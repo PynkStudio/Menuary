@@ -31,6 +31,10 @@ const emptyForm = {
 export function GestioneLocationsManager({ tenantId, initialLocations, multiLocationEnabled }: Props) {
   const [locations, setLocations] = useState(initialLocations);
 
+  useEffect(() => {
+    setLocations(initialLocations);
+  }, [initialLocations]);
+
   // Su demo idratiamo le sedi da localStorage al mount: il layout server
   // non interroga Supabase quindi initialLocations è sempre [].
   useEffect(() => {

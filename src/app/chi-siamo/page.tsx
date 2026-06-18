@@ -32,6 +32,14 @@ export async function generateMetadata(): Promise<Metadata> {
       alternates: marketingAlternates(BIZERY_ORIGIN, "/chi-siamo", await getLocale()),
     };
   }
+  const tenant = resolveTenantFromHost(h.get("host"));
+  if (tenant.id === "cascina-errante") {
+    return {
+      title: "Chi siamo",
+      description:
+        "Il manifesto di Cascina Errante: agricoltura innovativa, ospitalità, rispetto per la natura ed eccellenza senza compromessi.",
+    };
+  }
   return {
     title: "Chi siamo",
     description: "Scopri il tenant ristorante attivo su Menuary.",

@@ -6,22 +6,31 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { openTableSession, closeTableSession } from "./actions";
 import { demoTavoli } from "@/lib/demo-fixtures";
 import { getGestioneTranslations } from "@/i18n/gestione";
+import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Table = { id: string; label: string; area: string; seats: number | null };
 type Session = { id: string; table_id: string; opened_at: string; declared_covers: number | null; code: string };
 
-async function fetchPlanner(tenantSlug: string): Promise<{ tables: Table[]; openByTable: Map<string, Session> }> {
+async function fetchPlanner(tenantSlug: string, locationId: string): Promise<{ tables: Table[]; openByTable: Map<string, Session> }> {
   const svc = createSupabaseServiceClient();
   if (!svc) return { tables: [], openByTable: new Map() };
 
-  const [{ data: tables }, { data: sessions }] = await Promise.all([
-    svc.from("tables").select("id, label, area, seats").eq("tenant_id", tenantSlug).order("area").order("label"),
-    svc
-      .from("table_sessions")
-      .select("id, table_id, opened_at, declared_covers, code")
-      .eq("tenant_id", tenantSlug)
-      .eq("status", "aperta"),
-  ]);
+  const { data: tables } = await svc
+    .from("tables")
+    .select("id, label, area, seats")
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", locationId)
+    .order("area")
+    .order("label");
+  const tableIds = (tables ?? []).map((table) => table.id);
+  const { data: sessions } = tableIds.length > 0
+    ? await svc
+        .from("table_sessions")
+        .select("id, table_id, opened_at, declared_covers, code")
+        .eq("tenant_id", tenantSlug)
+        .in("table_id", tableIds)
+        .eq("status", "aperta")
+    : { data: [] };
 
   const map = new Map<string, Session>();
   for (const s of sessions ?? []) map.set(s.table_id, s as Session);
@@ -53,7 +62,12 @@ export default async function TavoliPage({
 
   const isServices = tenant.vertical === "services" || tenant.vertical === "creative";
   const demoVertical = tenant.vertical === "food" ? "food" : "services";
-  const planner = auth.isDemo ? demoTavoli(demoVertical) : await fetchPlanner(tenantSlug);
+  const activeLocation = auth.isDemo ? null : await getActiveGestioneLocation(tenantSlug);
+  const planner = auth.isDemo
+    ? demoTavoli(demoVertical)
+    : activeLocation
+      ? await fetchPlanner(tenantSlug, activeLocation.id)
+      : { tables: [], openByTable: new Map<string, Session>() };
 
   const byArea = new Map<string, Table[]>();
   for (const t of planner.tables) {

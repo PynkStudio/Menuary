@@ -42,6 +42,7 @@ import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
 import { HelpHint } from "@/components/gestione/help-hint";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 import { MENU_ORDER_CHANNELS, availableMenuOrderChannels } from "@/lib/menu-channels";
+import { useGestioneLocationOrNull } from "@/components/gestione/gestione-location-provider";
 
 const DAY_OPTIONS: Array<{ value: MenuDay; label: string }> = [
   { value: 1, label: "Lun" },
@@ -87,11 +88,13 @@ export default function AdminMenuPage() {
   const hydrated = useHydrated();
   const tenant = useTenantOrNull();
   const tenantId = tenant?.id ?? "bepork";
+  const gestioneLocation = useGestioneLocationOrNull();
+  const locationId = gestioneLocation?.activeLocation?.id ?? null;
   const {
     status: syncStatus,
     hasUnpublishedChanges,
     publishMenu,
-  } = useSupabaseMenuSync(tenantId, true, null, true);
+  } = useSupabaseMenuSync(tenantId, true, null, true, locationId);
   const vertical = tenant?.vertical ?? "food";
   const isServices = vertical === "services";
   const listinoLabel = getModuleLabel("onlineMenu", vertical);

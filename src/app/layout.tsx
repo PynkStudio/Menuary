@@ -3,8 +3,10 @@ import { headers } from "next/headers";
 import {
   Bagel_Fat_One,
   Bebas_Neue,
+  Cormorant_Garamond,
   DM_Sans,
   Fraunces,
+  Inter,
   Manrope,
 } from "next/font/google";
 import Script from "next/script";
@@ -84,6 +86,20 @@ const menuaryDisplay = Fraunces({
 const menuaryBody = DM_Sans({
   subsets: ["latin"],
   variable: "--font-menuary-body",
+  display: "swap",
+});
+
+const cascinaHeading = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-cascina-heading",
+  display: "swap",
+});
+
+const cascinaBody = Inter({
+  subsets: ["latin"],
+  variable: "--font-cascina-body",
   display: "swap",
 });
 
@@ -587,7 +603,7 @@ export default async function RootLayout({
   return (
     <html
       lang={lang}
-      className={`${display.variable} ${impact.variable} ${body.variable} ${menuaryDisplay.variable} ${menuaryBody.variable}`}
+      className={`${display.variable} ${impact.variable} ${body.variable} ${menuaryDisplay.variable} ${menuaryBody.variable} ${cascinaHeading.variable} ${cascinaBody.variable}`}
       style={themeVars as React.CSSProperties}
       data-tenant={tenant.id}
       data-platform={mode}

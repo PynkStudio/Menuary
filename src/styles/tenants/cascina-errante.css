@@ -1,363 +1,824 @@
 @layer components {
   [data-tenant-surface="cascina-errante"],
   html[data-tenant="cascina-errante"] {
-    --cascina-forest: #153d2a;
-    --cascina-forest-deep: #0b2117;
-    --cascina-moss: #54724d;
-    --cascina-linen: #f5eddc;
-    --cascina-straw: #dac18a;
-    --cascina-copper: #c87938;
-    --cascina-clay: #9e4f32;
-    --cascina-ink: #132019;
-    --cascina-muted: #647066;
-    --cascina-line: rgba(19, 32, 25, 0.16);
-    font-family: var(--font-menuary-body), Inter, system-ui, sans-serif;
-    color: var(--cascina-ink);
+    --ce-forest: #1c4a31;
+    --ce-forest-light: #32704d;
+    --ce-forest-dark: #0f2f1e;
+    --ce-warm: #efe3c2;
+    --ce-warm-dark: #dfc992;
+    --ce-warm-light: #faf4e4;
+    --ce-accent: #efa950;
+    --ce-accent-light: #f4c985;
+    --ce-pop: #f0783c;
+    --ce-paper: #ffffff;
+    --ce-muted: #68756d;
+    --ce-line: rgba(28, 74, 49, 0.14);
+    --ce-heading: var(--font-cascina-heading), Georgia, serif;
+    --ce-body: var(--font-cascina-body), Arial, sans-serif;
+    color: var(--ce-forest-dark);
+    font-family: var(--ce-body);
   }
 
   html[data-tenant="cascina-errante"] body,
   [data-tenant-surface="cascina-errante"] {
-    background: var(--cascina-linen);
+    background: var(--ce-paper);
+    background-image: none;
   }
 
   html[data-tenant="cascina-errante"] .headline,
   html[data-tenant="cascina-errante"] .impact-title,
   [data-tenant-surface="cascina-errante"] .headline,
   [data-tenant-surface="cascina-errante"] .impact-title {
-    font-family: var(--font-menuary-display), Georgia, serif;
+    font-family: var(--ce-heading);
     letter-spacing: 0;
     text-transform: none;
   }
 
+  html[data-tenant="cascina-errante"] header {
+    border-bottom: 1px solid var(--ce-line);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--ce-forest);
+    backdrop-filter: blur(14px);
+  }
+
+  html[data-tenant="cascina-errante"] header a,
+  html[data-tenant="cascina-errante"] header button {
+    color: var(--ce-forest);
+  }
+
+  html[data-tenant="cascina-errante"] header .btn-primary {
+    background: var(--ce-forest);
+    color: var(--ce-warm);
+  }
+
   html[data-tenant="cascina-errante"] .tenant-site-footer {
-    background: var(--cascina-forest-deep);
+    background: var(--ce-forest-dark);
+    color: var(--ce-warm-light);
   }
 
-  .cascina-page {
-    background:
-      linear-gradient(180deg, rgba(245, 237, 220, 0.96), rgba(245, 237, 220, 1)),
-      repeating-linear-gradient(90deg, rgba(21, 61, 42, 0.035) 0 1px, transparent 1px 72px);
-    color: var(--cascina-ink);
+  .ce-site {
+    overflow: hidden;
+    background: var(--ce-paper);
+    color: var(--ce-forest-dark);
+    font-family: var(--ce-body);
   }
 
-  .cascina-hero {
+  .ce-site h1,
+  .ce-site h2,
+  .ce-site h3,
+  .ce-site blockquote {
+    font-family: var(--ce-heading);
+    letter-spacing: 0;
+  }
+
+  .ce-home-hero {
+    position: relative;
     min-height: calc(100svh - 76px);
-    padding: clamp(4rem, 9vw, 7rem) clamp(1rem, 4vw, 3rem) clamp(3rem, 7vw, 5rem);
-    background:
-      linear-gradient(135deg, rgba(11, 33, 23, 0.98), rgba(21, 61, 42, 0.92)),
-      linear-gradient(90deg, var(--cascina-forest), var(--cascina-copper));
-    color: var(--cascina-linen);
-  }
-
-  .cascina-hero-inner,
-  .cascina-production,
-  .cascina-band,
-  .cascina-static-hero,
-  .cascina-values,
-  .cascina-contact-grid {
-    width: min(1160px, calc(100vw - 2rem));
-    margin-inline: auto;
-  }
-
-  .cascina-hero-inner {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-    gap: clamp(2rem, 5vw, 5rem);
+    display: flex;
     align-items: center;
+    justify-content: center;
+    isolation: isolate;
+    padding: clamp(4rem, 9vw, 7rem) 1rem;
+    background:
+      linear-gradient(145deg, var(--ce-forest-light), var(--ce-forest-dark));
   }
 
-  .cascina-hero-logo {
-    width: min(520px, 88vw);
+  .ce-home-hero::before,
+  .ce-home-hero::after {
+    position: absolute;
+    z-index: -1;
+    content: "";
+    border: 1px solid rgba(239, 227, 194, 0.18);
+    border-radius: 50%;
+  }
+
+  .ce-home-hero::before {
+    width: 24rem;
+    height: 24rem;
+    top: -7rem;
+    left: -8rem;
+  }
+
+  .ce-home-hero::after {
+    width: 18rem;
+    height: 18rem;
+    right: -5rem;
+    bottom: -6rem;
+  }
+
+  .ce-home-hero-shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(15, 47, 30, 0.15), transparent 32%, rgba(239, 169, 80, 0.1));
+  }
+
+  .ce-home-hero-copy {
+    width: min(100%, 980px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: var(--ce-warm);
+  }
+
+  .ce-home-logo {
+    width: min(560px, 86vw);
     height: auto;
-    margin-block: 1.25rem 1.5rem;
     object-fit: contain;
   }
 
-  .cascina-kicker {
-    color: var(--cascina-copper);
-    font-size: 0.75rem;
-    font-weight: 850;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  .ce-home-hero h1 {
+    margin-top: 1.4rem;
+    font-size: clamp(3rem, 7vw, 6.6rem);
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1;
   }
 
-  .cascina-hero h1,
-  .cascina-section-head h2,
-  .cascina-production h2,
-  .cascina-demo-panel h2,
-  .cascina-static h1 {
-    font-family: var(--font-menuary-display), Georgia, serif;
-    font-weight: 680;
-    letter-spacing: 0;
-    line-height: 0.95;
+  .ce-home-hero p {
+    max-width: 780px;
+    margin-top: 1.5rem;
+    color: rgba(250, 244, 228, 0.9);
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    line-height: 1.7;
   }
 
-  .cascina-hero h1 {
-    max-width: 760px;
-    font-size: clamp(3.6rem, 8vw, 7.8rem);
+  .ce-home-next {
+    position: absolute;
+    bottom: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(250, 244, 228, 0.7);
+    font-size: 0.8rem;
+    font-weight: 700;
   }
 
-  .cascina-lead,
-  .cascina-production p,
-  .cascina-static p {
-    max-width: 700px;
-    color: color-mix(in srgb, currentColor 74%, transparent);
-    font-size: clamp(1rem, 1.45vw, 1.25rem);
-    line-height: 1.75;
-  }
-
-  .cascina-actions,
-  .cascina-contact-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    margin-top: 2rem;
-  }
-
-  .cascina-btn {
+  .ce-button {
     display: inline-flex;
     min-height: 3.1rem;
     align-items: center;
     justify-content: center;
     gap: 0.55rem;
-    border-radius: 999px;
-    padding: 0.8rem 1.15rem;
-    font-weight: 850;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0.85rem 1.15rem;
+    font-weight: 800;
     line-height: 1;
-    transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+    transition: transform 220ms ease, background-color 220ms ease, color 220ms ease;
   }
 
-  .cascina-btn:hover {
+  .ce-button:hover {
     transform: translateY(-2px);
   }
 
-  .cascina-btn-primary {
-    background: var(--cascina-straw);
-    color: var(--cascina-forest-deep);
+  .ce-button-light {
+    margin-top: 2rem;
+    background: var(--ce-warm-light);
+    color: var(--ce-forest);
   }
 
-  .cascina-btn-secondary {
-    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
-    color: currentColor;
+  .ce-button-forest {
+    background: var(--ce-forest);
+    color: var(--ce-warm-light);
   }
 
-  .cascina-hero-board {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+  .ce-button-outline-light {
+    border-color: rgba(255, 255, 255, 0.75);
+    color: white;
   }
 
-  .cascina-board-main,
-  .cascina-board-stat,
-  .cascina-experience,
-  .cascina-values article,
-  .cascina-demo-panel {
-    border: 1px solid rgba(245, 237, 220, 0.2);
-    border-radius: 8px;
+  .ce-section,
+  .ce-production,
+  .ce-manifesto,
+  .ce-values-section,
+  .ce-collaboration,
+  .ce-contact-cards,
+  .ce-contact-main,
+  .ce-faq {
+    width: min(1180px, calc(100vw - 2rem));
+    margin-inline: auto;
+    padding-block: clamp(4.5rem, 9vw, 7rem);
   }
 
-  .cascina-board-main {
-    grid-column: 1 / -1;
-    min-height: 20rem;
-    padding: 1.4rem;
-    background:
-      linear-gradient(180deg, rgba(218, 193, 138, 0.16), rgba(200, 121, 56, 0.1)),
-      var(--cascina-forest);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-
-  .cascina-board-main p,
-  .cascina-board-stat strong {
-    font-family: var(--font-menuary-display), Georgia, serif;
-    font-size: clamp(2rem, 4vw, 3.8rem);
-    line-height: 0.95;
-  }
-
-  .cascina-board-main span,
-  .cascina-board-stat span {
-    color: rgba(245, 237, 220, 0.72);
-  }
-
-  .cascina-board-stat {
-    min-height: 9rem;
-    padding: 1rem;
-    background: rgba(245, 237, 220, 0.08);
-  }
-
-  .cascina-board-stat strong,
-  .cascina-board-stat span {
-    display: block;
-  }
-
-  .cascina-band {
-    padding-block: clamp(4rem, 8vw, 6rem);
-  }
-
-  .cascina-section-head {
-    margin-bottom: 2rem;
+  .ce-heading {
+    max-width: 760px;
+    margin-inline: auto;
     text-align: center;
   }
 
-  .cascina-section-head h2,
-  .cascina-production h2,
-  .cascina-demo-panel h2,
-  .cascina-static h1 {
-    color: var(--cascina-forest);
-    font-size: clamp(2.8rem, 6vw, 5.4rem);
+  .ce-heading-left {
+    margin-inline: 0;
+    text-align: left;
   }
 
-  .cascina-experience-grid,
-  .cascina-values {
+  .ce-heading > p,
+  .ce-eyebrow {
+    color: var(--ce-pop);
+    font-size: 0.76rem;
+    font-weight: 850;
+    text-transform: uppercase;
+  }
+
+  .ce-heading h2,
+  .ce-theatre h2,
+  .ce-manifesto h2,
+  .ce-innovation h2,
+  .ce-collaboration h2,
+  .ce-directions h2,
+  .ce-final-cta h2 {
+    color: var(--ce-forest);
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .ce-heading h2 {
+    margin-top: 0.5rem;
+  }
+
+  .ce-heading > span {
+    display: block;
+    margin-top: 1rem;
+    color: var(--ce-muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .ce-souls-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  .ce-soul {
+    min-height: 15rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    align-items: start;
+    border: 1px solid var(--ce-line);
+    border-radius: 8px;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    color: var(--ce-forest-dark);
+    transition: transform 260ms ease, box-shadow 260ms ease;
+  }
+
+  .ce-soul:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 38px rgba(28, 74, 49, 0.12);
+  }
+
+  .ce-soul-forest { background: rgba(28, 74, 49, 0.06); }
+  .ce-soul-pop { background: rgba(240, 120, 60, 0.07); }
+  .ce-soul-accent { background: rgba(239, 169, 80, 0.09); }
+  .ce-soul-warm { background: var(--ce-warm-light); }
+
+  .ce-soul-icon {
+    display: grid;
+    width: 3.6rem;
+    height: 3.6rem;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--ce-paper);
+    color: var(--ce-forest);
+    box-shadow: 0 8px 24px rgba(28, 74, 49, 0.08);
+  }
+
+  .ce-soul h3 {
+    color: var(--ce-forest);
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  .ce-soul p {
+    margin-top: 0.5rem;
+    color: var(--ce-muted);
+    line-height: 1.65;
+  }
+
+  .ce-soul strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+    color: var(--ce-pop);
+    font-size: 0.86rem;
+  }
+
+  .ce-theatre {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+    gap: clamp(2rem, 7vw, 6rem);
+    align-items: center;
+    padding: clamp(4rem, 8vw, 7rem) max(1rem, calc((100vw - 1180px) / 2));
+    background: var(--ce-warm-light);
+  }
+
+  .ce-theatre-copy > p:not(.ce-eyebrow),
+  .ce-manifesto p,
+  .ce-innovation p,
+  .ce-collaboration p,
+  .ce-directions span,
+  .ce-faq p {
+    color: var(--ce-muted);
+    line-height: 1.75;
+  }
+
+  .ce-theatre-stats {
+    display: grid;
+    gap: 0.7rem;
+    margin-block: 1.5rem;
+  }
+
+  .ce-theatre-stats span {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    border-left: 3px solid var(--ce-accent);
+    padding: 0.75rem 1rem;
+    background: white;
+    color: var(--ce-muted);
+  }
+
+  .ce-theatre-stats strong {
+    color: var(--ce-forest);
+    font-family: var(--ce-heading);
+    font-size: 2rem;
+  }
+
+  .ce-theatre-scene {
+    min-height: 30rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 2rem;
+    background: linear-gradient(145deg, var(--ce-forest), var(--ce-accent));
+    color: white;
+    text-align: center;
+  }
+
+  .ce-theatre-scene blockquote {
+    max-width: 360px;
+    margin-top: 1rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-style: italic;
+    line-height: 1.15;
+  }
+
+  .ce-theatre-scene div {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  .ce-production {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1.15fr);
+    gap: clamp(2rem, 7vw, 6rem);
+    align-items: center;
+  }
+
+  .ce-products {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .ce-products div {
+    min-height: 6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--ce-line);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--ce-forest);
+    font-weight: 750;
+  }
+
+  .ce-products svg { color: var(--ce-pop); }
+
+  .ce-philosophy {
+    padding: clamp(4.5rem, 9vw, 7rem) 1rem;
+    background: #f5f4ef;
+    text-align: center;
+  }
+
+  .ce-philosophy > svg { color: var(--ce-pop); }
+
+  .ce-philosophy blockquote {
+    max-width: 920px;
+    margin: 1.2rem auto 0;
+    color: var(--ce-forest);
+    font-size: clamp(2rem, 5vw, 3.7rem);
+    font-style: italic;
+    line-height: 1.25;
+  }
+
+  .ce-principles {
+    width: min(900px, 100%);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 3rem auto 0;
+  }
+
+  .ce-principles span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--ce-muted);
+    font-size: 0.9rem;
+  }
+
+  .ce-principles strong {
+    color: var(--ce-forest);
+    font-size: 1.05rem;
+  }
+
+  .ce-final-cta {
+    padding: clamp(4.5rem, 9vw, 7rem) 1rem;
+    background: linear-gradient(110deg, var(--ce-forest), var(--ce-accent));
+    color: white;
+    text-align: center;
+  }
+
+  .ce-final-cta h2 { color: white; }
+
+  .ce-final-cta p {
+    max-width: 720px;
+    margin: 1rem auto 0;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.7;
+  }
+
+  .ce-final-cta > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .ce-page-hero {
+    min-height: 58svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 1rem;
+    text-align: center;
+  }
+
+  .ce-menu-hero {
+    padding: clamp(5rem, 10vw, 8rem) max(1rem, calc((100vw - 1180px) / 2));
+    background: linear-gradient(145deg, var(--ce-forest-light), var(--ce-forest-dark));
+    color: var(--ce-warm-light);
+  }
+
+  .ce-menu-hero > p {
+    color: var(--ce-accent);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+  }
+
+  .ce-menu-hero h1 {
+    max-width: 900px;
+    margin-top: 0.6rem;
+    color: var(--ce-warm-light);
+    font-size: clamp(3.2rem, 8vw, 7rem);
+    font-weight: 600;
+    line-height: 0.95;
+  }
+
+  .ce-menu-hero span {
+    display: block;
+    max-width: 680px;
+    margin-top: 1.25rem;
+    color: rgba(250, 244, 228, 0.78);
+    font-size: 1.08rem;
+    line-height: 1.7;
+  }
+
+  .ce-page-hero-forest {
+    background: linear-gradient(145deg, var(--ce-forest-light), var(--ce-forest-dark));
+    color: var(--ce-warm-light);
+  }
+
+  .ce-page-hero-warm {
+    background: linear-gradient(145deg, var(--ce-warm), var(--ce-warm-light));
+    color: var(--ce-forest);
+  }
+
+  .ce-page-hero > p {
+    font-size: 0.8rem;
+    font-weight: 850;
+    text-transform: uppercase;
+  }
+
+  .ce-page-hero h1 {
+    max-width: 900px;
+    margin-top: 0.5rem;
+    font-size: clamp(3.2rem, 8vw, 7rem);
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .ce-page-hero blockquote {
+    max-width: 820px;
+    margin-top: 1.25rem;
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    font-style: italic;
+    line-height: 1.45;
+  }
+
+  .ce-manifesto {
+    max-width: 960px;
+    text-align: center;
+  }
+
+  .ce-manifesto > div {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 2rem;
+    font-size: 1.05rem;
+  }
+
+  .ce-manifesto strong { color: var(--ce-forest); }
+
+  .ce-values-section {
+    width: 100%;
+    max-width: none;
+    padding-inline: max(1rem, calc((100vw - 1180px) / 2));
+    background: #f5f4ef;
+  }
+
+  .ce-values-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+
+  .ce-values-grid article,
+  .ce-contact-cards article,
+  .ce-faq article {
+    border: 1px solid var(--ce-line);
+    border-radius: 8px;
+    padding: 1.25rem;
+    background: white;
+  }
+
+  .ce-values-grid svg,
+  .ce-contact-cards svg {
+    color: var(--ce-pop);
+  }
+
+  .ce-values-grid h3,
+  .ce-contact-cards h2,
+  .ce-faq h3 {
+    margin-top: 0.75rem;
+    color: var(--ce-forest);
+    font-size: 1.35rem;
+    font-weight: 650;
+  }
+
+  .ce-values-grid p {
+    margin-top: 0.5rem;
+    color: var(--ce-muted);
+    line-height: 1.65;
+  }
+
+  .ce-innovation {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: clamp(2rem, 8vw, 7rem);
+    align-items: center;
+    padding: clamp(4.5rem, 9vw, 7rem) max(1rem, calc((100vw - 1050px) / 2));
+  }
+
+  .ce-innovation ul {
+    display: grid;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+  }
+
+  .ce-innovation li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: var(--ce-muted);
+  }
+
+  .ce-innovation li svg { color: var(--ce-accent); }
+
+  .ce-innovation-mark {
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: linear-gradient(145deg, var(--ce-forest), var(--ce-pop));
+    color: white;
+    font-family: var(--ce-heading);
+    font-size: 11rem;
+    font-style: italic;
+  }
+
+  .ce-collaboration {
+    max-width: 900px;
+    text-align: center;
+  }
+
+  .ce-collaboration p {
+    max-width: 720px;
+    margin: 1rem auto 1.5rem;
+  }
+
+  .ce-contact-cards {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
   }
 
-  .cascina-experience,
-  .cascina-values article {
-    min-height: 19rem;
-    padding: 1.2rem;
-    background: color-mix(in srgb, white 58%, var(--cascina-linen));
-    border-color: var(--cascina-line);
-    color: var(--cascina-ink);
+  .ce-contact-cards article {
+    min-width: 0;
+    text-align: center;
   }
 
-  .cascina-experience h3,
-  .cascina-values h2 {
-    margin-top: 1rem;
-    color: var(--cascina-forest);
-    font-size: 1.35rem;
-    font-weight: 850;
+  .ce-contact-cards article > *:not(svg):not(h2) {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--ce-muted);
+    overflow-wrap: anywhere;
   }
 
-  .cascina-experience p,
-  .cascina-values p {
-    margin-top: 0.7rem;
-    color: var(--cascina-muted);
-    line-height: 1.65;
-  }
-
-  .cascina-experience span {
-    margin-top: 1.2rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--cascina-clay);
-    font-weight: 850;
-  }
-
-  .cascina-production {
+  .ce-contact-main {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
-    gap: clamp(2rem, 5vw, 5rem);
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    gap: clamp(2rem, 7vw, 6rem);
     align-items: center;
-    padding-block: clamp(4rem, 8vw, 6rem);
   }
 
-  .cascina-production ul {
-    display: grid;
-    gap: 0.75rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .ce-contact-map {
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    background: var(--ce-forest);
   }
 
-  .cascina-production li {
+  .ce-directions > div {
     display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    border-left: 3px solid var(--cascina-copper);
-    background: rgba(255, 255, 255, 0.48);
-    padding: 1rem;
-    font-weight: 800;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
   }
 
-  .cascina-band-dark {
-    width: 100%;
-    max-width: none;
-    background: var(--cascina-forest-deep);
-    color: var(--cascina-linen);
+  .ce-directions > div svg {
+    flex: none;
+    color: var(--ce-pop);
   }
 
-  .cascina-demo-panel {
-    width: min(980px, calc(100vw - 2rem));
-    margin-inline: auto;
-    padding: clamp(1.5rem, 4vw, 3rem);
-    background: linear-gradient(135deg, rgba(218, 193, 138, 0.13), rgba(84, 114, 77, 0.16));
+  .ce-directions strong {
+    display: block;
+    color: var(--ce-forest);
   }
 
-  .cascina-demo-panel h2 {
-    color: var(--cascina-straw);
+  .ce-directions .ce-button { margin-top: 1.5rem; }
+
+  .ce-faq {
+    text-align: center;
   }
 
-  .cascina-demo-panel p {
-    max-width: 760px;
-    color: rgba(245, 237, 220, 0.76);
-    line-height: 1.75;
-  }
-
-  .cascina-static {
-    padding-block: clamp(4rem, 8vw, 7rem);
-  }
-
-  .cascina-static-hero {
+  .ce-faq > div:last-of-type {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-block: 2.5rem;
+    text-align: left;
+  }
+
+  .ce-faq article p { margin-top: 0.55rem; }
+
+  .ce-gallery-scenes,
+  .ce-events-gallery {
+    width: min(1180px, calc(100vw - 2rem));
+    margin-inline: auto;
+    padding-block: clamp(4.5rem, 9vw, 7rem);
+  }
+
+  .ce-gallery-scenes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
   }
 
-  .cascina-static-hero img {
-    width: min(360px, 78vw);
-    height: auto;
-  }
-
-  .cascina-values {
-    margin-top: 2rem;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .cascina-contact-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
-    gap: clamp(2rem, 5vw, 5rem);
-    align-items: center;
-  }
-
-  .cascina-map-wrap {
-    overflow: hidden;
-    aspect-ratio: 4 / 3;
-    border: 1px solid var(--cascina-line);
+  .ce-gallery-scenes article {
+    min-height: 24rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
     border-radius: 8px;
-    background: var(--cascina-forest);
+    padding: 1.5rem;
+    color: white;
   }
 
-  .cascina-address-link {
-    display: inline-flex;
+  .ce-gallery-scenes article:nth-child(1) {
+    background: linear-gradient(145deg, var(--ce-forest), var(--ce-accent));
+  }
+
+  .ce-gallery-scenes article:nth-child(2) {
+    background: linear-gradient(145deg, var(--ce-forest-light), var(--ce-forest-dark));
+  }
+
+  .ce-gallery-scenes article:nth-child(3) {
+    background: linear-gradient(145deg, var(--ce-pop), var(--ce-accent));
+  }
+
+  .ce-gallery-scenes h2 {
+    margin-top: 1rem;
+    font-size: 2.1rem;
+    line-height: 1;
+  }
+
+  .ce-gallery-scenes p {
+    margin-top: 0.75rem;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.6;
+  }
+
+  .ce-events-gallery {
+    text-align: center;
+  }
+
+  .ce-events-gallery > div:nth-child(2) {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-block: 2.5rem;
+    text-align: left;
+  }
+
+  .ce-event-card {
+    min-height: 18rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: 8px;
+    padding: 1.25rem;
+    color: white;
+  }
+
+  .ce-event-card-1 { background: linear-gradient(145deg, #d6be86, #f3e7c7); color: var(--ce-forest); }
+  .ce-event-card-2 { background: linear-gradient(145deg, var(--ce-accent), var(--ce-accent-light)); }
+  .ce-event-card-3 { background: linear-gradient(145deg, var(--ce-pop), var(--ce-accent)); }
+  .ce-event-card-4 { background: linear-gradient(145deg, var(--ce-forest), var(--ce-forest-light)); }
+
+  .ce-event-card span {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  .ce-event-card h3 {
+    margin-top: 0.35rem;
+    font-size: 1.6rem;
+    line-height: 1.05;
+  }
+
+  .ce-event-card p {
+    display: flex;
     align-items: center;
-    gap: 0.45rem;
-    margin-top: 1.2rem;
-    color: var(--cascina-clay);
-    font-weight: 850;
+    gap: 0.35rem;
+    margin-top: 0.65rem;
+    font-size: 0.85rem;
   }
 
   .gestione-admin[data-gestione-tenant="cascina-errante"] {
-    --ga-bg: #f5eddc;
-    --ga-surface: #fffaf0;
-    --ga-surface-2: #efe1c7;
-    --ga-surface-3: #e6d1a8;
-    --ga-border: rgba(19, 32, 25, 0.16);
-    --ga-border-strong: rgba(19, 32, 25, 0.28);
-    --ga-ink: #132019;
-    --ga-muted: #637064;
-    --ga-accent: #153d2a;
-    --ga-accent-2: #c87938;
-    --ga-accent-ring: rgba(200, 121, 56, 0.34);
-    --ga-danger: #9e4f32;
-    --ga-success: #54724d;
-    --ga-warning: #dac18a;
-    --ga-font-display: var(--font-menuary-display), Georgia, serif;
-    --ga-font-body: var(--font-menuary-body), system-ui, sans-serif;
+    --ga-bg: #f5f4ef;
+    --ga-surface: #ffffff;
+    --ga-surface-2: #faf4e4;
+    --ga-surface-3: #efe3c2;
+    --ga-border: rgba(28, 74, 49, 0.14);
+    --ga-border-strong: rgba(28, 74, 49, 0.3);
+    --ga-ink: #0f2f1e;
+    --ga-muted: #68756d;
+    --ga-accent: #1c4a31;
+    --ga-accent-2: #f0783c;
+    --ga-accent-ring: rgba(239, 169, 80, 0.34);
+    --ga-danger: #b34b32;
+    --ga-success: #32704d;
+    --ga-warning: #efa950;
+    --ga-font-display: var(--ce-heading);
+    --ga-font-body: var(--ce-body);
   }
 
   .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-header,
@@ -373,14 +834,14 @@
   .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-btn-primary,
   .gestione-admin[data-gestione-tenant="cascina-errante"] .ga-tab-active {
     background: var(--ga-accent);
-    color: #f5eddc;
+    color: #faf4e4;
   }
 
   .gestione-admin[data-gestione-tenant="cascina-errante"] input,
   .gestione-admin[data-gestione-tenant="cascina-errante"] textarea,
   .gestione-admin[data-gestione-tenant="cascina-errante"] select {
     border-color: var(--ga-border);
-    background: #fffaf0;
+    background: white;
     color: var(--ga-ink);
   }
 
@@ -392,32 +853,49 @@
   }
 
   @media (max-width: 920px) {
-    .cascina-hero-inner,
-    .cascina-production,
-    .cascina-contact-grid {
+    .ce-theatre,
+    .ce-production,
+    .ce-contact-main,
+    .ce-innovation {
       grid-template-columns: 1fr;
     }
 
-    .cascina-experience-grid,
-    .cascina-values {
+    .ce-values-grid,
+    .ce-contact-cards {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ce-events-gallery > div:nth-child(2) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ce-innovation-mark {
+      width: min(280px, 100%);
     }
   }
 
-  @media (max-width: 620px) {
-    .cascina-hero {
-      min-height: auto;
-      padding-top: 3rem;
+  @media (max-width: 660px) {
+    .ce-home-hero {
+      min-height: 82svh;
     }
 
-    .cascina-hero h1 {
-      font-size: clamp(3rem, 16vw, 4.6rem);
-    }
-
-    .cascina-hero-board,
-    .cascina-experience-grid,
-    .cascina-values {
+    .ce-souls-grid,
+    .ce-products,
+    .ce-principles,
+    .ce-values-grid,
+    .ce-contact-cards,
+    .ce-gallery-scenes,
+    .ce-events-gallery > div:nth-child(2),
+    .ce-faq > div:last-of-type {
       grid-template-columns: 1fr;
+    }
+
+    .ce-soul {
+      grid-template-columns: 1fr;
+    }
+
+    .ce-theatre-scene {
+      min-height: 22rem;
     }
   }
 }

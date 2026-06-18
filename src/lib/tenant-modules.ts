@@ -31,6 +31,14 @@ export type TenantModuleDefinition = {
   verticalCopy?: Partial<Record<TenantVertical, VerticalModuleCopy>>;
 };
 
+export type TenantModuleGroupDefinition = {
+  key: string;
+  label: string;
+  description: string;
+  modules: TenantFeatureKey[];
+  verticalCopy?: Partial<Record<TenantVertical, Pick<TenantModuleGroupDefinition, "label" | "description">>>;
+};
+
 export const TENANT_MODULES: TenantModuleDefinition[] = [
   {
     key: "website",
@@ -539,6 +547,112 @@ export const TENANT_MODULE_CATEGORIES: TenantModuleCategory[] = [
   "Integrazioni",
 ];
 
+export const TENANT_MODULE_GROUPS: TenantModuleGroupDefinition[] = [
+  {
+    key: "presence",
+    label: "Presenza online",
+    description: "Sito, contenuti pubblici e canali di contatto.",
+    modules: ["website", "gallery", "blog", "linktree", "pressKit"],
+    verticalCopy: {
+      creative: {
+        label: "Presenza editoriale",
+        description: "Sito, press kit, journal e canali pubblici.",
+      },
+    },
+  },
+  {
+    key: "catalog",
+    label: "Menu e catalogo",
+    description: "Menu, preferiti, disponibilità, costi e valorizzazione dell'offerta.",
+    modules: [
+      "onlineMenu",
+      "favorites",
+      "productAvailability",
+      "upselling",
+      "inventoryFoodCost",
+      "worksCatalog",
+      "rightsRoyalties",
+    ],
+    verticalCopy: {
+      services: {
+        label: "Listino e catalogo",
+        description: "Servizi, preferiti, disponibilità, costi e valorizzazione dell'offerta.",
+      },
+      creative: {
+        label: "Opere e diritti",
+        description: "Catalogo opere, materiali, crediti, licenze e royalty.",
+      },
+    },
+  },
+  {
+    key: "commerce",
+    label: "Ordini e vendita",
+    description: "Canali d'ordine, shop, capacità e flussi di evasione.",
+    modules: [
+      "shop",
+      "takeaway",
+      "tableOrders",
+      "orderKiosk",
+      "takeawaySlots",
+      "deliveryHub",
+      "dinerSeparation",
+      "slabbby",
+    ],
+    verticalCopy: {
+      services: {
+        label: "Richieste e vendita",
+        description: "Shop, richieste operative, capacità e flussi di evasione.",
+      },
+    },
+  },
+  {
+    key: "operations",
+    label: "Operatività",
+    description: "Cassa, sala, reparti e strumenti per il lavoro quotidiano.",
+    modules: ["cashRegister", "kitchenDisplay", "printStations", "tablePlanner"],
+    verticalCopy: {
+      services: {
+        label: "Operatività",
+        description: "Cassa, postazioni, reparti e strumenti per il lavoro quotidiano.",
+      },
+    },
+  },
+  {
+    key: "bookings",
+    label: "Prenotazioni",
+    description: "Richieste, conferme e pianificazione delle disponibilità.",
+    modules: ["reservations", "creativeBooking"],
+    verticalCopy: {
+      services: {
+        label: "Appuntamenti",
+        description: "Richieste, conferme e pianificazione delle disponibilità.",
+      },
+      creative: {
+        label: "Booking",
+        description: "Eventi, collaborazioni, disponibilità e materiali organizzativi.",
+      },
+    },
+  },
+  {
+    key: "customers",
+    label: "Clienti e crescita",
+    description: "CRM, recensioni, community e analisi dei risultati.",
+    modules: ["crm", "reviews", "reputationReviews", "fanbaseCommunity", "analytics"],
+  },
+  {
+    key: "organization",
+    label: "Organizzazione",
+    description: "Team, ruoli, sedi e comunicazioni interne.",
+    modules: ["staffRoles", "multiLocation", "mail"],
+  },
+  {
+    key: "integrations",
+    label: "Automazioni e pagamenti",
+    description: "Assistenti AI, sincronizzazioni esterne e incassi.",
+    modules: ["aiPhone", "aiWhatsapp", "hubriseSync", "payments"],
+  },
+];
+
 export const TENANT_MODULE_BY_KEY = Object.fromEntries(
   TENANT_MODULES.map((module) => [module.key, module]),
 ) as Record<TenantFeatureKey, TenantModuleDefinition>;
@@ -563,6 +677,24 @@ export function getTenantModulesForVertical(
     (module) => !isTenantModuleVerticalAware(module, vertical),
   );
   return [...matching, ...otherVerticals];
+}
+
+export function getTenantModuleGroups(
+  vertical: TenantVertical,
+  modules: TenantModuleDefinition[] = getTenantModulesForVertical(vertical),
+): Array<TenantModuleGroupDefinition & { definitions: TenantModuleDefinition[] }> {
+  const moduleByKey = new Map(modules.map((module) => [module.key, module]));
+
+  return TENANT_MODULE_GROUPS.map((group) => {
+    const copy = group.verticalCopy?.[vertical];
+    return {
+      ...group,
+      ...copy,
+      definitions: group.modules
+        .map((key) => moduleByKey.get(key))
+        .filter((module): module is TenantModuleDefinition => Boolean(module)),
+    };
+  }).filter((group) => group.definitions.length > 0);
 }
 
 export function allTenantFeatures(enabled = true): TenantFeatureFlags {

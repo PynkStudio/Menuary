@@ -12,11 +12,14 @@ const RESERVED_SLUGS = new Set([
 ]);
 
 async function resolveAdminAccess(supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>, userId: string, tenantId: string) {
-  const [{ data: ta }, { data: sa }] = await Promise.all([
-    supabase.from("tenantadmin").select("id").eq("user_id", userId).eq("tenant_id", tenantId).eq("enabled", true).maybeSingle(),
-    supabase.from("siteadmin").select("id").eq("user_id", userId).eq("enabled", true).maybeSingle(),
-  ]);
-  return !!(ta || sa);
+  void tenantId;
+  const { data: siteadmin } = await supabase
+    .from("siteadmin")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("enabled", true)
+    .maybeSingle();
+  return Boolean(siteadmin);
 }
 
 /** PATCH /api/gestione/locations/[locationId] — aggiorna una sede */

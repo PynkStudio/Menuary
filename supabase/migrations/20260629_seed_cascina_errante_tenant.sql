@@ -15,16 +15,16 @@ values (
   'food',
   'active',
   jsonb_build_object(
-    'red', '#9E4F32',
-    'redDark', '#153D2A',
-    'peach', '#F5EDDC',
-    'cream', '#F5EDDC',
-    'ink', '#132019',
-    'brick', '#0B2117',
-    'mustard', '#DAC18A',
-    'mustardSoft', '#EFE1C7',
-    'green', '#54724D',
-    'pink', '#C87938'
+    'red', '#F0783C',
+    'redDark', '#0F2F1E',
+    'peach', '#EFE3C2',
+    'cream', '#FFFFFF',
+    'ink', '#0F2F1E',
+    'brick', '#1C4A31',
+    'mustard', '#EFA950',
+    'mustardSoft', '#F4C985',
+    'green', '#32704D',
+    'pink', '#F0783C'
   ),
   jsonb_build_object(
     'website', true,
@@ -67,11 +67,11 @@ values (
     'linktree', true
   ),
   jsonb_build_object(
-    'address', 'Strada della Cascina, 1 - 25030 Franciacorta (BS)',
-    'phone', '+39 030 000 0000',
-    'email', 'demo@cascinaerrante.it',
+    'address', 'Via delle Cascine, 123 - 20010 Milano (MI)',
+    'phone', '+39 095 123 4567',
+    'email', 'info@cascinaerrante.it',
     'websiteUrl', 'https://cascinaerrante.it',
-    'googleMapsUrl', 'https://www.google.com/maps/search/?api=1&query=Cascina+Errante+Franciacorta',
+    'googleMapsUrl', 'https://www.google.com/maps/search/?api=1&query=Cascina+Errante+Via+delle+Cascine+123+Milano',
     'stripeMode', 'demo_sandbox_in_production'
   ),
   '[
@@ -103,12 +103,12 @@ insert into public.locations (
 )
 values (
   'cascina-errante',
-  'franciacorta',
+  'milano',
   'Cascina Errante',
-  'Strada della Cascina, 1',
-  'Franciacorta',
-  '+39 030 000 0000',
-  'demo@cascinaerrante.it',
+  'Via delle Cascine, 123',
+  'Milano',
+  '+39 095 123 4567',
+  'info@cascinaerrante.it',
   true,
   'both',
   '[
@@ -182,10 +182,10 @@ insert into public.tenant_ai_phone_settings (
 values (
   'cascina-errante',
   true,
-  '+39 030 000 0000',
+  '+39 095 123 4567',
   'Ciao, hai chiamato Cascina Errante. Posso aiutarti con menu, prenotazioni, ordini o una demo Menuary.',
   'Sei l''assistente del ristorante demo Cascina Errante. Usa solo menu, prezzi, disponibilita, orari, sedi e policy presenti nel contesto. Conferma sempre prodotti, quantita, recapito, canale, orario e pagamento prima di creare ordini o prenotazioni. Ricorda che i pagamenti Stripe del tenant usano sandbox anche in produzione.',
-  '+39 030 000 0000',
+  '+39 095 123 4567',
   'it-IT',
   true,
   true,
@@ -226,6 +226,119 @@ on conflict (tenant_id) do update set
   dont_examples = excluded.dont_examples,
   updated_at = now();
 
+delete from public.menu_categories where tenant_id = 'cascina-errante';
+
+with category as (
+  insert into public.menu_categories (
+    tenant_id, code, title, subtitle, description, position
+  )
+  values (
+    'cascina-errante',
+    'ristorante',
+    'Il Teatro della Cucina',
+    'Dal campo al piatto, sotto i vostri occhi',
+    'Ingredienti della cascina, produzione idroponica e una brigata che trasforma ogni servizio in un racconto.',
+    0
+  )
+  returning id
+)
+insert into public.menu_items (
+  tenant_id, category_id, code, name, description, price_kind, price, tags, allergens, image, available, position
+)
+select 'cascina-errante', id, item.code, item.name, item.description, 'single'::public.price_kind,
+  jsonb_build_object('kind', 'single', 'value', item.price), item.tags, item.allergens, item.image, true, item.position
+from category
+cross join (
+  values
+    ('percorso-errante', 'Percorso Errante', 'Menu degustazione stagionale con microgreens, fiori edibili, verdure idroponiche e ingredienti raccolti in cascina.', 68::numeric, array['firma']::text[], array[]::text[], '/cascina-errante/logo.png', 0),
+    ('risotto-funghi', 'Risotto ai Funghi Orientali', 'Riso mantecato con funghi coltivati in cascina, erbe fresche e polvere di porcini.', 22::numeric, array['firma','veg']::text[], array['latte','sedano','solfiti']::text[], null, 1),
+    ('loto-microgreens', 'Rizoma di Loto e Microgreens', 'Rizoma di loto croccante, selezione di germogli e salsa alle erbe aromatiche.', 18::numeric, array['veg']::text[], array['soia','sesamo']::text[], null, 2),
+    ('uovo-papera', 'Uovo di Papera della Cascina', 'Uovo morbido, verdure di stagione e fondo aromatico della casa.', 20::numeric, array['novita']::text[], array['uova','latte','sedano']::text[], null, 3)
+) as item(code, name, description, price, tags, allergens, image, position);
+
+with category as (
+  insert into public.menu_categories (
+    tenant_id, code, title, subtitle, description, position
+  )
+  values (
+    'cascina-errante',
+    'bottega',
+    'La Bottega',
+    'Prodotti innovativi e tradizione artigianale',
+    'Dal campo alla tavola, una selezione di prodotti freschi e trasformati della nostra produzione.',
+    1
+  )
+  returning id
+)
+insert into public.menu_items (
+  tenant_id, category_id, code, name, description, price_kind, price, tags, allergens, available, position
+)
+select 'cascina-errante', id, item.code, item.name, item.description, 'single'::public.price_kind,
+  jsonb_build_object('kind', 'single', 'value', item.price), item.tags, array[]::text[], true, item.position
+from category
+cross join (
+  values
+    ('microgreens-premium', 'Microgreens Premium', 'Giovani germogli ricchi di nutrienti e sapore intenso.', 9::numeric, array['firma','veg']::text[], 0),
+    ('miele-aromatizzato', 'Miele Aromatizzato', 'Basilico, menta e peperoni per un miele unico al mondo.', 18::numeric, array['novita']::text[], 1),
+    ('erbe-aromatiche', 'Erbe Aromatiche Fresche', 'Dal nostro sistema idroponico verticale.', 6::numeric, array['veg']::text[], 2),
+    ('fiori-edibili', 'Fiori Edibili', 'Colori e sapori per piatti d''autore.', 11::numeric, array['veg']::text[], 3)
+) as item(code, name, description, price, tags, position);
+
+with category as (
+  insert into public.menu_categories (
+    tenant_id, code, title, subtitle, description, position
+  )
+  values (
+    'cascina-errante',
+    'adventure',
+    'Errante Adventure',
+    'Liofilizzati gourmet per esploratori esigenti',
+    'Sapore autentico, preparazione semplice e ingredienti coltivati nella nostra cascina lombarda.',
+    2
+  )
+  returning id
+)
+insert into public.menu_items (
+  tenant_id, category_id, code, name, description, price_kind, price, tags, allergens, available, position
+)
+select 'cascina-errante', id, item.code, item.name, item.description, 'single'::public.price_kind,
+  jsonb_build_object('kind', 'single', 'value', item.price), item.tags, item.allergens, true, item.position
+from category
+cross join (
+  values
+    ('adventure-risotto', 'Risotto ai Funghi Porcini', 'Cremoso risotto con funghi selezionati, pronto in 8 minuti.', 24::numeric, array['firma']::text[], array[]::text[], 0),
+    ('adventure-curry', 'Curry di Verdure Thai', 'Verdure di stagione e spezie autentiche, pronto in 10 minuti.', 22::numeric, array['veg']::text[], array[]::text[], 1),
+    ('adventure-pasta-fagioli', 'Pasta e Fagioli della Nonna', 'Il comfort food italiano perfetto per ogni avventura.', 20::numeric, array[]::text[], array['glutine','sedano']::text[], 2),
+    ('adventure-lenticchie', 'Zuppa di Lenticchie Speziate', 'Proteine vegetali e sapori intensi per rigenerarsi.', 19::numeric, array['veg']::text[], array['sedano']::text[], 3)
+) as item(code, name, description, price, tags, allergens, position);
+
+with category as (
+  insert into public.menu_categories (
+    tenant_id, code, title, subtitle, description, position
+  )
+  values (
+    'cascina-errante',
+    'eventi',
+    'Eventi & Privé',
+    'Esperienze itineranti su misura',
+    'Food truck premium, catering con ingredienti propri e show cooking della brigata Errante.',
+    3
+  )
+  returning id
+)
+insert into public.menu_items (
+  tenant_id, category_id, code, name, description, price_kind, price, tags, allergens, available, position
+)
+select 'cascina-errante', id, item.code, item.name, item.description, 'single'::public.price_kind,
+  jsonb_build_object('kind', 'single', 'value', item.price), item.tags, array[]::text[], true, item.position
+from category
+cross join (
+  values
+    ('food-truck-premium', 'Food Truck Premium', 'La brigata porta i prodotti della cascina nella location del tuo evento.', 45::numeric, array['firma']::text[], 0),
+    ('catering-cascina', 'Catering con Ingredienti Propri', 'Servizio completo con derrate autoprodotte e preparazione sul posto.', 65::numeric, array[]::text[], 1),
+    ('show-cooking', 'Esperienza dalla Cascina', 'Show cooking, storia degli ingredienti e degustazione guidata.', 85::numeric, array['novita']::text[], 2)
+) as item(code, name, description, price, tags, position);
+
 with lead as (
   insert into public.platform_leads (
     business_name, business_slug, business_vertical, business_type,
@@ -237,7 +350,7 @@ with lead as (
   )
   values (
     'Cascina Errante', 'cascina-errante', 'food', 'Ristorante demo / cascina esperienziale',
-    '+39 030 000 0000', 'demo@cascinaerrante.it', 'Strada della Cascina, 1', 'Franciacorta', 'BS', '25030', 'IT',
+    '+39 095 123 4567', 'info@cascinaerrante.it', 'Via delle Cascine, 123', 'Milano', 'MI', '20010', 'IT',
     'manuale', 'customer', 'active', 'hot',
     'Tenant demo Menuary attivo con tutte le feature abilitate. Pagamenti Stripe forzati su sandbox anche sul dominio produzione cascinaerrante.it.',
     'https://demo.menuary.it/cascina-errante', 'cascinaerrante.it', true, 'cascina-errante',
@@ -278,8 +391,8 @@ insert into public.platform_lead_locations (
   lead_id, name, street, street_number, address, city, province, postal_code, country, is_primary
 )
 select
-  lead.id, 'Sede principale', 'Strada della Cascina', '1',
-  'Strada della Cascina, 1', 'Franciacorta', 'BS', '25030', 'IT', true
+  lead.id, 'Sede principale', 'Via delle Cascine', '123',
+  'Via delle Cascine, 123', 'Milano', 'MI', '20010', 'IT', true
 from lead
 where not exists (
   select 1 from public.platform_lead_locations l

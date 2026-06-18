@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 function code(): string {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -21,6 +22,16 @@ export async function openTableSession(formData: FormData) {
 
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
+
+  const { data: table } = await svc
+    .from("tables")
+    .select("id")
+    .eq("id", tableId)
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id)
+    .maybeSingle();
+  if (!table) throw new Error("table_location_mismatch");
 
   const { error } = await svc.from("table_sessions").insert({
     tenant_id: tenantSlug,
@@ -45,6 +56,22 @@ export async function closeTableSession(formData: FormData) {
 
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
+  const { data: session } = await svc
+    .from("table_sessions")
+    .select("table_id")
+    .eq("id", sessionId)
+    .eq("tenant_id", tenantSlug)
+    .maybeSingle();
+  if (!session) throw new Error("table_session_not_found");
+  const { data: table } = await svc
+    .from("tables")
+    .select("id")
+    .eq("id", session.table_id)
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id)
+    .maybeSingle();
+  if (!table) throw new Error("table_session_location_mismatch");
 
   const { error } = await svc
     .from("table_sessions")

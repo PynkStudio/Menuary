@@ -52,12 +52,13 @@ export type GoogleLocation = {
  * Il cron usa solo la sede primaria; quando implementeremo il multi-location
  * si itererà su tutte.
  */
-export async function getLinkedLocations(tenantId: string): Promise<GoogleLocation[]> {
-  const { data } = await db()
+export async function getLinkedLocations(tenantId: string, locationId?: string | null): Promise<GoogleLocation[]> {
+  let query = db()
     .from("tenant_google_locations")
     .select("location_resource_name,place_id,location_name,is_primary")
-    .eq("tenant_id", tenantId)
-    .order("is_primary", { ascending: false });
+    .eq("tenant_id", tenantId);
+  if (locationId) query = query.eq("location_id", locationId);
+  const { data } = await query.order("is_primary", { ascending: false });
 
   return (data ?? []).map((r) => ({
     locationResourceName: r.location_resource_name,
@@ -68,8 +69,8 @@ export async function getLinkedLocations(tenantId: string): Promise<GoogleLocati
 }
 
 /** Restituisce la sede primaria collegata, o null se il tenant non ha ancora fatto il linking. */
-export async function getPrimaryLocation(tenantId: string): Promise<GoogleLocation | null> {
-  const locations = await getLinkedLocations(tenantId);
+export async function getPrimaryLocation(tenantId: string, locationId?: string | null): Promise<GoogleLocation | null> {
+  const locations = await getLinkedLocations(tenantId, locationId);
   return locations.find((l) => l.isPrimary) ?? locations[0] ?? null;
 }
 

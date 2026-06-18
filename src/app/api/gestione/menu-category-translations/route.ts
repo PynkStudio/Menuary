@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 export const runtime = "nodejs";
 
-async function findCategoryDbId(tenantId: string, categoryId: string) {
+async function findCategoryDbId(tenantId: string, locationId: string, categoryId: string) {
   const svc = createSupabaseServiceClient();
   if (!svc) return null;
   const { data } = await svc
     .from("menu_categories")
     .select("id")
     .eq("tenant_id", tenantId)
+    .eq("location_id", locationId)
     .eq("code", categoryId)
     .maybeSingle();
   return data?.id ?? null;
@@ -28,11 +30,13 @@ export async function GET(req: NextRequest) {
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (auth.isDemo) return NextResponse.json([]);
+  const location = await requireActiveGestioneLocation(tenantId);
 
   const svc = createSupabaseServiceClient();
   if (!svc) return NextResponse.json([]);
 
-  const categoryDbId = await findCategoryDbId(tenantId, categoryId);
+  const categoryDbId = await findCategoryDbId(tenantId, location.id, categoryId);
   if (!categoryDbId) return NextResponse.json([]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,11 +73,13 @@ export async function POST(req: NextRequest) {
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (auth.isDemo) return NextResponse.json({ ok: true });
+  const location = await requireActiveGestioneLocation(tenantId);
 
   const svc = createSupabaseServiceClient();
   if (!svc) return NextResponse.json({ error: "db_unavailable" }, { status: 503 });
 
-  const categoryDbId = await findCategoryDbId(tenantId, categoryId);
+  const categoryDbId = await findCategoryDbId(tenantId, location.id, categoryId);
   if (!categoryDbId) return NextResponse.json({ error: "category_not_found" }, { status: 404 });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

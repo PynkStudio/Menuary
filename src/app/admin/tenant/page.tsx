@@ -32,9 +32,9 @@ import { TENANTS } from "@/lib/tenant-registry";
 import {
   formatFeatureDependencies,
   getMissingFeatureDependencies,
+  getTenantModuleGroups,
   getTenantModulesForVertical,
   isTenantModuleVerticalAware,
-  TENANT_MODULE_CATEGORIES,
   type TenantModuleDefinition,
 } from "@/lib/tenant-modules";
 import { getModuleCopy, getVerticalMeta } from "@/lib/vertical";
@@ -661,19 +661,19 @@ function ModuleCategoryList({
     enabled: boolean,
   ) => void;
 }) {
+  const groups = getTenantModuleGroups(tenant.vertical, modules);
+
   return (
     <div className="mt-4 space-y-5">
-      {TENANT_MODULE_CATEGORIES.map((category) => {
-        const categoryModules = modules.filter((feature) => feature.category === category);
-        if (categoryModules.length === 0) return null;
-
+      {groups.map((group) => {
         return (
-          <div key={category}>
-            <p className="mb-2 text-[10px] font-black uppercase tracking-wide text-pork-ink/45">
-              {category}
-            </p>
+          <div key={group.key}>
+            <div className="mb-2">
+              <p className="text-sm font-black text-pork-ink">{group.label}</p>
+              <p className="mt-0.5 text-xs text-pork-ink/50">{group.description}</p>
+            </div>
             <div className="space-y-3">
-              {categoryModules.map((feature) => {
+              {group.definitions.map((feature) => {
                 const enabled = features[feature.key];
                 const missing = getMissingFeatureDependencies(features, feature.key);
                 const dependencyNote = formatFeatureDependencies(feature.key);

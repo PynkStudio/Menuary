@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 import type { Json } from "@/lib/database.types";
 
 export type KioskConfig = {
@@ -40,13 +41,13 @@ async function guard(tenantSlug: string) {
 export async function createKioskDevice(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  const locationId = String(formData.get("locationId") ?? "") || null;
   if (!tenantSlug || !name) return;
 
   const auth = await guard(tenantSlug);
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
   // Tentativi per evitare collisione del pairing_code.
   let attempts = 0;
@@ -55,7 +56,7 @@ export async function createKioskDevice(formData: FormData) {
     const { error } = await svc.from("kiosk_devices").insert({
       tenant_id: tenantSlug,
       name,
-      location_id: locationId,
+      location_id: location.id,
       pairing_code: code,
     });
     if (!error) {
@@ -78,12 +79,14 @@ export async function toggleKioskDevice(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
   const { error } = await svc
     .from("kiosk_devices")
     .update({ enabled: enable, updated_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("tenant_id", tenantSlug);
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/gestione/${tenantSlug}/kiosk`);
 }
@@ -97,8 +100,9 @@ export async function deleteKioskDevice(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
-  const { error } = await svc.from("kiosk_devices").delete().eq("id", id).eq("tenant_id", tenantSlug);
+  const { error } = await svc.from("kiosk_devices").delete().eq("id", id).eq("tenant_id", tenantSlug).eq("location_id", location.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/gestione/${tenantSlug}/kiosk`);
 }
@@ -112,6 +116,7 @@ export async function regeneratePairingCode(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
   const code = generateCode();
   // Reset anche del token: l'eventuale device gia' accoppiato dovrà riaccoppiarsi.
@@ -124,7 +129,8 @@ export async function regeneratePairingCode(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("tenant_id", tenantSlug);
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/gestione/${tenantSlug}/kiosk`);
 }
@@ -138,12 +144,14 @@ export async function updateKioskConfig(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
   const { data: row } = await svc
     .from("kiosk_devices")
     .select("config")
     .eq("id", id)
     .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id)
     .maybeSingle();
   const current = (row?.config ?? {}) as Partial<KioskConfig>;
 
@@ -168,7 +176,8 @@ export async function updateKioskConfig(formData: FormData) {
     .from("kiosk_devices")
     .update({ config: config as unknown as Json, updated_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("tenant_id", tenantSlug);
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/gestione/${tenantSlug}/kiosk`);
 }

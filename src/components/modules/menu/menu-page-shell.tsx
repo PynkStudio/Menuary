@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { InteractiveMenu } from "@/components/modules/menu/interactive-menu";
 import { DeliveryStrip } from "@/components/modules/shop/delivery-strip";
 import { MenuIntroParagraph } from "@/components/modules/menu/menu-intro-paragraph";
@@ -11,8 +11,10 @@ import { useTenant } from "@/components/core/tenant-provider";
 
 export function MenuPageShell({
   hasGlobalHeader = true,
+  hero,
 }: {
   hasGlobalHeader?: boolean;
+  hero?: ReactNode;
 }) {
   const tenant = useTenant();
   const isFaak = tenant.id === "faak";
@@ -24,7 +26,8 @@ export function MenuPageShell({
     <>
       {!isDoca && <MenuaryAuthHintGate />}
       {!isDoca && <PersonalizedMenuHint />}
-      {!isDoca && (
+      {!isDoca && hero}
+      {!isDoca && !hero && (
         <section className="tenant-menu-hero relative bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
           <div className="container-wide">
             <span className="chip-mustard">Menu</span>

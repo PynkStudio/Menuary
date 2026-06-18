@@ -19,6 +19,9 @@ import { buildTenantIconSet } from "@/lib/favicon";
 import { TenantProvider } from "@/components/core/tenant-provider";
 import { getGestioneTranslations } from "@/i18n/gestione";
 import type { TenantTheme } from "@/lib/tenant";
+import { readGestioneLocationId } from "@/lib/gestione-location";
+import { GestioneLocationGate } from "@/components/gestione/gestione-location-gate";
+import { GestioneLocationProvider } from "@/components/gestione/gestione-location-provider";
 
 interface Props {
   children: React.ReactNode;
@@ -148,11 +151,11 @@ export default async function GestioneLayout({ children, params }: Props) {
   const cssVars = tenantThemeCssVars(tenant.theme);
   const demoEmailDomain = tenant.vertical === "creative" ? "weuseorpheo.com" : tenant.vertical === "services" ? "bizery.it" : "menuary.it";
 
-  // Sedi: solo se il tenant ha multiLocation abilitato.
+  // Ogni tenant operativo lavora dentro una sede, anche quando ne possiede una sola.
   // Su demo non interroghiamo il DB: l'idratazione avviene client-side da localStorage.
   const allLocations = isDemo
     ? []
-    : tenant.features.multiLocation
+    : tenant.vertical !== "creative"
       ? await fetchLocations(supabase, tenantSlug)
       : [];
 
@@ -167,6 +170,33 @@ export default async function GestioneLayout({ children, params }: Props) {
         const allowed = await fetchStaffAllowedLocationIds(supabase, adminId);
         return filterAllowedLocations(allLocations, allowed);
       })();
+  const selectedLocationId = await readGestioneLocationId(tenantSlug);
+  const activeLocation =
+    visibleLocations.length === 1
+      ? visibleLocations[0]
+      : visibleLocations.find((location) => location.id === selectedLocationId);
+
+  if (visibleLocations.length > 1 && !activeLocation) {
+    return (
+      <div
+        className="gestione-admin"
+        data-gestione-tenant={tenantSlug}
+        data-tenant-surface={tenantSlug}
+        style={{
+          ...cssVars,
+          ["--ga-accent" as string]: tenant.theme.red,
+          ["--ga-accent-soft" as string]: `${tenant.theme.red}24`,
+          ["--ga-accent-ring" as string]: `${tenant.theme.red}52`,
+        } as React.CSSProperties}
+      >
+        <GestioneLocationGate
+          tenantId={tenantSlug}
+          tenantName={tenant.name}
+          locations={visibleLocations}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -181,40 +211,46 @@ export default async function GestioneLayout({ children, params }: Props) {
         ["--ga-accent-ring" as string]: `${tenant.theme.red}52`,
       } as React.CSSProperties}
     >
-      <GestioneShell
-        tenant={{
-          id: tenant.id,
-          name: tenant.name,
-          vertical: tenant.vertical,
-          theme: tenant.theme,
-          features: tenant.features,
-        }}
-        currentUser={{
-          email:
-            ta?.email
-            ?? emp?.email
-            ?? user?.email
-            ?? (isDemo ? `demo@${demoEmailDomain}` : backendLive ? `backend-live@${demoEmailDomain}` : ""),
-          displayName:
-            (
-              [ta?.first_name, ta?.last_name].filter(Boolean).join(" ").trim()
-              || [emp?.first_name, emp?.last_name].filter(Boolean).join(" ").trim()
-              || ta?.display_name
-              || emp?.display_name
-            )
-            ?? (isDemo ? "Demo" : backendLive ? "Backend live" : null),
-          role: (emp?.role as EmployeeRole | null) ?? null,
-          permissions: (emp?.permissions as Record<string, boolean>) ?? {},
-          isTenantAdmin: isTenantAdmin || isSiteadmin,
-        }}
+      <GestioneLocationProvider
+        tenantId={tenantSlug}
         locations={visibleLocations}
-        navBaseHref={navBaseHref}
-        loginFrom={loginFrom}
-        isDemo={isDemo}
-        messages={messages}
+        activeLocation={activeLocation}
       >
-        <TenantProvider tenant={tenant}>{children}</TenantProvider>
-      </GestioneShell>
+        <GestioneShell
+          tenant={{
+            id: tenant.id,
+            name: tenant.name,
+            vertical: tenant.vertical,
+            theme: tenant.theme,
+            features: tenant.features,
+          }}
+          currentUser={{
+            email:
+              ta?.email
+              ?? emp?.email
+              ?? user?.email
+              ?? (isDemo ? `demo@${demoEmailDomain}` : backendLive ? `backend-live@${demoEmailDomain}` : ""),
+            displayName:
+              (
+                [ta?.first_name, ta?.last_name].filter(Boolean).join(" ").trim()
+                || [emp?.first_name, emp?.last_name].filter(Boolean).join(" ").trim()
+                || ta?.display_name
+                || emp?.display_name
+              )
+              ?? (isDemo ? "Demo" : backendLive ? "Backend live" : null),
+            role: (emp?.role as EmployeeRole | null) ?? null,
+            permissions: (emp?.permissions as Record<string, boolean>) ?? {},
+            isTenantAdmin: isTenantAdmin || isSiteadmin,
+          }}
+          locations={visibleLocations}
+          navBaseHref={navBaseHref}
+          loginFrom={loginFrom}
+          isDemo={isDemo}
+          messages={messages}
+        >
+          <TenantProvider tenant={tenant}>{children}</TenantProvider>
+        </GestioneShell>
+      </GestioneLocationProvider>
       {!isDemoHostname && <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />}
       {isDemo && <DemoModeInstaller />}
     </div>

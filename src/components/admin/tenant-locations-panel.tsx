@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { MapPin, Save, Loader2 } from "lucide-react";
+import { GestioneLocationsManager } from "@/components/gestione/gestione-locations-manager";
+import type { TenantLocation } from "@/lib/tenant";
 
 interface LocationsData {
   tenantId: string;
@@ -20,6 +22,7 @@ export function AdminTenantLocationsPanel({ tenantId, multiLocationEnabled }: Pr
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [locations, setLocations] = useState<TenantLocation[]>([]);
 
   useEffect(() => {
     fetch(`/api/admin/tenant-locations?tenantId=${tenantId}`)
@@ -27,6 +30,24 @@ export function AdminTenantLocationsPanel({ tenantId, multiLocationEnabled }: Pr
       .then((d: LocationsData) => {
         setData(d);
         setMaxInput(d.maxLocations);
+      })
+      .catch(() => null);
+    fetch(`/api/gestione/locations?tenantId=${tenantId}`)
+      .then((r) => r.json())
+      .then((rows: Array<Record<string, unknown>>) => {
+        if (!Array.isArray(rows)) return;
+        setLocations(rows.map((row) => ({
+          id: String(row.id),
+          tenantId: String(row.tenant_id),
+          name: String(row.name),
+          slug: String(row.slug),
+          address: typeof row.address === "string" ? row.address : null,
+          city: typeof row.city === "string" ? row.city : null,
+          phone: typeof row.phone === "string" ? row.phone : null,
+          email: typeof row.email === "string" ? row.email : null,
+          isDefault: Boolean(row.is_default),
+          routingMode: row.routing_mode === "path" || row.routing_mode === "subdomain" ? row.routing_mode : "both",
+        })));
       })
       .catch(() => null);
   }, [tenantId]);
@@ -120,6 +141,14 @@ export function AdminTenantLocationsPanel({ tenantId, multiLocationEnabled }: Pr
           Le sedi esistenti non vengono eliminate, ma non si potranno aggiungerne di nuove.
         </p>
       )}
+
+      <div className="border-t border-pork-ink/10 pt-4">
+        <GestioneLocationsManager
+          tenantId={tenantId}
+          initialLocations={locations}
+          multiLocationEnabled={multiLocationEnabled}
+        />
+      </div>
     </div>
   );
 }

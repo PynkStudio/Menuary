@@ -19,6 +19,7 @@ import {
 } from "./actions";
 import { demoKiosks } from "@/lib/demo-fixtures";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
+import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 type DeviceRow = {
   id: string;
@@ -32,7 +33,7 @@ type DeviceRow = {
   config: KioskConfig;
 };
 
-async function fetchKiosks(tenantSlug: string): Promise<{
+async function fetchKiosks(tenantSlug: string, locationId: string): Promise<{
   devices: DeviceRow[];
   locations: { id: string; name: string; slug: string }[];
 }> {
@@ -47,6 +48,7 @@ async function fetchKiosks(tenantSlug: string): Promise<{
     .from("kiosk_devices")
     .select("id, name, location_id, pairing_code, device_token, enabled, paired_at, last_seen_at, config")
     .eq("tenant_id", tenantSlug)
+    .eq("location_id", locationId)
     .order("created_at", { ascending: true });
 
   return {
@@ -87,7 +89,12 @@ export default async function KioskGestionePage({
   if (!auth.isDemo && !auth.isAdmin) notFound();
   if (!tenant.features.orderKiosk) notFound();
 
-  const { devices, locations } = auth.isDemo ? demoKiosks() : await fetchKiosks(tenantSlug);
+  const activeLocation = auth.isDemo ? null : await getActiveGestioneLocation(tenantSlug);
+  const { devices, locations } = auth.isDemo
+    ? demoKiosks()
+    : activeLocation
+      ? await fetchKiosks(tenantSlug, activeLocation.id)
+      : { devices: [], locations: [] };
 
   return (
     <div className="ga-dashboard">
@@ -106,15 +113,8 @@ export default async function KioskGestionePage({
         </div>
         <form action={createKioskDevice} className="ga-form-inline">
           <input type="hidden" name="tenantSlug" value={tenantSlug} />
+          {activeLocation && <input type="hidden" name="locationId" value={activeLocation.id} />}
           <input type="text" name="name" placeholder={t.namePlaceholder} required className="ga-input" />
-          {locations.length > 1 && (
-            <select name="locationId" className="ga-select" defaultValue="">
-              <option value="">{t.allLocations}</option>
-              {locations.map((l) => (
-                <option key={l.id} value={l.id}>{l.name}</option>
-              ))}
-            </select>
-          )}
           <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
             <Plus size={14} strokeWidth={2.4} /> {t.create}
           </button>

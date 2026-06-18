@@ -1,16 +1,4 @@
-import Link from "next/link";
 import { headers } from "next/headers";
-import {
-  Settings,
-  ClipboardList,
-  BookOpen,
-  CalendarDays,
-  Users,
-  Star,
-  BarChart3,
-  MapPin,
-  ArrowRight,
-} from "lucide-react";
 import { getTenantById } from "@/lib/data/tenant";
 import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
@@ -18,9 +6,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isDemoHost } from "@/lib/platform";
 import { getTenantDemoControl } from "@/lib/demo-controls";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
-import { TENANT_MODULES } from "@/lib/tenant-modules";
-import { demoDashboardKpis } from "@/lib/demo-fixtures";
+import { getTenantModuleGroups } from "@/lib/tenant-modules";
+import { DashboardQuickActions } from "@/components/gestione/dashboard-quick-actions";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
+import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Kpi = {
   label: string;
@@ -28,78 +17,135 @@ type Kpi = {
   hint?: string;
 };
 
-async function loadKpis(tenantSlug: string, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services" | "creative", t: GestioneMessages["dashboard"]): Promise<Kpi[]> {
-  if (vertical === "creative") {
-    return [
-      { label: "Catalogo opere", value: features.hasCreativeWorks ? "Attivo" : null, hint: features.hasCreativeWorks ? "Schede e press kit" : t.kpi.inactiveModule },
-      { label: "Booking eventi", value: features.hasCreativeBookings ? "Attivo" : null, hint: features.hasCreativeBookings ? "Richieste e disponibilità" : t.kpi.inactiveModule },
-      { label: "Reputation", value: features.modules.reputationReviews ? "Attiva" : null, hint: features.modules.reputationReviews ? "Recensioni e presenza pubblica" : t.kpi.inactiveModule },
-      { label: "Community", value: features.canManageFidelity ? "Attiva" : null, hint: features.canManageFidelity ? "Fanbase e newsletter" : t.kpi.inactiveModule },
-    ].filter((kpi) => kpi.value !== null);
-  }
-
-  const operationalVertical = vertical === "food" ? "food" : "services";
+async function loadKpis(tenantSlug: string, locationId: string | null, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services" | "creative", t: GestioneMessages["dashboard"]): Promise<Kpi[]> {
   if (isDemo) {
-    const k = demoDashboardKpis(operationalVertical);
-    const out: Kpi[] = [
-      { label: operationalVertical === "services" ? t.kpi.appointmentsToday : t.kpi.reservationsToday, value: String(k.reservationsToday) },
-      { label: t.kpi.reviews7d, value: String(k.reviews7d), hint: t.kpi.reviewsAvg },
-    ];
-    if (features.canManageStaff) {
-      out.push({ label: t.kpi.staffActive, value: String(k.staffActive) });
+    const demo: Kpi[] = [];
+    if (features.hasOrders) {
+      demo.push(
+        { label: "Valore ordini oggi", value: "642 €", hint: "18 ordini validi" },
+        { label: "Ordini da gestire", value: "6", hint: "2 in attesa di conferma" },
+      );
     }
-    return out;
+    if (features.canManageReservations) {
+      demo.push(
+        {
+          label: vertical === "services" ? t.kpi.appointmentsToday : vertical === "creative" ? "Richieste booking oggi" : t.kpi.reservationsToday,
+          value: vertical === "services" ? "9" : "14",
+          hint: vertical === "food" ? "38 coperti previsti" : undefined,
+        },
+        { label: "Richieste da confermare", value: "3" },
+      );
+    }
+    if (features.canManageMenu) {
+      demo.push({
+        label: vertical === "services" ? "Servizi non disponibili" : vertical === "creative" ? "Opere pubblicate" : "Piatti non disponibili",
+        value: vertical === "creative" ? "12" : "2",
+        hint: vertical === "creative" ? "Catalogo pubblico" : "Aggiorna prima del servizio",
+      });
+    }
+    if (features.hasGoogleBusiness) {
+      demo.push({ label: t.kpi.reviews7d, value: "4", hint: t.kpi.reviewsAvg });
+    }
+    return demo.slice(0, 4);
   }
 
   const supabase = await createSupabaseServerClient(resolveSessionCookieDomain((await headers()).get("host") ?? ""));
-  const today = new Date();
-  const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
-  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const now = new Date();
+  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const today = [
+    dayStart.getFullYear(),
+    String(dayStart.getMonth() + 1).padStart(2, "0"),
+    String(dayStart.getDate()).padStart(2, "0"),
+  ].join("-");
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [reservations, reviews, staff] = await Promise.all([
+  const [orders, reservations, menuItems, reviews] = await Promise.all([
+    features.hasOrders
+      ? supabase
+          .from("orders")
+          .select("total,status")
+          .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
+          .gte("created_at", dayStart.toISOString())
+          .lt("created_at", dayEnd.toISOString())
+      : Promise.resolve({ data: [] }),
     features.canManageReservations
       ? supabase
           .from("reservation_requests")
-          .select("id", { count: "exact", head: true })
-          .eq("tenant_id", tenantSlug)
-          .gte("reservation_date", dayStart)
-      : Promise.resolve({ count: null } as { count: number | null }),
+          .select("status,covers")
+          .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
+          .eq("reservation_date", today)
+      : Promise.resolve({ data: [] }),
+    features.canManageMenu
+      ? supabase
+          .from("menu_items")
+          .select("available")
+          .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
+      : Promise.resolve({ data: [] }),
     features.hasGoogleBusiness
       ? supabase
           .from("reviews")
           .select("id", { count: "exact", head: true })
-          .eq("tenant_id", tenantSlug)
+          .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
           .gte("created_at", weekAgo)
       : Promise.resolve({ count: null } as { count: number | null }),
-    supabase
-      .from("employee")
-      .select("id", { count: "exact", head: true })
-      .eq("tenant_id", tenantSlug)
-      .eq("enabled", true),
   ]);
 
-  const enabledCount = Object.values(features.modules).filter(Boolean).length;
+  const orderRows = orders.data ?? [];
+  const reservationRows = reservations.data ?? [];
+  const menuRows = menuItems.data ?? [];
+  const out: Kpi[] = [];
 
-  return [
-    {
-      label: t.kpi.reservationsToday,
-      value: features.canManageReservations ? String(reservations.count ?? 0) : null,
-      hint: features.canManageReservations ? undefined : t.kpi.inactiveModule,
-    },
-    {
-      label: t.kpi.reviews7d,
-      value: features.hasGoogleBusiness ? String(reviews.count ?? 0) : null,
-      hint: features.hasGoogleBusiness ? undefined : t.kpi.inactiveModule,
-    },
-    {
-      label: t.kpi.staffActive,
-      value: String(staff.count ?? 0),
-    },
-    {
-      label: t.kpi.activeModules,
-      value: String(enabledCount),
-    },
-  ];
+  if (features.hasOrders) {
+    const validOrders = orderRows.filter((order) => !["annullato", "expired"].includes(order.status));
+    const revenue = validOrders.reduce((sum, order) => sum + Number(order.total ?? 0), 0);
+    const open = validOrders.filter((order) =>
+      ["pending_confirmation", "nuovo", "in_preparazione", "pronto"].includes(order.status),
+    );
+    const pending = open.filter((order) => order.status === "pending_confirmation").length;
+    out.push(
+      {
+        label: "Valore ordini oggi",
+        value: new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(revenue),
+        hint: `${validOrders.length} ordini validi`,
+      },
+      {
+        label: "Ordini da gestire",
+        value: String(open.length),
+        hint: pending > 0 ? `${pending} in attesa di conferma` : "Nessuno in attesa di conferma",
+      },
+    );
+  }
+
+  if (features.canManageReservations) {
+    const pending = reservationRows.filter((reservation) =>
+      ["pending_manual", "auto_proposed"].includes(reservation.status),
+    ).length;
+    const covers = reservationRows.reduce((sum, reservation) => sum + Number(reservation.covers ?? 0), 0);
+    out.push(
+      {
+        label: vertical === "services" ? t.kpi.appointmentsToday : vertical === "creative" ? "Richieste booking oggi" : t.kpi.reservationsToday,
+        value: String(reservationRows.length),
+        hint: vertical === "food" ? `${covers} coperti previsti` : undefined,
+      },
+      { label: "Richieste da confermare", value: String(pending) },
+    );
+  }
+
+  if (features.canManageMenu) {
+    const unavailable = menuRows.filter((item) => !item.available).length;
+    out.push({
+      label: vertical === "services" ? "Servizi non disponibili" : vertical === "creative" ? "Opere pubblicate" : "Piatti non disponibili",
+      value: String(vertical === "creative" ? menuRows.length : unavailable),
+      hint: vertical === "creative" ? "Catalogo pubblico" : unavailable > 0 ? "Richiedono un controllo" : "Tutta l'offerta è disponibile",
+    });
+  }
+
+  if (features.hasGoogleBusiness) {
+    out.push({ label: t.kpi.reviews7d, value: String(reviews.count ?? 0) });
+  }
+
+  return out.slice(0, 4);
 }
 
 export default async function GestioneDashboardPage({
@@ -120,6 +166,14 @@ export default async function GestioneDashboardPage({
   const vertical = getVerticalMeta(tenant.vertical);
   const access = getGestioneModuleAccess(tenant.features);
   const base = getGestioneBaseHref(host, tenant) || `/gestione/${tenant.id}`;
+  const publicDomain = tenant.domains.find(
+    (domain) => !domain.startsWith("www.") && !domain.includes("localhost") && domain !== "127.0.0.1",
+  );
+  const ordersHref = isDemoHostname
+    ? `/${tenant.id}/ordini`
+    : publicDomain
+      ? `https://ordini.${publicDomain}`
+      : `/operativo/${tenant.id}/ordini`;
 
   const menuLabel = getModuleLabel("onlineMenu", tenant.vertical);
   const reservationsLabel = getModuleLabel("reservations", tenant.vertical);
@@ -127,9 +181,6 @@ export default async function GestioneDashboardPage({
     tenant.vertical === "creative" ? getModuleLabel("worksCatalog", tenant.vertical) : menuLabel;
   const bookingLabel =
     tenant.vertical === "creative" ? getModuleLabel("creativeBooking", tenant.vertical) : reservationsLabel;
-  const audienceLabel =
-    tenant.vertical === "creative" ? getModuleLabel("fanbaseCommunity", tenant.vertical) : t.actions.analytics.label;
-
   const dashboardCopy =
     tenant.vertical === "creative"
       ? "Da qui gestisci sito, catalogo opere, community e materiali editoriali."
@@ -141,78 +192,19 @@ export default async function GestioneDashboardPage({
         })
       : t.copyFood;
 
-  const kpis = await loadKpis(tenantSlug, isDemo, access, tenant.vertical, t);
+  const activeLocation = isDemo || tenant.vertical === "creative"
+    ? null
+    : await getActiveGestioneLocation(tenantSlug);
+  const kpis = await loadKpis(tenantSlug, activeLocation?.id ?? null, isDemo, access, tenant.vertical, t);
 
-  const quickActions: { href: string; label: string; hint: string; icon: React.ReactNode; show: boolean }[] = [
-    {
-      href: `${base}/impostazioni`,
-      label: tenant.vertical === "creative" ? "Presenza online" : t.actions.activity.label,
-      hint: tenant.vertical === "creative" ? "Sito, contatti e contenuti" : t.actions.activity.hint,
-      icon: <Settings size={16} strokeWidth={2} />,
-      show: access.canManageActivity,
-    },
-    {
-      href: `${base}/prenotazioni`,
-      label: bookingLabel,
-      hint: tenant.vertical === "creative" ? "Eventi e collaborazioni" : t.actions.reservations.hint,
-      icon: <CalendarDays size={16} strokeWidth={2} />,
-      show: access.canManageReservations,
-    },
-    {
-      href: `${base}/listino`,
-      label: worksLabel,
-      hint: tenant.vertical === "creative" ? "Libri, press kit e provider" : t.actions.menu.hint,
-      icon: <BookOpen size={16} strokeWidth={2} />,
-      show: access.canManageMenu,
-    },
-    {
-      href: `${base}/ordini`,
-      label: t.actions.orders.label,
-      hint: t.actions.orders.hint,
-      icon: <ClipboardList size={16} strokeWidth={2} />,
-      show: access.hasOrders,
-    },
-    {
-      href: `${base}/staff`,
-      label: t.actions.staff.label,
-      hint: t.actions.staff.hint,
-      icon: <Users size={16} strokeWidth={2} />,
-      show: access.canManageStaff,
-    },
-    {
-      href: `${base}/google`,
-      label: t.actions.google.label,
-      hint: t.actions.google.hint,
-      icon: <Star size={16} strokeWidth={2} />,
-      show: access.hasGoogleBusiness,
-    },
-    {
-      href: `${base}/analytics`,
-      label: audienceLabel,
-      hint: tenant.vertical === "creative" ? "Pubblico e newsletter" : t.actions.analytics.hint,
-      icon: <BarChart3 size={16} strokeWidth={2} />,
-      show: access.canViewAnalytics,
-    },
-    {
-      href: `${base}/sedi`,
-      label: t.actions.locations.label,
-      hint: t.actions.locations.hint,
-      icon: <MapPin size={16} strokeWidth={2} />,
-      show: access.canManageLocations,
-    },
-  ].filter((a) => a.show);
-
-  // Moduli effettivamente attivati per il tenant dal control panel di
-  // admin.menuary.it (passa per resolveTenantFeatures dentro getGestioneModuleAccess,
-  // così rispettiamo dependency e implies). Stato di default "ok": la diagnostica
-  // reale (warn/error) verrà popolata in seguito.
-  type ModuleStatus = "ok" | "warn" | "error";
-  const enabledModules = TENANT_MODULES.filter((mod) => access.modules[mod.key]).map((mod) => ({
-    key: mod.key,
-    name: getModuleLabel(mod.key, tenant.vertical),
-    status: "ok" as ModuleStatus,
-    note: null as string | null,
-  }));
+  const orderModules = (["takeaway", "tableOrders", "orderKiosk"] as const)
+    .filter((key) => access.modules[key]);
+  const enabledGroups = getTenantModuleGroups(tenant.vertical)
+    .map((group) => ({
+      ...group,
+      activeDefinitions: group.definitions.filter((module) => access.modules[module.key]),
+    }))
+    .filter((group) => group.activeDefinitions.length > 0);
 
   return (
     <div className="ga-dashboard">
@@ -240,44 +232,49 @@ export default async function GestioneDashboardPage({
         </div>
       </section>
 
-      {quickActions.length > 0 && (
+      {(access.hasOrders || access.canManageMenu || access.canManageReservations || access.canManageActivity) && (
         <section className="ga-section" aria-labelledby="ga-quick-title">
           <div className="ga-section-head">
             <h2 id="ga-quick-title" className="ga-section-title">{t.shortcuts}</h2>
-            <span className="ga-section-hint">{interpolate(t.availableAreas, { count: quickActions.length })}</span>
+            <span className="ga-section-hint">Le operazioni più frequenti, senza passaggi inutili</span>
           </div>
-          <div className="ga-quick-grid">
-            {quickActions.map((a) => (
-              <Link key={a.href} href={a.href} className="ga-quick">
-                <span className="ga-quick-icon">{a.icon}</span>
-                <span className="ga-quick-meta">
-                  <span>{a.label}</span>
-                  <span className="ga-quick-hint">{a.hint}</span>
-                </span>
-                <ArrowRight size={14} strokeWidth={2} style={{ marginLeft: "auto", opacity: 0.4 }} />
-              </Link>
-            ))}
-          </div>
+          <DashboardQuickActions
+            tenantId={tenant.id}
+            base={base}
+            ordersHref={ordersHref}
+            vertical={tenant.vertical}
+            isDemo={isDemo}
+            hasOrders={access.hasOrders}
+            canManageMenu={access.canManageMenu}
+            canManageReservations={access.canManageReservations}
+            canManageActivity={access.canManageActivity}
+            orderModules={[...orderModules]}
+          />
         </section>
       )}
 
       <section className="ga-section" aria-labelledby="ga-modules-title">
         <div className="ga-section-head">
           <h2 id="ga-modules-title" className="ga-section-title">{t.modulesDiagnostic}</h2>
-          <span className="ga-section-hint">{interpolate(t.activeModules, { count: enabledModules.length })}</span>
+          <span className="ga-section-hint">{enabledGroups.length} aree operative</span>
         </div>
-        {enabledModules.length === 0 ? (
+        {enabledGroups.length === 0 ? (
           <div className="ga-empty">
             {t.noModules}
           </div>
         ) : (
           <div className="ga-modules-grid">
-            {enabledModules.map((m) => (
-              <div key={m.key} className="ga-module">
-                <span className="ga-module-name">{m.name}</span>
-                <span className="ga-module-status" data-status={m.status}>
-                  {m.status === "ok" ? t.moduleStatus.online : m.status === "warn" ? t.moduleStatus.check : t.moduleStatus.issue}
+            {enabledGroups.map((group) => (
+              <div key={group.key} className="ga-module">
+                <span>
+                  <span className="ga-module-name">{group.label}</span>
+                  <span className="ga-kpi-hint">
+                    {group.activeDefinitions
+                      .map((module) => getModuleLabel(module.key, tenant.vertical))
+                      .join(" · ")}
+                  </span>
                 </span>
+                <span className="ga-module-count">{group.activeDefinitions.length} attive</span>
               </div>
             ))}
           </div>

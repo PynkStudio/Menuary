@@ -6,6 +6,7 @@ import { useTenant } from "@/components/core/tenant-provider";
 import type { TenantOrderSettings } from "@/lib/types";
 import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
 import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
+import { useGestioneLocation } from "@/components/gestione/gestione-location-provider";
 
 type FormState = Omit<TenantOrderSettings, "id" | "tenantId" | "locationId">;
 
@@ -39,11 +40,12 @@ const EMPTY: FormState = {
 
 export function OrderSettingsPanel() {
   const tenant = useTenant();
+  const { activeLocation } = useGestioneLocation();
   const [form, setForm] = useState<FormState>(EMPTY);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const draft = useDraftPersistence<FormState>(`draft:${tenant.id}:order-settings`);
+  const draft = useDraftPersistence<FormState>(`draft:${tenant.id}:${activeLocation?.id ?? "demo"}:order-settings`);
   const savedFormRef = useRef<FormState | null>(null);
   const isDirty = useMemo(
     () => loaded && savedFormRef.current !== null && JSON.stringify(form) !== JSON.stringify(savedFormRef.current),
@@ -55,7 +57,9 @@ export function OrderSettingsPanel() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const res = await fetch(`/api/gestione/order-settings?tenantId=${tenant.id}`, {
+      const params = new URLSearchParams({ tenantId: tenant.id });
+      if (activeLocation) params.set("locationId", activeLocation.id);
+      const res = await fetch(`/api/gestione/order-settings?${params.toString()}`, {
         cache: "no-store",
       });
       if (!res.ok) {
@@ -73,7 +77,7 @@ export function OrderSettingsPanel() {
     return () => {
       cancelled = true;
     };
-  }, [tenant.id]);
+  }, [activeLocation, tenant.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,10 +107,12 @@ export function OrderSettingsPanel() {
     setSaving(true);
     setMsg(null);
     try {
-      const res = await fetch(`/api/gestione/order-settings?tenantId=${tenant.id}`, {
+      const params = new URLSearchParams({ tenantId: tenant.id });
+      if (activeLocation) params.set("locationId", activeLocation.id);
+      const res = await fetch(`/api/gestione/order-settings?${params.toString()}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId: tenant.id, locationId: null, ...form }),
+        body: JSON.stringify({ tenantId: tenant.id, locationId: activeLocation?.id ?? null, ...form }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));

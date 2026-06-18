@@ -21,6 +21,7 @@ export function useSupabaseMenuSync(
   enabled = true,
   locale?: string | null,
   preserveLocalDraft = false,
+  locationId?: string | null,
 ) {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "saving" | "error">("idle");
   const [publishedSnapshot, setPublishedSnapshot] = useState("");
@@ -31,7 +32,8 @@ export function useSupabaseMenuSync(
   const extraLists = useMenuStore((s) => s.extraLists);
   const customTags = useMenuStore((s) => s.customTags);
   const volumeLabels = useMenuStore((s) => s.volumeLabels);
-  const loadedTenantRef = useRef<string | null>(null);
+  const loadedScopeRef = useRef<string | null>(null);
+  const scopeId = tenantId ? `${tenantId}:${locationId ?? "default"}` : null;
 
   useEffect(() => {
     if (!enabled || !tenantId) return;
@@ -40,6 +42,7 @@ export function useSupabaseMenuSync(
 
     const params = new URLSearchParams({ tenantId });
     if (locale) params.set("locale", locale);
+    if (locationId) params.set("locationId", locationId);
 
     fetch(`/api/menu-sync?${params.toString()}`, {
       cache: "no-store",
@@ -51,7 +54,7 @@ export function useSupabaseMenuSync(
       .then((bundle) => {
         if (cancelled) return;
         const draftSnapshot = JSON.stringify(toBundle());
-        const publishedKey = `menu-sync:last-published:${tenantId}`;
+        const publishedKey = `menu-sync:last-published:${scopeId}`;
         const lastPublishedSnapshot = window.localStorage.getItem(publishedKey);
         const currentTenantId = useMenuStore.getState().currentTenantId;
 
@@ -59,6 +62,7 @@ export function useSupabaseMenuSync(
 
         if (
           preserveLocalDraft &&
+          loadedScopeRef.current === scopeId &&
           currentTenantId === tenantId &&
           lastPublishedSnapshot &&
           draftSnapshot !== lastPublishedSnapshot
@@ -71,7 +75,7 @@ export function useSupabaseMenuSync(
           window.localStorage.setItem(publishedKey, nextPublishedSnapshot);
         }
 
-        loadedTenantRef.current = tenantId;
+        loadedScopeRef.current = scopeId;
         setStatus("ready");
       })
       .catch(() => {
@@ -81,7 +85,7 @@ export function useSupabaseMenuSync(
     return () => {
       cancelled = true;
     };
-  }, [enabled, locale, preserveLocalDraft, replaceMenuData, tenantId]);
+  }, [enabled, locale, locationId, preserveLocalDraft, replaceMenuData, scopeId, tenantId]);
 
   const snapshot = useMemo(
     () => JSON.stringify({ categories, items, menuLists, extraLists, customTags, volumeLabels }),
@@ -89,31 +93,33 @@ export function useSupabaseMenuSync(
   );
 
   const hasUnpublishedChanges =
-    Boolean(tenantId && loadedTenantRef.current === tenantId && publishedSnapshot) &&
+    Boolean(scopeId && loadedScopeRef.current === scopeId && publishedSnapshot) &&
     snapshot !== publishedSnapshot;
 
   const publishMenu = useCallback(async () => {
-    if (!enabled || !tenantId || loadedTenantRef.current !== tenantId) return false;
+    if (!enabled || !tenantId || !scopeId || loadedScopeRef.current !== scopeId) return false;
     const bundle = toBundle();
     const body = JSON.stringify(bundle);
     setStatus("saving");
 
     try {
-      const res = await fetch(`/api/menu-sync?tenantId=${encodeURIComponent(tenantId)}`, {
+      const params = new URLSearchParams({ tenantId });
+      if (locationId) params.set("locationId", locationId);
+      const res = await fetch(`/api/menu-sync?${params.toString()}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body,
       });
       if (!res.ok) throw new Error("Menu sync failed");
       setPublishedSnapshot(body);
-      window.localStorage.setItem(`menu-sync:last-published:${tenantId}`, body);
+      window.localStorage.setItem(`menu-sync:last-published:${scopeId}`, body);
       setStatus("ready");
       return true;
     } catch {
       setStatus("error");
       return false;
     }
-  }, [enabled, tenantId]);
+  }, [enabled, locationId, scopeId, tenantId]);
 
   return { status, hasUnpublishedChanges, publishMenu };
 }

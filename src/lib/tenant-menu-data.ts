@@ -254,6 +254,161 @@ export const docaMenu: MenuCategory[] = [
   },
 ];
 
+export const cascinaErranteMenu: MenuCategory[] = [
+  {
+    id: "ristorante",
+    title: "Il Teatro della Cucina",
+    subtitle: "Dal campo al piatto, sotto i vostri occhi",
+    description:
+      "Ingredienti della cascina, produzione idroponica e una brigata che trasforma ogni servizio in un racconto.",
+    items: [
+      {
+        id: "percorso-errante",
+        name: "Percorso Errante",
+        description:
+          "Menu degustazione stagionale con microgreens, fiori edibili, verdure idroponiche e ingredienti raccolti in cascina.",
+        price: s(68),
+        tags: ["firma"],
+        image: "/cascina-errante/logo.png",
+      },
+      {
+        id: "risotto-funghi",
+        name: "Risotto ai Funghi Orientali",
+        description:
+          "Riso mantecato con funghi coltivati in cascina, erbe fresche e polvere di porcini.",
+        price: s(22),
+        tags: ["firma", "veg"],
+        allergens: ix("latte", "sedano", "solfiti"),
+      },
+      {
+        id: "loto-microgreens",
+        name: "Rizoma di Loto e Microgreens",
+        description:
+          "Rizoma di loto croccante, selezione di germogli e salsa alle erbe aromatiche.",
+        price: s(18),
+        tags: ["veg"],
+        allergens: ix("soia", "sesamo"),
+      },
+      {
+        id: "uovo-papera",
+        name: "Uovo di Papera della Cascina",
+        description:
+          "Uovo morbido, verdure di stagione e fondo aromatico della casa.",
+        price: s(20),
+        tags: ["novita"],
+        allergens: ix("uova", "latte", "sedano"),
+      },
+    ],
+  },
+  {
+    id: "bottega",
+    title: "La Bottega",
+    subtitle: "Prodotti innovativi e tradizione artigianale",
+    description:
+      "Dal campo alla tavola, una selezione di prodotti freschi e trasformati della nostra produzione.",
+    items: [
+      {
+        id: "microgreens-premium",
+        name: "Microgreens Premium",
+        description: "Giovani germogli ricchi di nutrienti e sapore intenso.",
+        price: s(9),
+        tags: ["firma", "veg"],
+      },
+      {
+        id: "miele-aromatizzato",
+        name: "Miele Aromatizzato",
+        description: "Basilico, menta e peperoni per un miele unico al mondo.",
+        price: s(18),
+        tags: ["novita"],
+      },
+      {
+        id: "erbe-aromatiche",
+        name: "Erbe Aromatiche Fresche",
+        description: "Dal nostro sistema idroponico verticale.",
+        price: s(6),
+        tags: ["veg"],
+      },
+      {
+        id: "fiori-edibili",
+        name: "Fiori Edibili",
+        description: "Colori e sapori per piatti d'autore.",
+        price: s(11),
+        tags: ["veg"],
+      },
+    ],
+  },
+  {
+    id: "adventure",
+    title: "Errante Adventure",
+    subtitle: "Liofilizzati gourmet per esploratori esigenti",
+    description:
+      "Sapore autentico, preparazione semplice e ingredienti coltivati nella nostra cascina lombarda.",
+    items: [
+      {
+        id: "adventure-risotto",
+        name: "Risotto ai Funghi Porcini",
+        description: "Cremoso risotto con funghi selezionati, pronto in 8 minuti.",
+        price: s(24),
+        tags: ["firma"],
+      },
+      {
+        id: "adventure-curry",
+        name: "Curry di Verdure Thai",
+        description: "Verdure di stagione e spezie autentiche, pronto in 10 minuti.",
+        price: s(22),
+        tags: ["veg"],
+      },
+      {
+        id: "adventure-pasta-fagioli",
+        name: "Pasta e Fagioli della Nonna",
+        description: "Il comfort food italiano perfetto per ogni avventura.",
+        price: s(20),
+        allergens: ix("glutine", "sedano"),
+      },
+      {
+        id: "adventure-lenticchie",
+        name: "Zuppa di Lenticchie Speziate",
+        description: "Proteine vegetali e sapori intensi per rigenerarsi.",
+        price: s(19),
+        tags: ["veg"],
+        allergens: ix("sedano"),
+      },
+    ],
+  },
+  {
+    id: "eventi",
+    title: "Eventi & Privé",
+    subtitle: "Esperienze itineranti su misura",
+    description:
+      "Food truck premium, catering con ingredienti propri e show cooking della brigata Errante.",
+    items: [
+      {
+        id: "food-truck-premium",
+        name: "Food Truck Premium",
+        description:
+          "La brigata porta i prodotti della cascina nella location del tuo evento.",
+        price: s(45),
+        tags: ["firma"],
+      },
+      {
+        id: "catering-cascina",
+        name: "Catering con Ingredienti Propri",
+        description:
+          "Servizio completo con derrate autoprodotte e preparazione sul posto.",
+        price: s(65),
+      },
+      {
+        id: "show-cooking",
+        name: "Esperienza dalla Cascina",
+        description:
+          "Show cooking, storia degli ingredienti e degustazione guidata.",
+        price: s(85),
+        tags: ["novita"],
+      },
+    ],
+  },
+];
+
 const jfPiqueImage =
   "https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=900&q=85";
 const jfGrillImage =
@@ -1294,6 +1449,7 @@ export const nomSushiMenu: MenuCategory[] = [
 export function getSeedMenuForTenant(tenantId: string): MenuCategory[] {
   if (tenantId === "faak") return faakMenu;
   if (tenantId === "doca") return docaMenu;
+  if (tenantId === "cascina-errante") return cascinaErranteMenu;
   if (tenantId === "junior-food") return juniorFoodMenu;
   if (tenantId === "kimos") return kimosMenu;
   if (tenantId === "nom-sushi") return nomSushiMenu;

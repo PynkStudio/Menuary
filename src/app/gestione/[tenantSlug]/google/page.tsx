@@ -8,6 +8,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { headers } from "next/headers";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { getGestioneTranslations, interpolate } from "@/i18n/gestione";
+import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 interface Props {
   params: Promise<{ tenantSlug: string }>;
@@ -23,8 +24,9 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
   const gt = await getGestioneTranslations();
   const t = gt.google;
 
+  const activeLocation = await getActiveGestioneLocation(tenantSlug);
   const [location, lastSync] = await Promise.all([
-    getPrimaryLocation(tenantSlug),
+    getPrimaryLocation(tenantSlug, activeLocation?.id),
     getLastSuccessfulSync(tenantSlug),
   ]);
 
@@ -35,6 +37,7 @@ export default async function GoogleDashboardPage({ params, searchParams }: Prop
         .from("reviews")
         .select("*", { count: "exact", head: true })
         .eq("tenant_id", tenantSlug)
+        .eq("location_id", activeLocation?.id ?? "")
         .eq("source", "google_places")
         .is("reply_comment", null)
     : { count: null };

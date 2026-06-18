@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getBusinessReviews, replyToReview, deleteReviewReply } from "@/lib/google/my-business";
 import { getPrimaryLocation } from "@/lib/data/google-sync";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 // GET  /api/gestione/google/reviews?tenantId=bepork
 // POST /api/gestione/google/reviews  { tenantId, reviewName, comment }   → risponde
@@ -12,11 +13,11 @@ export async function GET(request: Request) {
   const tenantId = new URL(request.url).searchParams.get("tenantId");
   if (!tenantId) return NextResponse.json({ error: "tenantId required" }, { status: 400 });
 
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const location = await getPrimaryLocation(tenantId);
+  const auth = await authorizeGestione(tenantId);
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (auth.isDemo) return NextResponse.json([]);
+  const activeLocation = await requireActiveGestioneLocation(tenantId);
+  const location = await getPrimaryLocation(tenantId, activeLocation.id);
   if (!location) return NextResponse.json({ error: "Sede Google non collegata" }, { status: 404 });
 
   try {
@@ -28,27 +29,39 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { tenantId, reviewName, comment } = (await request.json()) as {
     tenantId: string;
     reviewName: string;
     comment: string;
   };
+  const auth = await authorizeGestione(tenantId);
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (auth.isDemo) return NextResponse.json({ ok: true });
+  const activeLocation = await requireActiveGestioneLocation(tenantId);
+  const db = createSupabaseServiceClient();
+  const googleReviewId = reviewName.split("/").pop()!;
+  const { data: review } = db
+    ? await db
+        .from("reviews")
+        .select("id")
+        .eq("google_review_id", googleReviewId)
+        .eq("tenant_id", tenantId)
+        .eq("location_id", activeLocation.id)
+        .maybeSingle()
+    : { data: null };
+  if (!review) return NextResponse.json({ error: "Recensione non trovata nella sede attiva" }, { status: 404 });
 
   try {
     await replyToReview(tenantId, reviewName, comment);
 
     // Persiste la risposta anche in locale per evitare un re-fetch
-    const db = createSupabaseServiceClient();
     if (db) {
       await db
         .from("reviews")
         .update({ reply_comment: comment, replied_at: new Date().toISOString() })
-        .eq("google_review_id", reviewName.split("/").pop()!)
-        .eq("tenant_id", tenantId);
+        .eq("google_review_id", googleReviewId)
+        .eq("tenant_id", tenantId)
+        .eq("location_id", activeLocation.id);
     }
 
     return NextResponse.json({ ok: true });
@@ -58,14 +71,26 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { tenantId, reviewName } = (await request.json()) as {
     tenantId: string;
     reviewName: string;
   };
+  const auth = await authorizeGestione(tenantId);
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (auth.isDemo) return NextResponse.json({ ok: true });
+  const activeLocation = await requireActiveGestioneLocation(tenantId);
+  const db = createSupabaseServiceClient();
+  const googleReviewId = reviewName.split("/").pop()!;
+  const { data: review } = db
+    ? await db
+        .from("reviews")
+        .select("id")
+        .eq("google_review_id", googleReviewId)
+        .eq("tenant_id", tenantId)
+        .eq("location_id", activeLocation.id)
+        .maybeSingle()
+    : { data: null };
+  if (!review) return NextResponse.json({ error: "Recensione non trovata nella sede attiva" }, { status: 404 });
 
   try {
     await deleteReviewReply(tenantId, reviewName);

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 export async function createShift(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
@@ -20,9 +21,11 @@ export async function createShift(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
   const { error } = await svc.from("shifts").insert({
     tenant_id: tenantSlug,
+    location_id: location.id,
     employee_id: employeeId,
     start_at: new Date(startAt).toISOString(),
     end_at: new Date(endAt).toISOString(),
@@ -44,8 +47,9 @@ export async function deleteShift(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
-  const { error } = await svc.from("shifts").delete().eq("id", id).eq("tenant_id", tenantSlug);
+  const { error } = await svc.from("shifts").delete().eq("id", id).eq("tenant_id", tenantSlug).eq("location_id", location.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/gestione/${tenantSlug}/turni`);
 }

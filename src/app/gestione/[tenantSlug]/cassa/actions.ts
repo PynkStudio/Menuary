@@ -5,6 +5,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { TENANTS } from "@/lib/tenant-registry";
+import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 function num(formData: FormData, key: string): number {
   const raw = formData.get(key);
@@ -28,10 +29,12 @@ export async function openCashSession(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
   const opening = num(formData, "openingAmount");
   const { error } = await svc.from("cash_sessions").insert({
     tenant_id: tenantSlug,
+    location_id: location.id,
     opening_amount: opening,
     opened_by: auth.userId,
     status: "open",
@@ -50,6 +53,7 @@ export async function closeCashSession(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
 
   const closing = num(formData, "closingAmount");
 
@@ -58,6 +62,8 @@ export async function closeCashSession(formData: FormData) {
     .from("cash_sessions")
     .select("opening_amount")
     .eq("id", sessionId)
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id)
     .maybeSingle();
   const { data: movs } = await svc
     .from("cash_movements")
@@ -82,7 +88,8 @@ export async function closeCashSession(formData: FormData) {
       expected_amount: expected,
     })
     .eq("id", sessionId)
-    .eq("tenant_id", tenantSlug);
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/gestione/${tenantSlug}/cassa`);
 }
@@ -102,6 +109,16 @@ export async function addCashMovement(formData: FormData) {
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
+
+  const { data: session } = await svc
+    .from("cash_sessions")
+    .select("id")
+    .eq("id", sessionId)
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id)
+    .maybeSingle();
+  if (!session) throw new Error("cash_session_location_mismatch");
 
   const { error } = await svc.from("cash_movements").insert({
     tenant_id: tenantSlug,
