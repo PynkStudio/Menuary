@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, UtensilsCrossed, AlarmClock, Bike, Settings } from "lucide-react";
+import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, UtensilsCrossed, AlarmClock, Bike, Settings, Phone, ChevronDown } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
@@ -32,11 +32,14 @@ type OrderRow = {
   customer_name: string | null;
   table_label: string | null;
   pickup_time: string | null;
+  desired_time: string | null;
   notes: string | null;
   created_at: string;
   dine_option: string | null;
   confirmation_expires_at: string | null;
   auto_accepted: boolean | null;
+  customer_phone: string | null;
+  delivery_address: string | null;
 };
 
 type OrderLine = { order_id: string; name: string; qty: number; variant_label: string | null };
@@ -73,7 +76,7 @@ async function fetchOrders(tenantSlug: string, filter: Filter, locationId: strin
 
   let q = svc
     .from("orders")
-    .select("id, code, status, type, total, customer_name, table_label, pickup_time, notes, created_at, dine_option, confirmation_expires_at, auto_accepted")
+    .select("id, code, status, type, total, customer_name, table_label, pickup_time, desired_time, notes, created_at, dine_option, confirmation_expires_at, auto_accepted, customer_phone, delivery_address")
     .eq("tenant_id", tenantSlug);
 
   if (locationId) q = q.eq("location_id", locationId);
@@ -260,6 +263,8 @@ export default async function OrdiniPage({
                 ? Math.max(0, Math.floor((new Date(o.confirmation_expires_at).getTime() - Date.now()) / 1000))
                 : null;
 
+            const scheduledTime = o.pickup_time ?? o.desired_time;
+
             return (
               <article key={o.id} className="ga-reservation">
                 <div className="ga-reservation-when">
@@ -280,6 +285,14 @@ export default async function OrdiniPage({
                       {formatTotal(o.total)}
                     </span>
                   </div>
+
+                  {scheduledTime && (
+                    <div className="ga-order-pickup">
+                      <Clock size={13} strokeWidth={2.6} />
+                      {interpolate(t.pickup, { time: scheduledTime })}
+                    </div>
+                  )}
+
                   <div className="ga-reservation-meta">
                     <span><Clock size={12} strokeWidth={2.2} /> {formatTime(o.created_at)}</span>
                     {o.dine_option === "dine_in" && (
@@ -294,15 +307,13 @@ export default async function OrdiniPage({
                     {o.table_label && (
                       <span><MapPin size={12} strokeWidth={2.2} /> {o.table_label}</span>
                     )}
-                    {o.pickup_time && (
-                      <span><Bell size={12} strokeWidth={2.2} /> {interpolate(t.pickup, { time: o.pickup_time })}</span>
-                    )}
                     {isPending && pendingSecondsLeft !== null && (
                       <span style={{ color: "var(--ga-warn, #B8332E)", fontWeight: 600 }}>
                         <AlarmClock size={12} strokeWidth={2.2} /> {interpolate(t.timeout, { seconds: pendingSecondsLeft })}
                       </span>
                     )}
                   </div>
+
                   {items.length > 0 && (
                     <ul className="ga-order-lines">
                       {items.map((l, i) => (
@@ -313,11 +324,35 @@ export default async function OrdiniPage({
                       ))}
                     </ul>
                   )}
+
                   {o.notes && (
                     <p className="ga-reservation-notes">
                       <StickyNote size={12} strokeWidth={2.2} style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }} />
                       {o.notes}
                     </p>
+                  )}
+
+                  {(o.customer_phone || o.delivery_address) && (
+                    <details className="ga-order-contact">
+                      <summary>
+                        <ChevronDown size={12} strokeWidth={2.4} />
+                        {t.contact}
+                      </summary>
+                      <div className="ga-order-contact-body">
+                        {o.customer_phone && (
+                          <span className="ga-order-contact-row">
+                            <Phone size={12} strokeWidth={2.2} />
+                            <a href={`tel:${o.customer_phone}`}>{o.customer_phone}</a>
+                          </span>
+                        )}
+                        {o.delivery_address && (
+                          <span className="ga-order-contact-row">
+                            <MapPin size={12} strokeWidth={2.2} />
+                            {o.delivery_address}
+                          </span>
+                        )}
+                      </div>
+                    </details>
                   )}
                 </div>
 

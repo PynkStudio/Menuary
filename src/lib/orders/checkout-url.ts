@@ -22,7 +22,7 @@ export function tenantCheckoutUrl(tenantId: string, code: string, token: string)
   if (domain) {
     return `https://${domain}/checkout/${encodeURIComponent(code)}${qs}`;
   }
-  const host = DEMO_HOST_BY_VERTICAL[tenant?.vertical ?? "food"] ?? "demo.menuary.it";
   const slug = tenant?.previewSlug ?? tenantId;
+  const host = DEMO_HOST_BY_VERTICAL[tenant?.vertical ?? "food"] ?? "demo.menuary.it";
   return `https://${host}/${encodeURIComponent(slug)}/checkout/${encodeURIComponent(code)}${qs}`;
 }

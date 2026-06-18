@@ -11,6 +11,7 @@ import { tenantCheckoutUrl } from "@/lib/orders/checkout-url";
 import { enqueueOutboundMessage, type OutboundChannel } from "@/lib/outbound/messages";
 import { getAiPhoneSettings } from "@/lib/retell/settings";
 import { findTenantById } from "@/lib/tenant-registry";
+import { formatEuro } from "@/lib/price-utils";
 
 export type PaymentLinkChannel = "retell" | "whatsapp" | "sms" | "manual";
 
@@ -31,6 +32,10 @@ export type CreateChannelPaymentRequestInput = {
    * Default: true (comportamento storico, link con pagamento).
    */
   paymentRequired?: boolean;
+  /** "takeaway" = pagamento al ritiro, "delivery" = pagamento alla consegna. Usato per scegliere il template WA corretto e per le variabili del messaggio. */
+  fulfillmentType?: "takeaway" | "delivery";
+  /** Indirizzo di consegna (solo delivery). Passato come {{5}} nel template WA. */
+  deliveryAddress?: string | null;
 };
 
 export type ChannelPaymentRequest = {
@@ -303,16 +308,29 @@ export async function createChannelPaymentRequest(
         : `Per completare l'ordine paga qui: ${stripe.paymentUrl}`;
 
       // Su WhatsApp i messaggi business-initiated richiedono un template Meta approvato.
-      // Scegliamo il template in base al metodo di pagamento (online vs ritiro/consegna);
-      // il bottone CTA punta allo short-link /c/<token> (prefisso fisso nel template).
-      // {{1}}=nome locale, {{2}}=codice ordine, {{3}}=token (suffisso del bottone).
+      // Template per metodo di pagamento e tipo di consegna:
+      //   online           → TWILIO_WA_ORDER_PAYMENT_SID
+      //   on_site takeaway → TWILIO_WA_ORDER_TAKEAWAY_SID  (fallback: TWILIO_WA_ORDER_ONSITE_SID)
+      //   on_site delivery → TWILIO_WA_ORDER_DELIVERY_SID  (fallback: TWILIO_WA_ORDER_ONSITE_SID)
+      // Variabili: {{1}}=nome locale, {{2}}=codice ordine, {{3}}=token bottone,
+      //            {{4}}=importo (es. "€18,50"), {{5}}=indirizzo consegna (solo delivery).
       const tok = input.orderId ? await getOrderPublicTokenById(input.orderId) : null;
       const tenantName = findTenantById(input.tenantId)?.name ?? input.tenantId;
-      const waContentSid = input.paymentRequired === false
-        ? process.env.TWILIO_WA_ORDER_ONSITE_SID
+      const isOnSite = input.paymentRequired === false;
+      const isDelivery = input.fulfillmentType === "delivery";
+      const waContentSid = isOnSite
+        ? isDelivery
+          ? (process.env.TWILIO_WA_ORDER_DELIVERY_SID ?? process.env.TWILIO_WA_ORDER_ONSITE_SID)
+          : (process.env.TWILIO_WA_ORDER_TAKEAWAY_SID ?? process.env.TWILIO_WA_ORDER_ONSITE_SID)
         : process.env.TWILIO_WA_ORDER_PAYMENT_SID;
       const waContentVariables = tok
-        ? { "1": tenantName, "2": tok.code, "3": tok.token }
+        ? {
+            "1": tenantName,
+            "2": tok.code,
+            "3": tok.token,
+            "4": formatEuro(input.amount),
+            ...(isDelivery && input.deliveryAddress ? { "5": input.deliveryAddress } : {}),
+          }
         : null;
 
       await enqueueOutboundMessage({

@@ -1161,6 +1161,8 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       currency: "EUR",
       description: `Ordine ${order.code}`,
       paymentRequired: effectivePaymentMethod === "online",
+      fulfillmentType,
+      deliveryAddress: input.delivery?.address ?? null,
       metadata: {
         source: input.source ?? "retell",
         fulfillmentType,

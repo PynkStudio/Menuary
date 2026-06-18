@@ -17,11 +17,14 @@ export type DemoOrder = {
   customer_name: string | null;
   table_label: string | null;
   pickup_time: string | null;
+  desired_time: string | null;
   notes: string | null;
   created_at: string;
   dine_option: string | null;
   confirmation_expires_at: string | null;
   auto_accepted: boolean | null;
+  customer_phone: string | null;
+  delivery_address: string | null;
 };
 
 export type DemoOrderLine = { order_id: string; name: string; qty: number; variant_label: string | null };
@@ -126,11 +129,18 @@ export function demoOrders(vertical: "food" | "services"): { orders: DemoOrder[]
       pickup_time: s.type === "asporto" && (s.status === "nuovo" || s.status === "in_preparazione" || s.status === "pronto" || s.status === "pending_confirmation")
         ? new Date(now + (15 + (i % 4) * 5) * 60_000).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })
         : null,
+      desired_time: s.type === "asporto" && (s.status === "nuovo" || s.status === "in_preparazione" || s.status === "pronto" || s.status === "pending_confirmation")
+        ? new Date(now + (15 + (i % 4) * 5) * 60_000).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })
+        : null,
       notes: i === 1 ? "Senza cipolla" : i === 4 ? "Cottura ben cotta" : null,
       created_at: new Date(now + s.offsetMin * 60_000).toISOString(),
       dine_option: s.type === "tavolo" ? "dine_in" : "takeaway",
       confirmation_expires_at: s.pending ? new Date(now + 110_000).toISOString() : null,
       auto_accepted: s.auto ?? false,
+      customer_phone: s.type === "asporto" && i % 2 === 0
+        ? `+39 ${340 + (i % 10)} ${(1000000 + i * 13579).toString().slice(0, 7)}`
+        : null,
+      delivery_address: null,
     };
   });
 

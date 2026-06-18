@@ -858,6 +858,9 @@ export async function middleware(request: NextRequest) {
     if (isInternalPlatformPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
+    // Short-link di piattaforma: non soggetto a locale redirect.
+    // Senza questo bypass i browser non-italiani verrebbero rediretti su /en/c/<token> → 404.
+    if (pathname.startsWith("/c/")) return NextResponse.next();
     return handleMarketingLocale(request, mode, (p) => p);
   }
 
