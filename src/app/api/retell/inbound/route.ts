@@ -5,6 +5,7 @@ import {
   createRetellReservation,
   getRetellAvailability,
   isAuthorizedRetellRequest,
+  lookupRetellCustomer,
   type CreateRetellOrderInput,
   type CreateRetellReservationInput,
   type RetellAvailabilityInput,
@@ -28,7 +29,8 @@ type RetellActionBody =
     })
   | ({ action: "availability" } & RetellAvailabilityInput)
   | ({ action: "create_reservation" } & CreateRetellReservationInput)
-  | ({ action: "create_order" } & CreateRetellOrderInput);
+  | ({ action: "create_order" } & CreateRetellOrderInput)
+  | ({ action: "customer_lookup"; tenantId?: string; tenant_id?: string; callerPhone?: string; caller_phone?: string });
 
 // Errori "di input" (codice prodotto inesistente, voce fuori menu, prezzo da
 // confermare, canale non in accettazione, ecc.): non sono guasti del server, ma
@@ -214,6 +216,16 @@ export async function POST(req: NextRequest) {
     if (body.action === "create_order") {
       const result = await createRetellOrder({ ...body, source: "retell" });
       return NextResponse.json({ ok: true, order: result });
+    }
+
+    if (body.action === "customer_lookup") {
+      const tenantId = tenantFrom(req, body);
+      if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
+      const callerPhone = ("callerPhone" in body ? body.callerPhone : undefined)
+        ?? ("caller_phone" in body ? body.caller_phone : undefined)
+        ?? "";
+      const customer = await lookupRetellCustomer(tenantId, callerPhone ?? "");
+      return NextResponse.json({ ok: true, customer });
     }
 
     return NextResponse.json({ error: "unsupported_action" }, { status: 400 });

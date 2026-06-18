@@ -12,7 +12,7 @@ import { createChannelPaymentRequest, type ChannelPaymentRequest, type PaymentLi
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { tenantUsesStripeDemoSandbox } from "@/lib/payments/stripe/sandbox-policy";
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
-import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
+import { normalizePhone, recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
 import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes } from "@/lib/orders/order-settings";
 import type { MenuOrderChannel } from "@/lib/types";
 import { isMenuOrderChannel } from "@/lib/menu-channels";
@@ -1181,4 +1181,76 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     payment,
     paymentMethod: effectivePaymentMethod,
   };
+}
+
+export type RetellCustomerContext = {
+  isKnown: boolean;
+  firstName: string;
+  lastAddress: string;
+  lastOrderSummary: string;
+};
+
+export async function lookupRetellCustomer(
+  tenantId: string,
+  callerPhone: string,
+): Promise<RetellCustomerContext> {
+  const empty: RetellCustomerContext = { isKnown: false, firstName: "", lastAddress: "", lastOrderSummary: "" };
+
+  const phone = normalizePhone(callerPhone);
+  if (!phone) return empty;
+
+  const db = svc();
+
+  const [{ data: customer }, { data: orders }] = await Promise.all([
+    db
+      .from("customers")
+      .select("id,display_name")
+      .eq("tenant_id", tenantId)
+      .eq("phone", phone)
+      .order("menuary_user_id", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from("orders")
+      .select("id,delivery_address,fulfillment_type")
+      .eq("tenant_id", tenantId)
+      .eq("customer_phone", phone)
+      .in("status", ["nuovo", "confermato", "pronto", "completato", "consegnato"])
+      .order("created_at", { ascending: false })
+      .limit(3),
+  ]);
+
+  if (!customer && (!orders || orders.length === 0)) return empty;
+
+  const firstName = (customer as { display_name?: string | null } | null)?.display_name
+    ?.trim()
+    .split(/\s+/)[0] ?? "";
+
+  const lastAddress =
+    (orders as { delivery_address: string | null; fulfillment_type: string }[] | null)
+      ?.find((o) => o.delivery_address)
+      ?.delivery_address ?? "";
+
+  let lastOrderSummary = "";
+  if (orders && orders.length > 0) {
+    const lastOrderId = (orders as { id: string }[])[0].id;
+    const { data: lines } = await db
+      .from("order_lines")
+      .select("name,qty,note,variant_label")
+      .eq("order_id", lastOrderId)
+      .order("position", { ascending: true });
+
+    if (lines && lines.length > 0) {
+      lastOrderSummary = (lines as { name: string; qty: number; note: string | null; variant_label: string | null }[])
+        .map((l) => {
+          let s = `${l.qty}× ${l.name}`;
+          if (l.variant_label) s += ` (${l.variant_label})`;
+          if (l.note?.trim()) s += ` — ${l.note.trim()}`;
+          return s;
+        })
+        .join(", ");
+    }
+  }
+
+  return { isKnown: true, firstName, lastAddress, lastOrderSummary };
 }
