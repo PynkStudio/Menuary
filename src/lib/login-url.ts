@@ -69,6 +69,20 @@ export function buildRecoveryCallbackUrl(from: LoginFrom): string {
   return `${LOGIN_BASE_URL}/confirm?from=${encodeURIComponent(from)}&mode=recovery`;
 }
 
+/**
+ * Valida che `url` sia una destinazione sicura post-login.
+ * Accetta: HTTPS su domini Menuary/PynkStudio, o path locale (/…).
+ * Previene open redirect su pagine di conferma e redirect intermedi.
+ */
+const SAFE_DESTINATION_RE =
+  /^https:\/\/[a-z0-9-]+\.(menuary\.it|pynkstudio\.it|pynkstudio\.com)(\/.*)?$/;
+
+export function isSafeDestination(url: string | null | undefined): url is string {
+  if (!url) return false;
+  if (url.startsWith("/") && !url.startsWith("//")) return true;
+  return SAFE_DESTINATION_RE.test(url);
+}
+
 /** Valida e normalizza il param `from` — previene open redirect */
 export function parseFrom(raw: string | null | undefined): LoginFrom | null {
   if (!raw) return null;

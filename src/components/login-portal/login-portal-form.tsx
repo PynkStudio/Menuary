@@ -78,70 +78,66 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
     setLoading(true);
     setError(null);
 
-    const supabase = createSupabaseBrowserClient();
+    try {
+      const supabase = createSupabaseBrowserClient();
 
-    // Un refresh-token orfano (lasciato in un cookie .menuary.it scaduto/ruotato)
-    // mandava il client GoTrue in loop su /token?grant_type=refresh_token (400/429):
-    // il SIGNED_OUT scatenato dal refresh fallito ripuliva l'header Authorization
-    // subito dopo signInWithPassword, e la query a `siteadmin` partiva come anon →
-    // RLS nascondeva la riga → "account non abilitato al pannello admin" anche per
-    // i superadmin reali. Forzare un signOut locale azzera lo stato prima del login.
-    await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+      // Un refresh-token orfano (lasciato in un cookie .menuary.it scaduto/ruotato)
+      // mandava il client GoTrue in loop su /token?grant_type=refresh_token (400/429):
+      // il SIGNED_OUT scatenato dal refresh fallito ripuliva l'header Authorization
+      // subito dopo signInWithPassword, e la query a `siteadmin` partiva come anon →
+      // RLS nascondeva la riga → "account non abilitato al pannello admin" anche per
+      // i superadmin reali. Forzare un signOut locale azzera lo stato prima del login.
+      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error || !data.user || !data.session) {
-      setError(loginErrorMessage(error?.message ?? ""));
-      setLoading(false);
-      return;
-    }
-
-    // Recupera ruolo dal DB usando un client isolato con la sessione appena
-    // ottenuta, per non dipendere dallo stato auth del client principale (che
-    // potrebbe essere ancora in mezzo a un refresh in volo).
-    const authedSupabase = createSupabaseBrowserClient();
-    await authedSupabase.auth.setSession({
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token,
-    });
-    const access = await resolveUserAccess(authedSupabase, data.user.id);
-    const accessError = portalAccessError(from);
-    const isWrongPortal =
-      (from === "admin" && !access.isSiteadmin) ||
-      (from === "studio" && !access.isSiteadmin && !access.tenantId) ||
-      (from?.startsWith("gestione") && !access.isSiteadmin && access.tenantId !== slug);
-
-    if (accessError && isWrongPortal) {
-      setError(accessError);
-      setLoading(false);
-      return;
-    }
-
-    const destination = resolveDestination({
-      from,
-      next,
-      isSiteadmin: access.isSiteadmin,
-      tenantId: access.tenantId,
-    });
-
-    if (popup) {
-      notifyParentAndClose({
-        from: from ?? "clienti",
-        parentOrigin,
-        accessToken: data.session.access_token,
-        refreshToken: data.session.refresh_token,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-    } else {
-      // Naviga via GET /api/auth/elevate-session che legge la sessione
-      // dai cookie appena impostati da signInWithPassword (su login.menuary.it),
-      // li promuove a cookie con Domain=.menuary.it via refreshSession(),
-      // e redirige alla destinazione.
+
+      if (error || !data.user || !data.session) {
+        setError(loginErrorMessage(error?.message ?? ""));
+        return;
+      }
+
+      const access = await resolveUserAccess(supabase, data.user.id);
+      const accessError = portalAccessError(from);
+      const isWrongPortal =
+        (from === "admin" && !access.isSiteadmin) ||
+        (from === "studio" && !access.isSiteadmin && !access.tenantId) ||
+        (from?.startsWith("gestione") && !access.isSiteadmin && access.tenantId !== slug);
+
+      if (accessError && isWrongPortal) {
+        setError(accessError);
+        return;
+      }
+
+      const destination = resolveDestination({
+        from,
+        next,
+        isSiteadmin: access.isSiteadmin,
+        tenantId: access.tenantId,
+      });
+
+      if (popup) {
+        notifyParentAndClose({
+          from: from ?? "clienti",
+          parentOrigin,
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+        });
+      } else {
+        // Naviga via GET /api/auth/elevate-session che legge la sessione
+        // dai cookie appena impostati da signInWithPassword (su login.menuary.it),
+        // li promuove a cookie con Domain=.menuary.it via refreshSession(),
+        // e redirige alla destinazione.
+        window.location.href =
+          `/api/auth/elevate-session?destination=${encodeURIComponent(destination)}`;
+        return; // loading resta true finché la navigazione parte
+      }
+    } catch {
+      setError("Si è verificato un errore imprevisto. Riprova.");
+    } finally {
       setLoading(false);
-      window.location.href =
-        `/api/auth/elevate-session?destination=${encodeURIComponent(destination)}`;
     }
   }
 

@@ -105,7 +105,7 @@ export default function ConfirmPage() {
       setError(INVALID_AUTH_LINK_MESSAGE);
     }
 
-    processAuth();
+    processAuth().catch(() => setError(INVALID_AUTH_LINK_MESSAGE));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

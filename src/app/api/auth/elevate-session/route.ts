@@ -64,12 +64,25 @@ async function createClientWithResponse(
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const destination = safeDestination(searchParams.get("destination"));
+  const domain = cookieDomain(request);
+
+  // Usa una response temporanea per raccogliere i cookie del refresh
+  // prima di decidere se redirigere alla destinazione o al login.
+  const cookieJar = NextResponse.json({});
+  const supabase = await createClientWithResponse(request, cookieJar, domain);
+  const { data, error } = await supabase.auth.refreshSession();
+
+  if (error || !data.session) {
+    // Sessione non valida — rimanda al login invece di far atterrare l'utente disconnesso.
+    const loginUrl = new URL("/", request.url);
+    loginUrl.searchParams.set("destination", destination);
+    return NextResponse.redirect(loginUrl);
+  }
 
   const response = NextResponse.redirect(new URL(destination));
-  const domain = cookieDomain(request);
-  const supabase = await createClientWithResponse(request, response, domain);
-  await supabase.auth.refreshSession();
-
+  for (const cookie of cookieJar.cookies.getAll()) {
+    response.cookies.set(cookie.name, cookie.value, cookie);
+  }
   return response;
 }
 

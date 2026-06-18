@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { notifyParentAndClose } from "@/lib/login-popup";
+import { isSafeDestination } from "@/lib/login-url";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 /**
@@ -23,21 +24,28 @@ export default function AuthSuccessPage() {
     const isPopup = !!window.opener && !window.opener.closed;
 
     if (isPopup) {
-      // Recupera token dalla sessione corrente per il postMessage
       const supabase = createSupabaseBrowserClient();
-      supabase.auth.getSession().then(({ data }) => {
-        if (data.session) {
-          notifyParentAndClose({
-            from,
-            parentOrigin,
-            accessToken: data.session.access_token,
-            refreshToken: data.session.refresh_token,
-          });
-        } else {
+      // Timeout di sicurezza: chiude il popup se getSession non risponde
+      const safetyTimer = setTimeout(() => window.close(), 15_000);
+      supabase.auth.getSession()
+        .then(({ data }) => {
+          clearTimeout(safetyTimer);
+          if (data.session) {
+            notifyParentAndClose({
+              from,
+              parentOrigin,
+              accessToken: data.session.access_token,
+              refreshToken: data.session.refresh_token,
+            });
+          } else {
+            window.close();
+          }
+        })
+        .catch(() => {
+          clearTimeout(safetyTimer);
           window.close();
-        }
-      });
-    } else if (destination) {
+        });
+    } else if (isSafeDestination(destination)) {
       window.location.href = destination;
     } else {
       router.replace("/");
