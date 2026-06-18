@@ -5,9 +5,12 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import {
   AI_ORDER_SOURCES,
   AI_COMMISSION_RATE,
+  AI_CONFIRMED_ORDER_STATUSES,
+  AI_NON_CONCLUDED_ORDER_STATUSES,
   type PlatformAIOrder,
   type PlatformNonAIOrderStat,
   type AIOrderBillingStatus,
+  type AIOrderCategory,
   type AIOrderSource,
 } from "@/lib/platform-crm-types";
 
@@ -30,6 +33,12 @@ async function requireSiteAdmin() {
     : null;
 }
 
+function orderCategory(status: string): AIOrderCategory {
+  if ((AI_CONFIRMED_ORDER_STATUSES as readonly string[]).includes(status)) return "confirmed";
+  if ((AI_NON_CONCLUDED_ORDER_STATUSES as readonly string[]).includes(status)) return "non_concluded";
+  return "pending";
+}
+
 function billingStatus(row: {
   payment_provider: string | null;
   application_fee_amount_cents: number | null;
@@ -44,6 +53,7 @@ type OrderRow = {
   tenant_id: string;
   code: string;
   source: string;
+  status: string;
   customer_name: string | null;
   total: number;
   payment_provider: string | null;
@@ -76,7 +86,7 @@ export async function GET(req: NextRequest) {
   }
 
   const SELECT_FIELDS =
-    "id, tenant_id, code, source, customer_name, total, payment_provider, payment_status, application_fee_amount_cents, created_at";
+    "id, tenant_id, code, source, status, customer_name, total, payment_provider, payment_status, application_fee_amount_cents, created_at";
 
   const [aiResult, nonAiResult] = await Promise.all([
     db
@@ -126,25 +136,33 @@ export async function GET(req: NextRequest) {
   // Build AI orders
   const aiOrders: PlatformAIOrder[] = aiRows.map((row) => {
     const total = Number(row.total);
-    const status = billingStatus(row);
+    const category = orderCategory(row.status);
+    const bStatus = billingStatus(row);
+
+    // Commissione: applicata solo ai confermati, 0 per pending
+    // Per non conclusi l'importo è positivo ma la categoria indica lo storno
     const feeFromStripe =
       row.application_fee_amount_cents !== null
         ? row.application_fee_amount_cents / 100
         : null;
+    const commissionAmount = feeFromStripe ?? Math.round(total * AI_COMMISSION_RATE * 100) / 100;
+
     return {
       id: row.id,
       tenant_id: row.tenant_id,
       tenant_name: tenantName(row.tenant_id),
       code: row.code,
       source: row.source as AIOrderSource,
+      status: row.status,
+      category,
       customer_name: row.customer_name,
       total,
       commission_rate: AI_COMMISSION_RATE,
-      commission_amount: feeFromStripe ?? Math.round(total * AI_COMMISSION_RATE * 100) / 100,
+      commission_amount: commissionAmount,
       payment_provider: row.payment_provider,
       payment_status: row.payment_status,
       application_fee_amount_cents: row.application_fee_amount_cents,
-      billing_status: status,
+      billing_status: bStatus,
       created_at: row.created_at,
     };
   });
@@ -176,6 +194,7 @@ export async function GET(req: NextRequest) {
 }
 
 // ─── POST /api/admin/orders/ai-revenue — segna commissione cash come addebitata ──
+// Solo per ordini confermati.
 
 export async function POST(req: NextRequest) {
   if (!(await requireSiteAdmin())) {
@@ -192,13 +211,19 @@ export async function POST(req: NextRequest) {
 
   const { data: order, error: fetchErr } = await db
     .from("orders")
-    .select("id, total, source, payment_provider, application_fee_amount_cents")
+    .select("id, total, source, status, payment_provider, application_fee_amount_cents")
     .eq("id", body.orderId)
     .in("source", [...AI_ORDER_SOURCES])
     .single();
 
   if (fetchErr || !order) {
     return NextResponse.json({ error: "Ordine non trovato" }, { status: 404 });
+  }
+  if (orderCategory(order.status) !== "confirmed") {
+    return NextResponse.json(
+      { error: "Commissione applicabile solo agli ordini confermati" },
+      { status: 400 },
+    );
   }
   if (order.payment_provider === "stripe") {
     return NextResponse.json(
