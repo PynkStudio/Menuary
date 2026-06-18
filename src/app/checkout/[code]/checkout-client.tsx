@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus, Pencil, Check } from "lucide-react";
 import type { PublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import type { TenantVertical } from "@/lib/tenant";
 
@@ -71,6 +71,13 @@ export function CheckoutClient({
   const [cancelling, setCancelling] = useState(false);
   const [orderCancelled, setOrderCancelled] = useState(order.status === "annullato");
 
+  // Valori modificabili entro la finestra di 5 minuti
+  const [pickupTime, setPickupTime] = useState(order.pickupTime ?? "");
+  const [deliveryAddress, setDeliveryAddress] = useState(order.deliveryAddress ?? "");
+  const [editingDelivery, setEditingDelivery] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
   // Timer "ticking" per aggiornare i countdown in tempo reale.
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -111,6 +118,28 @@ export function CheckoutClient({
       setError(e instanceof Error ? e.message : "errore");
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const saveDeliveryEdit = async () => {
+    setSavingEdit(true);
+    setEditError(null);
+    try {
+      const body: Record<string, unknown> = { tenantId, token };
+      if (order.dineOption === "delivery") body.deliveryAddress = deliveryAddress.trim() || null;
+      body.pickupTime = pickupTime.trim() || null;
+      const res = await fetch(`/api/checkout/${encodeURIComponent(order.code)}/update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(json.error ?? "update_failed");
+      setEditingDelivery(false);
+    } catch (e) {
+      setEditError(e instanceof Error ? e.message : "errore");
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -261,7 +290,72 @@ export function CheckoutClient({
                 {`Aggiungi altro · ${formatRemaining(upsellRemaining)}`}
               </a>
             )}
+            {canUpsell && (order.dineOption === "delivery" || order.pickupTime) && (
+              <button
+                type="button"
+                onClick={() => setEditingDelivery((v) => !v)}
+                className="inline-flex items-center gap-1.5 rounded-full border-2 bg-white px-3.5 py-1.5 text-xs font-bold"
+                style={{ borderColor: c.divider, color: c.ink }}
+                title={`Puoi modificare indirizzo e orario entro ${formatRemaining(upsellRemaining)}`}
+              >
+                <Pencil size={13} />
+                {editingDelivery ? "Chiudi" : "Modifica orario/indirizzo"}
+              </button>
+            )}
           </div>
+        )}
+
+        {!alreadyPaid && !orderCancelled && canUpsell && editingDelivery && (
+          <section className="mb-4 rounded-2xl p-4" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
+            <p className="mb-3 text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>
+              Modifica orario / indirizzo · {formatRemaining(upsellRemaining)}
+            </p>
+            <div className="space-y-3">
+              {order.pickupTime !== undefined && (
+                <label className="block">
+                  <span className="mb-1 block text-xs font-bold" style={{ color: c.inkMuted }}>
+                    {order.dineOption === "delivery" ? "Orario di consegna" : "Orario di ritiro"}
+                  </span>
+                  <input
+                    type="text"
+                    value={pickupTime}
+                    onChange={(e) => setPickupTime(e.target.value)}
+                    placeholder="es. 19:30"
+                    className="w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                    style={{ borderColor: c.divider, color: c.ink, backgroundColor: c.bgSoft }}
+                  />
+                </label>
+              )}
+              {order.dineOption === "delivery" && (
+                <label className="block">
+                  <span className="mb-1 block text-xs font-bold" style={{ color: c.inkMuted }}>Indirizzo di consegna</span>
+                  <input
+                    type="text"
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    placeholder="Via, numero civico, città"
+                    className="w-full rounded-xl border px-3 py-2 text-sm outline-none"
+                    style={{ borderColor: c.divider, color: c.ink, backgroundColor: c.bgSoft }}
+                  />
+                </label>
+              )}
+            </div>
+            {editError && (
+              <p className="mt-2 text-xs text-rose-600">
+                {editError === "update_window_expired" ? "Finestra di modifica scaduta." : editError}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={saveDeliveryEdit}
+              disabled={savingEdit}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-black text-white disabled:opacity-50"
+              style={{ backgroundColor: c.accent }}
+            >
+              <Check size={13} />
+              {savingEdit ? "Salvataggio…" : "Salva modifiche"}
+            </button>
+          </section>
         )}
 
         {!alreadyPaid && !orderCancelled && canUpsell && upsellSuggestions.length > 0 && (
@@ -330,8 +424,11 @@ export function CheckoutClient({
             {dineLabel(order.dineOption, tenantVertical) && (
               <div className="flex justify-between"><dt>Modalità</dt><dd className="font-bold" style={{ color: c.ink }}>{dineLabel(order.dineOption, tenantVertical)}</dd></div>
             )}
-            {order.pickupTime && (
-              <div className="flex justify-between"><dt>Orario</dt><dd className="font-bold" style={{ color: c.ink }}>{order.pickupTime}</dd></div>
+            {pickupTime && (
+              <div className="flex justify-between"><dt>Orario</dt><dd className="font-bold" style={{ color: c.ink }}>{pickupTime}</dd></div>
+            )}
+            {deliveryAddress && (
+              <div className="flex justify-between gap-4"><dt>Indirizzo</dt><dd className="text-right font-bold" style={{ color: c.ink }}>{deliveryAddress}</dd></div>
             )}
             {order.customerName && (
               <div className="flex justify-between"><dt>Cliente</dt><dd className="font-bold" style={{ color: c.ink }}>{order.customerName}</dd></div>

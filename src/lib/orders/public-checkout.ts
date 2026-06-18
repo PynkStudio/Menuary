@@ -19,6 +19,7 @@ export type PublicCheckoutOrder = {
   customerName: string | null;
   customerPhone: string | null;
   pickupTime: string | null;
+  deliveryAddress: string | null;
   notes: string | null;
   createdAt: string;
   source: string | null;
@@ -56,7 +57,7 @@ export async function getPublicCheckoutOrder(input: {
   const { data, error } = await db
     .from("orders")
     .select(
-      "id, tenant_id, code, status, type, table_id, total, dine_option, customer_name, customer_phone, pickup_time, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(item_id, name, qty, unit_price, line_total, notes, added_extras, removed_ingredients)",
+      "id, tenant_id, code, status, type, table_id, total, dine_option, customer_name, customer_phone, pickup_time, delivery_address, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(item_id, name, qty, unit_price, line_total, notes, added_extras, removed_ingredients)",
     )
     .eq("tenant_id", input.tenantId)
     .eq("code", input.code)
@@ -77,6 +78,7 @@ export async function getPublicCheckoutOrder(input: {
     customer_name: string | null;
     customer_phone: string | null;
     pickup_time: string | null;
+    delivery_address: string | null;
     notes: string | null;
     created_at: string;
     source: string | null;
@@ -113,6 +115,7 @@ export async function getPublicCheckoutOrder(input: {
     customerName: row.customer_name,
     customerPhone: row.customer_phone,
     pickupTime: row.pickup_time,
+    deliveryAddress: row.delivery_address,
     notes: row.notes,
     createdAt: row.created_at,
     source: row.source,
