@@ -21,6 +21,7 @@ type CustomerRow = {
   phone: string | null;
   email: string | null;
   display_name: string | null;
+  language: string | null;
   tags: string[];
   hubrise_customer_id: string | null;
 };
@@ -47,7 +48,7 @@ function mergeTags(existing: string[], next: string[]) {
   return Array.from(new Set([...existing, ...next]));
 }
 
-const CUSTOMER_COLS = "id,tenant_id,menuary_user_id,phone,email,display_name,tags,hubrise_customer_id";
+const CUSTOMER_COLS = "id,tenant_id,menuary_user_id,phone,email,display_name,language,tags,hubrise_customer_id";
 
 async function findTenantCustomer(tenantId: string, phone: string): Promise<CustomerRow | null> {
   const { data } = await db()

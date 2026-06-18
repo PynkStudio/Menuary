@@ -36,6 +36,12 @@ export type CreateChannelPaymentRequestInput = {
   fulfillmentType?: "takeaway" | "delivery";
   /** Indirizzo di consegna (solo delivery). Passato come {{5}} nel template WA. */
   deliveryAddress?: string | null;
+  /**
+   * Quando true, pagamento online è disponibile ma NON obbligatorio (policy=both).
+   * Il messaggio diventa "puoi pagare con carta sul link" invece di "paga per confermare".
+   * Ignorato se paymentRequired=false.
+   */
+  onSiteAvailable?: boolean;
 };
 
 export type ChannelPaymentRequest = {
@@ -305,7 +311,9 @@ export async function createChannelPaymentRequest(
       const kind = input.paymentRequired === false ? "order_summary" : "payment_link";
       const greeting = input.paymentRequired === false
         ? `Riepilogo del tuo ordine: ${stripe.paymentUrl}`
-        : `Per completare l'ordine paga qui: ${stripe.paymentUrl}`;
+        : input.onSiteAvailable
+          ? `Puoi pagare l'ordine con carta cliccando sul link qui sotto: ${stripe.paymentUrl}`
+          : `Clicca sul link per procedere al pagamento e confermare l'ordine: ${stripe.paymentUrl}`;
 
       // Su WhatsApp i messaggi business-initiated richiedono un template Meta approvato.
       // Template per metodo di pagamento e tipo di consegna:
@@ -317,12 +325,15 @@ export async function createChannelPaymentRequest(
       const tok = input.orderId ? await getOrderPublicTokenById(input.orderId) : null;
       const tenantName = findTenantById(input.tenantId)?.name ?? input.tenantId;
       const isOnSite = input.paymentRequired === false;
+      const isOptional = !isOnSite && Boolean(input.onSiteAvailable);
       const isDelivery = input.fulfillmentType === "delivery";
       const waContentSid = isOnSite
         ? isDelivery
           ? (process.env.TWILIO_WA_ORDER_DELIVERY_SID ?? process.env.TWILIO_WA_ORDER_ONSITE_SID)
           : (process.env.TWILIO_WA_ORDER_TAKEAWAY_SID ?? process.env.TWILIO_WA_ORDER_ONSITE_SID)
-        : process.env.TWILIO_WA_ORDER_PAYMENT_SID;
+        : isOptional
+          ? (process.env.TWILIO_WA_ORDER_OPTIONAL_SID ?? process.env.TWILIO_WA_ORDER_PAYMENT_SID)
+          : process.env.TWILIO_WA_ORDER_PAYMENT_SID;
       const waContentVariables = tok
         ? {
             "1": tenantName,

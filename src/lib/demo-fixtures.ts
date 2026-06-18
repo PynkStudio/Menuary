@@ -25,6 +25,7 @@ export type DemoOrder = {
   auto_accepted: boolean | null;
   customer_phone: string | null;
   delivery_address: string | null;
+  fulfillment_type: string | null;
 };
 
 export type DemoOrderLine = { order_id: string; name: string; qty: number; variant_label: string | null };
@@ -141,6 +142,7 @@ export function demoOrders(vertical: "food" | "services"): { orders: DemoOrder[]
         ? `+39 ${340 + (i % 10)} ${(1000000 + i * 13579).toString().slice(0, 7)}`
         : null,
       delivery_address: null,
+      fulfillment_type: s.type === "asporto" ? "takeaway" : null,
     };
   });
 

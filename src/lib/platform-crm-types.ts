@@ -351,3 +351,98 @@ export const SOURCE_LABELS: Record<LeadSource, string> = {
   manuale: "Manuale",
   altro: "Altro",
 };
+
+// ─── AI Order Revenue ──────────────────────────────────────────────────────────
+
+export const AI_ORDER_SOURCES = ["retell", "whatsapp"] as const;
+export type AIOrderSource = (typeof AI_ORDER_SOURCES)[number];
+
+/**
+ * Categoria dell'ordine AI rispetto al lifecycle di conferma.
+ * - confirmed: ordine superato il countdown (fee applicata)
+ * - non_concluded: scaduto o annullato (fee stornata)
+ * - pending: ancora nel countdown dei 5 minuti (escluso dal calcolo)
+ */
+export type AIOrderCategory = "confirmed" | "non_concluded" | "pending";
+
+/** Status DB che indicano ordine confermato e attivo */
+export const AI_CONFIRMED_ORDER_STATUSES = [
+  "nuovo",
+  "in_preparazione",
+  "pronto",
+  "consegnato",
+] as const;
+
+/** Status DB che indicano ordine non concluso (da stornare) */
+export const AI_NON_CONCLUDED_ORDER_STATUSES = ["expired", "annullato"] as const;
+
+/** Stato addebito commissione su un ordine AI */
+export type AIOrderBillingStatus =
+  | "stripe"       // già addebitato da Stripe automaticamente
+  | "cash_pending" // cash, commissione non ancora registrata
+  | "cash_billed"; // cash, commissione registrata manualmente
+
+export type PlatformAIOrder = {
+  id: string;
+  tenant_id: string;
+  tenant_name: string;
+  code: string;
+  source: AIOrderSource;
+  status: string;
+  category: AIOrderCategory;
+  customer_name: string | null;
+  total: number;
+  commission_rate: number;
+  /** Importo commissione (positivo per confermati, negativo per stornati, 0 per pending) */
+  commission_amount: number;
+  payment_provider: string | null;
+  payment_status: string;
+  /** null = non ancora addebitato (cash); >0 = addebitato (stripe o manuale) */
+  application_fee_amount_cents: number | null;
+  billing_status: AIOrderBillingStatus;
+  created_at: string;
+};
+
+export type PlatformNonAIOrderStat = {
+  tenant_id: string;
+  tenant_name: string;
+  source: string;
+  order_count: number;
+  total_volume: number;
+};
+
+export const AI_ORDER_SOURCE_LABELS: Record<AIOrderSource, string> = {
+  retell: "Telefono AI",
+  whatsapp: "WhatsApp AI",
+};
+
+export const AI_ORDER_SOURCE_COLORS: Record<AIOrderSource, string> = {
+  retell: "bg-violet-100 text-violet-700",
+  whatsapp: "bg-emerald-100 text-emerald-700",
+};
+
+export const AI_ORDER_BILLING_LABELS: Record<AIOrderBillingStatus, string> = {
+  stripe: "Stripe",
+  cash_pending: "Cash — da addebitare",
+  cash_billed: "Cash — addebitato",
+};
+
+export const AI_ORDER_BILLING_COLORS: Record<AIOrderBillingStatus, string> = {
+  stripe: "bg-sky-100 text-sky-700",
+  cash_pending: "bg-pork-mustard/30 text-pork-ink",
+  cash_billed: "bg-pork-green/20 text-pork-green",
+};
+
+export const AI_ORDER_CATEGORY_LABELS: Record<AIOrderCategory, string> = {
+  confirmed: "Confermato",
+  non_concluded: "Non concluso",
+  pending: "In attesa",
+};
+
+export const AI_ORDER_CATEGORY_COLORS: Record<AIOrderCategory, string> = {
+  confirmed: "bg-pork-green/20 text-pork-green",
+  non_concluded: "bg-pork-ink/10 text-pork-ink/50",
+  pending: "bg-pork-mustard/25 text-pork-ink",
+};
+
+export const AI_COMMISSION_RATE = 0.03;

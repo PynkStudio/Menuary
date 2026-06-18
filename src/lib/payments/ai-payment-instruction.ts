@@ -56,18 +56,18 @@ export function buildAiPaymentInstruction(
   // Caso 2: solo online.
   if (input.policy === "online_only") {
     return {
-      text: `Pagamento solo online. Informa il cliente che riceverà via messaggio il riepilogo dell'ordine con il link di pagamento sicuro; l'ordine sarà confermato dopo il pagamento. Non offrire il pagamento ${word}.`,
+      text: `Pagamento solo online. Conferma l'ordine al cliente e informa che riceverà via messaggio il link per completare il pagamento; l'ordine è confermato dopo il pagamento. Non offrire il pagamento ${word}.`,
       onlineAvailable: true,
       onSiteAvailable: false,
       shouldAsk: false,
     };
   }
 
-  // Caso 3: entrambi → chiedi la preferenza.
+  // Caso 3: entrambi → non chiedere, manda il riepilogo. Il cliente potrà scegliere sul link.
   return {
-    text: `Chiedi al cliente se preferisce pagare online (riceverà il link via messaggio) oppure ${word}. In entrambi i casi gli verrà inviato il riepilogo dell'ordine via messaggio.`,
+    text: `Conferma l'ordine al cliente senza chiedere il metodo di pagamento. Informa che riceverà via messaggio il riepilogo con un link dove potrà eventualmente pagare con carta.`,
     onlineAvailable: true,
     onSiteAvailable: true,
-    shouldAsk: true,
+    shouldAsk: false,
   };
 }

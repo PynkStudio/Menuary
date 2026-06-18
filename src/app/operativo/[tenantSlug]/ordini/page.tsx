@@ -40,6 +40,7 @@ type OrderRow = {
   auto_accepted: boolean | null;
   customer_phone: string | null;
   delivery_address: string | null;
+  fulfillment_type: string | null;
 };
 
 type OrderLine = { order_id: string; name: string; qty: number; variant_label: string | null };
@@ -76,7 +77,7 @@ async function fetchOrders(tenantSlug: string, filter: Filter, locationId: strin
 
   let q = svc
     .from("orders")
-    .select("id, code, status, type, total, customer_name, table_label, pickup_time, desired_time, notes, created_at, dine_option, confirmation_expires_at, auto_accepted, customer_phone, delivery_address")
+    .select("id, code, status, type, total, customer_name, table_label, pickup_time, desired_time, notes, created_at, dine_option, fulfillment_type, confirmation_expires_at, auto_accepted, customer_phone, delivery_address")
     .eq("tenant_id", tenantSlug);
 
   if (locationId) q = q.eq("location_id", locationId);
@@ -263,7 +264,17 @@ export default async function OrdiniPage({
                 ? Math.max(0, Math.floor((new Date(o.confirmation_expires_at).getTime() - Date.now()) / 1000))
                 : null;
 
-            const scheduledTime = o.pickup_time ?? o.desired_time;
+            const rawScheduledTime = o.pickup_time ?? o.desired_time;
+            const effectiveModality = o.dine_option ?? o.fulfillment_type;
+            const isDelivery = effectiveModality === "delivery";
+            const isAsap = !rawScheduledTime || rawScheduledTime.toLowerCase() === "asap";
+            const scheduledTime = isAsap ? null : rawScheduledTime;
+            const timeLabel = isAsap
+              ? (isDelivery ? interpolate(t.deliveryPickup, { time: t.asap }) : interpolate(t.pickup, { time: t.asap }))
+              : isDelivery
+                ? interpolate(t.deliveryPickup, { time: scheduledTime! })
+                : interpolate(t.pickup, { time: scheduledTime! });
+            const showTimeBanner = Boolean(rawScheduledTime) || isDelivery;
 
             return (
               <article key={o.id} className="ga-reservation">
@@ -286,22 +297,22 @@ export default async function OrdiniPage({
                     </span>
                   </div>
 
-                  {scheduledTime && (
-                    <div className="ga-order-pickup">
-                      <Clock size={13} strokeWidth={2.6} />
-                      {interpolate(t.pickup, { time: scheduledTime })}
+                  {showTimeBanner && (
+                    <div className="ga-order-pickup" data-delivery={isDelivery || undefined}>
+                      {isDelivery ? <Bike size={13} strokeWidth={2.6} /> : <Clock size={13} strokeWidth={2.6} />}
+                      {timeLabel}
                     </div>
                   )}
 
                   <div className="ga-reservation-meta">
                     <span><Clock size={12} strokeWidth={2.2} /> {formatTime(o.created_at)}</span>
-                    {o.dine_option === "dine_in" && (
+                    {effectiveModality === "dine_in" && (
                       <span><UtensilsCrossed size={12} strokeWidth={2.2} /> {t.type.dineIn}</span>
                     )}
-                    {o.dine_option === "takeaway" && (
+                    {effectiveModality === "takeaway" && (
                       <span><ShoppingBag size={12} strokeWidth={2.2} /> {t.type.takeaway}</span>
                     )}
-                    {o.dine_option === "delivery" && (
+                    {effectiveModality === "delivery" && (
                       <span><Bike size={12} strokeWidth={2.2} /> {t.type.delivery}</span>
                     )}
                     {o.table_label && (

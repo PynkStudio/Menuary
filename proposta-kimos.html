@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta Menuary × Pizzeria Kimos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red:     #C64335;
+    --redDark: #8E2B26;
+    --peach:   #E9D8B6;
+    --cream:   #F4E9D3;
+    --ink:     #171512;
+    --brick:   #2B211C;
+    --mustard: #E5B83B;
+    --white:   #FFFDF8;
+    --gray:    #5C5248;
+  }
+
+  html, body {
+    width: 297mm;
+    height: 210mm;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--white);
+    color: var(--ink);
+    font-size: 9pt;
+    line-height: 1.45;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  .page {
+    width: 297mm;
+    height: 210mm;
+    display: grid;
+    grid-template-columns: 68mm 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    overflow: hidden;
+  }
+
+  /* ─── Colonna sinistra: header + identità ──────────────── */
+  .col-brand {
+    background: var(--brick);
+    color: var(--cream);
+    display: flex;
+    flex-direction: column;
+    padding: 10mm 8mm;
+    gap: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .col-brand::before {
+    content: '';
+    position: absolute;
+    bottom: -20mm;
+    left: -10mm;
+    width: 90mm;
+    height: 90mm;
+    border-radius: 50%;
+    background: var(--red);
+    opacity: 0.18;
+  }
+
+  .brand-logo {
+    font-size: 11pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 1mm;
+  }
+
+  .brand-tagline {
+    font-size: 7pt;
+    color: var(--peach);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8mm;
+    opacity: 0.8;
+  }
+
+  .divider {
+    width: 100%;
+    height: 0.4mm;
+    background: var(--red);
+    opacity: 0.6;
+    margin: 4mm 0;
+  }
+
+  .tenant-label {
+    font-size: 7pt;
+    color: var(--peach);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    opacity: 0.7;
+    margin-bottom: 1mm;
+  }
+
+  .tenant-name {
+    font-size: 16pt;
+    font-weight: 900;
+    color: var(--white);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 2mm;
+  }
+
+  .tenant-city {
+    font-size: 8pt;
+    color: var(--mustard);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .brand-spacer { flex: 1; }
+
+  .plan-badge {
+    background: var(--red);
+    border-radius: 3mm;
+    padding: 4mm 5mm;
+    margin-bottom: 4mm;
+  }
+
+  .plan-badge-label {
+    font-size: 6.5pt;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.8mm;
+  }
+
+  .plan-badge-name {
+    font-size: 13pt;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+
+  .plan-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1mm;
+    margin-top: 2mm;
+  }
+
+  .plan-price-big {
+    font-size: 22pt;
+    font-weight: 900;
+    color: var(--white);
+    letter-spacing: -0.04em;
+  }
+
+  .plan-price-unit {
+    font-size: 8pt;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .plan-price-annual {
+    font-size: 7pt;
+    color: var(--peach);
+    margin-top: 1mm;
+    opacity: 0.85;
+  }
+
+  .setup-note {
+    font-size: 6.5pt;
+    color: var(--peach);
+    opacity: 0.75;
+    margin-top: 1mm;
+  }
+
+  .date-label {
+    font-size: 6.5pt;
+    color: var(--peach);
+    opacity: 0.6;
+    margin-top: 3mm;
+  }
+
+  /* ─── Colonne contenuto ─────────────────────────────────── */
+  .col-content {
+    padding: 9mm 7mm;
+    display: flex;
+    flex-direction: column;
+    gap: 4mm;
+    border-right: 0.3mm solid var(--peach);
+  }
+
+  .col-content:last-child { border-right: none; }
+
+  .col-header {
+    display: flex;
+    align-items: center;
+    gap: 2.5mm;
+    margin-bottom: 1mm;
+  }
+
+  .col-icon {
+    width: 7mm;
+    height: 7mm;
+    border-radius: 2mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10pt;
+    flex-shrink: 0;
+  }
+
+  .icon-phone  { background: #FFF0EE; }
+  .icon-web    { background: #EDFAF2; }
+  .icon-referral { background: #FFF8E0; }
+
+  .col-title {
+    font-size: 10pt;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .col-subtitle {
+    font-size: 7pt;
+    color: var(--gray);
+    font-weight: 400;
+    margin-top: 0.5mm;
+  }
+
+  /* Card principale (commissione) */
+  .main-card {
+    border-radius: 3mm;
+    padding: 4.5mm 5mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-red   { background: var(--red); color: white; }
+  .card-green { background: #1A6B43; color: white; }
+  .card-gold  { background: var(--mustard); color: var(--ink); }
+
+  .card-pct {
+    font-size: 32pt;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .card-pct-sub {
+    font-size: 8pt;
+    font-weight: 600;
+    margin-top: 0.5mm;
+    opacity: 0.85;
+  }
+
+  .card-pct-note {
+    font-size: 6.5pt;
+    margin-top: 1.5mm;
+    opacity: 0.75;
+    line-height: 1.4;
+  }
+
+  /* Feature list */
+  .feat-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2mm;
+  }
+
+  .feat-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 2mm;
+    font-size: 7.5pt;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .feat-check {
+    flex-shrink: 0;
+    width: 3.5mm;
+    height: 3.5mm;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6pt;
+    margin-top: 0.3mm;
+  }
+
+  .check-red    { background: var(--red); color: white; }
+  .check-green  { background: #1A6B43; color: white; }
+  .check-gold   { background: var(--mustard); color: var(--ink); }
+
+  /* Info box */
+  .info-box {
+    background: var(--cream);
+    border-radius: 2.5mm;
+    padding: 3.5mm 4mm;
+    font-size: 7pt;
+    color: var(--gray);
+    line-height: 1.45;
+    border-left: 1.5mm solid var(--peach);
+  }
+
+  .info-box strong { color: var(--ink); font-weight: 700; }
+
+  /* Modules attivi */
+  .modules-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5mm;
+  }
+
+  .module-chip {
+    background: var(--cream);
+    border: 0.3mm solid var(--peach);
+    border-radius: 2mm;
+    padding: 1mm 2.5mm;
+    font-size: 6.5pt;
+    color: var(--brick);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* Referral highlight */
+  .referral-big {
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+    background: var(--mustard);
+    border-radius: 3mm;
+    padding: 4mm 5mm;
+  }
+
+  .referral-pct {
+    font-size: 34pt;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .referral-desc {
+    font-size: 7.5pt;
+    color: var(--brick);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .referral-desc span {
+    display: block;
+    font-size: 8.5pt;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 0.5mm;
+  }
+
+  /* Footer strip */
+  .footer-strip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+  }
+
+  /* Example calc */
+  .calc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1mm;
+  }
+
+  .calc-table td {
+    font-size: 7pt;
+    padding: 1.5mm 0;
+    border-bottom: 0.3mm solid var(--peach);
+    color: var(--gray);
+  }
+
+  .calc-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .calc-table tr.total td {
+    font-weight: 700;
+    color: var(--red);
+    border-bottom: none;
+    font-size: 8pt;
+  }
+
+  .highlight-row td { color: #1A6B43 !important; }
+
+  .section-label {
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray);
+    font-weight: 600;
+    margin-bottom: 1.5mm;
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════════════════════════════════════════════════
+       COLONNA 1 — Brand + Piano
+  ════════════════════════════════════════════════════ -->
+  <div class="col-brand">
+    <div class="brand-logo">menuary</div>
+    <div class="brand-tagline">Piattaforma digitale per il food</div>
+
+    <div class="divider"></div>
+
+    <div class="tenant-label">Proposta per</div>
+    <div class="tenant-name">Pizzeria<br>Kimos</div>
+    <div class="tenant-city">Milano · Giugno 2026</div>
+
+    <div class="brand-spacer"></div>
+
+    <div class="plan-badge">
+      <div class="plan-badge-label">Piano incluso</div>
+      <div class="plan-badge-name">Prenotazioni</div>
+      <div class="plan-price-row">
+        <div class="plan-price-big">€89</div>
+        <div class="plan-price-unit">/mese</div>
+      </div>
+      <div class="plan-price-annual">€1.068/anno · pagamento annuale anticipato</div>
+      <div class="setup-note">Setup una tantum: da €1.190 + IVA</div>
+    </div>
+
+    <div style="font-size:6.5pt; color:var(--peach); opacity:0.65; line-height:1.4;">
+      Sito, menu digitale, ordini, CRM, analytics, AI phone &amp; WhatsApp, delivery, fidelity — tutto incluso.
+      Attivazione entro 7 giorni dalla firma. Contratto annuale, disdetta con 30 gg di preavviso.
+    </div>
+
+    <div class="date-label">Prezzi IVA esclusa · menuary.it</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       COLONNA 2 — Ordini AI al telefono
+  ════════════════════════════════════════════════════ -->
+  <div class="col-content">
+    <div class="col-header">
+      <div class="col-icon icon-phone">📞</div>
+      <div>
+        <div class="col-title">Ordini AI<br>al telefono</div>
+        <div class="col-subtitle">Attivo 24/7 · senza operatori</div>
+      </div>
+    </div>
+
+    <div class="main-card card-red">
+      <div class="card-pct">3%</div>
+      <div class="card-pct-sub">solo su ordini andati a buon fine</div>
+      <div class="card-pct-note">
+        <strong style="color:rgba(255,255,255,0.95);">Non paghi nulla se:</strong><br>
+        · la chiamata è solo informativa o viene interrotta<br>
+        · il cliente cancella l'ordine dopo averlo fatto<br>
+        · il locale rifiuta o non può evadere l'ordine<br>
+        Paghi solo quando l'ordine viene confermato e accettato.
+      </div>
+    </div>
+
+    <div class="section-label">Come funziona</div>
+    <ul class="feat-list">
+      <li>
+        <div class="feat-check check-red">✓</div>
+        Il cliente chiama e l'IA risponde con la voce del locale, 24/7
+      </li>
+      <li>
+        <div class="feat-check check-red">✓</div>
+        Prende l'ordine, conferma i prodotti e il totale in tempo reale
+      </li>
+      <li>
+        <div class="feat-check check-red">✓</div>
+        L'ordine appare direttamente in cucina e in cassa
+      </li>
+      <li>
+        <div class="feat-check check-red">✓</div>
+        Suggerisce upselling automatico (extra, bevande, promo)
+      </li>
+      <li>
+        <div class="feat-check check-red">✓</div>
+        Multilingua: IT, EN, FR, ES — nessuna barriera col cliente
+      </li>
+      <li>
+        <div class="feat-check check-red">✓</div>
+        Registra il cliente nel CRM ad ogni ordine
+      </li>
+    </ul>
+
+    <div class="info-box">
+      <strong>Esempio:</strong> 50 ordini/mese da €22 media = €1.100 · commissione = <strong>€33</strong>. Il centralino non risponde più di notte, tu non perdi un ordine.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       COLONNA 3 — Ordini web + moduli attivi
+  ════════════════════════════════════════════════════ -->
+  <div class="col-content">
+    <div class="col-header">
+      <div class="col-icon icon-web">🌐</div>
+      <div>
+        <div class="col-title">Ordini web<br>e asporto</div>
+        <div class="col-subtitle">Dal sito e dai canali digitali</div>
+      </div>
+    </div>
+
+    <div class="main-card card-green">
+      <div class="card-pct">0%</div>
+      <div class="card-pct-sub">commissione · zero forever</div>
+      <div class="card-pct-note">Ordini dal sito, QR code e WhatsApp — margine al 100% tuo. Nessun intermediario, nessun Deliveroo.</div>
+    </div>
+
+    <div class="section-label">Canali inclusi</div>
+    <ul class="feat-list">
+      <li>
+        <div class="feat-check check-green">✓</div>
+        Sito Kimos — ordina direttamente online con pagamento integrato
+      </li>
+      <li>
+        <div class="feat-check check-green">✓</div>
+        Slot asporto gestiti — orari e capacità sempre sotto controllo
+      </li>
+      <li>
+        <div class="feat-check check-green">✓</div>
+        Delivery hub — gestisci i tuoi rider o colleghi a terzi
+      </li>
+      <li>
+        <div class="feat-check check-green">✓</div>
+        Pagamenti online: carta, Apple Pay, Google Pay
+      </li>
+      <li>
+        <div class="feat-check check-green">✓</div>
+        Kitchen display in cucina — ordini in tempo reale senza carta
+      </li>
+      <li>
+        <div class="feat-check check-green">✓</div>
+        Disponibilità prodotti — "esaurito" automatico senza telefonate
+      </li>
+    </ul>
+
+    <div class="section-label" style="margin-top:1mm;">Moduli attivi nel piano</div>
+    <div class="modules-grid">
+      <div class="module-chip">Sito web</div>
+      <div class="module-chip">Menu digitale</div>
+      <div class="module-chip">Ordini asporto</div>
+      <div class="module-chip">Delivery hub</div>
+      <div class="module-chip">Kitchen display</div>
+      <div class="module-chip">AI phone</div>
+      <div class="module-chip">AI WhatsApp</div>
+      <div class="module-chip">CRM clienti</div>
+      <div class="module-chip">Analytics</div>
+      <div class="module-chip">Pagamenti</div>
+      <div class="module-chip">Fidelity</div>
+      <div class="module-chip">Galleria</div>
+      <div class="module-chip">Recensioni</div>
+      <div class="module-chip">Upselling AI</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       COLONNA 4 — Referral + Riepilogo
+  ════════════════════════════════════════════════════ -->
+  <div class="col-content" style="border-right:none;">
+    <div class="col-header">
+      <div class="col-icon icon-referral">💸</div>
+      <div>
+        <div class="col-title">Porta un locale,<br>incassi il 10%</div>
+        <div class="col-subtitle">Programma referral · cash</div>
+      </div>
+    </div>
+
+    <div class="referral-big">
+      <div class="referral-pct">10%</div>
+      <div class="referral-desc">
+        <span>Cash per ogni referral</span>
+        Per ogni ristorante o attività che ci presenti e firma con Menuary, ricevi il 10% del loro primo acquisto in contanti — direttamente a te.
+      </div>
+    </div>
+
+    <ul class="feat-list">
+      <li>
+        <div class="feat-check check-gold">✓</div>
+        Valido su qualsiasi piano Menuary (Presenza, Prenotazioni, Operatività)
+      </li>
+      <li>
+        <div class="feat-check check-gold">✓</div>
+        Il 10% viene calcolato sul totale del primo acquisto (piano + setup)
+      </li>
+      <li>
+        <div class="feat-check check-gold">✓</div>
+        Liquidato entro 30 giorni dalla firma del cliente referito
+      </li>
+      <li>
+        <div class="feat-check check-gold">✓</div>
+        Senza limiti — ogni locale che porti conta
+      </li>
+    </ul>
+
+    <div style="margin-top:0mm;">
+      <div class="section-label">Esempio referral</div>
+      <table class="calc-table">
+        <tr>
+          <td>Piano Prenotazioni (annuale)</td>
+          <td>€1.068</td>
+        </tr>
+        <tr>
+          <td>Setup una tantum</td>
+          <td>€1.190</td>
+        </tr>
+        <tr>
+          <td>Totale primo acquisto</td>
+          <td>€2.258</td>
+        </tr>
+        <tr class="total highlight-row">
+          <td>Il tuo 10% cash</td>
+          <td>€225,80</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="info-box" style="margin-top:1mm; border-left-color: var(--mustard);">
+      <strong>Riepilogo Kimos · costi fissi:</strong><br>
+      Piano annuale €1.068 + setup €1.190 una tantum.<br>
+      Ordini telefono: 3% solo su ordini completati.<br>
+      Ordini web &amp; asporto: <strong>0% per sempre</strong>.
+    </div>
+
+    <div style="font-size:6pt; color:var(--gray); opacity:0.6; margin-top:auto; padding-top:2mm; border-top:0.3mm solid var(--peach);">
+      Proposta valida 30 giorni · Prezzi IVA esclusa · Contratto annuale con pagamento anticipato<br>
+      menuary.it · info@menuary.it
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

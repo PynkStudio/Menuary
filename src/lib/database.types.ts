@@ -522,6 +522,7 @@ export type Database = {
           email: string | null
           hubrise_customer_id: string | null
           id: string
+          language: string | null
           menuary_user_id: string | null
           phone: string | null
           source: string
@@ -536,6 +537,7 @@ export type Database = {
           email?: string | null
           hubrise_customer_id?: string | null
           id?: string
+          language?: string | null
           menuary_user_id?: string | null
           phone?: string | null
           source?: string
@@ -550,6 +552,7 @@ export type Database = {
           email?: string | null
           hubrise_customer_id?: string | null
           id?: string
+          language?: string | null
           menuary_user_id?: string | null
           phone?: string | null
           source?: string

@@ -7,6 +7,7 @@ import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { buildAiPaymentInstruction } from "@/lib/payments/ai-payment-instruction";
 import { findTenantById } from "@/lib/tenant-registry";
 import { getTenantContent } from "@/lib/tenant-content";
+import { tenantUsesStripeDemoSandbox } from "@/lib/payments/stripe/sandbox-policy";
 
 // Saluto contestuale in base all'ora locale (Europe/Rome): Buongiorno / Buon pomeriggio / Buonasera.
 function italianGreetingForNow(now = new Date()): string {
@@ -128,7 +129,8 @@ async function buildInboundDynamicVariables(
 
     // Istruzione pagamento per il prompt — combina feature flag, stato Stripe Connect e policy AI.
     const tenantProfile = findTenantById(tenantId);
-    const stripeAccount = await getTenantPaymentAccount(tenantId).catch(() => null);
+    const useDemoSandbox = tenantUsesStripeDemoSandbox(tenantId);
+    const stripeAccount = await getTenantPaymentAccount(tenantId, { demoSandbox: useDemoSandbox }).catch(() => null);
     const instruction = buildAiPaymentInstruction({
       paymentsModuleEnabled: Boolean(tenantProfile?.features.payments),
       stripeReady: Boolean(stripeAccount?.chargesEnabled),

@@ -23,18 +23,14 @@ type Body = {
   extraNote?: string | null;
 };
 
-function publicBaseForTenant(tenantId: string): string {
+// URL canonico del menu: menuary.it/c/[previewSlug] (short-link piattaforma).
+// Quando il tenant avrà un dominio proprio, /c/[slug] continuerà a funzionare
+// come alias permanente senza bisogno di aggiornare i template WA già inviati.
+function menuShortUrl(tenantId: string): string {
   const tenant = findTenantById(tenantId);
-  // Preferenza: primo dominio proprio non-localhost. Fallback: menuary.it + previewSlug.
-  const publicDomain = tenant?.domains?.find(
-    (d) => !d.includes("localhost") && !d.includes("127.0.0.1") && !d.includes("menuary.local"),
-  );
-  if (publicDomain) return `https://${publicDomain}`;
-  if (tenant?.previewSlug) {
-    const platformBase = process.env.NEXT_PUBLIC_SITE_URL ?? "https://menuary.it";
-    return `${platformBase}/${tenant.previewSlug}`;
-  }
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://menuary.it";
+  const platformBase = process.env.NEXT_PUBLIC_SITE_URL ?? "https://menuary.it";
+  if (tenant?.previewSlug) return `${platformBase}/c/${tenant.previewSlug}`;
+  return platformBase;
 }
 
 export async function POST(req: NextRequest) {
@@ -58,11 +54,19 @@ export async function POST(req: NextRequest) {
   const primary: OutboundChannel = settings.paymentControls.defaultChannel;
   const fallback: OutboundChannel | null = settings.paymentControls.fallbackChannel;
 
-  const url = `${publicBaseForTenant(body.tenantId)}/menu`;
+  const url = menuShortUrl(body.tenantId);
+  const tenantName = tenant.label ?? tenant.name;
   const locationLine = body.locationName ? ` (${body.locationName})` : "";
   const extra = body.extraNote?.trim() ? `\n${body.extraNote.trim()}` : "";
   const messageBody =
-    `Ciao da ${tenant.label ?? tenant.name}${locationLine}! Qui trovi il nostro menu completo: ${url}${extra}\nA presto!`;
+    `Ciao da ${tenantName}${locationLine}! Qui trovi il nostro menu completo: ${url}${extra}\nA presto!`;
+
+  // Template WA approvato Meta per il link menu (opzionale: se non configurato usa testo libero).
+  // Variabili: {{1}} = nome locale, {{2}} = previewSlug (suffisso del bottone CTA menuary.it/c/{{2}}).
+  const waContentSid = process.env.TWILIO_WA_MENU_LINK_SID ?? null;
+  const waContentVariables = waContentSid && tenant.previewSlug
+    ? { "1": tenantName, "2": tenant.previewSlug }
+    : null;
 
   try {
     const enqueued = await enqueueOutboundMessage({
@@ -73,6 +77,8 @@ export async function POST(req: NextRequest) {
       recipientPhone: body.recipientPhone,
       body: messageBody,
       source: "retell",
+      contentSid: primary === "whatsapp" ? waContentSid : null,
+      contentVariables: primary === "whatsapp" ? waContentVariables : null,
       metadata: {
         menu_url: url,
         location_name: body.locationName ?? null,

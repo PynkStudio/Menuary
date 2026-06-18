@@ -747,8 +747,10 @@ export async function buildRetellInboundContext(
         : [],
     },
     retellInstructions: [
+      "Se il risultato di `customer_lookup` contiene un campo `language` non vuoto, adotta quella lingua fin dalla prima risposta. Altrimenti rileva la lingua dal primo messaggio del chiamante (default italiano se non determinabile) e mantienila per tutta la conversazione senza mai cambiarla o mescolarla con altre lingue. Dopo aver identificato la lingua chiama `set_customer_language` per salvarla nel CRM. Se possibile traduci nomi di piatti, ingredienti e modificatori nella lingua del chiamante.",
       "Usa solo le informazioni presenti in questo contesto per menu/listino, prezzi, modifiche, orari e sedi.",
       "Il menu nel contesto e gia filtrato per l'orario locale della chiamata. Non proporre voci assenti e recupera nuovamente il contesto prima di confermare un ordine.",
+      "Se il cliente chiede di vedere il menu, il listino completo o vuole sfogliare i piatti, proponi di inviargli il link via messaggio usando la funzione send_menu_link; non elencare i piatti verbalmente.",
       "Prima di creare ordini, prenotazioni o appuntamenti conferma sempre nome, telefono, giorno, orario e sede quando ci sono piu sedi.",
       "Per ordini delivery raccogli indirizzo, citofono, piano, note consegna, orario desiderato e numero di telefono. Se il numero chiamante non va bene, chiedine uno alternativo.",
       "Prima di proporre prenotazioni o appuntamenti usa l'azione availability per leggere gli slot disponibili dal calendario interno.",
@@ -947,13 +949,9 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   } else if (input.paymentMethodChoice === "online" || input.paymentMethodChoice === "on_site") {
     effectivePaymentMethod = input.paymentMethodChoice;
   } else {
-    // policy=both, agente non ha raccolto scelta → fallback legacy.
-    const legacyRequire =
-      input.requestPayment === true ||
-      (fulfillmentType === "delivery"
-        ? settings.paymentControls.requireForDelivery
-        : settings.paymentControls.requireForTakeaway);
-    effectivePaymentMethod = legacyRequire ? "online" : "on_site";
+    // policy=both, agente non chiede più la preferenza → online di default così il bottone
+    // "Paga" è visibile sul link di riepilogo; il cliente può scegliere se pagare subito.
+    effectivePaymentMethod = "online";
   }
 
   const shouldRequestPayment = effectivePaymentMethod === "online";
@@ -1161,6 +1159,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       currency: "EUR",
       description: `Ordine ${order.code}`,
       paymentRequired: effectivePaymentMethod === "online",
+      onSiteAvailable: effectivePaymentMethod === "online" && policy === "both",
       fulfillmentType,
       deliveryAddress: input.delivery?.address ?? null,
       metadata: {
@@ -1186,15 +1185,33 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
 export type RetellCustomerContext = {
   isKnown: boolean;
   firstName: string;
+  language: string;
   lastAddress: string;
   lastOrderSummary: string;
 };
+
+export async function setCustomerLanguage(
+  tenantId: string,
+  callerPhone: string,
+  language: string,
+): Promise<{ updated: boolean }> {
+  const phone = normalizePhone(callerPhone);
+  if (!phone || !language.trim()) return { updated: false };
+
+  const db = svc();
+  const { error } = await db
+    .from("customers")
+    .update({ language: language.trim(), updated_at: new Date().toISOString() } as never)
+    .eq("tenant_id", tenantId)
+    .eq("phone", phone);
+  return { updated: !error };
+}
 
 export async function lookupRetellCustomer(
   tenantId: string,
   callerPhone: string,
 ): Promise<RetellCustomerContext> {
-  const empty: RetellCustomerContext = { isKnown: false, firstName: "", lastAddress: "", lastOrderSummary: "" };
+  const empty: RetellCustomerContext = { isKnown: false, firstName: "", language: "", lastAddress: "", lastOrderSummary: "" };
 
   const phone = normalizePhone(callerPhone);
   if (!phone) return empty;
@@ -1204,7 +1221,7 @@ export async function lookupRetellCustomer(
   const [{ data: customer }, { data: orders }] = await Promise.all([
     db
       .from("customers")
-      .select("id,display_name")
+      .select("id,display_name,language")
       .eq("tenant_id", tenantId)
       .eq("phone", phone)
       .order("menuary_user_id", { ascending: false })
@@ -1215,16 +1232,17 @@ export async function lookupRetellCustomer(
       .select("id,delivery_address,fulfillment_type")
       .eq("tenant_id", tenantId)
       .eq("customer_phone", phone)
-      .in("status", ["nuovo", "confermato", "pronto", "completato", "consegnato"])
+      .in("status", ["nuovo", "in_preparazione", "pronto", "consegnato"])
       .order("created_at", { ascending: false })
       .limit(3),
   ]);
 
   if (!customer && (!orders || orders.length === 0)) return empty;
 
-  const firstName = (customer as { display_name?: string | null } | null)?.display_name
+  const firstName = (customer as { display_name?: string | null; language?: string | null } | null)?.display_name
     ?.trim()
     .split(/\s+/)[0] ?? "";
+  const language = (customer as { language?: string | null } | null)?.language?.trim() ?? "";
 
   const lastAddress =
     (orders as { delivery_address: string | null; fulfillment_type: string }[] | null)
@@ -1252,5 +1270,5 @@ export async function lookupRetellCustomer(
     }
   }
 
-  return { isKnown: true, firstName, lastAddress, lastOrderSummary };
+  return { isKnown: true, firstName, language, lastAddress, lastOrderSummary };
 }
