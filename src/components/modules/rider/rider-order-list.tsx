@@ -23,7 +23,7 @@ type RiderOrder = {
   order_lines: OrderLine[];
 };
 
-export function RiderOrderList({ riderName, tenantId }: { riderName: string; tenantId: string }) {
+export function RiderOrderList({ riderName }: { riderName: string; tenantId: string }) {
   const [orders, setOrders] = useState<RiderOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();

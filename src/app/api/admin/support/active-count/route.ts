@@ -5,7 +5,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -26,10 +26,12 @@ export async function GET() {
   const db = createSupabaseServiceClient();
   if (!db) return NextResponse.json({ count: 0 });
 
-  const { count, error } = await db
+  const source = new URL(request.url).searchParams.get("source");
+  const query = db
     .from("support_tickets")
     .select("id", { count: "exact", head: true })
     .not("status", "in", '("resolved","closed")');
+  const { count, error } = await (source ? query.eq("source", source) : query);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ count: count ?? 0 });

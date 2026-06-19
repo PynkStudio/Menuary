@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { Copy, Check, ExternalLink, CreditCard, Landmark } from "lucide-react";
 
@@ -151,7 +152,7 @@ export function PynkPaymentRight({ method, amount, canoneLabel, kind, actionUrl,
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: 6, boxSizing: "border-box",
           }}>
-            <img src="/bunq/logo.svg" alt="bunq" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <Image src="/bunq/logo.svg" alt="bunq" width={28} height={28} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </div>
           <div>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: PYNK.fg }}>bunq</p>

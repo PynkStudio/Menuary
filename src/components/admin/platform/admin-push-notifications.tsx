@@ -62,6 +62,10 @@ function isOnlineOrWhatsappLead(row: EventRow | null | undefined): boolean {
   return notes.includes("whatsapp");
 }
 
+function isWhatsappSupportTicket(row: EventRow | null | undefined): boolean {
+  return text(row, "source") === "whatsapp_customer_service";
+}
+
 function isFresh(row: EventRow | null | undefined, mountedAt: number): boolean {
   if (!row) return true;
   const value = text(row, "updated_at") ?? text(row, "created_at");
@@ -172,7 +176,14 @@ export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificat
         (payload) => {
           const row = payload.new as EventRow | undefined;
           if (!isFresh(row, mountedAt)) return;
-          notify("Nuovo ticket supporto", text(row, "subject") ?? "Nuova richiesta di supporto.", `admin-support-${text(row, "id") ?? Date.now()}`, "/admin/supporto");
+          window.dispatchEvent(new Event("support:refresh"));
+          const isWhatsapp = isWhatsappSupportTicket(row);
+          notify(
+            isWhatsapp ? "Nuovo messaggio WhatsApp" : "Nuovo ticket supporto",
+            text(row, "subject") ?? "Nuova richiesta di supporto.",
+            `admin-support-${text(row, "id") ?? Date.now()}`,
+            isWhatsapp ? "/admin/messaggi-wa" : "/admin/supporto",
+          );
         },
       );
     }

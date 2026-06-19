@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { timingSafeEqual } from "node:crypto";
-import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import { isDemoHostname } from "@/lib/demo-mode";

@@ -49,7 +49,7 @@ export function detectMenuOpportunities(
   );
   if (menuItems.length === 0) return [];
 
-  const catById = new Map(allCategories.map((c) => [c.id, c]));
+  void allCategories;
 
   const results: MenuOpportunity[] = [];
 

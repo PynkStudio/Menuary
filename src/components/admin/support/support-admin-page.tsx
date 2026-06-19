@@ -56,11 +56,13 @@ export function SupportAdminPage({
   initialMessages,
   tenantNames,
   currentSiteadminId,
+  variant = "support",
 }: {
   initialTickets: SupportTicketRow[];
   initialMessages: SupportTicketMessageRow[];
   tenantNames: Record<string, string>;
   currentSiteadminId: string | null;
+  variant?: "support" | "whatsapp";
 }) {
   const [tickets, setTickets] = useState(initialTickets);
   const [messages, setMessages] = useState(initialMessages);
@@ -78,6 +80,7 @@ export function SupportAdminPage({
   }, [filter, tickets]);
   const selectedMessages = selected ? messages.filter((message) => message.ticket_id === selected.id) : [];
   const activeCount = tickets.filter((ticket) => ticket.status !== "closed" && ticket.status !== "resolved").length;
+  const isWhatsappView = variant === "whatsapp";
 
   async function refreshWaStatus() {
     const response = await fetch("/api/admin/support/wa-status", { cache: "no-store" });
@@ -134,9 +137,11 @@ export function SupportAdminPage({
     <div className="space-y-6">
       <header className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <h1 className="menuary-admin-page-title">Supporto</h1>
+          <h1 className="menuary-admin-page-title">{isWhatsappView ? "Messaggi WhatsApp" : "Supporto"}</h1>
           <p className="menuary-admin-page-subtitle">
-            Ticket generati da support@menuary.it, support@bizery.it, support@weuseorpheo.com e dal flusso WhatsApp operativo.
+            {isWhatsappView
+              ? "Ticket generati dal flusso WhatsApp operativo quando l'assistente IA richiede intervento umano."
+              : "Ticket generati da support@menuary.it, support@bizery.it, support@weuseorpheo.com e dal flusso WhatsApp operativo."}
           </p>
         </div>
         <div className="grid gap-2 sm:grid-cols-3 xl:min-w-[32rem]">
@@ -145,7 +150,7 @@ export function SupportAdminPage({
             <p className="text-2xl font-bold text-[var(--ma-ink)]">{activeCount}</p>
           </div>
           <div className="rounded-xl border border-[var(--ma-line)] bg-white p-3">
-            <p className="text-xs font-semibold uppercase text-[var(--ma-muted)]">Totali</p>
+            <p className="text-xs font-semibold uppercase text-[var(--ma-muted)]">{isWhatsappView ? "WA totali" : "Totali"}</p>
             <p className="text-2xl font-bold text-[var(--ma-ink)]">{tickets.length}</p>
           </div>
           <button

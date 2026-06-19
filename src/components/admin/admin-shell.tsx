@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  MessageCircle,
   LifeBuoy,
   Menu as MenuIcon,
   Package,
@@ -60,6 +61,7 @@ type NavItem = {
 
 const PLATFORM_ADMIN_NAV: NavItem[] = [
   { href: "/admin/inbox", label: "Posta in arrivo", icon: Mail, permission: "inbox:view" },
+  { href: "/admin/messaggi-wa", label: "Messaggi WA", icon: MessageCircle, permission: "support:manage" },
   { href: "/admin/supporto", label: "Supporto", icon: LifeBuoy, permission: "support:manage" },
   { href: "/admin/crm", label: "CRM Lead", icon: Users, permission: "crm:view" },
   { href: "/admin/crm/nuovo", label: "Nuovo lead", icon: UserPlus, permission: "crm:create" },
@@ -123,6 +125,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [platformRole, setPlatformRole] = useState<SiteadminRole | null>(null);
   const [platformSiteadminId, setPlatformSiteadminId] = useState<string | null>(null);
   const [inboxUnread, setInboxUnread] = useState(0);
+  const [waSupportCount, setWaSupportCount] = useState(0);
   const [leadAttentionCount, setLeadAttentionCount] = useState(0);
   const [contractsAttention, setContractsAttention] = useState(0);
   const [invoiceTasks, setInvoiceTasks] = useState(0);
@@ -158,6 +161,27 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       active = false;
     };
   }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "platform-admin" || !hasAdminPermission(platformRole, "support:manage")) return;
+
+    function fetchWaSupportCount() {
+      void fetch("/api/admin/support/active-count?source=whatsapp_customer_service", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data: { count?: number }) => setWaSupportCount(data.count ?? 0))
+        .catch(() => {});
+    }
+
+    fetchWaSupportCount();
+    const interval = setInterval(fetchWaSupportCount, 25_000);
+    window.addEventListener("focus", fetchWaSupportCount);
+    window.addEventListener("support:refresh", fetchWaSupportCount as EventListener);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchWaSupportCount);
+      window.removeEventListener("support:refresh", fetchWaSupportCount as EventListener);
+    };
+  }, [mode, platformRole]);
 
   useEffect(() => {
     if (mode !== "platform-admin" || !hasAdminPermission(platformRole, "crm:view")) return;
@@ -347,6 +371,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       active ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
                     )}>
                       {inboxUnread}
+                    </span>
+                  )}
+                  {it.href === "/admin/messaggi-wa" && waSupportCount > 0 && (
+                    <span className={cn(
+                      "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      active ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
+                    )}>
+                      {waSupportCount}
                     </span>
                   )}
                   {it.href === "/admin/crm" && leadAttentionCount > 0 && (

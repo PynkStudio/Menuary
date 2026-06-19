@@ -279,14 +279,15 @@ export function PynkCrm() {
   }, []);
 
   useEffect(() => {
-    void load(search, statusFilter);
-  }, [load, statusFilter]); // search debounced below
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(() => void load(search, statusFilter), search ? 300 : 0);
+    return () => {
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    };
+  }, [load, search, statusFilter]);
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const q = e.target.value;
-    setSearch(q);
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => void load(q, statusFilter), 300);
+    setSearch(e.target.value);
   };
 
   const handleSaved = (updated: Contact) => {
@@ -312,7 +313,7 @@ export function PynkCrm() {
             onChange={onSearchChange}
           />
           {search && (
-            <button type="button" onClick={() => { setSearch(""); void load("", statusFilter); }} className="pynk-crm-search-clear" aria-label="Cancella">
+            <button type="button" onClick={() => setSearch("")} className="pynk-crm-search-clear" aria-label="Cancella">
               <X size={14} />
             </button>
           )}

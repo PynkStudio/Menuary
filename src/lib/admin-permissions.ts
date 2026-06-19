@@ -110,6 +110,7 @@ export function requiredPermissionForAdminPath(pathname: string): AdminPermissio
   if (normalized === "/admin/tenant" || normalized.startsWith("/admin/tenant/")) return "tenant:manage";
   if (normalized === "/admin/utenti" || normalized.startsWith("/admin/utenti/")) return "users:manage";
   if (normalized === "/admin/inbox" || normalized.startsWith("/admin/inbox/")) return "inbox:view";
+  if (normalized === "/admin/messaggi-wa" || normalized.startsWith("/admin/messaggi-wa/")) return "support:manage";
   if (normalized === "/admin/supporto" || normalized.startsWith("/admin/supporto/")) return "support:manage";
   return "users:manage";
 }

@@ -75,30 +75,38 @@ export async function getCurrentSiteadmin(): Promise<Siteadmin | null> {
   return (data as Siteadmin | null) ?? null;
 }
 
-export async function listSupportTickets() {
+export async function listSupportTickets(options: { source?: SupportTicketSource } = {}) {
   const admin = createSupabaseAdminClient();
   const columns = "id,tenant_id,source,requester_phone_e164,requester_email,requester_name,subject,body,status,priority,assigned_to_siteadmin_id,metadata,created_at,updated_at,last_response_at,resolved_at";
-  const { data, error } = await (admin as unknown as {
+  type TicketQuery = {
+    eq: (column: string, value: string) => TicketQuery;
+    order: (column: string, options: { ascending: boolean }) => Promise<{ data: SupportTicketRow[] | null; error: { message: string } | null }>;
+  };
+  type TicketSelect = {
     from: (table: "support_tickets") => {
-      select: (columns: string) => {
-        order: (column: string, options: { ascending: boolean }) => Promise<{ data: SupportTicketRow[] | null; error: { message: string } | null }>;
-      };
+      select: (columns: string) => TicketQuery;
     };
-  })
+  };
+  const query = (admin as unknown as TicketSelect)
     .from("support_tickets")
-    .select(columns)
+    .select(columns);
+  const { data, error } = await (options.source ? query.eq("source", options.source) : query)
     .order("updated_at", { ascending: false });
 
   if (error && /requester_email|last_response_at|resolved_at/.test(error.message)) {
-    const fallback = await (admin as unknown as {
+    const fallbackQuery = (admin as unknown as {
       from: (table: "support_tickets") => {
         select: (columns: string) => {
+          eq: (column: string, value: string) => {
+            order: (column: string, options: { ascending: boolean }) => Promise<{ data: Array<Omit<SupportTicketRow, "requester_email" | "last_response_at" | "resolved_at">> | null; error: { message: string } | null }>;
+          };
           order: (column: string, options: { ascending: boolean }) => Promise<{ data: Array<Omit<SupportTicketRow, "requester_email" | "last_response_at" | "resolved_at">> | null; error: { message: string } | null }>;
         };
       };
     })
       .from("support_tickets")
-      .select("id,tenant_id,source,requester_phone_e164,requester_name,subject,body,status,priority,assigned_to_siteadmin_id,metadata,created_at,updated_at")
+      .select("id,tenant_id,source,requester_phone_e164,requester_name,subject,body,status,priority,assigned_to_siteadmin_id,metadata,created_at,updated_at");
+    const fallback = await (options.source ? fallbackQuery.eq("source", options.source) : fallbackQuery)
       .order("updated_at", { ascending: false });
     if (fallback.error) throw new Error(fallback.error.message);
     return (fallback.data ?? []).map((ticket) => ({

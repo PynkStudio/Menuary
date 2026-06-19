@@ -34,7 +34,6 @@ function ManciaOverlay({
   tenantId,
   token,
   isStripePaid,
-  orderTotalCents,
   tipState,
   setTipState,
   onClose,
@@ -43,7 +42,6 @@ function ManciaOverlay({
   tenantId: string;
   token: string;
   isStripePaid: boolean;
-  orderTotalCents: number;
   tipState: "idle" | "loading" | "done" | "error";
   setTipState: (s: "idle" | "loading" | "done" | "error") => void;
   onClose: () => void;
@@ -838,7 +836,6 @@ export function CheckoutClient({
           tenantId={tenantId}
           token={token}
           isStripePaid={alreadyPaid}
-          orderTotalCents={Math.round(order.total * 100)}
           tipState={tipState}
           setTipState={setTipState}
           onClose={() => setShowManciaOverlay(false)}

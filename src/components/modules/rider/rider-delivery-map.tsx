@@ -17,7 +17,7 @@ export function RiderDeliveryMap({ lat, lng, label }: Props) {
     let map: import("maplibre-gl").Map | null = null;
 
     async function init() {
-      // @ts-ignore — CSS module, no type declarations
+      // @ts-expect-error -- maplibre CSS import has no local type declaration.
       await import("maplibre-gl/dist/maplibre-gl.css");
       const ml = await import("maplibre-gl");
 
