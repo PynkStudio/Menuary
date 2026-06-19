@@ -819,14 +819,17 @@ export async function buildRetellInboundContext(
       registryTenant.id === "kimos"
         ? "Per Kimos, se il cliente ordina una pizza senza specificare formato o impasto, procedi senza chiarimenti usando formato Normale e impasto Classico. Chiedi chiarimenti solo se il cliente cita una variante in modo ambiguo."
         : "",
-      "Prima di creare ordini, prenotazioni o appuntamenti conferma sempre nome, telefono, giorno, orario e sede quando ci sono piu sedi.",
+      "Quando il cliente ordina un piatto, conferma brevemente e chiedi se vuole aggiungere altro (es. 'Va bene, una margherita. Qualcos'altro?'). Non elencare ingredienti, allergeni o prezzo del singolo piatto a meno che il cliente non li chieda esplicitamente. Se il cliente ha gia indicato la quantita (es. 'una margherita') non richiedere quante ne vuole.",
+      "Non comunicare i prezzi dei singoli piatti durante la raccolta dell'ordine. Il prezzo viene comunicato solo alla fine, come totale complessivo nel riepilogo.",
+      "Fulfillment: se il cliente dice 'portare a casa', 'consegnare', 'delivery', 'a domicilio' o simili, tratta l'ordine come delivery senza chiedere conferma. Se dice 'passo io', 'ritiro', 'vengo a prendere' o simili, tratta come asporto. Chiedi 'asporto o consegna?' SOLO se {{delivery_available}} e {{takeaway_available}} sono entrambi true E il cliente non ha indicato alcuna preferenza. Se solo uno dei due e disponibile, usalo senza chiedere.",
+      "Prima di creare ordini, prenotazioni o appuntamenti conferma sempre nome e sede quando ci sono piu sedi.",
       "Quando il cliente fornisce dati nella prima frase (es. 'vorrei una margherita in via Roma 10 citofono Rossi'), estrai TUTTI i dati gia forniti e chiedi SOLO quelli mancanti. Per delivery servono: indirizzo, citofono, piano, orario desiderato. Se manca un solo dato (es. il piano) chiedi solo quello, senza ripetere cio che il cliente ha gia detto.",
       "Non chiedere di confermare il numero da cui chiama e non dire che lo richiameremo su quel numero. Usa caller_phone se non viene dato un numero alternativo.",
       "Prima di proporre prenotazioni o appuntamenti usa l'azione availability per leggere gli slot disponibili dal calendario interno.",
       "Non proporre spontaneamente il metodo di pagamento e non chiedere come il cliente vuole pagare. Se il cliente chiede come puo pagare o se accettate carta/contanti, rispondi che ricevera un link su WhatsApp dove trovera tutte le istruzioni per il pagamento. Dopo la conferma dell'ordine di solo che arrivera un messaggio su WhatsApp con il link.",
       "Il riepilogo finale deve essere il piu breve possibile: solo cosa ha ordinato, dove e quando portarlo o ritirarlo e il totale. Non ripetere il numero di telefono. Concludi dicendo che arrivera il messaggio su WhatsApp e basta.",
       "Se un prezzo e variabile o da confermare, dillo chiaramente e non inventare importi.",
-      "Per allergeni, intolleranze o disponibilita dubbie, segnala che il locale confermera manualmente.",
+      "Per allergeni, intolleranze o disponibilita dubbie, segnala che il locale confermera manualmente solo se il cliente chiede informazioni su allergeni.",
       aiSettings.quickSettings.notesForAssistant,
     ].filter(Boolean),
   };

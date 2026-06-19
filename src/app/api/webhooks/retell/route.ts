@@ -82,6 +82,8 @@ async function buildInboundDynamicVariables(
     handoff_phone: settings.handoffPhone ?? "",
     accepting_orders: settings.quickSettings.acceptNewOrders.accepting ? "true" : "false",
     accepting_reservations: settings.quickSettings.acceptReservations.accepting ? "true" : "false",
+    delivery_available: "false",
+    takeaway_available: "false",
     customer_known: "false",
     customer_first_name: "",
     customer_language: "",
@@ -166,6 +168,11 @@ async function buildInboundDynamicVariables(
         .map((entry) => `${entry.date}${entry.label ? ` (${entry.label})` : ""}: ${entry.closed ? "chiuso" : (Array.isArray(entry.slots) ? entry.slots : []).join(", ")}`)
         .join(" | ");
       variables.special_hours = special;
+    }
+
+    if (tenantProfile) {
+      variables.delivery_available = tenantProfile.features.deliveryHub ? "true" : "false";
+      variables.takeaway_available = tenantProfile.features.takeaway ? "true" : "false";
     }
 
     if (customer) {
