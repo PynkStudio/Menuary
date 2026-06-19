@@ -82,5 +82,8 @@ export function useEffectiveFeatures() {
     favoritesEnabled: enabled("favorites"),
     reviewsEnabled: enabled("reviews"),
     galleryEnabled: enabled("gallery"),
+    aiPhoneEnabled: enabled("aiPhone"),
+    aiWhatsappEnabled: enabled("aiWhatsapp"),
+    upsellingEnabled: enabled("upselling"),
   };
 }

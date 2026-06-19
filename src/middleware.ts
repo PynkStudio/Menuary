@@ -784,14 +784,33 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── Portali operativi tenant (ordini/cassa/kiosk.[dominio]) ──────────────
-  if (mode === "ordini-custom" || mode === "cassa-custom" || mode === "kiosk-custom") {
+  // ── App rider tenant (rider.[dominio]) ───────────────────────────────────
+  // Nessuna sessione Supabase richiesta: auth con access_code (cookie rider-session).
+  if (mode === "rider-custom") {
+    const tenant = resolveTenantFromPrefixedHost(host, "rider");
+    if (!tenant) return NextResponse.next();
+    const rewrittenPath = `/operativo/${tenant.id}/rider${pathname === "/" ? "" : pathname}`;
+    if (!pathname.startsWith(`/operativo/${tenant.id}/rider`)) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = rewrittenPath;
+      const rh = new Headers(request.headers);
+      rh.set("x-operational-portal", "rider");
+      rh.set("x-tenant-public-path", pathname);
+      return NextResponse.rewrite(rewritten, { request: { headers: rh } });
+    }
+    return NextResponse.next();
+  }
+
+  // ── Portali operativi tenant (ordini/cassa/kiosk/cucina.[dominio]) ───────
+  if (mode === "ordini-custom" || mode === "cassa-custom" || mode === "kiosk-custom" || mode === "cucina-custom") {
     const section =
       mode === "ordini-custom"
         ? "ordini"
         : mode === "cassa-custom"
           ? "cassa"
-          : "kiosk";
+          : mode === "kiosk-custom"
+            ? "kiosk"
+            : "cucina";
     const tenant = resolveTenantFromPrefixedHost(host, section);
     if (!tenant) return NextResponse.next();
 

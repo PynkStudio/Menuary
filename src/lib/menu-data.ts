@@ -36,13 +36,15 @@ export type MenuServiceNoteKey =
   | "senzaLattosio"
   | "impastoNapoletano";
 
-/** Scelte obbligatorie per menu fissi (es. pizza classica + bibita). */
+/** Scelte obbligatorie per menu composti (es. pizza classica + bibita). */
 export type MenuBundleSlot = {
   id: string;
   label: string;
   hint?: string;
   /** Categorie da cui attingere le opzioni (nell’ordine mostrato). */
   sourceCategoryIds: string[];
+  /** Prodotti specifici selezionabili in questo slot (alternativa o integrazione alle categorie). */
+  sourceItemIds?: string[];
 };
 
 export type MenuItem = {
@@ -1404,78 +1406,6 @@ export const menu: MenuCategory[] = [
     ],
   },
   {
-    id: "menu-fissi",
-    title: "Menu Fissi",
-    subtitle: "Quando la fame non ha voglia di scegliere",
-    items: [
-      {
-        id: "menu-15",
-        name: "Menu 15€",
-        description:
-          "Bruschette, olive, pizza a scelta (solo tra le classiche) e bevanda inclusa",
-        price: s(15),
-        allergens: ix("glutine", "uova", "latte", "arachidi", "senape", "soia", "solfiti", "frutta_guscio", "sesamo"),
-        bundleSlots: [
-          {
-            id: "pizza",
-            label: "Pizza classica",
-            hint: "Solo tra le classiche",
-            sourceCategoryIds: ["pizze-classiche"],
-          },
-          {
-            id: "bevanda",
-            label: "Bevanda inclusa",
-            sourceCategoryIds: ["bevande"],
-          },
-        ],
-      },
-      {
-        id: "menu-20",
-        name: "Menu 20€",
-        description:
-          "3 antipasti della casa, panino a scelta o primo a scelta (solo i classici, per le pizze solo tra le classiche), bevanda inclusa",
-        price: s(20),
-        tags: ["firma"],
-        allergens: ix("glutine", "uova", "latte", "arachidi", "senape", "soia", "solfiti", "frutta_guscio", "sesamo"),
-        bundleSlots: [
-          {
-            id: "portata",
-            label: "Panino o primo",
-            hint: "Club sandwich o primi del menu",
-            sourceCategoryIds: ["club-sandwich", "primi"],
-          },
-          {
-            id: "bevanda",
-            label: "Bevanda inclusa",
-            sourceCategoryIds: ["bevande"],
-          },
-        ],
-      },
-      {
-        id: "menu-30",
-        name: "Menu 30€",
-        description:
-          "5 antipasti della casa, panino a scelta o pizza a scelta o primo a scelta (solo i classici, per le pizze solo tra le classiche), bevanda inclusa",
-        price: s(30),
-        tags: ["firma"],
-        allergens: ix("glutine", "uova", "latte", "arachidi", "senape", "soia", "solfiti", "frutta_guscio", "sesamo"),
-        bundleSlots: [
-          {
-            id: "portata",
-            label: "Panino, pizza o primo",
-            hint: "Club sandwich, primi o pizza classica",
-            sourceCategoryIds: ["club-sandwich", "primi", "pizze-classiche"],
-          },
-          {
-            id: "bevanda",
-            label: "Bevanda inclusa",
-            sourceCategoryIds: ["bevande"],
-          },
-        ],
-      },
-    ],
-  },
-  {
     id: "birre",
     title: "Birre alla spina",
     subtitle: "Tedesche di carattere e una IPA di casa",
@@ -1614,8 +1544,6 @@ export const menu: MenuCategory[] = [
     ],
   },
 ];
-
-export const menuFissi = menu.find((c) => c.id === "menu-fissi")!;
 
 export const formatPrice = (price: PriceFormat): string => {
   switch (price.kind) {

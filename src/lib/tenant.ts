@@ -85,6 +85,8 @@ export type TenantFeatureFlags = {
   fanbaseCommunity?: boolean;
   /** Linktree proprietario: pagina link pubblica e gestione autonoma dei link. */
   linktree?: boolean;
+  /** App web rider per consegne delivery: profili rider, assegnazione ordini, mappa pin. Richiede deliveryHub o hubriseSync attivi. */
+  rider?: boolean;
   /** Agenda call di consulenza (pynkstudio-specific): calendario prenotazioni call inbound da prenota-call. */
   pynkAgenda?: boolean;
   /** Vista patrimoniale aziendale: raccoglie gli introiti di tutti i verticali + attività diretta (pynkstudio-specific). */

@@ -62,5 +62,6 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     canManageBlog: Boolean(modules.blog),
     canManagePynkAgenda: Boolean(features.pynkAgenda),
     canManagePatrimoniale: Boolean(features.companyPatrimoniale),
+    canManageRider: Boolean(features.rider),
   };
 }

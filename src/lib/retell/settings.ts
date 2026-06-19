@@ -262,6 +262,25 @@ function toDbPatch(patch: AiPhoneSettingsPatch, current: AiPhoneSettings) {
   };
 }
 
+export async function resolveRetellTenantByPhone(calledNumber: string): Promise<string | null> {
+  const normalized = calledNumber.trim();
+  if (!normalized) return null;
+  const { data } = await (db() as unknown as {
+    from: (table: "tenant_ai_phone_settings") => {
+      select: (columns: string) => {
+        eq: (column: string, value: string) => {
+          maybeSingle: () => Promise<{ data: { tenant_id: string } | null }>;
+        };
+      };
+    };
+  })
+    .from("tenant_ai_phone_settings")
+    .select("tenant_id")
+    .eq("phone_number", normalized)
+    .maybeSingle();
+  return data?.tenant_id ?? null;
+}
+
 export async function getAiPhoneSettings(tenantId: string): Promise<AiPhoneSettings> {
   const { data } = await (db() as unknown as {
     from: (table: "tenant_ai_phone_settings") => {

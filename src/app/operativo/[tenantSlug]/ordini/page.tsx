@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, UtensilsCrossed, AlarmClock, Bike, Settings, Phone, ChevronDown } from "lucide-react";
+import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, UtensilsCrossed, AlarmClock, Bike, Settings, Phone, ChevronDown, Star } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
@@ -69,6 +69,37 @@ async function resolveLocationId(tenantSlug: string, locationSlug?: string): Pro
     .eq("slug", locationSlug)
     .maybeSingle();
   return data?.id ?? null;
+}
+
+type CustomerStat = { total: number; recent: number };
+
+// Affezionato = 10+ total orders, OR 4+ orders in the last 30 days (roughly weekly cadence)
+const LOYALTY_RECENT_DAYS = 30;
+const LOYALTY_RECENT_MIN = 4;
+const LOYALTY_TOTAL_MIN = 10;
+
+async function fetchCustomerStats(tenantSlug: string, phones: string[]): Promise<Map<string, CustomerStat>> {
+  const stats = new Map<string, CustomerStat>();
+  if (phones.length === 0) return stats;
+  const svc = createSupabaseServiceClient();
+  if (!svc) return stats;
+  const cutoff = new Date(Date.now() - LOYALTY_RECENT_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const { data } = await svc
+    .from("orders")
+    .select("customer_phone, created_at")
+    .eq("tenant_id", tenantSlug)
+    .eq("status", "consegnato")
+    .in("customer_phone", phones)
+    .limit(5000);
+  for (const row of (data ?? []) as { customer_phone: string | null; created_at: string }[]) {
+    if (!row.customer_phone) continue;
+    const prev = stats.get(row.customer_phone) ?? { total: 0, recent: 0 };
+    stats.set(row.customer_phone, {
+      total: prev.total + 1,
+      recent: prev.recent + (row.created_at >= cutoff ? 1 : 0),
+    });
+  }
+  return stats;
 }
 
 async function fetchOrders(tenantSlug: string, filter: Filter, locationId: string | null): Promise<{ orders: OrderRow[]; lines: Map<string, OrderLine[]> }> {
@@ -153,12 +184,30 @@ function filterDemoOrders(
   return { orders: kept as OrderRow[], lines: source.lines as Map<string, OrderLine[]> };
 }
 
+function modalityLabel(effectiveModality: string | null, orderType: string, t: GestioneMessages["orders"]): string {
+  if (effectiveModality === "delivery") return t.type.delivery;
+  if (effectiveModality === "dine_in") return t.type.dineIn;
+  if (effectiveModality === "takeaway") return t.type.takeaway;
+  return orderType === "tavolo" ? t.type.table : t.type.takeaway;
+}
+
+function customerLoyalty(phone: string | null, stats: Map<string, CustomerStat>): { label: string; bg: string; fg: string } | null {
+  if (!phone) return null;
+  const { total, recent } = stats.get(phone) ?? { total: 0, recent: 0 };
+  if (total === 0) return { label: "Nuovo", bg: "var(--ga-info-faint, #EFF6FF)", fg: "var(--ga-info, #1D4ED8)" };
+  if (total >= LOYALTY_TOTAL_MIN || recent >= LOYALTY_RECENT_MIN) {
+    return { label: "Affezionato", bg: "var(--ga-ok-faint, #ECFDF5)", fg: "var(--ga-ok-ink, #065F46)" };
+  }
+  return { label: "Ritorna", bg: "var(--ga-warn-faint, #FFFBEB)", fg: "var(--ga-warn-ink, #92400E)" };
+}
+
 function statusBadge(status: OrderRow["status"], t: GestioneMessages["orders"]): { label: string; tone: "ok" | "warn" | "error" | "muted" | "pending" } {
   switch (status) {
     case "pending_confirmation": return { label: t.status.pending, tone: "warn" };
     case "nuovo": return { label: t.status.new, tone: "warn" };
     case "in_preparazione": return { label: t.status.preparing, tone: "pending" };
     case "pronto": return { label: t.status.ready, tone: "ok" };
+    case "in_consegna": return { label: "In consegna", tone: "ok" };
     case "consegnato": return { label: t.status.delivered, tone: "muted" };
     case "annullato": return { label: t.status.cancelled, tone: "error" };
     case "expired": return { label: t.status.expired, tone: "error" };
@@ -220,6 +269,9 @@ export default async function OrdiniPage({
     ? filterDemoOrders(demoOrders(demoVertical), filter)
     : await fetchOrders(tenantSlug, filter, locationId);
 
+  const uniquePhones = [...new Set(orders.map((o) => o.customer_phone).filter(Boolean) as string[])];
+  const customerStats = auth.isDemo ? new Map<string, CustomerStat>() : await fetchCustomerStats(tenantSlug, uniquePhones);
+
   return (
     <div className="ga-dashboard">
       <OrdersLiveRefresh tenantId={tenantSlug} />
@@ -269,23 +321,36 @@ export default async function OrdiniPage({
             const isDelivery = effectiveModality === "delivery";
             const isAsap = !rawScheduledTime || rawScheduledTime.toLowerCase() === "asap";
             const scheduledTime = isAsap ? null : rawScheduledTime;
-            const timeLabel = isAsap
+            const timeBannerLabel = isAsap
               ? (isDelivery ? interpolate(t.deliveryPickup, { time: t.asap }) : interpolate(t.pickup, { time: t.asap }))
               : isDelivery
                 ? interpolate(t.deliveryPickup, { time: scheduledTime! })
                 : interpolate(t.pickup, { time: scheduledTime! });
             const showTimeBanner = Boolean(rawScheduledTime) || isDelivery;
+            const loyalty = customerLoyalty(o.customer_phone, customerStats);
 
             return (
               <article key={o.id} className="ga-reservation">
                 <div className="ga-reservation-when">
-                  <span className="ga-reservation-date">{o.type === "asporto" ? t.type.takeaway : t.type.table}</span>
+                  <span className="ga-reservation-date">{modalityLabel(effectiveModality, o.type, t)}</span>
                   <span className="ga-reservation-time">{o.code}</span>
+                  {showTimeBanner && (
+                    <span style={{ fontSize: "0.68rem", color: "var(--ga-ink-faint)", display: "flex", alignItems: "center", gap: 3, marginTop: 2 }}>
+                      {isDelivery ? <Bike size={10} strokeWidth={2.2} /> : <AlarmClock size={10} strokeWidth={2.2} />}
+                      {scheduledTime ?? t.asap}
+                    </span>
+                  )}
                 </div>
 
                 <div className="ga-reservation-body">
                   <div className="ga-reservation-head">
                     <span className="ga-reservation-name">{o.customer_name ?? t.customer}</span>
+                    {loyalty && (
+                      <span className="ga-reservation-tag" style={{ background: loyalty.bg, color: loyalty.fg, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                        {loyalty.label === "Affezionato" && <Star size={10} strokeWidth={2.4} style={{ fill: "currentColor" }} />}
+                        {loyalty.label}
+                      </span>
+                    )}
                     <span className="ga-module-status" data-status={badge.tone}>{badge.label}</span>
                     {o.auto_accepted && (
                       <span className="ga-reservation-tag" style={{ background: "var(--ga-ink-faint, #eef)", color: "var(--ga-ink)" }}>
@@ -300,7 +365,7 @@ export default async function OrdiniPage({
                   {showTimeBanner && (
                     <div className="ga-order-pickup" data-delivery={isDelivery || undefined}>
                       {isDelivery ? <Bike size={13} strokeWidth={2.6} /> : <Clock size={13} strokeWidth={2.6} />}
-                      {timeLabel}
+                      {timeBannerLabel}
                     </div>
                   )}
 

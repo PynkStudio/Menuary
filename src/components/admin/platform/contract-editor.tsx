@@ -49,7 +49,7 @@ import {
   type ContractData,
   type PaymentMethod,
 } from "@/lib/contracts/menuary-contract";
-import { buildClauses, VESSATORIE_RIF } from "@/lib/contracts/menuary-clauses";
+import { buildClauses, buildVessatorieRif } from "@/lib/contracts/menuary-clauses";
 import { buildAttachments } from "@/lib/contracts/menuary-attachments";
 import {
   CONTRACT_STATUS_COLORS,
@@ -1103,6 +1103,79 @@ export function ContractEditor({ contractId }: Props) {
           Regime forfettario (€2 marca da bollo, poi rivalsa INPS 4% sul totale)
         </label>
 
+        <h3>Moduli IA</h3>
+        <p className="hint">
+          Le clausole IA del contratto compaiono solo per i moduli attivi qui sotto.
+        </p>
+        <label className="rate-toggle">
+          <input
+            type="checkbox"
+            checked={data.servizio.moduliIa.telefono}
+            onChange={(e) =>
+              setData((d) => ({
+                ...d,
+                servizio: {
+                  ...d.servizio,
+                  moduliIa: { ...d.servizio.moduliIa, telefono: e.target.checked },
+                },
+              }))
+            }
+          />
+          Assistente telefonico AI (chiamate)
+        </label>
+        <label className="rate-toggle">
+          <input
+            type="checkbox"
+            checked={data.servizio.moduliIa.whatsapp}
+            onChange={(e) =>
+              setData((d) => ({
+                ...d,
+                servizio: {
+                  ...d.servizio,
+                  moduliIa: { ...d.servizio.moduliIa, whatsapp: e.target.checked },
+                },
+              }))
+            }
+          />
+          Assistente WhatsApp AI
+        </label>
+        <label className="rate-toggle">
+          <input
+            type="checkbox"
+            checked={data.servizio.moduliIa.upselling}
+            onChange={(e) =>
+              setData((d) => ({
+                ...d,
+                servizio: {
+                  ...d.servizio,
+                  moduliIa: { ...d.servizio.moduliIa, upselling: e.target.checked },
+                },
+              }))
+            }
+          />
+          IA di suggerimento / upselling (tier 2+, inclusa nel canone)
+        </label>
+        {(data.servizio.moduliIa.telefono || data.servizio.moduliIa.whatsapp) && (
+          <>
+            <label>Commissione ordini confermati (%)</label>
+            <input
+              type="number"
+              step="0.5"
+              min="0"
+              value={data.economiche.commissioneOrdiniPct}
+              onChange={(e) =>
+                setData((d) => ({
+                  ...d,
+                  economiche: {
+                    ...d.economiche,
+                    commissioneOrdiniPct: Number(e.target.value),
+                  },
+                }))
+              }
+            />
+          </>
+        )}
+
         <h3>Documento</h3>
         <label>Numero contratto</label>
         <input
@@ -1506,7 +1579,7 @@ export function ContractEditor({ contractId }: Props) {
           </strong>
           <br />
           Il Cliente, previa attenta lettura, dichiara di approvare specificamente per iscritto le
-          clausole di cui agli artt.: {VESSATORIE_RIF.join("; ")}.
+          clausole di cui agli artt.: {buildVessatorieRif(data).join("; ")}.
         </div>
 
         <div className="signatures">
@@ -1740,6 +1813,7 @@ const CONTRACT_STYLES = `
 .brand-picker .brand-pill.active { background: #fff; color: #111827; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 .rate-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #374151; margin-bottom: 8px !important; cursor: pointer; }
 .rate-toggle input { width: auto !important; margin: 0 !important; }
+.contract-form .hint { font-size: 11px; color: #6b7280; margin: 0 0 8px; }
 .rate-box { border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
 .rate-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
 .rate-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6b7280; }

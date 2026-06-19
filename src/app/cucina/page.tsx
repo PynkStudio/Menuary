@@ -72,6 +72,7 @@ function KitchenDisplayInner() {
       nuovo: [],
       in_preparazione: [],
       pronto: [],
+      in_consegna: [],
       consegnato: [],
       annullato: [],
     };
@@ -86,6 +87,7 @@ function KitchenDisplayInner() {
       nuovo: [],
       in_preparazione: [],
       pronto: [],
+      in_consegna: [],
       consegnato: [],
       annullato: [],
     };

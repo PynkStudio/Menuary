@@ -1,4 +1,10 @@
 import { BRAND_INFO, FORNITORE, type ContractData } from "./menuary-contract";
+import {
+  clauseNumber,
+  getIaModules,
+  hasConversationalIa,
+  hasUpsellingIa,
+} from "./menuary-clauses";
 
 export type AttachmentBlock = {
   id: string;
@@ -13,6 +19,31 @@ export function buildAttachments(data: ContractData): AttachmentBlock[] {
   const ragioneSocialeCliente = cliente.ragioneSociale || "_______________";
   const brandName = BRAND_INFO[data.brand].platformName;
   const supportEmail = BRAND_INFO[data.brand].supportEmail;
+  const ia = getIaModules(data);
+  const iaActive = hasConversationalIa(data) || hasUpsellingIa(data);
+  const iaArtRef = hasConversationalIa(data)
+    ? `art. ${clauseNumber(data, "moduli-ia")}`
+    : `art. ${clauseNumber(data, "moduli-ia-upselling")}`;
+
+  // I sub-responsabili IA compaiono solo per i moduli effettivamente attivi.
+  const iaSubprocessors = [
+    ia.telefono
+      ? "  • Retell AI, Inc. — assistente telefonico AI ed elaborazione/trascrizione delle conversazioni, senza conservazione delle registrazioni audio (USA, garanzie SCC);"
+      : "",
+    ia.telefono
+      ? "  • Twilio Inc. — telefonia, numerazioni, chiamate e SMS (UE/USA, garanzie SCC + DPF);"
+      : "",
+    ia.whatsapp
+      ? "  • Meta Platforms Ireland Ltd. — WhatsApp Business Platform per la messaggistica (UE/USA, garanzie SCC + DPF);"
+      : "",
+    iaActive
+      ? "  • OpenAI Ireland Ltd. — modelli di linguaggio per l'interpretazione delle conversazioni e l'elaborazione dei suggerimenti (UE/USA, garanzie SCC);"
+      : "",
+  ].filter(Boolean);
+
+  const iaDataCategories = hasConversationalIa(data)
+    ? ` Qualora siano attivi i Moduli IA conversazionali (${iaArtRef} del Contratto principale), il trattamento include altresì: trascrizioni testuali delle chiamate gestite dall'assistente telefonico — senza conservazione delle registrazioni audio — il contenuto delle conversazioni WhatsApp e dei messaggi scambiati, e i dati forniti dall'utente nel corso dell'interazione automatizzata (es. nominativo, recapito, indirizzo di consegna, dettagli dell'ordine, eventuali indicazioni su allergeni).`
+    : "";
 
   return [
     {
@@ -28,8 +59,8 @@ export function buildAttachments(data: ContractData): AttachmentBlock[] {
         {
           heading: "2. Categorie di interessati e dati trattati",
           body: `Interessati: clienti, prospect, dipendenti e collaboratori del Titolare, utenti del sito web del Titolare.
-Categorie di dati: dati identificativi e di contatto, dati di prenotazione/ordine, dati di pagamento (token, non i numeri di carta), dati di navigazione e log tecnici, contenuti generati dall'utente (testi, immagini, recensioni).
-Non sono trattate categorie particolari di dati ex art. 9 GDPR, salvo diverso accordo scritto.`,
+Categorie di dati: dati identificativi e di contatto, dati di prenotazione/ordine, dati di pagamento (token, non i numeri di carta), dati di navigazione e log tecnici, contenuti generati dall'utente (testi, immagini, recensioni).${iaDataCategories}
+Non sono trattate categorie particolari di dati ex art. 9 GDPR, salvo diverso accordo scritto.${iaActive ? " Il Titolare si impegna a non sollecitare e a non far trattare tramite i Moduli IA categorie particolari di dati." : ""}`,
         },
         {
           heading: "3. Durata",
@@ -65,7 +96,11 @@ Non sono trattate categorie particolari di dati ex art. 9 GDPR, salvo diverso ac
   • Supabase Inc. — database PostgreSQL gestito (UE, EU region);
   • Provider email transazionale (Resend / Postmark) per invio comunicazioni di servizio;
   • Stripe Payments Europe Ltd. — gestione pagamenti (UE/USA, garanzie SCC + DPF);
-  • Google Ireland Ltd. — solo per le funzioni espressamente attivate dal Titolare (es. Google Business Profile).
+  • Google Ireland Ltd. — solo per le funzioni espressamente attivate dal Titolare (es. Google Business Profile).${
+    iaSubprocessors.length > 0
+      ? `\n\nPer i Moduli IA attivati dal Titolare (${iaArtRef} del Contratto principale), il Responsabile si avvale altresì dei seguenti sub-responsabili:\n${iaSubprocessors.join("\n")}`
+      : ""
+  }
 
 Il Responsabile informerà il Titolare di ogni modifica all'elenco dei sub-responsabili con almeno 30 giorni di preavviso, dando facoltà al Titolare di opporsi per giustificati motivi.`,
         },
@@ -196,7 +231,7 @@ Il Fornitore si riserva di rimuovere immediatamente i contenuti vietati e di sos
         },
         {
           heading: "6. Modifiche delle condizioni",
-          body: `Il Fornitore si riserva di aggiornare le presenti condizioni d'uso per ragioni tecniche, normative o di sicurezza. Le modifiche sostanziali saranno comunicate al Cliente con almeno 30 giorni di preavviso e daranno facoltà di recesso ai sensi dell'art. 14 del Contratto principale.`,
+          body: `Il Fornitore si riserva di aggiornare le presenti condizioni d'uso per ragioni tecniche, normative o di sicurezza. Le modifiche sostanziali saranno comunicate al Cliente con almeno 30 giorni di preavviso e daranno facoltà di recesso ai sensi dell'art. ${clauseNumber(data, "modifiche")} del Contratto principale.`,
         },
       ],
     },

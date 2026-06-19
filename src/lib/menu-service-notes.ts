@@ -13,7 +13,6 @@ const CATEGORIES_WITH_SENZA_LATTOSIO = new Set([
   "pizze-speciali",
   "burger",
   "club-sandwich",
-  "menu-fissi",
 ]);
 
 export function categoryOffersSenzaLattosio(categoryId: string): boolean {
@@ -27,7 +26,6 @@ const CATEGORY_DEFAULT_NOTES: Partial<
   "pizze-speciali": ["impastoNapoletano", "aggiunte"],
   burger: ["aggiunte"],
   "club-sandwich": ["aggiunte"],
-  "menu-fissi": [],
 };
 
 export function getMenuServiceNotes(

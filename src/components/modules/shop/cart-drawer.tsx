@@ -23,6 +23,7 @@ import { hasMenuBundle } from "@/lib/menu-bundle";
 import type { AdminMenuItem, CartLine } from "@/lib/types";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { CartAiUpsell } from "@/components/modules/shop/cart-ai-upsell";
+import { CartMenuConversion } from "@/components/modules/shop/cart-menu-conversion";
 import { canAddToCart } from "@/lib/ordering-rules";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { spawnCartFly } from "@/lib/cart-fly";
@@ -390,6 +391,10 @@ export function CartDrawer() {
               spawnCartFly(flyFrom ?? null, formatoFavItem.image ?? null);
             }}
           />
+        )}
+
+        {lines.length > 0 && (
+          <CartMenuConversion lines={lines} />
         )}
 
         {lines.length > 0 && (

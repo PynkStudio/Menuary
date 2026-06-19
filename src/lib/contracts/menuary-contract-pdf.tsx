@@ -22,7 +22,7 @@ import {
   MARCA_BOLLO,
   type ContractData,
 } from "./menuary-contract";
-import { buildClauses, VESSATORIE_RIF } from "./menuary-clauses";
+import { buildClauses, buildVessatorieRif } from "./menuary-clauses";
 import { buildAttachments } from "./menuary-attachments";
 
 const styles = StyleSheet.create({
@@ -264,7 +264,7 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
           </Text>
           <Text>
             Il Cliente, previa attenta lettura, dichiara di approvare specificamente per
-            iscritto le clausole di cui agli artt.: {VESSATORIE_RIF.join("; ")}.
+            iscritto le clausole di cui agli artt.: {buildVessatorieRif(data).join("; ")}.
           </Text>
         </View>
 

@@ -3,18 +3,26 @@ import {
   buildRetellInboundContext,
   createRetellOrder,
   createRetellReservation,
+  detectRetellMenuOpportunity,
   getRetellAvailability,
   isAuthorizedRetellRequest,
   lookupRetellCustomer,
+  resendRetellOrderLink,
   setCustomerLanguage,
   type CreateRetellOrderInput,
   type CreateRetellReservationInput,
   type RetellAvailabilityInput,
 } from "@/lib/retell/inbound-orchestrator";
+import { resolveRetellTenantByPhone } from "@/lib/retell/settings";
+
+// calledNumber viene iniettato dal flow Retell come {{to_number}} (parametro constant,
+// non compilato dall'LLM). È la fonte di verità per risolvere il tenant, immune
+// da allucinazioni. Tutti i tipi di action possono trasportarlo.
+type WithCalledNumber = { calledNumber?: string; called_number?: string };
 
 type RetellActionBody =
-  | ({ action: "context" } & { tenantId?: string; tenant_id?: string; locationId?: string | null; location_id?: string | null })
-  | ({ action: "venue_info" } & { tenantId?: string; tenant_id?: string; locationId?: string | null; location_id?: string | null })
+  | ({ action: "context" } & { tenantId?: string; tenant_id?: string; locationId?: string | null; location_id?: string | null } & WithCalledNumber)
+  | ({ action: "venue_info" } & { tenantId?: string; tenant_id?: string; locationId?: string | null; location_id?: string | null } & WithCalledNumber)
   | ({
       action: "menu_search";
       tenantId?: string;
@@ -27,12 +35,14 @@ type RetellActionBody =
       itemCodes?: string[] | null;
       item_codes?: string[] | null;
       limit?: number | null;
-    })
-  | ({ action: "availability" } & RetellAvailabilityInput)
-  | ({ action: "create_reservation" } & CreateRetellReservationInput)
-  | ({ action: "create_order" } & CreateRetellOrderInput)
-  | ({ action: "customer_lookup"; tenantId?: string; tenant_id?: string; callerPhone?: string; caller_phone?: string })
-  | ({ action: "set_customer_language"; tenantId?: string; tenant_id?: string; callerPhone?: string; caller_phone?: string; language: string });
+    } & WithCalledNumber)
+  | ({ action: "availability" } & RetellAvailabilityInput & WithCalledNumber)
+  | ({ action: "create_reservation" } & CreateRetellReservationInput & WithCalledNumber)
+  | ({ action: "create_order" } & CreateRetellOrderInput & WithCalledNumber)
+  | ({ action: "customer_lookup"; tenantId?: string; tenant_id?: string; callerPhone?: string; caller_phone?: string } & WithCalledNumber)
+  | ({ action: "set_customer_language"; tenantId?: string; tenant_id?: string; callerPhone?: string; caller_phone?: string; language: string } & WithCalledNumber)
+  | ({ action: "detect_menu_opportunity"; tenantId?: string; tenant_id?: string; itemCodes: string[] } & WithCalledNumber)
+  | ({ action: "resend_order_link"; orderId: string; callerPhone?: string; caller_phone?: string } & WithCalledNumber);
 
 // Errori "di input" (codice prodotto inesistente, voce fuori menu, prezzo da
 // confermare, canale non in accettazione, ecc.): non sono guasti del server, ma
@@ -54,11 +64,21 @@ const CLIENT_ERROR_PREFIXES = [
   "delivery_address_required",
   "payment_phone_required",
   "recipient_phone_required",
+  "order_id_required",
   "invalid_amount",
 ];
 
 function statusForError(message: string): number {
   return CLIENT_ERROR_PREFIXES.some((prefix) => message.startsWith(prefix)) ? 422 : 500;
+}
+
+function calledNumberFrom(body?: RetellActionBody | null): string {
+  if (!body) return "";
+  return (
+    ("calledNumber" in body ? body.calledNumber : undefined) ||
+    ("called_number" in body ? body.called_number : undefined) ||
+    ""
+  );
 }
 
 function tenantFrom(req: NextRequest, body?: RetellActionBody | null): string {
@@ -69,6 +89,19 @@ function tenantFrom(req: NextRequest, body?: RetellActionBody | null): string {
     (body && "tenant_id" in body ? body.tenant_id : undefined) ||
     ""
   );
+}
+
+// Risolve il tenantId con priorità:
+// 1. calledNumber → lookup DB per phone_number (immune da allucinazioni LLM)
+// 2. URL query string tenant_id
+// 3. Valore nel body (potenzialmente allucinato dall'LLM, usato solo come fallback)
+async function resolveTenantId(req: NextRequest, body?: RetellActionBody | null): Promise<string> {
+  const calledNumber = calledNumberFrom(body);
+  if (calledNumber) {
+    const resolved = await resolveRetellTenantByPhone(calledNumber);
+    if (resolved) return resolved;
+  }
+  return tenantFrom(req, body);
 }
 
 function locationFrom(req: NextRequest, body?: RetellActionBody | null): string | null {
@@ -189,8 +222,9 @@ export async function POST(req: NextRequest) {
   if (!body) return NextResponse.json({ error: "invalid_json" }, { status: 400 });
 
   try {
+    const tenantId = await resolveTenantId(req, body);
+
     if (body.action === "context" || body.action === "venue_info" || body.action === "menu_search") {
-      const tenantId = tenantFrom(req, body);
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
       const context = await buildRetellInboundContext(tenantId, { locationId: locationFrom(req, body) });
       if (!context.tenant.aiPhoneEnabled) {
@@ -206,22 +240,35 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === "create_reservation") {
-      const result = await createRetellReservation({ ...body, source: "retell" });
+      const result = await createRetellReservation({
+        ...body,
+        tenantId: tenantId || body.tenantId,
+        locationId: locationFrom(req, body) ?? body.locationId,
+        source: "retell",
+      });
       return NextResponse.json({ ok: true, reservation: result });
     }
 
     if (body.action === "availability") {
-      const result = await getRetellAvailability(body);
+      const result = await getRetellAvailability({
+        ...body,
+        tenantId: tenantId || body.tenantId,
+        locationId: locationFrom(req, body) ?? body.locationId,
+      });
       return NextResponse.json({ ok: true, availability: result });
     }
 
     if (body.action === "create_order") {
-      const result = await createRetellOrder({ ...body, source: "retell" });
+      const result = await createRetellOrder({
+        ...body,
+        tenantId: tenantId || body.tenantId,
+        locationId: locationFrom(req, body) ?? body.locationId,
+        source: "retell",
+      });
       return NextResponse.json({ ok: true, order: result });
     }
 
     if (body.action === "customer_lookup") {
-      const tenantId = tenantFrom(req, body);
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
       const callerPhone = ("callerPhone" in body ? body.callerPhone : undefined)
         ?? ("caller_phone" in body ? body.caller_phone : undefined)
@@ -231,12 +278,28 @@ export async function POST(req: NextRequest) {
     }
 
     if (body.action === "set_customer_language") {
-      const tenantId = tenantFrom(req, body);
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
       const callerPhone = ("callerPhone" in body ? body.callerPhone : undefined)
         ?? ("caller_phone" in body ? body.caller_phone : undefined)
         ?? "";
       const result = await setCustomerLanguage(tenantId, callerPhone ?? "", body.language ?? "");
+      return NextResponse.json({ ok: true, ...result });
+    }
+
+    if (body.action === "detect_menu_opportunity") {
+      if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
+      const opportunity = await detectRetellMenuOpportunity(tenantId, body.itemCodes ?? []);
+      return NextResponse.json({ ok: true, opportunity });
+    }
+
+    if (body.action === "resend_order_link") {
+      if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
+      if (!body.orderId) return NextResponse.json({ error: "order_id_required" }, { status: 422 });
+      const recipientPhone =
+        ("callerPhone" in body ? body.callerPhone : undefined) ??
+        ("caller_phone" in body ? body.caller_phone : undefined) ??
+        "";
+      const result = await resendRetellOrderLink({ tenantId, orderId: body.orderId, recipientPhone });
       return NextResponse.json({ ok: true, ...result });
     }
 

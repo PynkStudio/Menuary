@@ -1953,6 +1953,13 @@ export type Database = {
           public_token: string
           session_code: string | null
           session_id: string | null
+          assigned_at: string | null
+          delivered_at: string | null
+          delivery_address_text: string | null
+          delivery_pin_lat: number | null
+          delivery_pin_lng: number | null
+          picked_up_at: string | null
+          rider_id: string | null
           source: string
           status: Database["public"]["Enums"]["order_status"]
           stripe_account_id: string | null
@@ -1961,6 +1968,7 @@ export type Database = {
           table_id: string | null
           table_label: string | null
           tenant_id: string
+          tip_amount_cents: number
           total: number
           type: Database["public"]["Enums"]["order_type"]
           updated_at: string
@@ -1997,6 +2005,13 @@ export type Database = {
           payment_status?: string
           pickup_time?: string | null
           public_token?: string
+          assigned_at?: string | null
+          delivered_at?: string | null
+          delivery_address_text?: string | null
+          delivery_pin_lat?: number | null
+          delivery_pin_lng?: number | null
+          picked_up_at?: string | null
+          rider_id?: string | null
           session_code?: string | null
           session_id?: string | null
           source?: string
@@ -2007,6 +2022,7 @@ export type Database = {
           table_id?: string | null
           table_label?: string | null
           tenant_id: string
+          tip_amount_cents?: number
           total?: number
           type: Database["public"]["Enums"]["order_type"]
           updated_at?: string
@@ -2044,6 +2060,13 @@ export type Database = {
           pickup_time?: string | null
           public_token?: string
           session_code?: string | null
+          assigned_at?: string | null
+          delivered_at?: string | null
+          delivery_address_text?: string | null
+          delivery_pin_lat?: number | null
+          delivery_pin_lng?: number | null
+          picked_up_at?: string | null
+          rider_id?: string | null
           session_id?: string | null
           source?: string
           status?: Database["public"]["Enums"]["order_status"]
@@ -2053,6 +2076,7 @@ export type Database = {
           table_id?: string | null
           table_label?: string | null
           tenant_id?: string
+          tip_amount_cents?: number
           total?: number
           type?: Database["public"]["Enums"]["order_type"]
           updated_at?: string
@@ -3280,6 +3304,41 @@ export type Database = {
           },
           {
             foreignKeyName: "reservation_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rider_profiles: {
+        Row: {
+          access_code: string
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          tenant_id: string
+        }
+        Insert: {
+          access_code: string
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          tenant_id: string
+        }
+        Update: {
+          access_code?: string
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rider_profiles_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -6143,6 +6202,7 @@ export type Database = {
         | "nuovo"
         | "in_preparazione"
         | "pronto"
+        | "in_consegna"
         | "consegnato"
         | "annullato"
         | "pending_confirmation"
@@ -6349,6 +6409,7 @@ export const Constants = {
         "nuovo",
         "in_preparazione",
         "pronto",
+        "in_consegna",
         "consegnato",
         "annullato",
         "pending_confirmation",

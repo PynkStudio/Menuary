@@ -102,6 +102,7 @@ export type OrderStatus =
   | "nuovo"
   | "in_preparazione"
   | "pronto"
+  | "in_consegna"
   | "consegnato"
   | "annullato";
 

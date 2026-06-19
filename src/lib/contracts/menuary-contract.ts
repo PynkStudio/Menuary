@@ -79,6 +79,19 @@ export type ContractData = {
     dominio: string;
     pianoNome: string;
     moduliInclusi: string[];
+    /**
+     * Moduli IA attivi nel piano. Le clausole IA del contratto sono rese solo per
+     * i moduli effettivamente attivi: a un cambio piano viene comunque emesso un
+     * nuovo contratto, quindi non servono clausole sempre presenti.
+     */
+    moduliIa: {
+      /** Assistente telefonico AI (Retell). */
+      telefono: boolean;
+      /** Assistente WhatsApp AI. */
+      whatsapp: boolean;
+      /** IA di suggerimento/upselling, inclusa nel canone dal tier 2 in su. */
+      upselling: boolean;
+    };
   };
   economiche: {
     canoneMensile: number;
@@ -92,6 +105,11 @@ export type ContractData = {
     setupRate: number[];
     /** Quando true, non applica IVA ma rivalsa INPS 4% + marca da bollo €2. */
     esenzioneIva: boolean;
+    /**
+     * Commissione forfettaria sugli ordini confermati gestiti dai moduli IA
+     * conversazionali (telefono/WhatsApp), in punti percentuali. Default 3.
+     */
+    commissioneOrdiniPct: number;
   };
   fornitore: {
     ragioneSociale: string;
@@ -145,6 +163,7 @@ export function freshContractData(brand: ContractBrand): ContractData {
         "Dominio personalizzato (primo anno incluso per nuove attivazioni)",
         "Integrazione Google Business Profile",
       ],
+      moduliIa: { telefono: false, whatsapp: false, upselling: false },
     },
     economiche: {
       canoneMensile: 89,
@@ -156,6 +175,7 @@ export function freshContractData(brand: ContractBrand): ContractData {
       setupRate: [290],
       // TODO: impostare false quando il fornitore passerà al regime ordinario/SRL.
       esenzioneIva: true,
+      commissioneOrdiniPct: DEFAULT_ORDER_COMMISSION_PCT,
     },
     fornitore: {
       ragioneSociale: FORNITORE.ragioneSociale,
@@ -173,9 +193,19 @@ export function normalizeContractData(data: ContractData): ContractData {
       ...data.cliente,
       tipo: data.cliente.tipo ?? "business",
     },
+    servizio: {
+      ...data.servizio,
+      moduliIa: {
+        telefono: data.servizio?.moduliIa?.telefono ?? false,
+        whatsapp: data.servizio?.moduliIa?.whatsapp ?? false,
+        upselling: data.servizio?.moduliIa?.upselling ?? false,
+      },
+    },
     economiche: {
       ...data.economiche,
       esenzioneIva: data.economiche.esenzioneIva ?? true,
+      commissioneOrdiniPct:
+        data.economiche.commissioneOrdiniPct ?? DEFAULT_ORDER_COMMISSION_PCT,
     },
     fornitore: {
       ragioneSociale: data.fornitore?.ragioneSociale ?? FORNITORE.ragioneSociale,
@@ -216,6 +246,8 @@ export function computeYearlyTotal(canoneMensile: number, scontoPct: number): nu
 }
 
 export const MAX_SETUP_RATE = 6;
+/** Commissione forfait di default sugli ordini confermati gestiti dai moduli IA. */
+export const DEFAULT_ORDER_COMMISSION_PCT = 3;
 export const IVA_RATE = 0.22;
 export const RIVALSA_INPS_RATE = 0.04;
 export const MARCA_BOLLO = 2;

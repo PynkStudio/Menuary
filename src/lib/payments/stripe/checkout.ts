@@ -30,6 +30,8 @@ export type CreateCheckoutInput = {
   metadata?: Record<string, string>;
   /** Usa la sandbox condivisa Menuary/Bizery sui tenant demo. */
   demoSandbox?: boolean;
+  /** "manual" = pre-autorizza senza catturare subito. Default "automatic". */
+  captureMethod?: "manual" | "automatic";
 };
 
 export type CheckoutSession = {
@@ -115,6 +117,7 @@ export async function createCheckoutSession(
         ? { description: trim(input.paymentIntentDescription, 1000) }
         : {}),
       ...(feeCents > 0 && stripeAccount ? { application_fee_amount: feeCents } : {}),
+      ...(input.captureMethod === "manual" ? { capture_method: "manual" } : {}),
     },
   };
 

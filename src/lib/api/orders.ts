@@ -17,6 +17,7 @@ export function dbLinesToOrderLines(rows: DbOrderLine[]): OrderLine[] {
     addedExtras: (r.added_extras as Array<{ id: string; name: string; price: number }>) ?? undefined,
     note: r.note ?? undefined,
     bundlePicks: (r.bundle_picks as Order["lines"][number]["bundlePicks"]) ?? undefined,
+    prepared: r.prepared ?? false,
   }));
 }
 
@@ -96,6 +97,13 @@ export type DbOrder = {
   confirmation_expires_at: string | null;
   confirmed_at: string | null;
   auto_accepted: boolean | null;
+  rider_id: string | null;
+  delivery_pin_lat: number | null;
+  delivery_pin_lng: number | null;
+  delivery_address_text: string | null;
+  assigned_at: string | null;
+  picked_up_at: string | null;
+  delivered_at: string | null;
 };
 
 export type DbOrderLine = {
@@ -115,6 +123,8 @@ export type DbOrderLine = {
   added_extras: Json;
   bundle_picks: Json;
   note: string | null;
+  prepared: boolean;
+  prepared_at: string | null;
 };
 
 export type DbTableSession = {

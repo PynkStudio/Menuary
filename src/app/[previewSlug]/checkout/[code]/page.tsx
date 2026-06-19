@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { suggestUpsellsForOrder } from "@/lib/upselling-engine";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
+import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import type { MenuOrderChannel } from "@/lib/types";
 import { CheckoutClient } from "../../../checkout/[code]/checkout-client";
 
@@ -22,11 +23,8 @@ export default async function PreviewOrderCheckoutPage({
   params: Promise<{ previewSlug: string; code: string }>;
   searchParams: Promise<{ t?: string; status?: string }>;
 }) {
-  const [{ previewSlug, code }, { t, status }, h] = await Promise.all([
-    params,
-    searchParams,
-    headers(),
-  ]);
+  const [{ previewSlug, code }, { t, status }] = await Promise.all([params, searchParams]);
+  const h = await headers();
 
   if (!t) notFound();
 
@@ -41,9 +39,11 @@ export default async function PreviewOrderCheckoutPage({
   if (!order) notFound();
 
   const isAiSource = order.source === "retell" || order.source === "whatsapp";
-  const upsellSuggestions = tenant.features.upselling
-    ? await loadCheckoutUpsellSuggestions(tenant.id, order)
-    : [];
+  const [upsellSuggestions, paymentAccount] = await Promise.all([
+    tenant.features.upselling ? loadCheckoutUpsellSuggestions(tenant.id, order) : Promise.resolve([]),
+    getTenantPaymentAccount(tenant.id),
+  ]);
+  const stripeEnabled = Boolean(paymentAccount?.chargesEnabled);
 
   return (
     <div style={tenantThemeCssVars(tenant.theme) as React.CSSProperties} data-tenant-surface={tenant.id}>
@@ -56,6 +56,7 @@ export default async function PreviewOrderCheckoutPage({
         paymentStatus={status ?? null}
         isAiSource={isAiSource}
         upsellSuggestions={upsellSuggestions}
+        stripeEnabled={stripeEnabled}
       />
     </div>
   );

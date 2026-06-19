@@ -11,6 +11,7 @@ export type PublicCheckoutOrder = {
   tenantId: string;
   code: string;
   status: string;
+  updatedAt: string;
   paymentStatus: string;
   paymentProvider: string | null;
   total: number;
@@ -57,7 +58,7 @@ export async function getPublicCheckoutOrder(input: {
   const { data, error } = await db
     .from("orders")
     .select(
-      "id, tenant_id, code, status, type, table_id, total, dine_option, customer_name, customer_phone, pickup_time, delivery_address, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(item_id, name, qty, unit_price, line_total, notes, added_extras, removed_ingredients)",
+      "id, tenant_id, code, status, updated_at, type, table_id, total, dine_option, customer_name, customer_phone, pickup_time, delivery_address, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(item_id, name, qty, unit_price, line_total, note, added_extras, removed_ingredients)",
     )
     .eq("tenant_id", input.tenantId)
     .eq("code", input.code)
@@ -71,6 +72,7 @@ export async function getPublicCheckoutOrder(input: {
     tenant_id: string;
     code: string;
     status: string;
+    updated_at: string;
     type: string;
     table_id: string | null;
     total: number | string;
@@ -92,7 +94,7 @@ export async function getPublicCheckoutOrder(input: {
       qty: number;
       unit_price: number | string;
       line_total: number | string;
-      notes: string | null;
+      note: string | null;
       added_extras: unknown;
       removed_ingredients: unknown;
     }>;
@@ -105,6 +107,7 @@ export async function getPublicCheckoutOrder(input: {
     tenantId: row.tenant_id,
     code: row.code,
     status: row.status,
+    updatedAt: row.updated_at,
     type: row.type,
     tableId: row.table_id,
     paymentStatus: row.payment_status,
@@ -126,7 +129,7 @@ export async function getPublicCheckoutOrder(input: {
       qty: Number(l.qty),
       unitPrice: Number(l.unit_price),
       total: Number(l.line_total),
-      notes: l.notes,
+      notes: l.note,
       addedExtras: parseAddedExtras(l.added_extras),
       removedIngredients: parseRemovedIngredients(l.removed_ingredients),
     })),

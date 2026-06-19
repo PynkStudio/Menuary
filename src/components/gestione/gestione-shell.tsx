@@ -130,6 +130,7 @@ function GestioneShellInner({
   const items: NavItem[] = [
     { label: t.nav.dashboard, href: dashboardHref, visible: () => true },
     { label: t.nav.orders, href: sectionHref("ordini"), visible: () => access.hasOrders, arrivalKind: "orders" },
+    { label: "Cucina", href: sectionHref("cucina"), visible: () => tenant.features.kitchenDisplay, arrivalKind: "orders" },
     { label: menuNavLabel, href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
     { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
     { label: bookingNavLabel, href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations, arrivalKind: "reservations" },
@@ -147,6 +148,7 @@ function GestioneShellInner({
     { label: t.nav.billing, href: sectionHref("fatturazione"), visible: () => isAdmin },
     { label: "Agenda call", href: sectionHref("agenda"), visible: () => isAdmin && access.canManagePynkAgenda },
     { label: "Patrimoniale", href: sectionHref("patrimoniale"), visible: () => isAdmin && access.canManagePatrimoniale },
+    { label: "Rider", href: sectionHref("rider"), visible: () => isAdmin && access.canManageRider },
   ];
 
   const visibleItems = items.filter((i) => i.visible(cap));

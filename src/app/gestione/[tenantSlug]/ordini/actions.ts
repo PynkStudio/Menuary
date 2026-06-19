@@ -50,6 +50,45 @@ export const markReady = makeAction("pronto");
 export const markDelivered = makeAction("consegnato");
 export const cancelOrder = makeAction("annullato");
 
+export async function toggleOrderLinePrepared(formData: FormData) {
+  const tenantSlug = String(formData.get("tenantSlug") ?? "");
+  const orderId = String(formData.get("orderId") ?? "");
+  const lineId = String(formData.get("lineId") ?? "");
+  const prepared = String(formData.get("prepared") ?? "") === "true";
+  if (!tenantSlug || !orderId || !lineId) return;
+
+  const auth = await authorizeGestione(tenantSlug);
+  if (!auth.ok) throw new Error("unauthorized");
+  if (auth.isDemo) return;
+
+  const svc = createSupabaseServiceClient();
+  if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await requireActiveGestioneLocation(tenantSlug);
+
+  const { data: order } = await svc
+    .from("orders")
+    .select("id")
+    .eq("id", orderId)
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id)
+    .maybeSingle();
+  if (!order) return;
+
+  const { error } = await svc
+    .from("order_lines")
+    .update({
+      prepared,
+      prepared_at: prepared ? new Date().toISOString() : null,
+    })
+    .eq("id", lineId)
+    .eq("order_id", orderId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/gestione/${tenantSlug}/cucina`);
+  revalidatePath(`/operativo/${tenantSlug}/cucina`);
+}
+
 /**
  * Conferma manuale di un ordine pending_confirmation: passa a "nuovo",
  * registra confirmed_at e invia email di conferma se disponibile.

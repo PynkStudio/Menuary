@@ -79,20 +79,23 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
     setError(null);
 
     try {
-      const supabase = createSupabaseBrowserClient();
+      // autoRefreshToken: false previene che GoTrue avvii un auto-refresh del token
+      // scaduto trovato nei cookie al momento dell'inizializzazione. Il client usa un
+      // lock interno per serializzare le operazioni auth: senza questa opzione,
+      // signInWithPassword aspetterebbe il lock del refresh — che può bloccarsi
+      // per sempre in caso di rate-limit 429 o loop su token ruotato.
+      const supabase = createSupabaseBrowserClient({ autoRefreshToken: false });
 
-      // Un refresh-token orfano (lasciato in un cookie .menuary.it scaduto/ruotato)
-      // mandava il client GoTrue in loop su /token?grant_type=refresh_token (400/429):
-      // il SIGNED_OUT scatenato dal refresh fallito ripuliva l'header Authorization
-      // subito dopo signInWithPassword, e la query a `siteadmin` partiva come anon →
-      // RLS nascondeva la riga → "account non abilitato al pannello admin" anche per
-      // i superadmin reali. Forzare un signOut locale azzera lo stato prima del login.
+      // Azzera ogni sessione residua prima del nuovo login.
       await supabase.auth.signOut({ scope: "local" }).catch(() => {});
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Timeout esplicito: se Supabase non risponde in 20 s, mostra errore e sblocca il form.
+      const { data, error } = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 20_000),
+        ),
+      ]);
 
       if (error || !data.user || !data.session) {
         setError(loginErrorMessage(error?.message ?? ""));
@@ -134,8 +137,12 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
           `/api/auth/elevate-session?destination=${encodeURIComponent(destination)}`;
         return; // loading resta true finché la navigazione parte
       }
-    } catch {
-      setError("Si è verificato un errore imprevisto. Riprova.");
+    } catch (err) {
+      if (err instanceof Error && err.message === "timeout") {
+        setError("Il server non risponde. Controlla la connessione e riprova.");
+      } else {
+        setError("Si è verificato un errore imprevisto. Riprova.");
+      }
     } finally {
       setLoading(false);
     }

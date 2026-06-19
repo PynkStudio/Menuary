@@ -17,6 +17,8 @@
 // "ordini-custom"     → ordini.[dominio]        console operativa ordini del tenant/sede
 // "cassa-custom"      → cassa.[dominio]         POS/cassa operativa del tenant/sede
 // "kiosk-custom"      → kiosk.[dominio]         runtime kiosk operativo del tenant/sede
+// "cucina-custom"     → cucina.[dominio]        kitchen display operativo del tenant/sede
+// "rider-custom"      → rider.[dominio]         app web rider delivery del tenant
 // "admin-pynkstudio"      → admin.pynkstudio.it         pannello controllo PynkStudio (azienda madre)
 // "pagamenti-pynkstudio"  → pagamenti.pynkstudio.it     portale pagamenti unificato (tutti i verticali)
 export type PlatformMode =
@@ -39,7 +41,9 @@ export type PlatformMode =
   | "gestione-custom"
   | "ordini-custom"
   | "cassa-custom"
-  | "kiosk-custom";
+  | "kiosk-custom"
+  | "cucina-custom"
+  | "rider-custom";
 
 export const PLATFORM_MODE_HEADER = "x-platform-mode";
 
@@ -82,6 +86,8 @@ const PLATFORM_MODES: PlatformMode[] = [
   "ordini-custom",
   "cassa-custom",
   "kiosk-custom",
+  "cucina-custom",
+  "rider-custom",
 ];
 
 export function isPlatformMode(value: unknown): value is PlatformMode {
@@ -115,6 +121,8 @@ export function getPlatformModeFromHost(
   if (normalized.startsWith("ordini."))                                return "ordini-custom";
   if (normalized.startsWith("cassa."))                                 return "cassa-custom";
   if (normalized.startsWith("kiosk."))                                 return "kiosk-custom";
+  if (normalized.startsWith("cucina."))                                return "cucina-custom";
+  if (normalized.startsWith("rider."))                                 return "rider-custom";
   return "tenant";
 }
 

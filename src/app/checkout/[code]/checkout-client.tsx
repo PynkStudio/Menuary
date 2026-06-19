@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus, Pencil, Check } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus, Pencil, Check, Clock, ChefHat, Bike } from "lucide-react";
 import type { PublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import type { TenantVertical } from "@/lib/tenant";
 
@@ -27,6 +27,176 @@ const c = {
   divider: "rgb(var(--tenant-ink) / 0.08)",
 };
 
+// ─── Mancia overlay ───────────────────────────────────────────────────────────
+
+function ManciaOverlay({
+  orderCode,
+  tenantId,
+  token,
+  isStripePaid,
+  orderTotalCents,
+  tipState,
+  setTipState,
+  onClose,
+}: {
+  orderCode: string;
+  tenantId: string;
+  token: string;
+  isStripePaid: boolean;
+  orderTotalCents: number;
+  tipState: "idle" | "loading" | "done" | "error";
+  setTipState: (s: "idle" | "loading" | "done" | "error") => void;
+  onClose: () => void;
+}) {
+  function markDone() {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`mancia-done-${orderCode}`, "1");
+    }
+  }
+
+  async function handleTip(amountCents: number) {
+    setTipState("loading");
+    markDone();
+    try {
+      if (isStripePaid) {
+        // Pre-autorizzazione: aggiunge la mancia e cattura
+        const res = await fetch(`/api/checkout/${encodeURIComponent(orderCode)}/capture`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenantId, token, tipCents: amountCents }),
+        });
+        if (!res.ok) throw new Error("capture_failed");
+        setTipState("done");
+      } else {
+        // Cash: nuova sessione Stripe per la sola mancia
+        const res = await fetch(`/api/checkout/${encodeURIComponent(orderCode)}/tip`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenantId, token, tipCents: amountCents }),
+        });
+        const json = (await res.json()) as { url?: string };
+        if (json.url) {
+          window.location.href = json.url;
+          return; // navigazione in corso
+        }
+        setTipState("done");
+      }
+    } catch {
+      setTipState("error");
+    }
+  }
+
+  async function handleSkip() {
+    markDone();
+    if (isStripePaid) {
+      // Cattura l'importo originale senza mancia (fire-and-forget)
+      void fetch(`/api/checkout/${encodeURIComponent(orderCode)}/capture`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId, token, tipCents: 0 }),
+      });
+    }
+    onClose();
+  }
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+        background: "rgba(0,0,0,0.55)",
+        backdropFilter: "blur(4px)",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget && tipState === "idle") void handleSkip(); }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          background: "#fff",
+          borderRadius: "24px 24px 0 0",
+          padding: "32px 24px 40px",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ fontSize: "2.8rem", lineHeight: 1, marginBottom: 12 }}>🛵</div>
+
+        {tipState === "done" || tipState === "error" ? (
+          <>
+            <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "rgb(var(--tenant-ink))", marginBottom: 8 }}>
+              {tipState === "done" ? "Grazie mille!" : "Prossima volta!"}
+            </div>
+            <p style={{ fontSize: "0.9rem", color: "rgb(var(--tenant-ink) / 0.6)", marginBottom: 24 }}>
+              {tipState === "done"
+                ? "La tua generosità fa la differenza per il rider."
+                : "Non è stato possibile processare la mancia. Puoi sempre lasciarne una in contanti."}
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{ padding: "12px 32px", borderRadius: 100, border: "none", background: "rgb(var(--tenant-red))", color: "#fff", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer" }}
+            >
+              Chiudi
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "rgb(var(--tenant-ink))", marginBottom: 6 }}>
+              Ordine consegnato!
+            </div>
+            <p style={{ fontSize: "0.9rem", color: "rgb(var(--tenant-ink) / 0.6)", marginBottom: 8 }}>
+              Speriamo ti sia piaciuto.
+            </p>
+            <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "rgb(var(--tenant-ink) / 0.5)", marginBottom: 24 }}>
+              {isStripePaid
+                ? "Vuoi aggiungere una mancia? Verrà addebitata sulla stessa carta."
+                : "Vuoi lasciare una mancia al rider tramite carta?"}
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 16 }}>
+              {[100, 200, 500].map((cents) => (
+                <button
+                  key={cents}
+                  type="button"
+                  onClick={() => void handleTip(cents)}
+                  disabled={tipState === "loading"}
+                  style={{
+                    padding: "14px 20px",
+                    borderRadius: 14,
+                    border: "2px solid rgb(var(--tenant-red) / 0.2)",
+                    background: "rgb(var(--tenant-red) / 0.06)",
+                    color: "rgb(var(--tenant-red))",
+                    fontWeight: 800,
+                    fontSize: "1rem",
+                    cursor: tipState === "loading" ? "not-allowed" : "pointer",
+                    minWidth: 72,
+                    opacity: tipState === "loading" ? 0.5 : 1,
+                  }}
+                >
+                  {tipState === "loading" ? "…" : `€${cents / 100}`}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => void handleSkip()}
+              disabled={tipState === "loading"}
+              style={{ background: "none", border: "none", color: "rgb(var(--tenant-ink) / 0.45)", fontSize: "0.85rem", cursor: "pointer", padding: "8px 16px" }}
+            >
+              No, grazie
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function formatRemaining(sec: number): string {
   if (sec <= 0) return "scaduto";
   const m = Math.floor(sec / 60);
@@ -46,6 +216,74 @@ function dineLabel(value: string | null, vertical: TenantVertical): string | nul
   return value === "dine_in" ? "Al tavolo" : value === "delivery" ? "Consegna" : "Asporto";
 }
 
+type CheckoutStatusPayload = {
+  status?: string;
+  paymentStatus?: string;
+  updatedAt?: string;
+};
+
+const ORDER_STATUS_COPY: Record<string, { label: string; description: string }> = {
+  pending_confirmation: {
+    label: "In attesa di conferma",
+    description: "Il locale deve ancora accettare l'ordine.",
+  },
+  nuovo: {
+    label: "Accettato",
+    description: "L'ordine è stato preso in carico.",
+  },
+  in_preparazione: {
+    label: "In preparazione",
+    description: "La cucina sta preparando l'ordine.",
+  },
+  pronto: {
+    label: "Pronto",
+    description: "L'ordine è pronto per il ritiro o la consegna.",
+  },
+  in_consegna: {
+    label: "In consegna",
+    description: "Il rider sta portando il tuo ordine.",
+  },
+  consegnato: {
+    label: "Completato",
+    description: "L'ordine risulta consegnato o ritirato.",
+  },
+  annullato: {
+    label: "Annullato",
+    description: "L'ordine è stato annullato e non verrà preparato.",
+  },
+  expired: {
+    label: "Scaduto",
+    description: "La conferma non è arrivata in tempo.",
+  },
+};
+
+const TRACKING_STEPS = ["pending_confirmation", "nuovo", "in_preparazione", "pronto", "in_consegna", "consegnato"];
+
+function liveStatusCopy(status: string, paymentStatus: string) {
+  if (paymentStatus === "pending") {
+    return {
+      label: "In attesa pagamento",
+      description: "Completa il pagamento online per inviare la conferma definitiva.",
+    };
+  }
+  if (paymentStatus === "failed") {
+    return {
+      label: "Pagamento non riuscito",
+      description: "Puoi riprovare il pagamento o contattare il locale.",
+    };
+  }
+  if (paymentStatus === "expired") {
+    return {
+      label: "Pagamento scaduto",
+      description: "Il link di pagamento non è più valido.",
+    };
+  }
+  return ORDER_STATUS_COPY[status] ?? {
+    label: "Aggiornamento ordine",
+    description: "Stato aggiornato dal locale.",
+  };
+}
+
 export function CheckoutClient({
   tenantId,
   tenantName,
@@ -55,6 +293,7 @@ export function CheckoutClient({
   paymentStatus,
   isAiSource,
   upsellSuggestions,
+  stripeEnabled,
 }: {
   tenantId: string;
   tenantName: string;
@@ -64,12 +303,15 @@ export function CheckoutClient({
   paymentStatus: string | null;
   isAiSource: boolean;
   upsellSuggestions: string[];
+  stripeEnabled: boolean;
 }) {
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
-  const [orderCancelled, setOrderCancelled] = useState(order.status === "annullato");
+  const [currentStatus, setCurrentStatus] = useState(order.status);
+  const [currentPaymentStatus, setCurrentPaymentStatus] = useState(order.paymentStatus);
+  const [statusUpdatedAt, setStatusUpdatedAt] = useState(order.updatedAt);
 
   // Valori modificabili entro la finestra di 5 minuti
   const [pickupTime, setPickupTime] = useState(order.pickupTime ?? "");
@@ -77,6 +319,8 @@ export function CheckoutClient({
   const [editingDelivery, setEditingDelivery] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [showManciaOverlay, setShowManciaOverlay] = useState(false);
+  const [tipState, setTipState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   // Timer "ticking" per aggiornare i countdown in tempo reale.
   const [now, setNow] = useState(() => Date.now());
@@ -84,17 +328,59 @@ export function CheckoutClient({
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+  useEffect(() => {
+    let active = true;
+
+    async function loadStatus() {
+      try {
+        const params = new URLSearchParams({ tenantId, t: token });
+        const res = await fetch(`/api/checkout/${encodeURIComponent(order.code)}/status?${params.toString()}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const json = (await res.json()) as CheckoutStatusPayload;
+        if (!active) return;
+        if (json.status) setCurrentStatus(json.status);
+        if (json.paymentStatus) setCurrentPaymentStatus(json.paymentStatus);
+        if (json.updatedAt) setStatusUpdatedAt(json.updatedAt);
+      } catch {
+        // Il tracking resta leggibile anche se un refresh puntuale fallisce.
+      }
+    }
+
+    void loadStatus();
+    const id = window.setInterval(loadStatus, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, [tenantId, token, order.code]);
+
+  const alreadyPaid = currentPaymentStatus === "paid";
+  const wasCancelled = paymentStatus === "cancel" || currentStatus === "annullato";
+  // Quando l'agente AI (o il cliente che ha scelto "pagamento al ritiro") ha
+  // marcato l'ordine come not_required, mostriamo solo il riepilogo, niente Stripe.
+  const payOnSite = currentPaymentStatus === "not_required";
+
+  useEffect(() => {
+    if (currentStatus === "consegnato" && order.dineOption === "delivery") {
+      const alreadyActed = typeof window !== "undefined"
+        && Boolean(localStorage.getItem(`mancia-done-${order.code}`));
+      const canShowMancia = alreadyPaid || (stripeEnabled && payOnSite);
+      if (!alreadyActed && canShowMancia) {
+        setShowManciaOverlay(true);
+      }
+    }
+  }, [currentStatus, order.dineOption, order.code, alreadyPaid, stripeEnabled, payOnSite]);
+
   const elapsedSec = Math.max(0, (now - new Date(order.createdAt).getTime()) / 1000);
   const cancelRemaining = Math.max(0, CANCEL_WINDOW_SEC - elapsedSec);
   const upsellRemaining = Math.max(0, UPSELL_WINDOW_SEC - elapsedSec);
   const canCancel = cancelRemaining > 0;
   const canUpsell = upsellRemaining > 0;
-
-  const alreadyPaid = order.paymentStatus === "paid";
-  const wasCancelled = paymentStatus === "cancel" || orderCancelled;
-  // Quando l'agente AI (o il cliente che ha scelto "pagamento al ritiro") ha
-  // marcato l'ordine come not_required, mostriamo solo il riepilogo, niente Stripe.
-  const payOnSite = order.paymentStatus === "not_required";
+  const statusCopy = liveStatusCopy(currentStatus, currentPaymentStatus);
+  const isTerminalNegative = currentStatus === "annullato" || currentStatus === "expired" || currentPaymentStatus === "failed" || currentPaymentStatus === "expired";
+  const activeStepIndex = TRACKING_STEPS.includes(currentStatus) ? TRACKING_STEPS.indexOf(currentStatus) : -1;
 
   // Link al menu/checkout preservando il prefisso slug in preview (es. /kimos/...).
   const basePath = typeof window !== "undefined" ? window.location.pathname.replace(/\/checkout\/.*$/, "") : "";
@@ -113,7 +399,7 @@ export function CheckoutClient({
       });
       const json = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok) throw new Error(json.error ?? "cancel_failed");
-      setOrderCancelled(true);
+      setCurrentStatus("annullato");
     } catch (e) {
       setError(e instanceof Error ? e.message : "errore");
     } finally {
@@ -188,7 +474,35 @@ export function CheckoutClient({
           </div>
         )}
 
-        {payOnSite && !alreadyPaid && !orderCancelled && (
+        <section className="mb-4 rounded-3xl p-4" style={{ backgroundColor: c.surface, boxShadow: `0 1px 2px rgb(0 0 0 / 0.05), 0 0 0 1px ${c.ring}` }}>
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: isTerminalNegative ? "#fff1f2" : c.accentSoft, color: isTerminalNegative ? "#be123c" : c.accent }}>
+              {currentStatus === "in_preparazione" ? <ChefHat size={18} /> : currentStatus === "pronto" || currentStatus === "in_consegna" ? <Bike size={18} /> : currentStatus === "annullato" || currentStatus === "expired" ? <AlertCircle size={18} /> : <Clock size={18} />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>Stato ordine live</p>
+              <h2 className="mt-0.5 text-lg font-black" style={{ color: c.ink }}>{statusCopy.label}</h2>
+              <p className="mt-1 text-sm" style={{ color: c.inkMuted }}>{statusCopy.description}</p>
+              {statusUpdatedAt && (
+                <p className="mt-2 text-[11px]" style={{ color: c.inkFaint }}>
+                  Aggiornato alle {new Date(statusUpdatedAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
+                </p>
+              )}
+            </div>
+          </div>
+          {!isTerminalNegative && (
+            <div className="mt-4 grid grid-cols-5 gap-1.5">
+              {TRACKING_STEPS.map((step, index) => {
+                const done = activeStepIndex >= index;
+                return (
+                  <div key={step} className="h-1.5 rounded-full" style={{ backgroundColor: done ? c.accent : c.divider }} />
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {payOnSite && !alreadyPaid && currentStatus !== "annullato" && (
           <>
             <div className="mb-4 flex items-center gap-3 rounded-2xl p-4" style={{ backgroundColor: c.bg, color: c.ink }}>
               <CheckCircle2 size={22} style={{ color: c.accent }} />
@@ -254,10 +568,10 @@ export function CheckoutClient({
             <AlertCircle size={22} />
             <div className="text-sm">
               <div className="font-bold">
-                {orderCancelled ? "Ordine annullato" : "Pagamento annullato"}
+                {currentStatus === "annullato" ? "Ordine annullato" : "Pagamento annullato"}
               </div>
               <div className="text-amber-700/80">
-                {orderCancelled
+                {currentStatus === "annullato"
                   ? "L'ordine è stato annullato e non verrà preparato."
                   : "Puoi riprovare quando vuoi."}
               </div>
@@ -265,7 +579,7 @@ export function CheckoutClient({
           </div>
         )}
 
-        {!alreadyPaid && !orderCancelled && (canCancel || canUpsell) && (
+        {!alreadyPaid && currentStatus !== "annullato" && (canCancel || canUpsell) && (
           <div className="mb-4 flex flex-wrap gap-2">
             {canCancel && (
               <button
@@ -305,7 +619,7 @@ export function CheckoutClient({
           </div>
         )}
 
-        {!alreadyPaid && !orderCancelled && canUpsell && editingDelivery && (
+        {!alreadyPaid && currentStatus !== "annullato" && canUpsell && editingDelivery && (
           <section className="mb-4 rounded-2xl p-4" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
             <p className="mb-3 text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>
               Modifica orario / indirizzo · {formatRemaining(upsellRemaining)}
@@ -358,7 +672,7 @@ export function CheckoutClient({
           </section>
         )}
 
-        {!alreadyPaid && !orderCancelled && canUpsell && upsellSuggestions.length > 0 && (
+        {!alreadyPaid && currentStatus !== "annullato" && canUpsell && upsellSuggestions.length > 0 && (
           <section className="mb-4 rounded-2xl border p-4 text-sm" style={{ borderColor: `rgb(var(--tenant-mustard) / 0.4)`, backgroundColor: c.mustardSoft, color: c.ink }}>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -439,7 +753,7 @@ export function CheckoutClient({
           </dl>
         </section>
 
-        {!alreadyPaid && !orderCancelled && !payOnSite && (
+        {!alreadyPaid && currentStatus !== "annullato" && !payOnSite && (
           <>
             <section className="mt-5 rounded-3xl p-5 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 1px 2px rgb(0 0 0 / 0.05), 0 0 0 1px ${c.ring}` }}>
               <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>
@@ -505,7 +819,7 @@ export function CheckoutClient({
           </>
         )}
 
-        {error && payOnSite && !alreadyPaid && !orderCancelled && (
+        {error && payOnSite && !alreadyPaid && currentStatus !== "annullato" && (
           <p className="mt-3 rounded-lg bg-rose-50 p-3 text-center text-xs text-rose-700">
             {error === "tenant_stripe_not_connected" || error === "tenant_stripe_charges_disabled"
               ? "Il locale non ha ancora attivato i pagamenti online. Puoi comunque pagare al ritiro o alla consegna."
@@ -517,6 +831,19 @@ export function CheckoutClient({
           Powered by Menuary · Pagamenti sicuri Stripe
         </footer>
       </div>
+
+      {showManciaOverlay && (
+        <ManciaOverlay
+          orderCode={order.code}
+          tenantId={tenantId}
+          token={token}
+          isStripePaid={alreadyPaid}
+          orderTotalCents={Math.round(order.total * 100)}
+          tipState={tipState}
+          setTipState={setTipState}
+          onClose={() => setShowManciaOverlay(false)}
+        />
+      )}
     </div>
   );
 }

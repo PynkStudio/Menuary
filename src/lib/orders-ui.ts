@@ -6,6 +6,7 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
   nuovo: "Nuovo",
   in_preparazione: "In preparazione",
   pronto: "Pronto",
+  in_consegna: "In consegna",
   consegnato: "Consegnato",
   annullato: "Annullato",
 };
@@ -16,6 +17,7 @@ export const STATUS_COLOR: Record<OrderStatus, string> = {
   nuovo: "bg-pork-red text-white",
   in_preparazione: "bg-pork-mustard text-pork-ink",
   pronto: "bg-pork-green text-white",
+  in_consegna: "bg-pork-green/80 text-white",
   consegnato: "bg-pork-ink/30 text-pork-ink",
   annullato: "bg-pork-ink/60 text-pork-cream",
 };
@@ -25,7 +27,8 @@ export const STATUS_FLOW: Record<OrderStatus, OrderStatus | null> = {
   expired: null,
   nuovo: "in_preparazione",
   in_preparazione: "pronto",
-  pronto: "consegnato",
+  pronto: "in_consegna",
+  in_consegna: "consegnato",
   consegnato: null,
   annullato: null,
 };

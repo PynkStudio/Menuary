@@ -734,7 +734,7 @@ export function findTenantByManagementHost(hostname: string): TenantProfile | un
 
 export function findTenantByPrefixedHost(
   hostname: string,
-  prefix: "gestione" | "ordini" | "cassa" | "kiosk",
+  prefix: "gestione" | "ordini" | "cassa" | "kiosk" | "cucina" | "rider",
 ): TenantProfile | undefined {
   const normalized = hostname.toLowerCase().split(":")[0] ?? hostname;
   const hostPrefix = `${prefix}.`;

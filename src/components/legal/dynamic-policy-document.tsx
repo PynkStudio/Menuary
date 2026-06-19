@@ -21,6 +21,9 @@ export function DynamicPolicyDocument({
     allowTableOrders,
     dinerSeparationAtTables,
     kitchenDisplayEnabled,
+    aiPhoneEnabled,
+    aiWhatsappEnabled,
+    upsellingEnabled,
   } = useEffectiveFeatures();
   const tenant = useTenantOrNull();
   const content = tenant ? getTenantContent(tenant.id) : null;
@@ -42,12 +45,18 @@ export function DynamicPolicyDocument({
       allowTableOrders,
       dinerSeparationAtTables,
       kitchenDisplayEnabled,
+      aiPhoneEnabled,
+      aiWhatsappEnabled,
+      upsellingEnabled,
     }),
     [
       allowTakeaway,
       allowTableOrders,
       dinerSeparationAtTables,
       kitchenDisplayEnabled,
+      aiPhoneEnabled,
+      aiWhatsappEnabled,
+      upsellingEnabled,
     ],
   );
 

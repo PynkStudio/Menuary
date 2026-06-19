@@ -62,6 +62,9 @@ export async function POST(
       cancelUrl: `${origin}${returnPath}&status=cancel`,
       expiresInMinutes: 60,
       demoSandbox,
+      // Consegne: pre-autorizza senza catturare subito, così possiamo
+      // aggiungere la mancia al momento della consegna senza un nuovo flusso.
+      captureMethod: order.dineOption === "delivery" ? "manual" : "automatic",
     });
     const db = createSupabaseServiceClient();
     if (db) {

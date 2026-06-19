@@ -127,6 +127,23 @@ async function handleCheckoutCompleted(
   const tenantId = session.metadata?.tenant_id;
   if (!orderId || !tenantId) return; // niente da aggiornare
 
+  // Sessione mancia: aggiorna solo tip_amount_cents, non toccare payment_status.
+  if (session.metadata?.source === "mancia") {
+    const tipCents = session.amount_total ?? 0;
+    const db = serviceDb();
+    await (db as unknown as {
+      from: (t: "orders") => {
+        update: (row: Record<string, unknown>) => {
+          eq: (k: string, v: string) => Promise<{ error: { message: string } | null }>;
+        };
+      };
+    })
+      .from("orders")
+      .update({ tip_amount_cents: tipCents })
+      .eq("id", orderId);
+    return;
+  }
+
   const db = serviceDb() as unknown as {
     from: (t: "orders") => {
       update: (row: Record<string, unknown>) => {

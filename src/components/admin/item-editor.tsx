@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Globe, ImageIcon, Plus, Save, Sparkles, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Globe, GripVertical, ImageIcon, Plus, Save, Sparkles, X } from "lucide-react";
 import { GestionePortalSurface } from "@/components/gestione/gestione-portal-surface";
 import { resolveExtrasForItem } from "@/lib/extra-lists";
 import type {
   AdminMenuItem,
+  AdminMenuCategory,
   Extra,
   MenuAllergen,
+  MenuBundleSlot,
   MenuTag,
   PiccanteLevel,
   TenantMenuTagDefinition,
@@ -16,7 +18,7 @@ import type {
 import { ALLERGEN_OPTIONS } from "@/lib/allergens";
 import { PriceEditor } from "./price-editor";
 import { ImageUpload } from "./image-upload";
-import { useMenuStore } from "@/store/menu-store";
+import { useMenuStore, selectCategoriesOrdered } from "@/store/menu-store";
 import { formatEuro } from "@/lib/price-utils";
 import { normalizeMenuIngredients, type MenuIngredient } from "@/lib/ingredients";
 import { defaultExpiryDate, isBuiltInMenuTag } from "@/lib/menu-tags";
@@ -65,6 +67,8 @@ export function ItemEditor({
   const addCustomTag = useMenuStore((s) => s.addCustomTag);
   const addVolumeLabel = useMenuStore((s) => s.addVolumeLabel);
   const tenantId = useMenuStore((s) => s.currentTenantId);
+  const allCategories = useMenuStore(selectCategoriesOrdered);
+  const allItems = useMenuStore((s) => s.items);
 
   const [draft, setDraft] = useState<AdminMenuItem>(item);
   const [extrasMode, setExtrasMode] = useState<"none" | "list" | "inline">(
@@ -594,6 +598,88 @@ export function ItemEditor({
     } finally {
       setAiTranslating(false);
     }
+  }
+
+  // --- Bundle slot helpers ---
+
+  function addBundleSlot() {
+    const id = `slot-${Date.now().toString(36)}`;
+    setDraft((d) => ({
+      ...d,
+      bundleSlots: [
+        ...(d.bundleSlots ?? []),
+        { id, label: "", sourceCategoryIds: [], sourceItemIds: [] },
+      ],
+    }));
+  }
+
+  function removeBundleSlot(slotId: string) {
+    setDraft((d) => ({
+      ...d,
+      bundleSlots: (d.bundleSlots ?? []).filter((s) => s.id !== slotId),
+    }));
+  }
+
+  function updateBundleSlot(slotId: string, patch: Partial<MenuBundleSlot>) {
+    setDraft((d) => ({
+      ...d,
+      bundleSlots: (d.bundleSlots ?? []).map((s) =>
+        s.id === slotId ? { ...s, ...patch } : s,
+      ),
+    }));
+  }
+
+  function moveBundleSlot(index: number, dir: -1 | 1) {
+    setDraft((d) => {
+      const slots = [...(d.bundleSlots ?? [])];
+      const target = index + dir;
+      if (target < 0 || target >= slots.length) return d;
+      [slots[index], slots[target]] = [slots[target], slots[index]];
+      return { ...d, bundleSlots: slots };
+    });
+  }
+
+  function toggleBundleMode() {
+    setDraft((d) => {
+      if (d.bundleSlots && d.bundleSlots.length > 0) {
+        return { ...d, bundleSlots: undefined };
+      }
+      return {
+        ...d,
+        bundleSlots: [{ id: `slot-${Date.now().toString(36)}`, label: "", sourceCategoryIds: [], sourceItemIds: [] }],
+      };
+    });
+  }
+
+  function toggleSlotCategory(slotId: string, catId: string) {
+    setDraft((d) => ({
+      ...d,
+      bundleSlots: (d.bundleSlots ?? []).map((s) => {
+        if (s.id !== slotId) return s;
+        const has = s.sourceCategoryIds.includes(catId);
+        return {
+          ...s,
+          sourceCategoryIds: has
+            ? s.sourceCategoryIds.filter((c) => c !== catId)
+            : [...s.sourceCategoryIds, catId],
+        };
+      }),
+    }));
+  }
+
+  function toggleSlotItem(slotId: string, itemId: string) {
+    setDraft((d) => ({
+      ...d,
+      bundleSlots: (d.bundleSlots ?? []).map((s) => {
+        if (s.id !== slotId) return s;
+        const cur = s.sourceItemIds ?? [];
+        const has = cur.includes(itemId);
+        return {
+          ...s,
+          sourceItemIds: has ? cur.filter((i) => i !== itemId) : [...cur, itemId],
+        };
+      }),
+    }));
   }
 
   function toggleAllergen(a: MenuAllergen) {
@@ -1245,6 +1331,66 @@ export function ItemEditor({
             </div>
           </div>
 
+          {/* Sezione bundle menu */}
+          <div className="mt-5 rounded-2xl bg-white p-4 ring-1 ring-pork-ink/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-base font-black text-pork-ink">Menu composto</p>
+                <p className="text-xs text-pork-ink/55">
+                  Attiva se questo prodotto è un menu con scelte guidate (es. pizza + bibita).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleBundleMode}
+                className={
+                  "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none " +
+                  (draft.bundleSlots?.length
+                    ? "bg-pork-red"
+                    : "bg-pork-ink/20")
+                }
+                aria-pressed={!!(draft.bundleSlots?.length)}
+                aria-label="Attiva menu composto"
+              >
+                <span
+                  className={
+                    "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform " +
+                    (draft.bundleSlots?.length ? "translate-x-5" : "translate-x-0")
+                  }
+                />
+              </button>
+            </div>
+
+            {draft.bundleSlots && draft.bundleSlots.length > 0 && (
+              <div className="mt-4 space-y-4">
+                {draft.bundleSlots.map((slot, idx) => (
+                  <BundleSlotEditor
+                    key={slot.id}
+                    slot={slot}
+                    index={idx}
+                    total={draft.bundleSlots!.length}
+                    categories={allCategories}
+                    allItems={allItems.filter((it) => it.id !== draft.id)}
+                    onUpdateLabel={(v) => updateBundleSlot(slot.id, { label: v })}
+                    onUpdateHint={(v) => updateBundleSlot(slot.id, { hint: v || undefined })}
+                    onToggleCategory={(cid) => toggleSlotCategory(slot.id, cid)}
+                    onToggleItem={(iid) => toggleSlotItem(slot.id, iid)}
+                    onMoveUp={() => moveBundleSlot(idx, -1)}
+                    onMoveDown={() => moveBundleSlot(idx, 1)}
+                    onRemove={() => removeBundleSlot(slot.id)}
+                  />
+                ))}
+                <button
+                  type="button"
+                  onClick={addBundleSlot}
+                  className="inline-flex items-center gap-1.5 rounded-xl border-2 border-dashed border-pork-ink/20 px-4 py-2 text-sm font-bold text-pork-ink/60 hover:border-pork-ink/40 hover:text-pork-ink"
+                >
+                  <Plus size={15} /> Aggiungi scelta
+                </button>
+              </div>
+            )}
+          </div>
+
         </div>
 
         <footer className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-pork-ink/10 bg-white px-5 py-4 shadow-[0_-8px_20px_-12px_rgba(0,0,0,0.15)]">
@@ -1376,6 +1522,203 @@ export function ItemEditor({
       </div>
     </GestionePortalSurface>,
     document.body,
+  );
+}
+
+function BundleSlotEditor({
+  slot,
+  index,
+  total,
+  categories,
+  allItems,
+  onUpdateLabel,
+  onUpdateHint,
+  onToggleCategory,
+  onToggleItem,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+}: {
+  slot: MenuBundleSlot;
+  index: number;
+  total: number;
+  categories: AdminMenuCategory[];
+  allItems: import("@/lib/types").AdminMenuItem[];
+  onUpdateLabel: (v: string) => void;
+  onUpdateHint: (v: string) => void;
+  onToggleCategory: (catId: string) => void;
+  onToggleItem: (itemId: string) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onRemove: () => void;
+}) {
+  const [itemSearch, setItemSearch] = useState("");
+  const [showItemPicker, setShowItemPicker] = useState(false);
+
+  const filteredItems = useMemo(() => {
+    const q = itemSearch.toLowerCase();
+    return allItems
+      .filter((it) => it.available && it.name.toLowerCase().includes(q))
+      .slice(0, 30);
+  }, [allItems, itemSearch]);
+
+  const selectedItemNames = useMemo(
+    () =>
+      (slot.sourceItemIds ?? [])
+        .map((id) => allItems.find((it) => it.id === id)?.name ?? id)
+        .join(", "),
+    [slot.sourceItemIds, allItems],
+  );
+
+  return (
+    <div className="rounded-xl bg-pork-cream p-3 ring-1 ring-pork-ink/10">
+      <div className="mb-3 flex items-center gap-2">
+        <div className="flex flex-col gap-0.5">
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={index === 0}
+            className="rounded p-0.5 text-pork-ink/40 hover:text-pork-ink disabled:opacity-20"
+            aria-label="Sposta su"
+          >
+            <ChevronUp size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={index === total - 1}
+            className="rounded p-0.5 text-pork-ink/40 hover:text-pork-ink disabled:opacity-20"
+            aria-label="Sposta giù"
+          >
+            <ChevronDown size={14} />
+          </button>
+        </div>
+        <GripVertical size={16} className="shrink-0 text-pork-ink/30" />
+        <span className="text-xs font-black uppercase tracking-wide text-pork-ink/50">
+          Scelta {index + 1}
+        </span>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="ml-auto rounded-full p-1 text-pork-ink/40 hover:bg-pork-red/10 hover:text-pork-red"
+          aria-label="Rimuovi scelta"
+        >
+          <X size={14} />
+        </button>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-wide text-pork-ink/50">
+            Etichetta *
+          </span>
+          <input
+            type="text"
+            value={slot.label}
+            onChange={(e) => onUpdateLabel(e.target.value)}
+            placeholder="es. Scegli la pizza"
+            className="w-full rounded-lg border-2 border-pork-ink/10 bg-white px-3 py-1.5 text-sm outline-none focus:border-pork-red"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[10px] font-black uppercase tracking-wide text-pork-ink/50">
+            Suggerimento (opzionale)
+          </span>
+          <input
+            type="text"
+            value={slot.hint ?? ""}
+            onChange={(e) => onUpdateHint(e.target.value)}
+            placeholder="es. Solo tra le classiche"
+            className="w-full rounded-lg border-2 border-pork-ink/10 bg-white px-3 py-1.5 text-sm outline-none focus:border-pork-red"
+          />
+        </label>
+      </div>
+
+      <div className="mt-3">
+        <p className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-pork-ink/50">
+          Categorie selezionabili
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {categories.map((cat) => {
+            const active = slot.sourceCategoryIds.includes(cat.id);
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => onToggleCategory(cat.id)}
+                className={
+                  "rounded-full px-2.5 py-1 text-xs font-bold transition-colors " +
+                  (active
+                    ? "bg-pork-red text-white"
+                    : "bg-pork-ink/5 text-pork-ink/60 hover:bg-pork-ink/10")
+                }
+              >
+                {cat.title}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-black uppercase tracking-wide text-pork-ink/50">
+            Prodotti specifici
+            {(slot.sourceItemIds?.length ?? 0) > 0 && (
+              <span className="ml-1 text-pork-red">({slot.sourceItemIds!.length})</span>
+            )}
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowItemPicker((v) => !v)}
+            className="text-[11px] font-bold text-pork-red hover:underline"
+          >
+            {showItemPicker ? "Chiudi" : "Seleziona prodotti"}
+          </button>
+        </div>
+
+        {(slot.sourceItemIds?.length ?? 0) > 0 && !showItemPicker && (
+          <p className="mt-1 text-xs text-pork-ink/60 leading-snug">{selectedItemNames}</p>
+        )}
+
+        {showItemPicker && (
+          <div className="mt-2 rounded-xl border-2 border-pork-ink/10 bg-white p-2">
+            <input
+              type="text"
+              value={itemSearch}
+              onChange={(e) => setItemSearch(e.target.value)}
+              placeholder="Cerca prodotto…"
+              className="mb-2 w-full rounded-lg border border-pork-ink/10 bg-pork-cream px-3 py-1.5 text-sm outline-none focus:border-pork-red"
+            />
+            <div className="max-h-40 space-y-0.5 overflow-y-auto">
+              {filteredItems.map((it) => {
+                const checked = slot.sourceItemIds?.includes(it.id) ?? false;
+                return (
+                  <label
+                    key={it.id}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-pork-cream"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => onToggleItem(it.id)}
+                      className="accent-pork-red"
+                    />
+                    <span className="flex-1 text-sm font-semibold">{it.name}</span>
+                    <span className="text-xs text-pork-ink/40">
+                      {categories.find((c) => c.id === it.categoryId)?.title ?? it.categoryId}
+                    </span>
+                  </label>
+                );
+              })}
+              {filteredItems.length === 0 && (
+                <p className="px-2 py-2 text-xs text-pork-ink/40">Nessun prodotto trovato</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

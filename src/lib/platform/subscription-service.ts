@@ -164,6 +164,28 @@ export async function activateSubscriptionByContract(contractId: string): Promis
   return true;
 }
 
+export async function syncContractPaymentFromSubscription(
+  subscriptionId: string,
+  paidAt = new Date().toISOString(),
+): Promise<void> {
+  const { data: sub, error } = await db()
+    .from("platform_subscriptions")
+    .select("contract_id")
+    .eq("id", subscriptionId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!sub?.contract_id) return;
+
+  await db()
+    .from("platform_contracts")
+    .update({
+      payment_status: "paid",
+      paid_at: paidAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", sub.contract_id);
+}
+
 /**
  * Pagamento ricevuto → attiva l'abbonamento e il tenant sul dominio indicato.
  * Marca pagato il pagamento `pending` collegato, calcola il prossimo rinnovo.
@@ -201,6 +223,8 @@ export async function activateSubscription(subscriptionId: string): Promise<void
     .update({ status: "paid", paid_at: now, payment_date: start, updated_at: now })
     .eq("subscription_id", subscriptionId)
     .eq("status", "pending");
+
+  await syncContractPaymentFromSubscription(subscriptionId, now);
 
   await activateTenant(sub.tenant_id as string | null, sub.lead_id as string | null);
   await sendActivationSetupEmailIfNeeded(

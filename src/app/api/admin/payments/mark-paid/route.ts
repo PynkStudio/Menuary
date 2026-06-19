@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { hasAdminPermission, isSiteadminRole } from "@/lib/admin-permissions";
-import { activateSubscription } from "@/lib/platform/subscription-service";
+import {
+  activateSubscription,
+  syncContractPaymentFromSubscription,
+} from "@/lib/platform/subscription-service";
 
 export const dynamic = "force-dynamic";
 
@@ -35,9 +38,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Servizio non configurato" }, { status: 503 });
   }
 
+  const paidAt = new Date().toISOString();
   const { data, error } = await db
     .from("platform_payments")
-    .update({ status: "paid", paid_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .update({ status: "paid", paid_at: paidAt, updated_at: paidAt })
     .eq("id", paymentId)
     .select()
     .maybeSingle();
@@ -50,6 +54,10 @@ export async function POST(req: NextRequest) {
   }
 
   if ((data as { kind?: string; subscription_id?: string }).kind === "first") {
+    await syncContractPaymentFromSubscription(
+      (data as { subscription_id: string }).subscription_id,
+      paidAt,
+    );
     await activateSubscription((data as { subscription_id: string }).subscription_id).catch(() => undefined);
   }
 

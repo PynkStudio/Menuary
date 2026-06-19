@@ -17,6 +17,7 @@ import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes } from
 import type { MenuOrderChannel } from "@/lib/types";
 import { isMenuOrderChannel } from "@/lib/menu-channels";
 import { euroToItalianWords, orderCodeToSpoken } from "@/lib/retell/number-speech";
+import { tenantCheckoutUrl } from "@/lib/orders/checkout-url";
 
 type Db = SupabaseClient<Database>;
 
@@ -1182,12 +1183,148 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   };
 }
 
+export type MenuOpportunitySuggestion = {
+  menuItemCode: string;
+  menuItemName: string;
+  menuPrice: number;
+  currentItemsTotal: number;
+  savingsEuro: number;
+  /** Testo già pronto per il TTS dell'agente vocale. */
+  spokenSuggestion: string;
+};
+
+/**
+ * Dato un set di codici-item già raccolti dall'agente, cerca se esiste un menu
+ * composto (bundle) che copre tutti gli slot con quegli item, e calcola il risparmio.
+ *
+ * Chiamare PRIMA di createRetellOrder, come tool separato dell'agente vocale.
+ * Se il cliente accetta, l'agente crea l'ordine con il solo item-menu (non i singoli).
+ */
+export async function detectRetellMenuOpportunity(
+  tenantId: string,
+  itemCodes: string[],
+): Promise<MenuOpportunitySuggestion | null> {
+  if (itemCodes.length < 2) return null;
+
+  const db = svc();
+  const tenantPrefix = `${tenantId}-`;
+
+  // Carica gli item richiesti
+  const candidates = new Set<string>(itemCodes.flatMap((c) => [c, `${tenantPrefix}${c}`]));
+  const { data: requestedItems } = await db
+    .from("menu_items")
+    .select("id,code,category_id,price")
+    .eq("tenant_id", tenantId)
+    .in("code", [...candidates]);
+
+  if (!requestedItems?.length) return null;
+
+  // Normalizza i codici alle versioni "senza prefisso" per la ricerca slot
+  const normalizeCode = (code: string) =>
+    code.startsWith(tenantPrefix) ? code.slice(tenantPrefix.length) : code;
+
+  const inputById = new Map(requestedItems.map((it) => [it.id, it]));
+  const inputByCat = new Map<string, typeof requestedItems[number][]>();
+  for (const it of requestedItems) {
+    const bucket = inputByCat.get(it.category_id) ?? [];
+    bucket.push(it);
+    inputByCat.set(it.category_id, bucket);
+  }
+
+  // Carica tutti i menu bundle del tenant
+  const { data: menuItems } = await db
+    .from("menu_items")
+    .select("id,code,name,price,bundle_slots,available")
+    .eq("tenant_id", tenantId)
+    .eq("available", true)
+    .not("bundle_slots", "is", null);
+
+  if (!menuItems?.length) return null;
+
+  let bestOpportunity: MenuOpportunitySuggestion | null = null;
+
+  for (const menuItem of menuItems) {
+    const slots = menuItem.bundle_slots as Array<{
+      id: string;
+      sourceCategoryIds: string[];
+      sourceItemIds?: string[];
+    }> | null;
+    if (!slots?.length) continue;
+
+    const usedItemIds = new Set<string>();
+    let allSlotsCovered = true;
+
+    for (const slot of slots) {
+      let covered = false;
+
+      for (const it of requestedItems) {
+        if (usedItemIds.has(it.id)) continue;
+        const catMatch = slot.sourceCategoryIds.includes(it.category_id);
+        const itemMatch = slot.sourceItemIds?.includes(it.id) ||
+          slot.sourceItemIds?.includes(normalizeCode(it.code));
+        if (catMatch || itemMatch) {
+          usedItemIds.add(it.id);
+          covered = true;
+          break;
+        }
+      }
+
+      if (!covered) {
+        allSlotsCovered = false;
+        break;
+      }
+    }
+
+    if (!allSlotsCovered) continue;
+
+    const coveredItems = [...usedItemIds].map((id) => inputById.get(id)!);
+    const currentItemsTotal = coveredItems.reduce(
+      (sum, it) => sum + resolveNumericPrice(it.code, it.price),
+      0,
+    );
+    const menuPrice = resolveNumericPrice(menuItem.code, menuItem.price);
+    const savingsEuro = currentItemsTotal - menuPrice;
+
+    if (!bestOpportunity || savingsEuro > bestOpportunity.savingsEuro) {
+      const savingsFmt = savingsEuro > 0
+        ? `risparmi ${euroToItalianWords(savingsEuro)}`
+        : "stesso prezzo";
+      bestOpportunity = {
+        menuItemCode: normalizeCode(menuItem.code),
+        menuItemName: menuItem.name,
+        menuPrice,
+        currentItemsTotal,
+        savingsEuro,
+        spokenSuggestion:
+          `Ho notato che gli articoli che hai scelto corrispondono al ${menuItem.name}: con il menu ${savingsFmt}. Vuoi che lo converta?`,
+      };
+    }
+  }
+
+  return bestOpportunity;
+}
+
+export type RetellActiveOrder = {
+  orderId: string;
+  code: string;
+  status: string;
+  statusLabel: string;
+  fulfillmentType: string;
+  scheduledTime: string;
+  itemsSummary: string;
+  /** True se l'ordine è ancora nella finestra di modifica/annullo (5 min da created_at, status permitting). */
+  isModifiable: boolean;
+  /** URL della pagina di riepilogo/pagamento dell'ordine, già con token. */
+  checkoutUrl: string;
+};
+
 export type RetellCustomerContext = {
   isKnown: boolean;
   firstName: string;
   language: string;
   lastAddress: string;
   lastOrderSummary: string;
+  activeOrder: RetellActiveOrder | null;
 };
 
 export async function setCustomerLanguage(
@@ -1207,18 +1344,47 @@ export async function setCustomerLanguage(
   return { updated: !error };
 }
 
+const ACTIVE_ORDER_STATUSES = ["pending_confirmation", "nuovo", "in_preparazione", "pronto"] as const;
+const MODIFIABLE_STATUSES = ["pending_confirmation", "nuovo"] as const;
+const MODIFY_WINDOW_MS = 5 * 60 * 1000;
+
+function orderStatusLabel(status: string): string {
+  switch (status) {
+    case "pending_confirmation": return "in attesa di conferma dal locale";
+    case "nuovo": return "confermato, in attesa di preparazione";
+    case "in_preparazione": return "in preparazione";
+    case "pronto": return "pronto per il ritiro o la consegna";
+    default: return status;
+  }
+}
+
+function fulfillmentLabel(type: string): string {
+  return type === "delivery" ? "consegna a domicilio" : "asporto";
+}
+
 export async function lookupRetellCustomer(
   tenantId: string,
   callerPhone: string,
 ): Promise<RetellCustomerContext> {
-  const empty: RetellCustomerContext = { isKnown: false, firstName: "", language: "", lastAddress: "", lastOrderSummary: "" };
+  const empty: RetellCustomerContext = { isKnown: false, firstName: "", language: "", lastAddress: "", lastOrderSummary: "", activeOrder: null };
 
   const phone = normalizePhone(callerPhone);
   if (!phone) return empty;
 
   const db = svc();
 
-  const [{ data: customer }, { data: orders }] = await Promise.all([
+  type ActiveOrderRow = { id: string; code: string; status: string; fulfillment_type: string; pickup_time: string | null; desired_time: string | null; created_at: string; public_token: string };
+  const activeOrderQuery = db
+    .from("orders")
+    .select("id,code,status,fulfillment_type,pickup_time,desired_time,created_at,public_token")
+    .eq("tenant_id", tenantId)
+    .eq("customer_phone", phone)
+    .in("status", [...ACTIVE_ORDER_STATUSES])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle() as unknown as Promise<{ data: ActiveOrderRow | null }>;
+
+  const [{ data: customer }, { data: orders }, { data: activeOrderRow }] = await Promise.all([
     db
       .from("customers")
       .select("id,display_name,language")
@@ -1235,19 +1401,16 @@ export async function lookupRetellCustomer(
       .in("status", ["nuovo", "in_preparazione", "pronto", "consegnato"])
       .order("created_at", { ascending: false })
       .limit(3),
+    activeOrderQuery,
   ]);
 
-  if (!customer && (!orders || orders.length === 0)) return empty;
+  if (!customer && (!orders || orders.length === 0) && !activeOrderRow) return empty;
 
-  const firstName = (customer as { display_name?: string | null; language?: string | null } | null)?.display_name
-    ?.trim()
-    .split(/\s+/)[0] ?? "";
+  const firstName = (customer as { display_name?: string | null } | null)?.display_name?.trim().split(/\s+/)[0] ?? "";
   const language = (customer as { language?: string | null } | null)?.language?.trim() ?? "";
 
   const lastAddress =
-    (orders as { delivery_address: string | null; fulfillment_type: string }[] | null)
-      ?.find((o) => o.delivery_address)
-      ?.delivery_address ?? "";
+    (orders as { delivery_address: string | null }[] | null)?.find((o) => o.delivery_address)?.delivery_address ?? "";
 
   let lastOrderSummary = "";
   if (orders && orders.length > 0) {
@@ -1270,5 +1433,107 @@ export async function lookupRetellCustomer(
     }
   }
 
-  return { isKnown: true, firstName, language, lastAddress, lastOrderSummary };
+  let activeOrder: RetellActiveOrder | null = null;
+  if (activeOrderRow) {
+    const isModifiableStatus = (MODIFIABLE_STATUSES as readonly string[]).includes(activeOrderRow.status);
+    const ageMs = Date.now() - new Date(activeOrderRow.created_at).getTime();
+    const isModifiable = isModifiableStatus && ageMs <= MODIFY_WINDOW_MS;
+    const scheduledTime = activeOrderRow.pickup_time ?? activeOrderRow.desired_time ?? "";
+
+    const { data: activeLines } = await db
+      .from("order_lines")
+      .select("name,qty")
+      .eq("order_id", activeOrderRow.id)
+      .order("position", { ascending: true });
+
+    const itemsSummary = (activeLines as { name: string; qty: number }[] | null ?? [])
+      .map((l) => `${l.qty}× ${l.name}`)
+      .join(", ");
+
+    activeOrder = {
+      orderId: activeOrderRow.id,
+      code: activeOrderRow.code,
+      status: activeOrderRow.status,
+      statusLabel: orderStatusLabel(activeOrderRow.status),
+      fulfillmentType: fulfillmentLabel(activeOrderRow.fulfillment_type),
+      scheduledTime,
+      itemsSummary,
+      isModifiable,
+      checkoutUrl: tenantCheckoutUrl(tenantId, activeOrderRow.code, activeOrderRow.public_token),
+    };
+  }
+
+  return {
+    isKnown: Boolean(customer || (orders && orders.length > 0) || activeOrderRow),
+    firstName,
+    language,
+    lastAddress,
+    lastOrderSummary,
+    activeOrder,
+  };
+}
+
+export type ResendRetellOrderLinkInput = {
+  tenantId: string;
+  orderId: string;
+  recipientPhone: string;
+};
+
+export async function resendRetellOrderLink(
+  input: ResendRetellOrderLinkInput,
+): Promise<{ sent: boolean; channel: string | null }> {
+  const phone = normalizePhone(input.recipientPhone);
+  if (!phone) return { sent: false, channel: null };
+
+  const db = svc();
+
+  type OrderRow = {
+    id: string;
+    code: string;
+    total: number | string;
+    fulfillment_type: string;
+    delivery_address: string | null;
+    payment_status: string;
+    customer_name: string | null;
+  };
+
+  const { data } = await (db as unknown as {
+    from: (table: "orders") => {
+      select: (cols: string) => {
+        eq: (col: string, val: string) => {
+          eq: (col: string, val: string) => {
+            maybeSingle: () => Promise<{ data: OrderRow | null }>;
+          };
+        };
+      };
+    };
+  })
+    .from("orders")
+    .select("id,code,total,fulfillment_type,delivery_address,payment_status,customer_name")
+    .eq("tenant_id", input.tenantId)
+    .eq("id", input.orderId)
+    .maybeSingle();
+
+  if (!data) return { sent: false, channel: null };
+
+  const isDelivery = data.fulfillment_type === "delivery";
+  // Pagamento richiesto solo se l'ordine è ancora in attesa di pagamento online.
+  const paymentRequired = data.payment_status === "pending";
+  const total = Number(data.total);
+
+  const aiSettings = await getAiPhoneSettings(input.tenantId);
+
+  await createChannelPaymentRequest({
+    tenantId: input.tenantId,
+    orderId: data.id,
+    channel: "retell",
+    recipientPhone: phone,
+    amount: total > 0 ? total : 0.01,
+    description: `Riepilogo ordine ${data.code}${data.customer_name ? ` — ${data.customer_name}` : ""}`,
+    paymentRequired,
+    fulfillmentType: isDelivery ? "delivery" : "takeaway",
+    deliveryAddress: isDelivery ? (data.delivery_address ?? undefined) : undefined,
+  });
+
+  return { sent: true, channel: aiSettings.paymentControls.defaultChannel };
 }

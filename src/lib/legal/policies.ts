@@ -4,7 +4,14 @@ import type { SiteSettingsState } from "@/store/settings-store";
 export type PolicyModuleFlags = Pick<
   SiteSettingsState,
   "allowTakeaway" | "allowTableOrders" | "dinerSeparationAtTables" | "kitchenDisplayEnabled"
->;
+> & {
+  /** Assistente telefonico AI attivo (Retell). */
+  aiPhoneEnabled?: boolean;
+  /** Assistente WhatsApp AI attivo. */
+  aiWhatsappEnabled?: boolean;
+  /** IA di suggerimento/upselling attiva. */
+  upsellingEnabled?: boolean;
+};
 
 export type PolicySection = {
   id: string;
@@ -22,6 +29,47 @@ export type PolicyController = {
 
 const hasAnyOrdering = (f: PolicyModuleFlags) =>
   f.allowTakeaway || f.allowTableOrders;
+
+const hasConversationalAi = (f: PolicyModuleFlags) =>
+  Boolean(f.aiPhoneEnabled || f.aiWhatsappEnabled);
+
+/** Sezione privacy sull'assistente conversazionale AI (telefono/WhatsApp). */
+function conversationalAiBlock(f: PolicyModuleFlags): PolicySection {
+  const channels: string[] = [];
+  if (f.aiPhoneEnabled) channels.push("le chiamate telefoniche");
+  if (f.aiWhatsappEnabled) channels.push("i messaggi su WhatsApp");
+  const channelLabel =
+    channels.length === 2 ? `${channels[0]} e ${channels[1]}` : channels[0];
+
+  const recipients: string[] = [];
+  if (f.aiPhoneEnabled) {
+    recipients.push(
+      "il fornitore della tecnologia di assistente vocale e l’operatore di telefonia che gestisce numerazioni, chiamate ed eventuali SMS",
+    );
+  }
+  if (f.aiWhatsappEnabled) {
+    recipients.push("WhatsApp / Meta per la messaggistica");
+  }
+  recipients.push(
+    "il fornitore del modello di linguaggio che interpreta la conversazione",
+  );
+
+  return {
+    id: "assistente-ai",
+    title: "Assistente automatico (telefono/WhatsApp)",
+    body: [
+      `Quando contatti il locale tramite ${channelLabel}, la conversazione può essere gestita da un assistente automatico basato su intelligenza artificiale, allo scopo di fornirti informazioni e raccogliere ordini o prenotazioni. Puoi in qualsiasi momento chiedere di parlare con una persona.`,
+      f.aiPhoneEnabled
+        ? "Per tutelare la tua riservatezza non conserviamo la registrazione audio delle telefonate; può essere conservata una trascrizione testuale della conversazione, al solo fine di erogare il servizio richiesto e migliorarne la qualità."
+        : "Il contenuto dei messaggi scambiati può essere conservato al solo fine di erogare il servizio richiesto e migliorarne la qualità.",
+      "Il trattamento ha come base giuridica l’esecuzione della tua richiesta (ordine/prenotazione) e il legittimo interesse a gestire il servizio in modo efficiente. I fornitori tecnologici che rendono possibile l’assistente operano come responsabili del trattamento, anche con server fuori dall’Unione Europea ma con adeguate garanzie (es. clausole contrattuali standard).",
+    ],
+    bullets: [
+      "dati che fornisci durante la conversazione: nome, recapito, eventuale indirizzo di consegna, contenuto dell’ordine o della prenotazione, eventuali indicazioni su allergeni;",
+      `soggetti che trattano questi dati per nostro conto: ${recipients.join("; ")}.`,
+    ],
+  };
+}
 
 function dataControllerBlock(controller?: PolicyController): PolicySection {
   const owner = controller ?? {
@@ -124,6 +172,21 @@ export function buildPrivacySections(
     });
   }
 
+  // Le sezioni IA precedono sempre i "Diritti degli interessati" (ultimo blocco).
+  if (hasConversationalAi(f)) {
+    sections.splice(sections.length - 1, 0, conversationalAiBlock(f));
+  }
+  if (f.upsellingEnabled) {
+    sections.splice(sections.length - 1, 0, {
+      id: "suggerimenti-ai",
+      title: "Suggerimenti automatici",
+      body: [
+        "Durante la consultazione del menu o la composizione dell’ordine, un sistema di intelligenza artificiale può proporti prodotti o abbinamenti suggeriti, sulla base delle voci che stai consultando o aggiungendo al carrello.",
+        "Si tratta di suggerimenti automatici di tipo commerciale che non producono decisioni con effetti giuridici sulla tua persona; non vengono utilizzati per profilazione invasiva. Puoi semplicemente ignorarli.",
+      ],
+    });
+  }
+
   return sections;
 }
 
@@ -178,6 +241,17 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
       title: "Servizi di terze parti collegati",
       body: [
         "Il sito può contenere link a WhatsApp, Instagram, Facebook e mappe esterne: aprendo tali link o incorporamenti potresti essere soggetto ai cookie e alle policy dei rispettivi fornitori.",
+        ...(hasConversationalAi(f)
+          ? [
+              `Se interagisci con l’assistente automatico ${
+                f.aiPhoneEnabled && f.aiWhatsappEnabled
+                  ? "telefonico o su WhatsApp"
+                  : f.aiWhatsappEnabled
+                    ? "su WhatsApp"
+                    : "telefonico"
+              }, la conversazione è gestita tramite servizi di terzi (telefonia, messaggistica WhatsApp/Meta e fornitori di intelligenza artificiale) secondo le rispettive policy; il dettaglio del trattamento è descritto nell’informativa privacy.`,
+            ]
+          : []),
         "Non utilizziamo pixel di remarketing né strumenti di analytics di terze parti di default nel codice pubblicato di questo progetto.",
       ],
     },
