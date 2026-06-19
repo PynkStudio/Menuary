@@ -393,6 +393,15 @@ function buildItemModifications(
   return [...inline, ...list];
 }
 
+const BASE_VARIANT_NAMES = ["normale", "classica", "classico", "semplice", "standard", "base", "regular", "plain"];
+
+function inferBaseVariantIndex(names: string[]): number {
+  const idx = names.findIndex((n) =>
+    BASE_VARIANT_NAMES.includes(n.trim().toLocaleLowerCase("it-IT")),
+  );
+  return idx >= 0 ? idx : 0;
+}
+
 function listVariantGroups(value: Json) {
   if (!Array.isArray(value)) return [];
   return value.flatMap((group) => {
@@ -413,12 +422,17 @@ function listVariantGroups(value: Json) {
       }];
     });
     if (options.length === 0) return [];
+    let resolvedOptions = options;
+    if (!defaultOptionId) {
+      const baseIndex = inferBaseVariantIndex(options.map((o) => o.name));
+      resolvedOptions = options.map((option, index) => ({ ...option, isDefault: index === baseIndex }));
+    }
     return [{
       id: g.id,
       name: g.name,
       required: g.required === true,
       defaultOptionId,
-      options: defaultOptionId ? options : options.map((option, index) => ({ ...option, isDefault: index === 0 })),
+      options: resolvedOptions,
     }];
   });
 }
@@ -815,11 +829,11 @@ export async function buildRetellInboundContext(
       "Usa solo le informazioni presenti in questo contesto per menu/listino, prezzi, modifiche, orari e sedi.",
       "Il menu nel contesto e gia filtrato per l'orario locale della chiamata. Non proporre voci assenti e recupera nuovamente il contesto prima di confermare un ordine.",
       "Se il cliente chiede di vedere il menu, il listino completo o vuole sfogliare i piatti, proponi di inviargli il link via messaggio usando la funzione send_menu_link; non elencare i piatti verbalmente.",
-      "Se un piatto ha piu varianti e il cliente non specifica la variante, usa la variante di default indicata dal menu senza chiedere quale preferisce. Chiedi la variante solo se il cliente la nomina in modo ambiguo o se non esiste una variante di default.",
+      "Se un piatto ha piu varianti e il cliente non specifica quale, seleziona automaticamente la variante marcata come default nel menu. Se nessuna variante e marcata come default, scegli quella il cui nome indica la versione base — ad esempio 'Normale', 'Classica', 'Semplice', 'Standard', 'Base', 'Regular' — e procedi senza chiedere. Chiedi la variante SOLO se il cliente la nomina in modo ambiguo o se non esiste ne un default ne una variante dal nome riconoscibile come base.",
       registryTenant.id === "kimos"
         ? "Per Kimos, se il cliente ordina una pizza senza specificare formato o impasto, procedi senza chiarimenti usando formato Normale e impasto Classico. Chiedi chiarimenti solo se il cliente cita una variante in modo ambiguo."
         : "",
-      "Quando il cliente ordina un piatto, conferma brevemente e chiedi se vuole aggiungere altro (es. 'Va bene, una margherita. Qualcos'altro?'). Non elencare ingredienti, allergeni o prezzo del singolo piatto a meno che il cliente non li chieda esplicitamente. Se il cliente ha gia indicato la quantita (es. 'una margherita') non richiedere quante ne vuole.",
+      "Quando il cliente ordina un piatto, conferma brevemente e chiedi se vuole aggiungere altro (es. 'Va bene, una margherita. Qualcos'altro?'). Non elencare MAI ingredienti, descrizione, allergeni o prezzo del singolo piatto: queste informazioni vanno fornite SOLO se il cliente le chiede esplicitamente (es. 'cosa c'e dentro?', 'contiene glutine?', 'quanto costa?'). Se il cliente ha gia indicato la quantita (es. 'una margherita') non richiedere quante ne vuole.",
       "Non comunicare i prezzi dei singoli piatti durante la raccolta dell'ordine. Il prezzo viene comunicato solo alla fine, come totale complessivo nel riepilogo.",
       "Fulfillment: se il cliente dice 'portare a casa', 'consegnare', 'delivery', 'a domicilio' o simili, tratta l'ordine come delivery senza chiedere conferma. Se dice 'passo io', 'ritiro', 'vengo a prendere' o simili, tratta come asporto. Chiedi 'asporto o consegna?' SOLO se {{delivery_available}} e {{takeaway_available}} sono entrambi true E il cliente non ha indicato alcuna preferenza. Se solo uno dei due e disponibile, usalo senza chiedere.",
       "Prima di creare ordini, prenotazioni o appuntamenti conferma sempre nome e sede quando ci sono piu sedi.",
