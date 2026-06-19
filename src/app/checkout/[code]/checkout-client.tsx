@@ -224,27 +224,27 @@ type CheckoutStatusPayload = {
 const ORDER_STATUS_COPY: Record<string, { label: string; description: string }> = {
   pending_confirmation: {
     label: "In attesa di conferma",
-    description: "Il locale deve ancora accettare l'ordine.",
+    description: "Stiamo controllando l'ordine e ti confermiamo tutto a breve.",
   },
   nuovo: {
     label: "Accettato",
-    description: "L'ordine è stato preso in carico.",
+    description: "Abbiamo preso in carico il tuo ordine.",
   },
   in_preparazione: {
     label: "In preparazione",
-    description: "La cucina sta preparando l'ordine.",
+    description: "La cucina sta preparando il tuo ordine.",
   },
   pronto: {
     label: "Pronto",
-    description: "L'ordine è pronto per il ritiro o la consegna.",
+    description: "Il tuo ordine è pronto per il ritiro o la consegna.",
   },
   in_consegna: {
     label: "In consegna",
-    description: "Il rider sta portando il tuo ordine.",
+    description: "Il rider sta arrivando con il tuo ordine.",
   },
   consegnato: {
     label: "Completato",
-    description: "L'ordine risulta consegnato o ritirato.",
+    description: "Ordine consegnato o ritirato. Grazie per aver ordinato da noi.",
   },
   annullato: {
     label: "Annullato",
@@ -252,7 +252,7 @@ const ORDER_STATUS_COPY: Record<string, { label: string; description: string }> 
   },
   expired: {
     label: "Scaduto",
-    description: "La conferma non è arrivata in tempo.",
+    description: "Non siamo riusciti a confermare l'ordine in tempo.",
   },
 };
 
@@ -262,13 +262,13 @@ function liveStatusCopy(status: string, paymentStatus: string) {
   if (paymentStatus === "pending") {
     return {
       label: "In attesa pagamento",
-      description: "Completa il pagamento online per inviare la conferma definitiva.",
+      description: "Completa il pagamento online: appena arriva, confermiamo l'ordine.",
     };
   }
   if (paymentStatus === "failed") {
     return {
       label: "Pagamento non riuscito",
-      description: "Puoi riprovare il pagamento o contattare il locale.",
+      description: "Puoi riprovare il pagamento o contattarci.",
     };
   }
   if (paymentStatus === "expired") {
@@ -279,7 +279,7 @@ function liveStatusCopy(status: string, paymentStatus: string) {
   }
   return ORDER_STATUS_COPY[status] ?? {
     label: "Aggiornamento ordine",
-    description: "Stato aggiornato dal locale.",
+    description: "Abbiamo aggiornato lo stato del tuo ordine.",
   };
 }
 
@@ -390,6 +390,20 @@ export function CheckoutClient({
   // Link al menu/checkout preservando il prefisso slug in preview (es. /kimos/...).
   const basePath = typeof window !== "undefined" ? window.location.pathname.replace(/\/checkout\/.*$/, "") : "";
   const menuHref = `${basePath}/menu?back=${encodeURIComponent(`${basePath}/checkout/${order.code}?t=${token}`)}`;
+  const fulfillmentLabel = dineLabel(order.dineOption, tenantVertical);
+  const mainTitle = alreadyPaid
+    ? "Ordine confermato"
+    : payOnSite
+      ? "Il tuo ordine è registrato"
+      : "Conferma e paga l'ordine";
+  const showQuickActions = !alreadyPaid && currentStatus !== "annullato" && (canCancel || canUpsell);
+  const statusIcon = currentStatus === "in_preparazione"
+    ? <ChefHat size={22} />
+    : currentStatus === "pronto" || currentStatus === "in_consegna"
+      ? <Bike size={22} />
+      : currentStatus === "annullato" || currentStatus === "expired"
+        ? <AlertCircle size={22} />
+        : <Clock size={22} />;
 
   const cancelOrder = async () => {
     if (!canCancel) return;
@@ -453,96 +467,167 @@ export function CheckoutClient({
   };
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: c.bgSoft }}>
-      <div className="mx-auto max-w-xl">
-        <header className="mb-6 text-center">
-          <p className="text-xs font-black uppercase tracking-wider" style={{ color: c.accent }}>{tenantName}</p>
-          <h1 className="mt-1 text-2xl font-black" style={{ color: c.ink }}>
-            {alreadyPaid
-              ? "Ordine confermato"
-              : payOnSite
-                ? "Riepilogo ordine"
-                : "Riepilogo e pagamento"}
-          </h1>
-          <p className="mt-2 text-sm" style={{ color: c.inkMuted }}>
-            Ordine <span className="font-mono font-bold">{order.code}</span>
-          </p>
-        </header>
-
-        {alreadyPaid && (
-          <div className="mb-4 flex items-center gap-3 rounded-2xl bg-emerald-50 p-4 text-emerald-800">
-            <CheckCircle2 size={22} />
-            <div className="text-sm">
-              <div className="font-bold">Pagamento ricevuto</div>
-              <div className="text-emerald-700/80">Il locale prenderà in carico l&apos;ordine a breve.</div>
+    <div
+      className="min-h-screen px-4 py-6 sm:py-10"
+      style={{
+        backgroundColor: c.bgSoft,
+        backgroundImage: `
+          radial-gradient(circle at 18% 0%, rgb(var(--tenant-red) / 0.14), transparent 34rem),
+          radial-gradient(circle at 92% 10%, rgb(var(--tenant-mustard) / 0.18), transparent 30rem),
+          linear-gradient(180deg, rgb(var(--tenant-cream) / 0.82), rgb(var(--tenant-cream) / 0.38))
+        `,
+      }}
+    >
+      <div className="mx-auto max-w-3xl">
+        <header
+          className="relative overflow-hidden rounded-[2rem] p-5 shadow-sm sm:p-7"
+          style={{
+            backgroundColor: c.surface,
+            boxShadow: `0 24px 70px rgb(var(--tenant-ink) / 0.10), 0 0 0 1px ${c.ring}`,
+          }}
+        >
+          <div
+            className="pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full"
+            style={{ backgroundColor: c.accentSoft }}
+          />
+          <div
+            className="pointer-events-none absolute -bottom-20 left-1/2 h-44 w-44 rounded-full"
+            style={{ backgroundColor: c.mustardSoft }}
+          />
+          <div className="relative">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: c.accent }}>
+                  {tenantName}
+                </p>
+                <h1 className="mt-2 max-w-xl text-3xl font-black leading-[1.02] sm:text-4xl" style={{ color: c.ink }}>
+                  {mainTitle}
+                </h1>
+              </div>
+              <div className="rounded-2xl px-4 py-3 text-right" style={{ backgroundColor: c.bgSoft }}>
+                <div className="text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: c.inkFaint }}>
+                  Totale
+                </div>
+                <div className="mt-1 text-2xl font-black tabular-nums" style={{ color: c.accent }}>
+                  {eur(order.total)}
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-bold" style={{ color: c.inkMuted }}>
+              <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: c.bg }}>
+                Ordine <span className="font-mono">{order.code}</span>
+              </span>
+              {fulfillmentLabel && (
+                <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: c.bg }}>
+                  {fulfillmentLabel}
+                </span>
+              )}
+              {pickupTime && (
+                <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: c.bg }}>
+                  {pickupTime}
+                </span>
+              )}
             </div>
           </div>
-        )}
+        </header>
 
-        <section className="mb-4 rounded-3xl p-4" style={{ backgroundColor: c.surface, boxShadow: `0 1px 2px rgb(0 0 0 / 0.05), 0 0 0 1px ${c.ring}` }}>
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: isTerminalNegative ? "#fff1f2" : c.accentSoft, color: isTerminalNegative ? "#be123c" : c.accent }}>
-              {currentStatus === "in_preparazione" ? <ChefHat size={18} /> : currentStatus === "pronto" || currentStatus === "in_consegna" ? <Bike size={18} /> : currentStatus === "annullato" || currentStatus === "expired" ? <AlertCircle size={18} /> : <Clock size={18} />}
+        <section
+          className="relative z-10 -mt-3 rounded-[1.75rem] p-5 shadow-sm sm:p-6"
+          style={{
+            backgroundColor: c.ink,
+            color: "#fff",
+            boxShadow: `0 18px 45px rgb(var(--tenant-ink) / 0.18)`,
+          }}
+        >
+          <div className="flex items-start gap-4">
+            <div
+              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+              style={{
+                backgroundColor: isTerminalNegative ? "#fff1f2" : "rgb(255 255 255 / 0.12)",
+                color: isTerminalNegative ? "#be123c" : "#fff",
+              }}
+            >
+              {statusIcon}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>Stato ordine live</p>
-              <h2 className="mt-0.5 text-lg font-black" style={{ color: c.ink }}>{statusCopy.label}</h2>
-              <p className="mt-1 text-sm" style={{ color: c.inkMuted }}>{statusCopy.description}</p>
-              {statusUpdatedAt && (
-                <p className="mt-2 text-[11px]" style={{ color: c.inkFaint }}>
-                  Aggiornato alle {new Date(statusUpdatedAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
-                </p>
-              )}
-              {confirmationSecondsLeft !== null && (
-                <div className="mt-3 rounded-2xl p-3 text-xs font-bold" style={{ backgroundColor: c.mustardSoft, color: c.ink }}>
-                  Il locale deve confermare entro {formatRemaining(confirmationSecondsLeft)}.
-                </div>
-              )}
+              <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "rgb(255 255 255 / 0.58)" }}>
+                Stato ordine
+              </p>
+              <h2 className="mt-1 text-2xl font-black leading-tight">{statusCopy.label}</h2>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed" style={{ color: "rgb(255 255 255 / 0.72)" }}>
+                {statusCopy.description}
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold" style={{ color: "rgb(255 255 255 / 0.68)" }}>
+                {statusUpdatedAt && (
+                  <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: "rgb(255 255 255 / 0.09)" }}>
+                    Aggiornato alle {new Date(statusUpdatedAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                )}
+                {confirmationSecondsLeft !== null && (
+                  <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: c.mustard, color: c.ink }}>
+                    Ti confermiamo entro {formatRemaining(confirmationSecondsLeft)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           {!isTerminalNegative && (
-            <div className="mt-4 grid grid-cols-5 gap-1.5">
+            <div className="mt-6 grid grid-cols-5 gap-2">
               {TRACKING_STEPS.map((step, index) => {
                 const done = activeStepIndex >= index;
                 return (
-                  <div key={step} className="h-1.5 rounded-full" style={{ backgroundColor: done ? c.accent : c.divider }} />
+                  <div
+                    key={step}
+                    className="h-2 rounded-full transition-colors"
+                    style={{ backgroundColor: done ? c.mustard : "rgb(255 255 255 / 0.16)" }}
+                  />
                 );
               })}
             </div>
           )}
         </section>
 
+        {alreadyPaid && (
+          <div className="mt-4 flex items-center gap-3 rounded-3xl bg-emerald-50 p-4 text-emerald-900 shadow-sm">
+            <CheckCircle2 size={24} />
+            <div className="text-sm">
+              <div className="font-black">Pagamento ricevuto</div>
+              <div className="text-emerald-800/80">Grazie, abbiamo ricevuto il pagamento e prepariamo il tuo ordine.</div>
+            </div>
+          </div>
+        )}
+
         {payOnSite && !alreadyPaid && currentStatus !== "annullato" && (
           <>
-            <div className="mb-4 flex items-center gap-3 rounded-2xl p-4" style={{ backgroundColor: c.bg, color: c.ink }}>
-              <CheckCircle2 size={22} style={{ color: c.accent }} />
+            <div className="mt-4 flex items-center gap-3 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.bg, color: c.ink }}>
+              <CheckCircle2 size={24} style={{ color: c.accent }} />
               <div className="text-sm">
-                <div className="font-bold">
+                <div className="font-black">
                   Pagamento {tenantVertical === "services" ? "all'appuntamento" : (order.dineOption === "delivery" ? "alla consegna" : "al ritiro")}
                 </div>
                 <div style={{ color: c.inkMuted }}>
                   {currentStatus === "pending_confirmation"
-                    ? "Il riepilogo è registrato: il locale deve ancora accettare l'ordine prima della preparazione."
-                    : "Conferma e dettagli ti sono stati inviati. L'ordine è confermato e verrà preparato."}
+                    ? "Abbiamo registrato il riepilogo: ti confermiamo l'ordine prima di iniziare la preparazione."
+                    : "Ti abbiamo inviato conferma e dettagli. L'ordine è confermato e verrà preparato."}
                 </div>
               </div>
             </div>
             {isAiSource && (
-              <div className="mb-4 rounded-2xl p-4 text-xs" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}`, color: c.inkMuted }}>
+              <div className="mt-4 rounded-3xl p-4 text-xs shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}`, color: c.inkMuted }}>
                 <div className="flex items-center gap-2 font-bold" style={{ color: c.ink }}>
                   <ShieldCheck size={14} />
                   {order.source === "retell" ? "Informativa chiamata registrata" : "Informativa conversazione WhatsApp"}
                 </div>
                 <p className="mt-2 leading-relaxed">
                   {order.source === "retell"
-                    ? `La chiamata effettuata al locale è stata gestita da un assistente vocale automatico per conto di ${tenantName} ed è stata registrata e trascritta per finalità di assistenza, evasione dell'ordine, qualità del servizio e adempimenti contabili.`
-                    : `Questa conversazione WhatsApp è stata gestita da un assistente automatico per conto di ${tenantName}. I messaggi vengono trattati per evadere l'ordine, fornire assistenza e adempiere agli obblighi contabili.`}
-                  {" "}Titolare del trattamento: <strong>{tenantName}</strong>. Diritti GDPR (artt. 15-22): contatta il locale.
+                    ? `Hai ordinato tramite l'assistente vocale di ${tenantName}. La chiamata è stata registrata e trascritta per gestire l'ordine, assisterti e rispettare gli obblighi contabili.`
+                    : `Hai ordinato tramite l'assistente WhatsApp di ${tenantName}. Trattiamo i messaggi per gestire l'ordine, assisterti e rispettare gli obblighi contabili.`}
+                  {" "}Titolare del trattamento: <strong>{tenantName}</strong>. Per esercitare i diritti GDPR puoi contattarci direttamente.
                 </p>
               </div>
             )}
             {stripeEnabled && (
-            <section className="mb-4 rounded-2xl p-4" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
+            <section className="mt-4 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
               <div className="flex items-start gap-3">
                 <ShieldCheck size={18} className="mt-0.5" style={{ color: c.accent }} />
                 <div className="min-w-0 flex-1">
@@ -593,14 +678,15 @@ export function CheckoutClient({
           </div>
         )}
 
-        {!alreadyPaid && currentStatus !== "annullato" && (canCancel || canUpsell) && (
-          <div className="mb-4 flex flex-wrap gap-2">
+        {showQuickActions && (
+          <div className="mt-4 rounded-3xl p-3 shadow-sm" style={{ backgroundColor: "rgb(255 255 255 / 0.72)", boxShadow: `0 0 0 1px ${c.ring}` }}>
+            <div className="flex flex-wrap gap-2">
             {canCancel && (
               <button
                 type="button"
                 onClick={cancelOrder}
                 disabled={cancelling}
-                className="inline-flex items-center gap-1.5 rounded-full border-2 border-rose-200 bg-white px-3.5 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full border-2 border-rose-200 bg-white px-3.5 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
                 title={`Puoi annullare entro ${formatRemaining(cancelRemaining)}`}
               >
                 <X size={13} />
@@ -610,7 +696,7 @@ export function CheckoutClient({
             {canUpsell && (
               <a
                 href={menuHref}
-                className="inline-flex items-center gap-1.5 rounded-full border-2 bg-white px-3.5 py-1.5 text-xs font-bold"
+                className="inline-flex items-center gap-1.5 rounded-full border-2 bg-white px-3.5 py-2 text-xs font-bold transition hover:-translate-y-0.5"
                 style={{ borderColor: c.divider, color: c.ink }}
                 title={`Puoi aggiungere altre voci entro ${formatRemaining(upsellRemaining)}`}
               >
@@ -622,7 +708,7 @@ export function CheckoutClient({
               <button
                 type="button"
                 onClick={() => setEditingDelivery((v) => !v)}
-                className="inline-flex items-center gap-1.5 rounded-full border-2 bg-white px-3.5 py-1.5 text-xs font-bold"
+                className="inline-flex items-center gap-1.5 rounded-full border-2 bg-white px-3.5 py-2 text-xs font-bold transition hover:-translate-y-0.5"
                 style={{ borderColor: c.divider, color: c.ink }}
                 title={`Puoi modificare indirizzo e orario entro ${formatRemaining(upsellRemaining)}`}
               >
@@ -630,11 +716,12 @@ export function CheckoutClient({
                 {editingDelivery ? "Chiudi" : "Modifica orario/indirizzo"}
               </button>
             )}
+            </div>
           </div>
         )}
 
         {!alreadyPaid && currentStatus !== "annullato" && canUpsell && editingDelivery && (
-          <section className="mb-4 rounded-2xl p-4" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
+          <section className="mt-4 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
             <p className="mb-3 text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>
               Modifica orario / indirizzo · {formatRemaining(upsellRemaining)}
             </p>
@@ -687,10 +774,10 @@ export function CheckoutClient({
         )}
 
         {!alreadyPaid && currentStatus !== "annullato" && canUpsell && upsellSuggestions.length > 0 && (
-          <section className="mb-4 rounded-2xl border p-4 text-sm" style={{ borderColor: `rgb(var(--tenant-mustard) / 0.4)`, backgroundColor: c.mustardSoft, color: c.ink }}>
+          <section className="mt-4 rounded-3xl border p-4 text-sm shadow-sm" style={{ borderColor: `rgb(var(--tenant-mustard) / 0.4)`, backgroundColor: c.mustardSoft, color: c.ink }}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase" style={{ color: c.accent }}>Suggerimenti per completare</p>
+                <p className="text-xs font-black uppercase tracking-[0.16em]" style={{ color: c.accent }}>Ci sta bene insieme</p>
                 <ul className="mt-2 list-disc space-y-1 pl-4">
                   {upsellSuggestions.map((suggestion) => (
                     <li key={suggestion}>{suggestion}</li>
@@ -709,14 +796,24 @@ export function CheckoutClient({
           </section>
         )}
 
-        <section className="rounded-3xl p-5 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 1px 2px rgb(0 0 0 / 0.05), 0 0 0 1px ${c.ring}` }}>
-          <h2 className="text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>Riepilogo</h2>
+        <section className="mt-4 rounded-[1.75rem] p-5 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 18px 50px rgb(var(--tenant-ink) / 0.08), 0 0 0 1px ${c.ring}` }}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em]" style={{ color: c.inkFaint }}>Il tuo ordine</p>
+              <h2 className="mt-1 text-xl font-black" style={{ color: c.ink }}>Riepilogo cucina</h2>
+            </div>
+            <div className="rounded-2xl px-3 py-2 text-right" style={{ backgroundColor: c.accentSoft }}>
+              <div className="text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: c.inkFaint }}>Totale</div>
+              <div className="text-lg font-black tabular-nums" style={{ color: c.accent }}>{eur(order.total)}</div>
+            </div>
+          </div>
           <ul className="mt-3 divide-y" style={{ borderColor: c.divider }}>
             {order.lines.map((line, i) => (
-              <li key={i} className="flex items-start justify-between gap-3 py-2.5" style={{ borderColor: c.divider }}>
+              <li key={i} className="flex items-start justify-between gap-4 py-3" style={{ borderColor: c.divider }}>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold" style={{ color: c.ink }}>
-                    <span style={{ color: c.accent }}>{line.qty}×</span> {line.name}
+                  <div className="text-sm font-black" style={{ color: c.ink }}>
+                    <span className="mr-2 inline-flex min-w-8 justify-center rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: c.bg, color: c.accent }}>{line.qty}×</span>
+                    {line.name}
                   </div>
                   {line.addedExtras.length > 0 && (
                     <ul className="mt-0.5 space-y-0.5">
@@ -743,14 +840,14 @@ export function CheckoutClient({
             ))}
           </ul>
 
-          <div className="mt-4 flex items-baseline justify-between border-t pt-3" style={{ borderColor: c.divider }}>
+          <div className="mt-4 flex items-baseline justify-between border-t pt-4" style={{ borderColor: c.divider }}>
             <span className="text-sm font-bold" style={{ color: c.ink }}>Totale</span>
             <span className="text-xl font-black tabular-nums" style={{ color: c.accent }}>{eur(order.total)}</span>
           </div>
 
           <dl className="mt-4 space-y-1 text-xs" style={{ color: c.inkMuted }}>
             {dineLabel(order.dineOption, tenantVertical) && (
-              <div className="flex justify-between"><dt>Modalità</dt><dd className="font-bold" style={{ color: c.ink }}>{dineLabel(order.dineOption, tenantVertical)}</dd></div>
+              <div className="flex justify-between"><dt>Modalità</dt><dd className="font-bold" style={{ color: c.ink }}>{fulfillmentLabel}</dd></div>
             )}
             {pickupTime && (
               <div className="flex justify-between"><dt>Orario</dt><dd className="font-bold" style={{ color: c.ink }}>{pickupTime}</dd></div>
@@ -769,7 +866,7 @@ export function CheckoutClient({
 
         {!alreadyPaid && currentStatus !== "annullato" && !payOnSite && (
           <>
-            <section className="mt-5 rounded-3xl p-5 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 1px 2px rgb(0 0 0 / 0.05), 0 0 0 1px ${c.ring}` }}>
+            <section className="mt-5 rounded-[1.75rem] p-5 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 18px 50px rgb(var(--tenant-ink) / 0.08), 0 0 0 1px ${c.ring}` }}>
               <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>
                 <ShieldCheck size={14} /> Privacy e condizioni
               </h2>
@@ -782,20 +879,20 @@ export function CheckoutClient({
                   </div>
                   <p className="mt-2 leading-relaxed">
                     {order.source === "retell"
-                      ? `La chiamata effettuata al locale è stata gestita da un assistente vocale automatico per conto di ${tenantName} ed è stata registrata e trascritta per finalità di assistenza, evasione dell'ordine, qualità del servizio e adempimenti contabili. La registrazione viene conservata per il tempo strettamente necessario.`
-                      : `Questa conversazione WhatsApp è stata gestita da un assistente automatico per conto di ${tenantName}. I messaggi e i dati condivisi vengono trattati per evadere l'ordine, fornire assistenza, garantire la qualità del servizio e adempiere agli obblighi contabili.`}
+                      ? `Hai ordinato tramite l'assistente vocale di ${tenantName}. La chiamata è stata registrata e trascritta per gestire l'ordine, assisterti e rispettare gli obblighi contabili. La registrazione viene conservata per il tempo strettamente necessario.`
+                      : `Hai ordinato tramite l'assistente WhatsApp di ${tenantName}. Trattiamo messaggi e dati condivisi per gestire l'ordine, assisterti e rispettare gli obblighi contabili.`}
                   </p>
                   <p className="mt-2 leading-relaxed">
-                    Titolare del trattamento: <strong>{tenantName}</strong>. Responsabile del trattamento tecnico: Menuary. Hai diritto di accesso, rettifica, cancellazione e opposizione ai sensi degli artt. 15-22 GDPR scrivendo al locale.
+                    Titolare del trattamento: <strong>{tenantName}</strong>. Puoi chiederci accesso, rettifica, cancellazione o opposizione ai sensi degli artt. 15-22 GDPR.
                   </p>
                 </div>
               )}
 
               <ul className="mt-3 space-y-2 text-xs leading-relaxed" style={{ color: c.inkMuted }}>
-                <li>• Pagando confermi l&apos;ordine sopra riportato. La conferma definitiva sarà visibile al locale solo a pagamento avvenuto.</li>
-                <li>• Pagamento elaborato in modo sicuro tramite <strong>Stripe</strong>: i dati della carta non transitano dai server di Menuary né del locale.</li>
-                <li>• Ricevuta e dati di fatturazione: ricevi automaticamente la ricevuta Stripe via email; per fattura intestata contatta direttamente {tenantName}.</li>
-                <li>• Rimborsi e contestazioni vanno gestiti direttamente con {tenantName}, titolare dell&apos;incasso.</li>
+                <li>• Pagando confermi l&apos;ordine sopra riportato. Appena il pagamento va a buon fine, lo vediamo in cucina.</li>
+                <li>• Il pagamento è gestito in modo sicuro da <strong>Stripe</strong>: non vediamo né conserviamo i dati della tua carta.</li>
+                <li>• Ricevi automaticamente la ricevuta Stripe via email; per una fattura intestata puoi contattarci.</li>
+                <li>• Per rimborsi o contestazioni, scrivici indicando il codice ordine <strong>{order.code}</strong>.</li>
               </ul>
 
               <label className="mt-4 flex cursor-pointer items-start gap-2.5 rounded-xl p-3 text-sm" style={{ backgroundColor: c.bgSoft, color: c.ink }}>
@@ -826,7 +923,7 @@ export function CheckoutClient({
             {error && (
               <p className="mt-3 rounded-lg bg-rose-50 p-3 text-center text-xs text-rose-700">
                 {error === "tenant_stripe_not_connected" || error === "tenant_stripe_charges_disabled"
-                  ? "Il locale non ha ancora attivato i pagamenti online. Riprova più tardi o contatta il locale."
+                  ? "I pagamenti online non sono disponibili in questo momento. Riprova più tardi o contattaci."
                   : error}
               </p>
             )}
@@ -836,13 +933,13 @@ export function CheckoutClient({
         {error && payOnSite && !alreadyPaid && currentStatus !== "annullato" && (
           <p className="mt-3 rounded-lg bg-rose-50 p-3 text-center text-xs text-rose-700">
             {error === "tenant_stripe_not_connected" || error === "tenant_stripe_charges_disabled"
-              ? "Il locale non ha ancora attivato i pagamenti online. Puoi comunque pagare al ritiro o alla consegna."
+              ? "I pagamenti online non sono disponibili in questo momento. Puoi comunque pagare al ritiro o alla consegna."
               : error}
           </p>
         )}
 
         <footer className="mt-8 text-center text-[10px]" style={{ color: c.inkFaint }}>
-          Powered by Menuary · Pagamenti sicuri Stripe
+          Pagamento sicuro con Stripe
         </footer>
       </div>
 
