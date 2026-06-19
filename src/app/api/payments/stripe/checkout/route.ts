@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import type { PaymentSource } from "@/lib/payments/stripe/fees";
-import { isDemoHostname } from "@/lib/demo-mode";
+import { shouldUseStripeSandbox } from "@/lib/payments/stripe/sandbox-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       cancelUrl: body.cancelUrl,
       expiresInMinutes: body.expiresInMinutes,
       metadata: body.metadata,
-      demoSandbox: isDemoHostname(url.hostname),
+      demoSandbox: shouldUseStripeSandbox(body.tenantId, url.hostname),
     });
     return NextResponse.json({ session });
   } catch (err) {

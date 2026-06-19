@@ -3,7 +3,7 @@ import { getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { PaymentSource } from "@/lib/payments/stripe/fees";
-import { isDemoHostname } from "@/lib/demo-mode";
+import { shouldUseStripeSandbox } from "@/lib/payments/stripe/sandbox-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,7 @@ export async function POST(
 
   const url = new URL(req.url);
   const origin = `${url.protocol}//${url.host}`;
-  const demoSandbox = isDemoHostname(url.hostname);
+  const demoSandbox = shouldUseStripeSandbox(order.tenantId, url.hostname);
   const returnPath = `/checkout/${encodeURIComponent(code)}?t=${encodeURIComponent(body.token)}`;
 
   try {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Clock, User, StickyNote, Package, Mail, ShoppingBag, UtensilsCrossed, Bike } from "lucide-react";
+import { Clock, User, StickyNote, Package, Mail, ShoppingBag, UtensilsCrossed, Bike, MapPin, Phone, DoorOpen, Building2 } from "lucide-react";
 import { useCartStore, cartTotal } from "@/store/cart-store";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
 import { formatRemovedForLine } from "@/lib/ingredients";
@@ -53,9 +53,14 @@ export default function OrdinaPage() {
   const [dineOption, setDineOption] = useState<OrderDineOption>("takeaway");
   const [deliveryEnabled, setDeliveryEnabled] = useState(false);
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [notes, setNotes] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryDoorbell, setDeliveryDoorbell] = useState("");
+  const [deliveryFloor, setDeliveryFloor] = useState("");
+  const [deliveryNotes, setDeliveryNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [slots] = useState(() => nextSlots());
 
@@ -118,7 +123,9 @@ export default function OrdinaPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!takeawayOk || !name.trim() || !pickupTime || lines.length === 0) return;
+    if (!takeawayOk || !name.trim() || !phone.trim() || !pickupTime || lines.length === 0) return;
+    const isDelivery = showDineOption && dineOption === "delivery";
+    if (isDelivery && !deliveryAddress.trim()) return;
     setSubmitting(true);
 
     if (checkoutBack) {
@@ -152,6 +159,7 @@ export default function OrdinaPage() {
       pickupTime,
       notes: notes.trim() || undefined,
       dineOption: showDineOption ? dineOption : undefined,
+      ...(isDelivery && { deliveryAddress: deliveryAddress.trim() }),
       lines: lines.map((l) => ({
         itemId: l.itemId,
         categoryId: l.categoryId,
@@ -181,10 +189,17 @@ export default function OrdinaPage() {
           tenantId: tenant.id,
           type: "asporto",
           customerName: name.trim(),
+          customerPhone: phone.trim() || undefined,
           customerEmail: email.trim() || undefined,
           pickupTime,
           notes: notes.trim() || undefined,
           dineOption: showDineOption ? dineOption : undefined,
+          ...(isDelivery && {
+            deliveryAddress: deliveryAddress.trim(),
+            deliveryDoorbell: deliveryDoorbell.trim() || undefined,
+            deliveryFloor: deliveryFloor.trim() || undefined,
+            deliveryNotes: deliveryNotes.trim() || undefined,
+          }),
           lines,
           total,
         }),
@@ -283,7 +298,18 @@ export default function OrdinaPage() {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Come ti chiamiamo al bancone"
+                      placeholder={dineOption === "delivery" ? "Nome e cognome" : "Come ti chiamiamo al bancone"}
+                      className="w-full bg-transparent outline-none"
+                    />
+                  </Field>
+
+                  <Field label="Telefono" icon={<Phone size={16} />}>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Per aggiornamenti sull'ordine"
                       className="w-full bg-transparent outline-none"
                     />
                   </Field>
@@ -298,7 +324,43 @@ export default function OrdinaPage() {
                     />
                   </Field>
 
-                  <Field label="Orario di ritiro" icon={<Clock size={16} />}>
+                  {showDineOption && dineOption === "delivery" && (
+                    <>
+                      <Field label="Indirizzo di consegna" icon={<MapPin size={16} />}>
+                        <input
+                          type="text"
+                          required
+                          value={deliveryAddress}
+                          onChange={(e) => setDeliveryAddress(e.target.value)}
+                          placeholder="Via, numero civico, città"
+                          className="w-full bg-transparent outline-none"
+                        />
+                      </Field>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <Field label="Citofono" icon={<DoorOpen size={16} />}>
+                          <input
+                            type="text"
+                            value={deliveryDoorbell}
+                            onChange={(e) => setDeliveryDoorbell(e.target.value)}
+                            placeholder="es. Rossi"
+                            className="w-full bg-transparent outline-none"
+                          />
+                        </Field>
+                        <Field label="Piano" icon={<Building2 size={16} />}>
+                          <input
+                            type="text"
+                            value={deliveryFloor}
+                            onChange={(e) => setDeliveryFloor(e.target.value)}
+                            placeholder="es. 3"
+                            className="w-full bg-transparent outline-none"
+                          />
+                        </Field>
+                      </div>
+                    </>
+                  )}
+
+                  <Field label={dineOption === "delivery" ? "Orario di consegna" : "Orario di ritiro"} icon={<Clock size={16} />}>
                     <select
                       required
                       value={pickupTime}
@@ -323,12 +385,25 @@ export default function OrdinaPage() {
                       className="w-full resize-none bg-transparent outline-none"
                     />
                   </Field>
+
+                  {showDineOption && dineOption === "delivery" && (
+                    <Field label="Note consegna (opzionale)" icon={<Bike size={16} />}>
+                      <textarea
+                        rows={2}
+                        value={deliveryNotes}
+                        onChange={(e) => setDeliveryNotes(e.target.value)}
+                        placeholder="Istruzioni per il rider: cancello, scala B, ecc."
+                        className="w-full resize-none bg-transparent outline-none"
+                      />
+                    </Field>
+                  )}
                 </div>
 
                 <button
                   type="submit"
                   disabled={
-                    submitting || !name.trim() || !pickupTime || lines.length === 0
+                    submitting || !name.trim() || !phone.trim() || !pickupTime || lines.length === 0
+                    || (showDineOption && dineOption === "delivery" && !deliveryAddress.trim())
                   }
                   className="btn-primary mt-8 w-full text-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -336,8 +411,9 @@ export default function OrdinaPage() {
                   Invia ordine ({formatEuro(total)})
                 </button>
                 <p className="mt-2 text-center text-[11px] text-pork-ink/50">
-                  L’ordine arriva in cucina; il pagamento avviene al ritiro al bancone, salvo
-                  diverse indicazioni del locale.
+                  {dineOption === "delivery"
+                    ? "L’ordine arriva in cucina; il pagamento avviene alla consegna, salvo diverse indicazioni del locale."
+                    : "L’ordine arriva in cucina; il pagamento avviene al ritiro al bancone, salvo diverse indicazioni del locale."}
                 </p>
               </form>
 

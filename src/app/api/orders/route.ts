@@ -44,6 +44,10 @@ export type CreateOrderBody = {
   dineOption?: OrderDineOption;
   /** ID sede da cui proviene l'ordine — null per tenant single-location */
   locationId?: string;
+  deliveryAddress?: string;
+  deliveryDoorbell?: string;
+  deliveryFloor?: string;
+  deliveryNotes?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -55,6 +59,10 @@ export async function POST(req: NextRequest) {
 
   if (!tenantId || !type || !lines?.length) {
     return NextResponse.json({ error: "missing required fields" }, { status: 400 });
+  }
+
+  if (rest.dineOption === "delivery" && !rest.deliveryAddress?.trim()) {
+    return NextResponse.json({ error: "Indirizzo di consegna obbligatorio per delivery.", code: "delivery_address_required" }, { status: 422 });
   }
 
   const invalidMenuItems = await validateMenuItemsForOrderChannel(supabase, {
@@ -167,6 +175,10 @@ export async function POST(req: NextRequest) {
       notes: rest.notes ?? null,
       location_id: locationId ?? null,
       dine_option: rest.dineOption ?? null,
+      delivery_address: rest.deliveryAddress?.trim() || null,
+      delivery_doorbell: rest.deliveryDoorbell?.trim() || null,
+      delivery_floor: rest.deliveryFloor?.trim() || null,
+      delivery_notes: rest.deliveryNotes?.trim() || null,
       confirmation_expires_at: confirmationExpiresAt,
       confirmed_at: confirmedAt,
       auto_accepted: autoAccepted,
@@ -219,6 +231,8 @@ export async function POST(req: NextRequest) {
     publicToken: (order as { public_token?: string }).public_token ?? "",
     customerPhone: (order as { customer_phone?: string | null }).customer_phone,
     kind: autoAccepted ? "confirmed" : "created",
+    orderSource: "web",
+    orderType: type,
     req,
   });
 

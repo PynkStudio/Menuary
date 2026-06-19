@@ -3,10 +3,16 @@
 import {
   createContext,
   useContext,
+  useLayoutEffect,
   useMemo,
+  useRef,
   type PropsWithChildren,
 } from "react";
 import type { TenantProfile } from "@/lib/tenant";
+import {
+  activateTenantScopedStorage,
+  getActiveTenantScopedStorageId,
+} from "@/lib/tenant-scoped-stores";
 import {
   mergeTenantOverrides,
   useTenantAdminStore,
@@ -26,9 +32,27 @@ export function TenantProvider({
 
   return (
     <TenantContext.Provider value={effectiveTenant}>
+      <TenantScopedStoreBridge tenantId={effectiveTenant.id} />
       {children}
     </TenantContext.Provider>
   );
+}
+
+function TenantScopedStoreBridge({ tenantId }: { tenantId: string }) {
+  const previousTenantRef = useRef<string | null>(null);
+
+  useLayoutEffect(() => {
+    previousTenantRef.current = getActiveTenantScopedStorageId();
+    void activateTenantScopedStorage(tenantId);
+
+    return () => {
+      const previousTenantId = previousTenantRef.current;
+      if (!previousTenantId || getActiveTenantScopedStorageId() !== tenantId) return;
+      void activateTenantScopedStorage(previousTenantId);
+    };
+  }, [tenantId]);
+
+  return null;
 }
 
 export function useTenant(): TenantProfile {

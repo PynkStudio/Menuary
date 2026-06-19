@@ -7,6 +7,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { suggestUpsellsForOrder } from "@/lib/upselling-engine";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
+import { shouldUseStripeSandbox } from "@/lib/payments/stripe/sandbox-policy";
 import { CheckoutClient } from "./checkout-client";
 import type { MenuOrderChannel } from "@/lib/types";
 
@@ -41,7 +42,7 @@ export default async function PublicCheckoutPage({
 
   const [upsellSuggestions, paymentAccount] = await Promise.all([
     tenant.features.upselling ? loadCheckoutUpsellSuggestions(tenant.id, order) : Promise.resolve([]),
-    getTenantPaymentAccount(tenant.id),
+    getTenantPaymentAccount(tenant.id, { demoSandbox: shouldUseStripeSandbox(tenant.id, host) }),
   ]);
   const stripeEnabled = Boolean(paymentAccount?.chargesEnabled);
 
@@ -49,7 +50,7 @@ export default async function PublicCheckoutPage({
     <div style={tenantThemeCssVars(tenant.theme) as React.CSSProperties} data-tenant-surface={tenant.id}>
       <CheckoutClient
         tenantId={tenant.id}
-        tenantName={tenant.label}
+        tenantName={tenant.name}
         tenantVertical={tenant.vertical}
         order={{ ...order, menuaryUserId: null }}
         token={t}

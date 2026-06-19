@@ -207,6 +207,21 @@ export function ArrivalAlertsProvider({
           ) {
             bump("orders", "order");
           }
+          // nuovo -> pending_confirmation: ordine modificato dal cliente, richiede ri-approvazione
+          if (
+            prev === "nuovo" &&
+            next === "pending_confirmation"
+          ) {
+            bump("orders", "order_edit");
+          }
+          // pending_confirmation -> pending_confirmation: modifica su ordine gia' in attesa (timer resettato)
+          if (
+            prev === "pending_confirmation" &&
+            next === "pending_confirmation" &&
+            oldRow?.updated_at !== newRow?.updated_at
+          ) {
+            bump("orders", "order_edit");
+          }
           // qualunque -> pronto: alert per chi serve (camerieri)
           if (
             enableReadyChannel &&

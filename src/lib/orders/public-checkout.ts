@@ -29,13 +29,14 @@ export type PublicCheckoutOrder = {
   tableId: string | null;
   menuaryUserId: string | null;
   lines: Array<{
+    id: string;
     itemId: string;
     name: string;
     qty: number;
     unitPrice: number;
     total: number;
     notes: string | null;
-    addedExtras: Array<{ name: string; price: number }>;
+    addedExtras: Array<{ id: string; name: string; price: number }>;
     removedIngredients: string[];
   }>;
 };
@@ -59,7 +60,7 @@ export async function getPublicCheckoutOrder(input: {
   const { data, error } = await db
     .from("orders")
     .select(
-      "id, tenant_id, code, status, updated_at, type, table_id, total, dine_option, fulfillment_type, confirmation_expires_at, customer_name, customer_phone, pickup_time, delivery_address, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(item_id, name, qty, unit_price, line_total, note, added_extras, removed_ingredients)",
+      "id, tenant_id, code, status, updated_at, type, table_id, total, dine_option, fulfillment_type, confirmation_expires_at, customer_name, customer_phone, pickup_time, delivery_address, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(id, item_id, name, qty, unit_price, line_total, note, added_extras, removed_ingredients)",
     )
     .eq("tenant_id", input.tenantId)
     .eq("code", input.code)
@@ -92,6 +93,7 @@ export async function getPublicCheckoutOrder(input: {
     payment_status: string;
     payment_provider: string | null;
     order_lines: Array<{
+      id: string;
       item_id: string;
       name: string;
       qty: number;
@@ -128,6 +130,7 @@ export async function getPublicCheckoutOrder(input: {
     source: row.source,
     menuaryUserId: row.menuary_user_id,
     lines: (row.order_lines ?? []).map((l) => ({
+      id: l.id,
       itemId: l.item_id,
       name: l.name,
       qty: Number(l.qty),
@@ -140,7 +143,7 @@ export async function getPublicCheckoutOrder(input: {
   };
 }
 
-function parseAddedExtras(value: unknown): Array<{ name: string; price: number }> {
+function parseAddedExtras(value: unknown): Array<{ id: string; name: string; price: number }> {
   if (!Array.isArray(value)) return [];
   return value
     .map((entry) => {
@@ -148,9 +151,10 @@ function parseAddedExtras(value: unknown): Array<{ name: string; price: number }
       const e = entry as Record<string, unknown>;
       const name = typeof e.name === "string" ? e.name : null;
       if (!name) return null;
-      return { name, price: Number(e.price) || 0 };
+      const id = typeof e.id === "string" ? e.id : (typeof e.code === "string" ? e.code : name);
+      return { id, name, price: Number(e.price) || 0 };
     })
-    .filter((x): x is { name: string; price: number } => x !== null);
+    .filter((x): x is { id: string; name: string; price: number } => x !== null);
 }
 
 function parseRemovedIngredients(value: unknown): string[] {

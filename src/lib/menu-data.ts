@@ -86,6 +86,7 @@ export type MenuVariantGroup = {
   id: string;
   name: string;
   required?: boolean;
+  defaultOptionId?: string;
   options: { id: string; name: string; price?: number }[];
 };
 

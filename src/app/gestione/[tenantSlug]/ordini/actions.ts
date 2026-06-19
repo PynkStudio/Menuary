@@ -6,10 +6,20 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { pushOrderStatusToHubrise } from "@/lib/hubrise/push-status";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
+import { notifyCustomerOrderStatus, type OrderNotificationKind } from "@/lib/orders/order-notifications";
 import type { Database } from "@/lib/database.types";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Status = Database["public"]["Enums"]["order_status"];
+
+function notificationKindForStatus(status: Status): OrderNotificationKind {
+  switch (status) {
+    case "nuovo": return "confirmed";
+    case "annullato": return "cancelled";
+    case "in_consegna": return "out_for_delivery";
+    default: return "updated";
+  }
+}
 
 async function update(tenantSlug: string, orderId: string, status: Status) {
   const auth = await authorizeGestione(tenantSlug);
@@ -19,6 +29,14 @@ async function update(tenantSlug: string, orderId: string, status: Status) {
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
   const location = await requireActiveGestioneLocation(tenantSlug);
+
+  const { data: order } = await svc
+    .from("orders")
+    .select("id, code, public_token, customer_phone, source, type")
+    .eq("id", orderId)
+    .eq("tenant_id", tenantSlug)
+    .eq("location_id", location.id)
+    .maybeSingle();
 
   const { error } = await svc
     .from("orders")
@@ -31,6 +49,18 @@ async function update(tenantSlug: string, orderId: string, status: Status) {
 
   after(async () => {
     await pushOrderStatusToHubrise({ orderId, newStatus: status });
+    if (order) {
+      await notifyCustomerOrderStatus({
+        tenantId: tenantSlug,
+        orderId: order.id,
+        code: order.code,
+        publicToken: order.public_token,
+        customerPhone: order.customer_phone,
+        kind: notificationKindForStatus(status),
+        orderSource: order.source,
+        orderType: order.type,
+      }).catch(() => {});
+    }
   });
 
   revalidatePath(`/gestione/${tenantSlug}/ordini`);
@@ -153,6 +183,30 @@ export async function confirmPendingOrder(formData: FormData) {
   // Email best-effort, non blocca l'action.
   await sendOrderConfirmationEmail(svc, id).catch(() => null);
 
+  after(async () => {
+    if (existing) {
+      const { data: order } = await svc
+        .from("orders")
+        .select("id, code, public_token, customer_phone, source, type")
+        .eq("id", id)
+        .eq("tenant_id", tenantSlug)
+        .eq("location_id", location.id)
+        .maybeSingle();
+      if (order) {
+        await notifyCustomerOrderStatus({
+          tenantId: tenantSlug,
+          orderId: order.id,
+          code: order.code,
+          publicToken: order.public_token,
+          customerPhone: order.customer_phone,
+          kind: "confirmed",
+          orderSource: order.source,
+          orderType: order.type,
+        }).catch(() => {});
+      }
+    }
+  });
+
   revalidatePath(`/gestione/${tenantSlug}/ordini`);
 }
 
@@ -182,6 +236,25 @@ export async function rejectPendingOrder(formData: FormData) {
 
   after(async () => {
     await pushOrderStatusToHubrise({ orderId: id, newStatus: "annullato" });
+    const { data: order } = await svc
+      .from("orders")
+      .select("id, code, public_token, customer_phone, source, type")
+      .eq("id", id)
+      .eq("tenant_id", tenantSlug)
+      .eq("location_id", location.id)
+      .maybeSingle();
+    if (order) {
+      await notifyCustomerOrderStatus({
+        tenantId: tenantSlug,
+        orderId: order.id,
+        code: order.code,
+        publicToken: order.public_token,
+        customerPhone: order.customer_phone,
+        kind: "cancelled",
+        orderSource: order.source,
+        orderType: order.type,
+      }).catch(() => {});
+    }
   });
 
   revalidatePath(`/gestione/${tenantSlug}/ordini`);

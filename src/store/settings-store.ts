@@ -7,7 +7,24 @@ import type { TenantFeatureKey } from "@/lib/tenant";
 import type { DaySchedule } from "@/lib/venue-hours";
 import { defaultHoursWeek } from "@/lib/venue-hours";
 
-const STORAGE_KEY = "bepork-settings-v1";
+const LEGACY_STORAGE_KEY = "bepork-settings-v1";
+const STORAGE_KEY_PREFIX = "menuary-settings-v1";
+const FALLBACK_STORAGE_KEY = `${STORAGE_KEY_PREFIX}:unscoped`;
+
+let activeSettingsTenantId: string | null = null;
+
+export function settingsStorageKey(tenantId: string): string {
+  return `${STORAGE_KEY_PREFIX}:${tenantId}`;
+}
+
+function migrateLegacySettingsStorage(tenantId: string, nextKey: string) {
+  if (typeof window === "undefined" || tenantId !== "bepork") return;
+  try {
+    if (window.localStorage.getItem(nextKey)) return;
+    const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy) window.localStorage.setItem(nextKey, legacy);
+  } catch {}
+}
 
 export type ModuleSuspension = {
   disabledUntil: number | null;
@@ -189,7 +206,7 @@ export const useSettingsStore = create<SettingsStore>()(
         })),
     }),
     {
-      name: STORAGE_KEY,
+      name: FALLBACK_STORAGE_KEY,
       skipHydration: true,
       storage: createBrowserLocalJSONStorage(),
       partialize: (s) => ({
@@ -235,6 +252,25 @@ export const useSettingsStore = create<SettingsStore>()(
     },
   ),
 );
+
+export function getActiveSettingsTenantId(): string | null {
+  return activeSettingsTenantId;
+}
+
+export async function activateSettingsTenantStorage(tenantId: string) {
+  const nextKey = settingsStorageKey(tenantId);
+  if (activeSettingsTenantId === tenantId && useSettingsStore.persist.getOptions().name === nextKey) {
+    return;
+  }
+  migrateLegacySettingsStorage(tenantId, nextKey);
+  activeSettingsTenantId = tenantId;
+  useSettingsStore.persist.setOptions({ name: nextKey });
+  useSettingsStore.setState({
+    ...SITE_SETTINGS_DEFAULTS,
+    hoursWeek: defaultHoursWeek(),
+  });
+  await useSettingsStore.persist.rehydrate();
+}
 
 export function getLocalModuleEnabled(
   settings: Pick<

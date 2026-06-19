@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus, Pencil, Check, Clock, ChefHat, Bike } from "lucide-react";
+import { useEffect, useState, useCallback, Fragment } from "react";
+import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus, Pencil, Check, Clock, ChefHat, Bike, Loader2, Home, ShoppingBag, RotateCcw, type LucideIcon } from "lucide-react";
 import type { PublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import type { TenantVertical } from "@/lib/tenant";
 
@@ -25,6 +25,8 @@ const c = {
   mustardSoft: "rgb(var(--tenant-mustard) / 0.12)",
   ring: "rgb(var(--tenant-ink) / 0.06)",
   divider: "rgb(var(--tenant-ink) / 0.08)",
+  green: "rgb(var(--tenant-green))",
+  greenSoft: "rgb(var(--tenant-green) / 0.12)",
 };
 
 // ─── Mancia overlay ───────────────────────────────────────────────────────────
@@ -193,6 +195,316 @@ function ManciaOverlay({
   );
 }
 
+// ─── Edit‑line overlay ───────────────────────────────────────────────────────
+
+type ItemOptions = {
+  ingredients: Array<{ code: string; name: string }>;
+  extras: Array<{ id: string; code: string; name: string; price: number }>;
+};
+
+type OrderLine = PublicCheckoutOrder["lines"][number];
+
+function EditLineOverlay({
+  orderCode,
+  tenantId,
+  token,
+  line,
+  onSaved,
+  onClose,
+}: {
+  orderCode: string;
+  tenantId: string;
+  token: string;
+  line: OrderLine;
+  onSaved: (result: {
+    lineId: string;
+    unitPrice: number;
+    lineTotal: number;
+    total: number;
+    addedExtras: Array<{ id: string; name: string; price: number }>;
+    removedIngredients: string[];
+    note: string | null;
+    newStatus?: string;
+  }) => void;
+  onClose: () => void;
+}) {
+  const [options, setOptions] = useState<ItemOptions | null>(null);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+  const [selectedExtras, setSelectedExtras] = useState<Array<{ id: string; name: string; price: number }>>(line.addedExtras);
+  const [removedIngredients, setRemovedIngredients] = useState<string[]>(line.removedIngredients);
+  const [note, setNote] = useState(line.notes ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const params = new URLSearchParams({ tenantId, t: token, itemId: line.itemId });
+        const res = await fetch(`/api/checkout/${encodeURIComponent(orderCode)}/item-options?${params.toString()}`);
+        if (!res.ok) throw new Error("fetch_failed");
+        const json = (await res.json()) as ItemOptions;
+        if (active) setOptions(json);
+      } catch {
+        if (active) setOptions({ ingredients: [], extras: [] });
+      } finally {
+        if (active) setLoadingOptions(false);
+      }
+    })();
+    return () => { active = false; };
+  }, [orderCode, tenantId, token, line.itemId]);
+
+  const toggleExtra = useCallback((extra: { id: string; name: string; price: number }) => {
+    setSelectedExtras((prev) => {
+      const exists = prev.some((e) => e.id === extra.id);
+      return exists ? prev.filter((e) => e.id !== extra.id) : [...prev, extra];
+    });
+  }, []);
+
+  const toggleIngredient = useCallback((ingredientName: string) => {
+    setRemovedIngredients((prev) =>
+      prev.includes(ingredientName) ? prev.filter((n) => n !== ingredientName) : [...prev, ingredientName],
+    );
+  }, []);
+
+  const hasChanges =
+    JSON.stringify(selectedExtras.map((e) => e.id).sort()) !== JSON.stringify(line.addedExtras.map((e) => e.id).sort()) ||
+    JSON.stringify([...removedIngredients].sort()) !== JSON.stringify([...line.removedIngredients].sort()) ||
+    (note.trim() || "") !== (line.notes || "");
+
+  const handleSave = async () => {
+    if (!hasChanges) { onClose(); return; }
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/checkout/${encodeURIComponent(orderCode)}/edit-line`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId,
+          token,
+          lineId: line.id,
+          addedExtras: selectedExtras,
+          removedIngredients,
+          note: note.trim() || null,
+        }),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string; lineId?: string; unitPrice?: number; lineTotal?: number; total?: number; needsApproval?: boolean; newStatus?: string };
+      if (!res.ok) throw new Error(json.error ?? "edit_failed");
+      onSaved({
+        lineId: json.lineId!,
+        unitPrice: json.unitPrice!,
+        lineTotal: json.lineTotal!,
+        total: json.total!,
+        addedExtras: selectedExtras,
+        removedIngredients,
+        note: note.trim() || null,
+        newStatus: json.newStatus,
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "errore");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+        background: "rgba(0,0,0,0.55)",
+        backdropFilter: "blur(4px)",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget && !saving) onClose(); }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          maxHeight: "85vh",
+          overflowY: "auto",
+          background: "#fff",
+          borderRadius: "24px 24px 0 0",
+          padding: "28px 20px 36px",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: "0.65rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.16em", color: c.inkFaint }}>
+              Modifica piatto
+            </div>
+            <div style={{ fontSize: "1.15rem", fontWeight: 900, color: c.ink, marginTop: 4 }}>
+              {line.name}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: c.inkMuted }}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {loadingOptions ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: "32px 0", color: c.inkMuted }}>
+            <Loader2 size={22} className="animate-spin" />
+          </div>
+        ) : (
+          <>
+            {/* Ingredienti */}
+            {options && options.ingredients.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: c.inkFaint, marginBottom: 10 }}>
+                  Ingredienti
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {options.ingredients.map((ing) => {
+                    const isRemoved = removedIngredients.includes(ing.name);
+                    return (
+                      <button
+                        key={ing.code}
+                        type="button"
+                        onClick={() => toggleIngredient(ing.name)}
+                        style={{
+                          padding: "8px 14px",
+                          borderRadius: 100,
+                          border: `2px solid ${isRemoved ? "rgb(var(--tenant-ink) / 0.12)" : c.accent}`,
+                          background: isRemoved ? "transparent" : c.accentSoft,
+                          color: isRemoved ? c.inkMuted : c.accent,
+                          fontWeight: 700,
+                          fontSize: "0.8rem",
+                          cursor: "pointer",
+                          textDecoration: isRemoved ? "line-through" : "none",
+                          opacity: isRemoved ? 0.6 : 1,
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {ing.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Extra */}
+            {options && options.extras.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: c.inkFaint, marginBottom: 10 }}>
+                  Extra
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {options.extras.map((extra) => {
+                    const isSelected = selectedExtras.some((e) => e.id === extra.id);
+                    return (
+                      <button
+                        key={extra.id}
+                        type="button"
+                        onClick={() => toggleExtra({ id: extra.id, name: extra.name, price: extra.price })}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "10px 14px",
+                          borderRadius: 14,
+                          border: `2px solid ${isSelected ? c.accent : "rgb(var(--tenant-ink) / 0.10)"}`,
+                          background: isSelected ? c.accentSoft : "transparent",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <span style={{ fontWeight: 700, fontSize: "0.85rem", color: isSelected ? c.accent : c.ink }}>
+                          {extra.name}
+                        </span>
+                        <span style={{ fontWeight: 800, fontSize: "0.8rem", color: isSelected ? c.accent : c.inkMuted }}>
+                          {extra.price > 0 ? `+${eur(extra.price)}` : "Gratis"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Note */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: c.inkFaint, marginBottom: 8 }}>
+                Note
+              </div>
+              <input
+                type="text"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="es. ben cotto, senza cipolla…"
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 12,
+                  border: `1.5px solid ${c.divider}`,
+                  fontSize: "0.85rem",
+                  color: c.ink,
+                  backgroundColor: c.bgSoft,
+                  outline: "none",
+                }}
+              />
+            </div>
+          </>
+        )}
+
+        {error && (
+          <p style={{ fontSize: "0.78rem", color: "#be123c", marginBottom: 12 }}>
+            {error === "edit_window_expired" ? "Finestra di modifica scaduta." : error}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || loadingOptions || !hasChanges}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            padding: "14px 24px",
+            borderRadius: 100,
+            border: "none",
+            background: hasChanges ? c.accent : c.divider,
+            color: "#fff",
+            fontWeight: 800,
+            fontSize: "0.95rem",
+            cursor: saving || loadingOptions || !hasChanges ? "not-allowed" : "pointer",
+            opacity: saving || loadingOptions ? 0.6 : 1,
+            transition: "all 0.15s ease",
+          }}
+        >
+          {saving ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Salvataggio…
+            </>
+          ) : hasChanges ? (
+            <>
+              <Check size={16} />
+              Salva modifiche
+            </>
+          ) : (
+            "Nessuna modifica"
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 function formatRemaining(sec: number): string {
@@ -283,6 +595,37 @@ function liveStatusCopy(status: string, paymentStatus: string) {
   };
 }
 
+type TrackerNode = { label: string; Icon: LucideIcon; state: "done" | "active" | "todo" };
+
+// Tappe visibili del tracker (4 nodi) mappate sugli stati interni. La soglia `t`
+// è l'indice in TRACKING_STEPS a partire dal quale il nodo è completato; il primo
+// nodo non completato diventa quello "attivo".
+function buildTrackerNodes(status: string, dineOption: string | null): TrackerNode[] {
+  const idx = TRACKING_STEPS.indexOf(status);
+  const defs =
+    dineOption === "delivery"
+      ? [
+          { label: "Ricevuto", Icon: Check, t: 1 },
+          { label: "In cucina", Icon: ChefHat, t: 2 },
+          { label: "In consegna", Icon: Bike, t: 4 },
+          { label: "Consegnato", Icon: Home, t: 5 },
+        ]
+      : [
+          { label: "Ricevuto", Icon: Check, t: 1 },
+          { label: "In cucina", Icon: ChefHat, t: 2 },
+          { label: "Pronto", Icon: ShoppingBag, t: 3 },
+          { label: "Ritirato", Icon: Check, t: 5 },
+        ];
+  let activeUsed = false;
+  return defs.map((d) => {
+    let state: TrackerNode["state"];
+    if (idx >= d.t) state = "done";
+    else if (!activeUsed) { state = "active"; activeUsed = true; }
+    else state = "todo";
+    return { label: d.label, Icon: d.Icon, state };
+  });
+}
+
 export function CheckoutClient({
   tenantId,
   tenantName,
@@ -321,6 +664,9 @@ export function CheckoutClient({
   const [editError, setEditError] = useState<string | null>(null);
   const [showManciaOverlay, setShowManciaOverlay] = useState(false);
   const [tipState, setTipState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [editingLine, setEditingLine] = useState<OrderLine | null>(null);
+  const [liveLines, setLiveLines] = useState(order.lines);
+  const [liveTotal, setLiveTotal] = useState(order.total);
 
   // Timer "ticking" per aggiornare i countdown in tempo reale.
   const [now, setNow] = useState(() => Date.now());
@@ -358,7 +704,6 @@ export function CheckoutClient({
   }, [tenantId, token, order.code]);
 
   const alreadyPaid = currentPaymentStatus === "paid";
-  const wasCancelled = paymentStatus === "cancel" || currentStatus === "annullato";
   // Quando l'agente AI (o il cliente che ha scelto "pagamento al ritiro") ha
   // marcato l'ordine come not_required, mostriamo solo il riepilogo, niente Stripe.
   const payOnSite = currentPaymentStatus === "not_required";
@@ -381,7 +726,6 @@ export function CheckoutClient({
   const canUpsell = upsellRemaining > 0;
   const statusCopy = liveStatusCopy(currentStatus, currentPaymentStatus);
   const isTerminalNegative = currentStatus === "annullato" || currentStatus === "expired" || currentPaymentStatus === "failed" || currentPaymentStatus === "expired";
-  const activeStepIndex = TRACKING_STEPS.includes(currentStatus) ? TRACKING_STEPS.indexOf(currentStatus) : -1;
   const confirmationSecondsLeft =
     currentStatus === "pending_confirmation" && confirmationExpiresAt
       ? Math.max(0, Math.floor((new Date(confirmationExpiresAt).getTime() - now) / 1000))
@@ -390,20 +734,16 @@ export function CheckoutClient({
   // Link al menu/checkout preservando il prefisso slug in preview (es. /kimos/...).
   const basePath = typeof window !== "undefined" ? window.location.pathname.replace(/\/checkout\/.*$/, "") : "";
   const menuHref = `${basePath}/menu?back=${encodeURIComponent(`${basePath}/checkout/${order.code}?t=${token}`)}`;
+  const privacyHref = `${basePath}/privacy`;
   const fulfillmentLabel = dineLabel(order.dineOption, tenantVertical);
-  const mainTitle = alreadyPaid
-    ? "Ordine confermato"
-    : payOnSite
-      ? "Il tuo ordine è registrato"
-      : "Conferma e paga l'ordine";
   const showQuickActions = !alreadyPaid && currentStatus !== "annullato" && (canCancel || canUpsell);
-  const statusIcon = currentStatus === "in_preparazione"
-    ? <ChefHat size={22} />
-    : currentStatus === "pronto" || currentStatus === "in_consegna"
-      ? <Bike size={22} />
-      : currentStatus === "annullato" || currentStatus === "expired"
-        ? <AlertCircle size={22} />
-        : <Clock size={22} />;
+
+  // Wordmark del tenant (iniziali) — niente logo terzo, solo identità del locale.
+  const initials = tenantName.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  // Tracker solo per ordini "in viaggio" (delivery/asporto) ancora vivi e solo nel
+  // verticale food: tappe come cucina/consegna non hanno senso altrove.
+  const showTracker = !isTerminalNegative && tenantVertical !== "services" && (order.dineOption === "delivery" || order.dineOption === "takeaway");
+  const trackerNodes = showTracker ? buildTrackerNodes(currentStatus, order.dineOption) : [];
 
   const cancelOrder = async () => {
     if (!canCancel) return;
@@ -478,9 +818,9 @@ export function CheckoutClient({
         `,
       }}
     >
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-xl">
         <header
-          className="relative overflow-hidden rounded-[2rem] p-5 shadow-sm sm:p-7"
+          className="relative overflow-hidden rounded-[2rem] p-5 shadow-sm sm:p-6"
           style={{
             backgroundColor: c.surface,
             boxShadow: `0 24px 70px rgb(var(--tenant-ink) / 0.10), 0 0 0 1px ${c.ring}`,
@@ -490,114 +830,133 @@ export function CheckoutClient({
             className="pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full"
             style={{ backgroundColor: c.accentSoft }}
           />
-          <div
-            className="pointer-events-none absolute -bottom-20 left-1/2 h-44 w-44 rounded-full"
-            style={{ backgroundColor: c.mustardSoft }}
-          />
-          <div className="relative">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em]" style={{ color: c.accent }}>
-                  {tenantName}
-                </p>
-                <h1 className="mt-2 max-w-xl text-3xl font-black leading-[1.02] sm:text-4xl" style={{ color: c.ink }}>
-                  {mainTitle}
-                </h1>
+          <div className="relative flex items-center gap-3">
+            <div
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black"
+              style={{ backgroundColor: c.accent, color: "#fff", letterSpacing: "0.04em" }}
+            >
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-base font-black leading-tight" style={{ color: c.ink }}>
+                {tenantName}
               </div>
-              <div className="rounded-2xl px-4 py-3 text-right" style={{ backgroundColor: c.bgSoft }}>
-                <div className="text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: c.inkFaint }}>
-                  Totale
-                </div>
-                <div className="mt-1 text-2xl font-black tabular-nums" style={{ color: c.accent }}>
-                  {eur(order.total)}
-                </div>
+              <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs font-bold" style={{ color: c.inkMuted }}>
+                <span>Ordine <span className="font-mono">{order.code}</span></span>
+                {fulfillmentLabel && (<><span style={{ opacity: 0.4 }}>·</span><span>{fulfillmentLabel}</span></>)}
+                {pickupTime && (<><span style={{ opacity: 0.4 }}>·</span><span>{pickupTime}</span></>)}
               </div>
             </div>
-            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-bold" style={{ color: c.inkMuted }}>
-              <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: c.bg }}>
-                Ordine <span className="font-mono">{order.code}</span>
-              </span>
-              {fulfillmentLabel && (
-                <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: c.bg }}>
-                  {fulfillmentLabel}
-                </span>
-              )}
-              {pickupTime && (
-                <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: c.bg }}>
-                  {pickupTime}
-                </span>
-              )}
+            <div className="shrink-0 text-right">
+              <div className="text-[10px] font-black uppercase tracking-[0.16em]" style={{ color: c.inkFaint }}>
+                Totale
+              </div>
+              <div className="text-2xl font-black tabular-nums" style={{ color: c.ink }}>
+                {eur(liveTotal)}
+              </div>
             </div>
           </div>
         </header>
 
         <section
-          className="relative z-10 -mt-3 rounded-[1.75rem] p-5 shadow-sm sm:p-6"
+          className="relative z-10 -mt-4 rounded-[1.75rem] p-5 shadow-sm sm:p-6"
           style={{
             backgroundColor: c.ink,
             color: "#fff",
-            boxShadow: `0 18px 45px rgb(var(--tenant-ink) / 0.18)`,
+            boxShadow: `0 18px 45px rgb(var(--tenant-ink) / 0.22)`,
           }}
         >
-          <div className="flex items-start gap-4">
-            <div
-              className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+          <div className="flex items-center gap-2">
+            <span
+              className="inline-flex h-2.5 w-2.5 rounded-full"
               style={{
-                backgroundColor: isTerminalNegative ? "#fff1f2" : "rgb(255 255 255 / 0.12)",
-                color: isTerminalNegative ? "#be123c" : "#fff",
+                backgroundColor: isTerminalNegative ? "rgb(var(--tenant-red))" : c.green,
+                boxShadow: isTerminalNegative
+                  ? "0 0 0 4px rgb(var(--tenant-red) / 0.18)"
+                  : "0 0 0 4px rgb(var(--tenant-green) / 0.22)",
               }}
-            >
-              {statusIcon}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: "rgb(255 255 255 / 0.58)" }}>
-                Stato ordine
-              </p>
-              <h2 className="mt-1 text-2xl font-black leading-tight">{statusCopy.label}</h2>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed" style={{ color: "rgb(255 255 255 / 0.72)" }}>
-                {statusCopy.description}
-              </p>
-              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold" style={{ color: "rgb(255 255 255 / 0.68)" }}>
-                {statusUpdatedAt && (
-                  <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: "rgb(255 255 255 / 0.09)" }}>
-                    Aggiornato alle {new Date(statusUpdatedAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                )}
-                {confirmationSecondsLeft !== null && (
-                  <span className="rounded-full px-3 py-1.5" style={{ backgroundColor: c.mustard, color: c.ink }}>
-                    Ti confermiamo entro {formatRemaining(confirmationSecondsLeft)}
-                  </span>
-                )}
-              </div>
-            </div>
+            />
+            <span className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: "rgb(255 255 255 / 0.55)" }}>
+              Stato ordine
+            </span>
+            {statusUpdatedAt && (
+              <span className="ml-auto text-[11px] font-bold" style={{ color: "rgb(255 255 255 / 0.5)" }}>
+                agg. {new Date(statusUpdatedAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
           </div>
-          {!isTerminalNegative && (
-            <div className="mt-6 grid grid-cols-5 gap-2">
-              {TRACKING_STEPS.map((step, index) => {
-                const done = activeStepIndex >= index;
-                return (
-                  <div
-                    key={step}
-                    className="h-2 rounded-full transition-colors"
-                    style={{ backgroundColor: done ? c.mustard : "rgb(255 255 255 / 0.16)" }}
-                  />
-                );
-              })}
+
+          <h1 className="mt-2 text-[1.7rem] font-black leading-tight">{statusCopy.label}</h1>
+          <p className="mt-1 text-sm leading-relaxed" style={{ color: "rgb(255 255 255 / 0.68)" }}>
+            {statusCopy.description}
+          </p>
+
+          {confirmationSecondsLeft !== null && (
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold" style={{ backgroundColor: c.mustard, color: c.ink }}>
+              <Clock size={12} /> Ti confermiamo entro {formatRemaining(confirmationSecondsLeft)}
+            </span>
+          )}
+
+          {showTracker && (
+            <div className="mt-5 flex items-start">
+              {trackerNodes.map((node, i) => (
+                <Fragment key={node.label}>
+                  {i > 0 && (
+                    <div
+                      className="h-0.5 flex-1 rounded-full"
+                      style={{ marginTop: 13, backgroundColor: node.state === "todo" ? "rgb(255 255 255 / 0.16)" : c.mustard }}
+                    />
+                  )}
+                  <div className="flex flex-col items-center" style={{ width: 56 }}>
+                    <div
+                      className="flex h-7 w-7 items-center justify-center rounded-full"
+                      style={{
+                        backgroundColor: node.state === "done" ? c.mustard : node.state === "active" ? "rgb(var(--tenant-mustard) / 0.16)" : "rgb(255 255 255 / 0.08)",
+                        color: node.state === "done" ? c.ink : node.state === "active" ? c.mustard : "rgb(255 255 255 / 0.5)",
+                        border: node.state === "active" ? `1.5px solid ${c.mustard}` : "1.5px solid transparent",
+                      }}
+                    >
+                      <node.Icon size={14} />
+                    </div>
+                    <div
+                      className="mt-1.5 text-center text-[9.5px] font-bold leading-tight"
+                      style={{ color: node.state === "todo" ? "rgb(255 255 255 / 0.45)" : "rgb(255 255 255 / 0.8)" }}
+                    >
+                      {node.label}
+                    </div>
+                  </div>
+                </Fragment>
+              ))}
+            </div>
+          )}
+
+          {isTerminalNegative && (
+            <div className="mt-4 flex flex-col gap-2.5 rounded-2xl p-3 sm:flex-row sm:items-center sm:justify-between" style={{ backgroundColor: "rgb(255 255 255 / 0.06)" }}>
+              <span className="text-xs font-bold" style={{ color: "rgb(255 255 255 / 0.7)" }}>
+                Nessun importo è stato addebitato.
+              </span>
+              <a
+                href={menuHref}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-xs font-black"
+                style={{ backgroundColor: c.mustard, color: c.ink }}
+              >
+                <RotateCcw size={13} /> Fai un nuovo ordine
+              </a>
             </div>
           )}
         </section>
 
         {alreadyPaid && (
-          <div className="mt-4 flex items-center gap-3 rounded-3xl bg-emerald-50 p-4 text-emerald-900 shadow-sm">
-            <CheckCircle2 size={24} />
+          <div className="mt-4 flex items-center gap-3 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.greenSoft, color: c.ink }}>
+            <CheckCircle2 size={24} style={{ color: c.green }} />
             <div className="text-sm">
               <div className="font-black">Pagamento ricevuto</div>
-              <div className="text-emerald-800/80">Grazie, abbiamo ricevuto il pagamento e prepariamo il tuo ordine.</div>
+              <div style={{ color: c.inkMuted }}>Grazie, abbiamo ricevuto il pagamento e prepariamo il tuo ordine.</div>
             </div>
           </div>
         )}
 
-        {payOnSite && !alreadyPaid && currentStatus !== "annullato" && (
+        {payOnSite && !alreadyPaid && !isTerminalNegative && (
           <>
             <div className="mt-4 flex items-center gap-3 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.bg, color: c.ink }}>
               <CheckCircle2 size={24} style={{ color: c.accent }} />
@@ -608,7 +967,7 @@ export function CheckoutClient({
                 <div style={{ color: c.inkMuted }}>
                   {currentStatus === "pending_confirmation"
                     ? "Abbiamo registrato il riepilogo: ti confermiamo l'ordine prima di iniziare la preparazione."
-                    : "Ti abbiamo inviato conferma e dettagli. L'ordine è confermato e verrà preparato."}
+                    : "Il tuo ordine è confermato: lo prepariamo a breve."}
                 </div>
               </div>
             </div>
@@ -616,13 +975,14 @@ export function CheckoutClient({
               <div className="mt-4 rounded-3xl p-4 text-xs shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}`, color: c.inkMuted }}>
                 <div className="flex items-center gap-2 font-bold" style={{ color: c.ink }}>
                   <ShieldCheck size={14} />
-                  {order.source === "retell" ? "Informativa chiamata registrata" : "Informativa conversazione WhatsApp"}
+                  {order.source === "retell" ? "Chiamata registrata" : "Conversazione WhatsApp"}
                 </div>
                 <p className="mt-2 leading-relaxed">
                   {order.source === "retell"
-                    ? `Hai ordinato tramite l'assistente vocale di ${tenantName}. La chiamata è stata registrata e trascritta per gestire l'ordine, assisterti e rispettare gli obblighi contabili.`
-                    : `Hai ordinato tramite l'assistente WhatsApp di ${tenantName}. Trattiamo i messaggi per gestire l'ordine, assisterti e rispettare gli obblighi contabili.`}
-                  {" "}Titolare del trattamento: <strong>{tenantName}</strong>. Per esercitare i diritti GDPR puoi contattarci direttamente.
+                    ? "La telefonata è stata registrata e trascritta per gestire l'ordine."
+                    : "I messaggi sono trattati per gestire l'ordine."}
+                  {" "}
+                  <a href={privacyHref} className="font-bold underline" style={{ color: c.accent }}>Informativa privacy</a>.
                 </p>
               </div>
             )}
@@ -652,7 +1012,7 @@ export function CheckoutClient({
                     className="mt-3 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-black text-white transition disabled:cursor-not-allowed disabled:opacity-40"
                     style={{ backgroundColor: c.accent }}
                   >
-                    {loading ? "Apertura pagamento…" : `Paga online ${eur(order.total)}`}
+                    {loading ? "Apertura pagamento…" : `Paga online ${eur(liveTotal)}`}
                     {!loading && <ArrowRight size={15} />}
                   </button>
                 </div>
@@ -662,18 +1022,12 @@ export function CheckoutClient({
           </>
         )}
 
-        {wasCancelled && !alreadyPaid && (
-          <div className="mb-4 flex items-center gap-3 rounded-2xl bg-amber-50 p-4 text-amber-800">
-            <AlertCircle size={22} />
+        {paymentStatus === "cancel" && !isTerminalNegative && !alreadyPaid && (
+          <div className="mt-4 flex items-center gap-3 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.mustardSoft, color: c.ink }}>
+            <AlertCircle size={22} style={{ color: c.accent }} />
             <div className="text-sm">
-              <div className="font-bold">
-                {currentStatus === "annullato" ? "Ordine annullato" : "Pagamento annullato"}
-              </div>
-              <div className="text-amber-700/80">
-                {currentStatus === "annullato"
-                  ? "L'ordine è stato annullato e non verrà preparato."
-                  : "Puoi riprovare quando vuoi."}
-              </div>
+              <div className="font-black">Pagamento annullato</div>
+              <div style={{ color: c.inkMuted }}>Nessun addebito effettuato. Puoi riprovare quando vuoi.</div>
             </div>
           </div>
         )}
@@ -804,16 +1158,27 @@ export function CheckoutClient({
             </div>
             <div className="rounded-2xl px-3 py-2 text-right" style={{ backgroundColor: c.accentSoft }}>
               <div className="text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: c.inkFaint }}>Totale</div>
-              <div className="text-lg font-black tabular-nums" style={{ color: c.accent }}>{eur(order.total)}</div>
+              <div className="text-lg font-black tabular-nums" style={{ color: c.accent }}>{eur(liveTotal)}</div>
             </div>
           </div>
           <ul className="mt-3 divide-y" style={{ borderColor: c.divider }}>
-            {order.lines.map((line, i) => (
-              <li key={i} className="flex items-start justify-between gap-4 py-3" style={{ borderColor: c.divider }}>
+            {liveLines.map((line, i) => (
+              <li key={line.id ?? i} className="flex items-start justify-between gap-4 py-3" style={{ borderColor: c.divider }}>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-black" style={{ color: c.ink }}>
-                    <span className="mr-2 inline-flex min-w-8 justify-center rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: c.bg, color: c.accent }}>{line.qty}×</span>
+                  <div className="flex items-center gap-1.5 text-sm font-black" style={{ color: c.ink }}>
+                    <span className="mr-1 inline-flex min-w-8 justify-center rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: c.bg, color: c.accent }}>{line.qty}×</span>
                     {line.name}
+                    {canUpsell && !alreadyPaid && currentStatus !== "annullato" && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingLine(line)}
+                        className="ml-1 inline-flex items-center justify-center rounded-full p-1 transition hover:scale-110"
+                        style={{ color: c.inkMuted, background: c.bgSoft }}
+                        title="Modifica piatto"
+                      >
+                        <Pencil size={12} />
+                      </button>
+                    )}
                   </div>
                   {line.addedExtras.length > 0 && (
                     <ul className="mt-0.5 space-y-0.5">
@@ -830,7 +1195,7 @@ export function CheckoutClient({
                     </div>
                   )}
                   {line.notes && (
-                    <div className="mt-0.5 text-xs italic" style={{ color: c.inkMuted }}>“{line.notes}”</div>
+                    <div className="mt-0.5 text-xs italic" style={{ color: c.inkMuted }}>{`“${line.notes}”`}</div>
                   )}
                 </div>
                 <div className="shrink-0 text-sm font-bold tabular-nums" style={{ color: c.ink }}>
@@ -842,7 +1207,7 @@ export function CheckoutClient({
 
           <div className="mt-4 flex items-baseline justify-between border-t pt-4" style={{ borderColor: c.divider }}>
             <span className="text-sm font-bold" style={{ color: c.ink }}>Totale</span>
-            <span className="text-xl font-black tabular-nums" style={{ color: c.accent }}>{eur(order.total)}</span>
+            <span className="text-xl font-black tabular-nums" style={{ color: c.accent }}>{eur(liveTotal)}</span>
           </div>
 
           <dl className="mt-4 space-y-1 text-xs" style={{ color: c.inkMuted }}>
@@ -855,8 +1220,8 @@ export function CheckoutClient({
             {deliveryAddress && (
               <div className="flex justify-between gap-4"><dt>Indirizzo</dt><dd className="text-right font-bold" style={{ color: c.ink }}>{deliveryAddress}</dd></div>
             )}
-            {order.customerName && (
-              <div className="flex justify-between"><dt>Cliente</dt><dd className="font-bold" style={{ color: c.ink }}>{order.customerName}</dd></div>
+            {(order.customerName || order.customerPhone) && (
+              <div className="flex justify-between gap-4"><dt>Cliente</dt><dd className="text-right font-bold" style={{ color: c.ink }}>{[order.customerName, order.customerPhone].filter(Boolean).join(" · ")}</dd></div>
             )}
             {order.notes && (
               <div className="mt-2 rounded-lg p-2.5" style={{ backgroundColor: c.bg, color: c.inkMuted }}><span className="font-bold">Note:</span> {order.notes}</div>
@@ -875,15 +1240,15 @@ export function CheckoutClient({
                 <div className="mt-3 rounded-2xl p-4 text-xs" style={{ backgroundColor: c.bg, color: c.inkMuted }}>
                   <div className="flex items-center gap-2 font-bold" style={{ color: c.ink }}>
                     {order.source === "retell" ? <Phone size={14} /> : <MessageCircle size={14} />}
-                    {order.source === "retell" ? "Informativa chiamata registrata" : "Informativa conversazione WhatsApp"}
+                    {order.source === "retell" ? "Chiamata registrata" : "Conversazione WhatsApp"}
                   </div>
                   <p className="mt-2 leading-relaxed">
                     {order.source === "retell"
-                      ? `Hai ordinato tramite l'assistente vocale di ${tenantName}. La chiamata è stata registrata e trascritta per gestire l'ordine, assisterti e rispettare gli obblighi contabili. La registrazione viene conservata per il tempo strettamente necessario.`
-                      : `Hai ordinato tramite l'assistente WhatsApp di ${tenantName}. Trattiamo messaggi e dati condivisi per gestire l'ordine, assisterti e rispettare gli obblighi contabili.`}
-                  </p>
-                  <p className="mt-2 leading-relaxed">
-                    Titolare del trattamento: <strong>{tenantName}</strong>. Puoi chiederci accesso, rettifica, cancellazione o opposizione ai sensi degli artt. 15-22 GDPR.
+                      ? "La telefonata è stata registrata e trascritta per gestire l'ordine."
+                      : "I messaggi sono trattati per gestire l'ordine."}
+                    {" "}
+                    Dettagli e diritti GDPR nell&apos;
+                    <a href={privacyHref} className="font-bold underline" style={{ color: c.accent }}>informativa privacy</a>.
                   </p>
                 </div>
               )}
@@ -916,7 +1281,7 @@ export function CheckoutClient({
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-40"
               style={{ backgroundColor: c.accent }}
             >
-              {loading ? "Apertura pagamento…" : `Paga ${eur(order.total)}`}
+              {loading ? "Apertura pagamento…" : `Paga ${eur(liveTotal)}`}
               {!loading && <ArrowRight size={18} />}
             </button>
 
@@ -938,9 +1303,11 @@ export function CheckoutClient({
           </p>
         )}
 
-        <footer className="mt-8 text-center text-[10px]" style={{ color: c.inkFaint }}>
-          Pagamento sicuro con Stripe
-        </footer>
+        {(alreadyPaid || !payOnSite) && (
+          <footer className="mt-8 text-center text-[10px]" style={{ color: c.inkFaint }}>
+            Pagamento sicuro con Stripe
+          </footer>
+        )}
       </div>
 
       {showManciaOverlay && (
@@ -952,6 +1319,28 @@ export function CheckoutClient({
           tipState={tipState}
           setTipState={setTipState}
           onClose={() => setShowManciaOverlay(false)}
+        />
+      )}
+
+      {editingLine && (
+        <EditLineOverlay
+          orderCode={order.code}
+          tenantId={tenantId}
+          token={token}
+          line={editingLine}
+          onClose={() => setEditingLine(null)}
+          onSaved={(result) => {
+            setLiveLines((prev) =>
+              prev.map((l) =>
+                l.id === result.lineId
+                  ? { ...l, unitPrice: result.unitPrice, total: result.lineTotal, addedExtras: result.addedExtras, removedIngredients: result.removedIngredients, notes: result.note }
+                  : l,
+              ),
+            );
+            setLiveTotal(result.total);
+            if (result.newStatus) setCurrentStatus(result.newStatus);
+            setEditingLine(null);
+          }}
         />
       )}
     </div>

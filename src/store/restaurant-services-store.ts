@@ -4,8 +4,25 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { createBrowserLocalJSONStorage } from "@/lib/zustand-json-storage";
 
-const STORAGE_KEY = "bepork-restaurant-services-v1";
+const LEGACY_STORAGE_KEY = "bepork-restaurant-services-v1";
+const STORAGE_KEY_PREFIX = "menuary-restaurant-services-v1";
+const FALLBACK_STORAGE_KEY = `${STORAGE_KEY_PREFIX}:unscoped`;
 const DEFAULT_TENANT_ID = "bepork";
+
+let activeRestaurantServicesTenantId: string | null = null;
+
+export function restaurantServicesStorageKey(tenantId: string): string {
+  return `${STORAGE_KEY_PREFIX}:${tenantId}`;
+}
+
+function migrateLegacyRestaurantServicesStorage(tenantId: string, nextKey: string) {
+  if (typeof window === "undefined" || tenantId !== "bepork") return;
+  try {
+    if (window.localStorage.getItem(nextKey)) return;
+    const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy) window.localStorage.setItem(nextKey, legacy);
+  } catch {}
+}
 
 export type ReservationStatus =
   | "nuova"
@@ -508,7 +525,7 @@ export const useRestaurantServicesStore = create<RestaurantServicesState>()(
         set((state) => buildInitial(state.currentTenantId || DEFAULT_TENANT_ID)),
     }),
     {
-      name: STORAGE_KEY,
+      name: FALLBACK_STORAGE_KEY,
       skipHydration: true,
       storage: createBrowserLocalJSONStorage(),
       merge: (persisted, current) => {
@@ -525,3 +542,22 @@ export const useRestaurantServicesStore = create<RestaurantServicesState>()(
     },
   ),
 );
+
+export function getActiveRestaurantServicesTenantId(): string | null {
+  return activeRestaurantServicesTenantId;
+}
+
+export async function activateRestaurantServicesTenantStorage(tenantId: string) {
+  const nextKey = restaurantServicesStorageKey(tenantId);
+  if (
+    activeRestaurantServicesTenantId === tenantId &&
+    useRestaurantServicesStore.persist.getOptions().name === nextKey
+  ) {
+    return;
+  }
+  migrateLegacyRestaurantServicesStorage(tenantId, nextKey);
+  activeRestaurantServicesTenantId = tenantId;
+  useRestaurantServicesStore.persist.setOptions({ name: nextKey });
+  useRestaurantServicesStore.setState(buildInitial(tenantId));
+  await useRestaurantServicesStore.persist.rehydrate();
+}

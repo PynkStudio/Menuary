@@ -44,7 +44,7 @@ type OrderRow = {
   fulfillment_type: string | null;
 };
 
-type OrderLine = { order_id: string; name: string; qty: number; variant_label: string | null };
+type OrderLine = { order_id: string; name: string; qty: number; variant_label: string | null; added_extras: unknown; removed_ingredients: unknown; note: string | null };
 type LocationChoice = { id: string; name: string; slug: string; is_default: boolean };
 
 async function fetchOperationalLocations(tenantSlug: string): Promise<LocationChoice[]> {
@@ -154,7 +154,7 @@ async function fetchOrders(tenantSlug: string, filter: Filter, locationId: strin
   if (ids.length > 0) {
     const { data: lineRows } = await svc
       .from("order_lines")
-      .select("order_id, name, qty, variant_label")
+      .select("order_id, name, qty, variant_label, added_extras, removed_ingredients, note")
       .in("order_id", ids)
       .order("position", { ascending: true });
     for (const l of lineRows ?? []) {
@@ -397,12 +397,31 @@ export default async function OrdiniPage({
 
                   {items.length > 0 && (
                     <ul className="ga-order-lines">
-                      {items.map((l, i) => (
-                        <li key={`${o.id}-${i}`}>
-                          <span className="ga-order-qty">{l.qty}×</span>
-                          <span>{l.name}{l.variant_label ? ` · ${l.variant_label}` : ""}</span>
-                        </li>
-                      ))}
+                      {items.map((l, i) => {
+                        const extras = Array.isArray(l.added_extras) ? l.added_extras as Array<{ name?: string; price?: number }> : [];
+                        const removed = Array.isArray(l.removed_ingredients) ? l.removed_ingredients as string[] : [];
+                        return (
+                          <li key={`${o.id}-${i}`}>
+                            <span className="ga-order-qty">{l.qty}×</span>
+                            <span>{l.name}{l.variant_label ? ` · ${l.variant_label}` : ""}</span>
+                            {extras.length > 0 && (
+                              <span style={{ fontSize: "0.7rem", color: "var(--ga-ink-faint)", display: "block", marginLeft: 24 }}>
+                                {extras.map((e) => `+ ${e.name ?? ""}`).join(", ")}
+                              </span>
+                            )}
+                            {removed.length > 0 && (
+                              <span style={{ fontSize: "0.7rem", color: "var(--ga-warn, #B8332E)", display: "block", marginLeft: 24 }}>
+                                Senza {removed.join(", ")}
+                              </span>
+                            )}
+                            {l.note && (
+                              <span style={{ fontSize: "0.7rem", color: "var(--ga-ink-faint)", fontStyle: "italic", display: "block", marginLeft: 24 }}>
+                                &quot;{l.note}&quot;
+                              </span>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
 

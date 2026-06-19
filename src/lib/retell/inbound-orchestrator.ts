@@ -53,6 +53,19 @@ type RetellMenuItemContext = {
     code: string;
     label: string;
     price: string;
+    isDefault: boolean;
+  }[];
+  variantGroups: {
+    id: string;
+    name: string;
+    required: boolean;
+    defaultOptionId: string | null;
+    options: {
+      id: string;
+      name: string;
+      price: string;
+      isDefault: boolean;
+    }[];
   }[];
   tags: string[];
   allergens: string[];
@@ -362,6 +375,36 @@ function buildItemModifications(
   return [...inline, ...list];
 }
 
+function listVariantGroups(value: Json) {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((group) => {
+    if (!group || typeof group !== "object" || Array.isArray(group)) return [];
+    const g = group as Record<string, Json | undefined>;
+    if (typeof g.id !== "string" || typeof g.name !== "string" || !Array.isArray(g.options)) return [];
+    const defaultOptionId = typeof g.defaultOptionId === "string" ? g.defaultOptionId : null;
+    const options = g.options.flatMap((option) => {
+      if (!option || typeof option !== "object" || Array.isArray(option)) return [];
+      const o = option as Record<string, Json | undefined>;
+      if (typeof o.id !== "string" || typeof o.name !== "string") return [];
+      const price = typeof o.price === "number" ? o.price : 0;
+      return [{
+        id: o.id,
+        name: o.name,
+        price: money(price),
+        isDefault: defaultOptionId ? o.id === defaultOptionId : false,
+      }];
+    });
+    if (options.length === 0) return [];
+    return [{
+      id: g.id,
+      name: g.name,
+      required: g.required === true,
+      defaultOptionId,
+      options: defaultOptionId ? options : options.map((option, index) => ({ ...option, isDefault: index === 0 })),
+    }];
+  });
+}
+
 function resolveAddedExtras(
   item: Pick<MenuItemRow, "id" | "extra_list_id">,
   codes: string[],
@@ -653,7 +696,7 @@ export async function buildRetellInboundContext(
     .order("position", { ascending: true });
   const itemsQ = db
     .from("menu_items")
-    .select("id,code,category_id,name,description,price,tags,allergens,available,bookable,duration_minutes,extra_list_id,location_id,position")
+    .select("id,code,category_id,name,description,price,tags,allergens,available,bookable,duration_minutes,variant_groups,extra_list_id,location_id,position")
     .eq("tenant_id", tenantId)
     .order("position", { ascending: true });
   if (!options.includeUnavailable) itemsQ.eq("available", true);
@@ -741,6 +784,7 @@ export async function buildRetellInboundContext(
                 price: formatEuro(option.value),
                 isDefault: option.isDefault,
               })),
+              variantGroups: listVariantGroups(item.variant_groups),
               tags: item.tags ?? [],
               allergens: item.allergens ?? [],
               modifications: buildItemModifications(item, inlineExtrasByItem, extraListsById, listItemsByListId),
@@ -753,10 +797,16 @@ export async function buildRetellInboundContext(
       "Usa solo le informazioni presenti in questo contesto per menu/listino, prezzi, modifiche, orari e sedi.",
       "Il menu nel contesto e gia filtrato per l'orario locale della chiamata. Non proporre voci assenti e recupera nuovamente il contesto prima di confermare un ordine.",
       "Se il cliente chiede di vedere il menu, il listino completo o vuole sfogliare i piatti, proponi di inviargli il link via messaggio usando la funzione send_menu_link; non elencare i piatti verbalmente.",
+      "Se un piatto ha piu varianti e il cliente non specifica la variante, usa la variante di default indicata dal menu senza chiedere quale preferisce. Chiedi la variante solo se il cliente la nomina in modo ambiguo o se non esiste una variante di default.",
+      registryTenant.id === "kimos"
+        ? "Per Kimos, se il cliente ordina una pizza senza specificare formato o impasto, procedi senza chiarimenti usando formato Normale e impasto Classico. Chiedi chiarimenti solo se il cliente cita una variante in modo ambiguo."
+        : "",
       "Prima di creare ordini, prenotazioni o appuntamenti conferma sempre nome, telefono, giorno, orario e sede quando ci sono piu sedi.",
-      "Per ordini delivery raccogli indirizzo, citofono, piano, note consegna, orario desiderato e numero di telefono. Se il numero chiamante non va bene, chiedine uno alternativo.",
+      "Quando il cliente fornisce dati nella prima frase (es. 'vorrei una margherita in via Roma 10 citofono Rossi'), estrai TUTTI i dati gia forniti e chiedi SOLO quelli mancanti. Per delivery servono: indirizzo, citofono, piano, orario desiderato. Se manca un solo dato (es. il piano) chiedi solo quello, senza ripetere cio che il cliente ha gia detto.",
+      "Non chiedere di confermare il numero da cui chiama e non dire che lo richiameremo su quel numero. Usa caller_phone se non viene dato un numero alternativo.",
       "Prima di proporre prenotazioni o appuntamenti usa l'azione availability per leggere gli slot disponibili dal calendario interno.",
-      "Non chiedere mai al cliente come preferisce pagare: dopo la conferma comunica solo il riepilogo e che ricevera un messaggio WhatsApp con il link al riepilogo dell'ordine.",
+      "Non proporre spontaneamente il metodo di pagamento e non chiedere come il cliente vuole pagare. Se il cliente chiede come puo pagare o se accettate carta/contanti, rispondi che ricevera un link su WhatsApp dove trovera tutte le istruzioni per il pagamento. Dopo la conferma dell'ordine di solo che arrivera un messaggio su WhatsApp con il link.",
+      "Il riepilogo finale deve essere il piu breve possibile: solo cosa ha ordinato, dove e quando portarlo o ritirarlo e il totale. Non ripetere il numero di telefono. Concludi dicendo che arrivera il messaggio su WhatsApp e basta.",
       "Se un prezzo e variabile o da confermare, dillo chiaramente e non inventare importi.",
       "Per allergeni, intolleranze o disponibilita dubbie, segnala che il locale confermera manualmente.",
       aiSettings.quickSettings.notesForAssistant,
@@ -1099,9 +1149,10 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       customer_id: identity?.customerId ?? null,
       menuary_user_id: identity?.menuaryUserId ?? null,
       pickup_time: input.pickupTime ?? null,
-      notes: [input.notes, identity?.phone || input.customerPhone ? `Telefono: ${identity?.phone ?? input.customerPhone}` : null]
-        .filter(Boolean)
-        .join("\n") || null,
+      // Il telefono vive nella colonna customer_phone (mostrata in operativo come
+      // link tel:). Non duplicarlo nelle note, altrimenti riappare al cliente nel
+      // riepilogo del checkout pubblico.
+      notes: input.notes?.trim() || null,
       location_id: locationId,
       status: initialStatus,
       customer_phone: identity?.phone ?? input.customerPhone ?? null,

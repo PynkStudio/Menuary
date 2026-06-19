@@ -11,6 +11,7 @@ const KIMOS_IMPASTO: MenuVariantGroup = {
   id: "kimos-impasto",
   name: "Tipo di impasto",
   required: false,
+  defaultOptionId: "kimos-imp-classico",
   options: [
     { id: "kimos-imp-classico", name: "Classico" },
     { id: "kimos-imp-doppia-pasta", name: "Doppia pasta", price: 1 },
@@ -673,6 +674,16 @@ const kimosPrice = (
   large: { label: largeLabel, price: large },
 });
 
+const kimosPizzaPrice = (
+  normale: number,
+  gigante: number,
+): PriceFormat => ({
+  kind: "volume",
+  small: { label: "Normale", price: normale },
+  large: { label: "Gigante", price: gigante },
+  defaultKey: "small",
+});
+
 export const kimosMenu: MenuCategory[] = [
   {
     id: "menu-completi",
@@ -715,7 +726,7 @@ export const kimosMenu: MenuCategory[] = [
         id: "kimos-margherita",
         name: "Margherita",
         description: "Pomodoro e mozzarella.",
-        price: kimosPrice("Normale", 7, "Gigante", 20),
+        price: kimosPizzaPrice(7, 20),
         image: "/kimos/menu-board-spread.png",
         ingredients: ingList("kimos-margherita", ["Pomodoro", "Mozzarella"]),
         allergens: ix("glutine", "latte"),
@@ -726,7 +737,7 @@ export const kimosMenu: MenuCategory[] = [
         id: "kimos-diavola",
         name: "Diavola",
         description: "Pomodoro, mozzarella e salame piccante.",
-        price: kimosPrice("Normale", 9, "Gigante", 25),
+        price: kimosPizzaPrice(9, 25),
         tags: ["piccante"],
         piccanteLevel: 1,
         ingredients: ingList("kimos-diavola", ["Pomodoro", "Mozzarella", "Salame piccante"]),
@@ -738,7 +749,7 @@ export const kimosMenu: MenuCategory[] = [
         id: "kimos-quattro-stagioni",
         name: "Quattro stagioni",
         description: "Pomodoro, mozzarella, prosciutto, funghi, carciofi e olive.",
-        price: kimosPrice("Normale", 10, "Gigante", 26),
+        price: kimosPizzaPrice(10, 26),
         ingredients: ingList("kimos-quattro-stagioni", [
           "Pomodoro",
           "Mozzarella",
@@ -755,7 +766,7 @@ export const kimosMenu: MenuCategory[] = [
         id: "kimos-panna-salmone",
         name: "Panna e salmone",
         description: "Mozzarella, salmone affumicato e panna.",
-        price: kimosPrice("Normale", 11, "Gigante", 30),
+        price: kimosPizzaPrice(11, 30),
         ingredients: ingList("kimos-panna-salmone", [
           "Mozzarella",
           "Salmone affumicato",
@@ -769,7 +780,7 @@ export const kimosMenu: MenuCategory[] = [
         id: "kimos-napoli",
         name: "Napoli",
         description: "Pomodoro, mozzarella, origano e acciughe.",
-        price: kimosPrice("Normale", 9, "Gigante", 26),
+        price: kimosPizzaPrice(9, 26),
         ingredients: ingList("kimos-napoli", [
           "Pomodoro",
           "Mozzarella",
@@ -784,7 +795,7 @@ export const kimosMenu: MenuCategory[] = [
         id: "kimos-funghi",
         name: "Funghi",
         description: "Pomodoro, mozzarella e funghi freschi.",
-        price: kimosPrice("Normale", 9.5, "Gigante", 27),
+        price: kimosPizzaPrice(9.5, 27),
         ingredients: ingList("kimos-funghi", ["Pomodoro", "Mozzarella", "Funghi freschi"]),
         allergens: ix("glutine", "latte"),
         extraListId: LIST_ID_KIMOS_PIZZA,

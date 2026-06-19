@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Json } from "@/lib/database.types";
-import { buildRetellInboundContext, isAuthorizedRetellRequest } from "@/lib/retell/inbound-orchestrator";
+import { buildRetellInboundContext, isAuthorizedRetellRequest, lookupRetellCustomer } from "@/lib/retell/inbound-orchestrator";
 import { getAiPhoneSettings, listAiPhoneSettings } from "@/lib/retell/settings";
-import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { buildAiPaymentInstruction } from "@/lib/payments/ai-payment-instruction";
 import { findTenantById } from "@/lib/tenant-registry";
 import { getTenantContent } from "@/lib/tenant-content";
-import { tenantUsesStripeDemoSandbox } from "@/lib/payments/stripe/sandbox-policy";
+import { defaultHoursWeekForTenant, type DaySchedule } from "@/lib/venue-hours";
 
 // Saluto contestuale in base all'ora locale (Europe/Rome): Buongiorno / Buon pomeriggio / Buonasera.
 function italianGreetingForNow(now = new Date()): string {
@@ -83,6 +82,14 @@ async function buildInboundDynamicVariables(
     handoff_phone: settings.handoffPhone ?? "",
     accepting_orders: settings.quickSettings.acceptNewOrders.accepting ? "true" : "false",
     accepting_reservations: settings.quickSettings.acceptReservations.accepting ? "true" : "false",
+    customer_known: "false",
+    customer_first_name: "",
+    customer_language: "",
+    customer_last_address: "",
+    customer_last_order_summary: "",
+    active_order_summary: "",
+    active_order_modifiable: "false",
+    active_order_checkout_url: "",
   };
 
   // Anagrafica statica del locale dal content registry — tutto stringificato per Retell.
@@ -105,37 +112,85 @@ async function buildInboundDynamicVariables(
   }
 
   try {
-    const context = await buildRetellInboundContext(tenantId);
-    variables.tenant_name = context.tenant.name;
-    // venue_name preferisce il display name del registry; se mancante, ripiega sul nome tecnico.
-    if (!variables.venue_name) variables.venue_name = context.tenant.name;
-    const location = context.locations[0];
+    const db = createSupabaseServiceClient();
+    if (!db) throw new Error("no_db");
+
+    const tenantProfile = findTenantById(tenantId);
+
+    // Solo queries necessarie per il greeting: tenant, sedi, ore speciali e lookup
+    // cliente — tutto in parallelo. Il menu completo NON serve qui (l'agente lo
+    // carica on-demand via search_menu), evitando ~8 query pesanti che causavano
+    // 5-6 secondi di vuoto prima della risposta.
+    const [{ data: tenantRow }, { data: locationRows }, { data: specialRows }, customer] = await Promise.all([
+      db.from("tenants").select("id,name,vertical").eq("id", tenantId).maybeSingle(),
+      db.from("locations").select("id,slug,name,address,city,phone,email,is_default,hours")
+        .eq("tenant_id", tenantId)
+        .order("is_default", { ascending: false })
+        .order("name", { ascending: true }),
+      settings.includeSpecialHours
+        ? db.from("tenant_special_hours").select("date,closed,slots,label,location_id")
+            .eq("tenant_id", tenantId)
+            .gte("date", new Date().toISOString().slice(0, 10))
+            .order("date", { ascending: true })
+            .limit(30)
+        : Promise.resolve({ data: [] as { date: string; closed: boolean; slots: unknown; label: string | null; location_id: string | null }[] }),
+      lookupRetellCustomer(tenantId, inbound.fromNumber ?? "").catch(() => null),
+    ]);
+
+    const vertical = (tenantRow?.vertical as string) ?? tenantProfile?.vertical ?? "food";
+    variables.tenant_name = (tenantRow?.name as string) ?? tenantProfile?.name ?? "";
+    if (!variables.venue_name) variables.venue_name = variables.tenant_name;
+
+    const locations = locationRows ?? [];
+    const location = locations[0] as { id: string; slug: string; name: string; is_default: boolean; hours?: unknown } | undefined;
     if (location) {
       variables.location_id = location.id;
       variables.location_name = location.name;
-      // Multi-sede: la flow chiede esplicitamente la sede solo quando il numero
-      // chiamato non identifica univocamente una location.
-      variables.multi_location_choice_required =
-        context.locations.length > 1 ? "true" : "false";
-      const weekly = location.weeklyHours
+      variables.multi_location_choice_required = locations.length > 1 ? "true" : "false";
+
+      const rawHours = location.hours;
+      const weeklyHours: DaySchedule[] =
+        Array.isArray(rawHours) && rawHours.length > 0 &&
+        rawHours.every((d: unknown) => d && typeof d === "object" && typeof (d as Record<string, unknown>).label === "string")
+          ? rawHours as DaySchedule[]
+          : defaultHoursWeekForTenant(tenantId);
+
+      const weekly = weeklyHours
         .map((day) => `${day.label}: ${day.closed ? "chiuso" : day.slots.join(", ")}`)
         .join(" | ");
       if (weekly) variables.open_hours = weekly;
-      const special = location.specialHours
-        .map((entry) => `${entry.date}${entry.label ? ` (${entry.label})` : ""}: ${entry.closed ? "chiuso" : entry.slots.join(", ")}`)
+
+      const specials = (specialRows ?? []) as { date: string; closed: boolean; slots: unknown; label: string | null; location_id: string | null }[];
+      const special = specials
+        .filter((entry) => !entry.location_id || entry.location_id === location.id)
+        .map((entry) => `${entry.date}${entry.label ? ` (${entry.label})` : ""}: ${entry.closed ? "chiuso" : (Array.isArray(entry.slots) ? entry.slots : []).join(", ")}`)
         .join(" | ");
       variables.special_hours = special;
     }
 
-    // Istruzione pagamento per il prompt — combina feature flag, stato Stripe Connect e policy AI.
-    const tenantProfile = findTenantById(tenantId);
-    const useDemoSandbox = tenantUsesStripeDemoSandbox(tenantId);
-    const stripeAccount = await getTenantPaymentAccount(tenantId, { demoSandbox: useDemoSandbox }).catch(() => null);
+    if (customer) {
+      variables.customer_known = customer.isKnown ? "true" : "false";
+      variables.customer_first_name = customer.firstName;
+      variables.customer_language = customer.language;
+      variables.customer_last_address = customer.lastAddress;
+      variables.customer_last_order_summary = customer.lastOrderSummary;
+      if (customer.activeOrder) {
+        variables.active_order_summary = [
+          `ordine ${customer.activeOrder.code}`,
+          customer.activeOrder.statusLabel,
+          customer.activeOrder.itemsSummary,
+          customer.activeOrder.scheduledTime ? `orario ${customer.activeOrder.scheduledTime}` : "",
+        ].filter(Boolean).join(" - ");
+        variables.active_order_modifiable = customer.activeOrder.isModifiable ? "true" : "false";
+        variables.active_order_checkout_url = customer.activeOrder.checkoutUrl;
+      }
+    }
+
     const instruction = buildAiPaymentInstruction({
       paymentsModuleEnabled: Boolean(tenantProfile?.features.payments),
-      stripeReady: Boolean(stripeAccount?.chargesEnabled),
+      stripeReady: false,
       policy: settings.paymentControls.acceptedMethods,
-      vertical: context.tenant.vertical === "services" ? "services" : "food",
+      vertical: vertical === "services" ? "services" : "food",
     });
     variables.payment_instruction = instruction.text;
     variables.payment_online_available = instruction.onlineAvailable ? "true" : "false";

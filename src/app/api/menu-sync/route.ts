@@ -92,7 +92,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string, locationId:
     scopeLocation(supabase
       .from("menu_items")
       .select(
-        "id,code,category_id,name,description,price,tags,tag_meta,piccante_level,allergens,abv,image,service_notes,bundle_slots,extra_list_id,available,position",
+        "id,code,category_id,name,description,price,tags,tag_meta,piccante_level,allergens,abv,image,service_notes,bundle_slots,variant_groups,extra_list_id,available,position",
       )
       .eq("tenant_id", tenantId), locationId)
       .order("position"),
@@ -165,6 +165,7 @@ async function readBundle(supabase: SupabaseAdmin, tenantId: string, locationId:
         image: item.image ?? undefined,
         serviceNotes: item.service_notes as AdminMenuItem["serviceNotes"],
         bundleSlots: item.bundle_slots as AdminMenuItem["bundleSlots"],
+        variantGroups: item.variant_groups as AdminMenuItem["variantGroups"],
         extraListId: item.extra_list_id ? extraListsByDbId.get(item.extra_list_id) : undefined,
         ingredients: translatedIngredients ?? (ingByItem.get(item.id) ?? []).map((row) => ({ id: row.code, name: row.name })),
         extras: (extrasByItem.get(item.id) ?? []).map((row) => ({ id: row.code, name: row.name, price: Number(row.price) })),
@@ -401,6 +402,7 @@ async function writeBundle(supabase: SupabaseAdmin, tenantId: string, locationId
       image: item.image ?? null,
       service_notes: item.serviceNotes ?? [],
       bundle_slots: (item.bundleSlots ?? null) as Database["public"]["Tables"]["menu_items"]["Insert"]["bundle_slots"],
+      variant_groups: (item.variantGroups ?? []) as Database["public"]["Tables"]["menu_items"]["Insert"]["variant_groups"],
       extra_list_id: item.extraListId ? extraIdByCode.get(item.extraListId) ?? null : null,
       available: item.available,
       position: item.order,

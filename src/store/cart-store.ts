@@ -5,7 +5,24 @@ import { persist } from "zustand/middleware";
 import { createBrowserLocalJSONStorage } from "@/lib/zustand-json-storage";
 import type { BundlePick, CartLine, OrderType } from "@/lib/types";
 
-const CART_KEY = "bepork-cart-v1";
+const LEGACY_CART_KEY = "bepork-cart-v1";
+const CART_KEY_PREFIX = "menuary-cart-v1";
+const CART_FALLBACK_KEY = `${CART_KEY_PREFIX}:unscoped`;
+
+let activeCartTenantId: string | null = null;
+
+export function cartStorageKey(tenantId: string): string {
+  return `${CART_KEY_PREFIX}:${tenantId}`;
+}
+
+function migrateLegacyCartStorage(tenantId: string, nextKey: string) {
+  if (typeof window === "undefined" || tenantId !== "bepork") return;
+  try {
+    if (window.localStorage.getItem(nextKey)) return;
+    const legacy = window.localStorage.getItem(LEGACY_CART_KEY);
+    if (legacy) window.localStorage.setItem(nextKey, legacy);
+  } catch {}
+}
 
 export interface CartContext {
   type: OrderType;
@@ -109,13 +126,29 @@ export const useCartStore = create<CartState>()(
         }),
     }),
     {
-      name: CART_KEY,
+      name: CART_FALLBACK_KEY,
       skipHydration: true,
       storage: createBrowserLocalJSONStorage(),
       partialize: (s) => ({ lines: s.lines, context: s.context }),
     },
   ),
 );
+
+export function getActiveCartTenantId(): string | null {
+  return activeCartTenantId;
+}
+
+export async function activateCartTenantStorage(tenantId: string) {
+  const nextKey = cartStorageKey(tenantId);
+  if (activeCartTenantId === tenantId && useCartStore.persist.getOptions().name === nextKey) {
+    return;
+  }
+  migrateLegacyCartStorage(tenantId, nextKey);
+  activeCartTenantId = tenantId;
+  useCartStore.persist.setOptions({ name: nextKey });
+  useCartStore.setState({ lines: [], context: { type: "asporto" }, openDrawer: false });
+  await useCartStore.persist.rehydrate();
+}
 
 export function cartTotal(lines: CartLine[]): number {
   return lines.reduce((acc, l) => acc + l.unitPrice * l.qty, 0);

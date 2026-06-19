@@ -33,8 +33,25 @@ import type { MenuIngredient } from "@/lib/ingredients";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 import { menuChannelIgnoresTimeRules } from "@/lib/menu-channels";
 
-const STORAGE_KEY = "bepork-menu-v3";
+const LEGACY_STORAGE_KEY = "bepork-menu-v3";
+const STORAGE_KEY_PREFIX = "menuary-menu-v3";
+const FALLBACK_STORAGE_KEY = `${STORAGE_KEY_PREFIX}:unscoped`;
 const DEFAULT_MENU_TENANT_ID = "bepork";
+
+let activeMenuTenantId: string | null = null;
+
+export function menuStorageKey(tenantId: string): string {
+  return `${STORAGE_KEY_PREFIX}:${tenantId}`;
+}
+
+function migrateLegacyMenuStorage(tenantId: string, nextKey: string) {
+  if (typeof window === "undefined" || tenantId !== "bepork") return;
+  try {
+    if (window.localStorage.getItem(nextKey)) return;
+    const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy) window.localStorage.setItem(nextKey, legacy);
+  } catch {}
+}
 
 function migrateItemIngredients(it: AdminMenuItem): AdminMenuItem {
   const ing = it.ingredients;
@@ -917,7 +934,7 @@ export const useMenuStore = create<MenuState>()(
         }),
     }),
     {
-      name: STORAGE_KEY,
+      name: FALLBACK_STORAGE_KEY,
       skipHydration: true,
       storage: createBrowserLocalJSONStorage(),
       partialize: (s) => ({
@@ -947,6 +964,22 @@ export const useMenuStore = create<MenuState>()(
     },
   ),
 );
+
+export function getActiveMenuTenantId(): string | null {
+  return activeMenuTenantId;
+}
+
+export async function activateMenuTenantStorage(tenantId: string) {
+  const nextKey = menuStorageKey(tenantId);
+  if (activeMenuTenantId === tenantId && useMenuStore.persist.getOptions().name === nextKey) {
+    return;
+  }
+  migrateLegacyMenuStorage(tenantId, nextKey);
+  activeMenuTenantId = tenantId;
+  useMenuStore.persist.setOptions({ name: nextKey });
+  useMenuStore.setState(buildInitial(tenantId));
+  await useMenuStore.persist.rehydrate();
+}
 
 export function selectCategoriesOrdered(s: MenuState): AdminMenuCategory[] {
   return [...s.categories].sort((a, b) => a.order - b.order);

@@ -4,7 +4,7 @@
 // (ordine, prenotazione, pronto) generati on-the-fly. Robusto, no asset.
 // Mute persistito in localStorage per-utente.
 
-export type ChimeKind = "order" | "reservation" | "ready";
+export type ChimeKind = "order" | "reservation" | "ready" | "order_edit";
 
 const MUTE_KEY = "menuary:chime-muted";
 
@@ -97,6 +97,11 @@ const PATTERNS: Record<ChimeKind, Array<{ freq: number; at: number; dur: number 
     { freq: 880, at: 0, dur: 0.16 },
     { freq: 1320, at: 0.14, dur: 0.22 },
   ],
+  order_edit: [
+    { freq: 1200, at: 0, dur: 0.12 },
+    { freq: 900, at: 0.12, dur: 0.12 },
+    { freq: 1200, at: 0.26, dur: 0.18 },
+  ],
   reservation: [{ freq: 660, at: 0, dur: 0.32 }],
   ready: [
     { freq: 1046, at: 0, dur: 0.1 },
@@ -119,8 +124,8 @@ export function playChime(kind: ChimeKind): void {
   master.gain.value = 0.18;
   master.connect(c.destination);
   activeNodes.push(master);
-  const repeats = kind === "order" ? 8 : 1;
-  const spacing = kind === "order" ? 1 : 0;
+  const repeats = kind === "order" ? 8 : kind === "order_edit" ? 4 : 1;
+  const spacing = kind === "order" || kind === "order_edit" ? 1 : 0;
   for (let repeat = 0; repeat < repeats; repeat++) {
     for (const note of PATTERNS[kind]) {
       const osc = c.createOscillator();

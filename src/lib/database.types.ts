@@ -1608,6 +1608,7 @@ export type Database = {
           tags: string[]
           tenant_id: string
           updated_at: string
+          variant_groups: Json
         }
         Insert: {
           abv?: string | null
@@ -1634,6 +1635,7 @@ export type Database = {
           tags?: string[]
           tenant_id: string
           updated_at?: string
+          variant_groups?: Json
         }
         Update: {
           abv?: string | null
@@ -1660,6 +1662,7 @@ export type Database = {
           tags?: string[]
           tenant_id?: string
           updated_at?: string
+          variant_groups?: Json
         }
         Relationships: [
           {

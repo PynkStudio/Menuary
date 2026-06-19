@@ -25,7 +25,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const { data: order, error: loadErr } = await supabase
     .from("orders")
-    .select("id, tenant_id, code, status, notes, public_token, customer_phone")
+    .select("id, tenant_id, code, status, notes, public_token, customer_phone, source, type")
     .eq("id", id)
     .maybeSingle();
 
@@ -57,6 +57,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     publicToken: order.public_token,
     customerPhone: order.customer_phone,
     kind: "rejected",
+    orderSource: order.source,
+    orderType: order.type,
     req,
     reason,
   });

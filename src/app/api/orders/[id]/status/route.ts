@@ -3,6 +3,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { pushOrderStatusToHubrise } from "@/lib/hubrise/push-status";
 import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 import type { OrderStatus } from "@/lib/types";
+import type { OrderNotificationKind } from "@/lib/orders/order-notifications";
 
 type Params = { params: Promise<{ id: string }> };
 type PersistedOrderStatus = Exclude<OrderStatus, "pending_confirmation" | "expired">;
@@ -11,12 +12,22 @@ const VALID_STATUSES: PersistedOrderStatus[] = [
   "nuovo",
   "in_preparazione",
   "pronto",
+  "in_consegna",
   "consegnato",
   "annullato",
 ];
 
 function isPersistedOrderStatus(status: unknown): status is PersistedOrderStatus {
   return typeof status === "string" && VALID_STATUSES.includes(status as PersistedOrderStatus);
+}
+
+function notificationKindForStatus(status: PersistedOrderStatus): OrderNotificationKind {
+  switch (status) {
+    case "nuovo": return "confirmed";
+    case "annullato": return "cancelled";
+    case "in_consegna": return "out_for_delivery";
+    default: return "updated";
+  }
 }
 
 // ─── PATCH /api/orders/[id]/status — aggiorna stato ordine ───────────────────
@@ -34,7 +45,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const { data: order, error: loadError } = await supabase
     .from("orders")
-    .select("id, tenant_id, code, public_token, customer_phone")
+    .select("id, tenant_id, code, public_token, customer_phone, source, type")
     .eq("id", id)
     .maybeSingle();
 
@@ -57,7 +68,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         code: order.code,
         publicToken: order.public_token,
         customerPhone: order.customer_phone,
-        kind: status === "annullato" ? "rejected" : status === "nuovo" ? "confirmed" : "updated",
+        kind: notificationKindForStatus(status),
+        orderSource: order.source,
+        orderType: order.type,
         req,
       });
     }

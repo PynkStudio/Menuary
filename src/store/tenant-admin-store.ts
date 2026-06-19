@@ -5,7 +5,17 @@ import { persist } from "zustand/middleware";
 import { createBrowserLocalJSONStorage } from "@/lib/zustand-json-storage";
 import type { TenantFeatureFlags, TenantFeatureKey } from "@/lib/tenant";
 
-const STORAGE_KEY = "bepork-tenant-admin-v1";
+const LEGACY_STORAGE_KEY = "bepork-tenant-admin-v1";
+export const TENANT_ADMIN_STORAGE_KEY = "menuary-tenant-admin-v1";
+
+export function migrateLegacyTenantAdminStorage() {
+  if (typeof window === "undefined") return;
+  try {
+    if (window.localStorage.getItem(TENANT_ADMIN_STORAGE_KEY)) return;
+    const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy) window.localStorage.setItem(TENANT_ADMIN_STORAGE_KEY, legacy);
+  } catch {}
+}
 
 type TenantRuntimeOverrides = {
   enabled?: boolean;
@@ -58,7 +68,7 @@ export const useTenantAdminStore = create<TenantAdminState>()(
         }),
     }),
     {
-      name: STORAGE_KEY,
+      name: TENANT_ADMIN_STORAGE_KEY,
       skipHydration: true,
       storage: createBrowserLocalJSONStorage(),
     },

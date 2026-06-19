@@ -32,42 +32,16 @@ export type AiPaymentInstruction = {
   shouldAsk: boolean;
 };
 
-function deliveryWord(vertical: "food" | "services"): string {
-  return vertical === "services" ? "al momento dell'appuntamento" : "al ritiro o alla consegna";
-}
-
 export function buildAiPaymentInstruction(
   input: BuildPaymentInstructionInput,
 ): AiPaymentInstruction {
   const effectiveOnline =
     input.paymentsModuleEnabled && input.stripeReady && input.policy !== "on_site_only";
-  const word = deliveryWord(input.vertical);
 
-  // Caso 1: online non realmente disponibile → comunica pagamento sul posto.
-  if (!effectiveOnline) {
-    return {
-      text: `Pagamento ${word}. Conferma al cliente che riceverà un riepilogo dell'ordine via messaggio e che il pagamento avverrà ${word}; non proporre il pagamento online.`,
-      onlineAvailable: false,
-      onSiteAvailable: true,
-      shouldAsk: false,
-    };
-  }
-
-  // Caso 2: solo online.
-  if (input.policy === "online_only") {
-    return {
-      text: `Pagamento solo online. Conferma l'ordine al cliente e informa che riceverà via messaggio il link per completare il pagamento; l'ordine è confermato dopo il pagamento. Non offrire il pagamento ${word}.`,
-      onlineAvailable: true,
-      onSiteAvailable: false,
-      shouldAsk: false,
-    };
-  }
-
-  // Caso 3: entrambi → non chiedere, manda il riepilogo. Il cliente potrà scegliere sul link.
   return {
-    text: `Non chiedere mai al cliente come preferisce pagare. Dopo la conferma dell'ordine, comunica solo il riepilogo e informa che riceverà un messaggio WhatsApp con il link al riepilogo dell'ordine.`,
-    onlineAvailable: true,
-    onSiteAvailable: true,
+    text: `Non proporre spontaneamente il metodo di pagamento e non chiedere come il cliente vuole pagare. Se il cliente chiede come pagare, rispondi che ricevera un link su WhatsApp dove trovera tutte le istruzioni per il pagamento. Dopo la conferma dell'ordine di solo che arrivera un messaggio su WhatsApp con il link.`,
+    onlineAvailable: effectiveOnline,
+    onSiteAvailable: input.policy !== "online_only" || !effectiveOnline,
     shouldAsk: false,
   };
 }

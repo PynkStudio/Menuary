@@ -426,7 +426,7 @@
   }
 }
 
-@keyframes bepork-cart-fly {
+@keyframes menuary-cart-fly {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
     opacity: 1;
@@ -438,7 +438,7 @@
 }
 
 .cart-fly-particle {
-  animation: bepork-cart-fly 0.64s cubic-bezier(0.22, 0.75, 0.28, 1) forwards;
+  animation: menuary-cart-fly 0.64s cubic-bezier(0.22, 0.75, 0.28, 1) forwards;
   will-change: transform, opacity;
 }
 
