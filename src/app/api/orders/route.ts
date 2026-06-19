@@ -15,6 +15,7 @@ import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email
 import { validateMenuItemsForOrderChannel } from "@/lib/menu-order-channels";
 import { COPERTO_ITEM_ID } from "@/lib/coperto";
 import { findTenantById } from "@/lib/tenant-registry";
+import { notifyOperationalNewOrder } from "@/lib/notifications/operational-order-push";
 import type { CartLine, OrderDineOption } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
 
@@ -198,6 +199,14 @@ export async function POST(req: NextRequest) {
     const { error: linesErr } = await supabase.from("order_lines").insert(lineRows);
     if (linesErr) return NextResponse.json({ error: linesErr.message }, { status: 500 });
   }
+
+  void notifyOperationalNewOrder({
+    tenantId,
+    orderCode: order.code,
+    status: initialStatus,
+    customerName: rest.customerName ?? null,
+    locationId: locationId ?? null,
+  }).catch(() => null);
 
   // Auto-accept: notifichiamo subito il cliente per email (best-effort).
   if (autoAccepted) {

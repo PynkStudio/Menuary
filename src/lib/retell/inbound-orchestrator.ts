@@ -18,6 +18,7 @@ import type { MenuOrderChannel } from "@/lib/types";
 import { isMenuOrderChannel } from "@/lib/menu-channels";
 import { euroToItalianWords, orderCodeToSpoken } from "@/lib/retell/number-speech";
 import { tenantCheckoutUrl } from "@/lib/orders/checkout-url";
+import { notifyOperationalNewOrder } from "@/lib/notifications/operational-order-push";
 
 type Db = SupabaseClient<Database>;
 
@@ -1105,6 +1106,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       status: initialStatus,
       customer_phone: identity?.phone ?? input.customerPhone ?? null,
       fulfillment_type: fulfillmentType,
+      dine_option: fulfillmentType,
       delivery_address: input.delivery?.address ?? null,
       delivery_doorbell: input.delivery?.doorbell ?? null,
       delivery_floor: input.delivery?.floor ?? null,
@@ -1123,6 +1125,13 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     rows.map(({ row }) => ({ ...row, order_id: order.id })),
   );
   if (linesErr) throw new Error(linesErr.message);
+  void notifyOperationalNewOrder({
+    tenantId: input.tenantId,
+    orderCode: order.code,
+    status: order.status,
+    customerName: input.customerName ?? null,
+    locationId,
+  }).catch(() => null);
   if (identity) {
     await recordCustomerEvent({
       tenantId: input.tenantId,

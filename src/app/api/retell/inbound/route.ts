@@ -113,6 +113,23 @@ function locationFrom(req: NextRequest, body?: RetellActionBody | null): string 
   );
 }
 
+function actionFrom(body: RetellActionBody): RetellActionBody["action"] | null {
+  if (typeof body.action === "string") return body.action;
+
+  const legacySearchBody = body as Partial<Extract<RetellActionBody, { action: "menu_search" }>>;
+  if (
+    typeof legacySearchBody.query === "string" ||
+    typeof legacySearchBody.categoryCode === "string" ||
+    typeof legacySearchBody.category_code === "string" ||
+    Array.isArray(legacySearchBody.itemCodes) ||
+    Array.isArray(legacySearchBody.item_codes)
+  ) {
+    return "menu_search";
+  }
+
+  return null;
+}
+
 function compactVenueInfo(context: Awaited<ReturnType<typeof buildRetellInboundContext>>) {
   return {
     tenant: context.tenant,
@@ -222,53 +239,58 @@ export async function POST(req: NextRequest) {
   if (!body) return NextResponse.json({ error: "invalid_json" }, { status: 400 });
 
   try {
+    const action = actionFrom(body);
     const tenantId = await resolveTenantId(req, body);
 
-    if (body.action === "context" || body.action === "venue_info" || body.action === "menu_search") {
+    if (action === "context" || action === "venue_info" || action === "menu_search") {
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
       const context = await buildRetellInboundContext(tenantId, { locationId: locationFrom(req, body) });
       if (!context.tenant.aiPhoneEnabled) {
         return NextResponse.json({ error: "ai_phone_not_enabled", context }, { status: 403 });
       }
-      if (body.action === "venue_info") {
+      if (action === "venue_info") {
         return NextResponse.json({ ok: true, venue: compactVenueInfo(context) });
       }
-      if (body.action === "menu_search") {
-        return NextResponse.json({ ok: true, menu: compactMenuSearch(context, body) });
+      if (action === "menu_search") {
+        const menuBody = body as Extract<RetellActionBody, { action: "menu_search" }>;
+        return NextResponse.json({ ok: true, menu: compactMenuSearch(context, menuBody) });
       }
       return NextResponse.json(context);
     }
 
-    if (body.action === "create_reservation") {
+    if (action === "create_reservation") {
+      const reservationBody = body as Extract<RetellActionBody, { action: "create_reservation" }>;
       const result = await createRetellReservation({
-        ...body,
-        tenantId: tenantId || body.tenantId,
-        locationId: locationFrom(req, body) ?? body.locationId,
+        ...reservationBody,
+        tenantId: tenantId || reservationBody.tenantId,
+        locationId: locationFrom(req, reservationBody) ?? reservationBody.locationId,
         source: "retell",
       });
       return NextResponse.json({ ok: true, reservation: result });
     }
 
-    if (body.action === "availability") {
+    if (action === "availability") {
+      const availabilityBody = body as Extract<RetellActionBody, { action: "availability" }>;
       const result = await getRetellAvailability({
-        ...body,
-        tenantId: tenantId || body.tenantId,
-        locationId: locationFrom(req, body) ?? body.locationId,
+        ...availabilityBody,
+        tenantId: tenantId || availabilityBody.tenantId,
+        locationId: locationFrom(req, availabilityBody) ?? availabilityBody.locationId,
       });
       return NextResponse.json({ ok: true, availability: result });
     }
 
-    if (body.action === "create_order") {
+    if (action === "create_order") {
+      const orderBody = body as Extract<RetellActionBody, { action: "create_order" }>;
       const result = await createRetellOrder({
-        ...body,
-        tenantId: tenantId || body.tenantId,
-        locationId: locationFrom(req, body) ?? body.locationId,
+        ...orderBody,
+        tenantId: tenantId || orderBody.tenantId,
+        locationId: locationFrom(req, orderBody) ?? orderBody.locationId,
         source: "retell",
       });
       return NextResponse.json({ ok: true, order: result });
     }
 
-    if (body.action === "customer_lookup") {
+    if (action === "customer_lookup") {
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
       const callerPhone = ("callerPhone" in body ? body.callerPhone : undefined)
         ?? ("caller_phone" in body ? body.caller_phone : undefined)
@@ -277,29 +299,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, customer });
     }
 
-    if (body.action === "set_customer_language") {
+    if (action === "set_customer_language") {
+      const languageBody = body as Extract<RetellActionBody, { action: "set_customer_language" }>;
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
-      const callerPhone = ("callerPhone" in body ? body.callerPhone : undefined)
-        ?? ("caller_phone" in body ? body.caller_phone : undefined)
+      const callerPhone = ("callerPhone" in languageBody ? languageBody.callerPhone : undefined)
+        ?? ("caller_phone" in languageBody ? languageBody.caller_phone : undefined)
         ?? "";
-      const result = await setCustomerLanguage(tenantId, callerPhone ?? "", body.language ?? "");
+      const result = await setCustomerLanguage(tenantId, callerPhone ?? "", languageBody.language ?? "");
       return NextResponse.json({ ok: true, ...result });
     }
 
-    if (body.action === "detect_menu_opportunity") {
+    if (action === "detect_menu_opportunity") {
+      const opportunityBody = body as Extract<RetellActionBody, { action: "detect_menu_opportunity" }>;
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
-      const opportunity = await detectRetellMenuOpportunity(tenantId, body.itemCodes ?? []);
+      const opportunity = await detectRetellMenuOpportunity(tenantId, opportunityBody.itemCodes ?? []);
       return NextResponse.json({ ok: true, opportunity });
     }
 
-    if (body.action === "resend_order_link") {
+    if (action === "resend_order_link") {
+      const resendBody = body as Extract<RetellActionBody, { action: "resend_order_link" }>;
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
-      if (!body.orderId) return NextResponse.json({ error: "order_id_required" }, { status: 422 });
+      if (!resendBody.orderId) return NextResponse.json({ error: "order_id_required" }, { status: 422 });
       const recipientPhone =
-        ("callerPhone" in body ? body.callerPhone : undefined) ??
-        ("caller_phone" in body ? body.caller_phone : undefined) ??
+        ("callerPhone" in resendBody ? resendBody.callerPhone : undefined) ??
+        ("caller_phone" in resendBody ? resendBody.caller_phone : undefined) ??
         "";
-      const result = await resendRetellOrderLink({ tenantId, orderId: body.orderId, recipientPhone });
+      const result = await resendRetellOrderLink({ tenantId, orderId: resendBody.orderId, recipientPhone });
       return NextResponse.json({ ok: true, ...result });
     }
 
@@ -307,7 +332,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "retell_action_failed";
     const status = statusForError(message);
-    const action = body && "action" in body ? body.action : "unknown";
+    const action = body ? actionFrom(body) ?? "unknown" : "unknown";
     console.error(
       `[retell/inbound] POST action=${action} tenant=${tenantFrom(req, body)} status=${status} error=${message}`,
       error,

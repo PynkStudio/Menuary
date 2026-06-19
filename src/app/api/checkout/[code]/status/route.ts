@@ -22,5 +22,6 @@ export async function GET(req: NextRequest, { params }: Params) {
     status: order.status,
     paymentStatus: order.paymentStatus,
     updatedAt: order.updatedAt,
+    confirmationExpiresAt: order.confirmationExpiresAt,
   });
 }

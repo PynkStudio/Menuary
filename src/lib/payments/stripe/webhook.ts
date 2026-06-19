@@ -153,6 +153,7 @@ async function handleCheckoutCompleted(
       };
     };
   };
+  const nowIso = new Date().toISOString();
   await db
     .from("orders")
     .update({
@@ -161,10 +162,31 @@ async function handleCheckoutCompleted(
       stripe_checkout_session_id: session.id,
       stripe_payment_intent_id: session.payment_intent,
       stripe_account_id: event.account ?? null,
-      paid_at: new Date().toISOString(),
+      paid_at: nowIso,
     })
     .eq("id", orderId)
     .eq("tenant_id", tenantId);
+
+  await (serviceDb() as unknown as {
+    from: (t: "orders") => {
+      update: (row: Record<string, unknown>) => {
+        eq: (k: string, v: string) => {
+          eq: (k: string, v: string) => {
+            eq: (k: string, v: string) => Promise<{ error: { message: string } | null }>;
+          };
+        };
+      };
+    };
+  })
+    .from("orders")
+    .update({
+      status: "nuovo",
+      confirmed_at: nowIso,
+      updated_at: nowIso,
+    })
+    .eq("id", orderId)
+    .eq("tenant_id", tenantId)
+    .eq("status", "pending_confirmation");
 
   // Aggiorna anche eventuale channel_payment_request collegato.
   const dbCh = serviceDb() as unknown as {
@@ -179,7 +201,7 @@ async function handleCheckoutCompleted(
     .update({
       status: "paid",
       stripe_payment_intent_id: session.payment_intent,
-      paid_at: new Date().toISOString(),
+      paid_at: nowIso,
     })
     .eq("provider_session_id", session.id);
 }

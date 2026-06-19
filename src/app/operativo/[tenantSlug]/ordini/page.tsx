@@ -7,6 +7,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/database.types";
 import { startOrder, markReady, markDelivered, cancelOrder, confirmPendingOrder, rejectPendingOrder } from "./actions";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
+import { OperationalAlertControls, OperationalAlertsClient } from "@/components/gestione/operational-alerts-client";
 import { demoOrders, type DemoOrder } from "@/lib/demo-fixtures";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 
@@ -113,7 +114,7 @@ async function fetchOrders(tenantSlug: string, filter: Filter, locationId: strin
 
   if (locationId) q = q.eq("location_id", locationId);
 
-  const liveStatuses: Database["public"]["Enums"]["order_status"][] = ["nuovo", "in_preparazione", "pronto"];
+  const liveStatuses: Database["public"]["Enums"]["order_status"][] = ["pending_confirmation", "nuovo", "in_preparazione", "pronto"];
   switch (filter) {
     case "live":
       q = q.in("status", liveStatuses);
@@ -273,6 +274,7 @@ export default async function OrdiniPage({
   const customerStats = auth.isDemo ? new Map<string, CustomerStat>() : await fetchCustomerStats(tenantSlug, uniquePhones);
 
   return (
+    <OperationalAlertsClient tenantId={tenantSlug} portal="ordini" locationId={locationId ?? undefined}>
     <div className="ga-dashboard">
       <OrdersLiveRefresh tenantId={tenantSlug} />
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
@@ -281,13 +283,16 @@ export default async function OrdiniPage({
           <h1 className="ga-heading">{t.title}</h1>
           <p className="ga-lead">{t.lead}</p>
         </div>
-        <Link
-          href={`/gestione/${tenantSlug}/ordini/impostazioni`}
-          className="ga-btn ga-btn-ghost"
-          style={{ alignSelf: "center" }}
-        >
-          <Settings size={14} strokeWidth={2.4} /> {t.settings}
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <OperationalAlertControls tenantId={tenantSlug} />
+          <Link
+            href={`/gestione/${tenantSlug}/ordini/impostazioni`}
+            className="ga-btn ga-btn-ghost"
+            style={{ alignSelf: "center" }}
+          >
+            <Settings size={14} strokeWidth={2.4} /> {t.settings}
+          </Link>
+        </div>
       </header>
 
       <nav className="ga-pills" aria-label={t.filterLabel}>
@@ -503,5 +508,6 @@ export default async function OrdiniPage({
         </div>
       )}
     </div>
+    </OperationalAlertsClient>
   );
 }

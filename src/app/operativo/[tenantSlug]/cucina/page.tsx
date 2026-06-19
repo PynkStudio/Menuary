@@ -5,9 +5,10 @@ import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getActiveGestioneLocation } from "@/lib/gestione-location";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
+import { OperationalAlertControls, OperationalAlertsClient } from "@/components/gestione/operational-alerts-client";
 import { demoOrders } from "@/lib/demo-fixtures";
 import type { Database } from "@/lib/database.types";
-import { markDelivered, markReady, startOrder, toggleOrderLinePrepared } from "./actions";
+import { confirmPendingOrder, markDelivered, markReady, rejectPendingOrder, startOrder, toggleOrderLinePrepared } from "./actions";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
 
@@ -36,7 +37,7 @@ type KitchenLine = {
   prepared: boolean;
 };
 
-const ACTIVE_STATUSES: OrderStatus[] = ["nuovo", "in_preparazione", "pronto"];
+const ACTIVE_STATUSES: OrderStatus[] = ["pending_confirmation", "nuovo", "in_preparazione", "pronto"];
 
 function minutesSince(iso: string): number {
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60_000));
@@ -120,11 +121,13 @@ function demoKitchenOrders(): { orders: KitchenOrder[]; lines: Map<string, Kitch
 
 function statusTitle(status: OrderStatus): string {
   if (status === "nuovo") return "Nuovi";
+  if (status === "pending_confirmation") return "Da confermare";
   if (status === "in_preparazione") return "In preparazione";
   return "Pronti";
 }
 
 function statusTone(status: OrderStatus): "warn" | "pending" | "ok" | "muted" {
+  if (status === "pending_confirmation") return "warn";
   if (status === "nuovo") return "warn";
   if (status === "in_preparazione") return "pending";
   if (status === "pronto") return "ok";
@@ -160,6 +163,7 @@ export default async function OperativoCucinaPage({
   const activeCount = orders.filter((order) => order.status !== "pronto").length;
 
   return (
+    <OperationalAlertsClient tenantId={tenantSlug} portal="cucina" locationId={activeLocation?.id ?? undefined}>
     <div className="ga-dashboard">
       <OrdersLiveRefresh tenantId={tenantSlug} />
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
@@ -170,9 +174,12 @@ export default async function OperativoCucinaPage({
             Coda live degli ordini confermati. Le azioni aggiornano lo stato visibile al cliente nel checkout.
           </p>
         </div>
-        <div className="ga-card" style={{ minWidth: 180, padding: 16 }}>
-          <span className="ga-section-hint">In lavorazione</span>
-          <div className="ga-heading" style={{ margin: 0 }}>{activeCount}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <OperationalAlertControls tenantId={tenantSlug} />
+          <div className="ga-card" style={{ minWidth: 180, padding: 16 }}>
+            <span className="ga-section-hint">In lavorazione</span>
+            <div className="ga-heading" style={{ margin: 0 }}>{activeCount}</div>
+          </div>
         </div>
       </header>
 
@@ -200,7 +207,13 @@ export default async function OperativoCucinaPage({
                     return (
                       <article key={order.id} className="ga-reservation">
                         <div className="ga-reservation-when">
-                          <span className="ga-reservation-date">{order.type === "tavolo" ? "Tavolo" : "Asporto"}</span>
+                          <span className="ga-reservation-date">
+                            {effectiveModality === "delivery"
+                              ? "Delivery"
+                              : effectiveModality === "dine_in" || order.type === "tavolo"
+                                ? "Tavolo"
+                                : "Asporto"}
+                          </span>
                           <span className="ga-reservation-time">{order.code}</span>
                         </div>
                         <div className="ga-reservation-body">
@@ -254,6 +267,24 @@ export default async function OperativoCucinaPage({
                           )}
 
                           <div className="ga-reservation-actions" style={{ marginTop: 12 }}>
+                            {order.status === "pending_confirmation" && (
+                              <>
+                                <form action={confirmPendingOrder}>
+                                  <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                                  <input type="hidden" name="id" value={order.id} />
+                                  <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
+                                    <Check size={14} strokeWidth={2.4} /> Accetta
+                                  </button>
+                                </form>
+                                <form action={rejectPendingOrder}>
+                                  <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                                  <input type="hidden" name="id" value={order.id} />
+                                  <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
+                                    Rifiuta
+                                  </button>
+                                </form>
+                              </>
+                            )}
                             {order.status === "nuovo" && (
                               <form action={startOrder}>
                                 <input type="hidden" name="tenantSlug" value={tenantSlug} />
@@ -293,5 +324,6 @@ export default async function OperativoCucinaPage({
         })}
       </div>
     </div>
+    </OperationalAlertsClient>
   );
 }

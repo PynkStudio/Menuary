@@ -218,6 +218,7 @@ type CheckoutStatusPayload = {
   status?: string;
   paymentStatus?: string;
   updatedAt?: string;
+  confirmationExpiresAt?: string | null;
 };
 
 const ORDER_STATUS_COPY: Record<string, { label: string; description: string }> = {
@@ -310,6 +311,7 @@ export function CheckoutClient({
   const [currentStatus, setCurrentStatus] = useState(order.status);
   const [currentPaymentStatus, setCurrentPaymentStatus] = useState(order.paymentStatus);
   const [statusUpdatedAt, setStatusUpdatedAt] = useState(order.updatedAt);
+  const [confirmationExpiresAt, setConfirmationExpiresAt] = useState(order.confirmationExpiresAt);
 
   // Valori modificabili entro la finestra di 5 minuti
   const [pickupTime, setPickupTime] = useState(order.pickupTime ?? "");
@@ -341,6 +343,7 @@ export function CheckoutClient({
         if (json.status) setCurrentStatus(json.status);
         if (json.paymentStatus) setCurrentPaymentStatus(json.paymentStatus);
         if (json.updatedAt) setStatusUpdatedAt(json.updatedAt);
+        if ("confirmationExpiresAt" in json) setConfirmationExpiresAt(json.confirmationExpiresAt ?? null);
       } catch {
         // Il tracking resta leggibile anche se un refresh puntuale fallisce.
       }
@@ -379,6 +382,10 @@ export function CheckoutClient({
   const statusCopy = liveStatusCopy(currentStatus, currentPaymentStatus);
   const isTerminalNegative = currentStatus === "annullato" || currentStatus === "expired" || currentPaymentStatus === "failed" || currentPaymentStatus === "expired";
   const activeStepIndex = TRACKING_STEPS.includes(currentStatus) ? TRACKING_STEPS.indexOf(currentStatus) : -1;
+  const confirmationSecondsLeft =
+    currentStatus === "pending_confirmation" && confirmationExpiresAt
+      ? Math.max(0, Math.floor((new Date(confirmationExpiresAt).getTime() - now) / 1000))
+      : null;
 
   // Link al menu/checkout preservando il prefisso slug in preview (es. /kimos/...).
   const basePath = typeof window !== "undefined" ? window.location.pathname.replace(/\/checkout\/.*$/, "") : "";
@@ -486,6 +493,11 @@ export function CheckoutClient({
                   Aggiornato alle {new Date(statusUpdatedAt).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
                 </p>
               )}
+              {confirmationSecondsLeft !== null && (
+                <div className="mt-3 rounded-2xl p-3 text-xs font-bold" style={{ backgroundColor: c.mustardSoft, color: c.ink }}>
+                  Il locale deve confermare entro {formatRemaining(confirmationSecondsLeft)}.
+                </div>
+              )}
             </div>
           </div>
           {!isTerminalNegative && (
@@ -509,7 +521,9 @@ export function CheckoutClient({
                   Pagamento {tenantVertical === "services" ? "all'appuntamento" : (order.dineOption === "delivery" ? "alla consegna" : "al ritiro")}
                 </div>
                 <div style={{ color: c.inkMuted }}>
-                  Conferma e dettagli ti sono stati inviati. L&apos;ordine è confermato e verrà preparato.
+                  {currentStatus === "pending_confirmation"
+                    ? "Il riepilogo è registrato: il locale deve ancora accettare l'ordine prima della preparazione."
+                    : "Conferma e dettagli ti sono stati inviati. L'ordine è confermato e verrà preparato."}
                 </div>
               </div>
             </div>
@@ -527,6 +541,7 @@ export function CheckoutClient({
                 </p>
               </div>
             )}
+            {stripeEnabled && (
             <section className="mb-4 rounded-2xl p-4" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
               <div className="flex items-start gap-3">
                 <ShieldCheck size={18} className="mt-0.5" style={{ color: c.accent }} />
@@ -558,6 +573,7 @@ export function CheckoutClient({
                 </div>
               </div>
             </section>
+            )}
           </>
         )}
 

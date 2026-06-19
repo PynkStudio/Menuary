@@ -10,6 +10,7 @@ const MUTE_KEY = "menuary:chime-muted";
 
 let ctx: AudioContext | null = null;
 let unlocked = false;
+let activeNodes: Array<AudioScheduledSourceNode | GainNode> = [];
 
 function getContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -64,12 +65,25 @@ export function setMuted(muted: boolean): void {
   try {
     if (muted) window.localStorage.setItem(MUTE_KEY, "1");
     else window.localStorage.removeItem(MUTE_KEY);
+    if (muted) stopActiveChimes();
     window.dispatchEvent(
       new CustomEvent("menuary:chime-mute", { detail: { muted } }),
     );
   } catch {
     /* storage non disponibile */
   }
+}
+
+function stopActiveChimes(): void {
+  for (const node of activeNodes) {
+    try {
+      if ("stop" in node) node.stop();
+      node.disconnect();
+    } catch {
+      /* nodo gia' fermo */
+    }
+  }
+  activeNodes = [];
 }
 
 /**
@@ -104,21 +118,27 @@ export function playChime(kind: ChimeKind): void {
   const master = c.createGain();
   master.gain.value = 0.18;
   master.connect(c.destination);
-  for (const note of PATTERNS[kind]) {
-    const osc = c.createOscillator();
-    const gain = c.createGain();
-    osc.type = "sine";
-    osc.frequency.value = note.freq;
-    // Envelope ADSR semplificato per evitare click
-    const start = now + note.at;
-    const end = start + note.dur;
-    gain.gain.setValueAtTime(0, start);
-    gain.gain.linearRampToValueAtTime(0.9, start + 0.01);
-    gain.gain.linearRampToValueAtTime(0.7, start + note.dur * 0.6);
-    gain.gain.linearRampToValueAtTime(0, end);
-    osc.connect(gain);
-    gain.connect(master);
-    osc.start(start);
-    osc.stop(end + 0.02);
+  activeNodes.push(master);
+  const repeats = kind === "order" ? 8 : 1;
+  const spacing = kind === "order" ? 1 : 0;
+  for (let repeat = 0; repeat < repeats; repeat++) {
+    for (const note of PATTERNS[kind]) {
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = "sine";
+      osc.frequency.value = note.freq;
+      // Envelope ADSR semplificato per evitare click
+      const start = now + repeat * spacing + note.at;
+      const end = start + note.dur;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.9, start + 0.01);
+      gain.gain.linearRampToValueAtTime(0.7, start + note.dur * 0.6);
+      gain.gain.linearRampToValueAtTime(0, end);
+      osc.connect(gain);
+      gain.connect(master);
+      osc.start(start);
+      osc.stop(end + 0.02);
+      activeNodes.push(osc, gain);
+    }
   }
 }
