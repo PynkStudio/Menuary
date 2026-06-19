@@ -2,7 +2,7 @@
 // "marketing"         → menuary.it             sito marketing verticale food
 // "marketing-bizery"  → bizery.it              sito marketing verticale services (Bizery)
 // "marketing-orpheo"  → weuseorpheo.com        sito marketing verticale creative (Orpheo)
-// "tenant"            → bepork.it / ecc.        sito del singolo locale
+// "tenant"            -> dominio custom tenant   sito del singolo locale
 // "platform-admin"    → admin.menuary.it        back-office piattaforma
 // "preview"           → demo.menuary.it         anteprima tenant food via previewSlug
 // "preview-bizery"    → demo.bizery.it          anteprima tenant bizery via previewSlug

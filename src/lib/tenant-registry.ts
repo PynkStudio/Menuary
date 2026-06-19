@@ -14,7 +14,7 @@ export const DEFAULT_CREATIVE_TENANT_ID = "orpheo-demo";
 /** @deprecated Usa getDefaultTenantForVertical(). Mantenuto per compatibilità con import esistenti. */
 export const DEFAULT_TENANT_ID = DEFAULT_FOOD_TENANT_ID;
 
-/** Be Pork: stack demo/produzione con tutti i moduli piattaforma attivi (nei limiti dell’implementazione). */
+/** ThePork: tenant demo food con tutti i moduli piattaforma attivi (nei limiti dell’implementazione). */
 export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = {
   ...allTenantFeatures(true),
   shop: false,
@@ -386,10 +386,10 @@ export const TENANTS: TenantProfile[] = [
   // ── Verticale food (menuary.it) ──────────────────────────────────────────
   {
     id: "bepork",
-    name: "Be Pork",
-    label: "Tenant 1 · Be Pork",
+    name: "ThePork",
+    label: "Demo · ThePork",
     vertical: "food",
-    domains: ["bepork.it", "www.bepork.it", "localhost", "127.0.0.1"],
+    domains: ["localhost", "127.0.0.1"],
     previewSlug: "bepork-demo",
     enabled: true,
     status: "active",
@@ -761,7 +761,7 @@ export function getDefaultTenantForVertical(vertical: TenantProfile["vertical"])
   return findTenantById(id) ?? findTenantsByVertical(vertical)[0] ?? TENANTS[0];
 }
 
-/** @deprecated Usa getDefaultTenantForVertical(vertical). Questo restituisce sempre il default food (BePork). */
+/** @deprecated Usa getDefaultTenantForVertical(vertical). Questo restituisce sempre il default food. */
 export function getDefaultTenant(): TenantProfile {
   return getDefaultTenantForVertical("food");
 }

@@ -29,7 +29,7 @@ export interface LoginPopupOptions {
  *
  * Flusso sessione:
  * - Parent su *.menuary.it → cookie .menuary.it già accessibile, solo router.refresh()
- * - Parent su dominio custom (bepork.it) → scambio token via /api/auth/set-session
+ * - Parent su dominio custom tenant -> scambio token via /api/auth/set-session
  */
 export function openLoginPopup(options: LoginPopupOptions): void {
   if (isMobile()) {

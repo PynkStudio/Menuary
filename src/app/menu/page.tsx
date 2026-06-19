@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Menu",
     description:
-      "Il menu di Be Pork: antipasti, taglieri, burger firmati, pizze classiche e speciali Be Pork, cucina pugliese, birre tedesche. A Bari, in Via Quintino Sella.",
+      "Il menu demo di ThePork: antipasti, taglieri, burger firmati, pizze classiche e speciali, cucina italiana e birre.",
   };
 }
 

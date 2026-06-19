@@ -954,7 +954,7 @@ export async function middleware(request: NextRequest) {
 
   // ── Tenant site (dominio custom o sottodominio tenant) ───────────────────
   // Rileva se il host è un sottodominio di un dominio del tenant
-  // (es. milano.bepork.it) e propaga lo slug come header x-location-slug
+  // (es. sede.example.it) e propaga lo slug come header x-location-slug
   // in modo che layout e pagine possano usarlo senza un'ulteriore query.
   // Funziona sia in mode "tenant" che in qualsiasi altra mode per i domini
   // custom con location subdomain.

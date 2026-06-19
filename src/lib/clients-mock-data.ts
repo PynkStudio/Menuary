@@ -28,8 +28,8 @@ export const MOCK_MARKETING_CONSENTS: MarketingConsentState = {
 export const MOCK_SHARED_RESTAURANTS: SharedRestaurantRecord[] = [
   {
     tenantId: "bepork",
-    displayName: "Be Pork",
-    city: "Bari",
+    displayName: "ThePork",
+    city: "Citta Demo",
     sharedSince: "2025-11-02",
     marketingConsentGranted: true,
     removalRequestedAt: null,
@@ -37,7 +37,7 @@ export const MOCK_SHARED_RESTAURANTS: SharedRestaurantRecord[] = [
   {
     tenantId: "faak",
     displayName: "FAAK",
-    city: "Bari",
+    city: "Milano",
     sharedSince: "2025-08-12",
     marketingConsentGranted: false,
     removalRequestedAt: null,
@@ -48,7 +48,7 @@ export const MOCK_ORDERS: ClientOrder[] = [
   {
     id: "ord-24091",
     tenantId: "bepork",
-    restaurantName: "Be Pork",
+    restaurantName: "ThePork",
     placedAt: "2026-05-10T19:42:00+02:00",
     totalEur: 38.5,
     channel: "asporto",

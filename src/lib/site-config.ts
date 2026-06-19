@@ -1,46 +1,46 @@
 export const siteConfig = {
-  name: "Be Pork",
-  tagline: "Il maiale è una filosofia. A Bari, si chiama Be Pork.",
+  name: "ThePork",
+  tagline: "Il maiale è una filosofia. Nel demo Menuary, si chiama ThePork.",
   description:
-    "Be Pork — ristorante, pizzeria e burger house nel centro di Bari. Burger smashati, pizze firmate, cucina pugliese che non chiede permesso.",
-  url: "https://bepork.it",
+    "ThePork - ristorante demo, pizzeria e burger house. Burger smashati, pizze firmate e cucina italiana pensata come modello Menuary.",
+  url: "https://demo.menuary.it/bepork-demo",
   ogImage: "/og/cover.jpg",
 
   address: {
-    street: "Via Quintino Sella, 128",
-    zip: "70123",
-    city: "Bari",
-    province: "BA",
+    street: "Via Demo, 1",
+    zip: "00000",
+    city: "Citta Demo",
+    province: "DM",
     country: "IT",
-    full: "Via Quintino Sella, 128 — 70123 Bari (BA)",
+    full: "Via Demo, 1 - 00000 Citta Demo (DM)",
   },
 
   geo: {
-    latitude: 41.1189,
-    longitude: 16.8638,
+    latitude: 41.9,
+    longitude: 12.5,
   },
 
   contact: {
-    phone: "+39 347 466 7087",
-    phoneDigits: "393474667087",
-    phoneLocal: "3474667087",
+    phone: "+39 000 000 0000",
+    phoneDigits: "390000000000",
+    phoneLocal: "0000000000",
     email: "",
   },
 
   social: {
-    instagram: "https://www.instagram.com/bepork2.0/",
-    instagramHandle: "@bepork2.0",
-    facebook: "https://www.facebook.com/BurgerPork/",
+    instagram: "https://www.instagram.com/thepork.demo/",
+    instagramHandle: "@thepork.demo",
+    facebook: "https://www.facebook.com/theporkdemo/",
   },
 
   maps: {
-    shortUrl: "https://maps.app.goo.gl/pV2yFJEbJaS5ameT8",
+    shortUrl: "https://www.google.com/maps/search/?api=1&query=ThePork+restaurant+demo",
     searchUrl:
-      "https://www.google.com/maps/search/?api=1&query=Be+Pork+Via+Quintino+Sella+128+Bari",
+      "https://www.google.com/maps/search/?api=1&query=ThePork+restaurant+demo",
     embedUrl:
-      "https://www.google.com/maps?q=Be+Pork+Via+Quintino+Sella+128+Bari&output=embed",
-    rating: 3.9,
-    reviewsCount: 1282,
+      "https://www.google.com/maps?q=restaurant+demo&output=embed",
+    rating: 4.6,
+    reviewsCount: 248,
   },
 
   hours: [
@@ -79,7 +79,7 @@ export const siteConfig = {
 
   whatsapp: {
     defaultMessage:
-      "Ciao Be Pork! Vorrei prenotare un tavolo. Siamo in ___ persone, per il giorno ___ alle ___. Grazie!",
+      "Ciao ThePork! Vorrei prenotare un tavolo. Siamo in ___ persone, per il giorno ___ alle ___. Grazie!",
   },
 
   delivery: [

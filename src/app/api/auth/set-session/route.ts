@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 /**
  * POST /api/auth/set-session
  *
- * Token exchange per domini custom (es. bepork.it).
+ * Token exchange per domini custom tenant.
  * Riceve access_token + refresh_token dal popup di login.menuary.it
  * tramite postMessage e li scambia con un cookie di sessione sul dominio corrente.
  *
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "missing tokens" }, { status: 400 });
   }
 
-  // Nessun cookieDomain → cookie scoped al dominio corrente (bepork.it, ecc.)
+  // Nessun cookieDomain -> cookie scoped al dominio corrente.
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase.auth.setSession({

@@ -1,5 +1,5 @@
 /* ============================================================
-   bepork.css — stili specifici per il tenant BePork
+   bepork.css — stili specifici per il tenant demo ThePork
    ============================================================ */
 
 @layer components {
@@ -60,7 +60,7 @@
     @apply relative rounded-3xl bg-pork-cream text-pork-ink shadow-xl shadow-pork-ink/10;
   }
 
-  /* Pannello gestione — identità BePork (cream + red, light) */
+  /* Pannello gestione — identità ThePork (cream + red, light) */
   .gestione-admin[data-gestione-tenant="bepork"] {
     --ga-bg:          #FFF4E6;
     --ga-surface:     #FFFFFF;

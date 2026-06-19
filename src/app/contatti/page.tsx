@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     : {
         title: "Contatti & Prenotazioni",
         description:
-          "Prenota da Be Pork su WhatsApp o chiamaci. Via Quintino Sella 128, 70123 Bari. Orari, mappa, social.",
+          "Prenota da ThePork su WhatsApp o chiamaci. Contatti, orari, mappa demo e social.",
       };
 }
 

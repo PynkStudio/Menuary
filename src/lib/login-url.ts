@@ -7,7 +7,7 @@
  *   "clienti"                → clienti.menuary.it            (portale clienti)
  *   "gestione.bepork"        → gestione.menuary.it/bepork    (pannello store food)
  *   "gestione-bizery.acme"   → gestione.bizery.it/acme       (pannello store bizery, cross-domain popup)
- *   "gestione-custom.bepork" → gestione.bepork.it            (pannello store sul dominio tenant)
+ *   "gestione-custom.bepork" -> gestione.tenant.example      (pannello store sul dominio tenant)
  *   "gestione-demo.bepork"   → demo.menuary.it/bepork/gestione
  *   "app.ios"                → deep link iOS app (futuro)
  *   "app.android"            → deep link Android app (futuro)

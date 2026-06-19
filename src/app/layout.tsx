@@ -297,7 +297,7 @@ export async function generateMetadata(): Promise<Metadata> {
           : tenant.id === "pynkstudio"
             ? "PYNK STUDIO — Software, web e app su misura"
             : `${tenant.name} - servizi, appuntamenti e listino prezzi`
-        : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
+        : `${tenant.name} - Burger, Pizza e Cucina italiana`;
 
   return {
     metadataBase: new URL(
@@ -373,14 +373,14 @@ export async function generateMetadata(): Promise<Metadata> {
               ]
           : [
               tenant.name,
-              "hamburger Bari",
-              "burger Bari centro",
-              "pizzeria Bari",
-              "ristorante Bari",
-              "street food Bari",
-              "Via Quintino Sella Bari",
-              "pulled pork Bari",
-              "pizza all'assassina Bari",
+              "hamburger demo",
+              "burger house",
+              "pizzeria demo",
+              "ristorante demo",
+              "street food",
+              "menu digitale ristorante",
+              "pulled pork",
+              "pizza all'assassina",
             ],
     openGraph: {
       title:
@@ -564,7 +564,7 @@ export default async function RootLayout({
       ? await fetchLocations(await createSupabaseServerClient(), tenant.id)
       : [];
 
-  // Slug sede da sottodominio (es. milano.bepork.it → "milano"), impostato dal middleware.
+  // Slug sede da sottodominio tenant (es. sede.example.it → "sede"), impostato dal middleware.
   const locationSlug = reqHeaders.get("x-location-slug") ?? undefined;
   const localeHeader = reqHeaders.get(LOCALE_HEADER);
   const lang = isAppLocale(localeHeader) ? localeHeader : "it";

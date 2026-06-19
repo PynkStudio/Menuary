@@ -77,7 +77,7 @@ export function BeporkContactsPage() {
 
           <div className="relative h-96 overflow-hidden rounded-3xl shadow-xl ring-1 ring-pork-ink/10 lg:h-auto">
             <VenueMapFrame
-              title="Mappa Be Pork"
+              title="Mappa ThePork"
               className="absolute inset-0 h-full w-full"
             />
           </div>

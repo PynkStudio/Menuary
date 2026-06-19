@@ -78,7 +78,7 @@ export async function generateMetadata({
               ? "Pizzeria Kimos - Pizza, kebab e ordini online a Milano"
             : tenant.id === "cascina-errante"
               ? "Cascina Errante - Ristorante demo Menuary"
-            : `${tenant.name} - Burger, Pizza e Cucina Pugliese a Bari`;
+            : `${tenant.name} - Burger, Pizza e Cucina italiana`;
 
   return {
     metadataBase: new URL(metadataOrigin),

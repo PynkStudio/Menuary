@@ -64,7 +64,7 @@ export function MenuPageShell({
             {isFaak ? (
               <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">
                 Il menu demo cambia lessico, categorie e contenuti: non e il listino
-                Be Pork con un altro logo, ma una struttura costruita sul ritmo FAAK.
+                ThePork con un altro logo, ma una struttura costruita sul ritmo FAAK.
               </p>
             ) : isNomSushi ? (
               <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">

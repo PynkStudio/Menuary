@@ -57,7 +57,7 @@ const EX_LIST_KIMOS_PIZZA: ExtraRow[] = [
   { id: "kpz-rucola", name: "Rucola", price: 0.5 },
 ];
 
-/** Ids fissi usati dal menu seed BePork: aggiornando la lista in admin si propagano tutti i piatti collegati. */
+/** Ids fissi usati dal menu seed del tenant demo: aggiornando la lista in admin si propagano tutti i piatti collegati. */
 export const LIST_ID_PIZZA = "lista-pizze" as const;
 export const LIST_ID_BURGER = "lista-burger" as const;
 export const LIST_ID_CLUB = "lista-club" as const;
@@ -76,7 +76,7 @@ const KIMOS_EXTRA_LISTS: readonly ExtraList[] = [
 /** @deprecated usa getTenantDefaultExtraLists(tenantId) */
 export const DEFAULT_EXTRA_LISTS = BEPORK_EXTRA_LISTS;
 
-/** Restituisce le liste aggiunte predefinite per il tenant. Solo BePork e Kimos hanno un seed; gli altri partono vuoti. */
+/** Restituisce le liste aggiunte predefinite per il tenant. Solo il tenant demo food e Kimos hanno un seed; gli altri partono vuoti. */
 export function getTenantDefaultExtraLists(tenantId: string): readonly ExtraList[] {
   if (tenantId === "bepork") return BEPORK_EXTRA_LISTS;
   if (tenantId === "kimos") return KIMOS_EXTRA_LISTS;

@@ -130,16 +130,16 @@ export const menu: MenuCategory[] = [
         allergens: ix("glutine", "uova", "latte", "senape"),
       },
       {
-        id: "mortadella-arrosto-barese",
-        name: "Mortadella arrosto alla barese",
+        id: "mortadella-arrosto-casa",
+        name: "Mortadella arrosto della casa",
         description: "Con pistacchio e provolone",
         price: s(6),
         tags: ["firma"],
         allergens: ix("latte", "frutta_guscio", "senape", "solfiti"),
       },
       {
-        id: "crudo-alla-barese",
-        name: "Crudo alla barese",
+        id: "crudo-della-casa",
+        name: "Crudo della casa",
         description: "Porzione di prosciutto crudo tagliato a dadini o strisce",
         price: s(6),
         allergens: ix("solfiti"),
@@ -1102,7 +1102,7 @@ export const menu: MenuCategory[] = [
   },
   {
     id: "pizze-speciali",
-    title: "Pizze Speciali Be Pork",
+    title: "Pizze Speciali ThePork",
     subtitle: "Classiche come non te le aspetti",
     items: [
       {
@@ -1321,7 +1321,7 @@ export const menu: MenuCategory[] = [
         id: "mortadella-pork",
         name: "Mortadella Pork",
         description:
-          "Mozzarella, provola affumicata, mortadella alla barese e pesto di pistacchio",
+          "Mozzarella, provola affumicata, mortadella della casa e pesto di pistacchio",
         price: s(10),
         tags: ["firma"],
         ingredients: ingList("mortadella-pork", [

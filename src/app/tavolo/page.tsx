@@ -324,8 +324,8 @@ function SessionBadge({
     if (typeof navigator !== "undefined" && "share" in navigator) {
       navigator
         .share({
-          title: `Be Pork · ${table.label}`,
-          text: `Unisciti al mio tavolo Be Pork con il codice ${session.code}`,
+          title: `ThePork · ${table.label}`,
+          text: `Unisciti al mio tavolo ThePork con il codice ${session.code}`,
           url: shareUrl,
         })
         .catch(() => {});

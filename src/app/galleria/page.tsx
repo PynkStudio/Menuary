@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Galleria",
     description:
-      "Foto dei piatti firma di Be Pork: burger smashati, pizze speciali, tagliata Angus, spaghetti all'Assassina, bombette in fonduta.",
+      "Foto dei piatti firma di ThePork: burger smashati, pizze speciali, tagliata Angus, spaghetti all'Assassina, bombette in fonduta.",
   };
 }
 

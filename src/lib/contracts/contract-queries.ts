@@ -2,6 +2,7 @@ import "server-only";
 
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { ContractData } from "./menuary-contract";
+import { leadUpdateFromContractData } from "./contract-lead-mapping";
 
 export type ContractStatus =
   | "draft"
@@ -158,6 +159,23 @@ export async function createContract(input: {
     .single();
   if (error) throw new Error(error.message);
   return data as unknown as PlatformContract;
+}
+
+export async function syncLeadFromContractData(
+  leadId: string | null | undefined,
+  contractData: ContractData,
+): Promise<void> {
+  if (!leadId) return;
+  const update = Object.fromEntries(
+    Object.entries(leadUpdateFromContractData(contractData)).filter(
+      ([, value]) => value !== undefined,
+    ),
+  );
+  const { error } = await db()
+    .from("platform_leads")
+    .update(update)
+    .eq("id", leadId);
+  if (error) throw new Error(error.message);
 }
 
 export async function updateContract(

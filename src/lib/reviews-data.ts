@@ -14,9 +14,9 @@ export type Review = {
 export const reviews: Review[] = [
   {
     id: "vitale",
-    author: "Francesco Vitale",
+    author: "Cliente demo",
     rating: 5,
-    text: "Se siete alla ricerca di un ottimo locale nel centro di Bari non cercate oltre. Menu ampio, atmosfera invitante, personale cordiale e attento. Non sono mai rimasto deluso.",
+    text: "Menu ampio, atmosfera invitante, personale cordiale e attento. Un esempio perfetto di come il locale puo presentarsi online.",
     date: "6 mesi fa",
     isLocalGuide: true,
     reviewsCount: 26,
@@ -24,7 +24,7 @@ export const reviews: Review[] = [
   },
   {
     id: "caso",
-    author: "Antonella Caso",
+    author: "Ospite demo",
     rating: 5,
     text: "A pranzo con gli studenti: li ho convinti ad evitare l'hamburger americano e sono rimasti soddisfattissimi di quelli italiani, abbondanti e squisiti. Ho preso un'assassina spettacolare!",
     date: "4 mesi fa",
@@ -34,7 +34,7 @@ export const reviews: Review[] = [
   },
   {
     id: "scamarcia",
-    author: "Cristian Scamarcia",
+    author: "Local guide demo",
     rating: 5,
     text: "Esperienza positiva in tutto: panini di ottima qualità, prezzo nella media e servizio efficiente. Uno dei migliori panini che abbia mai provato.",
     date: "6 mesi fa",
@@ -44,7 +44,7 @@ export const reviews: Review[] = [
   },
   {
     id: "berardi",
-    author: "Francesco Berardi",
+    author: "Cliente abituale",
     rating: 4,
     text: "Ottimo pub per passare una serata diversa, cibo molto particolare ed abbondante di alta qualità. Personale gentile. Conto giustificato dai suoi piatti.",
     date: "3 mesi fa",
@@ -55,10 +55,10 @@ export const reviews: Review[] = [
 ];
 
 export const googleRating = {
-  average: 3.9,
-  count: 1282,
+  average: 4.6,
+  count: 248,
   profileUrl:
-    "https://www.google.com/maps/search/?api=1&query=Be+Pork+Via+Quintino+Sella+128+Bari",
+    "https://www.google.com/maps/search/?api=1&query=ThePork+restaurant+demo",
 };
 
 export const officinaKamReviews: Review[] = [

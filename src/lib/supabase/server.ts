@@ -8,7 +8,7 @@ import type { Database } from "@/lib/database.types";
  *   - undefined      → nessun attributo Domain (cookie scoped al host corrente)
  *
  * Usare ".menuary.it" esplicitamente solo dal login portal e dal middleware
- * dei sottodomini Menuary. NON impostarlo su domini custom (bepork.it, ecc.)
+ * dei sottodomini Menuary. NON impostarlo su domini custom tenant.
  * perché il browser rifiuterebbe il cookie (spec violation).
  */
 export async function createSupabaseServerClient(cookieDomain?: string) {

@@ -130,7 +130,7 @@ const MOCK_PACKAGES: PlatformPackageExtended[] = [
     name: AI_ADDON.slug,
     slug: AI_ADDON.slug,
     description: AI_ADDON.description,
-    vertical: "both",
+    vertical: "food",
     adapted_name: null,
     price_monthly: AI_ADDON.monthly,
     price_yearly: AI_ADDON.monthly * 12,
@@ -204,6 +204,7 @@ type PackageForm = {
   min_package_slug: string;
   included_minutes: string;
   overage_mode: "cost" | "fixed";
+  commission_pct: string;
   voice_cloning: boolean;
   channels_raw: string;
   languages_raw: string;
@@ -234,6 +235,7 @@ function emptyForm(): PackageForm {
     min_package_slug: "",
     included_minutes: "",
     overage_mode: "cost",
+    commission_pct: "",
     voice_cloning: false,
     channels_raw: "",
     languages_raw: "",
@@ -284,6 +286,7 @@ function pkgToForm(p: PlatformPackageExtended): PackageForm {
     min_package_slug: p.min_package_slug ?? "",
     included_minutes: settings.includedMinutes != null ? String(settings.includedMinutes) : "",
     overage_mode: settings.overageMode === "fixed" ? "fixed" : "cost",
+    commission_pct: settings.commissionPct != null ? String(settings.commissionPct) : "",
     voice_cloning: settings.voiceCloning === true,
     channels_raw: Array.isArray(settings.channels) ? settings.channels.join(", ") : "",
     languages_raw: Array.isArray(settings.languages) ? settings.languages.join(", ") : "",
@@ -384,6 +387,8 @@ export function PlatformPackagesPage() {
           settings: {
             includedMinutes: form.included_minutes ? Number(form.included_minutes) : undefined,
             overageMode: form.overage_mode,
+            commissionPct: form.commission_pct ? Number(form.commission_pct) : undefined,
+            availableVerticals: form.slug === "ai-phone" ? ["food"] : undefined,
             voiceCloning: form.voice_cloning,
             channels: form.channels_raw.split(",").map((item) => item.trim()).filter(Boolean),
             languages: form.languages_raw.split(",").map((item) => item.trim()).filter(Boolean),
@@ -560,6 +565,10 @@ function PackageCard({
   onToggleActive: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const settings = (pkg.settings ?? {}) as Record<string, unknown>;
+  const commissionPct = typeof settings.commissionPct === "number" ? settings.commissionPct : null;
+  const commissionLabel =
+    commissionPct != null ? `${commissionPct}% sugli ordini confermati` : null;
   const saving = pkg.price_monthly_billing != null
     ? (pkg.price_monthly_billing - pkg.price_monthly) * 12
     : null;
@@ -605,10 +614,14 @@ function PackageCard({
           {/* Prezzi */}
           <div className="mt-3 flex flex-wrap items-center gap-4">
             <div className="rounded-xl bg-pork-cream px-3 py-1.5">
-              <span className="text-xs text-pork-ink/50">Annuale: </span>
-              <span className="font-black">€{pkg.price_monthly}/mese</span>
+              <span className="text-xs text-pork-ink/50">
+                {commissionLabel ? "Commissione: " : "Annuale: "}
+              </span>
+              <span className="font-black">
+                {commissionLabel ?? `€${pkg.price_monthly}/mese`}
+              </span>
             </div>
-            {pkg.price_monthly_billing != null && (
+            {pkg.price_monthly_billing != null && !commissionLabel && (
               <div className="rounded-xl bg-pork-ink/5 px-3 py-1.5">
                 <span className="text-xs text-pork-ink/50">Mensile: </span>
                 <span className="font-black">€{pkg.price_monthly_billing}/mese</span>
@@ -796,6 +809,9 @@ function PackageFormPanel({
               </FormField>
               <FormField label="Minuti inclusi / mese">
                 <input type="number" value={form.included_minutes} onChange={(e) => set("included_minutes", e.target.value)} className="input-base" placeholder="120" />
+              </FormField>
+              <FormField label="Commissione ordini confermati (%)">
+                <input type="number" step="0.1" min="0" value={form.commission_pct} onChange={(e) => set("commission_pct", e.target.value)} className="input-base" placeholder="3" />
               </FormField>
               <FormField label="Extra minuti">
                 <select value={form.overage_mode} onChange={(e) => set("overage_mode", e.target.value === "fixed" ? "fixed" : "cost")} className="input-base">

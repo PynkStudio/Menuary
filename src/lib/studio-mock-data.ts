@@ -1,14 +1,14 @@
 import type { StudioBillingProfile, StudioSubscriptionSummary } from "@/lib/studio-types";
 
 export const MOCK_STUDIO_BILLING: StudioBillingProfile = {
-  tradeName: "Be Pork",
-  legalName: "Be Pork S.r.l.",
+  tradeName: "ThePork",
+  legalName: "ThePork Demo S.r.l.",
   vatNumber: "IT01234567890",
   fiscalCode: "01234567890",
   sdiRecipientCode: "XXXXXXX",
-  pecEmail: "bepork@pec.example.it",
-  legalAddress: "Via Esempio 1\n70100 Bari (BA)\nItalia",
-  billingEmail: "amministrazione@bepork.it",
+  pecEmail: "thepork@pec.example.it",
+  legalAddress: "Via Demo 1\n00000 Citta Demo (DM)\nItalia",
+  billingEmail: "amministrazione@thepork.example",
 };
 
 export const MOCK_STUDIO_SUBSCRIPTION: StudioSubscriptionSummary = {

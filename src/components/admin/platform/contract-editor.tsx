@@ -51,6 +51,7 @@ import {
 } from "@/lib/contracts/menuary-contract";
 import { buildClauses, buildVessatorieRif } from "@/lib/contracts/menuary-clauses";
 import { buildAttachments } from "@/lib/contracts/menuary-attachments";
+import { applyLeadToContractData } from "@/lib/contracts/contract-lead-mapping";
 import {
   CONTRACT_STATUS_COLORS,
   CONTRACT_STATUS_LABELS,
@@ -238,71 +239,11 @@ export function ContractEditor({ contractId }: Props) {
     const lead = source.find((item) => item.id === id);
     if (!lead) return;
     setLeadId(id);
-    const inferredBrand: ContractBrand =
-      lead.business_vertical === "creative"
-        ? "orpheo"
-        : lead.business_vertical === "services"
-          ? "bizery"
-          : "menuary";
-
-    // Proposta commerciale del lead → pre-compila pacchetto ed economiche.
     const proposedPkg = lead.proposed_package_slug
       ? PLATFORM_PACKAGES.find((p) => p.slug === lead.proposed_package_slug)
       : undefined;
     if (lead.proposed_package_slug) setPackageSlug(lead.proposed_package_slug);
-
-    setData((d) => {
-      const cycle = lead.proposed_billing_cycle ?? d.economiche.cicloFatturazione;
-      const recurring = lead.proposed_recurring_amount;
-      // Il contratto modella un canone mensile base; il canone effettivo concordato
-      // (multi-sede + addon inclusi) viene riportato in mensile-equivalente.
-      const canoneMensile =
-        recurring != null
-          ? cycle === "yearly"
-            ? round2(recurring / 12)
-            : recurring
-          : proposedPkg?.price_monthly ?? d.economiche.canoneMensile;
-      const setup = lead.proposed_setup_amount ?? proposedPkg?.setup_amount ?? d.economiche.setup;
-
-      return {
-        ...d,
-        brand: inferredBrand,
-        cliente: {
-          tipo: lead.billing_cf && !lead.billing_vat ? "individual" : d.cliente.tipo,
-          ragioneSociale: lead.billing_name ?? lead.business_name,
-          legaleRappresentante: lead.contact_name ?? "",
-          piva: lead.billing_vat ?? "",
-          cf: lead.billing_cf ?? "",
-          sedeLegale: [
-            lead.billing_address ?? lead.address,
-            lead.billing_postal_code ?? lead.postal_code,
-            lead.billing_city ?? lead.city,
-            lead.billing_province ?? lead.province,
-          ]
-            .filter(Boolean)
-            .join(", "),
-          pec: lead.billing_pec ?? "",
-          email: lead.contact_email ?? "",
-          telefono: lead.contact_phone ?? "",
-          sdi: lead.billing_sdi ?? "",
-        },
-        servizio: {
-          ...d.servizio,
-          tenantSlug: lead.business_slug ?? "",
-          dominio: lead.official_domain ?? "",
-          pianoNome: proposedPkg?.name ?? d.servizio.pianoNome,
-        },
-        economiche: {
-          ...d.economiche,
-          cicloFatturazione: cycle,
-          canoneMensile,
-          setup,
-          setupRate: [setup],
-          // Lo sconto annuale è già incluso nel canone concordato → azzerato per non riapplicarlo.
-          scontoAnnuale: recurring != null ? 0 : d.economiche.scontoAnnuale,
-        },
-      };
-    });
+    setData((d) => applyLeadToContractData(d, lead, proposedPkg));
   }
 
   function applyPackage(slug: string) {
@@ -1523,6 +1464,14 @@ export function ContractEditor({ contractId }: Props) {
                   : `${formatEUR(totaleAnnuale)} ${taxSuffix(data.economiche)} / anno`
                 : `${formatEUR(data.economiche.canoneMensile)} ${taxSuffix(data.economiche)} / mese`}
             </dd>
+            {(data.servizio.moduliIa.telefono || data.servizio.moduliIa.whatsapp) && (
+              <>
+                <dt>Commissione IA</dt>
+                <dd>
+                  {data.economiche.commissioneOrdiniPct}% sugli ordini confermati gestiti dai moduli IA
+                </dd>
+              </>
+            )}
             {data.economiche.esenzioneIva && (
               <>
                 <dt>Marca da bollo</dt>

@@ -9,6 +9,7 @@ import {
   updateContract,
   deleteContractById,
   setContractCancelled,
+  syncLeadFromContractData,
 } from "@/lib/contracts/contract-queries";
 import { normalizeContractData, type ContractData } from "@/lib/contracts/menuary-contract";
 import { voidEnvelope } from "@/lib/contracts/documenso";
@@ -81,6 +82,7 @@ export async function POST(req: NextRequest) {
     lead_id: body.leadId ?? null,
     package_slug: body.packageSlug ?? null,
   });
+  await syncLeadFromContractData(body.leadId ?? null, data);
   return NextResponse.json({ contract }, { status: 201 });
 }
 
@@ -93,10 +95,22 @@ export async function PATCH(req: NextRequest) {
   if (!id) {
     return NextResponse.json({ error: "id obbligatorio" }, { status: 400 });
   }
+  const current = await getContract(id);
+  if (!current) return NextResponse.json({ error: "Contratto non trovato" }, { status: 404 });
+  let contractDataForLeadSync: ContractData | null = null;
   if (updates.contract_data) {
     updates.contract_data = normalizeContractData(updates.contract_data as ContractData);
+    contractDataForLeadSync = updates.contract_data as ContractData;
   }
   const contract = await updateContract(id, updates);
+  const leadIdForSync =
+    typeof updates.lead_id === "string" || updates.lead_id === null
+      ? updates.lead_id
+      : current.lead_id;
+  await syncLeadFromContractData(
+    leadIdForSync,
+    contractDataForLeadSync ?? contract.contract_data,
+  );
   return NextResponse.json({ contract });
 }
 

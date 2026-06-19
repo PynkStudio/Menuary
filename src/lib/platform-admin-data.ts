@@ -9,7 +9,7 @@ import type {
 
 } from "@/lib/platform-crm-types";
 import type { TenantFeatureKey } from "@/lib/tenant";
-import { BIZERY_PRICING_PLANS, ORPHEO_PRICING_PLANS, PRICING_PLANS } from "@/lib/platform-pricing";
+import { AI_ADDON, BIZERY_PRICING_PLANS, ORPHEO_PRICING_PLANS, PRICING_PLANS } from "@/lib/platform-pricing";
 import { allTenantFeatures } from "@/lib/tenant-modules";
 
 const presenceModules: TenantFeatureKey[] = ["website", "onlineMenu", "reviews", "gallery"];
@@ -96,13 +96,13 @@ PLATFORM_PACKAGES.push(...ORPHEO_PLATFORM_PACKAGES);
 export const PLATFORM_ADDON_PACKAGES: PlatformPackage[] = [
   {
     id: "pkg-ai-phone",
-    name: "Assistente vocale AI",
+    name: AI_ADDON.marketing_name,
     slug: "ai-phone",
-    vertical: "both",
+    vertical: "food",
     adapted_name: null,
-    description: "Add-on IA per chiamate inbound con Retell AI.",
-    price_monthly: 60,
-    price_yearly: 720,
+    description: "Add-on IA per chiamate inbound: nessun canone fisso, 3% sugli ordini confermati gestiti dall'IA.",
+    price_monthly: AI_ADDON.monthly,
+    price_yearly: 0,
     currency: "EUR",
     modules: aiAddonModules,
     is_active: true,

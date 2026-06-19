@@ -16,7 +16,7 @@ interface Props {
  * del login portal, in base al parametro `from`.
  *
  * Esempi:
- *   from="gestione.bepork" → colori e font di BePork
+ *   from="gestione.bepork" -> colori e font del tenant demo
  *   from="admin"           → nessun override (tema dark del layout)
  *   from="clienti"         → nessun override (tema Menuary light)
  */

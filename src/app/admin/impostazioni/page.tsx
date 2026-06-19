@@ -564,7 +564,7 @@ export default function AdminImpostazioniPage() {
         </h2>
         <p className="mt-2 text-sm text-pork-ink/70">
           Riporta piatti, prezzi, disponibilità, tavoli, sessioni e ordini allo stato iniziale
-          fornito da Be Pork. Le scelte di questa pagina (moduli e recapiti) non cambiano: per
+          fornito da ThePork. Le scelte di questa pagina (moduli e recapiti) non cambiano: per
           quelle usa &quot;Ripristina impostazioni&quot; qui sotto.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">

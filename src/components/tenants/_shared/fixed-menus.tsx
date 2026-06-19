@@ -192,7 +192,7 @@ export function FixedMenus() {
         <div className="mt-10 text-center">
           <a
             href={whatsappUrl(
-              "Ciao Be Pork! Vorrei prenotare per il Menu Fisso. Siamo in ___ persone il giorno ___. Grazie!"
+              "Ciao ThePork! Vorrei prenotare per il Menu Fisso. Siamo in ___ persone il giorno ___. Grazie!"
             )}
             target="_blank"
             rel="noopener noreferrer"

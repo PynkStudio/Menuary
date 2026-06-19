@@ -6,7 +6,7 @@ import { Wrench, Calendar, Car, ChevronDown } from "lucide-react";
 import { useTenant } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
 
-// Colori tenant via CSS vars — non usa token BePork
+// Colori tenant via CSS vars, senza token di tenant specifici.
 const v = {
   bg:           "rgb(var(--tenant-cream))",
   surface:      "rgb(var(--tenant-brick))",

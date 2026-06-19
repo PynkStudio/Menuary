@@ -87,43 +87,43 @@ export type TenantContent = {
 
 const beporkContent: TenantContent = {
   logoSrc: "/logo.png",
-  logoAlt: "Be Pork",
+  logoAlt: "ThePork",
   showcaseLogoSrc: "/logo-payoff.png",
-  showcaseLogoAlt: "Be Pork - Mordi e Godi",
+  showcaseLogoAlt: "ThePork - demo restaurant",
   description:
-    "Be Pork - ristorante, pizzeria e burger house nel centro di Bari. Burger smashati, pizze firmate, cucina pugliese che non chiede permesso.",
-  url: "https://bepork.it",
+    "ThePork - ristorante demo, pizzeria e burger house. Burger smashati, pizze firmate e cucina italiana pensata come modello Menuary.",
+  url: "https://demo.menuary.it/bepork-demo",
   social: {
-    instagram: "https://www.instagram.com/bepork2.0/",
-    facebook: "https://www.facebook.com/BurgerPork/",
-    instagramLabel: "Instagram Be Pork",
-    facebookLabel: "Facebook Be Pork",
+    instagram: "https://www.instagram.com/thepork.demo/",
+    facebook: "https://www.facebook.com/theporkdemo/",
+    instagramLabel: "Instagram ThePork",
+    facebookLabel: "Facebook ThePork",
   },
   contact: {
-    phone: "+39 347 466 7087",
-    whatsappDigits: "393474667087",
+    phone: "+39 000 000 0000",
+    whatsappDigits: "390000000000",
     whatsappMessage:
-      "Ciao Be Pork! Vorrei prenotare un tavolo. Siamo in ___ persone, per il giorno ___ alle ___. Grazie!",
+      "Ciao ThePork! Vorrei prenotare un tavolo. Siamo in ___ persone, per il giorno ___ alle ___. Grazie!",
   },
   address: {
-    street: "Via Quintino Sella, 128",
-    zip: "70123",
-    city: "Bari",
-    province: "BA",
-    full: "Via Quintino Sella, 128 - 70123 Bari (BA)",
+    street: "Via Demo, 1",
+    zip: "00000",
+    city: "Citta Demo",
+    province: "DM",
+    full: "Via Demo, 1 - 00000 Citta Demo (DM)",
   },
   maps: {
     searchUrl:
-      "https://www.google.com/maps/search/?api=1&query=Be+Pork+Via+Quintino+Sella+128+Bari",
+      "https://www.google.com/maps/search/?api=1&query=ThePork+restaurant+demo",
     embedUrl:
-      "https://www.google.com/maps?q=Be+Pork+Via+Quintino+Sella+128+Bari&output=embed",
+      "https://www.google.com/maps?q=restaurant+demo&output=embed",
   },
   hero: {
-    eyebrow: "Ristorante - Pizzeria - Burger House - Bari",
+    eyebrow: "Ristorante - Pizzeria - Burger House",
     titleLead: "Il maiale",
     titleAccent: "e una filosofia.",
     body:
-      "A Bari, si chiama Be Pork. Burger smashati, pizze firmate, cucina pugliese che non chiede permesso.",
+      "Qui si chiama ThePork. Burger smashati, pizze firmate e cucina italiana con carattere, pronta da mostrare come modello.",
     backdrop: "/photos/burger-esagerato.png",
     ctaLabel: "Prenota su WhatsApp",
   },
@@ -132,7 +132,7 @@ const beporkContent: TenantContent = {
     titleLead: "Tutte le facce della fame,",
     titleAccent: "in un posto solo.",
     body:
-      "Be Pork non e un burger bar. E un ristorante con tre anime forti che convivono nello stesso tavolo.",
+      "ThePork non e un burger bar. E un ristorante demo con tre anime forti che convivono nello stesso tavolo.",
   },
   souls: [
     {
@@ -147,15 +147,15 @@ const beporkContent: TenantContent = {
       id: "pizza",
       kicker: "Italian Style",
       title: "Pizza House",
-      desc: "Classiche come devono essere. Speciali Be Pork come non te le aspetti.",
+      desc: "Classiche come devono essere. Speciali ThePork come non te le aspetti.",
       href: "/menu#pizze-speciali",
       image: "/photos/pizza-multigusto.png",
     },
     {
       id: "cucina",
-      kicker: "Tradizione Pugliese",
-      title: "Cucina Pugliese",
-      desc: "Crudo alla barese, orecchiette con le brasciole, tagliata Angus. Si mangia sul serio.",
+      kicker: "Tradizione italiana",
+      title: "Cucina di casa",
+      desc: "Primi della tradizione, tagliata Angus, piatti generosi e servizio diretto. Si mangia sul serio.",
       href: "/menu#secondi",
       image: "/photos/orecchiette-brasciole.png",
     },
@@ -176,7 +176,7 @@ const beporkContent: TenantContent = {
     },
     {
       name: "Pizza all'Assassina",
-      desc: "Spaghetti croccanti, pomodoro, stracciatella. Bari in una fetta.",
+      desc: "Spaghetti croccanti, pomodoro, stracciatella. Una firma italiana in una fetta.",
       price: "€ 10,00",
       image: "/photos/pizza-multigusto.png",
       variant: "mustard",
@@ -208,7 +208,7 @@ const beporkContent: TenantContent = {
     },
     {
       name: "Orecchiette con le brasciole",
-      desc: "Il ragu della domenica, a Bari, ogni sera.",
+      desc: "Il ragu della domenica, ogni sera.",
       price: "Primi",
       image: "/photos/orecchiette-padella.png",
       variant: "mustard",
@@ -217,20 +217,20 @@ const beporkContent: TenantContent = {
   ],
   findUs: {
     eyebrow: "Come trovarci",
-    titleLead: "In centro a Bari,",
+    titleLead: "Nel cuore della citta,",
     titleAccent: "dove si mangia davvero.",
     body:
-      "Via Quintino Sella, cuore del quartiere Murat. Due passi dal mare, meno da un buon bicchiere di birra.",
-    mapTitle: "Mappa Be Pork",
+      "Un indirizzo demo pensato per mostrare prenotazioni, mappa, orari e contatti senza esporre riferimenti reali.",
+    mapTitle: "Mappa ThePork",
   },
   footer: {
     tagline: "Il maiale e una filosofia.",
     body:
-      "Ristorante, pizzeria e burger house nel centro di Bari. Burger smashati, pizze firmate, cucina pugliese che non chiede permesso.",
+      "Ristorante, pizzeria e burger house demo. Burger smashati, pizze firmate e cucina italiana pensata come modello Menuary.",
   },
   delivery: {
     title: "Fame ora, tavolo pieno?",
-    body: "Presto ordini Be Pork anche a domicilio.",
+    body: "Presto ordini ThePork anche a domicilio.",
     partners: [
       { name: "Glovo", url: "#", active: false },
       { name: "Deliveroo", url: "#", active: false },
@@ -287,7 +287,7 @@ const faakContent: TenantContent = {
     titleLead: "La stessa piattaforma,",
     titleAccent: "un carattere completamente diverso.",
     body:
-      "Per FAAK la navigazione diventa manifesto: mattina, giorno e aperitivo sostituiscono il lessico Be Pork e mostrano come il sistema regga un'identita nuova.",
+      "Per FAAK la navigazione diventa manifesto: mattina, giorno e aperitivo sostituiscono il lessico ThePork e mostrano come il sistema regga un'identita nuova.",
   },
   souls: [
     {
@@ -1744,7 +1744,7 @@ export function getTenantContent(tenantId: string): TenantContent {
   if (tenantId === "nom-sushi") return nomSushiContent;
   if (tenantId === "kimos") return kimosContent;
   // Ogni tenant deve avere il proprio blocco content sopra.
-  // Fallback per verticale: non restituire mai contenuto BePork per tenant non-food.
+  // Fallback per verticale: non restituire mai contenuto food per tenant non-food.
   const profile = findTenantById(tenantId);
   if (profile?.vertical === "creative") return valentinaOrciuoliContent;
   if (profile?.vertical === "services") return officinakamContent;

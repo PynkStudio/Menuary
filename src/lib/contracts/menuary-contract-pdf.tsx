@@ -214,6 +214,12 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
                 : `${formatEUR(data.economiche.canoneMensile)} ${taxSuffix(data.economiche)} / mese`
             }
           />
+          {(data.servizio.moduliIa.telefono || data.servizio.moduliIa.whatsapp) && (
+            <SummaryItem
+              dt="Commissione IA"
+              dd={`${data.economiche.commissioneOrdiniPct}% sugli ordini confermati gestiti dai moduli IA`}
+            />
+          )}
           <SummaryItem
             dt="Modalità di pagamento"
             dd={paymentMethodLabel(data.economiche.metodoPagamento)}

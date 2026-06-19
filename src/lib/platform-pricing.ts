@@ -57,6 +57,7 @@ export type PricingAddon = {
   tagline: string;
   description: string;
   monthly: number;
+  commission_pct?: number;
   currency?: string;
   minPlan: string;
   setup_from?: string;
@@ -65,6 +66,8 @@ export type PricingAddon = {
   settings: {
     includedMinutes?: number;
     overageMode?: "cost" | "fixed";
+    commissionPct?: number;
+    availableVerticals?: string[];
     voiceCloning?: boolean;
     channels?: string[];
     languages?: string[];
@@ -75,24 +78,28 @@ export type PricingAddon = {
 export const AI_ADDON: PricingAddon = {
   slug: "ai-phone",
   marketing_name: "Assistente vocale AI",
-  tagline: "IA al telefono · 24/7",
-  monthly: 60,
+  tagline: "IA al telefono · 3% sugli ordini confermati",
+  monthly: 0,
+  commission_pct: 3,
   minPlan: "prenotazioni" as const,
   description:
-    "Assistente IA al telefono disponibile 24/7. Risponde con la voce e il tono del tuo locale, prende prenotazioni e le scrive in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce le richieste fuori orario.",
+    "Assistente IA al telefono disponibile 24/7 per Menuary. Risponde con la voce e il tono del tuo locale, prende prenotazioni e le scrive in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce le richieste fuori orario. Nessun canone fisso: si applica il 3% sugli ordini confermati gestiti dall'IA.",
   items: [
     "Risponde al telefono 24/7 con la voce del locale",
     "Prenotazioni autonome direttamente in agenda",
     "Ordini d'asporto e gestione richieste fuori orario",
+    "Nessun canone fisso mensile: 3% sugli ordini confermati",
     "Suggerisce piatti del giorno e promozioni",
     "Cloning vocale opzionale",
     "Multilingua nativa: IT, EN, FR, ES, DE",
   ],
   minutesNote:
-    "Ogni piano include una quota mensile di minuti. Superata la soglia, gli addebiti sono a prezzo di costo — senza nessun markup da parte nostra.",
+    "L'add-on non ha canone fisso mensile. La commissione del 3% si applica solo agli ordini confermati gestiti dall'IA; i costi vivi di chiamata restano a prezzo di costo, senza markup.",
   settings: {
     includedMinutes: 120,
     overageMode: "cost",
+    commissionPct: 3,
+    availableVerticals: ["food"],
     voiceCloning: true,
     channels: ["phone"],
     languages: ["it", "en", "fr", "es", "de"],

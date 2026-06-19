@@ -846,6 +846,10 @@ function TabProposta({
   );
   const defaultPkg =
     availablePackages.find((p) => p.slug === lead.proposed_package_slug) ?? availablePackages[0];
+  const availableAddonPackages = PLATFORM_ADDON_PACKAGES.filter(
+    (addon) => addon.vertical === "both" || addon.vertical === lead.business_vertical,
+  );
+  const availableAddonSlugs = new Set(availableAddonPackages.map((addon) => addon.slug));
 
   const pkgBase = (pkg: (typeof availablePackages)[number], cycle: BillingCycle) =>
     cycle === "yearly" ? pkg.price_yearly ?? pkg.price_monthly * 12 : pkg.price_monthly;
@@ -854,7 +858,7 @@ function TabProposta({
     return usesLocations ? calculateMultiLocationTotal(base, lead.locations) : base;
   };
   const addonsTotal = (addonSlugs: string[], cycle: BillingCycle) =>
-    PLATFORM_ADDON_PACKAGES.filter((a) => addonSlugs.includes(a.slug)).reduce(
+    availableAddonPackages.filter((a) => addonSlugs.includes(a.slug)).reduce(
       (sum, a) => sum + (cycle === "yearly" ? a.price_yearly ?? a.price_monthly * 12 : a.price_monthly),
       0,
     );
@@ -866,7 +870,9 @@ function TabProposta({
 
   const [packageSlug, setPackageSlug] = useState(defaultPkg?.slug ?? "");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(lead.proposed_billing_cycle ?? "monthly");
-  const [addons, setAddons] = useState<string[]>(lead.proposed_addons ?? []);
+  const [addons, setAddons] = useState<string[]>(
+    (lead.proposed_addons ?? []).filter((slug) => availableAddonSlugs.has(slug)),
+  );
   const [extraModules, setExtraModules] = useState<TenantFeatureKey[]>(lead.proposed_extra_modules ?? []);
   const [setupAmount, setSetupAmount] = useState<number>(
     lead.proposed_setup_amount ?? defaultPkg?.setup_amount ?? 490,
@@ -973,8 +979,14 @@ function TabProposta({
       <div>
         <span className="text-xs font-black uppercase tracking-wide text-pork-ink/45">Add-on</span>
         <div className="mt-2 flex flex-wrap gap-2">
-          {PLATFORM_ADDON_PACKAGES.map((addon) => {
+          {availableAddonPackages.map((addon) => {
             const active = addons.includes(addon.slug);
+            const price =
+              billingCycle === "yearly" ? addon.price_yearly ?? addon.price_monthly * 12 : addon.price_monthly;
+            const priceLabel =
+              addon.slug === "ai-phone" && price === 0
+                ? "3% sugli ordini confermati"
+                : `${eur(price)}/${billingCycle === "yearly" ? "anno" : "mese"}`;
             return (
               <button
                 key={addon.slug}
@@ -986,8 +998,7 @@ function TabProposta({
                     : "border-pork-ink/15 text-pork-ink/60 hover:text-pork-ink",
                 )}
               >
-                {addon.name} · {eur(billingCycle === "yearly" ? addon.price_yearly ?? addon.price_monthly * 12 : addon.price_monthly)}
-                /{billingCycle === "yearly" ? "anno" : "mese"}
+                {addon.name} · {priceLabel}
               </button>
             );
           })}

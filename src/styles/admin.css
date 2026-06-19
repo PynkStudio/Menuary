@@ -115,7 +115,7 @@
   }
 }
 
-/* admin.menuary.it: i contenuti dentro le pagine usano classi BePork (.headline,
+/* admin.menuary.it: i contenuti dentro le pagine usano classi tenant demo (.headline,
    .impact-title, btn-primary, ecc.). Le rivestiamo con i font/colori Menuary
    senza dover toccare ogni singola pagina. */
 @layer components {

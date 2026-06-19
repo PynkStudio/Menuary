@@ -33,6 +33,27 @@ function numeric(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function normalizePackageRow<T extends Record<string, unknown>>(pkg: T): T {
+  if (pkg.slug !== "ai-phone") return pkg;
+  const settings =
+    pkg.settings && typeof pkg.settings === "object" && !Array.isArray(pkg.settings)
+      ? (pkg.settings as Record<string, unknown>)
+      : {};
+  return {
+    ...pkg,
+    vertical: "food",
+    price_monthly: 0,
+    price_yearly: 0,
+    price_monthly_billing: 0,
+    tagline: "IA al telefono · 3% sugli ordini confermati",
+    settings: {
+      ...settings,
+      commissionPct: 3,
+      availableVerticals: ["food"],
+    },
+  };
+}
+
 export async function GET() {
   const auth = await requirePackagesPermission();
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -57,7 +78,12 @@ export async function GET() {
     .select("*")
     .in("package_slug", slugs);
 
-  return NextResponse.json({ packages: packages ?? [], market_prices: marketPrices ?? [] });
+  return NextResponse.json({
+    packages: (packages ?? []).map((pkg) => normalizePackageRow(pkg as Record<string, unknown>)),
+    market_prices: (marketPrices ?? []).filter(
+      (price) => (price as { package_slug?: string }).package_slug !== "ai-phone",
+    ),
+  });
 }
 
 export async function PUT(request: Request) {
@@ -78,6 +104,7 @@ export async function PUT(request: Request) {
     name: slug,
     slug,
     description: typeof body.marketing_description === "string" ? body.marketing_description : null,
+    ...(slug === "ai-phone" ? { vertical: "food" } : {}),
     package_kind: body.package_kind === "addon" ? "addon" : "base",
     min_package_slug: typeof body.min_package_slug === "string" && body.min_package_slug ? body.min_package_slug : null,
     settings: body.settings && typeof body.settings === "object" ? body.settings : {},
@@ -150,5 +177,5 @@ export async function PUT(request: Request) {
     }
   }
 
-  return NextResponse.json({ package: savedPackage, market_prices: rows });
+  return NextResponse.json({ package: normalizePackageRow(savedPackage as Record<string, unknown>), market_prices: rows });
 }

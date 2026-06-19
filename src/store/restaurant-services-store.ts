@@ -279,8 +279,8 @@ function beporkSeed(): RestaurantServicesSnapshot {
       { id: "sr-4", name: "Bar piano", role: "Bar", permissions: ["ordini bar", "piano bar"], active: false },
     ],
     locations: [
-      { id: "lo-1", name: "Be Pork Bari", address: "Via Arnaldo da Brescia, 5", activeMenus: ["Menu sera", "Menu weekend", "Piano bar"], revenueToday: 1840, openOrders: 9 },
-      { id: "lo-2", name: "Be Pork Pop-up", address: "Evento demo", activeMenus: ["Menu ridotto", "Delivery diretto"], revenueToday: 420, openOrders: 3 },
+      { id: "lo-1", name: "ThePork Demo", address: "Via Demo, 1", activeMenus: ["Menu sera", "Menu weekend", "Piano bar"], revenueToday: 1840, openOrders: 9 },
+      { id: "lo-2", name: "ThePork Pop-up", address: "Evento demo", activeMenus: ["Menu ridotto", "Delivery diretto"], revenueToday: 420, openOrders: 3 },
     ],
     analytics: [
       { label: "Scontrino medio", value: "28,40 EUR", delta: "+8% vs settimana scorsa" },

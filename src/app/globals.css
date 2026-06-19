@@ -59,7 +59,7 @@
 @layer base {
   /* Fallback verticale food (Menuary). Questi valori vengono sempre sovrascritti a runtime
      da tenantThemeCssVars() nel layout — sono visibili solo se il JS fallisce completamente.
-     Il tenant demo di riferimento per il verticale food è BePork. */
+     Il tenant demo di riferimento per il verticale food è ThePork. */
   :root {
     --font-display: "Bagel Fat One", cursive;
     --font-impact: "Bebas Neue", sans-serif;

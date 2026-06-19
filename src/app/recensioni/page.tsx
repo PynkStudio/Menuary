@@ -9,7 +9,7 @@ import { whatsappUrl } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "Recensioni",
   description:
-    "Le recensioni Google di Be Pork a Bari. Un rating pubblico, senza filtri, e le voci di chi ci ha già provato.",
+    "Le recensioni demo di ThePork. Un rating pubblico di esempio e le voci di chi ha provato il locale.",
 };
 
 export default function RecensioniPage() {

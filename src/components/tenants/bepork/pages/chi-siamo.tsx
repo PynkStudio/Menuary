@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
-import { siteConfig, whatsappUrl } from "@/lib/site-config";
+import { whatsappUrl } from "@/lib/site-config";
 
 const souls = [
   {
@@ -14,13 +14,13 @@ const souls = [
     kicker: "Italian Style",
     title: "Pizza House",
     image: "/photos/pizza-multigusto.png",
-    body: "Impasto che resta stomaco-friendly, farciture che non hanno paura di essere generose. Dalle classiche come si deve alle speciali Be Pork, fino alla pizza all'Assassina.",
+    body: "Impasto che resta stomaco-friendly, farciture che non hanno paura di essere generose. Dalle classiche come si deve alle speciali ThePork, fino alla pizza all'Assassina.",
   },
   {
-    kicker: "Tradizione Pugliese",
+    kicker: "Tradizione italiana",
     title: "Cucina di casa",
     image: "/photos/orecchiette-brasciole.png",
-    body: "Orecchiette con le brasciole, tagliata Angus, stinco di maiale, bombette in fonduta. La Puglia che ci portiamo da sempre, con la faccia pulita e il piatto pieno.",
+    body: "Primi della tradizione, tagliata Angus, stinco di maiale, bombette in fonduta. La cucina di casa portata in tavola con faccia pulita e piatto pieno.",
   },
 ];
 
@@ -32,12 +32,12 @@ export function BeporkAboutPage() {
           <div>
             <span className="chip-mustard">Chi siamo</span>
             <h1 className="headline mt-4 text-6xl sm:text-7xl lg:text-8xl text-balance">
-              Be Pork non è un pranzo.
+              ThePork non è un pranzo.
               <br />
               <span className="text-pork-mustard">È una posizione sul mondo.</span>
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-pork-cream/75 text-pretty">
-              Siamo un ristorante con tre anime dichiarate, nel cuore di Bari.
+              Siamo un ristorante demo con tre anime dichiarate.
               Ristorante, pizzeria, burger house: niente etichette, tutto sul piatto.
               Mangiare bene senza mettersi cravatta.
             </p>
@@ -45,7 +45,7 @@ export function BeporkAboutPage() {
           <div className="relative mx-auto aspect-square w-full max-w-sm isolate">
             <Image
               src="/logo-payoff.png"
-              alt="Be Pork — Mordi e Godi"
+              alt="ThePork - demo restaurant"
               fill
               unoptimized
               sizes="(max-width: 1024px) 60vw, 320px"
@@ -131,9 +131,9 @@ export function BeporkAboutPage() {
       <section className="bg-pork-ink py-16 text-pork-cream">
         <div className="container-wide flex flex-col items-center gap-6 text-center">
           <h2 className="headline text-4xl sm:text-5xl lg:text-6xl text-balance">
-            Vieni a trovarci in
+            Vieni a trovarci nel nostro
             <br />
-            <span className="text-pork-mustard">{siteConfig.address.street}.</span>
+            <span className="text-pork-mustard">indirizzo demo.</span>
           </h2>
           <div className="flex flex-wrap justify-center gap-3">
             <a
