@@ -935,7 +935,7 @@
     transform: rotate(-4.5deg);
   }
 
-  [data-tenant-surface="kimos"] .km-nora-ticket {
+  [data-tenant-surface="kimos"] .km-order-ticket {
     position: absolute;
     right: 10%;
     bottom: 0.4rem;
@@ -953,17 +953,17 @@
     backdrop-filter: blur(12px);
   }
 
-  [data-tenant-surface="kimos"] .km-nora-ticket > svg {
+  [data-tenant-surface="kimos"] .km-order-ticket > svg {
     flex: 0 0 auto;
     color: var(--km-warm);
   }
 
-  [data-tenant-surface="kimos"] .km-nora-ticket strong,
-  [data-tenant-surface="kimos"] .km-nora-ticket span {
+  [data-tenant-surface="kimos"] .km-order-ticket strong,
+  [data-tenant-surface="kimos"] .km-order-ticket span {
     display: block;
   }
 
-  [data-tenant-surface="kimos"] .km-nora-ticket strong {
+  [data-tenant-surface="kimos"] .km-order-ticket strong {
     font-family: "Arial Black", Impact, sans-serif;
     font-size: 1.15rem;
     letter-spacing: -0.06em;
@@ -971,7 +971,7 @@
     text-transform: uppercase;
   }
 
-  [data-tenant-surface="kimos"] .km-nora-ticket span {
+  [data-tenant-surface="kimos"] .km-order-ticket span {
     margin-top: 0.18rem;
     color: rgba(244, 233, 211, 0.7);
     font-size: 0.8rem;
@@ -1085,7 +1085,7 @@
     content: "";
   }
 
-  [data-tenant-surface="kimos"] .km-nora-panel {
+  [data-tenant-surface="kimos"] .km-order-panel {
     position: relative;
     display: grid;
     grid-template-columns: minmax(0, 0.92fr) minmax(22rem, 1.08fr);
@@ -1098,13 +1098,13 @@
     box-shadow: 0 28px 70px rgba(23, 21, 18, 0.36);
   }
 
-  [data-tenant-surface="kimos"] .km-nora-copy,
-  [data-tenant-surface="kimos"] .km-nora-chat {
+  [data-tenant-surface="kimos"] .km-order-copy,
+  [data-tenant-surface="kimos"] .km-order-steps {
     background: rgba(23, 21, 18, 0.74);
     padding: clamp(1.4rem, 3vw, 2.6rem);
   }
 
-  [data-tenant-surface="kimos"] .km-nora-copy h3 {
+  [data-tenant-surface="kimos"] .km-order-copy h3 {
     max-width: 34rem;
     margin: 1rem 0 0;
     font-family: "Arial Black", Impact, sans-serif;
@@ -1114,7 +1114,7 @@
     text-transform: uppercase;
   }
 
-  [data-tenant-surface="kimos"] .km-nora-copy > span {
+  [data-tenant-surface="kimos"] .km-order-copy > span {
     display: block;
     max-width: 35rem;
     margin-top: 1.2rem;
@@ -1122,12 +1122,12 @@
     line-height: 1.65;
   }
 
-  [data-tenant-surface="kimos"] .km-nora-chat {
+  [data-tenant-surface="kimos"] .km-order-steps {
     display: grid;
     gap: 0.85rem;
   }
 
-  [data-tenant-surface="kimos"] .km-nora-chat p {
+  [data-tenant-surface="kimos"] .km-order-steps p {
     display: grid;
     gap: 0.35rem;
     max-width: 26rem;
@@ -1138,13 +1138,13 @@
     background: rgba(255, 249, 236, 0.06);
   }
 
-  [data-tenant-surface="kimos"] .km-nora-chat p:nth-child(even) {
+  [data-tenant-surface="kimos"] .km-order-steps p:nth-child(even) {
     justify-self: end;
     border-color: rgba(229, 184, 59, 0.22);
     background: rgba(229, 184, 59, 0.1);
   }
 
-  [data-tenant-surface="kimos"] .km-nora-chat strong {
+  [data-tenant-surface="kimos"] .km-order-steps strong {
     color: var(--km-warm);
     font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
     font-size: 0.64rem;
@@ -1153,7 +1153,7 @@
     text-transform: uppercase;
   }
 
-  [data-tenant-surface="kimos"] .km-nora-chat span {
+  [data-tenant-surface="kimos"] .km-order-steps span {
     color: rgba(244, 233, 211, 0.82);
     line-height: 1.45;
   }
@@ -1215,7 +1215,7 @@
 
     [data-tenant-surface="kimos"] .km-category-grid,
     [data-tenant-surface="kimos"] .km-highlight-grid,
-    [data-tenant-surface="kimos"] .km-nora-panel {
+    [data-tenant-surface="kimos"] .km-order-panel {
       grid-template-columns: 1fr;
     }
 

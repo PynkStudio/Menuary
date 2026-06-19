@@ -44,6 +44,12 @@ export const DEFAULT_ORDER_SETTINGS: Omit<TenantOrderSettings, "id" | "tenantId"
   pendingTimeoutSeconds: 120,
 };
 
+export function resolvePendingTimeoutSeconds(value: number | null | undefined): number {
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds) || seconds < 30) return DEFAULT_ORDER_SETTINGS.pendingTimeoutSeconds;
+  return Math.floor(seconds);
+}
+
 function dbRowToSettings(row: DbOrderSettings): TenantOrderSettings {
   return {
     id: row.id,
@@ -64,7 +70,7 @@ function dbRowToSettings(row: DbOrderSettings): TenantOrderSettings {
     autoAcceptOnlyReturning: row.auto_accept_only_returning,
     autoAcceptNoNotes: row.auto_accept_no_notes,
     autoAcceptMinNoticeMinutes: row.auto_accept_min_notice_minutes,
-    pendingTimeoutSeconds: row.pending_timeout_seconds,
+    pendingTimeoutSeconds: resolvePendingTimeoutSeconds(row.pending_timeout_seconds),
   };
 }
 

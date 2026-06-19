@@ -5,9 +5,10 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/database.types";
-import { startOrder, markReady, markDelivered, cancelOrder, confirmPendingOrder, rejectPendingOrder } from "./actions";
+import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder } from "./actions";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 import { OperationalAlertControls, OperationalAlertsClient } from "@/components/gestione/operational-alerts-client";
+import { OrderConfirmationTimeForm } from "@/components/gestione/order-confirmation-time-form";
 import { demoOrders, type DemoOrder } from "@/lib/demo-fixtures";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 
@@ -459,13 +460,14 @@ export default async function OrdiniPage({
                 <div className="ga-reservation-actions">
                   {isPending && (
                     <>
-                      <form action={confirmPendingOrder}>
-                        <input type="hidden" name="tenantSlug" value={tenantSlug} />
-                        <input type="hidden" name="id" value={o.id} />
-                        <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                          <Check size={14} strokeWidth={2.4} /> {t.actions.confirm}
-                        </button>
-                      </form>
+                      <OrderConfirmationTimeForm
+                        tenantSlug={tenantSlug}
+                        orderId={o.id}
+                        requestedTime={rawScheduledTime}
+                        createdAt={o.created_at}
+                        disabled={auth.isDemo}
+                        confirmLabel={t.actions.confirm}
+                      />
                       <form action={rejectPendingOrder}>
                         <input type="hidden" name="tenantSlug" value={tenantSlug} />
                         <input type="hidden" name="id" value={o.id} />

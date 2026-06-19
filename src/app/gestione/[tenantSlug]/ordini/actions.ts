@@ -127,6 +127,7 @@ export async function toggleOrderLinePrepared(formData: FormData) {
 export async function confirmPendingOrder(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
   const id = String(formData.get("id") ?? "");
+  const expectedTime = String(formData.get("expectedTime") ?? "").trim();
   if (!tenantSlug || !id) return;
 
   const auth = await authorizeGestione(tenantSlug);
@@ -171,6 +172,7 @@ export async function confirmPendingOrder(formData: FormData) {
     .update({
       status: "nuovo",
       confirmed_at: new Date().toISOString(),
+      ...(expectedTime ? { desired_time: expectedTime } : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)

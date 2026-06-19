@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Bot,
   Clock3,
   ExternalLink,
   Flame,
@@ -81,21 +80,21 @@ const highlights = [
 const channels = [
   {
     icon: ShoppingBag,
-    eyebrow: "MENU ONLINE",
-    title: "Scegli dal sito",
-    body: "Apri la carta, controlli prezzi e disponibilità, poi mandi l'ordine senza cercare il volantino.",
+    eyebrow: "MENU",
+    title: "Guarda la carta",
+    body: "Pizze, kebab, panini e fritti con prezzi chiari prima di ordinare.",
   },
   {
     icon: MessageCircle,
-    eyebrow: "NORA MESSAGGI",
-    title: "Scrivi a Nora",
-    body: "Nora capisce l'ordine, chiede quello che manca e prepara un riepilogo chiaro per Kimos.",
+    eyebrow: "WHATSAPP",
+    title: "Scrivi al locale",
+    body: "Manda l'ordine, indica ritiro o consegna e ricevi conferma da Kimos.",
   },
   {
     icon: PhoneCall,
-    eyebrow: "NORA TELEFONO",
-    title: "Chiama e ordina",
-    body: "Se preferisci parlare, Nora prende la chiamata e usa lo stesso menu aggiornato del sito.",
+    eyebrow: "TELEFONO",
+    title: "Chiama Kimos",
+    body: "Per ordini veloci, richieste sulla pizza gigante o indicazioni sulla consegna.",
   },
 ];
 
@@ -133,8 +132,8 @@ export function KimosHomePage() {
             <span>Kebab.</span>
           </h1>
           <p className="km-hero-text">
-            Pizzeria, kebab e fritti in zona Santa Giulia: menu grande,
-            ordine veloce e Nora pronta a raccogliere richieste da messaggio o telefono.
+            Pizza al forno, kebab allo spiedo, panini e fritti in zona Santa Giulia.
+            Guarda il menu, scegli cosa mangiare e ordina per ritiro o consegna.
           </p>
           <div className="km-hero-tags" aria-label="Punti forti Kimos">
             <span>Forno caldo</span>
@@ -146,7 +145,7 @@ export function KimosHomePage() {
               Vai al menu <ArrowRight size={17} />
             </Link>
             <VenueWhatsappLink className="km-button km-button-outline">
-              <MessageCircle size={17} /> Scrivi a Nora
+              <MessageCircle size={17} /> Scrivi su WhatsApp
             </VenueWhatsappLink>
           </div>
           <a
@@ -193,11 +192,11 @@ export function KimosHomePage() {
             <span>APERTO</span>
             <strong>7 / 7</strong>
           </div>
-          <div className="km-nora-ticket" aria-label="Nora assistente ordini">
-            <Bot size={18} />
+          <div className="km-order-ticket" aria-label="Ordini Pizzeria Kimos">
+            <PhoneCall size={18} />
             <div>
-              <strong>Nora</strong>
-              <span>prende ordini da messaggi e chiamate</span>
+              <strong>Ordini</strong>
+              <span>menu online, telefono e WhatsApp</span>
             </div>
           </div>
         </div>
@@ -212,19 +211,19 @@ export function KimosHomePage() {
         <i aria-hidden="true" />
         <span>Panini</span>
         <i aria-hidden="true" />
-        <span>Ordini online</span>
+        <span>Ritiro e consegna</span>
       </section>
 
       <section className="km-intro">
         <div>
           <p className="km-section-code">KMS / 02</p>
-          <h2>Una carta ampia.<br /><span>Zero complicazioni.</span></h2>
+          <h2>Pizza, kebab,<br /><span>fritti e panini.</span></h2>
         </div>
         <div>
           <p>
-            Da Kimos trovi la pizza che conosci, il kebab preparato al momento e
-            i fritti che completano l&apos;ordine. Il menu vive su una pagina dedicata:
-            categorie chiare, prezzi visibili, ordine in pochi tap.
+            Da Kimos trovi una carta da pizzeria di quartiere: classiche, giganti,
+            kebab, panini, piadine, piatti e fritti. Apri il menu, controlli i prezzi
+            e decidi subito cosa mettere nell&apos;ordine.
           </p>
           <div className="km-category-grid">
             {categories.map(({ code, title, body, tag }) => (
@@ -245,8 +244,8 @@ export function KimosHomePage() {
       <section id="menu" className="km-highlight">
         <div className="km-section-heading">
           <p className="km-section-code">KMS / I PIÙ ORDINATI</p>
-          <h2>Le scelte.<br /><span>Della cucina.</span></h2>
-          <p>Una selezione dei piatti più richiesti, per chi vuole decidere in dieci secondi.</p>
+          <h2>Quando hai fame,<br /><span>vai sul sicuro.</span></h2>
+          <p>Tre scelte dirette dalla carta Kimos: pizza, kebab e un ordine più grande da condividere.</p>
         </div>
         <div className="km-highlight-grid">
           {highlights.map(({ code, title, body, price }) => (
@@ -265,29 +264,29 @@ export function KimosHomePage() {
         </div>
         <div className="km-highlight-foot">
           <Flame size={18} />
-          <span>Disponibilità e prezzi in tempo reale solo sul menu online.</span>
+          <span>Prezzi e disponibilità aggiornati nel menu online.</span>
         </div>
       </section>
 
       <section id="ordina" className="km-channels">
         <div className="km-section-heading km-section-heading-light">
-          <p className="km-section-code">KMS / NORA ORDINI</p>
-          <h2>Ordini come vuoi.<br /><span>Risponde Nora.</span></h2>
+          <p className="km-section-code">KMS / ORDINI</p>
+          <h2>Scegli la pizza.<br /><span>Al resto pensa Kimos.</span></h2>
         </div>
-        <div className="km-nora-panel">
-          <div className="km-nora-copy">
-            <p className="km-section-code">Assistente del locale</p>
-            <h3>Nora tiene insieme menu, messaggi e telefono.</h3>
+        <div className="km-order-panel">
+          <div className="km-order-copy">
+            <p className="km-section-code">Ritiro e consegna</p>
+            <h3>Ordina dal menu, su WhatsApp o al telefono.</h3>
             <span>
-              Il cliente può scrivere o chiamare. Nora raccoglie gusti, quantità,
-              orario e recapito, poi passa al locale un ordine leggibile.
+              Scegli cosa vuoi mangiare, indica quantità, orario e indirizzo se serve
+              la consegna. Kimos ti conferma l&apos;ordine e prepara tutto in pizzeria.
             </span>
           </div>
-          <div className="km-nora-chat" aria-label="Esempio conversazione con Nora">
-            <p><strong>Cliente</strong><span>Una pizza Kimos, un kebab e patatine.</span></p>
-            <p><strong>Nora</strong><span>Perfetto. Ritiro o consegna?</span></p>
-            <p><strong>Cliente</strong><span>Ritiro alle 20:15.</span></p>
-            <p><strong>Nora</strong><span>Ordine pronto per conferma.</span></p>
+          <div className="km-order-steps" aria-label="Informazioni ordini Pizzeria Kimos">
+            <p><strong>1</strong><span>Apri il menu e scegli pizze, kebab, panini o fritti.</span></p>
+            <p><strong>2</strong><span>Invia l&apos;ordine su WhatsApp o chiama il locale.</span></p>
+            <p><strong>3</strong><span>Concorda ritiro in pizzeria o consegna in zona.</span></p>
+            <p><strong>4</strong><span>Passa da Via Bruno Cassinari 3 o aspetta la consegna.</span></p>
           </div>
         </div>
         <div className="km-channel-grid">
@@ -305,7 +304,7 @@ export function KimosHomePage() {
             Apri il menu <UtensilsCrossed size={17} />
           </Link>
           <VenueWhatsappLink className="km-button km-button-quiet">
-            Scrivi a Nora <MessageCircle size={17} />
+            WhatsApp <MessageCircle size={17} />
           </VenueWhatsappLink>
           <a href="tel:02513404" className="km-button km-button-quiet">
             Chiama <Phone size={17} />

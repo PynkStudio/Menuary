@@ -227,7 +227,7 @@ export default function OrdinaPage() {
     }).catch(() => {});
 
     clear();
-    if (tenant.id === "kimos" && serverCode && publicToken) {
+    if (serverCode && publicToken) {
       router.replace(
         `${previewPrefix}/checkout/${encodeURIComponent(serverCode)}?t=${encodeURIComponent(publicToken)}`,
       );

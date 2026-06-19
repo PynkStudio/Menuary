@@ -13,7 +13,7 @@ import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { tenantUsesStripeDemoSandbox } from "@/lib/payments/stripe/sandbox-policy";
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
 import { normalizePhone, recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
-import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes } from "@/lib/orders/order-settings";
+import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes, resolvePendingTimeoutSeconds } from "@/lib/orders/order-settings";
 import type { MenuOrderChannel } from "@/lib/types";
 import { isMenuOrderChannel } from "@/lib/menu-channels";
 import { euroToItalianWords, orderCodeToSpoken } from "@/lib/retell/number-speech";
@@ -178,7 +178,9 @@ export type CreateRetellOrderInput = {
   customerName?: string | null;
   customerPhone?: string | null;
   pickupTime?: string | null;
+  pickupDate?: string | null;
   desiredTime?: string | null;
+  desiredDate?: string | null;
   notes?: string | null;
   fulfillmentType?: "takeaway" | "delivery";
   delivery?: {
@@ -206,6 +208,22 @@ export type CreateRetellOrderInput = {
     removedIngredients?: string[];
   }[];
 };
+
+function normalizeConversationalOrderTime(input: {
+  desiredTime?: string | null;
+  desiredDate?: string | null;
+  pickupTime?: string | null;
+  pickupDate?: string | null;
+}): string | null {
+  const rawTime = (input.desiredTime ?? input.pickupTime ?? "").trim();
+  if (!rawTime) return null;
+  const rawDate = (input.desiredDate ?? input.pickupDate ?? "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate) && /^\d{1,2}:\d{2}$/.test(rawTime)) {
+    const [hour, minute] = rawTime.split(":");
+    return `${rawDate} ${hour!.padStart(2, "0")}:${minute}`;
+  }
+  return rawTime;
+}
 
 export type RetellAvailabilityInput = {
   tenantId: string;
@@ -1116,7 +1134,9 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   const noticeMinutes = resolveOrderNoticeMinutes({
     pickupTime: input.pickupTime,
     desiredTime: input.desiredTime,
+    pickupDate: input.desiredDate ?? input.pickupDate,
   });
+  const desiredTime = normalizeConversationalOrderTime(input);
   const autoAccepted = evaluateAutoAccept(orderSettings, {
     total,
     itemsCount,
@@ -1126,9 +1146,10 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     noticeMinutes,
   });
   const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
+  const pendingTimeoutSeconds = resolvePendingTimeoutSeconds(orderSettings.pendingTimeoutSeconds);
   const confirmationExpiresAt = autoAccepted
     ? null
-    : new Date(Date.now() + orderSettings.pendingTimeoutSeconds * 1000).toISOString();
+    : new Date(Date.now() + pendingTimeoutSeconds * 1000).toISOString();
   const confirmedAt = autoAccepted ? new Date().toISOString() : null;
 
   const { data: codeRow, error: codeErr } = await db.rpc("next_order_code", {
@@ -1142,7 +1163,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     .insert({
       tenant_id: input.tenantId,
       code: codeRow as string,
-      type: "asporto",
+      type: fulfillmentType === "delivery" ? "delivery" : "asporto",
       total,
       source: input.source ?? "retell",
       customer_name: input.customerName ?? null,
@@ -1162,7 +1183,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       delivery_doorbell: input.delivery?.doorbell ?? null,
       delivery_floor: input.delivery?.floor ?? null,
       delivery_notes: input.delivery?.notes ?? null,
-      desired_time: input.desiredTime ?? input.pickupTime ?? null,
+      desired_time: desiredTime,
       payment_status: shouldRequestPayment ? "pending" : "not_required",
       confirmation_expires_at: confirmationExpiresAt,
       confirmed_at: confirmedAt,

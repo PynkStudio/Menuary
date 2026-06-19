@@ -8,7 +8,7 @@ import {
   type DbOrderLine,
 } from "@/lib/api/orders";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
-import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes } from "@/lib/orders/order-settings";
+import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes, resolvePendingTimeoutSeconds } from "@/lib/orders/order-settings";
 import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 import { checkOrderingWindow, type OrderChannel } from "@/lib/orders/ordering-window";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
@@ -20,6 +20,17 @@ import type { CartLine, OrderDineOption } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
 
 // ─── POST /api/orders — crea ordine ──────────────────────────────────────────
+
+function normalizeDesiredOrderTime(input: { desiredTime?: string | null; pickupTime?: string | null; pickupDate?: string | null }): string | null {
+  const rawTime = (input.desiredTime ?? input.pickupTime ?? "").trim();
+  if (!rawTime) return null;
+  const date = input.pickupDate?.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date ?? "") && /^\d{1,2}:\d{2}$/.test(rawTime)) {
+    const [hour, minute] = rawTime.split(":");
+    return `${date} ${hour!.padStart(2, "0")}:${minute}`;
+  }
+  return rawTime;
+}
 
 export type CreateOrderBody = {
   tenantId: string;
@@ -134,6 +145,11 @@ export async function POST(req: NextRequest) {
     pickupDate: rest.pickupDate,
     desiredTime: rest.desiredTime,
   });
+  const desiredTime = normalizeDesiredOrderTime({
+    pickupTime: rest.pickupTime,
+    pickupDate: rest.pickupDate,
+    desiredTime: rest.desiredTime,
+  });
 
   const autoAccepted = evaluateAutoAccept(settings, {
     total,
@@ -145,9 +161,10 @@ export async function POST(req: NextRequest) {
   });
 
   const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
+  const pendingTimeoutSeconds = resolvePendingTimeoutSeconds(settings.pendingTimeoutSeconds);
   const confirmationExpiresAt = autoAccepted
     ? null
-    : new Date(Date.now() + settings.pendingTimeoutSeconds * 1000).toISOString();
+    : new Date(Date.now() + pendingTimeoutSeconds * 1000).toISOString();
   const confirmedAt = autoAccepted ? new Date().toISOString() : null;
 
   // Inserisci ordine
@@ -158,6 +175,7 @@ export async function POST(req: NextRequest) {
       code: codeRow as string,
       type,
       total,
+      source: "web",
       status: initialStatus,
       table_id: rest.tableId ?? null,
       table_label: rest.tableLabel ?? null,
@@ -171,7 +189,7 @@ export async function POST(req: NextRequest) {
       customer_id: identity?.customerId ?? null,
       menuary_user_id: rest.menuaryUserId ?? identity?.menuaryUserId ?? null,
       pickup_time: rest.pickupTime ?? null,
-      desired_time: rest.desiredTime ?? rest.pickupTime ?? null,
+      desired_time: desiredTime,
       notes: rest.notes ?? null,
       location_id: locationId ?? null,
       dine_option: rest.dineOption ?? null,
@@ -244,7 +262,7 @@ export async function POST(req: NextRequest) {
       status: initialStatus,
       autoAccepted,
       confirmationExpiresAt,
-      pendingTimeoutSeconds: settings.pendingTimeoutSeconds,
+      pendingTimeoutSeconds,
     },
     { status: 201 },
   );
