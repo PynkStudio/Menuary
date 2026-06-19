@@ -65,7 +65,7 @@ export function buildAiPaymentInstruction(
 
   // Caso 3: entrambi → non chiedere, manda il riepilogo. Il cliente potrà scegliere sul link.
   return {
-    text: `Conferma l'ordine al cliente senza chiedere il metodo di pagamento. Informa che riceverà via messaggio il riepilogo con un link dove potrà eventualmente pagare con carta.`,
+    text: `Non chiedere mai al cliente come preferisce pagare. Dopo la conferma dell'ordine, comunica solo il riepilogo e informa che riceverà un messaggio WhatsApp con il link al riepilogo dell'ordine.`,
     onlineAvailable: true,
     onSiteAvailable: true,
     shouldAsk: false,

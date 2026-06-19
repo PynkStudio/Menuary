@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Clock, User, StickyNote, Package, Mail, ShoppingBag, UtensilsCrossed, Bike } from "lucide-react";
 import { useCartStore, cartTotal } from "@/store/cart-store";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
@@ -36,6 +36,7 @@ function nextSlots(count = 8, stepMin = 15): string[] {
 export default function OrdinaPage() {
   const hydrated = useHydrated();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const tenant = useTenant();
   const { allowTakeaway: takeawayOk, allowTableOrders } = useEffectiveFeatures();
@@ -97,6 +98,10 @@ export default function OrdinaPage() {
 
   const total = cartTotal(lines);
   const empty = hydrated && lines.length === 0;
+  const previewPrefix =
+    tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`)
+      ? `/${tenant.previewSlug}`
+      : "";
   const backParam = searchParams.get("back");
   const checkoutBack = (() => {
     if (!backParam) return null;
@@ -165,6 +170,8 @@ export default function OrdinaPage() {
 
     // Persistenza server-side: decide auto-accept / pending in base alle settings.
     let serverId: string | null = null;
+    let serverCode: string | null = null;
+    let publicToken: string | null = null;
     let autoAccepted = false;
     try {
       const res = await fetch("/api/orders", {
@@ -185,6 +192,8 @@ export default function OrdinaPage() {
       if (res.ok) {
         const data = await res.json();
         serverId = data.id ?? null;
+        serverCode = typeof data.code === "string" ? data.code : null;
+        publicToken = typeof data.publicToken === "string" ? data.publicToken : null;
         autoAccepted = Boolean(data.autoAccepted);
       }
     } catch {
@@ -203,6 +212,13 @@ export default function OrdinaPage() {
     }).catch(() => {});
 
     clear();
+    if (tenant.id === "kimos" && serverCode && publicToken) {
+      router.replace(
+        `${previewPrefix}/checkout/${encodeURIComponent(serverCode)}?t=${encodeURIComponent(publicToken)}`,
+      );
+      return;
+    }
+
     const id = serverId ?? local.id;
     router.replace(autoAccepted ? `/ordina/conferma?id=${id}` : `/ordina/attesa/${id}`);
   }

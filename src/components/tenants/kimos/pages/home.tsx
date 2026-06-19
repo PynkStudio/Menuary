@@ -135,6 +135,11 @@ export function KimosHomePage() {
             Kimos è la pizzeria di quartiere che tiene insieme forno, spiedo e fritti:
             una carta ampia, ordini rapidi e due servizi ogni giorno.
           </p>
+          <div className="km-hero-tags" aria-label="Punti forti Kimos">
+            <span>Forno caldo</span>
+            <span>Spiedo kebab</span>
+            <span>Ritiro rapido</span>
+          </div>
           <div className="km-actions">
             <Link href={menuHref} className="km-button km-button-hot">
               Vai al menu <ArrowRight size={17} />
@@ -175,6 +180,14 @@ export function KimosHomePage() {
               sizes="(max-width: 900px) 38vw, 14vw"
             />
           </div>
+          <div className="km-board-photo km-board-photo-plates">
+            <Image
+              src="/kimos/menu-board-plates.png"
+              alt="Pagina menu Kimos con pizze, fritti e piatti pronti"
+              fill
+              sizes="(max-width: 900px) 52vw, 19vw"
+            />
+          </div>
           <div className="km-board-stamp">
             <span>APERTO</span>
             <strong>7 / 7</strong>
@@ -184,13 +197,13 @@ export function KimosHomePage() {
 
       <section className="km-marquee" aria-label="Specialità Kimos">
         <span>Pizza</span>
-        <i>◆</i>
+        <i aria-hidden="true" />
         <span>Kebab</span>
-        <i>◆</i>
+        <i aria-hidden="true" />
         <span>Fritti</span>
-        <i>◆</i>
+        <i aria-hidden="true" />
         <span>Panini</span>
-        <i>◆</i>
+        <i aria-hidden="true" />
         <span>Ordini online</span>
       </section>
 

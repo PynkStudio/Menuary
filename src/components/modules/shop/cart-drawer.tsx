@@ -28,9 +28,11 @@ import { canAddToCart } from "@/lib/ordering-rules";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
 import { spawnCartFly } from "@/lib/cart-fly";
 import { formatRemovedForLine } from "@/lib/ingredients";
+import { useTenant } from "@/components/core/tenant-provider";
 
 export function CartDrawer() {
   const pathname = usePathname();
+  const tenant = useTenant();
   const hydrated = useHydrated();
   const open = useCartStore((s) => s.openDrawer);
   const setOpen = useCartStore((s) => s.setOpen);
@@ -77,8 +79,12 @@ export function CartDrawer() {
 
   if (!hydrated) return null;
 
+  const previewPrefix =
+    tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`)
+      ? `/${tenant.previewSlug}`
+      : "";
   const checkoutHref =
-    context.type === "tavolo" ? "/tavolo/checkout" : "/ordina";
+    previewPrefix + (context.type === "tavolo" ? "/tavolo/checkout" : "/ordina");
 
   return (
     <>
