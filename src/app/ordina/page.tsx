@@ -24,23 +24,13 @@ import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import type { OrderDineOption } from "@/lib/types";
 
-function nextSlots(count = 8, stepMin = 15): string[] {
-  const out: string[] = [];
-  const now = new Date();
-  now.setMinutes(now.getMinutes() + 20);
-  now.setSeconds(0);
-  now.setMilliseconds(0);
-  const m = now.getMinutes();
-  const roundedUp = Math.ceil(m / stepMin) * stepMin;
-  now.setMinutes(roundedUp);
-  for (let i = 0; i < count; i++) {
-    const hh = now.getHours().toString().padStart(2, "0");
-    const mm = now.getMinutes().toString().padStart(2, "0");
-    out.push(`${hh}:${mm}`);
-    now.setMinutes(now.getMinutes() + stepMin);
-  }
-  return out;
-}
+type AvailableDay = { date: string; label: string; slots: string[] };
+type PublicSettings = {
+  takeawayEnabled: boolean;
+  dineInEnabled: boolean;
+  deliveryEnabled: boolean;
+  availableDays: AvailableDay[];
+};
 
 export default function OrdinaPage() {
   const hydrated = useHydrated();
@@ -69,6 +59,8 @@ export default function OrdinaPage() {
   const showDineOption = !isTavolo && !allowTableOrders;
   const [dineOption, setDineOption] = useState<OrderDineOption>("takeaway");
   const [deliveryEnabled, setDeliveryEnabled] = useState(false);
+  const [availableDays, setAvailableDays] = useState<AvailableDay[]>([]);
+  const [selectedDate, setSelectedDate] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -79,7 +71,11 @@ export default function OrdinaPage() {
   const [deliveryFloor, setDeliveryFloor] = useState("");
   const [deliveryNotes, setDeliveryNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [slots] = useState(() => nextSlots());
+
+  const selectedDaySlots = useMemo(
+    () => availableDays.find((d) => d.date === selectedDate)?.slots ?? [],
+    [availableDays, selectedDate],
+  );
 
   const sessionStillOpen = isTavolo && context.sessionId
     ? sessions.some((s) => s.id === context.sessionId && s.status === "aperta")
@@ -98,21 +94,25 @@ export default function OrdinaPage() {
 
   useEffect(() => {
     if (isTavolo) return;
-    if (!deliveryEnabled) {
-      let cancelled = false;
-      (async () => {
-        try {
-          const res = await fetch(`/api/orders/public-settings?tenantId=${tenant.id}`, {
-            cache: "no-store",
-          });
-          if (!res.ok || cancelled) return;
-          const data = await res.json();
-          if (!cancelled) setDeliveryEnabled(Boolean(data.deliveryEnabled));
-        } catch { /* niente delivery in UI è il default sicuro */ }
-      })();
-      return () => { cancelled = true; };
-    }
-  }, [tenant.id, isTavolo, deliveryEnabled]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/orders/public-settings?tenantId=${tenant.id}`, {
+          cache: "no-store",
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as PublicSettings;
+        if (cancelled) return;
+        setDeliveryEnabled(Boolean(data.deliveryEnabled));
+        const days = data.availableDays ?? [];
+        setAvailableDays(days);
+        if (days.length > 0 && !selectedDate) {
+          setSelectedDate(days[0].date);
+        }
+      } catch { /* niente delivery/slots in UI è il default sicuro */ }
+    })();
+    return () => { cancelled = true; };
+  }, [tenant.id, isTavolo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (isTavolo) return;
@@ -221,6 +221,7 @@ export default function OrdinaPage() {
           customerPhone: phone.trim() || undefined,
           customerEmail: email.trim() || undefined,
           pickupTime,
+          pickupDate: selectedDate || undefined,
           notes: notes.trim() || undefined,
           dineOption: showDineOption ? dineOption : undefined,
           ...(isDelivery && {
@@ -508,15 +509,33 @@ export default function OrdinaPage() {
                         </>
                       )}
 
+                      <Field label="Giorno" icon={<Clock size={16} />}>
+                        <select
+                          required
+                          value={selectedDate}
+                          onChange={(e) => {
+                            setSelectedDate(e.target.value);
+                            setPickupTime("");
+                          }}
+                          className="w-full bg-transparent outline-none"
+                        >
+                          {availableDays.length === 0 && <option value="">Caricamento…</option>}
+                          {availableDays.map((d) => (
+                            <option key={d.date} value={d.date}>{d.label}</option>
+                          ))}
+                        </select>
+                      </Field>
+
                       <Field label={dineOption === "delivery" ? "Orario di consegna" : "Orario di ritiro"} icon={<Clock size={16} />}>
                         <select
                           required
                           value={pickupTime}
                           onChange={(e) => setPickupTime(e.target.value)}
                           className="w-full bg-transparent outline-none"
+                          disabled={selectedDaySlots.length === 0}
                         >
                           <option value="">Scegli un orario…</option>
-                          {slots.map((s) => (
+                          {selectedDaySlots.map((s) => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </select>

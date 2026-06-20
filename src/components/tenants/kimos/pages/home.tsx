@@ -13,7 +13,6 @@ import {
   PhoneCall,
   ShoppingBag,
   Star,
-  UtensilsCrossed,
 } from "lucide-react";
 import { Footer } from "@/components/tenant-shell/footer";
 import { ReviewsSection } from "@/components/modules/reviews/reviews-section";
@@ -84,7 +83,6 @@ export function KimosHomePage() {
         </a>
         <nav className="km-nav" aria-label="Navigazione principale">
           <Link href={menuHref}>Menu</Link>
-          <a href="#ordina">Ordina</a>
           <a href="#recensioni">Recensioni</a>
           <a href="#contatti">Contatti</a>
         </nav>
@@ -107,7 +105,7 @@ export function KimosHomePage() {
           </p>
           <div className="km-hero-tags" aria-label="Punti forti Kimos">
             <span><Flame size={13} /> Forno a legna</span>
-            <span><UtensilsCrossed size={13} /> Spiedo kebab</span>
+            <span><Flame size={13} /> Spiedo kebab</span>
             <span><Clock3 size={13} /> Ritiro in 15 min</span>
           </div>
           <div className="km-actions">
@@ -232,37 +230,6 @@ export function KimosHomePage() {
         </div>
       </section>
 
-      <section id="ordina" className="km-channels">
-        <div className="km-section-heading km-section-heading-light">
-          <h2>Come<br /><span>ordinare.</span></h2>
-        </div>
-        <div className="km-order-panel">
-          <div className="km-order-copy">
-            <h3>Scegli dal menu, ordina e mangia.</h3>
-            <span>
-              Guarda cosa vuoi, dicci quantità e orario. Se vuoi la consegna
-              lascia l&apos;indirizzo. Kimos prepara e ti avvisa quando è pronto.
-            </span>
-          </div>
-          <div className="km-order-steps" aria-label="Come ordinare da Kimos">
-            <p><strong>1</strong><span>Apri il menu e scegli pizze, kebab, panini o fritti.</span></p>
-            <p><strong>2</strong><span>Manda l&apos;ordine su WhatsApp o chiama il locale.</span></p>
-            <p><strong>3</strong><span>Passa a ritirare in pizzeria o aspetta la consegna.</span></p>
-          </div>
-        </div>
-        <div className="km-channel-actions">
-          <Link href={menuHref} className="km-button km-button-warm">
-            Apri il menu <UtensilsCrossed size={17} />
-          </Link>
-          <VenueWhatsappLink className="km-button km-button-quiet">
-            WhatsApp <MessageCircle size={17} />
-          </VenueWhatsappLink>
-          <a href="tel:02513404" className="km-button km-button-quiet">
-            Chiama <Phone size={17} />
-          </a>
-        </div>
-      </section>
-
       <div id="recensioni" className="km-reviews">
         <ReviewsSection />
       </div>
@@ -288,9 +255,17 @@ export function KimosHomePage() {
               <VenueHoursList variant="find-us" />
             </div>
           </dl>
-          <VenueGoogleMapsLink className="km-button km-button-hot">
-            Apri su Google Maps <ExternalLink size={16} />
-          </VenueGoogleMapsLink>
+          <div className="km-visit-actions">
+            <VenueWhatsappLink className="km-button km-button-hot">
+              <MessageCircle size={16} /> Scrivi su WhatsApp
+            </VenueWhatsappLink>
+            <a href="tel:02513404" className="km-button km-button-outline km-button-outline-dark">
+              <Phone size={16} /> Chiama
+            </a>
+            <VenueGoogleMapsLink className="km-button km-button-outline km-button-outline-dark">
+              Google Maps <ExternalLink size={16} />
+            </VenueGoogleMapsLink>
+          </div>
         </div>
         <div className="km-map">
           <VenueMapFrame title={content.findUs.mapTitle} className="h-full w-full" />

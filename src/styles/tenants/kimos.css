@@ -656,98 +656,18 @@
     font-weight: 600;
   }
 
-  /* ── Channels / Come ordinare ── */
+  /* ── Visit actions ── */
 
-  [data-tenant-surface="kimos"] .km-channels {
-    padding: clamp(4rem, 8vw, 7rem) max(1rem, calc((100vw - 1280px) / 2));
-    background: var(--km-charcoal);
-    color: var(--km-paper);
-  }
-
-  [data-tenant-surface="kimos"] .km-section-heading-light h2 {
-    color: var(--km-paper);
-  }
-
-  [data-tenant-surface="kimos"] .km-section-heading-light h2 span {
-    color: var(--km-warm);
-  }
-
-  [data-tenant-surface="kimos"] .km-order-panel {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 1fr);
-    gap: 1px;
-    margin-top: 2.5rem;
-    border: 1px solid rgba(250, 243, 230, 0.12);
-    border-radius: 1rem;
-    overflow: hidden;
-    background: rgba(250, 243, 230, 0.12);
-    box-shadow: 0 16px 48px rgba(43, 31, 20, 0.3);
-  }
-
-  [data-tenant-surface="kimos"] .km-order-copy,
-  [data-tenant-surface="kimos"] .km-order-steps {
-    background: rgba(43, 31, 20, 0.6);
-    padding: clamp(1.4rem, 3vw, 2.4rem);
-  }
-
-  [data-tenant-surface="kimos"] .km-order-copy h3 {
-    max-width: 30rem;
-    margin: 0;
-    font-family: var(--km-font-display);
-    font-size: clamp(1.8rem, 3.5vw, 3.2rem);
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-  }
-
-  [data-tenant-surface="kimos"] .km-order-copy > span {
-    display: block;
-    max-width: 32rem;
-    margin-top: 1rem;
-    color: rgba(250, 243, 230, 0.72);
-    line-height: 1.6;
-  }
-
-  [data-tenant-surface="kimos"] .km-order-steps {
-    display: grid;
-    gap: 0.75rem;
-    align-content: center;
-  }
-
-  [data-tenant-surface="kimos"] .km-order-steps p {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0;
-    border: 1px solid rgba(250, 243, 230, 0.1);
-    border-radius: 0.7rem;
-    padding: 0.9rem 1rem;
-    background: rgba(250, 243, 230, 0.05);
-  }
-
-  [data-tenant-surface="kimos"] .km-order-steps strong {
-    display: grid;
-    place-items: center;
-    flex: 0 0 2.2rem;
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 50%;
-    background: var(--km-red);
-    color: #fff;
-    font-family: var(--km-font-display);
-    font-size: 1rem;
-    font-weight: 800;
-  }
-
-  [data-tenant-surface="kimos"] .km-order-steps span {
-    color: rgba(250, 243, 230, 0.85);
-    line-height: 1.45;
-  }
-
-  [data-tenant-surface="kimos"] .km-channel-actions {
+  [data-tenant-surface="kimos"] .km-visit-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2rem;
+    gap: 0.65rem;
+    margin-top: 0.5rem;
+  }
+
+  [data-tenant-surface="kimos"] .km-button-outline-dark {
+    border-color: var(--km-line);
+    color: var(--km-ink);
   }
 
   /* ── Reviews ── */
