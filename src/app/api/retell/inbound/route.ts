@@ -1,14 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import {
   buildRetellInboundContext,
   createRetellOrder,
   createRetellReservation,
   detectRetellMenuOpportunity,
   getRetellAvailability,
+  getRetellInboundContextCached,
   isAuthorizedRetellRequest,
   lookupRetellCustomer,
   resendRetellOrderLink,
   setCustomerLanguage,
+  warmRetellInboundContext,
   type CreateRetellOrderInput,
   type CreateRetellReservationInput,
   type RetellAvailabilityInput,
@@ -244,7 +246,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "context" || action === "venue_info" || action === "menu_search") {
       if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
-      const context = await buildRetellInboundContext(tenantId, { locationId: locationFrom(req, body) });
+      const context = await getRetellInboundContextCached(tenantId, { locationId: locationFrom(req, body) });
       if (!context.tenant.aiPhoneEnabled) {
         return NextResponse.json({ error: "ai_phone_not_enabled", context }, { status: 403 });
       }
@@ -296,6 +298,10 @@ export async function POST(req: NextRequest) {
         ?? ("caller_phone" in body ? body.caller_phone : undefined)
         ?? "";
       const customer = await lookupRetellCustomer(tenantId, callerPhone ?? "");
+      // Warm-up: customer_lookup è il primo nodo della chiamata. Pre-costruiamo qui il
+      // contesto menu così, quando l'utente nominerà un piatto, search_menu legge dalla
+      // cache (istantaneo). after() lo esegue dopo la risposta sulla stessa istanza Fluid.
+      after(() => warmRetellInboundContext(tenantId, { locationId: locationFrom(req, body) }));
       return NextResponse.json({ ok: true, customer });
     }
 

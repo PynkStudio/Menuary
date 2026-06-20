@@ -261,6 +261,45 @@ function svc(): Db {
   return client;
 }
 
+// Cache in-memory del contesto inbound: ricostruirlo costa ~10 query Supabase, ma il
+// menu non cambia durante una telefonata. Con Fluid Compute l'istanza è riusata tra le
+// invocazioni della stessa chiamata, quindi il warm-up sul primo nodo (customer_lookup)
+// rende le successive search_menu praticamente istantanee. TTL breve = tolleranza alle
+// variazioni di menu/orari, e create_order rivalida comunque tutto alla conferma.
+type RetellContextOptions = Parameters<typeof buildRetellInboundContext>[1];
+type CachedContext = { context: RetellInboundContext; expiresAt: number };
+const CONTEXT_CACHE = new Map<string, CachedContext>();
+const CONTEXT_TTL_MS = 240_000;
+
+function contextCacheKey(tenantId: string, options: RetellContextOptions = {}): string {
+  return [
+    tenantId,
+    options.channel ?? "retell",
+    options.locationId ?? "",
+    options.includeUnavailable ? "1" : "0",
+    options.sharedWhatsappSender ? "1" : "0",
+  ].join("|");
+}
+
+export async function getRetellInboundContextCached(
+  tenantId: string,
+  options: RetellContextOptions = {},
+): Promise<RetellInboundContext> {
+  const key = contextCacheKey(tenantId, options);
+  const hit = CONTEXT_CACHE.get(key);
+  if (hit && hit.expiresAt > Date.now()) return hit.context;
+  const context = await buildRetellInboundContext(tenantId, options);
+  CONTEXT_CACHE.set(key, { context, expiresAt: Date.now() + CONTEXT_TTL_MS });
+  return context;
+}
+
+// Fire-and-forget: popola la cache senza far attendere il chiamante e ingoia gli errori
+// (un warm-up fallito non deve mai far cadere l'azione che l'ha innescato).
+export function warmRetellInboundContext(tenantId: string, options: RetellContextOptions = {}): void {
+  if (!tenantId) return;
+  void getRetellInboundContextCached(tenantId, options).catch(() => undefined);
+}
+
 function isDayScheduleArray(value: unknown): value is DaySchedule[] {
   return Array.isArray(value) && value.every((day) => {
     if (!day || typeof day !== "object") return false;
