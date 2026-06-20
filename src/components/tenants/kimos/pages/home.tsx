@@ -31,25 +31,21 @@ import { useTenant } from "@/components/core/tenant-provider";
 
 const categories = [
   {
-    code: "01",
     title: "Pizze",
     body: "Classiche, giganti, rosse, bianche e componibili.",
     tag: "Forno",
   },
   {
-    code: "02",
     title: "Kebab",
     body: "Panino, piadina, piatto e menu con patatine.",
     tag: "Spiedo",
   },
   {
-    code: "03",
     title: "Panini",
     body: "Cotoletta, hamburger, falafel e salse di casa.",
     tag: "Grill",
   },
   {
-    code: "04",
     title: "Fritti",
     body: "Patatine, crocchette, nuggets, alette e box misti.",
     tag: "Fryer",
@@ -58,43 +54,19 @@ const categories = [
 
 const highlights = [
   {
-    code: "MENU 01",
     title: "Pizza Kimos",
     body: "Pomodoro San Marzano, fior di latte, salame piccante e olio EVO. Pronta in 8 minuti.",
     price: "€ 9,50",
   },
   {
-    code: "MENU 02",
     title: "Kebab nel pane",
     body: "Pane caldo, vitello e pollo allo spiedo, salse di casa. Aggiungi patatine al menu.",
     price: "€ 7,00",
   },
   {
-    code: "MENU 03",
     title: "Box famiglia",
     body: "Due pizze giganti, kebab in piatto, fritti misti e bibite. Pensato per quattro.",
     price: "€ 32,00",
-  },
-];
-
-const channels = [
-  {
-    icon: ShoppingBag,
-    eyebrow: "MENU",
-    title: "Guarda la carta",
-    body: "Pizze, kebab, panini e fritti con prezzi chiari prima di ordinare.",
-  },
-  {
-    icon: MessageCircle,
-    eyebrow: "WHATSAPP",
-    title: "Scrivi al locale",
-    body: "Manda l'ordine, indica ritiro o consegna e ricevi conferma da Kimos.",
-  },
-  {
-    icon: PhoneCall,
-    eyebrow: "TELEFONO",
-    title: "Chiama Kimos",
-    body: "Per ordini veloci, richieste sulla pizza gigante o indicazioni sulla consegna.",
   },
 ];
 
@@ -123,29 +95,27 @@ export function KimosHomePage() {
 
       <section id="top" className="km-hero">
         <div className="km-hero-copy">
-          <p className="km-kicker">Santa Giulia · Milano · dal forno allo spiedo</p>
+          <p className="km-kicker">Pizzeria &amp; Kebab · Santa Giulia, Milano</p>
           <h1>
-            Kimos.
+            Pizza e kebab
             <br />
-            Pizza.
-            <br />
-            <span>Kebab.</span>
+            <span>come si deve.</span>
           </h1>
           <p className="km-hero-text">
-            Pizza al forno, kebab allo spiedo, panini e fritti in zona Santa Giulia.
-            Guarda il menu, scegli cosa mangiare e ordina per ritiro o consegna.
+            Forno caldo, spiedo che gira, panini e fritti fatti al momento.
+            Da Kimos in zona Santa Giulia ordini, passi a ritirare o te lo portiamo noi.
           </p>
           <div className="km-hero-tags" aria-label="Punti forti Kimos">
-            <span>Forno caldo</span>
-            <span>Spiedo kebab</span>
-            <span>Ritiro rapido</span>
+            <span><Flame size={13} /> Forno a legna</span>
+            <span><UtensilsCrossed size={13} /> Spiedo kebab</span>
+            <span><Clock3 size={13} /> Ritiro in 15 min</span>
           </div>
           <div className="km-actions">
             <Link href={menuHref} className="km-button km-button-hot">
-              Vai al menu <ArrowRight size={17} />
+              Guarda il menu <ArrowRight size={17} />
             </Link>
             <VenueWhatsappLink className="km-button km-button-outline">
-              <MessageCircle size={17} /> Scrivi su WhatsApp
+              <MessageCircle size={17} /> Ordina su WhatsApp
             </VenueWhatsappLink>
           </div>
           <a
@@ -162,7 +132,6 @@ export function KimosHomePage() {
         </div>
 
         <div className="km-hero-board" aria-label="Menu fotografico Pizzeria Kimos">
-          <div className="km-board-label">Menu fotografico / Kimos</div>
           <div className="km-board-photo km-board-photo-main">
             <Image
               src="/kimos/menu-board-spread.png"
@@ -196,7 +165,7 @@ export function KimosHomePage() {
             <PhoneCall size={18} />
             <div>
               <strong>Ordini</strong>
-              <span>menu online, telefono e WhatsApp</span>
+              <span>telefono, WhatsApp e online</span>
             </div>
           </div>
         </div>
@@ -211,53 +180,48 @@ export function KimosHomePage() {
         <i aria-hidden="true" />
         <span>Panini</span>
         <i aria-hidden="true" />
-        <span>Ritiro e consegna</span>
+        <span>Consegna a domicilio</span>
       </section>
 
       <section className="km-intro">
         <div>
-          <p className="km-section-code">KMS / 02</p>
-          <h2>Pizza, kebab,<br /><span>fritti e panini.</span></h2>
+          <h2>La nostra<br /><span>carta.</span></h2>
+          <p className="km-intro-sub">
+            Tutto quello che prepariamo ogni giorno, dal forno e dallo spiedo.
+          </p>
         </div>
         <div>
-          <p>
-            Da Kimos trovi una carta da pizzeria di quartiere: classiche, giganti,
-            kebab, panini, piadine, piatti e fritti. Apri il menu, controlli i prezzi
-            e decidi subito cosa mettere nell&apos;ordine.
-          </p>
           <div className="km-category-grid">
-            {categories.map(({ code, title, body, tag }) => (
-              <Link key={code} href={menuHref} className="km-category">
-                <span>{code} · {tag}</span>
+            {categories.map(({ title, body, tag }) => (
+              <Link key={title} href={menuHref} className="km-category">
+                <span className="km-category-tag">{tag}</span>
                 <strong>{title}</strong>
                 <small>{body}</small>
-                <em><ArrowRight size={14} /> Apri</em>
+                <em><ArrowRight size={14} /> Vedi</em>
               </Link>
             ))}
           </div>
           <Link href={menuHref} className="km-button km-button-hot km-intro-cta">
-            Apri il menu completo <ArrowRight size={17} />
+            Menu completo con prezzi <ArrowRight size={17} />
           </Link>
         </div>
       </section>
 
       <section id="menu" className="km-highlight">
         <div className="km-section-heading">
-          <p className="km-section-code">KMS / I PIÙ ORDINATI</p>
-          <h2>Quando hai fame,<br /><span>vai sul sicuro.</span></h2>
-          <p>Tre scelte dirette dalla carta Kimos: pizza, kebab e un ordine più grande da condividere.</p>
+          <h2>I più<br /><span>ordinati.</span></h2>
+          <p>Tre scelte dalla carta di Kimos: pizza, kebab e un ordine da condividere in famiglia.</p>
         </div>
         <div className="km-highlight-grid">
-          {highlights.map(({ code, title, body, price }) => (
-            <article key={code} className="km-highlight-card">
+          {highlights.map(({ title, body, price }) => (
+            <article key={title} className="km-highlight-card">
               <header>
-                <span>{code}</span>
                 <em>{price}</em>
               </header>
               <h3>{title}</h3>
               <p>{body}</p>
               <Link href={menuHref} className="km-highlight-cta">
-                Vai al menu <ArrowRight size={15} />
+                Ordina <ArrowRight size={15} />
               </Link>
             </article>
           ))}
@@ -270,34 +234,21 @@ export function KimosHomePage() {
 
       <section id="ordina" className="km-channels">
         <div className="km-section-heading km-section-heading-light">
-          <p className="km-section-code">KMS / ORDINI</p>
-          <h2>Scegli la pizza.<br /><span>Al resto pensa Kimos.</span></h2>
+          <h2>Come<br /><span>ordinare.</span></h2>
         </div>
         <div className="km-order-panel">
           <div className="km-order-copy">
-            <p className="km-section-code">Ritiro e consegna</p>
-            <h3>Ordina dal menu, su WhatsApp o al telefono.</h3>
+            <h3>Scegli dal menu, ordina e mangia.</h3>
             <span>
-              Scegli cosa vuoi mangiare, indica quantità, orario e indirizzo se serve
-              la consegna. Kimos ti conferma l&apos;ordine e prepara tutto in pizzeria.
+              Guarda cosa vuoi, dicci quantità e orario. Se vuoi la consegna
+              lascia l&apos;indirizzo. Kimos prepara e ti avvisa quando è pronto.
             </span>
           </div>
-          <div className="km-order-steps" aria-label="Informazioni ordini Pizzeria Kimos">
+          <div className="km-order-steps" aria-label="Come ordinare da Kimos">
             <p><strong>1</strong><span>Apri il menu e scegli pizze, kebab, panini o fritti.</span></p>
-            <p><strong>2</strong><span>Invia l&apos;ordine su WhatsApp o chiama il locale.</span></p>
-            <p><strong>3</strong><span>Concorda ritiro in pizzeria o consegna in zona.</span></p>
-            <p><strong>4</strong><span>Passa da Via Bruno Cassinari 3 o aspetta la consegna.</span></p>
+            <p><strong>2</strong><span>Manda l&apos;ordine su WhatsApp o chiama il locale.</span></p>
+            <p><strong>3</strong><span>Passa a ritirare in pizzeria o aspetta la consegna.</span></p>
           </div>
-        </div>
-        <div className="km-channel-grid">
-          {channels.map(({ icon: Icon, eyebrow, title, body }) => (
-            <article className="km-channel" key={eyebrow}>
-              <div className="km-channel-icon"><Icon size={22} /></div>
-              <p>{eyebrow}</p>
-              <h3>{title}</h3>
-              <span>{body}</span>
-            </article>
-          ))}
         </div>
         <div className="km-channel-actions">
           <Link href={menuHref} className="km-button km-button-warm">
@@ -318,11 +269,10 @@ export function KimosHomePage() {
 
       <section id="contatti" className="km-visit">
         <div className="km-visit-copy">
-          <p className="km-section-code">KMS / DOVE SIAMO</p>
-          <h2>Santa Giulia,<br /><span>Via Cassinari 3.</span></h2>
+          <h2>Dove<br /><span>trovarci.</span></h2>
           <p className="km-visit-text">
             A pochi minuti da Milano Rogoredo. Passa da Kimos oppure ordina per
-            il ritiro e la consegna.
+            il ritiro o la consegna a domicilio.
           </p>
           <dl className="km-contact-list">
             <div>

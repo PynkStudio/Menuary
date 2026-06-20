@@ -85,5 +85,6 @@ export function useEffectiveFeatures() {
     aiPhoneEnabled: enabled("aiPhone"),
     aiWhatsappEnabled: enabled("aiWhatsapp"),
     upsellingEnabled: enabled("upselling"),
+    autonomousTableCheckout: enabled("autonomousTableCheckout"),
   };
 }

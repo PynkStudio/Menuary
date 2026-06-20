@@ -43,7 +43,7 @@ function sameTavoloSessionBinding(
   );
 }
 
-function SessionRunningTotal({ sessionId }: { sessionId: string }) {
+function SessionRunningTotal({ sessionId, summaryHref }: { sessionId: string; summaryHref: string }) {
   const orders = useMenuStore((s) => s.orders);
   const list = useMemo(
     () =>
@@ -53,15 +53,19 @@ function SessionRunningTotal({ sessionId }: { sessionId: string }) {
   const total = list.reduce((a, o) => a + o.total, 0);
   if (list.length === 0) return null;
   return (
-    <div className="border-b border-pork-ink/10 bg-pork-mustard/15 py-3 text-pork-ink">
+    <Link
+      href={summaryHref}
+      className="block border-b border-pork-ink/10 bg-pork-mustard/15 py-3 text-pork-ink transition-colors hover:bg-pork-mustard/25"
+    >
       <div className="container-wide flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-sm font-semibold">
           Totale al tavolo · {list.length}{" "}
           {list.length === 1 ? "ordine inviato" : "ordini inviati"}
+          <span className="ml-2 text-xs font-normal text-pork-ink/50">Vedi riepilogo →</span>
         </p>
         <p className="font-impact text-2xl text-pork-red">{formatEuro(total)}</p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -254,6 +258,9 @@ function TavoloBody() {
     !cartContext.nickname &&
     cartContext.sessionId === activeSession.id;
 
+  const tableParam = sessionTable.id.replace(/^tbl-/, "") || sessionTable.id;
+  const summaryHref = `/tavolo/${tableParam}`;
+
   return (
     <>
       {needsNickname && (
@@ -285,10 +292,11 @@ function TavoloBody() {
           dinerSeparation ? nickname || cartContext.nickname : undefined
         }
         dinerSeparation={dinerSeparation}
+        summaryHref={summaryHref}
       />
 
       {!dinerSeparation && (
-        <SessionRunningTotal sessionId={activeSession.id} />
+        <SessionRunningTotal sessionId={activeSession.id} summaryHref={summaryHref} />
       )}
 
       <InteractiveMenu />
@@ -301,11 +309,13 @@ function SessionBadge({
   table,
   nickname,
   dinerSeparation,
+  summaryHref,
 }: {
   session: TableSession;
   table: Table;
   nickname?: string;
   dinerSeparation: boolean;
+  summaryHref: string;
 }) {
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") return `/tavolo?code=${session.code}`;
@@ -376,6 +386,12 @@ function SessionBadge({
               <Copy size={14} />
               {copied ? "Copiato!" : "Condividi"}
             </button>
+            <Link
+              href={summaryHref}
+              className="inline-flex items-center gap-1 rounded-full bg-pork-cream/10 px-4 py-2 text-sm font-bold text-pork-cream hover:bg-pork-cream/20"
+            >
+              Vedi il conto
+            </Link>
           </div>
         </div>
 

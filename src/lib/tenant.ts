@@ -87,6 +87,8 @@ export type TenantFeatureFlags = {
   linktree?: boolean;
   /** App web rider per consegne delivery: profili rider, assegnazione ordini, mappa pin. Richiede deliveryHub o hubriseSync attivi. */
   rider?: boolean;
+  /** Checkout autonomo al tavolo: il commensale può pagare il conto dal telefono senza passare dallo staff. Richiede payments + tableOrders. */
+  autonomousTableCheckout?: boolean;
   /** Agenda call di consulenza (pynkstudio-specific): calendario prenotazioni call inbound da prenota-call. */
   pynkAgenda?: boolean;
   /** Vista patrimoniale aziendale: raccoglie gli introiti di tutti i verticali + attività diretta (pynkstudio-specific). */

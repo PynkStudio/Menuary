@@ -55,7 +55,7 @@ export function CartDrawer() {
     null,
   );
 
-  const { allowTakeaway, allowTableOrders } = useEffectiveFeatures();
+  const { allowTakeaway, allowTableOrders, modules } = useEffectiveFeatures();
   const orderingHere = canAddToCart(pathname, {
     allowTakeaway,
     allowTableOrders,
@@ -83,8 +83,7 @@ export function CartDrawer() {
     tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`)
       ? `/${tenant.previewSlug}`
       : "";
-  const checkoutHref =
-    previewPrefix + (context.type === "tavolo" ? "/tavolo/checkout" : "/ordina");
+  const checkoutHref = previewPrefix + "/ordina";
 
   return (
     <>
@@ -432,9 +431,11 @@ export function CartDrawer() {
                 Per inviare l&apos;ordine digitale chiedi al personale.
               </p>
             )}
-            <p className="mt-2 text-center text-[11px] text-pork-ink/50">
-              Nessun pagamento online. Paghi in cassa o al ritiro.
-            </p>
+            {!modules.payments && (
+              <p className="mt-2 text-center text-[11px] text-pork-ink/50">
+                Nessun pagamento online. Paghi in cassa o al ritiro.
+              </p>
+            )}
           </footer>
         )}
       </aside>

@@ -536,6 +536,14 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
       },
     },
   },
+  {
+    key: "autonomousTableCheckout",
+    label: "Checkout autonomo al tavolo",
+    description: "Il commensale può pagare il conto direttamente dal telefono senza passare dallo staff, dalla pagina riepilogo del tavolo.",
+    category: "Ordini",
+    verticals: ["food"],
+    requires: ["tableOrders", "payments"],
+  },
 ];
 
 export const TENANT_MODULE_CATEGORIES: TenantModuleCategory[] = [
