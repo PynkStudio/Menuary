@@ -1027,6 +1027,58 @@ export async function createRetellReservation(input: CreateRetellReservationInpu
   return data;
 }
 
+// Normalizza un codice/nome per il matching tollerante: minuscole, prefisso tenant
+// rimosso, accenti tolti, solo lettere/numeri/spazi singoli. "Pizza Margherita!" e
+// "kimos-MARGHERITA" collassano entrambi su "pizza margherita" / "margherita".
+function normalizeForMatch(value: string, tenantPrefix: string): string {
+  let s = value.trim().toLocaleLowerCase("it-IT");
+  if (s.startsWith(tenantPrefix)) s = s.slice(tenantPrefix.length);
+  s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return s.replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function matchTokens(value: string): string[] {
+  return value ? value.split(" ").filter(Boolean) : [];
+}
+
+// Riconciliazione: l'assistente AI a volte allucina l'itemCode (es. "MARGHERITA",
+// o il nome del piatto al posto del code). Invece di fallire, cerchiamo il match
+// migliore sull'intero menu per codice/nome normalizzato. Restituisce null solo se
+// nessun candidato è abbastanza simile (così l'errore missing_items resta possibile).
+function reconcileMenuItem<T extends { code: string; name: string }>(
+  requested: string,
+  pool: T[],
+  tenantPrefix: string,
+): T | null {
+  const req = normalizeForMatch(requested, tenantPrefix);
+  if (!req) return null;
+  const reqSpaceless = req.replace(/\s/g, "");
+  const reqTokens = matchTokens(req);
+
+  let best: { item: T; score: number } | null = null;
+  for (const item of pool) {
+    const code = normalizeForMatch(item.code, tenantPrefix);
+    const name = normalizeForMatch(item.name, tenantPrefix);
+    let score = 0;
+    if (code === req || name === req) {
+      score = 100;
+    } else if (code.replace(/\s/g, "") === reqSpaceless || name.replace(/\s/g, "") === reqSpaceless) {
+      score = 90;
+    } else {
+      const nameTokens = matchTokens(name);
+      const allReqInName = reqTokens.length > 0 && reqTokens.every((t) => nameTokens.includes(t));
+      const allNameInReq = nameTokens.length > 0 && nameTokens.every((t) => reqTokens.includes(t));
+      if (allReqInName || allNameInReq) {
+        score = 70 + Math.min(reqTokens.length, nameTokens.length);
+      } else if (req.length >= 4 && (name.includes(req) || code.includes(req))) {
+        score = 50;
+      }
+    }
+    if (score > 0 && (!best || score > best.score)) best = { item, score };
+  }
+  return best && best.score >= 50 ? best.item : null;
+}
+
 export async function createRetellOrder(input: CreateRetellOrderInput) {
   const db = svc();
   // L'assistente AI a volte inventa il tenantId (es. il placeholder "kimos_tenant_id")
@@ -1113,12 +1165,34 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     );
   };
   const resolvedByRequested = new Map(requestedCodes.map((code) => [code, resolveItem(code)] as const));
-  const missing = requestedCodes.filter((code) => !resolvedByRequested.get(code));
-  if (missing.length > 0) throw new Error(`missing_items:${missing.join(",")}`);
+  let resolvedItems = (items ?? []) as NonNullable<typeof items>;
+  const unresolved = requestedCodes.filter((code) => !resolvedByRequested.get(code));
+  if (unresolved.length > 0) {
+    // Fallback di riconciliazione: carichiamo l'intero menu del tenant e proviamo a
+    // ricollegare i codici allucinati per nome/codice normalizzato. Solo i codici
+    // che non somigliano a nessun piatto restano davvero missing. Il link di checkout
+    // è comunque modificabile dall'utente, quindi un match imperfetto è recuperabile.
+    const { data: allItems } = await db
+      .from("menu_items")
+      .select("id,code,category_id,name,price,available,extra_list_id,location_id")
+      .eq("tenant_id", input.tenantId);
+    const pool = (allItems ?? []) as NonNullable<typeof items>;
+    const stillMissing: string[] = [];
+    for (const code of unresolved) {
+      const match = reconcileMenuItem(code, pool, tenantPrefix);
+      if (match) {
+        resolvedByRequested.set(code, match);
+        if (!resolvedItems.some((it) => it.id === match.id)) resolvedItems = [...resolvedItems, match];
+      } else {
+        stillMissing.push(code);
+      }
+    }
+    if (stillMissing.length > 0) throw new Error(`missing_items:${stillMissing.join(",")}`);
+  }
 
-  const itemIds = (items ?? []).map((item) => item.id);
-  const categoryIds = [...new Set((items ?? []).map((item) => item.category_id))];
-  const listIds = (items ?? []).map((item) => item.extra_list_id).filter(Boolean) as string[];
+  const itemIds = resolvedItems.map((item) => item.id);
+  const categoryIds = [...new Set(resolvedItems.map((item) => item.category_id))];
+  const listIds = resolvedItems.map((item) => item.extra_list_id).filter(Boolean) as string[];
   const [{ data: itemExtras }, { data: extraListItems }, { data: categories }, menuLists] = await Promise.all([
     db.from("menu_item_extras").select("item_id,code,name,price,position").in("item_id", itemIds),
     listIds.length
