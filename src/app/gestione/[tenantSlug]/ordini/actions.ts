@@ -8,7 +8,7 @@ import { pushOrderStatusToHubrise } from "@/lib/hubrise/push-status";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
 import { notifyCustomerOrderStatus, type OrderNotificationKind } from "@/lib/orders/order-notifications";
 import type { Database } from "@/lib/database.types";
-import { requireActiveGestioneLocation } from "@/lib/gestione-location";
+import { getActiveGestioneLocation, requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Status = Database["public"]["Enums"]["order_status"];
 
@@ -21,6 +21,10 @@ function notificationKindForStatus(status: Status): OrderNotificationKind {
   }
 }
 
+function canActOnOrder(orderLocationId: string | null, activeLocationId: string | null): boolean {
+  return !orderLocationId || !activeLocationId || orderLocationId === activeLocationId;
+}
+
 async function update(tenantSlug: string, orderId: string, status: Status) {
   const auth = await authorizeGestione(tenantSlug);
   if (!auth.ok) throw new Error("unauthorized");
@@ -28,22 +32,21 @@ async function update(tenantSlug: string, orderId: string, status: Status) {
 
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
-  const location = await requireActiveGestioneLocation(tenantSlug);
+  const location = await getActiveGestioneLocation(tenantSlug);
 
   const { data: order } = await svc
     .from("orders")
-    .select("id, code, public_token, customer_phone, source, type")
+    .select("id, code, public_token, customer_phone, source, type, location_id")
     .eq("id", orderId)
     .eq("tenant_id", tenantSlug)
-    .eq("location_id", location.id)
     .maybeSingle();
+  if (!order || !canActOnOrder(order.location_id, location?.id ?? null)) return;
 
   const { error } = await svc
     .from("orders")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", orderId)
-    .eq("tenant_id", tenantSlug)
-    .eq("location_id", location.id);
+    .eq("tenant_id", tenantSlug);
 
   if (error) throw new Error(error.message);
 
@@ -64,6 +67,7 @@ async function update(tenantSlug: string, orderId: string, status: Status) {
   });
 
   revalidatePath(`/gestione/${tenantSlug}/ordini`);
+  revalidatePath(`/operativo/${tenantSlug}/ordini`);
 }
 
 function makeAction(status: Status) {
@@ -136,19 +140,20 @@ export async function confirmPendingOrder(formData: FormData) {
 
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
-  const location = await requireActiveGestioneLocation(tenantSlug);
+  const location = await getActiveGestioneLocation(tenantSlug);
 
   const { data: existing } = await svc
     .from("orders")
-    .select("status, confirmation_expires_at")
+    .select("status, confirmation_expires_at, location_id")
     .eq("id", id)
     .eq("tenant_id", tenantSlug)
-    .eq("location_id", location.id)
     .maybeSingle();
 
   if (!existing) return;
+  if (!canActOnOrder(existing.location_id, location?.id ?? null)) return;
   if (existing.status !== "pending_confirmation") {
     revalidatePath(`/gestione/${tenantSlug}/ordini`);
+    revalidatePath(`/operativo/${tenantSlug}/ordini`);
     return;
   }
 
@@ -161,9 +166,9 @@ export async function confirmPendingOrder(formData: FormData) {
       .from("orders")
       .update({ status: "expired", updated_at: new Date().toISOString() })
       .eq("id", id)
-      .eq("tenant_id", tenantSlug)
-      .eq("location_id", location.id);
+      .eq("tenant_id", tenantSlug);
     revalidatePath(`/gestione/${tenantSlug}/ordini`);
+    revalidatePath(`/operativo/${tenantSlug}/ordini`);
     return;
   }
 
@@ -177,7 +182,6 @@ export async function confirmPendingOrder(formData: FormData) {
     })
     .eq("id", id)
     .eq("tenant_id", tenantSlug)
-    .eq("location_id", location.id)
     .eq("status", "pending_confirmation");
 
   if (error) throw new Error(error.message);
@@ -192,7 +196,6 @@ export async function confirmPendingOrder(formData: FormData) {
         .select("id, code, public_token, customer_phone, source, type")
         .eq("id", id)
         .eq("tenant_id", tenantSlug)
-        .eq("location_id", location.id)
         .maybeSingle();
       if (order) {
         await notifyCustomerOrderStatus({
@@ -210,6 +213,7 @@ export async function confirmPendingOrder(formData: FormData) {
   });
 
   revalidatePath(`/gestione/${tenantSlug}/ordini`);
+  revalidatePath(`/operativo/${tenantSlug}/ordini`);
 }
 
 /** Rifiuta un ordine pending_confirmation portandolo a "annullato". */
@@ -224,14 +228,21 @@ export async function rejectPendingOrder(formData: FormData) {
 
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
-  const location = await requireActiveGestioneLocation(tenantSlug);
+  const location = await getActiveGestioneLocation(tenantSlug);
+
+  const { data: existing } = await svc
+    .from("orders")
+    .select("location_id")
+    .eq("id", id)
+    .eq("tenant_id", tenantSlug)
+    .maybeSingle();
+  if (!existing || !canActOnOrder(existing.location_id, location?.id ?? null)) return;
 
   const { error } = await svc
     .from("orders")
     .update({ status: "annullato", updated_at: new Date().toISOString() })
     .eq("id", id)
     .eq("tenant_id", tenantSlug)
-    .eq("location_id", location.id)
     .eq("status", "pending_confirmation");
 
   if (error) throw new Error(error.message);
@@ -243,7 +254,6 @@ export async function rejectPendingOrder(formData: FormData) {
       .select("id, code, public_token, customer_phone, source, type")
       .eq("id", id)
       .eq("tenant_id", tenantSlug)
-      .eq("location_id", location.id)
       .maybeSingle();
     if (order) {
       await notifyCustomerOrderStatus({
@@ -260,4 +270,5 @@ export async function rejectPendingOrder(formData: FormData) {
   });
 
   revalidatePath(`/gestione/${tenantSlug}/ordini`);
+  revalidatePath(`/operativo/${tenantSlug}/ordini`);
 }

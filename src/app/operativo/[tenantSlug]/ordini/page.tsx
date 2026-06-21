@@ -9,6 +9,7 @@ import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder }
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 import { OperationalAlertControls, OperationalAlertsClient } from "@/components/gestione/operational-alerts-client";
 import { OrderConfirmationTimeForm } from "@/components/gestione/order-confirmation-time-form";
+import { OrderExpiryCountdown } from "@/components/gestione/order-expiry-countdown";
 import { demoOrders, type DemoOrder } from "@/lib/demo-fixtures";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 
@@ -317,11 +318,6 @@ export default async function OrdiniPage({
             const isNuovo = o.status === "nuovo";
             const isPreparazione = o.status === "in_preparazione";
             const isPronto = o.status === "pronto";
-            const pendingSecondsLeft =
-              isPending && o.confirmation_expires_at
-                ? Math.max(0, Math.floor((new Date(o.confirmation_expires_at).getTime() - Date.now()) / 1000))
-                : null;
-
             const rawScheduledTime = o.pickup_time ?? o.desired_time;
             const effectiveModality = o.dine_option ?? o.fulfillment_type;
             const isDelivery = effectiveModality === "delivery";
@@ -389,10 +385,8 @@ export default async function OrdiniPage({
                     {o.table_label && (
                       <span><MapPin size={12} strokeWidth={2.2} /> {o.table_label}</span>
                     )}
-                    {isPending && pendingSecondsLeft !== null && (
-                      <span style={{ color: "var(--ga-warn, #B8332E)", fontWeight: 600 }}>
-                        <AlarmClock size={12} strokeWidth={2.2} /> {interpolate(t.timeout, { seconds: pendingSecondsLeft })}
-                      </span>
+                    {isPending && o.confirmation_expires_at && (
+                      <OrderExpiryCountdown expiresAt={o.confirmation_expires_at} timeoutTemplate={t.timeout} />
                     )}
                   </div>
 

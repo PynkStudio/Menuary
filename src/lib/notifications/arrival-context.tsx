@@ -160,6 +160,24 @@ export function ArrivalAlertsProvider({
     };
     const isActiveLocation = (row: Record<string, unknown> | null | undefined) =>
       !locationId || row?.location_id === locationId;
+    const isFreshUpdate = (row: Record<string, unknown> | null | undefined) => {
+      const updated = row?.updated_at;
+      if (typeof updated !== "string") return true;
+      const ts = Date.parse(updated);
+      if (Number.isNaN(ts)) return true;
+      return ts >= mountedAt - 5_000;
+    };
+    const changed = (
+      oldRow: Record<string, unknown> | undefined,
+      newRow: Record<string, unknown> | undefined,
+      key: string,
+    ) => oldRow?.[key] !== undefined && oldRow[key] !== newRow?.[key];
+    const timestampsClose = (a: unknown, b: unknown, toleranceMs = 2_000) => {
+      if (typeof a !== "string" || typeof b !== "string") return false;
+      const left = Date.parse(a);
+      const right = Date.parse(b);
+      return !Number.isNaN(left) && !Number.isNaN(right) && Math.abs(left - right) <= toleranceMs;
+    };
 
     const channel = supabase
       .channel(`arrival-alerts-${tenantId}`)
@@ -200,28 +218,29 @@ export function ArrivalAlertsProvider({
           if (!isActiveLocation(newRow)) return;
           const prev = oldRow?.status;
           const next = newRow?.status;
-          // pending_confirmation -> nuovo: ordine appena confermato (auto o manuale)
-          if (
-            prev === "pending_confirmation" &&
-            next === "nuovo"
-          ) {
-            bump("orders", "order");
-          }
-          // nuovo -> pending_confirmation: ordine modificato dal cliente, richiede ri-approvazione
-          if (
-            prev === "nuovo" &&
-            next === "pending_confirmation"
-          ) {
+
+          const statusChanged = changed(oldRow, newRow, "status");
+          const customerEditFieldsChanged =
+            changed(oldRow, newRow, "total") ||
+            changed(oldRow, newRow, "pickup_time") ||
+            changed(oldRow, newRow, "desired_time") ||
+            changed(oldRow, newRow, "delivery_address") ||
+            changed(oldRow, newRow, "confirmation_expires_at");
+          const isManualConfirmationUpdate =
+            next === "nuovo" && timestampsClose(newRow?.confirmed_at, newRow?.updated_at);
+          const likelyCustomerEditWithoutOldRow =
+            !statusChanged &&
+            !isManualConfirmationUpdate &&
+            isFreshUpdate(newRow) &&
+            (next === "pending_confirmation" || next === "nuovo") &&
+            typeof newRow?.created_at === "string" &&
+            typeof newRow?.updated_at === "string" &&
+            Date.parse(newRow.updated_at) > Date.parse(newRow.created_at) + 3_000;
+
+          if (customerEditFieldsChanged || likelyCustomerEditWithoutOldRow) {
             bump("orders", "order_edit");
           }
-          // pending_confirmation -> pending_confirmation: modifica su ordine gia' in attesa (timer resettato)
-          if (
-            prev === "pending_confirmation" &&
-            next === "pending_confirmation" &&
-            oldRow?.updated_at !== newRow?.updated_at
-          ) {
-            bump("orders", "order_edit");
-          }
+
           // qualunque -> pronto: alert per chi serve (camerieri)
           if (
             enableReadyChannel &&
