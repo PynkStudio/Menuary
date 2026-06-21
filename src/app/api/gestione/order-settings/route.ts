@@ -24,6 +24,7 @@ type SettingsPatch = {
   autoAcceptNoNotes?: boolean;
   autoAcceptMinNoticeMinutes?: number | null;
   pendingTimeoutSeconds?: number;
+  avgHandlingMinutes?: number;
 };
 
 function tenantFrom(req: NextRequest, body?: SettingsPatch | null) {
@@ -88,6 +89,13 @@ export async function PUT(req: NextRequest) {
       { status: 422 },
     );
   }
+  const avgHandling = body.avgHandlingMinutes;
+  if (avgHandling != null && (avgHandling < 0 || avgHandling > 600)) {
+    return NextResponse.json(
+      { error: "avgHandlingMinutes deve essere tra 0 e 600" },
+      { status: 422 },
+    );
+  }
 
   const supabase = createSupabaseServiceClient();
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
@@ -138,6 +146,7 @@ export async function PUT(req: NextRequest) {
         ? body.autoAcceptMinNoticeMinutes
         : existing.autoAcceptMinNoticeMinutes,
     pendingTimeoutSeconds: body.pendingTimeoutSeconds ?? existing.pendingTimeoutSeconds,
+    avgHandlingMinutes: body.avgHandlingMinutes ?? existing.avgHandlingMinutes,
   };
 
   // L'unique index parziale (tenant_id) WHERE location_id IS NULL non è gestibile
@@ -163,6 +172,7 @@ export async function PUT(req: NextRequest) {
         auto_accept_no_notes: merged.autoAcceptNoNotes,
         auto_accept_min_notice_minutes: merged.autoAcceptMinNoticeMinutes,
         pending_timeout_seconds: merged.pendingTimeoutSeconds,
+        avg_handling_minutes: merged.avgHandlingMinutes,
       })
       .eq("id", existing.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -186,6 +196,7 @@ export async function PUT(req: NextRequest) {
       auto_accept_no_notes: merged.autoAcceptNoNotes,
       auto_accept_min_notice_minutes: merged.autoAcceptMinNoticeMinutes,
       pending_timeout_seconds: merged.pendingTimeoutSeconds,
+      avg_handling_minutes: merged.avgHandlingMinutes,
     });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }

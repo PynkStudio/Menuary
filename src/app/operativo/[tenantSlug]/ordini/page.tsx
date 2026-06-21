@@ -5,7 +5,8 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/database.types";
-import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder } from "./actions";
+import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder, setTodayHandlingOverride } from "./actions";
+import { loadOrderSettings } from "@/lib/orders/order-settings";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 import { OperationalAlertControls, OperationalAlertsClient } from "@/components/gestione/operational-alerts-client";
 import { OrderConfirmationTimeForm } from "@/components/gestione/order-confirmation-time-form";
@@ -275,6 +276,10 @@ export default async function OrdiniPage({
   const uniquePhones = [...new Set(orders.map((o) => o.customer_phone).filter(Boolean) as string[])];
   const customerStats = auth.isDemo ? new Map<string, CustomerStat>() : await fetchCustomerStats(tenantSlug, uniquePhones);
 
+  // Tempo medio di gestione effettivo (con eventuale override di oggi) per il controllo rapido.
+  const settingsSvc = auth.isDemo ? null : createSupabaseServiceClient();
+  const effectiveHandling = settingsSvc ? (await loadOrderSettings(settingsSvc, tenantSlug, locationId)).avgHandlingMinutes : 45;
+
   return (
     <OperationalAlertsClient tenantId={tenantSlug} portal="ordini" locationId={locationId ?? undefined}>
     <div className="ga-dashboard">
@@ -286,6 +291,25 @@ export default async function OrdiniPage({
           <p className="ga-lead">{t.lead}</p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {!auth.isDemo && (
+            <form action={setTodayHandlingOverride} style={{ display: "flex", alignItems: "center", gap: 6 }} title="Tempo medio di gestione valido solo per oggi; a fine giornata torna al default.">
+              <input type="hidden" name="tenantSlug" value={tenantSlug} />
+              <input type="hidden" name="locationId" value={locationId ?? ""} />
+              <span style={{ fontSize: "0.72rem", color: "var(--ga-ink-faint)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <AlarmClock size={13} strokeWidth={2.4} /> Gestione oggi
+              </span>
+              <input
+                name="minutes"
+                type="number"
+                min={0}
+                max={600}
+                defaultValue={effectiveHandling}
+                aria-label="Minuti gestione ordine per oggi"
+                style={{ width: 60, padding: "4px 6px", border: "1px solid var(--ga-border, #ddd)", borderRadius: 8, fontSize: "0.8rem" }}
+              />
+              <button type="submit" className="ga-btn ga-btn-ghost">min</button>
+            </form>
+          )}
           <OperationalAlertControls tenantId={tenantSlug} />
           <Link
             href={`/gestione/${tenantSlug}/ordini/impostazioni`}
@@ -315,6 +339,9 @@ export default async function OrdiniPage({
             const badge = statusBadge(o.status, t);
             const items = lines.get(o.id) ?? [];
             const isPending = o.status === "pending_confirmation";
+            // Ordine programmato: pending senza scadenza (ordine telefonico per un giorno
+            // futuro). Niente countdown 120s; mostrato come "Ricevuto".
+            const isScheduled = isPending && !o.confirmation_expires_at;
             const isNuovo = o.status === "nuovo";
             const isPreparazione = o.status === "in_preparazione";
             const isPronto = o.status === "pronto";
@@ -353,7 +380,12 @@ export default async function OrdiniPage({
                         {loyalty.label}
                       </span>
                     )}
-                    <span className="ga-module-status" data-status={badge.tone}>{badge.label}</span>
+                    <span className="ga-module-status" data-status={badge.tone}>{isScheduled ? "Ricevuto" : badge.label}</span>
+                    {isScheduled && (
+                      <span className="ga-reservation-tag" style={{ background: "var(--ga-ink-faint, #eef)", color: "var(--ga-ink)" }}>
+                        Programmato
+                      </span>
+                    )}
                     {o.auto_accepted && (
                       <span className="ga-reservation-tag" style={{ background: "var(--ga-ink-faint, #eef)", color: "var(--ga-ink)" }}>
                         Auto

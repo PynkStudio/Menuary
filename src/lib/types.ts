@@ -170,6 +170,8 @@ export type TenantOrderSettings = {
   autoAcceptNoNotes: boolean;
   autoAcceptMinNoticeMinutes: number | null;
   pendingTimeoutSeconds: number;
+  /** Tempo medio di gestione ordine (min): la prima consegna possibile è adesso + questo. */
+  avgHandlingMinutes: number;
 };
 
 export type Table = {

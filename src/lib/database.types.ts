@@ -5507,6 +5507,44 @@ export type Database = {
           },
         ]
       }
+      tenant_order_daily_overrides: {
+        Row: {
+          avg_handling_minutes: number | null
+          created_at: string
+          id: string
+          location_id: string | null
+          service_date: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          avg_handling_minutes?: number | null
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          service_date: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          avg_handling_minutes?: number | null
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          service_date?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_order_daily_overrides_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_order_settings: {
         Row: {
           auto_accept_enabled: boolean
@@ -5515,6 +5553,7 @@ export type Database = {
           auto_accept_min_notice_minutes: number | null
           auto_accept_no_notes: boolean
           auto_accept_only_returning: boolean
+          avg_handling_minutes: number
           created_at: string
           delivery_enabled: boolean | null
           delivery_window_before_close_min: number | null
@@ -5538,6 +5577,7 @@ export type Database = {
           auto_accept_min_notice_minutes?: number | null
           auto_accept_no_notes?: boolean
           auto_accept_only_returning?: boolean
+          avg_handling_minutes?: number
           created_at?: string
           delivery_enabled?: boolean | null
           delivery_window_before_close_min?: number | null
@@ -5561,6 +5601,7 @@ export type Database = {
           auto_accept_min_notice_minutes?: number | null
           auto_accept_no_notes?: boolean
           auto_accept_only_returning?: boolean
+          avg_handling_minutes?: number
           created_at?: string
           delivery_enabled?: boolean | null
           delivery_window_before_close_min?: number | null
@@ -6118,6 +6159,7 @@ export type Database = {
           auto_accept_min_notice_minutes: number | null
           auto_accept_no_notes: boolean
           auto_accept_only_returning: boolean
+          avg_handling_minutes: number
           created_at: string
           delivery_enabled: boolean | null
           delivery_window_before_close_min: number | null

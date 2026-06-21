@@ -14,6 +14,7 @@ import { tenantUsesStripeDemoSandbox } from "@/lib/payments/stripe/sandbox-polic
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
 import { normalizePhone, recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
 import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes, resolvePendingTimeoutSeconds } from "@/lib/orders/order-settings";
+import { resolveDeliveryAvailability, resolveDeliveryWindowsForDate } from "@/lib/orders/ordering-window";
 import type { MenuOrderChannel } from "@/lib/types";
 import { isMenuOrderChannel } from "@/lib/menu-channels";
 import { euroToItalianWords, orderCodeToSpoken } from "@/lib/retell/number-speech";
@@ -223,6 +224,154 @@ function normalizeConversationalOrderTime(input: {
     return `${rawDate} ${hour!.padStart(2, "0")}:${minute}`;
   }
   return rawTime;
+}
+
+export type ValidateOrderTimeInput = {
+  tenantId: string;
+  locationId?: string | null;
+  fulfillmentType?: "takeaway" | "delivery";
+  desiredTime?: string | null;
+  desiredDate?: string | null;
+  pickupTime?: string | null;
+  pickupDate?: string | null;
+  now?: Date;
+};
+
+export type OrderTimeValidationResult =
+  | { ok: true; mode: "asap_today" | "time_today"; scheduled: false; date: string; whenSpoken: string | null }
+  | { ok: true; mode: "scheduled_future"; scheduled: true; date: string; whenSpoken: string | null }
+  | {
+      ok: false;
+      reason: "too_early" | "outside_window" | "closed_today" | "closed_day";
+      date: string;
+      requestedSpoken: string | null;
+      openWindowSpoken: string;
+      earliestSpoken: string | null;
+      nextDate: string | null;
+      nextEarliestSpoken: string | null;
+      canSchedule: boolean;
+    };
+
+// L'agente esprime l'orario in linguaggio naturale: "il prima possibile", "appena
+// pronto", oppure un orario concreto. Solo gli orari concreti vanno validati.
+const ASAP_TIME_RE = /prima possibile|appena|asap|subito|quando (potete|puoi|riuscite)/i;
+
+function romeToday(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: MENU_TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+}
+
+function hhmmInRome(iso: string | null): string | null {
+  if (!iso) return null;
+  return new Intl.DateTimeFormat("it-IT", {
+    timeZone: MENU_TIMEZONE, hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(new Date(iso));
+}
+
+function spokenWindowsIso(windows: Array<{ startIso: string; endIso: string }>): string {
+  return windows.map((w) => `${hhmmInRome(w.startIso)}–${hhmmInRome(w.endIso)}`).join(" e ");
+}
+
+// Istante UTC (ms) dell'orologio da parete `dateStr`+`hhmm` nel fuso del locale.
+function requestedInstantMs(dateStr: string, hhmm: string): number {
+  const [y, mo, d] = dateStr.split("-").map(Number);
+  const [h, mi] = hhmm.split(":").map(Number);
+  const asUTC = Date.UTC(y!, mo! - 1, d!, h!, mi!, 0);
+  const p = new Intl.DateTimeFormat("en-US", {
+    timeZone: MENU_TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+  }).formatToParts(new Date(asUTC));
+  const g = (t: string) => Number(p.find((x) => x.type === t)?.value ?? "0");
+  const tzAsUTC = Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute"), g("second"));
+  return asUTC - (tzAsUTC - asUTC);
+}
+
+/**
+ * Valida l'orario di un ordine telefonico contro la FINESTRA CONSEGNE dedicata (offset su
+ * orari del locale) e il tempo medio di gestione (lead time): la prima consegna possibile
+ * è max(adesso+lead, apertura finestra). Gestisce:
+ *  - "il prima possibile" oggi → ok con earliest calcolato;
+ *  - orario concreto oggi → ok se in finestra e ≥ earliest;
+ *  - oggi non più possibile o data futura → ordine PROGRAMMATO per il prossimo giorno
+ *    disponibile (o la data richiesta), validato contro la finestra di quel giorno.
+ */
+export async function validateRetellOrderTime(
+  input: ValidateOrderTimeInput,
+): Promise<OrderTimeValidationResult> {
+  const db = svc();
+  const now = input.now ?? new Date();
+  const settings = await loadOrderSettings(db, input.tenantId, input.locationId ?? null);
+  const channel = input.fulfillmentType === "delivery" ? "delivery" : "takeaway";
+  const loc = input.locationId ?? null;
+
+  const rawTime = (input.desiredTime ?? input.pickupTime ?? "").trim();
+  const rawDate = (input.desiredDate ?? input.pickupDate ?? "").trim();
+  const today = romeToday();
+  const targetDate = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : today;
+  const isFuture = targetDate > today;
+  const hhmmMatch = (!rawTime || ASAP_TIME_RE.test(rawTime)) ? null : rawTime.match(/(\d{1,2}):(\d{2})/);
+  const hhmm = hhmmMatch ? `${hhmmMatch[1]!.padStart(2, "0")}:${hhmmMatch[2]}` : null;
+
+  // ── Ordine programmato per un giorno futuro ──────────────────────────────
+  if (isFuture) {
+    const dateObj = new Date(`${targetDate}T12:00:00Z`);
+    const { closed, windows } = await resolveDeliveryWindowsForDate(db, {
+      tenantId: input.tenantId, locationId: loc, settings, channel, date: dateObj,
+    });
+    const winIso = windows.map((w) => ({ startIso: w.start.toISOString(), endIso: w.end.toISOString() }));
+    if (closed) {
+      const avail = await resolveDeliveryAvailability(db, { tenantId: input.tenantId, locationId: loc, settings, channel, now });
+      return {
+        ok: false, reason: "closed_day", date: targetDate, requestedSpoken: hhmm,
+        openWindowSpoken: "", earliestSpoken: null,
+        nextDate: avail.nextDate, nextEarliestSpoken: hhmmInRome(avail.nextEarliestIso), canSchedule: true,
+      };
+    }
+    if (!hhmm) {
+      return { ok: true, mode: "scheduled_future", scheduled: true, date: targetDate, whenSpoken: winIso.length ? hhmmInRome(winIso[0]!.startIso) : null };
+    }
+    const reqMs = requestedInstantMs(targetDate, hhmm);
+    const within = winIso.some((w) => reqMs >= Date.parse(w.startIso) && reqMs <= Date.parse(w.endIso));
+    if (within) return { ok: true, mode: "scheduled_future", scheduled: true, date: targetDate, whenSpoken: hhmm };
+    return {
+      ok: false, reason: "outside_window", date: targetDate, requestedSpoken: hhmm,
+      openWindowSpoken: spokenWindowsIso(winIso), earliestSpoken: null,
+      nextDate: null, nextEarliestSpoken: null, canSchedule: true,
+    };
+  }
+
+  // ── Oggi ─────────────────────────────────────────────────────────────────
+  const avail = await resolveDeliveryAvailability(db, { tenantId: input.tenantId, locationId: loc, settings, channel, now });
+
+  if (!hhmm) {
+    if (avail.todayPossible) {
+      return { ok: true, mode: "asap_today", scheduled: false, date: today, whenSpoken: hhmmInRome(avail.earliestIso) };
+    }
+    return {
+      ok: false, reason: avail.closedToday ? "closed_today" : "outside_window", date: today, requestedSpoken: null,
+      openWindowSpoken: spokenWindowsIso(avail.todayWindows), earliestSpoken: null,
+      nextDate: avail.nextDate, nextEarliestSpoken: hhmmInRome(avail.nextEarliestIso), canSchedule: Boolean(avail.nextDate),
+    };
+  }
+
+  const reqMs = requestedInstantMs(today, hhmm);
+  const within = avail.todayWindows.some((w) => reqMs >= Date.parse(w.startIso) && reqMs <= Date.parse(w.endIso));
+  if (!within) {
+    return {
+      ok: false, reason: avail.closedToday ? "closed_today" : "outside_window", date: today, requestedSpoken: hhmm,
+      openWindowSpoken: spokenWindowsIso(avail.todayWindows), earliestSpoken: hhmmInRome(avail.earliestIso),
+      nextDate: avail.nextDate, nextEarliestSpoken: hhmmInRome(avail.nextEarliestIso), canSchedule: Boolean(avail.nextDate),
+    };
+  }
+  if (avail.earliestIso && reqMs < Date.parse(avail.earliestIso)) {
+    return {
+      ok: false, reason: "too_early", date: today, requestedSpoken: hhmm,
+      openWindowSpoken: spokenWindowsIso(avail.todayWindows), earliestSpoken: hhmmInRome(avail.earliestIso),
+      nextDate: null, nextEarliestSpoken: null, canSchedule: false,
+    };
+  }
+  return { ok: true, mode: "time_today", scheduled: false, date: today, whenSpoken: hhmm };
 }
 
 export type RetellAvailabilityInput = {
@@ -1095,6 +1244,31 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   if (fulfillmentType === "delivery" && !input.delivery?.address?.trim()) {
     throw new Error("delivery_address_required");
   }
+  // Enforcement orari: un orario richiesto fuori dall'apertura non deve mai diventare un
+  // ordine. Il nodo validate_order_time del flow lo intercetta già conversazionalmente;
+  // questa è la rete di sicurezza server-side. La finestra valida viaggia nel messaggio
+  // d'errore (422) così l'agente può ri-proporla.
+  const timeCheck = await validateRetellOrderTime({
+    tenantId: input.tenantId,
+    locationId,
+    fulfillmentType,
+    desiredTime: input.desiredTime,
+    desiredDate: input.desiredDate,
+    pickupTime: input.pickupTime,
+    pickupDate: input.pickupDate,
+  });
+  if (!timeCheck.ok) {
+    const detail =
+      timeCheck.reason === "closed_day" || timeCheck.reason === "closed_today"
+        ? "closed"
+        : timeCheck.reason === "too_early"
+          ? `earliest ${timeCheck.earliestSpoken ?? ""}`.trim()
+          : timeCheck.openWindowSpoken || "closed";
+    throw new Error(`order_time_outside_hours:${detail}`);
+  }
+  // Ordine programmato per un giorno futuro: niente scadenza 120s, resta "ricevuto"
+  // (pending_confirmation senza expiry) finché il ristorante non lo accetta.
+  const scheduledFuture = timeCheck.scheduled;
   // Risoluzione metodo di pagamento effettivo, tenendo conto di:
   //   1) scelta esplicita raccolta dall'agente (`paymentMethodChoice`);
   //   2) policy tenant `acceptedMethods` (online_only / on_site_only / both);
@@ -1256,18 +1430,28 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     desiredTime: input.desiredTime,
     pickupDate: input.desiredDate ?? input.pickupDate,
   });
-  const desiredTime = normalizeConversationalOrderTime(input);
-  const autoAccepted = evaluateAutoAccept(orderSettings, {
-    total,
-    itemsCount,
-    hasNotes,
-    isReturningCustomer,
-    crmEnabled,
-    noticeMinutes,
-  });
+  let desiredTime = normalizeConversationalOrderTime(input);
+  // Ordine programmato a giorno futuro: assicura che la data finisca in desired_time
+  // (non esiste colonna desired_date) così operativo non lo mostra come "il prima possibile".
+  if (scheduledFuture && timeCheck.ok && (!desiredTime || !/^\d{4}-\d{2}-\d{2}/.test(desiredTime))) {
+    desiredTime = timeCheck.whenSpoken ? `${timeCheck.date} ${timeCheck.whenSpoken}` : timeCheck.date;
+  }
+  // Ordini programmati: mai auto-accept, restano "ricevuto" (pending senza scadenza)
+  // finché il ristorante non li accetta manualmente.
+  const autoAccepted = scheduledFuture
+    ? false
+    : evaluateAutoAccept(orderSettings, {
+        total,
+        itemsCount,
+        hasNotes,
+        isReturningCustomer,
+        crmEnabled,
+        noticeMinutes,
+      });
   const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
   const pendingTimeoutSeconds = resolvePendingTimeoutSeconds(orderSettings.pendingTimeoutSeconds);
-  const confirmationExpiresAt = autoAccepted
+  // scheduledFuture → confirmationExpiresAt null = nessuna scadenza (vedi route confirm).
+  const confirmationExpiresAt = autoAccepted || scheduledFuture
     ? null
     : new Date(Date.now() + pendingTimeoutSeconds * 1000).toISOString();
   const confirmedAt = autoAccepted ? new Date().toISOString() : null;

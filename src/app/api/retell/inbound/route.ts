@@ -10,6 +10,7 @@ import {
   lookupRetellCustomer,
   resendRetellOrderLink,
   setCustomerLanguage,
+  validateRetellOrderTime,
   warmRetellInboundContext,
   type CreateRetellOrderInput,
   type CreateRetellReservationInput,
@@ -41,6 +42,18 @@ type RetellActionBody =
   | ({ action: "availability" } & RetellAvailabilityInput & WithCalledNumber)
   | ({ action: "create_reservation" } & CreateRetellReservationInput & WithCalledNumber)
   | ({ action: "create_order" } & CreateRetellOrderInput & WithCalledNumber)
+  | ({
+      action: "validate_order_time";
+      tenantId?: string;
+      tenant_id?: string;
+      locationId?: string | null;
+      location_id?: string | null;
+      fulfillmentType?: "takeaway" | "delivery";
+      desiredTime?: string | null;
+      desired_time?: string | null;
+      desiredDate?: string | null;
+      desired_date?: string | null;
+    } & WithCalledNumber)
   | ({ action: "customer_lookup"; tenantId?: string; tenant_id?: string; callerPhone?: string; caller_phone?: string } & WithCalledNumber)
   | ({ action: "set_customer_language"; tenantId?: string; tenant_id?: string; callerPhone?: string; caller_phone?: string; language: string } & WithCalledNumber)
   | ({ action: "detect_menu_opportunity"; tenantId?: string; tenant_id?: string; itemCodes: string[] } & WithCalledNumber)
@@ -64,6 +77,7 @@ const CLIENT_ERROR_PREFIXES = [
   "price_to_confirm:",
   "price_option_required:",
   "delivery_address_required",
+  "order_time_outside_hours",
   "payment_phone_required",
   "recipient_phone_required",
   "order_id_required",
@@ -290,6 +304,19 @@ export async function POST(req: NextRequest) {
         source: "retell",
       });
       return NextResponse.json({ ok: true, order: result });
+    }
+
+    if (action === "validate_order_time") {
+      const timeBody = body as Extract<RetellActionBody, { action: "validate_order_time" }>;
+      if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
+      const validation = await validateRetellOrderTime({
+        tenantId,
+        locationId: locationFrom(req, timeBody) ?? timeBody.locationId,
+        fulfillmentType: timeBody.fulfillmentType,
+        desiredTime: timeBody.desiredTime ?? timeBody.desired_time,
+        desiredDate: timeBody.desiredDate ?? timeBody.desired_date,
+      });
+      return NextResponse.json({ ok: true, validation });
     }
 
     if (action === "customer_lookup") {

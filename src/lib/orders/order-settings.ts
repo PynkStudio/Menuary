@@ -22,7 +22,26 @@ type DbOrderSettings = {
   auto_accept_no_notes: boolean;
   auto_accept_min_notice_minutes: number | null;
   pending_timeout_seconds: number;
+  avg_handling_minutes: number | null;
 };
+
+export const DEFAULT_AVG_HANDLING_MINUTES = 45;
+
+export function resolveAvgHandlingMinutes(value: number | null | undefined): number {
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes) || minutes < 0) return DEFAULT_AVG_HANDLING_MINUTES;
+  return Math.floor(minutes);
+}
+
+/** Data "oggi" (YYYY-MM-DD) nel fuso operativo del locale. */
+function serviceDateToday(timeZone = "Europe/Rome"): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
 
 /** Settings di default usati se non esiste riga per il tenant. */
 export const DEFAULT_ORDER_SETTINGS: Omit<TenantOrderSettings, "id" | "tenantId" | "locationId"> = {
@@ -42,6 +61,7 @@ export const DEFAULT_ORDER_SETTINGS: Omit<TenantOrderSettings, "id" | "tenantId"
   autoAcceptNoNotes: false,
   autoAcceptMinNoticeMinutes: null,
   pendingTimeoutSeconds: 120,
+  avgHandlingMinutes: DEFAULT_AVG_HANDLING_MINUTES,
 };
 
 export function resolvePendingTimeoutSeconds(value: number | null | undefined): number {
@@ -71,7 +91,33 @@ function dbRowToSettings(row: DbOrderSettings): TenantOrderSettings {
     autoAcceptNoNotes: row.auto_accept_no_notes,
     autoAcceptMinNoticeMinutes: row.auto_accept_min_notice_minutes,
     pendingTimeoutSeconds: resolvePendingTimeoutSeconds(row.pending_timeout_seconds),
+    avgHandlingMinutes: resolveAvgHandlingMinutes(row.avg_handling_minutes),
   };
+}
+
+/**
+ * Override giornaliero del tempo medio di gestione: il ristorante può alzarlo solo
+ * per oggi (dal portale ordini) nelle giornate cariche. La riga è per-data, quindi
+ * scade da sé a fine giornata. Location-specific vince sul default sede.
+ */
+async function resolveDailyAvgHandlingOverride(
+  supabase: SupabaseClient,
+  tenantId: string,
+  locationId: string | null,
+): Promise<number | null> {
+  let query = supabase
+    .from("tenant_order_daily_overrides")
+    .select("avg_handling_minutes, location_id")
+    .eq("tenant_id", tenantId)
+    .eq("service_date", serviceDateToday());
+  // Sede specifica + riga default (location_id NULL); senza sede solo il default.
+  query = locationId ? query.or(`location_id.eq.${locationId},location_id.is.null`) : query.is("location_id", null);
+  const { data, error } = await query;
+  if (error || !data?.length) return null;
+  const exact = locationId ? data.find((r) => r.location_id === locationId) : undefined;
+  const fallback = data.find((r) => r.location_id === null);
+  const pick = exact ?? fallback;
+  return pick && pick.avg_handling_minutes != null ? resolveAvgHandlingMinutes(pick.avg_handling_minutes) : null;
 }
 
 /**
@@ -89,16 +135,15 @@ export async function loadOrderSettings(
     .rpc("resolve_order_settings", { p_tenant_id: tenantId, p_location_id: locationId })
     .maybeSingle();
 
-  if (error || !data) {
-    // Default soft: pretendiamo che esista una "riga virtuale" senza id.
-    return {
-      id: "",
-      tenantId,
-      locationId,
-      ...DEFAULT_ORDER_SETTINGS,
-    };
-  }
-  return dbRowToSettings(data as DbOrderSettings);
+  const base: TenantOrderSettings = (error || !data)
+    ? { id: "", tenantId, locationId, ...DEFAULT_ORDER_SETTINGS }
+    : dbRowToSettings(data as DbOrderSettings);
+
+  // Override "solo oggi" del tempo medio di gestione (portale ordini → giornate cariche).
+  const dailyOverride = await resolveDailyAvgHandlingOverride(supabase, tenantId, locationId);
+  if (dailyOverride != null) base.avgHandlingMinutes = dailyOverride;
+
+  return base;
 }
 
 /** Parametri minimi per valutare auto-accept su un ordine in creazione. */

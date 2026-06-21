@@ -36,6 +36,7 @@ const EMPTY: FormState = {
   autoAcceptNoNotes: false,
   autoAcceptMinNoticeMinutes: null,
   pendingTimeoutSeconds: 120,
+  avgHandlingMinutes: 45,
 };
 
 export function OrderSettingsPanel() {
@@ -250,7 +251,9 @@ export function OrderSettingsPanel() {
         </h2>
         <p className="mt-1 text-sm text-zinc-500">
           Minuti rispetto agli orari di apertura del locale. Lascia vuoto per
-          nessun limite su quel lato.
+          nessun limite su quel lato. Valori <strong>negativi</strong> spostano
+          dal lato opposto: es. apertura <strong>−60</strong> = inizio consegne
+          1h <em>dopo</em> l&apos;apertura del locale.
         </p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -276,6 +279,28 @@ export function OrderSettingsPanel() {
             onBeforeClose={(v) => patch("deliveryWindowBeforeCloseMin", v)}
           />
         </div>
+      </section>
+
+      {/* Tempo medio di gestione (lead time) */}
+      <section className="rounded-2xl border border-zinc-200 bg-white p-6">
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <Clock size={18} /> Tempo medio di gestione ordine
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500">
+          Minuti necessari per gestire e consegnare un ordine. La prima consegna
+          possibile è calcolata come <strong>adesso + questo tempo</strong>: se
+          cade dopo la fine della finestra consegne, l&apos;ordine non è più
+          disponibile per oggi. Modificabile solo per oggi anche dal portale ordini.
+        </p>
+        <NumberField
+          className="mt-4 max-w-[200px]"
+          label="Minuti"
+          placeholder="45"
+          value={form.avgHandlingMinutes}
+          onChange={(v) => patch("avgHandlingMinutes", v ?? 45)}
+          min={0}
+          max={600}
+        />
       </section>
 
       {/* Auto-accept */}

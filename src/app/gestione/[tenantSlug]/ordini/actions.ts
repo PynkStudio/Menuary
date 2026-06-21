@@ -216,6 +216,62 @@ export async function confirmPendingOrder(formData: FormData) {
   revalidatePath(`/operativo/${tenantSlug}/ordini`);
 }
 
+/**
+ * Override del tempo medio di gestione ordine valido SOLO per oggi (giornate cariche).
+ * Scritto in tenant_order_daily_overrides per la data odierna (Europe/Rome): a fine
+ * giornata non esiste più riga per la nuova data → torna automaticamente al default.
+ * `minutes` vuoto = rimuove l'override e ripristina il default.
+ */
+export async function setTodayHandlingOverride(formData: FormData) {
+  const tenantSlug = String(formData.get("tenantSlug") ?? "");
+  const raw = String(formData.get("minutes") ?? "").trim();
+  if (!tenantSlug) return;
+
+  const auth = await authorizeGestione(tenantSlug);
+  if (!auth.ok) throw new Error("unauthorized");
+  if (auth.isDemo) return;
+
+  if (raw !== "" && !Number.isFinite(Number(raw))) return;
+  const minutes = raw === "" ? null : Math.max(0, Math.min(600, Math.floor(Number(raw))));
+
+  const svc = createSupabaseServiceClient();
+  if (!svc) throw new Error("supabase_service_unconfigured");
+  // La sede su cui agisce il portale arriva dal form (sede selezionata); fallback alla
+  // sede attiva di gestione. Stringa vuota = sede di default (location_id NULL).
+  const passedLocation = String(formData.get("locationId") ?? "").trim();
+  const locationId = passedLocation || (await getActiveGestioneLocation(tenantSlug))?.id || null;
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+
+  let q = svc
+    .from("tenant_order_daily_overrides")
+    .select("id")
+    .eq("tenant_id", tenantSlug)
+    .eq("service_date", today);
+  q = locationId ? q.eq("location_id", locationId) : q.is("location_id", null);
+  const { data: existing } = await q.maybeSingle();
+
+  if (minutes == null) {
+    if (existing?.id) await svc.from("tenant_order_daily_overrides").delete().eq("id", existing.id);
+  } else if (existing?.id) {
+    await svc
+      .from("tenant_order_daily_overrides")
+      .update({ avg_handling_minutes: minutes, updated_at: new Date().toISOString() })
+      .eq("id", existing.id);
+  } else {
+    await svc.from("tenant_order_daily_overrides").insert({
+      tenant_id: tenantSlug,
+      location_id: locationId,
+      service_date: today,
+      avg_handling_minutes: minutes,
+    });
+  }
+
+  revalidatePath(`/gestione/${tenantSlug}/ordini`);
+  revalidatePath(`/operativo/${tenantSlug}/ordini`);
+}
+
 /** Rifiuta un ordine pending_confirmation portandolo a "annullato". */
 export async function rejectPendingOrder(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
