@@ -15,6 +15,7 @@ import {
   selectVisibleMenuLists,
 } from "@/store/menu-store";
 import { useCartStore } from "@/store/cart-store";
+import { parseAppendTarget } from "@/lib/orders/append-target";
 import { useHydrated } from "@/components/core/providers";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
@@ -64,6 +65,8 @@ export function InteractiveMenu({
   const syncStatus = useSupabaseMenuSync(tenant.id, true, menuLanguage).status;
   const searchParams = useSearchParams();
   const tableParam = searchParams.get("t");
+  // Menu "adattato": aperto dal checkout per aggiungere piatti a un ordine esistente.
+  const appendTarget = parseAppendTarget(searchParams.get("back"));
   const setContext = useCartStore((s) => s.setContext);
 
   const categoriesRaw = useMenuStore((s) => s.categories);
@@ -177,6 +180,13 @@ export function InteractiveMenu({
 
   return (
     <>
+      {appendTarget && (
+        <div className="sticky top-0 z-30 bg-pork-red px-4 py-2.5 text-center text-sm font-bold text-white shadow-md">
+          Stai aggiungendo all&apos;ordine{" "}
+          <span className="font-mono">#{appendTarget.code}</span> — i piatti scelti
+          si uniranno al conto.
+        </div>
+      )}
       <MenuCategoryNav
         categories={categoryNavCategories}
         hasGlobalHeader={hasGlobalHeader}

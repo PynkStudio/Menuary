@@ -23,5 +23,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     paymentStatus: order.paymentStatus,
     updatedAt: order.updatedAt,
     confirmationExpiresAt: order.confirmationExpiresAt,
+    total: order.total,
+    lines: order.lines,
   });
 }

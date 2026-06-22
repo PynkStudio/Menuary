@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, Fragment } from "react";
+import { useEffect, useRef, useState, useCallback, Fragment } from "react";
 import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus, Pencil, Check, Clock, ChefHat, Bike, Loader2, Home, ShoppingBag, RotateCcw, type LucideIcon } from "lucide-react";
 import type { PublicCheckoutOrder } from "@/lib/orders/public-checkout";
+import type { CheckoutUpsellSuggestion } from "@/lib/orders/checkout-upsell";
 import type { TenantVertical } from "@/lib/tenant";
 
 const CANCEL_WINDOW_SEC = 120;   // 2 minuti
@@ -505,6 +506,215 @@ function EditLineOverlay({
   );
 }
 
+// ─── Edit‑details overlay ────────────────────────────────────────────────────
+
+function EditDetailsOverlay({
+  orderCode,
+  tenantId,
+  token,
+  initialName,
+  initialPhone,
+  initialAddress,
+  initialNotes,
+  showAddress,
+  onSaved,
+  onClose,
+}: {
+  orderCode: string;
+  tenantId: string;
+  token: string;
+  initialName: string;
+  initialPhone: string;
+  initialAddress: string;
+  initialNotes: string;
+  showAddress: boolean;
+  onSaved: (data: { customerName: string; customerPhone: string; deliveryAddress: string; notes: string }) => void;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState(initialName);
+  const [phone, setPhone] = useState(initialPhone);
+  const [address, setAddress] = useState(initialAddress);
+  const [notes, setNotes] = useState(initialNotes);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const hasChanges =
+    name.trim() !== initialName ||
+    phone.trim() !== initialPhone ||
+    (showAddress && address.trim() !== initialAddress) ||
+    notes.trim() !== initialNotes;
+
+  const handleSave = async () => {
+    if (!hasChanges) { onClose(); return; }
+    setSaving(true);
+    setError(null);
+    try {
+      const body: Record<string, unknown> = {
+        tenantId,
+        token,
+        customerName: name.trim() || null,
+        customerPhone: phone.trim() || null,
+        notes: notes.trim() || null,
+      };
+      if (showAddress) body.deliveryAddress = address.trim() || null;
+      const res = await fetch(`/api/checkout/${encodeURIComponent(orderCode)}/update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(json.error ?? "update_failed");
+      onSaved({
+        customerName: name.trim(),
+        customerPhone: phone.trim(),
+        deliveryAddress: showAddress ? address.trim() : initialAddress,
+        notes: notes.trim(),
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "errore");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const fieldStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 14px",
+    borderRadius: 12,
+    border: `1.5px solid ${c.divider}`,
+    fontSize: "0.85rem",
+    color: c.ink,
+    backgroundColor: c.bgSoft,
+    outline: "none",
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 50,
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+        background: "rgba(0,0,0,0.55)",
+        backdropFilter: "blur(4px)",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget && !saving) onClose(); }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 480,
+          maxHeight: "85vh",
+          overflowY: "auto",
+          background: "#fff",
+          borderRadius: "24px 24px 0 0",
+          padding: "28px 20px 36px",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: "0.65rem", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.16em", color: c.inkFaint }}>
+              Modifica dati
+            </div>
+            <div style={{ fontSize: "1.15rem", fontWeight: 900, color: c.ink, marginTop: 4 }}>
+              Informazioni ordine
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: c.inkMuted }}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <label style={{ display: "block" }}>
+            <span style={{ display: "block", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: c.inkFaint, marginBottom: 6 }}>
+              Nome
+            </span>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome e cognome" style={fieldStyle} />
+          </label>
+          <label style={{ display: "block" }}>
+            <span style={{ display: "block", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: c.inkFaint, marginBottom: 6 }}>
+              Telefono
+            </span>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="es. +39 333 1234567" style={fieldStyle} />
+          </label>
+          {showAddress && (
+            <label style={{ display: "block" }}>
+              <span style={{ display: "block", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: c.inkFaint, marginBottom: 6 }}>
+                Indirizzo di consegna
+              </span>
+              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Via, numero civico, città" style={fieldStyle} />
+            </label>
+          )}
+          <label style={{ display: "block" }}>
+            <span style={{ display: "block", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.14em", color: c.inkFaint, marginBottom: 6 }}>
+              Note per l&apos;ordine
+            </span>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="es. citofono rotto, suonare al 2° piano…"
+              rows={2}
+              style={{ ...fieldStyle, resize: "vertical" }}
+            />
+          </label>
+        </div>
+
+        {error && (
+          <p style={{ fontSize: "0.78rem", color: "#be123c", marginTop: 12 }}>
+            {error.startsWith("blocked_status_") ? "Non è più possibile modificare i dati." : error}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || !hasChanges}
+          style={{
+            width: "100%",
+            marginTop: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            padding: "14px 24px",
+            borderRadius: 100,
+            border: "none",
+            background: hasChanges ? c.accent : c.divider,
+            color: "#fff",
+            fontWeight: 800,
+            fontSize: "0.95rem",
+            cursor: saving || !hasChanges ? "not-allowed" : "pointer",
+            opacity: saving ? 0.6 : 1,
+            transition: "all 0.15s ease",
+          }}
+        >
+          {saving ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Salvataggio…
+            </>
+          ) : hasChanges ? (
+            <>
+              <Check size={16} />
+              Salva modifiche
+            </>
+          ) : (
+            "Nessuna modifica"
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 function formatRemaining(sec: number): string {
@@ -531,7 +741,17 @@ type CheckoutStatusPayload = {
   paymentStatus?: string;
   updatedAt?: string;
   confirmationExpiresAt?: string | null;
+  total?: number;
+  lines?: PublicCheckoutOrder["lines"];
 };
+
+// Stati in cui l'ordine è ancora modificabile dal cliente (extra, ingredienti,
+// orario, annullo). Da "in_preparazione" in poi la cucina ci sta lavorando: stop.
+const MODIFIABLE_STATUSES = ["pending_confirmation", "nuovo"];
+// Stati in cui si possono ancora AGGIUNGERE piatti: anche durante la preparazione,
+// ma non quando l'ordine è "pronto" (anche se la finestra a tempo è ancora aperta).
+const ADDABLE_STATUSES = ["pending_confirmation", "nuovo", "in_preparazione"];
+const DETAIL_EDITABLE_STATUSES = ["pending_confirmation", "nuovo", "in_preparazione", "pronto"];
 
 const ORDER_STATUS_COPY: Record<string, { label: string; description: string }> = {
   pending_confirmation: {
@@ -644,13 +864,16 @@ export function CheckoutClient({
   token: string;
   paymentStatus: string | null;
   isAiSource: boolean;
-  upsellSuggestions: string[];
+  upsellSuggestions: CheckoutUpsellSuggestion[];
   stripeEnabled: boolean;
 }) {
+  const [suggestions, setSuggestions] = useState(upsellSuggestions);
+  const [addingItemId, setAddingItemId] = useState<string | null>(null);
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [markingDelivered, setMarkingDelivered] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(order.status);
   const [currentPaymentStatus, setCurrentPaymentStatus] = useState(order.paymentStatus);
   const [statusUpdatedAt, setStatusUpdatedAt] = useState(order.updatedAt);
@@ -665,8 +888,20 @@ export function CheckoutClient({
   const [showManciaOverlay, setShowManciaOverlay] = useState(false);
   const [tipState, setTipState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [editingLine, setEditingLine] = useState<OrderLine | null>(null);
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [liveCustomerName, setLiveCustomerName] = useState(order.customerName ?? "");
+  const [liveCustomerPhone, setLiveCustomerPhone] = useState(order.customerPhone ?? "");
+  const [liveNotes, setLiveNotes] = useState(order.notes ?? "");
   const [liveLines, setLiveLines] = useState(order.lines);
   const [liveTotal, setLiveTotal] = useState(order.total);
+
+  // Refresh live del riepilogo: lo sospendiamo mentre il cliente sta modificando
+  // qualcosa (overlay piatto, editor orario/indirizzo, aggiunta in corso) per non
+  // sovrascrivergli l'input; le modifiche server vengono applicate appena chiude.
+  const editingRef = useRef(false);
+  editingRef.current = Boolean(editingLine) || editingDelivery || editingDetails || savingEdit || Boolean(addingItemId);
+  // Ultimo updated_at già riflesso nel riepilogo: evita re-render inutili a ogni poll.
+  const appliedUpdatedAtRef = useRef(order.updatedAt);
 
   // Timer "ticking" per aggiornare i countdown in tempo reale.
   const [now, setNow] = useState(() => Date.now());
@@ -690,6 +925,18 @@ export function CheckoutClient({
         if (json.paymentStatus) setCurrentPaymentStatus(json.paymentStatus);
         if (json.updatedAt) setStatusUpdatedAt(json.updatedAt);
         if ("confirmationExpiresAt" in json) setConfirmationExpiresAt(json.confirmationExpiresAt ?? null);
+        // Riallinea righe e totale solo se il server è cambiato e l'utente non sta
+        // editando: copre modifiche dalla cucina, aggiunte da menu e import su altro device.
+        if (
+          json.lines &&
+          json.updatedAt &&
+          json.updatedAt !== appliedUpdatedAtRef.current &&
+          !editingRef.current
+        ) {
+          appliedUpdatedAtRef.current = json.updatedAt;
+          setLiveLines(json.lines);
+          if (typeof json.total === "number") setLiveTotal(json.total);
+        }
       } catch {
         // Il tracking resta leggibile anche se un refresh puntuale fallisce.
       }
@@ -722,10 +969,27 @@ export function CheckoutClient({
   const elapsedSec = Math.max(0, (now - new Date(order.createdAt).getTime()) / 1000);
   const cancelRemaining = Math.max(0, CANCEL_WINDOW_SEC - elapsedSec);
   const upsellRemaining = Math.max(0, UPSELL_WINDOW_SEC - elapsedSec);
-  const canCancel = cancelRemaining > 0;
-  const canUpsell = upsellRemaining > 0;
+  const windowAllowsCancel = cancelRemaining > 0;
+  const windowAllowsUpsell = upsellRemaining > 0;
+  // Le azioni dipendono dalla finestra a tempo E dallo stato dell'ordine, in linea
+  // con i blocchi server: niente modifiche da "in_preparazione", niente aggiunte da "pronto".
+  const statusAllowsModify = MODIFIABLE_STATUSES.includes(currentStatus);
+  const statusAllowsAdd = ADDABLE_STATUSES.includes(currentStatus);
+  const canCancel = windowAllowsCancel && statusAllowsModify && !alreadyPaid;
+  const canModify = windowAllowsUpsell && statusAllowsModify && !alreadyPaid;
+  const canAdd = windowAllowsUpsell && statusAllowsAdd && !alreadyPaid;
+  const canEditDetails = DETAIL_EDITABLE_STATUSES.includes(currentStatus);
   const statusCopy = liveStatusCopy(currentStatus, currentPaymentStatus);
   const isTerminalNegative = currentStatus === "annullato" || currentStatus === "expired" || currentPaymentStatus === "failed" || currentPaymentStatus === "expired";
+  // Spiega perché un'azione è sparita pur essendo la finestra a tempo ancora aperta.
+  const lockedNote =
+    !alreadyPaid && !isTerminalNegative && windowAllowsUpsell
+      ? !statusAllowsAdd
+        ? "L'ordine è pronto: non è più possibile aggiungere o modificare piatti."
+        : !statusAllowsModify
+          ? "L'ordine è in preparazione: puoi ancora aggiungere piatti, ma non modificare quelli già ordinati."
+          : null
+      : null;
   const confirmationSecondsLeft =
     currentStatus === "pending_confirmation" && confirmationExpiresAt
       ? Math.max(0, Math.floor((new Date(confirmationExpiresAt).getTime() - now) / 1000))
@@ -736,7 +1000,7 @@ export function CheckoutClient({
   const menuHref = `${basePath}/menu?back=${encodeURIComponent(`${basePath}/checkout/${order.code}?t=${token}`)}`;
   const privacyHref = `${basePath}/privacy`;
   const fulfillmentLabel = dineLabel(order.dineOption, tenantVertical);
-  const showQuickActions = !alreadyPaid && currentStatus !== "annullato" && (canCancel || canUpsell);
+  const showQuickActions = !alreadyPaid && !isTerminalNegative && (canCancel || canAdd || canModify);
 
   // Wordmark del tenant (iniziali) — niente logo terzo, solo identità del locale.
   const initials = tenantName.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -766,6 +1030,27 @@ export function CheckoutClient({
     }
   };
 
+  const markDelivered = async () => {
+    if (markingDelivered) return;
+    setMarkingDelivered(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/checkout/${encodeURIComponent(order.code)}/delivered`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId, token }),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(json.error ?? "delivered_failed");
+      setCurrentStatus("consegnato");
+      setStatusUpdatedAt(new Date().toISOString());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "errore");
+    } finally {
+      setMarkingDelivered(false);
+    }
+  };
+
   const saveDeliveryEdit = async () => {
     setSavingEdit(true);
     setEditError(null);
@@ -792,10 +1077,13 @@ export function CheckoutClient({
     setError(null);
     setLoading(true);
     try {
+      // Passa il pathname corrente (include il prefisso slug in preview) così che
+      // Stripe rientri sulla stessa route e non sulla root → niente 404.
+      const returnPath = typeof window !== "undefined" ? window.location.pathname : undefined;
       const res = await fetch(`/api/checkout/${encodeURIComponent(order.code)}/session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tenantId, token }),
+        body: JSON.stringify({ tenantId, token, returnPath }),
       });
       const json = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !json.url) throw new Error(json.error ?? "checkout_failed");
@@ -803,6 +1091,45 @@ export function CheckoutClient({
     } catch (e) {
       setError(e instanceof Error ? e.message : "errore");
       setLoading(false);
+    }
+  };
+
+  const appendSuggestion = async (suggestion: CheckoutUpsellSuggestion) => {
+    if (suggestion.unitPrice == null || addingItemId) return;
+    setAddingItemId(suggestion.itemId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/checkout/${encodeURIComponent(order.code)}/append`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tenantId,
+          token,
+          lines: [{ itemId: suggestion.itemId, name: suggestion.name, qty: 1, unitPrice: suggestion.unitPrice }],
+        }),
+      });
+      const json = (await res.json()) as { ok?: boolean; total?: number; error?: string };
+      if (!res.ok || !json.ok) throw new Error(json.error ?? "append_failed");
+      setLiveLines((prev) => [
+        ...prev,
+        {
+          id: `pending-${suggestion.itemId}-${prev.length}`,
+          itemId: suggestion.itemId,
+          name: suggestion.name,
+          qty: 1,
+          unitPrice: suggestion.unitPrice as number,
+          total: suggestion.unitPrice as number,
+          notes: null,
+          addedExtras: [],
+          removedIngredients: [],
+        },
+      ]);
+      if (typeof json.total === "number") setLiveTotal(json.total);
+      setSuggestions((prev) => prev.filter((s) => s.itemId !== suggestion.itemId));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "errore");
+    } finally {
+      setAddingItemId(null);
     }
   };
 
@@ -930,6 +1257,19 @@ export function CheckoutClient({
             </div>
           )}
 
+          {currentStatus === "in_consegna" && (
+            <button
+              type="button"
+              onClick={markDelivered}
+              disabled={markingDelivered}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ backgroundColor: c.mustard, color: c.ink }}
+            >
+              {markingDelivered ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+              {markingDelivered ? "Conferma in corso…" : "Ho ricevuto l'ordine"}
+            </button>
+          )}
+
           {isTerminalNegative && (
             <div className="mt-4 flex flex-col gap-2.5 rounded-2xl p-3 sm:flex-row sm:items-center sm:justify-between" style={{ backgroundColor: "rgb(255 255 255 / 0.06)" }}>
               <span className="text-xs font-bold" style={{ color: "rgb(255 255 255 / 0.7)" }}>
@@ -1047,7 +1387,7 @@ export function CheckoutClient({
                 {cancelling ? "Annullamento…" : `Annulla ordine · ${formatRemaining(cancelRemaining)}`}
               </button>
             )}
-            {canUpsell && (
+            {canAdd && (
               <a
                 href={menuHref}
                 className="inline-flex items-center gap-1.5 rounded-full border-2 bg-white px-3.5 py-2 text-xs font-bold transition hover:-translate-y-0.5"
@@ -1058,7 +1398,7 @@ export function CheckoutClient({
                 {`Aggiungi altro · ${formatRemaining(upsellRemaining)}`}
               </a>
             )}
-            {canUpsell && (order.dineOption === "delivery" || order.pickupTime) && (
+            {canModify && (order.dineOption === "delivery" || order.pickupTime) && (
               <button
                 type="button"
                 onClick={() => setEditingDelivery((v) => !v)}
@@ -1074,7 +1414,14 @@ export function CheckoutClient({
           </div>
         )}
 
-        {!alreadyPaid && currentStatus !== "annullato" && canUpsell && editingDelivery && (
+        {lockedNote && (
+          <div className="mt-4 flex items-center gap-2 rounded-2xl px-4 py-3 text-xs font-bold shadow-sm" style={{ backgroundColor: c.mustardSoft, color: c.ink, boxShadow: `0 0 0 1px ${c.ring}` }}>
+            <Clock size={14} style={{ color: c.accent }} />
+            {lockedNote}
+          </div>
+        )}
+
+        {!alreadyPaid && currentStatus !== "annullato" && canModify && editingDelivery && (
           <section className="mt-4 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
             <p className="mb-3 text-xs font-bold uppercase tracking-wider" style={{ color: c.inkFaint }}>
               Modifica orario / indirizzo · {formatRemaining(upsellRemaining)}
@@ -1127,25 +1474,51 @@ export function CheckoutClient({
           </section>
         )}
 
-        {!alreadyPaid && currentStatus !== "annullato" && canUpsell && upsellSuggestions.length > 0 && (
+        {!alreadyPaid && currentStatus !== "annullato" && canAdd && suggestions.length > 0 && (
           <section className="mt-4 rounded-3xl border p-4 text-sm shadow-sm" style={{ borderColor: `rgb(var(--tenant-mustard) / 0.4)`, backgroundColor: c.mustardSoft, color: c.ink }}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.16em]" style={{ color: c.accent }}>Ci sta bene insieme</p>
-                <ul className="mt-2 list-disc space-y-1 pl-4">
-                  {upsellSuggestions.map((suggestion) => (
-                    <li key={suggestion}>{suggestion}</li>
-                  ))}
-                </ul>
-              </div>
-              <a
-                href={menuHref}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold text-white"
-                style={{ backgroundColor: c.ink }}
-              >
-                <Plus size={13} />
-                Aggiungi
-              </a>
+            <p className="text-xs font-black uppercase tracking-[0.16em]" style={{ color: c.accent }}>Ci sta bene insieme</p>
+            <div className="mt-2 space-y-2">
+              {suggestions.map((suggestion) => {
+                const addable = suggestion.unitPrice != null;
+                const adding = addingItemId === suggestion.itemId;
+                const content = (
+                  <>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold leading-tight" style={{ color: c.ink }}>{suggestion.name}</p>
+                      <p className="mt-0.5 text-xs" style={{ color: c.inkMuted }}>{suggestion.text}</p>
+                    </div>
+                    {addable && (
+                      <span className="shrink-0 text-sm font-black tabular-nums" style={{ color: c.accent }}>
+                        {eur(suggestion.unitPrice as number)}
+                      </span>
+                    )}
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white" style={{ backgroundColor: c.ink }}>
+                      {adding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                    </span>
+                  </>
+                );
+                return addable ? (
+                  <button
+                    key={suggestion.itemId}
+                    type="button"
+                    disabled={adding || Boolean(addingItemId)}
+                    onClick={() => appendSuggestion(suggestion)}
+                    className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left ring-1 transition hover:-translate-y-0.5 disabled:opacity-50"
+                    style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}
+                  >
+                    {content}
+                  </button>
+                ) : (
+                  <a
+                    key={suggestion.itemId}
+                    href={menuHref}
+                    className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left ring-1 transition hover:-translate-y-0.5"
+                    style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}
+                  >
+                    {content}
+                  </a>
+                );
+              })}
             </div>
           </section>
         )}
@@ -1168,7 +1541,7 @@ export function CheckoutClient({
                   <div className="flex items-center gap-1.5 text-sm font-black" style={{ color: c.ink }}>
                     <span className="mr-1 inline-flex min-w-8 justify-center rounded-full px-2 py-0.5 text-xs" style={{ backgroundColor: c.bg, color: c.accent }}>{line.qty}×</span>
                     {line.name}
-                    {canUpsell && !alreadyPaid && currentStatus !== "annullato" && (
+                    {canModify && (
                       <button
                         type="button"
                         onClick={() => setEditingLine(line)}
@@ -1220,11 +1593,24 @@ export function CheckoutClient({
             {deliveryAddress && (
               <div className="flex justify-between gap-4"><dt>Indirizzo</dt><dd className="text-right font-bold" style={{ color: c.ink }}>{deliveryAddress}</dd></div>
             )}
-            {(order.customerName || order.customerPhone) && (
-              <div className="flex justify-between gap-4"><dt>Cliente</dt><dd className="text-right font-bold" style={{ color: c.ink }}>{[order.customerName, order.customerPhone].filter(Boolean).join(" · ")}</dd></div>
+            {(liveCustomerName || liveCustomerPhone) && (
+              <div className="flex justify-between gap-4"><dt>Cliente</dt><dd className="text-right font-bold" style={{ color: c.ink }}>{[liveCustomerName, liveCustomerPhone].filter(Boolean).join(" · ")}</dd></div>
             )}
-            {order.notes && (
-              <div className="mt-2 rounded-lg p-2.5" style={{ backgroundColor: c.bg, color: c.inkMuted }}><span className="font-bold">Note:</span> {order.notes}</div>
+            {liveNotes && (
+              <div className="mt-2 rounded-lg p-2.5" style={{ backgroundColor: c.bg, color: c.inkMuted }}><span className="font-bold">Note:</span> {liveNotes}</div>
+            )}
+            {canEditDetails && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingDetails(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full border-2 bg-white px-3.5 py-2 text-xs font-bold transition hover:-translate-y-0.5"
+                  style={{ borderColor: c.divider, color: c.ink }}
+                >
+                  <Pencil size={12} />
+                  Modifica dati
+                </button>
+              </div>
             )}
           </dl>
         </section>
@@ -1340,6 +1726,27 @@ export function CheckoutClient({
             setLiveTotal(result.total);
             if (result.newStatus) setCurrentStatus(result.newStatus);
             setEditingLine(null);
+          }}
+        />
+      )}
+
+      {editingDetails && (
+        <EditDetailsOverlay
+          orderCode={order.code}
+          tenantId={tenantId}
+          token={token}
+          initialName={liveCustomerName}
+          initialPhone={liveCustomerPhone}
+          initialAddress={deliveryAddress}
+          initialNotes={liveNotes}
+          showAddress={order.dineOption === "delivery"}
+          onClose={() => setEditingDetails(false)}
+          onSaved={(data) => {
+            setLiveCustomerName(data.customerName);
+            setLiveCustomerPhone(data.customerPhone);
+            if (order.dineOption === "delivery") setDeliveryAddress(data.deliveryAddress);
+            setLiveNotes(data.notes);
+            setEditingDetails(false);
           }}
         />
       )}

@@ -22,6 +22,7 @@ import { LineMods } from "@/components/modules/shop/line-mods";
 import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
 import { useTenant } from "@/components/core/tenant-provider";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
+import { parseAppendTarget } from "@/lib/orders/append-target";
 import type { OrderDineOption } from "@/lib/types";
 
 type AvailableDay = { date: string; label: string; slots: string[] };
@@ -142,18 +143,45 @@ export default function OrdinaPage() {
       : "";
 
   const backParam = searchParams.get("back");
-  const checkoutBack = (() => {
-    if (!backParam) return null;
+  const checkoutBack = parseAppendTarget(backParam);
+  const [appendError, setAppendError] = useState<string | null>(null);
+
+  // ── Aggiunta a un ordine esistente (link "Aggiungi altro" dal checkout) ──────
+  // Niente form dati cliente: nome/telefono/orario sono già sull'ordine; qui si
+  // uniscono solo le nuove righe e si torna al checkout, che si aggiorna live.
+  async function handleAppendSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!checkoutBack || lines.length === 0) return;
+    setSubmitting(true);
+    setAppendError(null);
     try {
-      const parsed = new URL(backParam, "https://menuary.local");
-      const match = parsed.pathname.match(/^\/checkout\/([^/]+)$/);
-      const token = parsed.searchParams.get("t");
-      if (!match?.[1] || !token) return null;
-      return { href: `${parsed.pathname}${parsed.search}`, code: decodeURIComponent(match[1]), token };
-    } catch {
-      return null;
+      const res = await fetch(`/api/checkout/${encodeURIComponent(checkoutBack.code)}/append`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId: tenant.id, token: checkoutBack.token, lines }),
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(err.error ?? "upsell_failed");
+      }
+      clear();
+      router.replace(checkoutBack.href);
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "upsell_failed";
+      setAppendError(
+        code === "upsell_window_expired"
+          ? "Il tempo per aggiungere piatti a questo ordine è scaduto."
+          : code === "order_pronto"
+            ? "L'ordine è già pronto: non è più possibile aggiungere piatti."
+            : code === "already_paid"
+              ? "L'ordine è già stato pagato."
+              : ["order_annullato", "order_expired", "order_consegnato"].includes(code)
+                ? "Questo ordine non è più aperto."
+                : "Non è stato possibile aggiungere i piatti. Riprova.",
+      );
+      setSubmitting(false);
     }
-  })();
+  }
 
   // ── Submit asporto / delivery ──────────────────────────────────────────────
   async function handleAsportoSubmit(e: React.FormEvent) {
@@ -162,25 +190,6 @@ export default function OrdinaPage() {
     const isDelivery = showDineOption && dineOption === "delivery";
     if (isDelivery && !deliveryAddress.trim()) return;
     setSubmitting(true);
-
-    if (checkoutBack) {
-      try {
-        const res = await fetch(`/api/checkout/${encodeURIComponent(checkoutBack.code)}/append`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tenantId: tenant.id, token: checkoutBack.token, lines }),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error ?? "upsell_failed");
-        }
-        clear();
-        router.replace(checkoutBack.href);
-      } catch {
-        setSubmitting(false);
-      }
-      return;
-    }
 
     const local = addOrder({
       type: "asporto",
@@ -308,6 +317,107 @@ export default function OrdinaPage() {
   }
 
   if (!hydrated) return null;
+
+  // ── Modalità "aggiungi all'ordine" ──────────────────────────────────────────
+  // Aperta dal checkout: niente form dati, solo conferma delle nuove righe.
+  if (checkoutBack && !isTavolo) {
+    const menuBackHref = `${previewPrefix}/menu?back=${encodeURIComponent(backParam ?? "")}`;
+    return (
+      <>
+        <MenuaryAuthHintGate />
+        <section className="relative bg-pork-ink pt-32 pb-10 text-pork-cream md:pt-40">
+          <div className="container-wide">
+            <span className="chip-mustard">Ordine #{checkoutBack.code}</span>
+            <h1 className="headline mt-4 text-5xl sm:text-6xl lg:text-7xl text-balance">
+              Aggiungi al tuo <span className="text-pork-mustard">ordine.</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg text-pork-cream/70">
+              Questi piatti si uniscono all&apos;ordine già inviato: stessi dati, stesso ritiro.
+            </p>
+          </div>
+        </section>
+
+        <div className="bg-pork-cream pb-32 pt-10">
+          <div className="container-wide">
+            {lines.length === 0 ? (
+              <div className="rounded-3xl bg-white p-12 text-center ring-1 ring-pork-ink/5">
+                <div className="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-pork-cream text-3xl">🛒</div>
+                <p className="impact-title text-2xl">Niente da aggiungere.</p>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-pork-ink/60">
+                  Torna al menu e scegli i piatti da unire all&apos;ordine.
+                </p>
+                <Link href={menuBackHref} className="btn-primary mt-6 inline-flex">
+                  Scegli dal menu
+                </Link>
+              </div>
+            ) : (
+              <div className="mx-auto max-w-xl">
+                <div className="rounded-3xl bg-pork-ink p-6 text-pork-cream ring-1 ring-pork-ink sm:p-8">
+                  <h3 className="headline text-2xl text-pork-mustard">Da aggiungere</h3>
+                  <ul className="mt-4 space-y-3">
+                    {lines.map((l) => (
+                      <li
+                        key={l.lineId}
+                        className="flex items-start justify-between gap-3 border-b border-pork-cream/10 pb-3 last:border-0 last:pb-0"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-semibold leading-tight">{l.qty} × {l.name}</p>
+                          {l.variantLabel && (
+                            <p className="text-xs text-pork-mustard">{l.variantLabel}</p>
+                          )}
+                          <LineMods
+                            removed={l.removedIngredients}
+                            removedDisplay={formatRemovedForLine(
+                              l.itemId,
+                              selectItemById(items, l.itemId)?.ingredients,
+                              l.removedIngredients,
+                            )}
+                            extras={l.addedExtras}
+                            note={l.note}
+                            bundlePicks={l.bundlePicks}
+                            tone="light"
+                          />
+                        </div>
+                        <span className="shrink-0 font-impact text-lg">
+                          {formatEuro(l.unitPrice * l.qty)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-5 flex items-baseline justify-between border-t border-pork-cream/20 pt-4">
+                    <span className="impact-title text-sm text-pork-cream/70">Totale aggiunte</span>
+                    <span className="headline text-3xl text-pork-mustard">{formatEuro(foodTotal)}</span>
+                  </div>
+                </div>
+
+                <form onSubmit={handleAppendSubmit} className="mt-4">
+                  <button
+                    type="submit"
+                    disabled={submitting || lines.length === 0}
+                    className="btn-primary w-full text-lg disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Package size={20} />
+                    Aggiungi all&apos;ordine ({formatEuro(foodTotal)})
+                  </button>
+                </form>
+                <Link
+                  href={menuBackHref}
+                  className="mt-3 block text-center text-sm font-semibold text-pork-ink/60 underline"
+                >
+                  Continua a scegliere dal menu
+                </Link>
+                {appendError && (
+                  <p className="mt-3 rounded-2xl bg-pork-red/10 px-4 py-3 text-center text-sm font-semibold text-pork-red">
+                    {appendError}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
 
   // ── Guardie ────────────────────────────────────────────────────────────────
   if (isTavolo && !context.tableId) {

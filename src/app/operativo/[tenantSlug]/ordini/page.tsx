@@ -5,11 +5,12 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/database.types";
-import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder, setTodayHandlingOverride } from "./actions";
-import { loadOrderSettings } from "@/lib/orders/order-settings";
+import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder } from "./actions";
+import { loadOrderHandling } from "@/lib/orders/order-settings";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 import { OperationalAlertControls, OperationalAlertsClient } from "@/components/gestione/operational-alerts-client";
 import { OrderConfirmationTimeForm } from "@/components/gestione/order-confirmation-time-form";
+import { TodayHandlingControl } from "@/components/gestione/today-handling-control";
 import { OrderExpiryCountdown } from "@/components/gestione/order-expiry-countdown";
 import { demoOrders, type DemoOrder } from "@/lib/demo-fixtures";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
@@ -278,7 +279,9 @@ export default async function OrdiniPage({
 
   // Tempo medio di gestione effettivo (con eventuale override di oggi) per il controllo rapido.
   const settingsSvc = auth.isDemo ? null : createSupabaseServiceClient();
-  const effectiveHandling = settingsSvc ? (await loadOrderSettings(settingsSvc, tenantSlug, locationId)).avgHandlingMinutes : 45;
+  const handling = settingsSvc
+    ? await loadOrderHandling(settingsSvc, tenantSlug, locationId)
+    : { defaultMinutes: 45, overrideMinutes: null, effectiveMinutes: 45 };
 
   return (
     <OperationalAlertsClient tenantId={tenantSlug} portal="ordini" locationId={locationId ?? undefined}>
@@ -292,23 +295,12 @@ export default async function OrdiniPage({
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           {!auth.isDemo && (
-            <form action={setTodayHandlingOverride} style={{ display: "flex", alignItems: "center", gap: 6 }} title="Tempo medio di gestione valido solo per oggi; a fine giornata torna al default.">
-              <input type="hidden" name="tenantSlug" value={tenantSlug} />
-              <input type="hidden" name="locationId" value={locationId ?? ""} />
-              <span style={{ fontSize: "0.72rem", color: "var(--ga-ink-faint)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                <AlarmClock size={13} strokeWidth={2.4} /> Gestione oggi
-              </span>
-              <input
-                name="minutes"
-                type="number"
-                min={0}
-                max={600}
-                defaultValue={effectiveHandling}
-                aria-label="Minuti gestione ordine per oggi"
-                style={{ width: 60, padding: "4px 6px", border: "1px solid var(--ga-border, #ddd)", borderRadius: 8, fontSize: "0.8rem" }}
-              />
-              <button type="submit" className="ga-btn ga-btn-ghost">min</button>
-            </form>
+            <TodayHandlingControl
+              tenantSlug={tenantSlug}
+              locationId={locationId ?? null}
+              defaultMinutes={handling.defaultMinutes}
+              overrideMinutes={handling.overrideMinutes}
+            />
           )}
           <OperationalAlertControls tenantId={tenantSlug} />
           <Link

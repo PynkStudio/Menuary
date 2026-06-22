@@ -67,7 +67,11 @@ export function ItemEditor({
   const addCustomTag = useMenuStore((s) => s.addCustomTag);
   const addVolumeLabel = useMenuStore((s) => s.addVolumeLabel);
   const tenantId = useMenuStore((s) => s.currentTenantId);
-  const allCategories = useMenuStore(selectCategoriesOrdered);
+  const categoriesRaw = useMenuStore((s) => s.categories);
+  const allCategories = useMemo(
+    () => selectCategoriesOrdered({ categories: categoriesRaw } as never),
+    [categoriesRaw],
+  );
   const allItems = useMenuStore((s) => s.items);
 
   const [draft, setDraft] = useState<AdminMenuItem>(item);

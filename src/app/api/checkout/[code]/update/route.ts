@@ -6,17 +6,30 @@ export const dynamic = "force-dynamic";
 
 const UPDATE_WINDOW_SEC = 300; // 5 minuti
 
+type UpdateBody = {
+  tenantId?: string;
+  token?: string;
+  pickupTime?: string | null;
+  deliveryAddress?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  notes?: string | null;
+};
+
+const TIMED_BLOCKED = ["annullato", "in_preparazione", "pronto", "consegnato", "in_consegna", "expired"];
+const DETAIL_BLOCKED = ["in_consegna", "consegnato", "annullato", "expired"];
+
 // PATCH /api/checkout/[code]/update
-// Body: { tenantId, token, pickupTime?, deliveryAddress? }
-// Permette di correggere orario e/o indirizzo entro i primi 5 minuti dalla creazione.
+// pickupTime: finestra 5 min + status modifiable
+// customerName, customerPhone, deliveryAddress, notes: fino a prima di "in_consegna"
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
-  let body: { tenantId?: string; token?: string; pickupTime?: string | null; deliveryAddress?: string | null } = {};
+  let body: UpdateBody = {};
   try {
-    body = (await req.json()) as typeof body;
+    body = (await req.json()) as UpdateBody;
   } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
@@ -26,7 +39,13 @@ export async function PATCH(
 
   const hasPickupTime = "pickupTime" in body;
   const hasAddress = "deliveryAddress" in body;
-  if (!hasPickupTime && !hasAddress) {
+  const hasName = "customerName" in body;
+  const hasPhone = "customerPhone" in body;
+  const hasNotes = "notes" in body;
+  const hasTimedField = hasPickupTime;
+  const hasDetailField = hasAddress || hasName || hasPhone || hasNotes;
+
+  if (!hasTimedField && !hasDetailField) {
     return NextResponse.json({ error: "nothing_to_update" }, { status: 400 });
   }
 
@@ -37,22 +56,29 @@ export async function PATCH(
   });
   if (!order) return NextResponse.json({ error: "order_not_found" }, { status: 404 });
 
-  if (order.paymentStatus === "paid") {
-    return NextResponse.json({ error: "already_paid" }, { status: 409 });
-  }
-  const blockedStatuses = ["annullato", "in_preparazione", "pronto", "consegnato", "expired"];
-  if (blockedStatuses.includes(order.status)) {
+  if (hasDetailField && DETAIL_BLOCKED.includes(order.status)) {
     return NextResponse.json({ error: `blocked_status_${order.status}` }, { status: 409 });
   }
 
-  const elapsedSec = (Date.now() - new Date(order.createdAt).getTime()) / 1000;
-  if (elapsedSec > UPDATE_WINDOW_SEC) {
-    return NextResponse.json({ error: "update_window_expired" }, { status: 409 });
+  if (hasTimedField) {
+    if (order.paymentStatus === "paid") {
+      return NextResponse.json({ error: "already_paid" }, { status: 409 });
+    }
+    if (TIMED_BLOCKED.includes(order.status)) {
+      return NextResponse.json({ error: `blocked_status_${order.status}` }, { status: 409 });
+    }
+    const elapsedSec = (Date.now() - new Date(order.createdAt).getTime()) / 1000;
+    if (elapsedSec > UPDATE_WINDOW_SEC) {
+      return NextResponse.json({ error: "update_window_expired" }, { status: 409 });
+    }
   }
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (hasPickupTime) patch.pickup_time = body.pickupTime ?? null;
   if (hasAddress) patch.delivery_address = body.deliveryAddress ?? null;
+  if (hasName) patch.customer_name = body.customerName ?? null;
+  if (hasPhone) patch.customer_phone = body.customerPhone ?? null;
+  if (hasNotes) patch.notes = body.notes ?? null;
 
   const db = createSupabaseServiceClient();
   if (!db) return NextResponse.json({ error: "supabase_unavailable" }, { status: 503 });

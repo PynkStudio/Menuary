@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { parseAppendTarget } from "@/lib/orders/append-target";
 import { useEffect, useMemo, useState } from "react";
 import { X, Minus, Plus, Pencil, ShoppingCart, Trash2 } from "lucide-react";
 import { useCartStore, cartTotal } from "@/store/cart-store";
@@ -32,6 +33,7 @@ import { useTenant } from "@/components/core/tenant-provider";
 
 export function CartDrawer() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const tenant = useTenant();
   const hydrated = useHydrated();
   const open = useCartStore((s) => s.openDrawer);
@@ -83,7 +85,12 @@ export function CartDrawer() {
     tenant.previewSlug && pathname?.startsWith(`/${tenant.previewSlug}`)
       ? `/${tenant.previewSlug}`
       : "";
-  const checkoutHref = previewPrefix + "/ordina";
+  // Se siamo in modalità "aggiungi all'ordine" (link dal checkout), portiamo il
+  // target fino a /ordina così le righe si uniscono all'ordine invece di crearne uno nuovo.
+  const appendTarget = parseAppendTarget(searchParams.get("back"));
+  const checkoutHref = appendTarget
+    ? `${previewPrefix}/ordina?back=${encodeURIComponent(searchParams.get("back") ?? "")}`
+    : previewPrefix + "/ordina";
 
   return (
     <>
@@ -424,7 +431,7 @@ export function CartDrawer() {
                 onClick={() => setOpen(false)}
                 className="btn-primary w-full text-lg"
               >
-                Vai all&apos;ordine
+                {appendTarget ? "Aggiungi all'ordine" : "Vai all'ordine"}
               </Link>
             ) : (
               <p className="rounded-2xl bg-pork-mustard/30 px-4 py-3 text-center text-sm font-semibold text-pork-ink">

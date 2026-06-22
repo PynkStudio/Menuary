@@ -16,9 +16,9 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
-  let body: { tenantId?: string; token?: string } = {};
+  let body: { tenantId?: string; token?: string; returnPath?: string } = {};
   try {
-    body = (await req.json()) as { tenantId?: string; token?: string };
+    body = (await req.json()) as { tenantId?: string; token?: string; returnPath?: string };
   } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
@@ -42,7 +42,11 @@ export async function POST(
   const url = new URL(req.url);
   const origin = `${url.protocol}//${url.host}`;
   const demoSandbox = shouldUseStripeSandbox(order.tenantId, url.hostname);
-  const returnPath = `/checkout/${encodeURIComponent(code)}?t=${encodeURIComponent(body.token)}`;
+  // In preview il checkout vive sotto lo slug del tenant (es. /kimos/checkout/...).
+  // Il client invia il proprio pathname così che Stripe rientri sulla stessa
+  // route: senza prefisso il redirect colpirebbe la route root e darebbe 404.
+  const safeReturnBase = sanitizeReturnPath(body.returnPath, code);
+  const returnPath = `${safeReturnBase}?t=${encodeURIComponent(body.token)}`;
 
   try {
     const session = await createCheckoutSession({
@@ -92,4 +96,13 @@ export async function POST(
         : 500;
     return NextResponse.json({ error: message }, { status });
   }
+}
+
+// Accetta solo un path same-origin che punta al checkout di questo ordine; in
+// ogni altro caso ripiega sulla route root. Evita open redirect via Stripe.
+function sanitizeReturnPath(returnPath: string | undefined, code: string): string {
+  const fallback = `/checkout/${encodeURIComponent(code)}`;
+  if (!returnPath || !returnPath.startsWith("/") || returnPath.startsWith("//")) return fallback;
+  if (returnPath.includes("\\") || returnPath.includes("?") || returnPath.includes("#")) return fallback;
+  return returnPath.endsWith(`/checkout/${code}`) ? returnPath : fallback;
 }

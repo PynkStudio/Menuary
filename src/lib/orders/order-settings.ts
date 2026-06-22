@@ -146,6 +146,28 @@ export async function loadOrderSettings(
   return base;
 }
 
+/**
+ * Tempo di gestione per il controllo rapido del portale ordini: separa il valore
+ * predefinito (impostazioni) dall'override "solo oggi", così la UI può mostrare
+ * entrambi senza confondere "0 minuti" con "nessun override".
+ */
+export async function loadOrderHandling(
+  supabase: SupabaseClient,
+  tenantId: string,
+  locationId: string | null,
+): Promise<{ defaultMinutes: number; overrideMinutes: number | null; effectiveMinutes: number }> {
+  const { data, error } = await supabase
+    .rpc("resolve_order_settings", { p_tenant_id: tenantId, p_location_id: locationId })
+    .maybeSingle();
+
+  const defaultMinutes = (error || !data)
+    ? DEFAULT_AVG_HANDLING_MINUTES
+    : resolveAvgHandlingMinutes((data as DbOrderSettings).avg_handling_minutes);
+  const overrideMinutes = await resolveDailyAvgHandlingOverride(supabase, tenantId, locationId);
+
+  return { defaultMinutes, overrideMinutes, effectiveMinutes: overrideMinutes ?? defaultMinutes };
+}
+
 /** Parametri minimi per valutare auto-accept su un ordine in creazione. */
 export type AutoAcceptCandidate = {
   total: number;
