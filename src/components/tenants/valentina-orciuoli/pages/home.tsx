@@ -4,7 +4,6 @@
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Instagram, Music2 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
 import {
   useValentinaNewsletter,
@@ -20,38 +19,22 @@ import {
   instagramHref,
   tiktokHref,
   trilogy,
-  trilogyHref,
 } from "@/components/tenants/valentina-orciuoli/content";
 
 export function ValentinaOrciuoliHomePage() {
   const newsletter = useValentinaNewsletter();
   const staffHref = getTenantGestioneExternalHref("valentina-orciuoli");
-  const headerRegionRef = useRef<HTMLDivElement>(null);
-  const [headerProgress, setHeaderProgress] = useState(0);
-
-  useEffect(() => {
-    function updateHeaderProgress() {
-      const region = headerRegionRef.current;
-      if (!region) return;
-      const top = region.getBoundingClientRect().top;
-      const viewport = window.innerHeight || 1;
-      const progress = (viewport * 0.92 - top) / (viewport * 0.74);
-      setHeaderProgress(Math.max(0, Math.min(1, progress)));
-    }
-
-    updateHeaderProgress();
-    window.addEventListener("scroll", updateHeaderProgress, { passive: true });
-    window.addEventListener("resize", updateHeaderProgress);
-    return () => {
-      window.removeEventListener("scroll", updateHeaderProgress);
-      window.removeEventListener("resize", updateHeaderProgress);
-    };
-  }, []);
 
   return (
-    <main className="vo-site">
+    <main className="vo-site vo-home-site">
+      <div className="vo-home-header">
+        <ValentinaOrciuoliHeader variant="home" />
+      </div>
       <section id="top" className="vo-hero">
-        <div className="vo-hero-art" aria-hidden="true" />
+        <div className="vo-hero-cosmos" aria-hidden="true" />
+        <div className="vo-hero-portrait" aria-hidden="true">
+          <img src="/valentina-orciuoli/valentina-autrice.webp" alt="" />
+        </div>
         <div className="vo-hero-shade" aria-hidden="true" />
 
         <div className="vo-hero-inner">
@@ -61,27 +44,34 @@ export function ValentinaOrciuoliHomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <h1>Valentina Orciuoli</h1>
-            <div className="vo-title-rule" aria-hidden="true" />
-            <p>Fantasy orientale, emozioni antiche e draghi che respirano luce.</p>
+            <h1>
+              <span>Valentina</span>
+              <span>Orciuoli</span>
+            </h1>
+            <div className="vo-hero-byline">
+              <span aria-hidden="true" />
+              <p>Autrice di</p>
+              <span aria-hidden="true" />
+            </div>
+            <p className="vo-hero-series">The Emotion Dragons Trilogy</p>
+            <p className="vo-hero-manifesto">
+              Dove le emozioni prendono forma.
+              <br />
+              Dove i draghi non sono solo leggenda,
+              <br />
+              ma parte di noi.
+            </p>
             <div className="vo-hero-actions">
-              <a className="vo-btn vo-btn-primary vo-btn-trilogy" href={trilogyHref} target="_blank" rel="noopener noreferrer">
-                Scopri la Trilogia dei Draghi delle Emozioni <ArrowRight size={16} />
+              <a className="vo-btn vo-btn-primary vo-btn-trilogy" href="#libri">
+                Scopri il mio mondo <span aria-hidden="true">✦</span>
               </a>
             </div>
           </motion.div>
         </div>
-        <a className="vo-scroll-cue" href="#libri" aria-label="Scorri verso i contenuti">
-          <span />
-          Scorri
-        </a>
+        <span className="vo-hero-signature" aria-hidden="true">VO✦</span>
       </section>
 
-      <div className="vo-sticky-header-region" ref={headerRegionRef}>
-        <motion.div className="vo-header-reveal" style={{ opacity: headerProgress, y: 22 * (1 - headerProgress) }}>
-          <ValentinaOrciuoliHeader />
-        </motion.div>
-
+      <div className="vo-sticky-header-region">
         <section id="libri" className="vo-book-showcase">
           <div className="vo-ink-bg" aria-hidden="true" />
           <motion.a
