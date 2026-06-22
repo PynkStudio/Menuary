@@ -19,7 +19,8 @@ export function hasOnlyPriceVariants(
   if (v.length <= 1) return false;
   const hasIng = normalizeMenuIngredients(item.id, item.ingredients).length > 0;
   const hasEx = resolveExtrasForItem(item, extraLists).length > 0;
-  if (hasIng || hasEx) return false;
+  const hasVariantGroups = (item.variantGroups ?? []).some((group) => group.options.length > 0);
+  if (hasIng || hasEx || hasVariantGroups) return false;
   if (categoryOffersSenzaLattosio(item.categoryId)) return false;
   return true;
 }

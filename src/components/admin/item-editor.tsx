@@ -11,6 +11,7 @@ import type {
   Extra,
   MenuAllergen,
   MenuBundleSlot,
+  MenuVariantGroup,
   MenuTag,
   PiccanteLevel,
   TenantMenuTagDefinition,
@@ -319,6 +320,94 @@ export function ItemEditor({
     setDraft((d) => ({
       ...d,
       extras: (d.extras ?? []).filter((e) => e.id !== id),
+    }));
+  }
+
+  function addVariantGroup() {
+    const id = `vg-${Date.now().toString(36)}`;
+    const optionId = `opt-${Date.now().toString(36)}`;
+    setDraft((d) => ({
+      ...d,
+      variantGroups: [
+        ...(d.variantGroups ?? []),
+        {
+          id,
+          name: "Impasto",
+          required: true,
+          defaultOptionId: optionId,
+          options: [{ id: optionId, name: "Classico", price: 0 }],
+        },
+      ],
+    }));
+  }
+
+  function updateVariantGroup(groupId: string, patch: Partial<MenuVariantGroup>) {
+    setDraft((d) => ({
+      ...d,
+      variantGroups: (d.variantGroups ?? []).map((group) =>
+        group.id === groupId ? { ...group, ...patch } : group,
+      ),
+    }));
+  }
+
+  function removeVariantGroup(groupId: string) {
+    setDraft((d) => ({
+      ...d,
+      variantGroups: (d.variantGroups ?? []).filter((group) => group.id !== groupId),
+    }));
+  }
+
+  function addVariantOption(groupId: string) {
+    const id = `opt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+    setDraft((d) => ({
+      ...d,
+      variantGroups: (d.variantGroups ?? []).map((group) =>
+        group.id === groupId
+          ? {
+              ...group,
+              defaultOptionId: group.defaultOptionId ?? id,
+              options: [...group.options, { id, name: "Nuova opzione", price: 0 }],
+            }
+          : group,
+      ),
+    }));
+  }
+
+  function updateVariantOption(
+    groupId: string,
+    optionId: string,
+    patch: Partial<MenuVariantGroup["options"][number]>,
+  ) {
+    setDraft((d) => ({
+      ...d,
+      variantGroups: (d.variantGroups ?? []).map((group) =>
+        group.id === groupId
+          ? {
+              ...group,
+              options: group.options.map((option) =>
+                option.id === optionId ? { ...option, ...patch } : option,
+              ),
+            }
+          : group,
+      ),
+    }));
+  }
+
+  function removeVariantOption(groupId: string, optionId: string) {
+    setDraft((d) => ({
+      ...d,
+      variantGroups: (d.variantGroups ?? []).map((group) => {
+        if (group.id !== groupId) return group;
+        const options = group.options.filter((option) => option.id !== optionId);
+        return {
+          ...group,
+          options,
+          defaultOptionId:
+            group.defaultOptionId === optionId
+              ? options[0]?.id
+              : group.defaultOptionId,
+        };
+      }),
     }));
   }
 
@@ -1044,6 +1133,113 @@ export function ItemEditor({
                       </ul>
                     )}
                   </>
+                )}
+              </Field>
+
+              <Field
+                label="Scelte obbligatorie"
+                help="Usale per alternative a scelta singola come il tipo di impasto. Non sono aggiunte multiple: il cliente ne sceglie una sola."
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-[11px] leading-snug text-pork-ink/55">
+                    Esempio: Impasto con default Classico e sovrapprezzi per opzioni speciali.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={addVariantGroup}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-pork-ink px-3 py-1.5 text-[11px] font-black text-pork-cream hover:bg-pork-red"
+                  >
+                    <Plus size={12} />
+                    Gruppo
+                  </button>
+                </div>
+                {(draft.variantGroups ?? []).length > 0 ? (
+                  <div className="space-y-3">
+                    {(draft.variantGroups ?? []).map((group) => (
+                      <div key={group.id} className="rounded-2xl bg-white p-3 ring-1 ring-pork-ink/10">
+                        <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-center">
+                          <input
+                            type="text"
+                            value={group.name}
+                            onChange={(e) => updateVariantGroup(group.id, { name: e.target.value })}
+                            className="rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm font-bold outline-none focus:border-pork-red"
+                            placeholder="Nome gruppo"
+                          />
+                          <label className="inline-flex items-center gap-2 rounded-xl bg-pork-cream px-3 py-2 text-xs font-bold text-pork-ink/70">
+                            <input
+                              type="checkbox"
+                              checked={group.required ?? false}
+                              onChange={(e) => updateVariantGroup(group.id, { required: e.target.checked })}
+                            />
+                            Obbligatoria
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => removeVariantGroup(group.id)}
+                            className="rounded-xl px-3 py-2 text-xs font-bold text-pork-red hover:bg-pork-red/10"
+                          >
+                            Rimuovi
+                          </button>
+                        </div>
+                        <div className="mt-3 space-y-2">
+                          {group.options.map((option) => (
+                            <div key={option.id} className="grid gap-2 sm:grid-cols-[auto_1fr_5rem_auto] sm:items-center">
+                              <label className="inline-flex items-center gap-1 text-[11px] font-bold text-pork-ink/60">
+                                <input
+                                  type="radio"
+                                  name={`default-${group.id}`}
+                                  checked={(group.defaultOptionId ?? group.options[0]?.id) === option.id}
+                                  onChange={() => updateVariantGroup(group.id, { defaultOptionId: option.id })}
+                                />
+                                Default
+                              </label>
+                              <input
+                                type="text"
+                                value={option.name}
+                                onChange={(e) => updateVariantOption(group.id, option.id, { name: e.target.value })}
+                                className="rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
+                                placeholder="Nome opzione"
+                              />
+                              <input
+                                type="text"
+                                value={option.price ?? 0}
+                                onChange={(e) => {
+                                  const parsed = Number.parseFloat(e.target.value.replace(",", "."));
+                                  updateVariantOption(group.id, option.id, {
+                                    price: Number.isFinite(parsed) ? parsed : 0,
+                                  });
+                                }}
+                                inputMode="decimal"
+                                className="rounded-xl border-2 border-pork-ink/10 bg-white px-3 py-2 text-sm outline-none focus:border-pork-red"
+                                aria-label="Sovrapprezzo"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeVariantOption(group.id, option.id)}
+                                disabled={group.options.length <= 1}
+                                className="rounded-xl px-2 py-2 text-xs font-bold text-pork-ink/45 hover:bg-pork-red/10 hover:text-pork-red disabled:cursor-not-allowed disabled:opacity-30"
+                                aria-label="Rimuovi opzione"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => addVariantOption(group.id)}
+                          className="mt-3 inline-flex items-center gap-1 rounded-full bg-pork-ink/5 px-3 py-1.5 text-[11px] font-bold text-pork-ink/65 hover:bg-pork-mustard/25"
+                        >
+                          <Plus size={12} />
+                          Aggiungi opzione
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-pork-ink/55 ring-1 ring-pork-ink/10">
+                    Nessuna scelta configurata.
+                  </p>
                 )}
               </Field>
 

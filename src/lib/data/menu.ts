@@ -26,7 +26,7 @@ export async function getMenuForTenant(tenantId: string): Promise<MenuCategory[]
       supabase
         .from("menu_items")
         .select(
-          "id,code,category_id,name,description,price,tags,tag_meta,piccante_level,allergens,abv,image,service_notes,bundle_slots,extra_list_id,available,position",
+          "id,code,category_id,name,description,price,tags,tag_meta,piccante_level,allergens,abv,image,service_notes,bundle_slots,variant_groups,extra_list_id,available,position",
         )
         .eq("tenant_id", tenantId)
         .eq("available", true)
@@ -71,6 +71,7 @@ export async function getMenuForTenant(tenantId: string): Promise<MenuCategory[]
           image: it.image ?? undefined,
           serviceNotes: (it.service_notes ?? []) as MenuServiceNoteKey[],
           bundleSlots: (it.bundle_slots as MenuBundleSlot[] | null) ?? undefined,
+          variantGroups: (it.variant_groups as MenuItem["variantGroups"] | null) ?? undefined,
           ingredients: (ingByItem.get(it.id) ?? []).map<MenuIngredient>((r) => ({
             id: r.code,
             name: r.name,

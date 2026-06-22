@@ -27,8 +27,9 @@ export function needsCustomization(
   const hasIngredients =
     (normalizeMenuIngredients(item.id, item.ingredients).length ?? 0) > 0;
   const hasExtras = resolveExtrasForItem(item, extraLists).length > 0;
+  const hasVariantGroups = (item.variantGroups ?? []).some((group) => group.options.length > 0);
   const lactose = categoryOffersSenzaLattosio(item.categoryId);
-  return variantsCount > 1 || hasIngredients || hasExtras || lactose;
+  return variantsCount > 1 || hasIngredients || hasExtras || hasVariantGroups || lactose;
 }
 
 export function ItemCustomizer({
@@ -94,6 +95,14 @@ export function ItemCustomizer({
   const [extras, setExtras] = useState<string[]>(
     () => initialLine?.addedExtras?.map((e) => e.id) ?? [],
   );
+  const [variantChoices, setVariantChoices] = useState<Record<string, string>>(() => {
+    const out: Record<string, string> = {};
+    for (const group of item.variantGroups ?? []) {
+      const initial = initialLine?.variantSelections?.find((selection) => selection.groupId === group.id);
+      out[group.id] = initial?.optionId ?? group.defaultOptionId ?? group.options[0]?.id ?? "";
+    }
+    return out;
+  });
   const [note, setNote] = useState(() => initialLine?.note ?? "");
   const [qty, setQty] = useState(() => initialLine?.qty ?? 1);
   const [mounted, setMounted] = useState(false);
@@ -117,8 +126,25 @@ export function ItemCustomizer({
     () => mergedExtras.filter((e) => extras.includes(e.id)),
     [mergedExtras, extras],
   );
+  const selectedVariantSelections = useMemo(
+    () =>
+      (item.variantGroups ?? []).flatMap((group) => {
+        const optionId = variantChoices[group.id] || group.defaultOptionId || group.options[0]?.id;
+        const option = group.options.find((candidate) => candidate.id === optionId);
+        if (!option) return [];
+        return [{
+          groupId: group.id,
+          groupName: group.name,
+          optionId: option.id,
+          optionName: option.name,
+          price: option.price ?? 0,
+        }];
+      }),
+    [item.variantGroups, variantChoices],
+  );
   const extrasTotal = selectedExtras.reduce((a, e) => a + e.price, 0);
-  const unitPrice = activeVariant.price + extrasTotal;
+  const variantsTotal = selectedVariantSelections.reduce((a, selection) => a + selection.price, 0);
+  const unitPrice = activeVariant.price + extrasTotal + variantsTotal;
   const total = unitPrice * qty;
   const spicyLevel = getResolvedPiccanteLevel(item);
 
@@ -149,6 +175,9 @@ export function ItemCustomizer({
         : undefined,
       addedExtras: selectedExtras.length
         ? selectedExtras.map((e) => ({ id: e.id, name: e.name, price: e.price }))
+        : undefined,
+      variantSelections: selectedVariantSelections.length
+        ? selectedVariantSelections
         : undefined,
       note: note.trim() || undefined,
     };
@@ -229,6 +258,40 @@ export function ItemCustomizer({
               </div>
             </Section>
           )}
+
+          {(item.variantGroups ?? []).map((group) => (
+            <Section
+              key={group.id}
+              title={group.name}
+              subtitle={group.required ? "Scelta obbligatoria" : "Scelta opzionale"}
+            >
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {group.options.map((option) => {
+                  const isSelected = (variantChoices[group.id] || group.defaultOptionId || group.options[0]?.id) === option.id;
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setVariantChoices((current) => ({ ...current, [group.id]: option.id }))}
+                      className={cn(
+                        "flex items-center justify-between gap-3 rounded-xl border-2 bg-white px-4 py-3 text-left transition-all active:scale-95",
+                        isSelected
+                          ? "border-pork-red"
+                          : "border-pork-ink/10 hover:border-pork-ink/30",
+                      )}
+                    >
+                      <span className="font-semibold">{option.name}</span>
+                      {(option.price ?? 0) > 0 ? (
+                        <span className="font-impact text-pork-red">+{formatEuro(option.price ?? 0)}</span>
+                      ) : (
+                        <span className="text-xs font-bold text-pork-ink/45">Incluso</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </Section>
+          ))}
 
           {ingredientRows.length > 0 && (
             <Section

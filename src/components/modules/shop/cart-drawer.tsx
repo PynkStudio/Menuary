@@ -201,6 +201,19 @@ export function CartDrawer() {
                             ))}
                           </ul>
                         )}
+                        {l.variantSelections && l.variantSelections.length > 0 && (
+                          <ul className="mt-1 text-[11px] text-pork-ink/75">
+                            {l.variantSelections.map((selection) => (
+                              <li key={`${selection.groupId}-${selection.optionId}`}>
+                                <span className="font-semibold">{selection.groupName}:</span>{" "}
+                                {selection.optionName}
+                                {selection.price > 0 ? (
+                                  <span className="text-pork-ink/50"> (+{formatEuro(selection.price)})</span>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                         {l.bundlePicks && l.bundlePicks.length > 0 && (
                           <ul className="mt-1 text-[11px] text-pork-ink/75">
                             {l.bundlePicks.map((b) => (

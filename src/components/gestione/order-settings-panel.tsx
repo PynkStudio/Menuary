@@ -298,7 +298,7 @@ export function OrderSettingsPanel() {
           placeholder="45"
           value={form.avgHandlingMinutes}
           onChange={(v) => patch("avgHandlingMinutes", v ?? 45)}
-          min={0}
+          min={1}
           max={600}
         />
       </section>

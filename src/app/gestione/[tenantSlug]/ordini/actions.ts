@@ -11,6 +11,7 @@ import type { Database } from "@/lib/database.types";
 import { getActiveGestioneLocation, requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Status = Database["public"]["Enums"]["order_status"];
+const DEFAULT_LOCATION_SCOPE = "__tenant_default__";
 
 function notificationKindForStatus(status: Status): OrderNotificationKind {
   switch (status) {
@@ -237,9 +238,11 @@ export async function setTodayHandlingOverride(formData: FormData) {
   const svc = createSupabaseServiceClient();
   if (!svc) throw new Error("supabase_service_unconfigured");
   // La sede su cui agisce il portale arriva dal form (sede selezionata); fallback alla
-  // sede attiva di gestione. Stringa vuota = sede di default (location_id NULL).
+  // sede attiva di gestione per i vecchi form. Sentinel esplicito = default tenant.
   const passedLocation = String(formData.get("locationId") ?? "").trim();
-  const locationId = passedLocation || (await getActiveGestioneLocation(tenantSlug))?.id || null;
+  const locationId = passedLocation === DEFAULT_LOCATION_SCOPE
+    ? null
+    : passedLocation || (await getActiveGestioneLocation(tenantSlug))?.id || null;
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit",
   }).format(new Date());

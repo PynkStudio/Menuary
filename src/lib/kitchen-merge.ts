@@ -19,6 +19,10 @@ function lineKey(l: OrderLine): string {
     .map((p) => `${p.slotId}:${p.choiceItemId}`)
     .sort()
     .join(",");
+  const vs = (l.variantSelections ?? [])
+    .map((p) => `${p.groupId}:${p.optionId}`)
+    .sort()
+    .join(",");
   return [
     l.itemId,
     l.categoryId ?? "",
@@ -27,6 +31,7 @@ function lineKey(l: OrderLine): string {
     rm,
     ex,
     bp,
+    vs,
   ].join("::");
 }
 

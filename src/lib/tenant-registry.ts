@@ -330,7 +330,7 @@ export const PYNKSTUDIO_MODULE_FLAGS: TenantFeatureFlags = {
   staffRoles: false,
   multiLocation: false,
   favorites: false,
-  reviews: false,
+  reviews: true,
   gallery: false,
   shop: false,
   slabbby: false,

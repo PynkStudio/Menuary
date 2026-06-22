@@ -187,6 +187,14 @@ function bundleSig(p?: BundlePick[]): string {
     .join("|");
 }
 
+function variantSelectionSig(p?: CartLine["variantSelections"]): string {
+  return [...(p ?? [])]
+    .slice()
+    .sort((x, y) => x.groupId.localeCompare(y.groupId))
+    .map((x) => `${x.groupId}:${x.optionId}`)
+    .join("|");
+}
+
 function sameCustomization(
   a: CartLine,
   b: Omit<CartLine, "lineId">,
@@ -197,6 +205,7 @@ function sameCustomization(
     (a.note ?? "") === (b.note ?? "") &&
     sameSet(a.removedIngredients, b.removedIngredients) &&
     sameExtras(a.addedExtras, b.addedExtras) &&
-    bundleSig(a.bundlePicks) === bundleSig(b.bundlePicks)
+    bundleSig(a.bundlePicks) === bundleSig(b.bundlePicks) &&
+    variantSelectionSig(a.variantSelections) === variantSelectionSig(b.variantSelections)
   );
 }

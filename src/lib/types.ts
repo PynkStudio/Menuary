@@ -5,6 +5,7 @@ import type {
   PriceFormat,
   MenuTag,
   MenuBundleSlot,
+  MenuVariantGroup,
   MenuAllergen,
   MenuServiceNoteKey,
   PiccanteLevel,
@@ -18,6 +19,7 @@ export type {
   PriceFormat,
   MenuTag,
   MenuBundleSlot,
+  MenuVariantGroup,
   MenuAllergen,
   MenuServiceNoteKey,
   PiccanteLevel,
@@ -29,6 +31,14 @@ export type BundlePick = {
   slotLabel: string;
   choiceItemId: string;
   choiceName: string;
+};
+
+export type VariantSelection = {
+  groupId: string;
+  groupName: string;
+  optionId: string;
+  optionName: string;
+  price: number;
 };
 
 export type Extra = {
@@ -117,6 +127,7 @@ export type OrderLine = {
   lineTotal: number;
   removedIngredients?: string[];
   addedExtras?: Array<{ id: string; name: string; price: number }>;
+  variantSelections?: VariantSelection[];
   note?: string;
   bundlePicks?: BundlePick[];
   /** Todo cucina: la riga è stata preparata. Toggle dal KDS. */
@@ -212,6 +223,7 @@ export type CartLine = {
   unitPrice: number;
   removedIngredients?: string[];
   addedExtras?: Array<{ id: string; name: string; price: number }>;
+  variantSelections?: VariantSelection[];
   note?: string;
   bundlePicks?: BundlePick[];
 };

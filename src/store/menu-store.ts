@@ -618,6 +618,7 @@ export const useMenuStore = create<MenuState>()(
           extraListId: draft.extraListId,
           extras: draft.extras,
           bundleSlots: draft.bundleSlots,
+          variantGroups: draft.variantGroups,
         };
         set((s) => ({
           items: [...s.items, newItem],
@@ -653,6 +654,7 @@ export const useMenuStore = create<MenuState>()(
             extraListId: draft.extraListId,
             extras: draft.extras,
             bundleSlots: draft.bundleSlots,
+            variantGroups: draft.variantGroups,
           } satisfies AdminMenuItem;
         });
         const ids = newItems.map((item) => item.id);

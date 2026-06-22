@@ -65,7 +65,14 @@ export function cartLinesToDbRows(
     unit_price: l.unitPrice,
     line_total: l.unitPrice * l.qty,
     removed_ingredients: l.removedIngredients ?? [],
-    added_extras: l.addedExtras ?? [],
+    added_extras: [
+      ...(l.addedExtras ?? []),
+      ...(l.variantSelections ?? []).map((selection) => ({
+        id: `variant:${selection.groupId}:${selection.optionId}`,
+        name: `${selection.groupName}: ${selection.optionName}`,
+        price: selection.price,
+      })),
+    ],
     bundle_picks: l.bundlePicks ?? [],
     note: l.note ?? null,
   }));

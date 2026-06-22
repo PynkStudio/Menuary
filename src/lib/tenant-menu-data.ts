@@ -684,6 +684,19 @@ const kimosPizzaPrice = (
   defaultKey: "small",
 });
 
+const kimosPizzaMargheritaImage = "/kimos/pizza-margherita.jpg";
+const kimosPizzaDiavolaImage = "/kimos/pizza-diavola.jpg";
+const kimosPizzaQuattroStagioniImage = "/kimos/pizza-quattro-stagioni.jpg";
+const kimosPizzaSalmoneImage = "/kimos/pizza-salmone.jpg";
+const kimosPizzaNapoliImage = "/kimos/pizza-napoli.jpg";
+const kimosPizzaFunghiImage = "/kimos/pizza-funghi.jpg";
+const kimosKebabImage = "/kimos/kebab-wrap.jpg";
+const kimosFocacciaImage = "/kimos/focaccia.jpg";
+const kimosFriesImage = "/kimos/fries.jpg";
+const kimosFalafelImage = "/kimos/falafel.jpg";
+const kimosInsalataImage = "/kimos/insalata-caprese.jpg";
+const kimosTiramisuImage = "/kimos/tiramisu.jpg";
+
 export const kimosMenu: MenuCategory[] = [
   {
     id: "menu-completi",
@@ -697,7 +710,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Panino kebab, patatine fritte e Coca-Cola 33 cl.",
         price: s(9.5),
         tags: ["firma"],
-        image: "/kimos/menu-board-kebab.png",
+        image: kimosKebabImage,
       },
       {
         id: "kimos-menu-piadina-kebab",
@@ -705,7 +718,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Piadina kebab, patatine fritte e Coca-Cola 33 cl.",
         price: s(10),
         tags: ["firma"],
-        image: "/kimos/menu-board-kebab.png",
+        image: kimosKebabImage,
       },
       {
         id: "kimos-componi-pizza",
@@ -713,6 +726,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Base pizza con ingredienti a scelta.",
         price: s(7),
         tags: ["novita"],
+        image: kimosPizzaMargheritaImage,
       },
     ],
   },
@@ -727,7 +741,7 @@ export const kimosMenu: MenuCategory[] = [
         name: "Margherita",
         description: "Pomodoro e mozzarella.",
         price: kimosPizzaPrice(7, 20),
-        image: "/kimos/menu-board-spread.png",
+        image: kimosPizzaMargheritaImage,
         ingredients: ingList("kimos-margherita", ["Pomodoro", "Mozzarella"]),
         allergens: ix("glutine", "latte"),
         extraListId: LIST_ID_KIMOS_PIZZA,
@@ -740,6 +754,7 @@ export const kimosMenu: MenuCategory[] = [
         price: kimosPizzaPrice(9, 25),
         tags: ["piccante"],
         piccanteLevel: 1,
+        image: kimosPizzaDiavolaImage,
         ingredients: ingList("kimos-diavola", ["Pomodoro", "Mozzarella", "Salame piccante"]),
         allergens: ix("glutine", "latte"),
         extraListId: LIST_ID_KIMOS_PIZZA,
@@ -750,6 +765,7 @@ export const kimosMenu: MenuCategory[] = [
         name: "Quattro stagioni",
         description: "Pomodoro, mozzarella, prosciutto, funghi, carciofi e olive.",
         price: kimosPizzaPrice(10, 26),
+        image: kimosPizzaQuattroStagioniImage,
         ingredients: ingList("kimos-quattro-stagioni", [
           "Pomodoro",
           "Mozzarella",
@@ -767,6 +783,7 @@ export const kimosMenu: MenuCategory[] = [
         name: "Panna e salmone",
         description: "Mozzarella, salmone affumicato e panna.",
         price: kimosPizzaPrice(11, 30),
+        image: kimosPizzaSalmoneImage,
         ingredients: ingList("kimos-panna-salmone", [
           "Mozzarella",
           "Salmone affumicato",
@@ -781,6 +798,7 @@ export const kimosMenu: MenuCategory[] = [
         name: "Napoli",
         description: "Pomodoro, mozzarella, origano e acciughe.",
         price: kimosPizzaPrice(9, 26),
+        image: kimosPizzaNapoliImage,
         ingredients: ingList("kimos-napoli", [
           "Pomodoro",
           "Mozzarella",
@@ -796,6 +814,7 @@ export const kimosMenu: MenuCategory[] = [
         name: "Funghi",
         description: "Pomodoro, mozzarella e funghi freschi.",
         price: kimosPizzaPrice(9.5, 27),
+        image: kimosPizzaFunghiImage,
         ingredients: ingList("kimos-funghi", ["Pomodoro", "Mozzarella", "Funghi freschi"]),
         allergens: ix("glutine", "latte"),
         extraListId: LIST_ID_KIMOS_PIZZA,
@@ -806,6 +825,7 @@ export const kimosMenu: MenuCategory[] = [
         name: "Pugliese",
         description: "Pomodoro, mozzarella, cipolla e origano.",
         price: s(8.5),
+        image: kimosPizzaMargheritaImage,
         ingredients: ingList("kimos-pugliese", [
           "Pomodoro",
           "Mozzarella",
@@ -830,7 +850,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Carne kebab, insalata, pomodoro, cipolla, salsa yogurt e salsa piccante.",
         price: s(7),
         tags: ["firma", "piccante"],
-        image: "/kimos/menu-board-kebab.png",
+        image: kimosKebabImage,
       },
       {
         id: "kimos-piadina-kebab",
@@ -838,7 +858,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Carne kebab, insalata, pomodoro, cipolla, salsa yogurt e salsa piccante.",
         price: s(7.5),
         tags: ["piccante"],
-        image: "/kimos/menu-board-kebab.png",
+        image: kimosKebabImage,
       },
       {
         id: "kimos-piatto-kebab",
@@ -846,19 +866,21 @@ export const kimosMenu: MenuCategory[] = [
         description: "Kebab servito al piatto con pane, insalata e contorno.",
         price: s(9.5),
         tags: ["firma"],
-        image: "/kimos/menu-board-plates.png",
+        image: kimosKebabImage,
       },
       {
         id: "kimos-vaschetta-kebab-pane",
         name: "Vaschetta kebab con pane",
         description: "Vaschetta kebab con pane.",
         price: s(8.5),
+        image: kimosKebabImage,
       },
       {
         id: "kimos-vaschetta-grande-patatine",
         name: "Vaschetta grande con patatine",
         description: "Vaschetta kebab grande con patatine fritte.",
         price: s(10.5),
+        image: kimosKebabImage,
       },
     ],
   },
@@ -873,6 +895,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Rucola, bresaola e grana.",
         price: s(7.5),
         tags: ["firma"],
+        image: kimosKebabImage,
       },
       {
         id: "kimos-panino-egiziano",
@@ -880,26 +903,28 @@ export const kimosMenu: MenuCategory[] = [
         description: "Falafel, rucola e pomodoro fresco.",
         price: s(7),
         tags: ["veg"],
+        image: kimosFalafelImage,
       },
       {
         id: "kimos-panino-cotoletta",
         name: "Panino cotoletta",
         description: "Cotoletta, insalata e maionese.",
         price: s(8),
-        image: "/kimos/menu-board-kebab.png",
+        image: kimosKebabImage,
       },
       {
         id: "kimos-panino-hamburger",
         name: "Panino hamburger",
         description: "Hamburger, cipolla, peperoni, maionese e sottilette.",
         price: s(8),
-        image: "/kimos/menu-board-kebab.png",
+        image: kimosKebabImage,
       },
       {
         id: "kimos-panino-gigante",
         name: "Panino gigante",
         description: "Con impasto di pizza e quattro ingredienti a scelta.",
         price: s(9),
+        image: kimosFocacciaImage,
       },
     ],
   },
@@ -913,6 +938,7 @@ export const kimosMenu: MenuCategory[] = [
         name: "Focaccia delicata",
         description: "Pomodorini freschi, acciughe, mozzarella di bufala e basilico.",
         price: s(10.5),
+        image: kimosFocacciaImage,
       },
       {
         id: "kimos-focaccia-bufalina",
@@ -920,18 +946,21 @@ export const kimosMenu: MenuCategory[] = [
         description: "Mozzarella di bufala, pomodorini e rucola.",
         price: s(10.5),
         tags: ["veg"],
+        image: kimosFocacciaImage,
       },
       {
         id: "kimos-focaccia-casa",
         name: "Focaccia della casa",
         description: "Rucola, speck e grana.",
         price: s(9),
+        image: kimosFocacciaImage,
       },
       {
         id: "kimos-focaccia-bomba",
         name: "Focaccia bomba",
         description: "Rucola, bresaola, limone affettato e grana.",
         price: s(10.5),
+        image: kimosFocacciaImage,
       },
     ],
   },
@@ -946,28 +975,28 @@ export const kimosMenu: MenuCategory[] = [
         description: "Olive ascolane, mozzarelline, alette, crocchette, onion rings e nuggets: 12 pezzi.",
         price: s(12.5),
         tags: ["firma"],
-        image: "/kimos/menu-board-plates.png",
+        image: kimosFriesImage,
       },
       {
         id: "kimos-alette-pollo",
         name: "Alette di pollo",
         description: "Una porzione.",
         price: s(7.5),
-        image: "/kimos/menu-board-plates.png",
+        image: kimosFriesImage,
       },
       {
         id: "kimos-chele-granchio",
         name: "Chele di granchio",
         description: "8 pezzi.",
         price: s(9.5),
-        image: "/kimos/menu-board-plates.png",
+        image: kimosFriesImage,
       },
       {
         id: "kimos-crocchette-pollo",
         name: "Crocchette di pollo",
         description: "10 pezzi.",
         price: s(8),
-        image: "/kimos/menu-board-plates.png",
+        image: kimosFriesImage,
       },
       {
         id: "kimos-crocchette-patate",
@@ -975,6 +1004,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "7 pezzi.",
         price: s(6.5),
         tags: ["veg"],
+        image: kimosFriesImage,
       },
       {
         id: "kimos-patatine",
@@ -982,6 +1012,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Piccole o grandi.",
         price: kimosPrice("Piccole", 6, "Grandi", 6.5),
         tags: ["veg"],
+        image: kimosFriesImage,
       },
       {
         id: "kimos-falafel",
@@ -989,6 +1020,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "6 pezzi.",
         price: s(8),
         tags: ["veg"],
+        image: kimosFalafelImage,
       },
     ],
   },
@@ -1003,6 +1035,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Lattuga, insalata, rucola, pomodoro fresco e trevisana.",
         price: s(7.5),
         tags: ["veg"],
+        image: kimosInsalataImage,
       },
       {
         id: "kimos-insalatona-kimos",
@@ -1010,6 +1043,7 @@ export const kimosMenu: MenuCategory[] = [
         description: "Pomodoro, insalata, acciughe, olive, prosciutto cotto e mais.",
         price: s(9.5),
         tags: ["firma"],
+        image: kimosInsalataImage,
       },
       {
         id: "kimos-insalatona-caprese",
@@ -1017,12 +1051,14 @@ export const kimosMenu: MenuCategory[] = [
         description: "Mozzarella di bufala, pomodoro fresco, basilico e origano.",
         price: s(9.5),
         tags: ["veg"],
+        image: kimosInsalataImage,
       },
       {
         id: "kimos-insalatona-estiva",
         name: "Insalatona estiva",
         description: "Lattuga, rucola, mozzarella di bufala, tonno e mais.",
         price: s(9.5),
+        image: kimosInsalataImage,
       },
     ],
   },
@@ -1031,8 +1067,18 @@ export const kimosMenu: MenuCategory[] = [
     title: "Dolci e bevande",
     subtitle: "Per chiudere l'ordine",
     items: [
-      { id: "kimos-tiramisu", name: "Tiramisù", price: s(6.5) },
-      { id: "kimos-focaccia-nutella", name: "Focaccia con Nutella", price: s(7.5) },
+      {
+        id: "kimos-tiramisu",
+        name: "Tiramisù",
+        price: s(6.5),
+        image: kimosTiramisuImage,
+      },
+      {
+        id: "kimos-focaccia-nutella",
+        name: "Focaccia con Nutella",
+        price: s(7.5),
+        image: kimosFocacciaImage,
+      },
       { id: "kimos-acqua", name: "Acqua 50 cl", price: s(2) },
       { id: "kimos-coca-cola", name: "Coca-Cola 33 cl", price: s(2.5) },
       { id: "kimos-fanta", name: "Fanta 33 cl", price: s(2.5) },

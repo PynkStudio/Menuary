@@ -33,6 +33,12 @@ export function resolveAvgHandlingMinutes(value: number | null | undefined): num
   return Math.floor(minutes);
 }
 
+export function resolveDefaultAvgHandlingMinutes(value: number | null | undefined): number {
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes) || minutes <= 0) return DEFAULT_AVG_HANDLING_MINUTES;
+  return Math.floor(minutes);
+}
+
 /** Data "oggi" (YYYY-MM-DD) nel fuso operativo del locale. */
 function serviceDateToday(timeZone = "Europe/Rome"): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -91,7 +97,7 @@ function dbRowToSettings(row: DbOrderSettings): TenantOrderSettings {
     autoAcceptNoNotes: row.auto_accept_no_notes,
     autoAcceptMinNoticeMinutes: row.auto_accept_min_notice_minutes,
     pendingTimeoutSeconds: resolvePendingTimeoutSeconds(row.pending_timeout_seconds),
-    avgHandlingMinutes: resolveAvgHandlingMinutes(row.avg_handling_minutes),
+    avgHandlingMinutes: resolveDefaultAvgHandlingMinutes(row.avg_handling_minutes),
   };
 }
 
@@ -162,7 +168,7 @@ export async function loadOrderHandling(
 
   const defaultMinutes = (error || !data)
     ? DEFAULT_AVG_HANDLING_MINUTES
-    : resolveAvgHandlingMinutes((data as DbOrderSettings).avg_handling_minutes);
+    : resolveDefaultAvgHandlingMinutes((data as DbOrderSettings).avg_handling_minutes);
   const overrideMinutes = await resolveDailyAvgHandlingOverride(supabase, tenantId, locationId);
 
   return { defaultMinutes, overrideMinutes, effectiveMinutes: overrideMinutes ?? defaultMinutes };

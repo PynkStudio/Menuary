@@ -90,9 +90,9 @@ export async function PUT(req: NextRequest) {
     );
   }
   const avgHandling = body.avgHandlingMinutes;
-  if (avgHandling != null && (avgHandling < 0 || avgHandling > 600)) {
+  if (avgHandling != null && (avgHandling < 1 || avgHandling > 600)) {
     return NextResponse.json(
-      { error: "avgHandlingMinutes deve essere tra 0 e 600" },
+      { error: "avgHandlingMinutes deve essere tra 1 e 600" },
       { status: 422 },
     );
   }

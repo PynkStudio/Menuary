@@ -12,6 +12,7 @@ type Props = {
 };
 
 const PRESETS = [15, 30, 45, 60, 90];
+const DEFAULT_LOCATION_SCOPE = "__tenant_default__";
 const MIN = 0;
 const MAX = 600;
 
@@ -23,6 +24,7 @@ function clamp(value: number): number {
 export function TodayHandlingControl({ tenantSlug, locationId, defaultMinutes, overrideMinutes }: Props) {
   const hasOverride = overrideMinutes != null;
   const effective = overrideMinutes ?? defaultMinutes;
+  const locationValue = locationId ?? DEFAULT_LOCATION_SCOPE;
   const [open, setOpen] = useState(false);
   const [minutes, setMinutes] = useState(effective);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -120,7 +122,7 @@ export function TodayHandlingControl({ tenantSlug, locationId, defaultMinutes, o
           <div className="ga-confirm-time-actions">
             <form action={setTodayHandlingOverride}>
               <input type="hidden" name="tenantSlug" value={tenantSlug} />
-              <input type="hidden" name="locationId" value={locationId ?? ""} />
+              <input type="hidden" name="locationId" value={locationValue} />
               <input type="hidden" name="minutes" value={minutes} />
               <button type="submit" className="ga-btn ga-btn-primary">
                 <Check size={14} strokeWidth={2.4} /> Salva per oggi
@@ -129,7 +131,7 @@ export function TodayHandlingControl({ tenantSlug, locationId, defaultMinutes, o
             {hasOverride && (
               <form action={setTodayHandlingOverride}>
                 <input type="hidden" name="tenantSlug" value={tenantSlug} />
-                <input type="hidden" name="locationId" value={locationId ?? ""} />
+                <input type="hidden" name="locationId" value={locationValue} />
                 <input type="hidden" name="minutes" value="" />
                 <button type="submit" className="ga-btn ga-btn-ghost">
                   <RotateCcw size={14} strokeWidth={2.4} /> Ripristina default
