@@ -1,6 +1,8 @@
 "use client";
 
 import { Heart, ShoppingBag } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { parseAppendTarget } from "@/lib/orders/append-target";
 import { useCartStore, cartCount } from "@/store/cart-store";
 import { useFavoritesStore } from "@/store/favorites-store";
 import { useHydrated } from "@/components/core/providers";
@@ -10,12 +12,14 @@ const fabClass =
   "inline-flex w-full min-w-[9.5rem] items-center justify-center gap-2 rounded-full bg-pork-ink px-4 py-2.5 text-sm font-bold text-pork-cream shadow-xl shadow-pork-ink/30 transition-all hover:-translate-y-0.5 hover:bg-pork-brick active:scale-95 sm:min-w-[10.5rem] sm:gap-3 sm:px-5 sm:py-3 sm:text-base";
 
 export function ShopFabs() {
+  const searchParams = useSearchParams();
   const hydrated = useHydrated();
   const lines = useCartStore((s) => s.lines);
   const setOpen = useCartStore((s) => s.setOpen);
   const cartQty = cartCount(lines);
   const favIds = useFavoritesStore((s) => s.ids);
   const setFavOpen = useFavoritesStore((s) => s.setOpen);
+  const appendTarget = parseAppendTarget(searchParams.get("back"));
 
   if (!hydrated) return null;
 
@@ -53,7 +57,7 @@ export function ShopFabs() {
             aria-label={`Carrello: ${cartQty} elementi`}
           >
             <ShoppingBag size={20} className="shrink-0" />
-            <span>Carrello</span>
+            <span>{appendTarget ? "Da confermare" : "Carrello"}</span>
             <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-pork-mustard px-1.5 text-xs font-black text-pork-ink">
               {cartQty}
             </span>

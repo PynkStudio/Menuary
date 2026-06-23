@@ -352,6 +352,26 @@ export default function OrdinaPage() {
               </div>
             ) : (
               <div className="mx-auto max-w-xl">
+                <form
+                  onSubmit={handleAppendSubmit}
+                  className="sticky top-[calc(1rem+env(safe-area-inset-top))] z-30 mb-4 rounded-3xl bg-white/95 p-3 shadow-2xl shadow-pork-ink/15 ring-1 ring-pork-ink/10 backdrop-blur"
+                >
+                  <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
+                    <span className="impact-title text-xs text-pork-ink/55">
+                      {lines.reduce((sum, line) => sum + line.qty, 0)} prodotti da aggiungere
+                    </span>
+                    <span className="font-impact text-xl text-pork-red">{formatEuro(foodTotal)}</span>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting || lines.length === 0}
+                    className="btn-primary w-full text-base disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Package size={18} />
+                    {submitting ? "Aggiunta in corso..." : "Conferma aggiunta"}
+                  </button>
+                </form>
+
                 <div className="rounded-3xl bg-pork-ink p-6 text-pork-cream ring-1 ring-pork-ink sm:p-8">
                   <h3 className="headline text-2xl text-pork-mustard">Da aggiungere</h3>
                   <ul className="mt-4 space-y-3">
@@ -397,7 +417,7 @@ export default function OrdinaPage() {
                     className="btn-primary w-full text-lg disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Package size={20} />
-                    Aggiungi all&apos;ordine ({formatEuro(foodTotal)})
+                    {submitting ? "Aggiunta in corso..." : `Aggiungi all'ordine (${formatEuro(foodTotal)})`}
                   </button>
                 </form>
                 <Link
