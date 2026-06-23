@@ -1,37 +1,46 @@
 # Architettura del progetto
 
-Un'unica codebase Next.js 15 (App Router) che serve due **verticali di prodotto**,
+Un'unica codebase Next.js 15 (App Router) che serve tre **verticali di prodotto**,
 ciascuno con un sito marketing, i suoi tenant e un back-office condiviso.
 
-| Verticale | Tipo di attività | Sito marketing | Stato |
-|-----------|-----------------|----------------|-------|
-| `food` | Ristoranti, pizzerie, bar | `menuary.it` | Attivo |
-| `services` | Studi, saloni, centri benessere, ecc. | TODO (dominio da definire) | Scaffold pronto |
+| Verticale | Prodotto | Tipo di attività | Sito marketing |
+|-----------|----------|------------------|----------------|
+| `food` | Menuary | Ristoranti, pizzerie, bar | `menuary.it` |
+| `services` | Bizery | Studi, saloni, centri benessere, ecc. | `bizery.it` |
+| `creative` | Orpheo | Artisti, autori, musicisti, attori, registi | `weuseorpheo.com` |
 
-I due verticali condividono la stessa infrastruttura di moduli, admin, preview e tenant
-registry. Differiscono nel copy (es. "prenota un tavolo" vs "prenota un appuntamento")
-e nelle pagine marketing.
+I tre verticali condividono la stessa infrastruttura di moduli, admin, preview e tenant
+registry. Differiscono nel copy (es. "prenota un tavolo" vs "prenota un appuntamento"
+vs "richiedi disponibilità") e nelle pagine marketing. La fonte autorevole dei metadati
+per-verticale è `VERTICAL_REGISTRY` in `src/lib/vertical.ts`.
 
 ---
 
 ## 1. Routing per host
 
 Il punto di ingresso è `src/lib/platform.ts`. Ad ogni request, l'header `Host`
-viene letto nel `layout.tsx` radice e classificato in uno di cinque **PlatformMode**:
+viene letto nel `layout.tsx` radice e classificato in un **PlatformMode**.
+I mode marketing e preview sono per-verticale (uno per `food`, `services`, `creative`):
 
-| Host | Mode | Cosa mostra |
+| Host (esempio) | Mode | Cosa mostra |
 |------|------|-------------|
-| `menuary.it` / `menuary.localhost` | `marketing` | Landing verticale food |
-| `vertical-b.localhost` *(TODO: dominio reale)* | `marketing-b` | Landing verticale services |
-| `bepork.it` / `localhost` | `tenant` | Sito BePork |
-| `faak.menuary.local` | `tenant` | Sito Faak |
+| `menuary.it` | `marketing` | Landing verticale food |
+| `bizery.it` | `marketing-bizery` | Landing verticale services |
+| `weuseorpheo.com` | `marketing-orpheo` | Landing verticale creative |
+| `bepork.it` / `localhost` | `tenant` | Sito tenant (per host) |
+| `demo.menuary.it` | `preview` | Anteprima tenant food via slug |
+| `demo.bizery.it` | `preview-bizery` | Anteprima tenant services via slug |
+| `demo.weuseorpheo.com` | `preview-orpheo` | Anteprima tenant creative via slug |
 | `admin.menuary.it` | `platform-admin` | Back-office piattaforma |
-| `demo.menuary.it` | `preview` | Anteprima tenant via slug |
+
+Esistono inoltre mode dedicati a studio/gestione cross-domain (es. `studio-bizery`,
+`gestione-bizery`). L'elenco completo e gli host sono in `PLATFORM_HOSTS` /
+`PLATFORM_MODES` in `src/lib/platform.ts` — quella è la fonte autorevole.
 
 ```ts
 // src/lib/platform.ts
 getPlatformModeFromHost(host) → PlatformMode
-isMarketingMode(mode)         → boolean  // true per "marketing" e "marketing-b"
+isMarketingMode(mode)         → boolean  // true per i mode "marketing*"
 ```
 
 Il `layout.tsx` radice applica `data-platform={mode}` e `data-tenant={tenant.id}` sull'`<html>`,
@@ -43,7 +52,7 @@ usati da Tailwind e dal CSS per temi e override visivi per tenant.
 
 ```
 src/lib/
-  tenant.ts       → TenantVertical = "food" | "services"
+  tenant.ts       → TenantVertical = "food" | "services" | "creative"
                     TenantProfile.vertical: TenantVertical
   vertical.ts     → VERTICAL_REGISTRY: metadati per vertical (nome prodotto, dominio,
                     businessNoun, reservationCTA, menuLabel)
@@ -53,7 +62,15 @@ src/lib/
                       con label/description alternativi per i moduli che cambiano semantica
 ```
 
-I moduli hanno lo **stesso codice** per entrambi i verticali. Cambia solo il copy
+Metadati per-verticale (da `VERTICAL_REGISTRY` in `vertical.ts`):
+
+| Verticale | productName | marketingDomain | reservationCTA | menuLabel |
+|-----------|-------------|-----------------|----------------|-----------|
+| `food` | Menuary | `menuary.it` | "Prenota un tavolo" | "Menu" |
+| `services` | Bizery | `bizery.it` | "Prenota un appuntamento" | "Listino prezzi" |
+| `creative` | Orpheo | `weuseorpheo.com` | "Richiedi disponibilità" | "Opere e progetti" |
+
+I moduli hanno lo **stesso codice** per tutti i verticali. Cambia solo il copy
 nell'interfaccia admin e nelle pagine marketing. Esempio:
 
 | Modulo | food | services |
@@ -63,6 +80,9 @@ nell'interfaccia admin e nelle pagine marketing. Esempio:
 | `tablePlanner` | "Gestione sala" | "Agenda e postazioni" |
 | `kitchenDisplay` | "Schermo cucina" | "Bacheca operatori" |
 | `takeaway` | "Ordini da asporto" | "Richieste a domicilio" |
+
+Il verticale `creative` (Orpheo) introduce moduli propri (es. `worksCatalog`,
+`creativeBooking`, `rightsRoyalties`, `fanbaseCommunity`): vedi `tenant-modules.ts`.
 
 ---
 
@@ -355,14 +375,17 @@ URL di esempio: `https://demo.menuary.it/bepork-demo`
 
 ## 8. Aggiungere un nuovo verticale
 
-Quando il secondo verticale avrà un nome:
+I tre verticali attuali (`food` / `services` / `creative`) sono già definiti. Per
+aggiungerne un quarto:
 
-1. **`src/lib/tenant.ts`** — `TenantVertical` già predisposto, eventualmente aggiungere un terzo valore
-2. **`src/lib/vertical.ts`** — aggiornare `VERTICAL_REGISTRY["services"]` con `productName` e `marketingDomain` reali
-3. **`src/lib/platform.ts`** — aggiornare `PLATFORM_HOSTS["marketing-b"]` con il dominio reale
-4. **Rinominare** `src/components/vertical-b/` → `src/components/[nome-verticale]/`
-5. **Aggiornare l'import** in `src/app/page.tsx` (e nelle altre pagine se hanno branch `marketing-b`)
-6. **Sviluppare le pagine marketing** in `src/components/[nome-verticale]/pages/` seguendo il pattern di `src/components/marketing/pages/`
+1. **`src/lib/tenant.ts`** — aggiungere il nuovo valore a `TenantVertical`
+2. **`src/lib/vertical.ts`** — aggiungere la entry in `VERTICAL_REGISTRY` con `productName`, `marketingDomain`, `businessNoun`, `reservationCTA`, `menuLabel`
+3. **`src/lib/platform.ts`** — aggiungere i mode (`marketing-*`, `preview-*`, ecc.) e gli host in `PLATFORM_HOSTS` / `PLATFORM_MODES`
+4. **Creare** `src/components/[nome-verticale]/pages/` con le pagine marketing proprie (pattern: `src/components/marketing/pages/`)
+5. **Aggiornare i dispatcher** in `src/app/page.tsx` e nelle pagine con branch per-verticale
+6. **Aggiornare la documentazione**: questo file e la vault Obsidian (`docs/`) — vedi la regola di sincronizzazione in `CLAUDE.md`
+
+> Riferimento d'implementazione: Orpheo (`creative`) è il verticale aggiunto più di recente — le migration `20260617_orpheo_creative_vertical.sql` e seguenti mostrano il pattern end-to-end.
 
 ---
 

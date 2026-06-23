@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "acd2ddc0186c94c7",
+        "id": "5b729d16b685a0db",
         "type": "tabs",
         "children": [
           {
-            "id": "dd1d9feabfd61028",
+            "id": "fc7beeb89cbc0bda",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Vista grafo"
+              "type": "markdown",
+              "state": {
+                "file": "docs/03-features/moduli-piattaforma.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "moduli-piattaforma"
             }
           }
         ]
@@ -90,6 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "docs/03-features/moduli-piattaforma.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Riferimenti"
+              "title": "Riferimenti a moduli-piattaforma"
             }
           },
           {
@@ -108,11 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "docs/03-features/moduli-piattaforma.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Collegamenti in uscita"
+              "title": "Collegamenti in uscita da moduli-piattaforma"
             }
           },
           {
@@ -150,12 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "docs/03-features/moduli-piattaforma.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Struttura"
+              "title": "Struttura di moduli-piattaforma"
             }
           }
         ]
@@ -176,21 +183,45 @@
       "bases:Crea nuova Base": false
     }
   },
-  "active": "dd1d9feabfd61028",
+  "active": "fc7beeb89cbc0bda",
   "lastOpenFiles": [
+    "docs/kb/glossary/README.md",
+    "docs/kb/faq/README.md",
+    "docs/kb/troubleshooting/README.md",
+    "docs/kb/procedures/README.md",
+    "docs/kb/modules/README.md",
+    "docs/kb/README.md",
+    "docs/kb/ai-support/rag-indexing.md",
+    "docs/kb/ai-support/ticket-template.md",
+    "docs/kb/ai-support/escalation-policy.md",
+    "docs/kb/templates/kb-troubleshooting-template.md",
+    "docs/kb/templates/kb-faq-template.md",
+    "docs/kb/templates/kb-procedure-template.md",
+    "docs/kb/templates/kb-module-template.md",
+    "docs/kb/troubleshooting",
+    "docs/kb/templates",
+    "docs/kb/procedures",
+    "docs/kb/modules",
+    "docs/kb/glossary",
+    "docs/kb/faq",
+    "docs/kb/ai-support",
+    "docs/kb",
+    "docs/04-decisions/README.md",
+    "docs/05-roadmap/README.md",
+    "docs/08-processes/README.md",
+    "docs/08-processes/cron-e-processi.md",
+    "docs/START-HERE.md",
+    "docs/02-architecture/panoramica-tecnica.md",
+    "docs/01-business/tenant-e-verticali.md",
+    "docs/01-business/README.md",
+    "docs/00-vision/README.md",
+    "docs/00-vision/panoramica-prodotto.md",
+    "docs/07-prompts/endpoint-ia.md",
+    "docs/06-integrations/integrazioni-attive.md",
+    "docs/03-features/moduli-piattaforma.md",
+    "Senza nome 1.canvas",
+    "Senza nome.canvas",
     "docs/templates",
-    "docs/09-meetings",
-    "docs/08-processes",
-    "docs/07-prompts",
-    "docs/06-integrations",
-    "docs/05-roadmap",
-    "docs/04-decisions",
-    "docs/03-features",
-    "docs/02-architecture",
-    "docs/01-business",
-    "docs/00-vision",
-    "ARCHITECTURE.md",
-    "CLAUDE.md",
-    "AGENTS.md"
+    "docs/09-meetings"
   ]
 }

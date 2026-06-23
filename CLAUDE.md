@@ -156,6 +156,35 @@ I tenant **non comunicano tra loro direttamente**. L'unico canale di comunicazio
 
 ---
 
+## Regola fondamentale: documentazione Obsidian sempre allineata
+
+La root della repo è una **vault Obsidian**. La documentazione vive in `docs/` (struttura `00-vision` … `09-meetings`, `templates`, più `docs/START-HERE.md`) e nei file di root (`README.md`, `ARCHITECTURE.md`, `PRODUCT.md`).
+
+**Ogni nuova feature o modifica strutturale alla repo deve generare, nello stesso intervento, l'aggiornamento della documentazione Obsidian corrispondente.** Non è accettabile mergiare codice che rende la documentazione obsoleta.
+
+Quando una modifica tocca uno di questi ambiti, aggiorna anche i doc nello stesso cambio:
+
+| Modifica al codice | Documento da aggiornare |
+|---|---|
+| Nuovo tenant / cambio status / verticale | `docs/01-business/tenant-e-verticali.md` + `ARCHITECTURE.md` |
+| Nuovo verticale o nuovi `PlatformMode`/host | `ARCHITECTURE.md` + `docs/00-vision/` + `docs/02-architecture/` |
+| Nuovo modulo o cambio in `tenant-modules.ts` | `docs/03-features/moduli-piattaforma.md` |
+| Nuova integrazione / env / webhook | `docs/06-integrations/integrazioni-attive.md` |
+| Nuovo endpoint/prompt IA | `docs/07-prompts/endpoint-ia.md` |
+| Nuovo cron o processo operativo | `docs/08-processes/cron-e-processi.md` |
+| Decisione architetturale rilevante | nuovo ADR in `docs/04-decisions/` (usa `docs/templates/adr-template.md`) |
+| Nuovo modulo, procedura o problema noto rilevante per gli utenti | scheda KB in `docs/kb/` (`modules/`, `procedures/`, `troubleshooting/`, `faq/`) con i template `docs/kb/templates/` — è la fonte dell'assistente AI di supporto |
+
+Regole di scrittura dei doc:
+
+- Markdown semplice, link Obsidian `[[nome file]]` dove utile.
+- **Mai inventare**: separa sempre ciò che è *dedotto dal codice* da ciò che è *da confermare*. Se un dato non è certo, scrivilo come "Da verificare".
+- Niente segreti o valori reali di env nei doc (solo i nomi delle variabili).
+- Aggiorna `docs/START-HERE.md` quando aggiungi un documento importante o cambi la mappa delle sezioni.
+- Questa è l'unica eccezione esplicita alla regola "nessun doc aggiuntivo senza richiesta" nello stile del codice: i doc Obsidian vanno mantenuti per definizione.
+
+---
+
 ## Stile del codice
 
 - Nessun commento ovvio: solo WHY non-ovvi (vincoli nascosti, workaround, invarianti sottili).
