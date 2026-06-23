@@ -7,6 +7,75 @@ import { buildAiPaymentInstruction } from "@/lib/payments/ai-payment-instruction
 import { findTenantById } from "@/lib/tenant-registry";
 import { getTenantContent } from "@/lib/tenant-content";
 import { defaultHoursWeekForTenant, type DaySchedule } from "@/lib/venue-hours";
+import { computeStatusFromSlots, parseSlot } from "@/lib/hours-status";
+
+const LABEL_TO_DOW: Record<string, number> = {
+  "Lunedì": 0, "Martedì": 1, "Mercoledì": 2, "Giovedì": 3, "Venerdì": 4, "Sabato": 5, "Domenica": 6,
+};
+
+// Stato aperto/chiuso "in questo momento" nel fuso del locale (Europe/Rome), con una
+// frase pronta per l'agente: il server è UTC, quindi NON possiamo usare getHours() diretto.
+// Costruiamo una Date "finta" i cui componenti locali coincidono con l'orologio di Roma,
+// così computeStatusFromSlots (che legge getHours/getMinutes) è corretta.
+function computeOpenStatusSpoken(
+  weeklyHours: DaySchedule[],
+  specials: { date: string; closed: boolean; slots: string[] }[],
+): { openNow: boolean; todayHours: string; spoken: string } {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Rome",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    weekday: "short", hourCycle: "h23",
+  }).formatToParts(now);
+  const g = (t: string) => parts.find((x) => x.type === t)?.value ?? "";
+  const y = Number(g("year")), mo = Number(g("month")), d = Number(g("day"));
+  const h = Number(g("hour")), mi = Number(g("minute")), s = Number(g("second"));
+  const wk: Record<string, number> = { Sun: 6, Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5 };
+  const dow = wk[g("weekday")] ?? 0;
+  const fakeNow = new Date(y, mo - 1, d, h, mi, s);
+
+  const iso = (yy: number, mm: number, dd: number) => `${yy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+  const isoToday = iso(y, mo, d);
+  const yDate = new Date(y, mo - 1, d - 1);
+  const isoYest = iso(yDate.getFullYear(), yDate.getMonth() + 1, yDate.getDate());
+
+  const byIndex = (idx: number) => weeklyHours.find((day) => LABEL_TO_DOW[day.label] === idx);
+  const resolveDay = (isoDate: string, idx: number): { closed: boolean; slots: string[] } => {
+    const sp = specials.find((e) => e.date === isoDate);
+    if (sp) return { closed: sp.closed, slots: sp.slots };
+    const day = byIndex(idx);
+    return day ? { closed: day.closed, slots: day.slots } : { closed: true, slots: [] };
+  };
+  const today = resolveDay(isoToday, dow);
+  const yest = resolveDay(isoYest, (dow + 6) % 7);
+  const todaySlots = today.closed ? [] : today.slots;
+  const yestSlots = yest.closed ? [] : yest.slots;
+
+  const status = computeStatusFromSlots(todaySlots, yestSlots, fakeNow);
+  const openNow = status.kind === "open" || status.kind === "closing_soon";
+  const todayHours = todaySlots.length === 0 ? "oggi chiuso" : todaySlots.join(", ");
+
+  // Prossima apertura odierna se al momento chiusi.
+  const nowMin = h * 60 + mi;
+  let nextOpen: string | null = null;
+  for (const slot of todaySlots) {
+    const ps = parseSlot(slot);
+    if (!ps) continue;
+    const startMin = ps.openH * 60 + ps.openM;
+    if (startMin > nowMin) { nextOpen = `${String(ps.openH).padStart(2, "0")}:${String(ps.openM).padStart(2, "0")}`; break; }
+  }
+
+  let spoken: string;
+  if (status.kind === "open") spoken = `Sì, siamo aperti${status.closesAt ? `, fino alle ${status.closesAt}` : ""}.`;
+  else if (status.kind === "closing_soon") spoken = `Siamo aperti ma stiamo per chiudere, alle ${status.closesAt}.`;
+  else if (status.kind === "opening_soon") spoken = `In questo momento siamo ancora chiusi, apriamo a breve alle ${status.opensAt}.`;
+  else spoken = nextOpen
+    ? `In questo momento siamo chiusi; oggi apriamo alle ${nextOpen}.`
+    : `In questo momento siamo chiusi. Oggi ${todayHours === "oggi chiuso" ? "siamo chiusi" : `siamo aperti ${todayHours}`}.`;
+
+  return { openNow, todayHours, spoken };
+}
 
 // Saluto contestuale in base all'ora locale (Europe/Rome): Buongiorno / Buon pomeriggio / Buonasera.
 function italianGreetingForNow(now = new Date()): string {
@@ -71,6 +140,9 @@ async function buildInboundDynamicVariables(
     location_name: "",
     open_hours: "",
     special_hours: "",
+    open_now: "false",
+    today_hours: "",
+    open_status_spoken: "",
     payment_instruction: "",
     payment_online_available: "false",
     payment_on_site_available: "true",
@@ -168,6 +240,20 @@ async function buildInboundDynamicVariables(
         .map((entry) => `${entry.date}${entry.label ? ` (${entry.label})` : ""}: ${entry.closed ? "chiuso" : (Array.isArray(entry.slots) ? entry.slots : []).join(", ")}`)
         .join(" | ");
       variables.special_hours = special;
+
+      // Stato aperto/chiuso "ora" + frase pronta, così l'agente risponde correttamente a
+      // "siete aperti?" senza inventare né dire che non può verificare gli orari.
+      const specialsNorm = specials
+        .filter((entry) => !entry.location_id || entry.location_id === location.id)
+        .map((entry) => ({
+          date: entry.date,
+          closed: entry.closed,
+          slots: Array.isArray(entry.slots) ? (entry.slots as string[]) : [],
+        }));
+      const openStatus = computeOpenStatusSpoken(weeklyHours, specialsNorm);
+      variables.open_now = openStatus.openNow ? "true" : "false";
+      variables.today_hours = openStatus.todayHours;
+      variables.open_status_spoken = openStatus.spoken;
     }
 
     if (tenantProfile) {
