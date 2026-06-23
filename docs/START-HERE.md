@@ -62,6 +62,7 @@ La cartella `docs/kb/` è la fonte primaria di conoscenza dell'assistente AI di 
 - [[escalation-policy]] — quando l'assistente risponde, chiede chiarimenti o escala.
 - [[ticket-template]] — campi del ticket generato in escalation.
 - [[rag-indexing]] — pipeline sync → chunk → embeddings → Supabase → query.
+- [[gestione-navigazione]] — mappa del pannello Gestione (UI): dove premere per ogni sezione.
 
 ## Template disponibili
 

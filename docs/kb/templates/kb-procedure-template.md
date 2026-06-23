@@ -41,3 +41,4 @@ Situazioni concrete in cui l'utente deve seguire questa procedura.
 
 - [[slug-modulo]]
 - [[slug-troubleshooting]]
+- Schermata UI di riferimento: [[slug-ui-screen]] (dove sono i pulsanti citati nei passi)

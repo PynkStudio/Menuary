@@ -11,14 +11,10 @@
             "id": "fc7beeb89cbc0bda",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "docs/03-features/moduli-piattaforma.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "moduli-piattaforma"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Vista grafo"
             }
           }
         ]
@@ -78,7 +74,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "064c9a3b2d2ca21f",
@@ -94,7 +91,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "docs/03-features/moduli-piattaforma.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +100,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Riferimenti a moduli-piattaforma"
+              "title": "Riferimenti"
             }
           },
           {
@@ -113,12 +109,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "docs/03-features/moduli-piattaforma.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Collegamenti in uscita da moduli-piattaforma"
+              "title": "Collegamenti in uscita"
             }
           },
           {
@@ -156,13 +151,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "docs/03-features/moduli-piattaforma.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Struttura di moduli-piattaforma"
+              "title": "Struttura"
             }
           }
         ]
@@ -185,6 +179,18 @@
   },
   "active": "fc7beeb89cbc0bda",
   "lastOpenFiles": [
+    "node_modules/eslint-plugin-import/docs/rules/no-namespace.md",
+    "node_modules/eslint-plugin-import/README.md",
+    "node_modules/ms/license.md",
+    "docs/01-business/tenant-e-verticali.md",
+    "docs/00-vision/panoramica-prodotto.md",
+    "docs/START-HERE.md",
+    "docs/03-features/moduli-piattaforma.md",
+    "docs/kb/ui/gestione-ordini.md",
+    "docs/kb/ui/gestione-navigazione.md",
+    "docs/kb/ui/README.md",
+    "docs/kb/ui",
+    "docs/kb/templates/kb-ui-screen-template.md",
     "docs/kb/glossary/README.md",
     "docs/kb/faq/README.md",
     "docs/kb/troubleshooting/README.md",
@@ -208,20 +214,8 @@
     "docs/kb",
     "docs/04-decisions/README.md",
     "docs/05-roadmap/README.md",
-    "docs/08-processes/README.md",
-    "docs/08-processes/cron-e-processi.md",
-    "docs/START-HERE.md",
-    "docs/02-architecture/panoramica-tecnica.md",
-    "docs/01-business/tenant-e-verticali.md",
-    "docs/01-business/README.md",
-    "docs/00-vision/README.md",
-    "docs/00-vision/panoramica-prodotto.md",
-    "docs/07-prompts/endpoint-ia.md",
-    "docs/06-integrations/integrazioni-attive.md",
-    "docs/03-features/moduli-piattaforma.md",
     "Senza nome 1.canvas",
     "Senza nome.canvas",
-    "docs/templates",
-    "docs/09-meetings"
+    "docs/templates"
   ]
 }

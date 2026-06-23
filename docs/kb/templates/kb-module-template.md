@@ -40,3 +40,7 @@ Passi tipici d'uso quotidiano. Per procedure complete e numerate rimanda a un do
 
 - [[slug-faq-1]]
 - [[slug-faq-2]]
+
+# Schermate UI correlate
+
+- [[slug-ui-screen]] — dove si trova il modulo nel pannello e quali pulsanti usare

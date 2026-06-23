@@ -17,6 +17,7 @@ Questa cartella è la **fonte primaria di conoscenza** per l'assistente AI di su
 | `procedures/` | Procedure operative passo-passo | [[kb-procedure-template]] |
 | `troubleshooting/` | Risoluzione problemi per sintomo | [[kb-troubleshooting-template]] |
 | `faq/` | Domande frequenti, una per file | [[kb-faq-template]] |
+| `ui/` | Schermate dell'interfaccia: dove sono i pulsanti e cosa fanno | [[kb-ui-screen-template]] |
 | `glossary/` | Termini e definizioni della piattaforma | — |
 | `templates/` | Modelli riutilizzabili (esclusi dall'indice RAG) | — |
 | `ai-support/` | Comportamento dell'assistente: policy, ticket, indicizzazione | — |

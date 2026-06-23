@@ -174,6 +174,7 @@ Quando una modifica tocca uno di questi ambiti, aggiorna anche i doc nello stess
 | Nuovo cron o processo operativo | `docs/08-processes/cron-e-processi.md` |
 | Decisione architetturale rilevante | nuovo ADR in `docs/04-decisions/` (usa `docs/templates/adr-template.md`) |
 | Nuovo modulo, procedura o problema noto rilevante per gli utenti | scheda KB in `docs/kb/` (`modules/`, `procedures/`, `troubleshooting/`, `faq/`) con i template `docs/kb/templates/` — è la fonte dell'assistente AI di supporto |
+| Modifica a una schermata, a una route `gestione`, o a un'etichetta UI (es. `src/i18n/gestione.ts`, pagine `src/app/gestione/...`, nav in `gestione-shell.tsx`) | scheda UI in `docs/kb/ui/` (etichette pulsanti, percorso di navigazione) — serve all'assistente per indicare i tasti da premere |
 
 Regole di scrittura dei doc:
 

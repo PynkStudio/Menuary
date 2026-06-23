@@ -38,7 +38,7 @@ Risposta fondata sulla KB (o escalation)
 
 - La fonte di verità è la cartella `docs/kb/` versionata in repo.
 - Ad ogni aggiornamento della documentazione (vedi la regola di sync in `CLAUDE.md`), la KB va re-indicizzata.
-- Si indicizzano i documenti di contenuto (`modules/`, `procedures/`, `troubleshooting/`, `faq/`, `glossary/`) e le policy in `ai-support/`. I file `templates/` sono **esclusi** dall'indice.
+- Si indicizzano i documenti di contenuto (`modules/`, `procedures/`, `troubleshooting/`, `faq/`, `ui/`, `glossary/`) e le policy in `ai-support/`. I file `templates/` sono **esclusi** dall'indice.
 - Il frontmatter YAML (`title`, `module`, `roles`, `tags`, `last_updated`, `owner`) viene estratto e conservato come **metadati** del documento.
 - **Da confermare**: meccanismo di trigger (CI on push, cron, comando manuale) e gestione del versionamento/diff per re-indicizzare solo ciò che è cambiato.
 
