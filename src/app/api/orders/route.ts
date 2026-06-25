@@ -9,6 +9,7 @@ import {
 } from "@/lib/api/orders";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
 import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes, resolvePendingTimeoutSeconds } from "@/lib/orders/order-settings";
+import { dispatchComandaForOrder } from "@/lib/printing/dispatch";
 import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 import { checkOrderingWindow, type OrderChannel } from "@/lib/orders/ordering-window";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
@@ -228,6 +229,12 @@ export async function POST(req: NextRequest) {
   if (lineRows.length > 0) {
     const { error: linesErr } = await supabase.from("order_lines").insert(lineRows);
     if (linesErr) return NextResponse.json({ error: linesErr.message }, { status: 500 });
+  }
+
+  // Stampa comanda server-side (es. stampante cloud SUNMI) per ordini accettati.
+  // QZ è gestito lato client; dispatch è no-op se non configurato. Mai bloccante.
+  if (autoAccepted) {
+    void dispatchComandaForOrder(supabase, tenantId, order.id, locationId ?? null).catch(() => {});
   }
 
   void notifyOperationalNewOrder({

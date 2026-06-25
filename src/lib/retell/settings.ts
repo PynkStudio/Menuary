@@ -49,6 +49,12 @@ export type ChannelPaymentControls = {
   sendAutomatically: boolean;
   /** Metodi di pagamento offerti al cliente dall'assistente AI. Default "on_site_only" se Stripe non collegato. */
   acceptedMethods: AiPaymentMethodsPolicy;
+  /**
+   * Soglia (in euro) oltre la quale il pagamento online con carta è OBBLIGATORIO:
+   * l'agente non propone la scelta e l'ordine viene confermato solo al pagamento.
+   * Default 50. 0 = nessuna soglia (online mai forzato dall'importo).
+   */
+  onlineRequiredAboveEuros: number;
 };
 
 export type AiPhoneSettings = {
@@ -200,6 +206,10 @@ function normalizePaymentControls(row: AiPhoneSettingsRow | null): ChannelPaymen
     fallbackChannel,
     sendAutomatically: typeof raw.sendAutomatically === "boolean" ? raw.sendAutomatically : true,
     acceptedMethods,
+    onlineRequiredAboveEuros:
+      typeof raw.onlineRequiredAboveEuros === "number" && raw.onlineRequiredAboveEuros >= 0
+        ? raw.onlineRequiredAboveEuros
+        : 50,
   };
 }
 

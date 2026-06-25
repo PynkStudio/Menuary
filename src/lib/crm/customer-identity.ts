@@ -12,6 +12,8 @@ export type CustomerIdentity = {
   registered: boolean;
   phone: string | null;
   email: string | null;
+  /** Nome risolto dal CRM (o quello passato), per intestare l'ordine senza chiederlo. */
+  displayName: string | null;
 };
 
 type CustomerRow = {
@@ -129,6 +131,7 @@ export async function resolveCustomerIdentity(input: {
       registered,
       phone,
       email: existing.email ?? null,
+      displayName: existing.display_name ?? input.displayName?.trim() ?? null,
     };
   }
 
@@ -151,6 +154,7 @@ export async function resolveCustomerIdentity(input: {
     registered,
     phone,
     email: (data as { email: string | null }).email ?? null,
+    displayName: input.displayName?.trim() || null,
   };
 }
 
@@ -209,6 +213,7 @@ export async function resolveHubriseCustomer(input: {
       registered,
       phone: existing.phone ?? phone,
       email: existing.email ?? email,
+      displayName: existing.display_name ?? input.displayName?.trim() ?? null,
     };
   }
 
@@ -235,6 +240,7 @@ export async function resolveHubriseCustomer(input: {
     registered,
     phone: row.phone,
     email: row.email,
+    displayName: input.displayName?.trim() || null,
   };
 }
 

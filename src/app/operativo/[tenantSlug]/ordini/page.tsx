@@ -8,6 +8,7 @@ import type { Database } from "@/lib/database.types";
 import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder } from "./actions";
 import { loadOrderHandling } from "@/lib/orders/order-settings";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
+import { ComandaAutoPrintWatcher } from "@/components/gestione/comanda-auto-print-watcher";
 import { OperationalAlertControls, OperationalAlertsClient } from "@/components/gestione/operational-alerts-client";
 import { OrderConfirmationTimeForm } from "@/components/gestione/order-confirmation-time-form";
 import { TodayHandlingControl } from "@/components/gestione/today-handling-control";
@@ -287,6 +288,9 @@ export default async function OrdiniPage({
     <OperationalAlertsClient tenantId={tenantSlug} portal="ordini" locationId={locationId ?? undefined}>
     <div className="ga-dashboard">
       <OrdersLiveRefresh tenantId={tenantSlug} />
+      {!auth.isDemo && tenant.features.printStations && (
+        <ComandaAutoPrintWatcher tenantId={tenantSlug} locationId={locationId ?? null} />
+      )}
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
         <div>
           <span className="ga-eyebrow">{t.eyebrow}</span>

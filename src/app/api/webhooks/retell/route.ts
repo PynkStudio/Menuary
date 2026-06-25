@@ -134,6 +134,10 @@ async function buildInboundDynamicVariables(
     caller_phone: (inbound.fromNumber ?? "").trim(),
     called_number: (inbound.toNumber ?? "").trim(),
     greeting: italianGreetingForNow(),
+    // Frasi pronte (in italiano) da far pronunciare al modello traducendole nella
+    // lingua del cliente: il modello in chiamata è inaffidabile sui rami se/altrimenti,
+    // quindi la scelta della frase la fa il backend. La persona ("sono Nora di …") resta nel flow.
+    welcome_greeting: italianGreetingForNow(),
     // Default conservativi: la flow li può overrideare se manca contesto.
     multi_location_choice_required: "false",
     location_id: "",
@@ -161,6 +165,11 @@ async function buildInboundDynamicVariables(
     customer_language: "",
     customer_last_address: "",
     customer_last_order_summary: "",
+    last_order_offer_spoken: "",
+    delivery_address_offer_spoken: "",
+    // Direttiva unica sul nome (zero rami nel prompt): cliente noto → annuncia il nome;
+    // sconosciuto → chiedilo. Per i noti il nome è già iniettato lato server nell'ordine.
+    order_name_directive: "Chiedi il nome per l'ordine e attendi la risposta.",
     active_order_summary: "",
     active_order_modifiable: "false",
     active_order_checkout_url: "",
@@ -196,7 +205,7 @@ async function buildInboundDynamicVariables(
     // carica on-demand via search_menu), evitando ~8 query pesanti che causavano
     // 5-6 secondi di vuoto prima della risposta.
     const [{ data: tenantRow }, { data: locationRows }, { data: specialRows }, customer] = await Promise.all([
-      db.from("tenants").select("id,name,vertical").eq("id", tenantId).maybeSingle(),
+      db.from("tenants").select("id,name,vertical,hours").eq("id", tenantId).maybeSingle(),
       db.from("locations").select("id,slug,name,address,city,phone,email,is_default,hours")
         .eq("tenant_id", tenantId)
         .order("is_default", { ascending: false })
@@ -221,40 +230,48 @@ async function buildInboundDynamicVariables(
       variables.location_id = location.id;
       variables.location_name = location.name;
       variables.multi_location_choice_required = locations.length > 1 ? "true" : "false";
-
-      const rawHours = location.hours;
-      const weeklyHours: DaySchedule[] =
-        Array.isArray(rawHours) && rawHours.length > 0 &&
-        rawHours.every((d: unknown) => d && typeof d === "object" && typeof (d as Record<string, unknown>).label === "string")
-          ? rawHours as DaySchedule[]
-          : defaultHoursWeekForTenant(tenantId);
-
-      const weekly = weeklyHours
-        .map((day) => `${day.label}: ${day.closed ? "chiuso" : day.slots.join(", ")}`)
-        .join(" | ");
-      if (weekly) variables.open_hours = weekly;
-
-      const specials = (specialRows ?? []) as { date: string; closed: boolean; slots: unknown; label: string | null; location_id: string | null }[];
-      const special = specials
-        .filter((entry) => !entry.location_id || entry.location_id === location.id)
-        .map((entry) => `${entry.date}${entry.label ? ` (${entry.label})` : ""}: ${entry.closed ? "chiuso" : (Array.isArray(entry.slots) ? entry.slots : []).join(", ")}`)
-        .join(" | ");
-      variables.special_hours = special;
-
-      // Stato aperto/chiuso "ora" + frase pronta, così l'agente risponde correttamente a
-      // "siete aperti?" senza inventare né dire che non può verificare gli orari.
-      const specialsNorm = specials
-        .filter((entry) => !entry.location_id || entry.location_id === location.id)
-        .map((entry) => ({
-          date: entry.date,
-          closed: entry.closed,
-          slots: Array.isArray(entry.slots) ? (entry.slots as string[]) : [],
-        }));
-      const openStatus = computeOpenStatusSpoken(weeklyHours, specialsNorm);
-      variables.open_now = openStatus.openNow ? "true" : "false";
-      variables.today_hours = openStatus.todayHours;
-      variables.open_status_spoken = openStatus.spoken;
     }
+
+    // Orari: location.hours → tenants.hours → default. Calcolati ANCHE senza location
+    // (tenant servito a livello tenant, es. kimos), coerente col fallback di loadWeekHours
+    // del modulo ordini: altrimenti open_status_spoken/open_hours/today_hours restano vuoti.
+    const isWeek = (h: unknown): h is DaySchedule[] =>
+      Array.isArray(h) && h.length > 0 &&
+      h.every((d) => d && typeof d === "object" && typeof (d as Record<string, unknown>).label === "string");
+    const tenantHours = (tenantRow as { hours?: unknown } | null)?.hours;
+    const weeklyHours: DaySchedule[] = isWeek(location?.hours)
+      ? (location!.hours as DaySchedule[])
+      : isWeek(tenantHours)
+        ? (tenantHours as DaySchedule[])
+        : defaultHoursWeekForTenant(tenantId);
+
+    const weekly = weeklyHours
+      .map((day) => `${day.label}: ${day.closed ? "chiuso" : day.slots.join(", ")}`)
+      .join(" | ");
+    if (weekly) variables.open_hours = weekly;
+
+    const specials = (specialRows ?? []) as { date: string; closed: boolean; slots: unknown; label: string | null; location_id: string | null }[];
+    // Senza location: tieni gli special tenant-wide (location_id null); con location: anche i suoi.
+    const relevantSpecial = (entry: { location_id: string | null }) =>
+      !entry.location_id || !location || entry.location_id === location.id;
+    variables.special_hours = specials
+      .filter(relevantSpecial)
+      .map((entry) => `${entry.date}${entry.label ? ` (${entry.label})` : ""}: ${entry.closed ? "chiuso" : (Array.isArray(entry.slots) ? entry.slots : []).join(", ")}`)
+      .join(" | ");
+
+    // Stato aperto/chiuso "ora" + frase pronta, così l'agente risponde correttamente a
+    // "siete aperti?" senza inventare né dire che non può verificare gli orari.
+    const specialsNorm = specials
+      .filter(relevantSpecial)
+      .map((entry) => ({
+        date: entry.date,
+        closed: entry.closed,
+        slots: Array.isArray(entry.slots) ? (entry.slots as string[]) : [],
+      }));
+    const openStatus = computeOpenStatusSpoken(weeklyHours, specialsNorm);
+    variables.open_now = openStatus.openNow ? "true" : "false";
+    variables.today_hours = openStatus.todayHours;
+    variables.open_status_spoken = openStatus.spoken;
 
     if (tenantProfile) {
       variables.delivery_available = tenantProfile.features.deliveryHub ? "true" : "false";
@@ -267,6 +284,16 @@ async function buildInboundDynamicVariables(
       variables.customer_language = customer.language;
       variables.customer_last_address = customer.lastAddress;
       variables.customer_last_order_summary = customer.lastOrderSummary;
+      if (customer.isKnown && customer.firstName) {
+        variables.welcome_greeting = `Ciao ${customer.firstName}`;
+        variables.order_name_directive = `Di' che l'ordine sarà a nome ${customer.firstName}.`;
+      }
+      if (customer.lastAddress) {
+        variables.delivery_address_offer_spoken = `Gliela portiamo in ${customer.lastAddress}?`;
+      }
+      if (customer.isKnown && customer.lastOrderSummary) {
+        variables.last_order_offer_spoken = `Vuole come l'ultima volta: ${customer.lastOrderSummary}?`;
+      }
       if (customer.activeOrder) {
         variables.active_order_summary = [
           `ordine ${customer.activeOrder.code}`,

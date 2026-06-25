@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
 import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
+import { dispatchComandaForOrder } from "@/lib/printing/dispatch";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const { data: order, error: loadErr } = await supabase
     .from("orders")
-    .select("id, tenant_id, code, status, confirmation_expires_at, public_token, customer_phone, source, type")
+    .select("id, tenant_id, location_id, code, status, confirmation_expires_at, public_token, customer_phone, source, type")
     .eq("id", id)
     .maybeSingle();
 
@@ -61,6 +62,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     .eq("status", "pending_confirmation"); // guard race: non sovrascrivere altri stati
 
   if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
+
+  // Stampa comanda server-side (es. SUNMI cloud). No-op se QZ/non configurato.
+  void dispatchComandaForOrder(supabase, order.tenant_id, order.id, order.location_id ?? null).catch(() => {});
 
   // Email di conferma — best-effort, non blocca la response.
   void sendOrderConfirmationEmail(supabase, id).catch(() => {});

@@ -159,7 +159,19 @@ export type Order = {
   confirmedAt?: string;
   /** true se passato auto-accept senza intervento staff. */
   autoAccepted?: boolean;
+  /** Metodo di pagamento scelto (telefono/checkout). */
+  paymentMethod?: PaymentMethod;
+  /** Stato pagamento DB: "pending" | "paid" | "not_required" | "failed" | "expired". */
+  paymentStatus?: string;
 };
+
+/**
+ * Metodo di pagamento dell'ordine:
+ *  - online            → paga adesso con carta (Stripe); ordine confermato al pagamento.
+ *  - on_delivery_cash  → paga alla consegna in contanti.
+ *  - on_delivery_card  → paga alla consegna con carta (POS).
+ */
+export type PaymentMethod = "online" | "on_delivery_cash" | "on_delivery_card";
 
 export type TenantOrderSettings = {
   id: string;
@@ -183,6 +195,35 @@ export type TenantOrderSettings = {
   pendingTimeoutSeconds: number;
   /** Tempo medio di gestione ordine (min): la prima consegna possibile è adesso + questo. */
   avgHandlingMinutes: number;
+};
+
+// ─── Stampanti comande (modulo printStations) ───────────────────────────────
+// Ponte verso la stampante: QZ Tray locale sul PC cassa (vedi lib/printing).
+// Schema predisposto multi-stampante (station/categories) ma la UI gestisce
+// una sola stampante per locale. TODO(multi-printer).
+export type PrinterConnection = "qz" | "network_eposprint" | "printnode" | "sunmi_cloud";
+export type PrinterStation = "cucina" | "bar" | "pizzeria" | "banco";
+
+export type TenantPrinter = {
+  id: string;
+  tenantId: string;
+  locationId: string | null;
+  name: string;
+  connection: PrinterConnection;
+  /** Nome stampante come visto da QZ Tray sull'OS (es. "EPSON TM-T20III"). */
+  qzPrinterName: string | null;
+  /** Numero di serie del device cloud (es. SUNMI SN). Per QZ resta null. */
+  deviceSn: string | null;
+  /** TODO(multi-printer): routing per reparto. null = stampa tutto. */
+  station: PrinterStation | null;
+  /** TODO(multi-printer): routing per categorie menu. null/[] = nessun filtro. */
+  categories: string[] | null;
+  /** Caratteri per riga: 48 = 80mm, 32 = 58mm. */
+  charWidth: number;
+  copies: number;
+  autoPrint: boolean;
+  isDefault: boolean;
+  enabled: boolean;
 };
 
 export type Table = {

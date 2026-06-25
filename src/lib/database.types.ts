@@ -1926,6 +1926,10 @@ export type Database = {
           application_fee_amount_cents: number | null
           auto_accepted: boolean
           code: string
+          comanda_printed_at: string | null
+          comanda_update_printed_at: string | null
+          payment_method: string | null
+          payment_method_changed_at: string | null
           confirmation_expires_at: string | null
           confirmed_at: string | null
           created_at: string
@@ -1980,6 +1984,7 @@ export type Database = {
           application_fee_amount_cents?: number | null
           auto_accepted?: boolean
           code: string
+          comanda_printed_at?: string | null
           confirmation_expires_at?: string | null
           confirmed_at?: string | null
           created_at?: string
@@ -2034,6 +2039,10 @@ export type Database = {
           application_fee_amount_cents?: number | null
           auto_accepted?: boolean
           code?: string
+          comanda_printed_at?: string | null
+          comanda_update_printed_at?: string | null
+          payment_method?: string | null
+          payment_method_changed_at?: string | null
           confirmation_expires_at?: string | null
           confirmed_at?: string | null
           created_at?: string
@@ -5541,6 +5550,78 @@ export type Database = {
             columns: ["location_id"]
             isOneToOne: false
             referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_printers: {
+        Row: {
+          auto_print: boolean
+          categories: string[] | null
+          char_width: number
+          connection: string
+          copies: number
+          created_at: string
+          device_sn: string | null
+          enabled: boolean
+          id: string
+          is_default: boolean
+          location_id: string | null
+          name: string
+          qz_printer_name: string | null
+          station: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_print?: boolean
+          categories?: string[] | null
+          char_width?: number
+          connection?: string
+          copies?: number
+          created_at?: string
+          device_sn?: string | null
+          enabled?: boolean
+          id?: string
+          is_default?: boolean
+          location_id?: string | null
+          name?: string
+          qz_printer_name?: string | null
+          station?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_print?: boolean
+          categories?: string[] | null
+          char_width?: number
+          connection?: string
+          copies?: number
+          created_at?: string
+          device_sn?: string | null
+          enabled?: boolean
+          id?: string
+          is_default?: boolean
+          location_id?: string | null
+          name?: string
+          qz_printer_name?: string | null
+          station?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_printers_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_printers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]

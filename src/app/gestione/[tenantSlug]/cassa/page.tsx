@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { CreditCard, Printer, ReceiptText, Settings2 } from "lucide-react";
 import { TENANTS } from "@/lib/tenant-registry";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { PrintersPanel } from "@/components/gestione/printers-panel";
 
 export default async function GestioneCassaSettingsPage({
   params,
@@ -11,7 +12,9 @@ export default async function GestioneCassaSettingsPage({
   const { tenantSlug } = await params;
   const tenant = TENANTS.find((t) => t.id === tenantSlug);
   if (!tenant) notFound();
-  if (!getGestioneModuleAccess(tenant.features).canManageCheckout) notFound();
+  const access = getGestioneModuleAccess(tenant.features);
+  // La pagina è raggiungibile sia col modulo cassa sia col modulo stampanti.
+  if (!access.canManageCheckout && !access.canManagePrintStations) notFound();
 
   return (
     <div className="ga-dashboard">
@@ -53,6 +56,12 @@ export default async function GestioneCassaSettingsPage({
           </div>
         </div>
       </section>
+
+      {access.canManagePrintStations && (
+        <section className="ga-card">
+          <PrintersPanel />
+        </section>
+      )}
     </div>
   );
 }

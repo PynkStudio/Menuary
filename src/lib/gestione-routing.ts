@@ -52,6 +52,7 @@ export function getGestioneModuleAccess(features: TenantFeatureFlags) {
     canManageTables: modules.tablePlanner,
     canManageReservations: modules.reservations || hasCreativeBookings,
     canManageCheckout: modules.cashRegister,
+    canManagePrintStations: modules.printStations,
     canManageShifts: modules.staffRoles,
     canManageStaff: modules.staffRoles,
     canManageMail: Boolean(modules.mail),

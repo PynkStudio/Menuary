@@ -44,6 +44,8 @@ export function dbRowToOrder(row: DbOrder, lines: OrderLine[]): Order {
     confirmationExpiresAt: row.confirmation_expires_at ?? undefined,
     confirmedAt: row.confirmed_at ?? undefined,
     autoAccepted: row.auto_accepted ?? false,
+    paymentMethod: (row.payment_method as Order["paymentMethod"]) ?? undefined,
+    paymentStatus: row.payment_status ?? undefined,
   };
 }
 
@@ -104,6 +106,8 @@ export type DbOrder = {
   confirmation_expires_at: string | null;
   confirmed_at: string | null;
   auto_accepted: boolean | null;
+  payment_method: string | null;
+  payment_status: string | null;
   rider_id: string | null;
   delivery_pin_lat: number | null;
   delivery_pin_lng: number | null;

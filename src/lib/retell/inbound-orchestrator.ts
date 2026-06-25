@@ -13,9 +13,10 @@ import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
 import { tenantUsesStripeDemoSandbox } from "@/lib/payments/stripe/sandbox-policy";
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
 import { normalizePhone, recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
-import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes, resolvePendingTimeoutSeconds } from "@/lib/orders/order-settings";
+import { loadOrderSettings } from "@/lib/orders/order-settings";
+import { dispatchComandaForOrder } from "@/lib/printing/dispatch";
 import { resolveDeliveryAvailability, resolveDeliveryWindowsForDate } from "@/lib/orders/ordering-window";
-import type { MenuOrderChannel } from "@/lib/types";
+import type { MenuOrderChannel, PaymentMethod } from "@/lib/types";
 import { isMenuOrderChannel } from "@/lib/menu-channels";
 import { euroToItalianWords, orderCodeToSpoken } from "@/lib/retell/number-speech";
 import { tenantCheckoutUrl } from "@/lib/orders/checkout-url";
@@ -200,6 +201,13 @@ export type CreateRetellOrderInput = {
    * fallback ai flag requireFor* per retrocompatibilità.
    */
   paymentMethodChoice?: "online" | "on_site";
+  /**
+   * Metodo di pagamento a 3 valori raccolto dall'agente (preferito su paymentMethodChoice):
+   *  - "online"           → paga adesso con carta (Stripe); ordine confermato al pagamento.
+   *  - "on_delivery_cash" → paga alla consegna in contanti (auto-accettato).
+   *  - "on_delivery_card" → paga alla consegna con carta/POS (auto-accettato).
+   */
+  paymentMethod?: PaymentMethod;
   lines: {
     itemCode: string;
     quantity: number;
@@ -250,6 +258,10 @@ export type OrderTimeValidationResult =
       nextDate: string | null;
       nextEarliestSpoken: string | null;
       canSchedule: boolean;
+      // Frase italiana già pronta da far pronunciare al modello (tradotta nella lingua
+      // del cliente): centralizza qui i rami se/altrimenti che prima vivevano nel prompt
+      // del nodo fix_time, dove il modello li gestiva male.
+      fixSpoken: string;
     };
 
 // L'agente esprime l'orario in linguaggio naturale: "il prima possibile", "appena
@@ -287,6 +299,57 @@ function requestedInstantMs(dateStr: string, hhmm: string): number {
   return asUTC - (tzAsUTC - asUTC);
 }
 
+function spokenDateInRome(dateStr: string | null): string {
+  if (!dateStr) return "";
+  // dateStr è già una data locale di Roma (YYYY-MM-DD): formattata a mezzogiorno UTC
+  // restituisce il giorno della settimana corretto senza slittamenti di fuso.
+  return new Intl.DateTimeFormat("it-IT", {
+    timeZone: "UTC", weekday: "long", day: "numeric", month: "long",
+  }).format(new Date(`${dateStr}T12:00:00Z`));
+}
+
+// Compone la frase pronta per il nodo fix_time a partire dal motivo del rifiuto e dai dati
+// di disponibilità. Unico punto in cui vivono i rami "oggi ancora possibile / programma il
+// prossimo giorno / nessuna fascia".
+type OrderTimeFailure = Omit<Extract<OrderTimeValidationResult, { ok: false }>, "fixSpoken">;
+function buildFixSpoken(r: OrderTimeFailure): string {
+  const nextDay = r.nextDate ? spokenDateInRome(r.nextDate) : "";
+  const scheduleLine =
+    r.canSchedule && r.nextDate && r.nextEarliestSpoken
+      ? ` Il primo giorno disponibile è ${nextDay} a partire dalle ${r.nextEarliestSpoken}. Vuole che programmi l'ordine per allora, oppure preferisce un altro giorno?`
+      : "";
+
+  if (r.reason === "too_early") {
+    return `Per oggi la prima consegna possibile è alle ${r.earliestSpoken}${r.openWindowSpoken ? ` (consegniamo ${r.openWindowSpoken})` : ""}. Va bene alle ${r.earliestSpoken}, oppure preferisce "il prima possibile"?`;
+  }
+  if (r.reason === "closed_today") {
+    return scheduleLine
+      ? `Oggi le consegne sono chiuse.${scheduleLine}`
+      : `Oggi le consegne sono chiuse e non riesco a trovare un giorno disponibile a breve. Preferisce richiamare più tardi?`;
+  }
+  if (r.reason === "closed_day") {
+    return scheduleLine
+      ? `In quel giorno non effettuiamo consegne.${scheduleLine}`
+      : `In quel giorno non effettuiamo consegne. Mi indica un altro giorno?`;
+  }
+  // outside_window
+  if (r.earliestSpoken) {
+    // Oggi è ancora possibile: resta nella fascia di oggi.
+    return `Per oggi consegniamo ${r.openWindowSpoken}, la prima consegna possibile è alle ${r.earliestSpoken}. Mi dice un orario in quella fascia, oppure preferisce "il prima possibile"?`;
+  }
+  if (r.openWindowSpoken && !r.nextDate) {
+    // Giorno futuro con orario fuori dalla finestra di quel giorno.
+    return `In quel giorno consegniamo ${r.openWindowSpoken}. Mi dice un orario in quella fascia?`;
+  }
+  return scheduleLine
+    ? `Per oggi non riusciamo a consegnare in quella fascia.${scheduleLine}`
+    : `Al momento non riesco a trovare una fascia di consegna disponibile. Preferisce richiamare più tardi?`;
+}
+
+function failResult(r: OrderTimeFailure): Extract<OrderTimeValidationResult, { ok: false }> {
+  return { ...r, fixSpoken: buildFixSpoken(r) };
+}
+
 /**
  * Valida l'orario di un ordine telefonico contro la FINESTRA CONSEGNE dedicata (offset su
  * orari del locale) e il tempo medio di gestione (lead time): la prima consegna possibile
@@ -322,11 +385,11 @@ export async function validateRetellOrderTime(
     const winIso = windows.map((w) => ({ startIso: w.start.toISOString(), endIso: w.end.toISOString() }));
     if (closed) {
       const avail = await resolveDeliveryAvailability(db, { tenantId: input.tenantId, locationId: loc, settings, channel, now });
-      return {
+      return failResult({
         ok: false, reason: "closed_day", date: targetDate, requestedSpoken: hhmm,
         openWindowSpoken: "", earliestSpoken: null,
         nextDate: avail.nextDate, nextEarliestSpoken: hhmmInRome(avail.nextEarliestIso), canSchedule: true,
-      };
+      });
     }
     if (!hhmm) {
       return { ok: true, mode: "scheduled_future", scheduled: true, date: targetDate, whenSpoken: winIso.length ? hhmmInRome(winIso[0]!.startIso) : null };
@@ -334,11 +397,11 @@ export async function validateRetellOrderTime(
     const reqMs = requestedInstantMs(targetDate, hhmm);
     const within = winIso.some((w) => reqMs >= Date.parse(w.startIso) && reqMs <= Date.parse(w.endIso));
     if (within) return { ok: true, mode: "scheduled_future", scheduled: true, date: targetDate, whenSpoken: hhmm };
-    return {
+    return failResult({
       ok: false, reason: "outside_window", date: targetDate, requestedSpoken: hhmm,
       openWindowSpoken: spokenWindowsIso(winIso), earliestSpoken: null,
       nextDate: null, nextEarliestSpoken: null, canSchedule: true,
-    };
+    });
   }
 
   // ── Oggi ─────────────────────────────────────────────────────────────────
@@ -348,28 +411,28 @@ export async function validateRetellOrderTime(
     if (avail.todayPossible) {
       return { ok: true, mode: "asap_today", scheduled: false, date: today, whenSpoken: hhmmInRome(avail.earliestIso) };
     }
-    return {
+    return failResult({
       ok: false, reason: avail.closedToday ? "closed_today" : "outside_window", date: today, requestedSpoken: null,
       openWindowSpoken: spokenWindowsIso(avail.todayWindows), earliestSpoken: null,
       nextDate: avail.nextDate, nextEarliestSpoken: hhmmInRome(avail.nextEarliestIso), canSchedule: Boolean(avail.nextDate),
-    };
+    });
   }
 
   const reqMs = requestedInstantMs(today, hhmm);
   const within = avail.todayWindows.some((w) => reqMs >= Date.parse(w.startIso) && reqMs <= Date.parse(w.endIso));
   if (!within) {
-    return {
+    return failResult({
       ok: false, reason: avail.closedToday ? "closed_today" : "outside_window", date: today, requestedSpoken: hhmm,
       openWindowSpoken: spokenWindowsIso(avail.todayWindows), earliestSpoken: hhmmInRome(avail.earliestIso),
       nextDate: avail.nextDate, nextEarliestSpoken: hhmmInRome(avail.nextEarliestIso), canSchedule: Boolean(avail.nextDate),
-    };
+    });
   }
   if (avail.earliestIso && reqMs < Date.parse(avail.earliestIso)) {
-    return {
+    return failResult({
       ok: false, reason: "too_early", date: today, requestedSpoken: hhmm,
       openWindowSpoken: spokenWindowsIso(avail.todayWindows), earliestSpoken: hhmmInRome(avail.earliestIso),
       nextDate: null, nextEarliestSpoken: null, canSchedule: false,
-    };
+    });
   }
   return { ok: true, mode: "time_today", scheduled: false, date: today, whenSpoken: hhmm };
 }
@@ -1283,29 +1346,43 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   const stripeReady = Boolean(stripeAccount?.chargesEnabled);
   const policy = settings.paymentControls.acceptedMethods;
 
-  let effectivePaymentMethod: "online" | "on_site";
-  if (!stripeReady || policy === "on_site_only") {
-    effectivePaymentMethod = "on_site";
-  } else if (policy === "online_only") {
-    effectivePaymentMethod = "online";
-  } else if (input.paymentMethodChoice === "online" || input.paymentMethodChoice === "on_site") {
-    effectivePaymentMethod = input.paymentMethodChoice;
+  // Metodo richiesto a 3 valori (preferito); fallback al vecchio paymentMethodChoice.
+  const requestedMethod: PaymentMethod | null =
+    input.paymentMethod === "online" || input.paymentMethod === "on_delivery_cash" || input.paymentMethod === "on_delivery_card"
+      ? input.paymentMethod
+      : input.paymentMethodChoice === "online"
+        ? "online"
+        : input.paymentMethodChoice === "on_site"
+          ? "on_delivery_cash"
+          : null;
+
+  const onlineAllowed = stripeReady && policy !== "on_site_only";
+  // Risoluzione metodo effettivo (3 valori), rispettando policy tenant + stato Stripe.
+  let paymentMethod: PaymentMethod;
+  if (policy === "online_only" && stripeReady) {
+    paymentMethod = "online";
+  } else if (requestedMethod === "online") {
+    // Online richiesto ma non disponibile → ripiega su carta alla consegna.
+    paymentMethod = onlineAllowed ? "online" : "on_delivery_card";
+  } else if (requestedMethod === "on_delivery_cash" || requestedMethod === "on_delivery_card") {
+    paymentMethod = requestedMethod;
   } else {
-    // policy=both, agente non chiede più la preferenza → online di default così il bottone
-    // "Paga" è visibile sul link di riepilogo; il cliente può scegliere se pagare subito.
-    effectivePaymentMethod = "online";
+    // Nessuna scelta esplicita: se l'online è disponibile lo proponiamo (link "Paga"),
+    // altrimenti contanti alla consegna.
+    paymentMethod = onlineAllowed ? "online" : "on_delivery_cash";
   }
 
-  const shouldRequestPayment = effectivePaymentMethod === "online";
-  if (shouldRequestPayment && !input.customerPhone?.trim()) {
-    throw new Error("payment_phone_required");
-  }
+  // effectivePaymentMethod / shouldRequestPayment vengono derivati DOPO il calcolo del
+  // totale, perché la soglia "online obbligatorio sopra N€" può forzare paymentMethod.
   const identity = await resolveCustomerIdentity({
     tenantId: input.tenantId,
     phone: input.customerPhone,
     displayName: input.customerName,
     source: input.source ?? "retell",
   });
+  // Per i clienti noti il nome arriva dal CRM (lookup sul telefono): l'agente non deve
+  // chiederlo né passarlo. Se non l'ha passato, lo intestiamo qui dal CRM.
+  const resolvedCustomerName = input.customerName?.trim() || identity?.displayName || null;
   if (input.lines.length === 0) throw new Error("empty_order");
   const requestedCodes = input.lines.map((line) => line.itemCode);
   // L'assistente AI a volte invia il codice senza prefisso tenant (es. "margherita"
@@ -1417,43 +1494,37 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     };
   });
   const total = rows.reduce((sum, row) => sum + row.row.line_total, 0);
-  const orderSettings = await loadOrderSettings(db, input.tenantId, locationId);
-  const hasNotes =
-    Boolean(input.notes?.trim()) ||
-    Boolean(input.delivery?.notes?.trim()) ||
-    input.lines.some((line) => Boolean(line.note?.trim()));
-  const itemsCount = input.lines.reduce((sum, line) => sum + Math.max(1, Math.floor(line.quantity)), 0);
-  const crmEnabled = Boolean(tenantProfile?.features.crm);
-  const isReturningCustomer = Boolean(identity?.registered) || Boolean(identity?.customerId);
-  const noticeMinutes = resolveOrderNoticeMinutes({
-    pickupTime: input.pickupTime,
-    desiredTime: input.desiredTime,
-    pickupDate: input.desiredDate ?? input.pickupDate,
-  });
+
+  // Soglia "online obbligatorio": sopra l'importo configurato (default 50€) il pagamento
+  // con carta online è forzato. L'agente non deve proporre la scelta (vedi tool payment_options),
+  // ma questa è la rete server-side che lo garantisce comunque.
+  const onlineThreshold = settings.paymentControls.onlineRequiredAboveEuros;
+  if (onlineThreshold > 0 && total > onlineThreshold && onlineAllowed) {
+    paymentMethod = "online";
+  }
+  const effectivePaymentMethod: "online" | "on_site" = paymentMethod === "online" ? "online" : "on_site";
+  const shouldRequestPayment = effectivePaymentMethod === "online";
+  if (shouldRequestPayment && !input.customerPhone?.trim()) {
+    throw new Error("payment_phone_required");
+  }
+
   let desiredTime = normalizeConversationalOrderTime(input);
   // Ordine programmato a giorno futuro: assicura che la data finisca in desired_time
   // (non esiste colonna desired_date) così operativo non lo mostra come "il prima possibile".
   if (scheduledFuture && timeCheck.ok && (!desiredTime || !/^\d{4}-\d{2}-\d{2}/.test(desiredTime))) {
     desiredTime = timeCheck.whenSpoken ? `${timeCheck.date} ${timeCheck.whenSpoken}` : timeCheck.date;
   }
-  // Ordini programmati: mai auto-accept, restano "ricevuto" (pending senza scadenza)
-  // finché il ristorante non li accetta manualmente.
-  const autoAccepted = scheduledFuture
-    ? false
-    : evaluateAutoAccept(orderSettings, {
-        total,
-        itemsCount,
-        hasNotes,
-        isReturningCustomer,
-        crmEnabled,
-        noticeMinutes,
-      });
+  // Nuovo modello pagamento:
+  //  - online → l'ordine ATTENDE il pagamento: resta pending_confirmation senza scadenza,
+  //    va in cucina/stampa solo quando il webhook Stripe lo porta a "nuovo".
+  //  - alla consegna (contanti/carta) → accettazione automatica: "nuovo" subito → stampa.
+  //  - programmato a giorno futuro → resta "ricevuto" (pending senza scadenza).
+  const waitsForPayment = shouldRequestPayment;
+  const autoAccepted = !scheduledFuture && !waitsForPayment;
   const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
-  const pendingTimeoutSeconds = resolvePendingTimeoutSeconds(orderSettings.pendingTimeoutSeconds);
-  // scheduledFuture → confirmationExpiresAt null = nessuna scadenza (vedi route confirm).
-  const confirmationExpiresAt = autoAccepted || scheduledFuture
-    ? null
-    : new Date(Date.now() + pendingTimeoutSeconds * 1000).toISOString();
+  // Nessuna scadenza 120s per gli ordini telefonici: online attende il pagamento,
+  // on-delivery è già accettato, programmato attende l'accettazione manuale.
+  const confirmationExpiresAt = null;
   const confirmedAt = autoAccepted ? new Date().toISOString() : null;
 
   const { data: codeRow, error: codeErr } = await db.rpc("next_order_code", {
@@ -1470,7 +1541,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       type: fulfillmentType === "delivery" ? "delivery" : "asporto",
       total,
       source: input.source ?? "retell",
-      customer_name: input.customerName ?? null,
+      customer_name: resolvedCustomerName,
       customer_id: identity?.customerId ?? null,
       menuary_user_id: identity?.menuaryUserId ?? null,
       pickup_time: input.pickupTime ?? null,
@@ -1488,6 +1559,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       delivery_floor: input.delivery?.floor ?? null,
       delivery_notes: input.delivery?.notes ?? null,
       desired_time: desiredTime,
+      payment_method: paymentMethod,
       payment_status: shouldRequestPayment ? "pending" : "not_required",
       confirmation_expires_at: confirmationExpiresAt,
       confirmed_at: confirmedAt,
@@ -1501,11 +1573,16 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     rows.map(({ row }) => ({ ...row, order_id: order.id })),
   );
   if (linesErr) throw new Error(linesErr.message);
+  // Stampa comanda server-side (es. stampante cloud SUNMI) per ordini accettati.
+  // No-op se non configurato / QZ. Mai bloccante per la creazione ordine.
+  if (autoAccepted) {
+    void dispatchComandaForOrder(db, input.tenantId, order.id, locationId).catch(() => {});
+  }
   void notifyOperationalNewOrder({
     tenantId: input.tenantId,
     orderCode: order.code,
     status: order.status,
-    customerName: input.customerName ?? null,
+    customerName: resolvedCustomerName,
     locationId,
   }).catch(() => null);
   if (identity) {
