@@ -55,12 +55,6 @@ export default async function AdminInboxPage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <h1 className="menuary-admin-page-title">Posta</h1>
-        <p className="menuary-admin-page-subtitle">
-          Email di @menuary.it e @bizery.it
-        </p>
-      </div>
       <MailApp
         initialInbox={inbox}
         initialSent={sent}

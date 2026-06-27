@@ -6,11 +6,6 @@ import { cn } from "@/lib/utils";
 import { markEmailRead, starEmail, archiveEmail, deleteEmail, assignEmail } from "@/lib/email/inbound-queries";
 import { findLeadsByEmails, searchLeads, linkInboundEmailToLead, getLeadsByIds } from "@/lib/email/lead-link-queries";
 import { getSiteadminForAssignment, type SiteadminAssignee } from "@/lib/email/assignment-queries";
-
-function formatAssigneeName(a: Pick<SiteadminAssignee, "first_name" | "last_name" | "email">): string {
-  const full = [a.first_name, a.last_name].filter(Boolean).join(" ");
-  return full || a.email;
-}
 import { buildEmailSrcDoc } from "@/lib/email/render-html";
 import type { InboundEmail } from "@/lib/email/inbound-types";
 import type { ResendInboundAttachment } from "@/lib/email/inbound-types";
@@ -27,6 +22,51 @@ type Props = {
   mode?: "platform" | "tenant";
   scope?: TenantEmailScope;
 };
+
+const BRAND_COMPANY_DOMAINS: Record<InboundEmail["brand"], string> = {
+  menuary: "menuary.it",
+  bizery: "bizery.it",
+  orpheo: "weuseorpheo.com",
+  pynkstudio: "pynkstudio.it",
+};
+
+function formatAssigneeName(a: Pick<SiteadminAssignee, "first_name" | "last_name" | "display_name" | "email">): string {
+  const full = [a.first_name, a.last_name].filter(Boolean).join(" ").trim();
+  return full || a.display_name?.trim() || a.email;
+}
+
+function localPartFromName(a: string | null, b: string | null): string | null {
+  const local = [a, b]
+    .filter(Boolean)
+    .join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.+|\.+$/g, "");
+  return local || null;
+}
+
+function companyEmailForAssignee(
+  assignee: Pick<SiteadminAssignee, "first_name" | "last_name" | "display_name" | "email">,
+  brand: InboundEmail["brand"],
+): string {
+  const domain = BRAND_COMPANY_DOMAINS[brand];
+  const [profileLocal, profileDomain] = assignee.email.split("@");
+  if (profileLocal && profileDomain?.toLowerCase() === domain.toLowerCase()) {
+    return `${profileLocal}@${domain}`;
+  }
+
+  const local = localPartFromName(assignee.first_name, assignee.last_name)
+    || localPartFromName(assignee.display_name, null)
+    || profileLocal
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ".")
+      .replace(/^\.+|\.+$/g, "");
+  return `${local || "team"}@${domain}`;
+}
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleString("it-IT", {
@@ -331,80 +371,90 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
   }
 
   const displayResults = searchQuery.trim() ? searchResults : autoMatches;
+  const leadLabel = linkedLead
+    ? linkedLead.business_name
+    : linkedLeadId
+      ? "Lead collegato"
+      : "Lead";
 
   return (
-    <div className="border-b border-[var(--ma-line)] px-5 py-3">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
-          Lead collegato
-        </p>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs gap-1"
-          title="Collega lead"
-        >
-          <Link2 size={12} />
-          {linkedLeadId ? "Cambia" : "Collega"}
-        </button>
-      </div>
-
-      {linkedLeadId ? (
-        <div className="mt-2 flex items-center gap-2">
-          <span className="flex-1 rounded-lg bg-[var(--ma-surface)] px-3 py-1.5 text-sm font-medium text-[var(--ma-ink)]">
-            {linkedLead ? (
-              <>
-                {linkedLead.business_name}
-                <span className="ml-1 text-xs font-normal text-[var(--ma-muted)]">
-                  · {linkedLead.contact_name || linkedLead.contact_email}
-                </span>
-              </>
-            ) : (
-              <span className="text-[var(--ma-muted)]">Caricamento…</span>
-            )}
-          </span>
-          <button
-            onClick={() => handleLink(null)}
-            disabled={isPending}
-            className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs text-red-500"
-            title="Scollega"
-          >
-            <X size={12} />
-          </button>
-        </div>
-      ) : (
-        <p className="mt-1 text-xs text-[var(--ma-muted)]">Nessun lead collegato</p>
-      )}
+    <div className="relative inline-flex">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "inline-flex max-w-[220px] items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+          linkedLeadId
+            ? "border-[var(--ma-accent)]/20 bg-[var(--ma-accent)]/8 text-[var(--ma-ink)]"
+            : "border-black/10 bg-white/70 text-[var(--ma-muted)] hover:bg-white hover:text-[var(--ma-ink)]",
+        )}
+        title={linkedLead ? `Lead collegato: ${linkedLead.business_name}` : "Collega lead"}
+      >
+        <Link2 size={12} />
+        <span className="truncate">{leadLabel}</span>
+      </button>
 
       {open && (
-        <div className="mt-2 space-y-1.5">
+        <div className="absolute right-0 top-8 z-20 w-80 rounded-2xl border border-black/10 bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.16)]">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
+              Lead collegato
+            </p>
+            {linkedLeadId && (
+              <button
+                onClick={() => handleLink(null)}
+                disabled={isPending}
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50"
+                title="Scollega"
+              >
+                <X size={12} />
+                Scollega
+              </button>
+            )}
+          </div>
+
+          {linkedLeadId && (
+            <div className="mb-2 rounded-xl bg-[var(--ma-surface)] px-3 py-2 text-sm font-medium text-[var(--ma-ink)]">
+              {linkedLead ? (
+                <>
+                  {linkedLead.business_name}
+                  <span className="mt-0.5 block truncate text-xs font-normal text-[var(--ma-muted)]">
+                    {linkedLead.contact_name || linkedLead.contact_email}
+                  </span>
+                </>
+              ) : (
+                <span className="text-[var(--ma-muted)]">Caricamento...</span>
+              )}
+            </div>
+          )}
+
           <div className="relative">
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--ma-muted)]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Cerca per nome o email…"
+              placeholder="Cerca per nome o email..."
               className="menuary-admin-input w-full !pl-8 !py-1.5 text-sm"
             />
           </div>
 
           {searching && (
-            <p className="text-xs text-[var(--ma-muted)]">Ricerca…</p>
+            <p className="mt-2 text-xs text-[var(--ma-muted)]">Ricerca...</p>
           )}
 
           {displayResults.length > 0 && (
-            <ul className="rounded-lg border border-[var(--ma-line)] bg-[var(--ma-paper)] divide-y divide-[var(--ma-line)] overflow-hidden">
+            <ul className="mt-2 max-h-72 overflow-y-auto rounded-xl border border-[var(--ma-line)] bg-[var(--ma-paper)] divide-y divide-[var(--ma-line)]">
               {displayResults.map((lead) => (
                 <li key={lead.id}>
                   <button
                     onClick={() => handleLink(lead.id)}
                     disabled={isPending}
-                    className="w-full px-3 py-2 text-left hover:bg-[var(--ma-surface)] transition-colors"
+                    className="w-full px-3 py-2 text-left transition-colors hover:bg-[var(--ma-surface)]"
                   >
-                    <span className="block text-sm font-medium text-[var(--ma-ink)]">
+                    <span className="block truncate text-sm font-medium text-[var(--ma-ink)]">
                       {lead.business_name}
                     </span>
-                    <span className="block text-xs text-[var(--ma-muted)]">
+                    <span className="block truncate text-xs text-[var(--ma-muted)]">
                       {lead.contact_name} · {lead.contact_email} ·{" "}
                       {VERTICAL_LABELS[lead.business_vertical] ?? lead.business_vertical}
                     </span>
@@ -415,7 +465,7 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
           )}
 
           {!searching && searchQuery.trim() && searchResults.length === 0 && (
-            <p className="text-xs text-[var(--ma-muted)]">Nessun lead trovato</p>
+            <p className="mt-2 text-xs text-[var(--ma-muted)]">Nessun lead trovato</p>
           )}
         </div>
       )}
@@ -428,10 +478,11 @@ function LeadPanel({ emailId, linkedLeadId, autoMatches, onLinked }: LeadPanelPr
 type AssignPanelProps = {
   emailId: string;
   assignedToUserId: string | null;
+  brand: InboundEmail["brand"];
   onAssigned: (emailId: string, siteadminId: string | null) => void;
 };
 
-function AssignPanel({ emailId, assignedToUserId, onAssigned }: AssignPanelProps) {
+function AssignPanel({ emailId, assignedToUserId, brand, onAssigned }: AssignPanelProps) {
   const [isPending, startTransition] = useTransition();
   const [open, setOpen]               = useState(false);
   const [users, setUsers]             = useState<SiteadminAssignee[]>([]);
@@ -447,10 +498,6 @@ function AssignPanel({ emailId, assignedToUserId, onAssigned }: AssignPanelProps
     return () => { cancelled = true; };
   }, []);
 
-  function handleOpen() {
-    setOpen((v) => !v);
-  }
-
   function handleAssign(siteadminId: string | null) {
     startTransition(async () => {
       await assignEmail(emailId, siteadminId);
@@ -460,68 +507,79 @@ function AssignPanel({ emailId, assignedToUserId, onAssigned }: AssignPanelProps
   }
 
   const currentUser = users.find((u) => u.id === assignedToUserId);
+  const currentName = currentUser ? formatAssigneeName(currentUser) : assignedToUserId ? "Assegnata" : "Assegna";
+  const currentCompanyEmail = currentUser ? companyEmailForAssignee(currentUser, brand) : null;
 
   return (
-    <div className="border-b border-[var(--ma-line)] px-5 py-3">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
-          Assegnata a
-        </p>
-        <button
-          onClick={handleOpen}
-          className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs gap-1"
-          title="Assegna mail"
-        >
-          <UserCheck size={12} />
-          {assignedToUserId ? "Cambia" : "Assegna"}
-        </button>
-      </div>
-
-      {assignedToUserId ? (
-        <div className="mt-2 flex items-center gap-2">
-          <span className="flex-1 rounded-lg bg-[var(--ma-surface)] px-3 py-1.5 text-sm font-medium text-[var(--ma-ink)]">
-            {currentUser ? formatAssigneeName(currentUser) : assignedToUserId.slice(0, 8) + "…"}
-          </span>
-          <button
-            onClick={() => handleAssign(null)}
-            disabled={isPending}
-            className="menuary-admin-nav-link !w-auto !px-2 !py-1 text-xs text-red-500"
-            title="Rimuovi assegnazione"
-          >
-            <X size={12} />
-          </button>
-        </div>
-      ) : (
-        <p className="mt-1 text-xs text-[var(--ma-muted)]">Non assegnata</p>
-      )}
+    <div className="relative inline-flex">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "inline-flex max-w-[220px] items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+          assignedToUserId
+            ? "border-[var(--ma-accent)]/20 bg-[var(--ma-accent)]/8 text-[var(--ma-ink)]"
+            : "border-black/10 bg-white/70 text-[var(--ma-muted)] hover:bg-white hover:text-[var(--ma-ink)]",
+        )}
+        title={currentCompanyEmail ? `${currentName} · ${currentCompanyEmail}` : "Assegna mail"}
+      >
+        <UserCheck size={12} />
+        <span className="truncate">{currentName}</span>
+      </button>
 
       {open && (
-        <div className="mt-2 space-y-1.5">
-          {loading && <p className="text-xs text-[var(--ma-muted)]">Caricamento…</p>}
+        <div className="absolute right-0 top-8 z-20 w-80 rounded-2xl border border-black/10 bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.16)]">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ma-muted)]">
+              Assegnata a
+            </p>
+            {assignedToUserId && (
+              <button
+                onClick={() => handleAssign(null)}
+                disabled={isPending}
+                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50"
+                title="Rimuovi assegnazione"
+              >
+                <X size={12} />
+                Rimuovi
+              </button>
+            )}
+          </div>
+
+          {currentUser && (
+            <div className="mb-2 rounded-xl bg-[var(--ma-surface)] px-3 py-2">
+              <p className="truncate text-sm font-semibold text-[var(--ma-ink)]">{formatAssigneeName(currentUser)}</p>
+              <p className="truncate text-xs text-[var(--ma-muted)]">{companyEmailForAssignee(currentUser, brand)}</p>
+            </div>
+          )}
+
+          {loading && <p className="text-xs text-[var(--ma-muted)]">Caricamento...</p>}
 
           {!loading && users.length > 0 && (
-            <ul className="rounded-lg border border-[var(--ma-line)] bg-[var(--ma-paper)] divide-y divide-[var(--ma-line)] overflow-hidden">
-              {users.map((user) => (
-                <li key={user.id}>
-                  <button
-                    onClick={() => handleAssign(user.id)}
-                    disabled={isPending}
-                    className={cn(
-                      "w-full px-3 py-2 text-left transition-colors",
-                      user.id === assignedToUserId
-                        ? "bg-[var(--ma-accent)]/10"
-                        : "hover:bg-[var(--ma-surface)]",
-                    )}
-                  >
-                    <span className="block text-sm font-medium text-[var(--ma-ink)]">
-                      {formatAssigneeName(user)}
-                    </span>
-                    <span className="block text-xs text-[var(--ma-muted)]">
-                      {user.email} · {user.role}
-                    </span>
-                  </button>
-                </li>
-              ))}
+            <ul className="max-h-72 overflow-y-auto rounded-xl border border-[var(--ma-line)] bg-[var(--ma-paper)] divide-y divide-[var(--ma-line)]">
+              {users.map((user) => {
+                const companyEmail = companyEmailForAssignee(user, brand);
+                return (
+                  <li key={user.id}>
+                    <button
+                      onClick={() => handleAssign(user.id)}
+                      disabled={isPending}
+                      className={cn(
+                        "w-full px-3 py-2 text-left transition-colors",
+                        user.id === assignedToUserId
+                          ? "bg-[var(--ma-accent)]/10"
+                          : "hover:bg-[var(--ma-surface)]",
+                      )}
+                    >
+                      <span className="block truncate text-sm font-medium text-[var(--ma-ink)]">
+                        {formatAssigneeName(user)}
+                      </span>
+                      <span className="block truncate text-xs text-[var(--ma-muted)]">
+                        {companyEmail} · {user.role}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -688,8 +746,8 @@ export function EmailDetail({ email, threadEmails, onClose, onMutated, onReply, 
           <span>{fmtDate(email.created_at)}</span>
         </div>
 
-        {(messages.length > 1 || threadAttachmentCount > 0) && (
-          <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-[var(--ma-muted)]">
+        {(messages.length > 1 || threadAttachmentCount > 0 || mode === "platform") && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--ma-muted)]">
             {messages.length > 1 && (
               <span className="rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-black/5">
                 {messages.length} messaggi nel thread
@@ -701,31 +759,28 @@ export function EmailDetail({ email, threadEmails, onClose, onMutated, onReply, 
                 {threadAttachmentCount} allegat{threadAttachmentCount === 1 ? "o" : "i"}
               </span>
             )}
+            {mode === "platform" && (
+              <>
+                <AssignPanel
+                  emailId={email.id}
+                  assignedToUserId={assignedUserId}
+                  brand={email.brand}
+                  onAssigned={(id, sid) => {
+                    setAssignedUserId(sid);
+                    onAssigned?.(id, sid);
+                  }}
+                />
+                <LeadPanel
+                  emailId={email.id}
+                  linkedLeadId={linkedLeadId}
+                  autoMatches={autoMatches}
+                  onLinked={setLinkedLeadId}
+                />
+              </>
+            )}
           </div>
         )}
       </div>
-
-      {/* Pannello assegnazione */}
-      {mode === "platform" && (
-        <AssignPanel
-          emailId={email.id}
-          assignedToUserId={assignedUserId}
-          onAssigned={(id, sid) => {
-            setAssignedUserId(sid);
-            onAssigned?.(id, sid);
-          }}
-        />
-      )}
-
-      {/* Lead panel */}
-      {mode === "platform" && (
-        <LeadPanel
-          emailId={email.id}
-          linkedLeadId={linkedLeadId}
-          autoMatches={autoMatches}
-          onLinked={setLinkedLeadId}
-        />
-      )}
 
       {/* Corpo email */}
       <div className="flex-1 overflow-y-auto bg-[var(--ma-surface)]/35 p-5">

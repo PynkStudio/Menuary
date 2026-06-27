@@ -7,6 +7,7 @@ export type SiteadminAssignee = {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  display_name: string | null;
   role: string;
 };
 
@@ -15,7 +16,7 @@ export async function getSiteadminForAssignment(): Promise<SiteadminAssignee[]> 
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("siteadmin")
-    .select("id, email, first_name, last_name, role")
+    .select("id, email, first_name, last_name, display_name, role")
     .eq("enabled", true)
     .order("first_name", { nullsFirst: false });
 

@@ -21,4 +21,5 @@ Quando cambia un'etichetta, una route o un pulsante nel codice (es. in `src/i18n
 
 - [[gestione-navigazione]] — mappa completa del menu del pannello Gestione.
 - [[gestione-ordini]] — schermata Ordini (esempio completo).
+- [[posta-admin-gestione]] — schermata Posta per admin piattaforma e tenant.
 - [[gestione-stampanti-comande]] — schermata Stampanti comande (in Cassa).

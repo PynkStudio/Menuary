@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { getGovernanceService } from "../ai-governance-data";
 import { PynkJsonLd } from "../pynk-json-ld";
@@ -13,6 +13,7 @@ export function PynkAiGovernanceServicePage({ slug }: { slug: string }) {
   const service = getGovernanceService(slug);
   const href = useTenantLocalizedHref();
   if (!service) return null;
+  const scopeItems = service.includes.slice(0, 6);
 
   const path = `/ai-governance/${service.slug}`;
   const jsonLd = [
@@ -60,45 +61,42 @@ export function PynkAiGovernanceServicePage({ slug }: { slug: string }) {
           <div className="pynk-container pynk-ai-split">
             <div>
               <h2 className="pynk-section-title pynk-section-title-left">Descrizione</h2>
-              <p className="pynk-section-lead pynk-section-lead-left">{service.description}</p>
+              <p className="pynk-section-lead pynk-section-lead-left pynk-ai-service-description">{service.description}</p>
             </div>
             <div className="pynk-panel pynk-double-bezel">
               <h3 className="pynk-panel-title">Comprende</h3>
-              <ul className="pynk-check-list pynk-mt-24">
-                {service.includes.map((item) => (
-                  <li key={item}>
-                    <CheckCircle2 className="pynk-icon-sm pynk-check" />
-                    <span>{item}</span>
-                  </li>
+              <div className="pynk-ai-token-list">
+                {scopeItems.map((item) => (
+                  <span key={item}>{item}</span>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
         </section>
 
         <section className="pynk-section pynk-section-alt">
-          <div className="pynk-container pynk-grid-2 pynk-grid-loose">
-            <div>
+          <div className="pynk-container pynk-ai-use-benefit">
+            <div className="pynk-ai-compact-block">
               <h2 className="pynk-section-title pynk-section-title-sm">Casi d&apos;uso</h2>
-              <ul className="pynk-check-list">
-                {service.useCases.map((item) => (
-                  <li key={item}>
-                    <CheckCircle2 className="pynk-icon-sm pynk-check" />
-                    <span>{item}</span>
-                  </li>
+              <div className="pynk-ai-compact-list">
+                {service.useCases.map((item, index) => (
+                  <article key={item}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <p>{item}</p>
+                  </article>
                 ))}
-              </ul>
+              </div>
             </div>
-            <div>
+            <div className="pynk-ai-compact-block">
               <h2 className="pynk-section-title pynk-section-title-sm">Benefici</h2>
-              <ul className="pynk-check-list">
-                {service.benefits.map((item) => (
-                  <li key={item}>
-                    <CheckCircle2 className="pynk-icon-sm pynk-check" />
-                    <span>{item}</span>
-                  </li>
+              <div className="pynk-ai-compact-list">
+                {service.benefits.map((item, index) => (
+                  <article key={item}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <p>{item}</p>
+                  </article>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
         </section>
@@ -109,7 +107,7 @@ export function PynkAiGovernanceServicePage({ slug }: { slug: string }) {
               <h2 className="pynk-section-title">Processo di lavoro</h2>
               <p className="pynk-section-lead">Fasi chiare, output verificabili e responsabilità tecniche esplicite.</p>
             </div>
-            <div className="pynk-steps pynk-steps-premium">
+            <div className="pynk-steps pynk-steps-premium pynk-steps-horizontal">
               {service.process.map((step, index) => (
                 <article key={step} className="pynk-step">
                   <div className="pynk-panel-icon pynk-panel-icon-sm">

@@ -82,16 +82,6 @@ export default async function GestioneMailPage({
 
   return (
     <div>
-      <div className="mb-4">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-50">Comunicazioni</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight">Mail</h1>
-        <p className="mt-3 max-w-2xl opacity-70">
-          {isGlobalInbox
-            ? "Email di @pynkstudio.it e dei verticali (@menuary.it, @bizery.it, @weuseorpheo.com)"
-            : `Casella interna di ${tenant.name}.`}
-        </p>
-      </div>
-
       <MailApp
         initialInbox={inbox}
         initialSent={sent}

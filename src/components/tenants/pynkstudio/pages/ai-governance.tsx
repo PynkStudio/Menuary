@@ -26,12 +26,44 @@ const platformBuilds = [
 ];
 
 const problems = [
-  "strumenti AI introdotti senza inventario, owner o criteri di approvazione",
-  "dati aziendali copiati in servizi cloud senza regole tecniche chiare",
-  "output usati nei processi senza verifica, logging o supervisione umana",
-  "modelli, prompt e knowledge base aggiornati senza versionamento",
-  "fornitori AI valutati solo sul prezzo, non su dati, API, lock-in e audit",
+  { title: "Shadow AI", body: "Tool introdotti senza inventario, owner o approvazione." },
+  { title: "Dati esposti", body: "Documenti e segreti copiati in cloud senza regole tecniche." },
+  { title: "Output non verificati", body: "Risposte usate nei processi senza review o log." },
+  { title: "Versioni opache", body: "Modelli, prompt e knowledge base cambiano senza traccia." },
+  { title: "Fornitori deboli", body: "Vendor scelti senza valutare API, lock-in e audit." },
 ];
+
+const governanceSignals = [
+  ["Inventario", "sistemi, modelli, owner"],
+  ["Dati", "fonti, permessi, retention"],
+  ["Processi", "workflow, review, escalation"],
+  ["Controllo", "logging, audit, versioni"],
+] as const;
+
+const operatingLayers = [
+  { label: "Business", detail: "caso d'uso, owner, impatto" },
+  { label: "Data", detail: "fonti, permessi, qualità" },
+  { label: "Model", detail: "LLM, RAG, agenti, eval" },
+  { label: "Control", detail: "policy, log, audit, review" },
+] as const;
+
+const governanceFlow = [
+  ["01", "Inventario", "Tool e sistemi AI realmente usati"],
+  ["02", "Classificazione", "Ruolo, rischio, dati e processi coinvolti"],
+  ["03", "Architettura", "Modelli, retrieval, tool, accessi e logging"],
+  ["04", "Operatività", "Policy, literacy, audit e miglioramento continuo"],
+] as const;
+
+const beforeAfter = [
+  {
+    title: "AI non governata",
+    items: ["tool scelti dal singolo reparto", "dati caricati senza criterio", "output copiati nei processi", "nessun audit trail"],
+  },
+  {
+    title: "AI governata",
+    items: ["owner e workflow definiti", "permessi e fonti controllate", "human review dove serve", "log, versioni e responsabilità"],
+  },
+] as const;
 
 const faq = [
   {
@@ -100,19 +132,23 @@ export function PynkAiGovernancePage() {
               aria-label="Sistema AI governato"
             >
               <div className="pynk-ai-system-top">
-                <span>governance runtime</span>
-                <strong>RAG / Agent / Audit</strong>
+                <span>operating model</span>
+                <strong>AI in produzione</strong>
               </div>
-              <div className="pynk-ai-system-core">
-                <span className="pynk-ai-node is-hot">policy</span>
-                <span className="pynk-ai-node">accessi</span>
-                <span className="pynk-ai-node">retrieval</span>
-                <span className="pynk-ai-node">tool</span>
-                <span className="pynk-ai-node">human review</span>
-                <span className="pynk-ai-node">log</span>
+              <div className="pynk-ai-orbit" aria-hidden>
+                <div className="pynk-ai-orbit-core">
+                  <strong>AI</strong>
+                  <span>governata</span>
+                </div>
+                {operatingLayers.map((layer, index) => (
+                  <div key={layer.label} className={`pynk-ai-orbit-node pynk-ai-orbit-node-${index + 1}`}>
+                    <b>{layer.label}</b>
+                    <small>{layer.detail}</small>
+                  </div>
+                ))}
               </div>
               <div className="pynk-ai-system-stream">
-                <span>model: claude/openai/llama</span>
+                <span>model: openai / claude / llama</span>
                 <span>risk: role + use case</span>
                 <span>trace: enabled</span>
               </div>
@@ -120,38 +156,63 @@ export function PynkAiGovernancePage() {
           </div>
         </section>
 
-        <section className="pynk-section">
-          <div className="pynk-container pynk-ai-split">
-            <div>
+        <section className="pynk-section pynk-ai-contrast-section">
+          <div className="pynk-container-wide">
+            <div className="pynk-ai-contrast-head">
               <p className="pynk-eyebrow">Il punto non è il tool</p>
-              <h2 className="pynk-section-title pynk-section-title-left">Ogni azienda sta introducendo AI. Poche stanno governando il processo.</h2>
-              <p className="pynk-section-lead pynk-section-lead-left">
-                ChatGPT, Copilot, Gemini, Claude, chatbot verticali e automazioni entrano nei reparti prima che esistano inventario, policy, ruoli e log. Il rischio nasce quando l&apos;AI diventa processo senza essere progettata come sistema.
-              </p>
+              <h2>Da uso spontaneo a sistema controllato.</h2>
             </div>
-            <div className="pynk-ai-terminal pynk-double-bezel" aria-label="Esempio di processo AI governato">
-              {["input classificato", "retrieval con permessi", "modello selezionato", "tool calling controllato", "human review", "logging e audit"].map((step, index) => (
-                <span key={step} style={{ "--pynk-row": index } as React.CSSProperties}>
-                  {step}
-                </span>
+            <div className="pynk-ai-before-after">
+              {beforeAfter.map((column, columnIndex) => (
+                <div key={column.title} className={`pynk-ai-ba-panel ${columnIndex === 1 ? "is-controlled" : ""}`}>
+                  <span>{columnIndex === 0 ? "senza processo" : "con governance"}</span>
+                  <h3>{column.title}</h3>
+                  <div>
+                    {column.items.map((item, index) => (
+                      <p key={item} style={{ "--pynk-row": index } as React.CSSProperties}>
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div className="pynk-ai-ba-bridge" aria-hidden>
+                <span />
+                <ArrowRight className="pynk-icon-sm" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="pynk-section pynk-section-alt pynk-ai-flow-section">
+          <div className="pynk-container-wide">
+            <div className="pynk-section-head">
+              <h2 className="pynk-section-title">Il metodo in quattro passaggi</h2>
+            </div>
+            <div className="pynk-ai-flow-map">
+              {governanceFlow.map(([number, title, detail], index) => (
+                <article key={number} className="pynk-ai-flow-node" style={{ "--pynk-row": index } as React.CSSProperties}>
+                  <span>{number}</span>
+                  <h3>{title}</h3>
+                  <p>{detail}</p>
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="pynk-section pynk-section-alt">
-          <div className="pynk-container">
-            <div className="pynk-section-head">
-              <h2 className="pynk-section-title">Senza governance i rischi sono tecnici prima che legali</h2>
-              <p className="pynk-section-lead">
-                Una buona architettura riduce esposizione dei dati, output non verificati, errori operativi e anche rischio normativo.
-              </p>
+        <section className="pynk-section">
+          <div className="pynk-container-wide pynk-ai-risk-layout">
+            <div className="pynk-ai-risk-copy">
+              <p className="pynk-eyebrow">Rischi tecnici</p>
+              <h2 className="pynk-section-title pynk-section-title-left">Il rischio legale nasce spesso da un difetto di architettura.</h2>
             </div>
             <div className="pynk-ai-risk-grid">
               {problems.map((problem) => (
-                <article key={problem} className="pynk-panel pynk-panel-sm">
+                <article key={problem.title} className="pynk-panel pynk-panel-sm pynk-ai-risk-card">
                   <ShieldCheck className="pynk-icon-sm pynk-check" />
-                  <p className="pynk-panel-desc">{problem}</p>
+                  <h3>{problem.title}</h3>
+                  <p>{problem.body}</p>
                 </article>
               ))}
             </div>
@@ -171,11 +232,16 @@ export function PynkAiGovernancePage() {
                 const Icon = [BrainCircuit, GitBranch, FileCheck2, ShieldCheck, Database, Bot, Wrench, CheckCircle2, FileCheck2][index] ?? BrainCircuit;
                 return (
                   <Link key={service.slug} href={href(`/ai-governance/${service.slug}`)} className={`pynk-panel pynk-ai-service-card pynk-ai-service-card-${index + 1}`}>
+                    <span className="pynk-ai-card-index">{String(index + 1).padStart(2, "0")}</span>
                     <div className="pynk-panel-icon pynk-panel-icon-soft">
                       <Icon className="pynk-icon-sm" />
                     </div>
                     <h3 className="pynk-panel-title">{service.title}</h3>
-                    <p className="pynk-panel-desc">{service.summary}</p>
+                    <div className="pynk-ai-mini-tags">
+                      {service.includes.slice(0, 3).map((item) => (
+                        <span key={item}>{item.split(",")[0]}</span>
+                      ))}
+                    </div>
                     <span className="pynk-card-cta">
                       Apri servizio <ArrowRight className="pynk-icon-xs" />
                     </span>
@@ -191,9 +257,11 @@ export function PynkAiGovernancePage() {
             <div>
               <p className="pynk-eyebrow">AI Act nella governance</p>
               <h2 className="pynk-section-title pynk-section-title-left">Gli obblighi dipendono da ruolo e rischio.</h2>
-              <p className="pynk-section-lead pynk-section-lead-left">
-                Provider, deployer, importatori e distributori non hanno lo stesso perimetro. Anche il livello di rischio cambia gli obblighi: sistemi vietati, alto rischio, AI Literacy, documentazione e governance vanno valutati sul sistema reale.
-              </p>
+              <div className="pynk-ai-role-grid">
+                {["provider", "deployer", "importatore", "distributore"].map((role) => (
+                  <span key={role}>{role}</span>
+                ))}
+              </div>
               <Link href={href("/ai-act")} className="pynk-link-cta pynk-mt-24">
                 Leggi la sezione AI Act <ArrowRight className="pynk-icon-xs" />
               </Link>
@@ -214,9 +282,14 @@ export function PynkAiGovernancePage() {
           <div className="pynk-container">
             <div className="pynk-section-head">
               <h2 className="pynk-section-title">Implementiamo direttamente i sistemi AI</h2>
-              <p className="pynk-section-lead">
-                La governance è più solida quando chi la progetta sa anche costruire i sistemi: modelli, API, dati, workflow e deployment.
-              </p>
+            </div>
+            <div className="pynk-ai-signal-grid">
+              {governanceSignals.map(([title, body]) => (
+                <article key={title}>
+                  <strong>{title}</strong>
+                  <span>{body}</span>
+                </article>
+              ))}
             </div>
             <div className="pynk-pills">
               {platformBuilds.map((item) => (

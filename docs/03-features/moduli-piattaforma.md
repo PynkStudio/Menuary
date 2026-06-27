@@ -51,6 +51,18 @@ I moduli sono abilitati per tenant tramite i feature-flag in `tenant-registry.ts
 
 > Le voci `catalog`, `commerce`, `operations`, `bookings`, `customers`, `organization`, `integrations` compaiono anch'esse come `key:` in `tenant-modules.ts`: **da verificare** se sono moduli o raggruppamenti/categorie. Vanno lette in contesto nel file.
 
+## Note modulo `mail`
+
+**Dedotto dal codice.** Il modulo `mail` usa la UI condivisa `MailApp` per:
+
+- inbox globale piattaforma in `/admin/inbox` (`admin.menuary.it/inbox`);
+- inbox tenant in `/gestione/[tenantSlug]/mail`, quando il tenant ha accesso al modulo mail;
+- vista conversazione in modalita' thread: la lista mostra il messaggio piu' recente della conversazione e il dettaglio mostra tutti i messaggi del thread in ordine cronologico;
+- conteggi aggregati per thread: numero messaggi, non lette e allegati;
+- allegati visibili direttamente nel corpo del messaggio quando il formato e' renderizzabile: immagini, PDF e testo/JSON; gli altri formati restano apribili/scaricabili.
+
+Scheda UI: [[posta-admin-gestione]].
+
 ## Dipendenze tra moduli
 
 Da `ARCHITECTURE.md`: i moduli dichiarano dipendenze (`requires`, `requiresAny`); un modulo è effettivo solo se anche le sue dipendenze sono abilitate. Le combinazioni esatte sono **da leggere** in `tenant-modules.ts`.

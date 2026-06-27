@@ -1,0 +1,95 @@
+---
+title: "Posta — inbox admin e tenant"
+module: "mail"
+roles: ["siteadmin", "tenant_admin"]
+tags: ["ui", "mail", "inbox", "gestione", "admin"]
+route: "/admin/inbox, /gestione/[tenantSlug]/mail"
+source: "src/app/admin/inbox/page.tsx, src/app/gestione/[tenantSlug]/mail/page.tsx, src/components/admin/inbox/mail-app.tsx, src/components/admin/inbox/email-list.tsx, src/components/admin/inbox/email-detail.tsx, src/components/admin/inbox/mail-sidebar.tsx"
+last_updated: "2026-06-28"
+owner: ""
+---
+
+# A cosa serve la schermata
+
+La schermata **Posta** permette di leggere, filtrare, rispondere, assegnare e organizzare le email ricevute dalla piattaforma o dal tenant.
+
+# Come arrivarci
+
+## Admin piattaforma
+
+1. Apri `admin.menuary.it`.
+2. Nel menu laterale premi **Posta in arrivo**.
+3. La route e' `/admin/inbox`.
+
+## Gestione tenant
+
+1. Apri il pannello **Gestione** del tenant.
+2. Nel menu laterale premi **Mail**.
+3. La route e' `/gestione/[tenantSlug]/mail`.
+
+La voce **Mail** nel pannello Gestione e' visibile solo quando il tenant ha accesso al modulo mail e l'utente ha i permessi necessari.
+
+# Elementi della schermata
+
+- Sidebar con le viste **Arrivo**, **Le mie**, **Inviata**, **Stellate**, **Archivio**. In modalita' tenant non compare **Le mie**.
+- Filtri brand nella inbox globale: **Tutte**, **PynkStudio**, **Menuary**, **Bizery**, **Orpheo**, **Supporto**.
+- Lista conversazioni: le email inbound sono raggruppate in thread. Ogni riga mostra mittente, oggetto, anteprima, data, eventuale badge con numero messaggi e badge allegati.
+- Dettaglio thread: mostra tutti i messaggi della conversazione in ordine cronologico. La pagina non ha titolo/sottotitolo sopra la mail app, cosi' il reader usa quasi tutta l'altezza disponibile.
+- Allegati inline: immagini, PDF e testo/JSON vengono mostrati direttamente nel corpo del messaggio quando il contenuto e' disponibile; gli altri formati mostrano una scheda allegato con azioni.
+- Controlli extra in admin piattaforma: assegnazione e lead sono pulsanti compatti nell'header del messaggio, non pannelli permanenti. L'assegnazione mostra il nome della persona; nel dropdown usa l'indirizzo aziendale derivato dal brand della mail, non l'email privata di login.
+
+# Pulsanti e azioni
+
+| Etichetta UI | Cosa fa | Dove si trova |
+|---|---|---|
+| **Scrivi** | Apre il drawer di composizione email. | Sidebar desktop o pulsante mobile in basso a destra. |
+| **Arrivo** | Mostra la posta in arrivo non archiviata. | Sidebar / filtri mobile. |
+| **Le mie** | Mostra le email assegnate all'utente siteadmin corrente. | Sidebar admin piattaforma. |
+| **Inviata** | Mostra le email inviate. | Sidebar / filtri mobile. |
+| **Stellate** | Mostra le email contrassegnate con stella. | Sidebar / filtri mobile. |
+| **Archivio** | Mostra le email archiviate. | Sidebar / filtri mobile. |
+| **Aggiorna** | Ricarica la lista corrente. | Toolbar sopra la lista. |
+| **Indietro** | Chiude il dettaglio email e torna alla lista. | Toolbar dettaglio. |
+| **Non letta** | Segna il messaggio selezionato come non letto. | Toolbar dettaglio. |
+| Icona stella | Aggiunge o rimuove la stella. | Toolbar dettaglio. |
+| Icona risposta | Apre la composizione precompilata per rispondere. | Toolbar dettaglio. |
+| Icona archivio | Archivia l'email selezionata. | Toolbar dettaglio. |
+| Icona cestino | Elimina definitivamente l'email selezionata dopo conferma. | Toolbar dettaglio. |
+| **Assegna** / nome persona | Assegna la mail a un siteadmin o cambia assegnazione. | Pulsante compatto nell'header del dettaglio, solo admin piattaforma. |
+| **Lead** / nome lead | Collega la mail a un lead o cambia lead collegato. | Pulsante compatto nell'header del dettaglio, solo admin piattaforma. |
+| **Rimuovi** | Rimuove l'assegnazione corrente. | Dropdown del pulsante assegnazione. |
+| **Scollega** | Rimuove il lead collegato. | Dropdown del pulsante lead. |
+| Icona apri allegato | Apre l'allegato in una nuova scheda/finestra. | Scheda allegato nel corpo del messaggio. |
+| Icona scarica allegato | Scarica l'allegato quando il contenuto e' disponibile. | Scheda allegato nel corpo del messaggio. |
+
+# Campi e filtri
+
+| Campo/filtro | Valori | Note |
+|---|---|---|
+| Vista cassetta | **Arrivo**, **Le mie**, **Inviata**, **Stellate**, **Archivio** | **Le mie** e' solo admin piattaforma. |
+| Brand | **Tutte**, **PynkStudio**, **Menuary**, **Bizery**, **Orpheo**, **Supporto** | Solo admin piattaforma. |
+| Cerca per nome o email | Testo libero | Presente nei pannelli di collegamento lead. |
+
+# Stati possibili
+
+- Thread non letto: la riga mostra indicatore laterale e data in evidenza.
+- Thread con piu' messaggi: la riga mostra il badge con il numero messaggi.
+- Thread con allegati: la riga mostra il badge allegati; nel dettaglio gli allegati compaiono dentro il corpo del messaggio.
+- Allegato con anteprima: immagini, PDF e testo/JSON vengono renderizzati inline quando disponibili.
+- Allegato senza anteprima: viene mostrata la scheda file con azioni apri/scarica se possibile.
+
+# Procedure correlate
+
+- [[gestione-navigazione]]
+- [[integrazioni-attive]]
+
+# Riferimenti nel codice (manutenzione)
+
+- Route admin piattaforma: `src/app/admin/inbox/page.tsx`
+- Route tenant: `src/app/gestione/[tenantSlug]/mail/page.tsx`
+- Shell mail condivisa: `src/components/admin/inbox/mail-app.tsx`
+- Lista conversazioni: `src/components/admin/inbox/email-list.tsx`
+- Dettaglio thread e allegati inline: `src/components/admin/inbox/email-detail.tsx`
+- Sidebar e filtri: `src/components/admin/inbox/mail-sidebar.tsx`
+- Query inbound: `src/lib/email/inbound-queries.ts`
+- Tipi inbound/allegati: `src/lib/email/inbound-types.ts`

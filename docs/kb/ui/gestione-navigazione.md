@@ -67,6 +67,7 @@ Sulla voce **Ordini** può comparire un contatore di nuovi arrivi / ordini pront
 # Procedure correlate
 
 - [[gestione-ordini]]
+- [[posta-admin-gestione]]
 
 # Riferimenti nel codice (manutenzione)
 

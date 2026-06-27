@@ -351,7 +351,7 @@ export function MailApp({
   return (
     <>
       <div className="menuary-admin-card overflow-hidden p-0">
-        <div className="flex h-[calc(100vh-180px)] min-h-[500px] rounded-[inherit] bg-white/45 backdrop-blur-xl">
+        <div className="flex h-[calc(100vh-4rem)] min-h-[640px] rounded-[inherit] bg-white/45 backdrop-blur-xl max-lg:h-[calc(100vh-5rem)]">
           {/* Sidebar */}
           <div className="hidden lg:flex">
             <MailSidebar
