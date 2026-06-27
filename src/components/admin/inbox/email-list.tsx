@@ -1,6 +1,6 @@
 "use client";
 
-import { Inbox, Star, Eye, MousePointerClick } from "lucide-react";
+import { Inbox, MessageSquareText, Paperclip, Star, Eye, MousePointerClick } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { InboundEmail } from "@/lib/email/inbound-types";
 import type { TrackingSummary } from "@/lib/email/tracking-queries";
@@ -10,6 +10,9 @@ type Props = {
   selectedId: string | null;
   onSelect: (email: InboundEmail) => void;
   trackingMap?: Record<string, TrackingSummary>;
+  threadCountMap?: Record<string, number>;
+  threadUnreadMap?: Record<string, number>;
+  threadAttachmentMap?: Record<string, number>;
 };
 
 function fmtDate(iso: string) {
@@ -38,7 +41,7 @@ function initialFor(email: InboundEmail): string {
   return src.charAt(0).toUpperCase();
 }
 
-export function EmailList({ emails, selectedId, onSelect, trackingMap }: Props) {
+export function EmailList({ emails, selectedId, onSelect, trackingMap, threadCountMap, threadUnreadMap, threadAttachmentMap }: Props) {
   if (emails.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center text-[var(--ma-muted)]">
@@ -49,10 +52,13 @@ export function EmailList({ emails, selectedId, onSelect, trackingMap }: Props) 
   }
 
   return (
-    <ul className="divide-y divide-[var(--ma-line)]">
+    <ul className="space-y-1.5 p-2">
       {emails.map((email) => {
         const isSelected = email.id === selectedId;
-        const isUnread = !email.read;
+        const threadCount = threadCountMap?.[email.id] ?? 1;
+        const threadUnreadCount = threadUnreadMap?.[email.id] ?? (!email.read ? 1 : 0);
+        const threadAttachmentCount = threadAttachmentMap?.[email.id] ?? email.attachments.length;
+        const isUnread = threadUnreadCount > 0;
         const brand = BRAND_STYLE[email.brand] ?? { bg: "bg-gray-400", ring: "ring-gray-300" };
         const tracking = email.message_id && trackingMap ? trackingMap[email.message_id] : undefined;
 
@@ -61,16 +67,18 @@ export function EmailList({ emails, selectedId, onSelect, trackingMap }: Props) 
             {isUnread && (
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-[var(--ma-accent)]"
+                className="pointer-events-none absolute inset-y-2 left-0 w-[3px] rounded-full bg-[var(--ma-accent)]"
               />
             )}
             <button
               onClick={() => onSelect(email)}
               className={cn(
-                "w-full px-4 py-3 text-left transition-colors",
-                "hover:bg-[var(--ma-surface)]",
-                isSelected && "bg-[var(--ma-surface)]",
-                isUnread && "pl-[calc(1rem+3px)]",
+                "w-full rounded-2xl px-3.5 py-3 text-left transition-all",
+                "hover:bg-white/70 hover:shadow-sm",
+                isSelected
+                  ? "bg-white shadow-[0_14px_36px_rgba(15,23,42,0.10)] ring-1 ring-black/5"
+                  : "bg-transparent",
+                isUnread && "pl-[calc(0.875rem+3px)]",
               )}
             >
               <div className="flex items-start gap-3">
@@ -107,21 +115,38 @@ export function EmailList({ emails, selectedId, onSelect, trackingMap }: Props) 
                     </span>
                   </div>
 
-                  <p
-                    className={cn(
-                      "mt-0.5 truncate text-sm",
-                      isUnread
-                        ? "font-medium text-[var(--ma-ink)]"
-                        : "text-[var(--ma-ink)]/75",
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <p
+                      className={cn(
+                        "min-w-0 flex-1 truncate text-sm",
+                        isUnread
+                          ? "font-medium text-[var(--ma-ink)]"
+                          : "text-[var(--ma-ink)]/75",
+                      )}
+                    >
+                      {email.subject || "(nessun oggetto)"}
+                    </p>
+                    {threadCount > 1 && (
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--ma-surface)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--ma-muted)]">
+                        <MessageSquareText size={10} />
+                        {threadCount}
+                      </span>
                     )}
-                  >
-                    {email.subject || "(nessun oggetto)"}
-                  </p>
+                  </div>
 
                   <div className="mt-0.5 flex items-center gap-1.5">
                     <p className="min-w-0 flex-1 truncate text-xs text-[var(--ma-muted)]">
                       {email.text_body?.slice(0, 120) ?? ""}
                     </p>
+                    {threadAttachmentCount > 0 && (
+                      <span
+                        className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600"
+                        title={`${threadAttachmentCount} allegat${threadAttachmentCount === 1 ? "o" : "i"}`}
+                      >
+                        <Paperclip size={10} />
+                        {threadAttachmentCount > 1 && threadAttachmentCount}
+                      </span>
+                    )}
                     {tracking && tracking.openCount > 0 && (
                       <span
                         className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-600"

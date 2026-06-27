@@ -3,9 +3,9 @@ import { requirePynkstudioTenant } from "@/components/tenants/pynkstudio/resolve
 import { PynkStudioServiziPage } from "@/components/tenants/pynkstudio/pages/servizi";
 
 export const metadata: Metadata = {
-  title: { absolute: "Servizi di sviluppo — PYNK STUDIO" },
+  title: { absolute: "Servizi di sviluppo software e AI — PYNK STUDIO" },
   description:
-    "Siti e landing, web app, app iOS/Android, desktop macOS/Windows, automazioni e AI. Stack dichiarato in modalità tecnica.",
+    "Sviluppo software, web app, app mobile, desktop, chatbot, agenti AI, RAG, automazioni, API, integrazioni e AI Governance.",
 };
 
 export default async function ServiziRoute() {

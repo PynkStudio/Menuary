@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ArrowRight, Brain, ChevronDown, Globe, Link2, Map, Monitor, Palette, Smartphone } from "lucide-react";
+import { ArrowRight, Brain, ChevronDown, FileCheck2, Globe, Link2, Map, Monitor, Palette, ShieldCheck, Smartphone } from "lucide-react";
 import { PynkShell, usePynkNerd } from "../pynk-shell";
 import { PynkPortfolioCard, PynkStackChips } from "../pynk-cards";
 import { pickPynkPortfolioPreview } from "../portfolio";
@@ -163,6 +163,43 @@ function HomeInner() {
               );
             })}
           </motion.div>
+        </div>
+      </section>
+
+      <section className="pynk-section">
+        <div className="pynk-container pynk-ai-split">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.55 }}>
+            <p className="pynk-eyebrow">AI Governance</p>
+            <h2 className="pynk-section-title pynk-section-title-left">
+              AI utile, scalabile e <span className="pynk-accent">governata</span>.
+            </h2>
+            <p className="pynk-section-lead pynk-section-lead-left">
+              Progettiamo chatbot, agenti, RAG, workflow e integrazioni AI con ruoli, dati, logging, supervisione e requisiti AI Act già considerati nell&apos;architettura.
+            </p>
+            <Link href={href("/ai-governance")} className="pynk-link-cta pynk-mt-24">
+              Apri AI Governance
+              <ArrowRight className="pynk-icon-xs" />
+            </Link>
+          </motion.div>
+          <div className="pynk-grid-2 pynk-grid-tight">
+            {[
+              { title: "Architettura AI", body: "OpenAI, Claude, Gemini, Llama, Mistral, Qwen, RAG, agenti, MCP e tool calling.", Icon: Brain },
+              { title: "Governance tecnica", body: "Workflow, accessi, versionamento, logging, auditing e supervisione umana.", Icon: ShieldCheck },
+              { title: "AI Act", body: "Valutazione di ruolo, rischio, AI Literacy, documentazione e possibili obblighi.", Icon: FileCheck2 },
+              { title: "Integrazioni", body: "CRM, ERP, WhatsApp, Microsoft 365, Google Workspace, email, database e API.", Icon: Link2 },
+            ].map(({ title, body, Icon }) => {
+              const TileIcon = Icon;
+              return (
+                <article key={title} className="pynk-panel pynk-panel-sm">
+                  <div className="pynk-panel-icon pynk-panel-icon-soft">
+                    <TileIcon className="pynk-icon-sm" />
+                  </div>
+                  <h3 className="pynk-panel-title-sm">{title}</h3>
+                  <p className="pynk-panel-desc-sm">{body}</p>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
 

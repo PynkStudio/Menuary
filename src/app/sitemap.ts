@@ -5,6 +5,7 @@ import { BIZERY_ORIGIN, MENUARY_ORIGIN, ORPHEO_ORIGIN, marketingSitemap } from "
 import { siteConfig } from "@/lib/site-config";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
+import { governanceBlogArticles, governanceServices } from "@/components/tenants/pynkstudio/ai-governance-data";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const h = await headers();
@@ -23,7 +24,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       : siteConfig.url;
   const routes =
     tenant.id === "pynkstudio"
-      ? ["", "/servizi", "/settori", "/lavori", "/consulenza", "/contattaci"]
+      ? [
+          "",
+          "/servizi",
+          "/ai-governance",
+          ...governanceServices.map((service) => `/ai-governance/${service.slug}`),
+          "/ai-act",
+          "/blog/ai-governance",
+          ...governanceBlogArticles.map((article) => `/blog/ai-governance/${article.slug}`),
+          "/settori",
+          "/lavori",
+          "/consulenza",
+          "/contattaci",
+        ]
       : [
           "",
           "/menu",

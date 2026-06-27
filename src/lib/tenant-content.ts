@@ -1479,9 +1479,9 @@ const pynkstudioContent: TenantContent = {
   logoSrc: "/pynkstudio/pynk-logo-transparent.png",
   logoAlt: "PYNK STUDIO",
   showcaseLogoSrc: "/pynkstudio/pynk-logo.png",
-  showcaseLogoAlt: "PYNK STUDIO — Software, web e app su misura",
+  showcaseLogoAlt: "PYNK STUDIO — Software house AI e sviluppo su misura",
   description:
-    "Sviluppo siti e web app, mobile e desktop. Portfolio reale, stack moderno. Consulenza operativa per PMI quando serve mettere ordine nei processi.",
+    "Software house specializzata in soluzioni AI: chatbot, agenti, RAG, AI locale e cloud, integrazioni, governance tecnica e conformità AI Act.",
   url: "https://pynkstudio.it",
   social: {
     instagram: "https://www.instagram.com/pynkstudios",
@@ -1508,10 +1508,10 @@ const pynkstudioContent: TenantContent = {
   },
   hero: {
     eyebrow: "Software house · Milano",
-    titleLead: "Costruiamo software",
+    titleLead: "Costruiamo sistemi AI",
     titleAccent: "che reggono il mondo reale.",
     body:
-      "Siti, web app, mobile e desktop quando serve qualcosa di più del generico. Pochi fronzoli, molta cura su performance, accessibilità e manutenibilità.",
+      "Progettiamo e implementiamo soluzioni AI moderne: chatbot, agenti, RAG, workflow, API e integrazioni governate da processi tecnici chiari.",
     backdrop: "/pynkstudio/pynk-logo.png",
     ctaLabel: "Contattaci",
   },
@@ -1588,7 +1588,7 @@ const pynkstudioContent: TenantContent = {
   },
   footer: {
     tagline: "Software, web e app su misura.",
-    body: "PYNK STUDIO — sviluppo siti e web app, mobile e desktop. Consulenza operativa per PMI. P.IVA 13577530960.",
+    body: "PYNK STUDIO — software house AI: sviluppo sistemi AI, web app, integrazioni, governance tecnica e conformità AI Act. P.IVA 13577530960.",
   },
   delivery: {
     title: "Prossimo progetto: il vostro?",

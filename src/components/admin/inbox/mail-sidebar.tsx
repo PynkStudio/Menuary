@@ -54,7 +54,7 @@ const BRANDS: { value: BrandFilter; label: string; icon: React.ElementType }[] =
 export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, mode = "platform", onViewChange, onBrandChange, onCompose }: Props) {
   const views = mode === "tenant" ? VIEWS.filter((item) => item.value !== "mine") : VIEWS;
   return (
-    <div className="flex h-full w-52 shrink-0 flex-col border-r border-[var(--ma-line)] bg-[var(--ma-surface)] p-3">
+    <div className="flex h-full w-52 shrink-0 flex-col border-r border-black/10 bg-white/55 p-3 backdrop-blur-xl">
       {/* Scrivi */}
       {canCompose && (
         <button
@@ -76,10 +76,10 @@ export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, 
             key={value}
             onClick={() => onViewChange(value)}
             className={cn(
-              "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-all",
               view === value
-                ? "bg-[var(--ma-accent)] text-white"
-                : "text-[var(--ma-muted)] hover:bg-[var(--ma-line)] hover:text-[var(--ma-ink)]",
+                ? "bg-white text-[var(--ma-ink)] shadow-sm ring-1 ring-black/5"
+                : "text-[var(--ma-muted)] hover:bg-white/65 hover:text-[var(--ma-ink)]",
             )}
           >
             <Icon size={15} />
@@ -87,7 +87,7 @@ export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, 
             {value === "inbox" && unreadCount > 0 && (
               <span className={cn(
                 "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                view === "inbox" ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
+                view === "inbox" ? "bg-[var(--ma-accent)]/10 text-[var(--ma-accent)]" : "bg-[var(--ma-accent)] text-white",
               )}>
                 {unreadCount}
               </span>
@@ -95,7 +95,7 @@ export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, 
             {value === "mine" && unreadMine > 0 && (
               <span className={cn(
                 "ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                view === "mine" ? "bg-white/20 text-white" : "bg-[var(--ma-accent)] text-white",
+                view === "mine" ? "bg-[var(--ma-accent)]/10 text-[var(--ma-accent)]" : "bg-[var(--ma-accent)] text-white",
               )}>
                 {unreadMine}
               </span>
@@ -117,8 +117,8 @@ export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, 
                 className={cn(
                   "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   brand === value
-                    ? "bg-[var(--ma-line)] text-[var(--ma-ink)]"
-                    : "text-[var(--ma-muted)] hover:bg-[var(--ma-line)] hover:text-[var(--ma-ink)]",
+                    ? "bg-white text-[var(--ma-ink)] shadow-sm ring-1 ring-black/5"
+                    : "text-[var(--ma-muted)] hover:bg-white/65 hover:text-[var(--ma-ink)]",
                 )}
               >
                 <Icon size={15} />
@@ -133,7 +133,7 @@ export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, 
         {mode === "platform" && (
           <Link
             href="/admin/profilo"
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-[var(--ma-muted)] transition-colors hover:bg-[var(--ma-line)] hover:text-[var(--ma-ink)]"
+            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-[var(--ma-muted)] transition-colors hover:bg-white/65 hover:text-[var(--ma-ink)]"
           >
             <Settings size={15} />
             Profilo e firma

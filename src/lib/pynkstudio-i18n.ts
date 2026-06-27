@@ -27,14 +27,14 @@ const it = {
   },
   homeHero: {
     title: {
-      plain: "Costruiamo software che reggono il mondo reale.",
-      nerd: "Engineering-first · TypeScript · da idea a produzione.",
+      plain: "Costruiamo sistemi AI che reggono il mondo reale.",
+      nerd: "AI engineering · RAG · agenti · governance · produzione.",
     } as PynkDual,
     subtitle: {
       plain:
-        "Siti, web app, mobile e desktop quando serve qualcosa di più del generico. Pochi fronzoli, molta cura su performance, accessibilità e manutenibilità.",
+        "Software house tecnica per aziende che vogliono progettare, integrare e governare soluzioni AI moderne: chatbot, agenti, RAG, automazioni, API e software su misura.",
       nerd:
-        "React/Next, API REST/GraphQL, Postgres & Supabase, SwiftUI/Kotlin, Electron/Tauri. Osservabilità, test mirati e deploy ripetibili — non demo usa-e-getta.",
+        "OpenAI/Claude/Gemini, Llama/Mistral/Qwen, RAG con vector DB, tool calling, MCP, API REST/GraphQL, Postgres, Supabase, osservabilità, eval e deploy ripetibili.",
     } as PynkDual,
     ctaPrimary: "Cosa costruiamo",
     ctaSecondary: "Vedi i lavori",
@@ -89,11 +89,11 @@ const it = {
       id: "ai",
       title: { plain: "AI e automazioni", nerd: "LLM · RAG · automazione" } as PynkDual,
       desc: {
-        plain: "Assistenti sui vostri documenti, integrazioni tra strumenti, meno lavoro ripetitivo.",
+        plain: "Chatbot, agenti, voice AI, RAG, automazioni e integrazioni progettate con dati, permessi e supervisione sotto controllo.",
         nerd:
-          "OpenAI/Anthropic APIs, modelli open-weight su Hugging Face, RAG con pgvector, LangChain/LlamaIndex light, queue workers, webhooks.",
+          "OpenAI/Anthropic/Gemini APIs, modelli open-weight, pgvector, chunking, retrieval eval, function/tool calling, MCP, queue workers e webhooks.",
       } as PynkDual,
-      stack: ["OpenAI", "pgvector", "Python", "Node.js", "webhooks"],
+      stack: ["OpenAI", "Claude", "Gemini", "pgvector", "MCP", "Node.js"],
     },
     {
       id: "ux",

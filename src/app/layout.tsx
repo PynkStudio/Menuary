@@ -295,7 +295,7 @@ export async function generateMetadata(): Promise<Metadata> {
         ? tenant.id === "officinakam"
           ? "Officina KAM - Meccanica di precisione"
           : tenant.id === "pynkstudio"
-            ? "PYNK STUDIO — Software, web e app su misura"
+            ? "PYNK STUDIO — Software house AI e governance tecnica"
             : `${tenant.name} - servizi, appuntamenti e listino prezzi`
         : `${tenant.name} - Burger, Pizza e Cucina italiana`;
 
@@ -360,6 +360,14 @@ export async function generateMetadata(): Promise<Metadata> {
                 "app iOS Android",
                 "applicazioni desktop",
                 "software house Milano",
+                "software house AI",
+                "AI Governance",
+                "AI Act aziende",
+                "AI Readiness Assessment",
+                "AI Literacy",
+                "sistemi RAG",
+                "agenti AI",
+                "LLM on-premise",
                 "consulenza operativa PMI",
               ]
           : tenant.id === "junior-food"

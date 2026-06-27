@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
-import { Archive, ArrowLeft, Download, ExternalLink, Link2, Paperclip, Reply, Search, Star, Trash2, UserCheck, X } from "lucide-react";
+import { Archive, ArrowLeft, Download, ExternalLink, File, FileText, ImageIcon, Link2, Paperclip, Reply, Search, Star, Trash2, UserCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { markEmailRead, starEmail, archiveEmail, deleteEmail, assignEmail } from "@/lib/email/inbound-queries";
 import { findLeadsByEmails, searchLeads, linkInboundEmailToLead, getLeadsByIds } from "@/lib/email/lead-link-queries";
@@ -19,6 +19,7 @@ import type { TenantEmailScope } from "@/lib/email/tenant-email-scope";
 
 type Props = {
   email: InboundEmail;
+  threadEmails?: InboundEmail[];
   onClose: () => void;
   onMutated: () => void;
   onReply?: (email: InboundEmail) => void;
@@ -32,6 +33,12 @@ function fmtDate(iso: string) {
     day: "2-digit", month: "short", year: "numeric",
     hour: "2-digit", minute: "2-digit",
   });
+}
+
+function fmtSize(size?: number) {
+  if (!size) return null;
+  if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 const BRAND_BADGE: Record<string, string> = {
@@ -97,7 +104,29 @@ function base64ToBlob(content: string, contentType: string): Blob {
   return new Blob([bytes], { type: contentType });
 }
 
+function attachmentSrc(att: ResendInboundAttachment): string | null {
+  if (att.content) {
+    return `data:${att.content_type ?? "application/octet-stream"};base64,${att.content}`;
+  }
+  return att.download_url ?? null;
+}
+
+function textFromBase64(content: string): string | null {
+  try {
+    const binary = window.atob(content);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
 function openAttachment(att: ResendInboundAttachment) {
+  if (!att.content && att.download_url) {
+    window.open(att.download_url, "_blank", "noopener,noreferrer");
+    return;
+  }
   if (!att.content) return;
   const blob = base64ToBlob(att.content, att.content_type ?? "application/octet-stream");
   const url = URL.createObjectURL(blob);
@@ -106,6 +135,10 @@ function openAttachment(att: ResendInboundAttachment) {
 }
 
 function downloadAttachment(att: ResendInboundAttachment, fallbackName: string) {
+  if (!att.content && att.download_url) {
+    window.open(att.download_url, "_blank", "noopener,noreferrer");
+    return;
+  }
   if (!att.content) return;
   const blob = base64ToBlob(att.content, att.content_type ?? "application/octet-stream");
   const url = URL.createObjectURL(blob);
@@ -116,6 +149,132 @@ function downloadAttachment(att: ResendInboundAttachment, fallbackName: string) 
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+function AttachmentInlinePreview({ att, index }: { att: ResendInboundAttachment; index: number }) {
+  const name = att.filename ?? `allegato-${index + 1}`;
+  const type = att.content_type ?? "application/octet-stream";
+  const src = attachmentSrc(att);
+  const size = fmtSize(att.size);
+  const canOpen = Boolean(att.content || att.download_url);
+  const isImage = type.startsWith("image/");
+  const isPdf = type === "application/pdf";
+  const isText = type.startsWith("text/") || type === "application/json";
+  const textPreview = isText && att.content ? textFromBase64(att.content) : null;
+  const Icon = isImage ? ImageIcon : isPdf || isText ? FileText : File;
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+      <div className="flex items-center gap-2 border-b border-black/10 bg-slate-50/80 px-3 py-2">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[var(--ma-muted)] shadow-sm ring-1 ring-black/5">
+          <Icon size={15} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-[var(--ma-ink)]">{name}</p>
+          <p className="truncate text-[11px] text-[var(--ma-muted)]">
+            {type}{size ? ` · ${size}` : ""}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => openAttachment(att)}
+          disabled={!canOpen}
+          className="rounded-full p-1.5 text-[var(--ma-muted)] transition-colors hover:bg-white hover:text-[var(--ma-ink)] disabled:opacity-40"
+          title="Apri allegato"
+        >
+          <ExternalLink size={14} />
+        </button>
+        <button
+          type="button"
+          onClick={() => downloadAttachment(att, name)}
+          disabled={!canOpen}
+          className="rounded-full p-1.5 text-[var(--ma-muted)] transition-colors hover:bg-white hover:text-[var(--ma-ink)] disabled:opacity-40"
+          title="Scarica allegato"
+        >
+          <Download size={14} />
+        </button>
+      </div>
+
+      {src && isImage ? (
+        <div className="bg-slate-100">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={src} alt={name} className="max-h-[520px] w-full object-contain" />
+        </div>
+      ) : src && isPdf ? (
+        <iframe
+          src={src}
+          title={name}
+          className="h-[520px] w-full bg-white"
+        />
+      ) : textPreview ? (
+        <pre className="max-h-80 overflow-auto whitespace-pre-wrap bg-slate-950 p-4 text-xs leading-relaxed text-slate-100">
+          {textPreview}
+        </pre>
+      ) : (
+        <div className="px-4 py-6 text-sm text-[var(--ma-muted)]">
+          Anteprima non disponibile per questo formato.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HtmlEmailFrame({ html }: { html: string }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    function resize() {
+      try {
+        const h = iframe!.contentDocument?.documentElement?.scrollHeight;
+        if (h && h > 0) iframe!.style.height = `${h + 16}px`;
+      } catch {}
+    }
+    iframe.addEventListener("load", resize);
+    return () => iframe.removeEventListener("load", resize);
+  }, [html]);
+
+  return (
+    <iframe
+      ref={iframeRef}
+      srcDoc={buildEmailSrcDoc(html)}
+      className="w-full rounded-2xl border border-black/10 bg-white shadow-sm"
+      style={{ minHeight: "360px", height: "400px" }}
+      sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+      title="Corpo email"
+    />
+  );
+}
+
+function EmailMessageBody({ message }: { message: InboundEmail }) {
+  return (
+    <div className="space-y-4">
+      {message.html_body ? (
+        <HtmlEmailFrame html={message.html_body} />
+      ) : message.text_body ? (
+        <div className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
+          <PlainTextEmail text={message.text_body} />
+        </div>
+      ) : (
+        <p className="rounded-2xl border border-dashed border-black/10 bg-white/70 p-4 text-sm text-[var(--ma-muted)]">
+          (Nessun contenuto)
+        </p>
+      )}
+
+      {message.attachments.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase text-[var(--ma-muted)]">
+            <Paperclip size={13} />
+            Allegati
+          </div>
+          {message.attachments.map((att, i) => (
+            <AttachmentInlinePreview key={`${att.filename ?? "attachment"}-${i}`} att={att} index={i} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── LeadPanel ────────────────────────────────────────────────────────────────
@@ -373,13 +532,21 @@ function AssignPanel({ emailId, assignedToUserId, onAssigned }: AssignPanelProps
 
 // ─── EmailDetail ──────────────────────────────────────────────────────────────
 
-export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned, mode = "platform", scope }: Props) {
+export function EmailDetail({ email, threadEmails, onClose, onMutated, onReply, onAssigned, mode = "platform", scope }: Props) {
   const [isPending, startTransition] = useTransition();
   const [starred, setStarred]           = useState(email.starred);
   const [assignedUserId, setAssignedUserId] = useState(email.assigned_to_user_id);
   const [linkedLeadId, setLinkedLeadId] = useState(email.lead_id);
   const [autoMatches, setAutoMatches]   = useState<LeadMatch[]>([]);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const messages = [...(threadEmails?.length ? threadEmails : [email])]
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  const threadAttachmentCount = messages.reduce((sum, item) => sum + item.attachments.length, 0);
+
+  useEffect(() => {
+    setStarred(email.starred);
+    setAssignedUserId(email.assigned_to_user_id);
+    setLinkedLeadId(email.lead_id);
+  }, [email.id, email.starred, email.assigned_to_user_id, email.lead_id]);
 
   // Auto-match lead dal mittente
   useEffect(() => {
@@ -388,20 +555,6 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned, mo
       .then(setAutoMatches)
       .catch(() => {});
   }, [email.from_address, mode]);
-
-  // Adatta l'altezza dell'iframe al suo contenuto
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-    function resize() {
-      try {
-        const h = iframe!.contentDocument?.documentElement?.scrollHeight;
-        if (h && h > 0) iframe!.style.height = `${h + 16}px`;
-      } catch {}
-    }
-    iframe.addEventListener("load", resize);
-    return () => iframe.removeEventListener("load", resize);
-  }, [email.html_body]);
 
   function handleStar() {
     const next = !starred;
@@ -441,9 +594,9 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned, mo
     : email.from_address;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-white/65 backdrop-blur-xl">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 border-b border-[var(--ma-line)] px-5 py-3">
+      <div className="flex items-center gap-2 border-b border-black/10 bg-white/75 px-5 py-3 backdrop-blur-xl">
         <button
           onClick={onClose}
           className="menuary-admin-nav-link mr-2 !w-auto gap-1.5 !px-2 !py-1.5 text-sm"
@@ -509,9 +662,9 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned, mo
       </div>
 
       {/* Header email */}
-      <div className="border-b border-[var(--ma-line)] px-5 py-4">
+      <div className="border-b border-black/10 bg-white/60 px-5 py-4">
         <div className="mb-2 flex flex-wrap items-start gap-2">
-          <h2 className="flex-1 text-lg font-semibold text-[var(--ma-ink)] leading-snug">
+          <h2 className="flex-1 text-xl font-semibold tracking-[-0.01em] text-[var(--ma-ink)] leading-snug">
             {email.subject || "(nessun oggetto)"}
           </h2>
           <span
@@ -535,50 +688,19 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned, mo
           <span>{fmtDate(email.created_at)}</span>
         </div>
 
-        {/* Allegati */}
-        {email.attachments.length > 0 && (
-          <div className="mt-2.5 flex flex-wrap gap-2">
-            {email.attachments.map((att, i) => {
-              const name = att.filename ?? `allegato-${i + 1}`;
-              const hasContent = !!att.content;
-              return hasContent ? (
-                <div
-                  key={i}
-                  className="flex items-center gap-1.5 rounded-md border border-[var(--ma-line)] bg-[var(--ma-surface)] px-2 py-1 text-xs text-[var(--ma-ink)]"
-                >
-                  <Paperclip size={12} className="text-[var(--ma-muted)]" />
-                  <span className="max-w-[220px] truncate">{name}</span>
-                  {att.size ? <span className="text-[var(--ma-muted)]">({(att.size / 1024).toFixed(0)} KB)</span> : null}
-                  <button
-                    type="button"
-                    onClick={() => openAttachment(att)}
-                    className="ml-1 rounded p-0.5 text-[var(--ma-muted)] hover:bg-[var(--ma-paper)] hover:text-[var(--ma-ink)]"
-                    title="Apri allegato"
-                  >
-                    <ExternalLink size={12} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => downloadAttachment(att, name)}
-                    className="rounded p-0.5 text-[var(--ma-muted)] hover:bg-[var(--ma-paper)] hover:text-[var(--ma-ink)]"
-                    title="Scarica allegato"
-                  >
-                    <Download size={12} />
-                  </button>
-                </div>
-              ) : (
-                <span
-                  key={i}
-                  className="flex items-center gap-1.5 rounded-md border border-[var(--ma-line)] bg-[var(--ma-surface)] px-2.5 py-1 text-xs text-[var(--ma-muted)]"
-                >
-                  <Paperclip size={12} />
-                  {name}
-                  {att.size ? (
-                    <span>({(att.size / 1024).toFixed(0)} KB)</span>
-                  ) : null}
-                </span>
-              );
-            })}
+        {(messages.length > 1 || threadAttachmentCount > 0) && (
+          <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-[var(--ma-muted)]">
+            {messages.length > 1 && (
+              <span className="rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-black/5">
+                {messages.length} messaggi nel thread
+              </span>
+            )}
+            {threadAttachmentCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-black/5">
+                <Paperclip size={12} />
+                {threadAttachmentCount} allegat{threadAttachmentCount === 1 ? "o" : "i"}
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -606,21 +728,30 @@ export function EmailDetail({ email, onClose, onMutated, onReply, onAssigned, mo
       )}
 
       {/* Corpo email */}
-      <div className="flex-1 overflow-y-auto p-5">
-        {email.html_body ? (
-          <iframe
-            ref={iframeRef}
-            srcDoc={buildEmailSrcDoc(email.html_body)}
-            className="w-full rounded-lg border border-[var(--ma-line)]"
-            style={{ minHeight: "400px", height: "400px" }}
-            sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-            title="Corpo email"
-          />
-        ) : email.text_body ? (
-          <PlainTextEmail text={email.text_body} />
-        ) : (
-          <p className="text-sm text-[var(--ma-muted)]">(Nessun contenuto)</p>
-        )}
+      <div className="flex-1 overflow-y-auto bg-[var(--ma-surface)]/35 p-5">
+        <div className="mx-auto max-w-4xl space-y-4">
+          {messages.map((message) => {
+            const from = message.from_name
+              ? `${message.from_name} <${message.from_address}>`
+              : message.from_address;
+            return (
+              <article key={message.id} className="rounded-[1.35rem] border border-black/10 bg-white/80 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+                <div className="mb-3 flex flex-wrap items-start justify-between gap-3 border-b border-black/10 pb-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[var(--ma-ink)]">{from}</p>
+                    <p className="mt-0.5 truncate text-xs text-[var(--ma-muted)]">
+                      A: {message.to_addresses.join(", ")}
+                    </p>
+                  </div>
+                  <time className="shrink-0 text-xs font-medium text-[var(--ma-muted)]">
+                    {fmtDate(message.created_at)}
+                  </time>
+                </div>
+                <EmailMessageBody message={message} />
+              </article>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -95,6 +95,47 @@ function replySubject(subject: string): string {
   return /^re:/i.test(subject.trim()) ? subject : `Re: ${subject}`;
 }
 
+function normalizeThreadSubject(subject: string): string {
+  return (subject || "(nessun oggetto)")
+    .trim()
+    .replace(/^(\s*(re|fw|fwd|rif|i)\s*:\s*)+/i, "")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+function threadKeyForEmail(email: InboundEmail): string {
+  const subject = normalizeThreadSubject(email.subject);
+  const people = [email.from_address, ...email.to_addresses]
+    .map((address) => address.trim().toLowerCase())
+    .filter(Boolean)
+    .sort()
+    .join("|");
+  return `${subject}::${people}`;
+}
+
+function groupInboundThreads(emails: InboundEmail[]) {
+  const groups = new Map<string, InboundEmail[]>();
+  for (const email of emails) {
+    const key = threadKeyForEmail(email);
+    const existing = groups.get(key);
+    if (existing) existing.push(email);
+    else groups.set(key, [email]);
+  }
+
+  return Array.from(groups.values())
+    .map((items) => {
+      const sortedDesc = [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const latest = sortedDesc[0];
+      return {
+        latest,
+        items: sortedDesc,
+        unreadCount: sortedDesc.filter((item) => !item.read).length,
+        attachmentCount: sortedDesc.reduce((sum, item) => sum + item.attachments.length, 0),
+      };
+    })
+    .sort((a, b) => new Date(b.latest.created_at).getTime() - new Date(a.latest.created_at).getTime());
+}
+
 function buildReplyBody(email: InboundEmail): string {
   const original = email.text_body ?? (email.html_body ? htmlToText(email.html_body) : "");
   const from = email.from_name ? `${email.from_name} <${email.from_address}>` : email.from_address;
@@ -256,13 +297,16 @@ export function MailApp({
   async function handleSelectInbound(email: InboundEmail) {
     setSelectedInbound(email);
     setSelectedSent(null);
-    if (!email.read) {
-      await markEmailRead(email.id, true, scope);
+    const threadItems = threadByLatestId[email.id] ?? [email];
+    const unreadThreadItems = threadItems.filter((item) => !item.read);
+    if (unreadThreadItems.length > 0) {
+      await Promise.all(unreadThreadItems.map((item) => markEmailRead(item.id, true, scope)));
+      const unreadIds = new Set(unreadThreadItems.map((item) => item.id));
       setInbox((prev) => ({
         ...prev,
-        emails: prev.emails.map((e) => e.id === email.id ? { ...e, read: true } : e),
+        emails: prev.emails.map((e) => unreadIds.has(e.id) ? { ...e, read: true } : e),
       }));
-      setUnread((n) => Math.max(0, n - 1));
+      setUnread((n) => Math.max(0, n - unreadThreadItems.length));
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("inbox:refresh"));
       }
@@ -292,9 +336,14 @@ export function MailApp({
   }
 
   const isSentView = view === "sent";
+  const inboundThreads = isSentView ? [] : groupInboundThreads(inbox.emails);
+  const threadByLatestId = Object.fromEntries(inboundThreads.map((thread) => [thread.latest.id, thread.items]));
+  const threadCountMap = Object.fromEntries(inboundThreads.map((thread) => [thread.latest.id, thread.items.length]));
+  const threadUnreadMap = Object.fromEntries(inboundThreads.map((thread) => [thread.latest.id, thread.unreadCount]));
+  const threadAttachmentMap = Object.fromEntries(inboundThreads.map((thread) => [thread.latest.id, thread.attachmentCount]));
   const listEmails = isSentView
     ? sent.emails.map(sentToListItem)
-    : inbox.emails;
+    : inboundThreads.map((thread) => thread.latest);
 
   const selectedListId = isSentView ? selectedSent?.id ?? null : selectedInbound?.id ?? null;
   const showDetail = isSentView ? selectedSent !== null : selectedInbound !== null;
@@ -302,7 +351,7 @@ export function MailApp({
   return (
     <>
       <div className="menuary-admin-card overflow-hidden p-0">
-        <div className="flex h-[calc(100vh-180px)] min-h-[500px]">
+        <div className="flex h-[calc(100vh-180px)] min-h-[500px] rounded-[inherit] bg-white/45 backdrop-blur-xl">
           {/* Sidebar */}
           <div className="hidden lg:flex">
             <MailSidebar
@@ -320,11 +369,11 @@ export function MailApp({
 
           {/* Lista */}
           <div className={cn(
-            "flex h-full flex-col overflow-hidden border-r border-[var(--ma-line)]",
+            "flex h-full flex-col overflow-hidden border-r border-black/10 bg-[var(--ma-surface)]/55",
             showDetail ? "hidden lg:flex lg:w-72 xl:w-80" : "flex-1",
           )}>
             {/* Toolbar lista */}
-            <div className="flex items-center justify-between border-b border-[var(--ma-line)] px-4 py-2.5">
+            <div className="flex items-center justify-between border-b border-black/10 bg-white/45 px-4 py-2.5 backdrop-blur-xl">
               {/* Mobile: filtri brand + vista */}
               <div className="flex flex-wrap gap-1 lg:hidden">
                 {(mode === "tenant"
@@ -359,8 +408,8 @@ export function MailApp({
                   </button>
                 ))}
               </div>
-              <p className="hidden text-xs text-[var(--ma-muted)] lg:block">
-                {isSentView ? sent.total : inbox.total} email
+              <p className="hidden text-xs font-medium text-[var(--ma-muted)] lg:block">
+                {isSentView ? sent.total : `${inboundThreads.length} thread`} · {isSentView ? "email" : `${inbox.total} email`}
               </p>
               <button
                 onClick={() => reload()}
@@ -378,6 +427,9 @@ export function MailApp({
                 selectedId={selectedListId}
                 onSelect={isSentView ? handleSelectSent : handleSelectInbound}
                 trackingMap={isSentView ? sentTrackingMap : undefined}
+                threadCountMap={isSentView ? undefined : threadCountMap}
+                threadUnreadMap={isSentView ? undefined : threadUnreadMap}
+                threadAttachmentMap={isSentView ? undefined : threadAttachmentMap}
               />
             </div>
           </div>
@@ -399,6 +451,7 @@ export function MailApp({
                   onAssigned={handleAssigned}
                   mode={mode}
                   scope={scope}
+                  threadEmails={threadByLatestId[selectedInbound.id] ?? [selectedInbound]}
                 />
               ) : null}
             </div>

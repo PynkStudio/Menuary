@@ -104,6 +104,7 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
 
   const navLinks = [
     { label: copy.nav.servizi, to: "/servizi" },
+    { label: "AI Governance", to: "/ai-governance" },
     { label: copy.nav.settori, to: "/settori" },
     { label: copy.nav.lavori, to: "/lavori" },
     { label: copy.nav.consulenza, to: "/consulenza" },
@@ -188,6 +189,9 @@ function PynkFooter() {
   const staffUrl = buildTenantManagementUrl("pynkstudio");
   const links = [
     { label: copy.nav.servizi, to: "/servizi" },
+    { label: "AI Governance", to: "/ai-governance" },
+    { label: "AI Act", to: "/ai-act" },
+    { label: "Blog AI Governance", to: "/blog/ai-governance" },
     { label: copy.nav.settori, to: "/settori" },
     { label: copy.nav.lavori, to: "/lavori" },
     { label: copy.nav.consulenza, to: "/consulenza" },
