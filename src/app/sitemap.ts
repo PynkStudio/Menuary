@@ -6,6 +6,7 @@ import { siteConfig } from "@/lib/site-config";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 import { governanceBlogArticles, governanceServices } from "@/components/tenants/pynkstudio/ai-governance-data";
+import { pynkSolutions } from "@/components/tenants/pynkstudio/pynk-solutions";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const h = await headers();
@@ -29,6 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           "/servizi",
           "/ai-governance",
           ...governanceServices.map((service) => `/ai-governance/${service.slug}`),
+          "/soluzioni",
+          ...pynkSolutions.map((solution) => `/soluzioni/${solution.slug}`),
           "/ai-act",
           "/blog/ai-governance",
           ...governanceBlogArticles.map((article) => `/blog/ai-governance/${article.slug}`),
@@ -47,13 +50,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           "/privacy",
           "/cookie",
         ];
+  const localePrefixes = tenantLocaleConfig?.locales ?? [];
+  // Rimuove l'eventuale prefisso lingua per classificare la route a fini SEO.
+  const routeOf = (fullPath: string): string => {
+    for (const loc of localePrefixes) {
+      if (fullPath === `/${loc}`) return "";
+      if (fullPath.startsWith(`/${loc}/`)) return fullPath.slice(loc.length + 1);
+    }
+    return fullPath;
+  };
+
+  type ChangeFreq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
+  const seoFor = (route: string): { priority: number; changeFrequency: ChangeFreq } => {
+    if (route === "") return { priority: 1, changeFrequency: "weekly" };
+    if (route === "/ai-governance") return { priority: 0.9, changeFrequency: "monthly" };
+    if (route === "/soluzioni") return { priority: 0.9, changeFrequency: "monthly" };
+    if (route.startsWith("/soluzioni/")) return { priority: 0.8, changeFrequency: "monthly" };
+    if (route === "/blog/ai-governance") return { priority: 0.8, changeFrequency: "weekly" };
+    if (route.startsWith("/blog/ai-governance/")) return { priority: 0.7, changeFrequency: "monthly" };
+    if (route.startsWith("/ai-governance/")) return { priority: 0.8, changeFrequency: "monthly" };
+    if (route === "/menu") return { priority: 0.8, changeFrequency: "weekly" };
+    if (route === "/servizi" || route === "/settori" || route === "/ai-act") return { priority: 0.7, changeFrequency: "monthly" };
+    return { priority: 0.6, changeFrequency: "monthly" };
+  };
+
   const localizedRoutes = tenantLocaleConfig
     ? tenantLocaleConfig.locales.flatMap((locale) => routes.map((path) => `/${locale}${path}`))
     : routes;
   return localizedRoutes.map((path) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
-    changeFrequency: path === "/menu" ? "weekly" : "monthly",
-    priority: path === "" ? 1 : 0.8,
+    ...seoFor(routeOf(path)),
   }));
 }

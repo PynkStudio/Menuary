@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { governanceBlogArticles } from "../ai-governance-data";
 import { PynkJsonLd } from "../pynk-json-ld";
-import { breadcrumbSchema, organizationSchema } from "../pynk-seo";
+import { breadcrumbSchema, itemListSchema, organizationSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 export function PynkAiGovernanceBlogPage() {
@@ -17,6 +17,13 @@ export function PynkAiGovernanceBlogPage() {
       { name: "Blog", path: "/blog/ai-governance" },
       { name: "AI Governance", path: "/blog/ai-governance" },
     ]),
+    itemListSchema(
+      "Guide tecniche AI Governance",
+      governanceBlogArticles.map((article) => ({
+        name: article.title,
+        path: `/blog/ai-governance/${article.slug}`,
+      })),
+    ),
   ];
 
   return (

@@ -172,6 +172,10 @@ export const governanceServices: PynkGovernanceService[] = [
         q: "Il programma è uguale per tutti?",
         a: "No. Manager, HR, marketing, customer care, sviluppatori, IT e direzione hanno competenze attese diverse: il percorso viene modulato sul ruolo.",
       },
+      {
+        q: "Come è strutturato il percorso?",
+        a: "In moduli combinabili: fondamenti dell'AI, prompting e verifica, sicurezza dei dati, AI Act, applicazioni per reparto, strumenti aziendali e laboratori pratici. Ogni modulo unisce comprensione teorica e applicazione su casi reali, con workshop, affiancamento e revisione di prompt e workflow.",
+      },
     ],
     cta: "Pianifica AI Literacy",
   },

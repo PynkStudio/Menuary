@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { getGovernanceArticle, governanceBlogArticles } from "../ai-governance-data";
 import { PynkJsonLd } from "../pynk-json-ld";
-import { breadcrumbSchema, faqSchema, organizationSchema } from "../pynk-seo";
+import { articleSchema, breadcrumbSchema, faqSchema, organizationSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 const sectionId = (index: number) => `sez-${index + 1}`;
@@ -45,17 +45,12 @@ export function PynkAiGovernanceArticlePage({ slug }: { slug: string }) {
       { name: article.title, path },
     ]),
     faqSchema(article.faq),
-    {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      headline: article.title,
+    articleSchema({
+      title: article.title,
       description: article.description,
-      author: { "@type": "Organization", name: "PYNK STUDIO" },
-      publisher: organizationSchema(),
-      mainEntityOfPage: path,
-      articleSection: "AI Governance",
-      keywords: article.topics.join(", "),
-    },
+      path,
+      keywords: article.topics,
+    }),
   ];
 
   return (

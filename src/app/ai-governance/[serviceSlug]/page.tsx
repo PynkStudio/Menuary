@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: Props) {
     title: service.metaTitle,
     description: service.metaDescription,
     path: `/ai-governance/${service.slug}`,
+    keywords: [service.title, service.shortTitle, "AI Act", "AI governance", "intelligenza artificiale aziende"],
   });
 }
 

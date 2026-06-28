@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { getGovernanceService } from "../ai-governance-data";
+import { PynkCarousel } from "../pynk-carousel";
+import { adoptionFormats, adoptionModules, adoptionRoles } from "../pynk-adoption-program";
 import { PynkJsonLd } from "../pynk-json-ld";
 import { breadcrumbSchema, faqSchema, organizationSchema, serviceSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
@@ -14,6 +16,7 @@ export function PynkAiGovernanceServicePage({ slug }: { slug: string }) {
   const href = useTenantLocalizedHref();
   if (!service) return null;
   const scopeItems = service.includes.slice(0, 6);
+  const isLiteracy = service.slug === "ai-literacy";
 
   const path = `/ai-governance/${service.slug}`;
   const jsonLd = [
@@ -73,6 +76,72 @@ export function PynkAiGovernanceServicePage({ slug }: { slug: string }) {
             </div>
           </div>
         </section>
+
+        {isLiteracy && (
+          <section className="pynk-section pynk-section-alt pynk-adoption-section">
+            <div className="pynk-container">
+              <div className="pynk-section-head">
+                <p className="pynk-eyebrow">Programma formativo · {adoptionModules.length} moduli</p>
+                <h2 className="pynk-section-title">Cosa comprende il percorso</h2>
+                <p className="pynk-section-lead">
+                  Moduli combinabili per ruolo. Ogni modulo unisce comprensione teorica e applicazione pratica: scorri per
+                  vedere argomenti e valore di ciascuno.
+                </p>
+              </div>
+
+              <PynkCarousel label="Moduli del percorso AI Adoption">
+                {adoptionModules.map((module) => (
+                  <article key={module.id} className="pynk-adoption-card">
+                    <span className="pynk-adoption-kicker">{module.kicker}</span>
+                    <h3 className="pynk-adoption-title">{module.title}</h3>
+                    <p className="pynk-adoption-summary">{module.summary}</p>
+                    <div className="pynk-adoption-topics">
+                      <span className="pynk-adoption-topics-label">Argomenti</span>
+                      <div className="pynk-stack-chips">
+                        {module.topics.map((topic) => (
+                          <span key={topic} className="pynk-chip">
+                            {topic}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="pynk-adoption-value">
+                      <div>
+                        <span>Cosa capisci</span>
+                        <p>{module.theory}</p>
+                      </div>
+                      <div>
+                        <span>Cosa sai fare</span>
+                        <p>{module.practice}</p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </PynkCarousel>
+
+              <div className="pynk-adoption-meta">
+                <div className="pynk-panel">
+                  <h3 className="pynk-panel-title-sm">Come si svolge</h3>
+                  <div className="pynk-pills pynk-pills-left pynk-mt-12">
+                    {adoptionFormats.map((format) => (
+                      <span key={format} className="pynk-pill">
+                        {format}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="pynk-panel">
+                  <h3 className="pynk-panel-title-sm">Modulato per ruolo</h3>
+                  <div className="pynk-ai-role-grid pynk-mt-12">
+                    {adoptionRoles.map((role) => (
+                      <span key={role}>{role}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="pynk-section pynk-section-alt">
           <div className="pynk-container pynk-ai-use-benefit">

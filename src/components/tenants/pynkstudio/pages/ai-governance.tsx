@@ -6,8 +6,10 @@ import { motion } from "framer-motion";
 import { AlertTriangle, ArrowRight, Bot, BrainCircuit, CheckCircle2, ChevronRight, Database, FileCheck2, GitBranch, ShieldCheck, Wrench } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { governanceServices, leadMagnets } from "../ai-governance-data";
+import { adoptionRoles } from "../pynk-adoption-program";
+import { pynkSolutions } from "../pynk-solutions";
 import { PynkJsonLd } from "../pynk-json-ld";
-import { breadcrumbSchema, faqSchema, organizationSchema, serviceSchema } from "../pynk-seo";
+import { breadcrumbSchema, faqSchema, offerCatalogSchema, organizationSchema, serviceSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 const dailyBuilds = [
@@ -119,20 +121,6 @@ const deliveryProcess = [
   ["07", "Supporto continuo", "Monitoraggio, aggiornamenti e ottimizzazione.", "SLA, review periodiche, evoluzione"],
 ] as const;
 
-const adoptionFormats = [
-  "Workshop",
-  "Affiancamento",
-  "Office hours",
-  "Prompt review",
-  "Workflow review",
-  "Shadowing",
-  "Sessioni pratiche",
-  "Laboratori",
-  "Casi reali",
-  "Revisione processi",
-];
-
-const adoptionRoles = ["Manager", "HR", "Marketing", "IT", "Sviluppatori", "Customer Care", "Direzione"];
 
 const trustCompare = [
   {
@@ -201,6 +189,14 @@ export function PynkAiGovernancePage() {
       { name: "Home", path: "/" },
       { name: "AI Governance", path: "/ai-governance" },
     ]),
+    offerCatalogSchema(
+      "Servizi AI Governance e AI Engineering",
+      governanceServices.map((service) => ({
+        name: service.title,
+        description: service.metaDescription,
+        path: `/ai-governance/${service.slug}`,
+      })),
+    ),
     faqSchema(faq),
   ];
 
@@ -463,6 +459,32 @@ export function PynkAiGovernancePage() {
           </div>
         </section>
 
+        <section className="pynk-section">
+          <div className="pynk-container">
+            <div className="pynk-section-head">
+              <p className="pynk-eyebrow">Soluzioni concrete</p>
+              <h2 className="pynk-section-title">L&apos;AI per problemi concreti della tua attività</h2>
+              <p className="pynk-section-lead">
+                Hai un problema, non una tecnologia da capire. Parti da qui: te lo spieghiamo semplice e, se ha senso, lo
+                costruiamo.
+              </p>
+            </div>
+            <div className="pynk-solution-grid">
+              {pynkSolutions.map((solution) => (
+                <Link key={solution.slug} href={href(`/soluzioni/${solution.slug}`)} className="pynk-ai-resource">
+                  {solution.h1}
+                  <ArrowRight className="pynk-icon-xs" />
+                </Link>
+              ))}
+            </div>
+            <div className="pynk-center-col pynk-mt-24">
+              <Link href={href("/soluzioni")} className="pynk-link-cta">
+                Vedi tutte le soluzioni <ArrowRight className="pynk-icon-xs" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
         <section className="pynk-section pynk-section-alt pynk-ai-contrast-section">
           <div className="pynk-container-wide">
             <div className="pynk-ai-contrast-head">
@@ -498,21 +520,20 @@ export function PynkAiGovernancePage() {
               <h2 className="pynk-section-title pynk-section-title-left">Insegniamo a usare davvero l&apos;AI.</h2>
               <p className="pynk-panel-desc">
                 Non un corso per rispettare una normativa. Un percorso operativo per portare l&apos;AI nel lavoro quotidiano:
-                workshop, affiancamento, revisione di prompt e workflow reali, con profondità diversa per ogni ruolo.
+                fondamenti, prompting, sicurezza dei dati, AI Act e applicazioni per reparto, con workshop e laboratori su casi reali.
               </p>
+              <p className="pynk-panel-desc">
+                Sette moduli combinabili, con profondità diversa per ogni ruolo: ogni profilo impara ciò che gli serve davvero.
+              </p>
+              <Link href={href("/ai-governance/ai-literacy")} className="pynk-link-cta pynk-mt-24">
+                Scopri i moduli del percorso <ArrowRight className="pynk-icon-xs" />
+              </Link>
+            </div>
+            <div className="pynk-panel">
+              <h3 className="pynk-panel-title">Modulato per ruolo</h3>
               <div className="pynk-ai-role-grid pynk-mt-24">
                 {adoptionRoles.map((role) => (
                   <span key={role}>{role}</span>
-                ))}
-              </div>
-            </div>
-            <div className="pynk-panel">
-              <h3 className="pynk-panel-title">Cosa comprende</h3>
-              <div className="pynk-pills pynk-pills-left pynk-mt-24">
-                {adoptionFormats.map((format) => (
-                  <span key={format} className="pynk-pill">
-                    {format}
-                  </span>
                 ))}
               </div>
             </div>

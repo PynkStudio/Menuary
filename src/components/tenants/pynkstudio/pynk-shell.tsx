@@ -111,6 +111,7 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
   const navLinks = [
     { label: copy.nav.servizi, to: "/servizi" },
     { label: "AI Governance", to: "/ai-governance" },
+    { label: "Soluzioni", to: "/soluzioni" },
     { label: copy.nav.settori, to: "/settori" },
     { label: copy.nav.lavori, to: "/lavori" },
     { label: copy.nav.consulenza, to: "/consulenza" },

@@ -17,9 +17,11 @@ export async function generateMetadata({ params }: Props) {
   const article = getGovernanceArticle(articleSlug);
   if (!article) return {};
   return pynkMetadata({
-    title: `${article.title} | PYNK STUDIO`,
+    title: `${article.title} | Guida tecnica AI — PYNK STUDIO`,
     description: article.description,
     path: `/blog/ai-governance/${article.slug}`,
+    keywords: [...article.topics, "intelligenza artificiale", "AI aziende", "guida tecnica"],
+    type: "article",
   });
 }
 

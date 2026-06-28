@@ -254,6 +254,10 @@ export const blogContent: Record<string, PynkArticleContent> = {
         q: "RAG elimina le allucinazioni?",
         a: "Le riduce molto, ma il modello può ancora interpretare male le fonti o rispondere oltre ciò che è scritto. Per questo servono citazioni verificabili e controlli sull'output.",
       },
+      {
+        q: "Come misuro quanto allucina un sistema?",
+        a: "Con un set di valutazione: domande con risposta attesa, controllo delle citazioni e revisione umana su un campione. Misurare il tasso di errore nel tempo permette di intervenire prima che degradi in produzione.",
+      },
     ],
     related: ["guardrails-ai", "human-in-the-loop", "rag-vs-fine-tuning"],
   },
@@ -649,6 +653,10 @@ export const blogContent: Record<string, PynkArticleContent> = {
         q: "Da dove parto se sono una PMI?",
         a: "Da un inventario dei sistemi AI usati e una valutazione preliminare di ruolo e rischio. È un'attività breve che chiarisce quali obblighi si applicano davvero.",
       },
+      {
+        q: "Quali sono le scadenze dell'AI Act?",
+        a: "L'AI Act si applica per fasi: alcuni divieti e l'obbligo di AI Literacy sono già operativi, mentre gli obblighi per i sistemi ad alto rischio entrano più avanti. Conviene mappare ora i propri sistemi per arrivare preparati a ogni scadenza.",
+      },
     ],
     related: ["sistemi-ai-ad-alto-rischio", "ai-literacy-articolo-4", "ai-governance"],
   },
@@ -679,12 +687,36 @@ export const blogContent: Record<string, PynkArticleContent> = {
         body:
           "La maggior parte degli incidenti AI in azienda nasce da uso scorretto: dati sensibili incollati in un tool pubblico, output non verificati usati nei processi, prompt che espongono segreti. La literacy giusta agisce esattamente su questi comportamenti.",
       },
+      {
+        title: "Cosa deve coprire un percorso serio",
+        body:
+          "Un programma di AI Literacy adeguato non è una lezione introduttiva: copre un curriculum strutturato che unisce comprensione teorica e applicazione pratica, modulato sul ruolo.",
+        bullets: [
+          "Fondamenti: come funzionano gli LLM, token, contesto, allucinazioni",
+          "Uso efficace: prompting, gestione del contesto, verifica degli output",
+          "Sicurezza: dati personali, segreti aziendali, IP, cloud vs locale",
+          "Normativa: principi dell'AI Act, ruoli, rischio, responsabilità d'uso",
+          "Applicazioni per reparto e laboratori su casi reali dell'azienda",
+        ],
+      },
+      {
+        title: "Come dimostrare la conformità",
+        body:
+          "L'Articolo 4 non chiede una certificazione, ma chiede di poter dimostrare un livello di competenza adeguato. Serve quindi tracciare cosa è stato erogato, a chi e con quale profondità.",
+        bullets: [
+          "Programma documentato e differenziato per ruolo",
+          "Registro di partecipazione e materiali distribuiti",
+          "Aggiornamenti collegati a nuovi strumenti e normative",
+          "Verifica pratica delle competenze, non solo presenza",
+        ],
+      },
     ],
     takeaways: [
       "L'Articolo 4 chiede competenza adeguata, differenziata per ruolo.",
       "Un corso unico per tutti non soddisfa né l'obbligo né i rischi reali.",
+      "Un percorso serio copre fondamenti, uso, sicurezza, normativa e pratica.",
       "La literacy ben fatta riduce gli incidenti più di una policy scritta.",
-      "Va aggiornata: strumenti e rischi cambiano in fretta.",
+      "Documenta il programma per dimostrare la conformità nel tempo.",
     ],
     faq: [
       {
@@ -694,6 +726,10 @@ export const blogContent: Record<string, PynkArticleContent> = {
       {
         q: "Ogni quanto va aggiornata la formazione?",
         a: "Quando cambiano strumenti, processi o normativa. In un campo che evolve così in fretta, un aggiornamento periodico è più utile di un corso una tantum.",
+      },
+      {
+        q: "Quanto dura un percorso di AI Literacy?",
+        a: "Dipende dai ruoli e dalla profondità necessaria. Si lavora per moduli combinabili: un percorso base per tutti e approfondimenti specifici per IT, marketing, HR o direzione, distribuiti nel tempo con affiancamento e laboratori.",
       },
     ],
     related: ["ai-act-pmi", "ai-governance", "chatgpt-in-azienda"],
@@ -1306,6 +1342,10 @@ export const blogContent: Record<string, PynkArticleContent> = {
       {
         q: "Da dove si parte?",
         a: "Da un inventario dei sistemi AI realmente usati e da una valutazione di rischi e ruoli. Poi si definiscono controlli tecnici e processi proporzionati, partendo dai casi a maggior impatto.",
+      },
+      {
+        q: "Serve un team dedicato per la governance?",
+        a: "Non necessariamente un team nuovo: servono ruoli chiari (chi decide, chi approva, chi controlla) e controlli inseriti nei sistemi. In aziende piccole può bastare un referente con il supporto di chi progetta e mantiene i sistemi AI.",
       },
     ],
     related: ["logging-sistemi-ai", "auditing-sistemi-ai", "ai-act-pmi"],
