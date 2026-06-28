@@ -12,10 +12,11 @@ export type AdminProfile = {
   display_name: string | null;
   phone: string | null;
   work_hours: string | null;
+  signature_role: string | null;
 };
 
 const PROFILE_FIELDS =
-  "id, user_id, email, role, first_name, last_name, display_name, phone, work_hours" as const;
+  "id, user_id, email, role, first_name, last_name, display_name, phone, work_hours, signature_role" as const;
 
 async function loadCurrentProfile(): Promise<AdminProfile | { status: number; error: string }> {
   const supabase = await createSupabaseServerClient(".menuary.it");
@@ -54,6 +55,7 @@ export async function PUT(request: Request) {
     last_name?: string;
     phone?: string;
     work_hours?: string;
+    signature_role?: string;
   };
   try {
     body = await request.json();
@@ -61,23 +63,24 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Body non valido." }, { status: 400 });
   }
 
-  const firstName = (body.first_name ?? "").trim();
-  const lastName  = (body.last_name  ?? "").trim();
-  const phone     = (body.phone      ?? "").trim();
-  const workHours = (body.work_hours ?? "").trim();
+  const firstName     = (body.first_name     ?? "").trim();
+  const lastName      = (body.last_name      ?? "").trim();
+  const phone         = (body.phone          ?? "").trim();
+  const workHours     = (body.work_hours     ?? "").trim();
+  const signatureRole = (body.signature_role ?? "").trim();
 
-  // display_name si auto-aggiorna a partire da nome+cognome se entrambi presenti.
   const displayName = [firstName, lastName].filter(Boolean).join(" ").trim() || null;
 
   const admin = createSupabaseAdminClient();
   const { error } = await admin
     .from("siteadmin")
     .update({
-      first_name:   firstName || null,
-      last_name:    lastName  || null,
-      phone:        phone     || null,
-      work_hours:   workHours || null,
-      display_name: displayName,
+      first_name:     firstName     || null,
+      last_name:      lastName      || null,
+      phone:          phone         || null,
+      work_hours:     workHours     || null,
+      signature_role: signatureRole || null,
+      display_name:   displayName,
     })
     .eq("id", result.id);
 

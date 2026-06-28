@@ -179,6 +179,7 @@
   },
   "active": "fc7beeb89cbc0bda",
   "lastOpenFiles": [
+    "tsconfig.tsbuildinfo",
     "node_modules/eslint-plugin-import/docs/rules/no-namespace.md",
     "node_modules/eslint-plugin-import/README.md",
     "node_modules/ms/license.md",
@@ -213,7 +214,6 @@
     "docs/kb/ai-support",
     "docs/kb",
     "docs/04-decisions/README.md",
-    "docs/05-roadmap/README.md",
     "Senza nome 1.canvas",
     "Senza nome.canvas",
     "docs/templates"

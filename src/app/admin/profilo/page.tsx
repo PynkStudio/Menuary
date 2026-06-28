@@ -4,12 +4,20 @@ import { AdminProfileForm } from "@/components/admin/profile/admin-profile-form"
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildAutoSignature } from "@/lib/email/signature-queries";
+import type { InboundEmailBrand } from "@/lib/email/inbound-types";
 
 export const metadata: Metadata = {
   title: "Profilo · Menuary Admin",
 };
 
 export const dynamic = "force-dynamic";
+
+const SIGNATURE_BRANDS: { brand: InboundEmailBrand; label: string }[] = [
+  { brand: "menuary",     label: "Menuary" },
+  { brand: "bizery",      label: "Bizery" },
+  { brand: "orpheo",      label: "Orpheo" },
+  { brand: "pynkstudio",  label: "PynkStudio" },
+];
 
 export default async function AdminProfiloPage() {
   const supabase = await createSupabaseServerClient(".menuary.it");
@@ -19,15 +27,19 @@ export default async function AdminProfiloPage() {
   const admin = createSupabaseAdminClient();
   const { data: sa } = await admin
     .from("siteadmin")
-    .select("id, email, role, first_name, last_name, display_name, phone, work_hours")
+    .select("id, email, role, first_name, last_name, display_name, phone, work_hours, signature_role")
     .eq("user_id", user.id)
     .eq("enabled", true)
     .maybeSingle();
 
   if (!sa) notFound();
 
-  const previewMenuary = buildAutoSignature(sa, "menuary").html;
-  const previewBizery  = buildAutoSignature(sa, "bizery").html;
+  const canEditSignatureRole = sa.role === "superadmin" || sa.role === "admin";
+
+  const previews = SIGNATURE_BRANDS.map(({ brand, label }) => ({
+    label,
+    html: buildAutoSignature(sa, brand).html,
+  }));
 
   return (
     <div className="max-w-3xl">
@@ -41,13 +53,15 @@ export default async function AdminProfiloPage() {
 
       <AdminProfileForm
         initial={{
-          email:      sa.email,
-          role:       sa.role,
-          firstName:  sa.first_name  ?? "",
-          lastName:   sa.last_name   ?? "",
-          phone:      sa.phone       ?? "",
-          workHours:  sa.work_hours  ?? "",
+          email:         sa.email,
+          role:          sa.role,
+          firstName:     sa.first_name  ?? "",
+          lastName:      sa.last_name   ?? "",
+          phone:         sa.phone       ?? "",
+          workHours:     sa.work_hours  ?? "",
+          signatureRole: sa.signature_role ?? "",
         }}
+        canEditSignatureRole={canEditSignatureRole}
       />
 
       <div className="mt-10 space-y-4">
@@ -59,9 +73,10 @@ export default async function AdminProfiloPage() {
           profilo.
         </p>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          <SignaturePreviewCard label="Menuary" html={previewMenuary} />
-          <SignaturePreviewCard label="Bizery"  html={previewBizery} />
+        <div className="grid gap-5 sm:grid-cols-2">
+          {previews.map((p) => (
+            <SignaturePreviewCard key={p.label} label={p.label} html={p.html} />
+          ))}
         </div>
       </div>
     </div>

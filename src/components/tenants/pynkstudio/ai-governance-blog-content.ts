@@ -121,11 +121,45 @@ export const blogContent: Record<string, PynkArticleContent> = {
         body:
           "La context window è il numero massimo di token che il modello può considerare in una volta (input + output). Superarla significa troncare o perdere informazioni. Gestire i token significa decidere cosa entra nel contesto e cosa no: è una scelta di architettura, non un dettaglio.",
       },
+      {
+        title: "Strategie per ottimizzare i token",
+        body:
+          "In produzione i token si gestiscono, non si subiscono. Ogni tecnica agisce su un punto diverso della pipeline.",
+        bullets: [
+          "Riassunti progressivi: comprimi la storia vecchia in poche righe",
+          "Retrieval mirato: porta nel contesto solo i chunk rilevanti, non tutto",
+          "System prompt compatti: istruzioni chiare in meno parole possibili",
+          "Output controllato: max_tokens e schema JSON riducono token di risposta",
+          "Modello giusto per il task: modelli piccoli per i task semplici, grandi solo dove serve",
+        ],
+        block: {
+          caption: "Esempio: contesto ottimizzato per un assistente",
+          lines: [
+            "system prompt      ~200 token  (istruzioni compatte)",
+            "retrieval (3 chunk) ~600 token  (solo i piu' rilevanti)",
+            "storia compressa   ~300 token  (riassunto, non tutto)",
+            "domanda utente     ~50 token",
+            "totale input       ~1.150 token  (su 128k disponibili)",
+          ],
+        },
+      },
+      {
+        title: "Errori comuni nella gestione dei token",
+        body:
+          "La maggior parte degli sprechi nasce da scelte di architettura, non dal modello. Riconoscerli e' il primo passo per ridurre costi e migliorare qualita'.",
+        bullets: [
+          "Reinviare l'intera conversazione senza comprimere i turni vecchi",
+          "System prompt troppo lungo ripetuto a ogni chiamata",
+          "Retrieval che porta 20 chunk quando ne bastano 3",
+          "Non impostare max_tokens: il modello risponde quanto vuole",
+          "Ignorare che l'italiano costa piu' token dell'inglese",
+        ],
+      },
     ],
     takeaways: [
       "1 token ≈ 0,75 parole; una pagina ≈ 500–800 token.",
-      "Paghi input + output: una chat lunga reinvia tutta la storia e costa di più a ogni turno.",
-      "L'italiano consuma più token dell'inglese a parità di contenuto.",
+      "Paghi input + output: una chat lunga reinvia tutta la storia e costa di piu' a ogni turno.",
+      "L'italiano consuma piu' token dell'inglese a parita' di contenuto.",
       "Ottimizzare i token (riassunti, retrieval mirato) riduce costo e latenza.",
     ],
     faq: [

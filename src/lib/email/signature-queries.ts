@@ -1,10 +1,5 @@
 import type { InboundEmailBrand } from "./inbound-types";
 
-// ── Firme automatiche standard ───────────────────────────────────────────────
-// Template fissi per brand compilati con i dati del profilo
-// siteadmin di chi invia la mail. NON sono modificabili dal singolo utente:
-// l'unica personalizzazione passa dalla pagina /admin/profilo.
-
 const ROLE_LABEL_IT: Record<string, string> = {
   superadmin:      "Amministratore di sistema",
   admin:           "Amministratore",
@@ -23,6 +18,7 @@ const BRAND_TEMPLATE = {
     accentInk:"#743D2F",
     paper:    "#FFFAF2",
     rule:     "#E6DFD2",
+    subtle:   "#9aa39e",
   },
   bizery: {
     label:    "Bizery",
@@ -33,6 +29,7 @@ const BRAND_TEMPLATE = {
     accentInk:"#234A85",
     paper:    "#F5F7FB",
     rule:     "#DFE5F0",
+    subtle:   "#8993a4",
   },
   orpheo: {
     label:    "Orpheo",
@@ -43,6 +40,7 @@ const BRAND_TEMPLATE = {
     accentInk:"#4C1D95",
     paper:    "#FBFAF7",
     rule:     "#E7E0F0",
+    subtle:   "#9590a8",
   },
   pynkstudio: {
     label:    "PynkStudio",
@@ -53,6 +51,7 @@ const BRAND_TEMPLATE = {
     accentInk:"#9B2D7A",
     paper:    "#FDF5FA",
     rule:     "#F0DDE9",
+    subtle:   "#a8909e",
   },
 } as const;
 
@@ -62,6 +61,7 @@ export type AutoSignatureProfile = {
   display_name: string | null;
   email:      string | null;
   role:       string | null;
+  signature_role?: string | null;
   phone:      string | null;
   work_hours: string | null;
 };
@@ -71,11 +71,6 @@ export type AutoSignature = {
   fromName: string;
 };
 
-/**
- * Costruisce la firma standard del brand a partire dal profilo siteadmin
- * dell'utente che invia. La struttura è identica per tutti gli utenti dello
- * stesso brand; cambiano solo nome, ruolo, telefono e orari.
- */
 export function buildAutoSignature(
   profile: AutoSignatureProfile,
   brand: InboundEmailBrand,
@@ -88,56 +83,60 @@ export function buildAutoSignature(
     "";
 
   const roleLabel =
-    (profile.role && ROLE_LABEL_IT[profile.role]) || (profile.role ?? "");
+    profile.signature_role?.trim() ||
+    (profile.role && ROLE_LABEL_IT[profile.role]) ||
+    (profile.role ?? "");
 
-  // L'indirizzo mostrato è SEMPRE quello aziendale del brand da cui si scrive,
-  // mai la mail di login personale del profilo (es. un indirizzo gmail privato).
-  // Si costruisce come nome.cognome@<dominio-brand>; in assenza di nome si
-  // ricade sull'indirizzo generico del brand (hello@…).
   const companyEmail = companyEmailForBrand(profile, t.website) ?? t.email;
 
-  const contactLine: string[] = [];
+  // Riga 1: telefono (se c'è) - mail personale aziendale
+  const contactParts: string[] = [];
   if (profile.phone) {
-    contactLine.push(
+    contactParts.push(
       `<a href="tel:${escape(profile.phone)}" style="color:${t.accentInk};text-decoration:none">${escape(profile.phone)}</a>`,
     );
   }
-  contactLine.push(
+  contactParts.push(
     `<a href="mailto:${escape(companyEmail)}" style="color:${t.accentInk};text-decoration:none">${escape(companyEmail)}</a>`,
   );
 
+  // Riga 2: Nome vertical
+  // Riga 3: sito vertical - mail generale vertical
   const html = `
-<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Helvetica,Arial,sans-serif;color:#1f2a26;font-size:13px;line-height:1.55">
+<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1f2937;font-size:13px;line-height:1.5">
   <tr>
-    <td style="padding:14px 16px;border-left:3px solid ${t.accent};background:${t.paper};border-radius:0 6px 6px 0">
-      <div style="font-size:15px;font-weight:600;color:${t.accentInk};letter-spacing:-0.005em">
-        ${escape(fullName) || "&nbsp;"}
-      </div>
-      ${roleLabel ? `<div style="margin-top:2px;color:#52605a;font-size:12px">${escape(roleLabel)} · ${t.label}</div>` : `<div style="margin-top:2px;color:#52605a;font-size:12px">${t.label}</div>`}
-      ${profile.work_hours ? `<div style="margin-top:6px;color:#6b7570;font-size:12px">Orari: ${escape(profile.work_hours)}</div>` : ""}
-      ${contactLine.length ? `<div style="margin-top:8px;font-size:12px">${contactLine.join(' &nbsp;·&nbsp; ')}</div>` : ""}
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid ${t.rule};font-size:11px;color:#7a8480">
-        <a href="mailto:${t.email}" style="color:#7a8480;text-decoration:none">${t.email}</a>
-        &nbsp;·&nbsp;
-        <a href="https://${t.website}" style="color:#7a8480;text-decoration:none">${t.website}</a>
-        <div style="margin-top:2px;color:#9aa39e;font-style:italic">${t.tagline}</div>
-      </div>
+    <td style="padding:0 0 0 14px;border-left:3px solid ${t.accent}">
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+        <tr>
+          <td style="padding:0 0 6px 0">
+            <div style="font-size:16px;font-weight:700;color:${t.accentInk};letter-spacing:-0.01em">${escape(fullName) || "&nbsp;"}</div>
+            ${roleLabel ? `<div style="margin-top:1px;font-size:12px;font-weight:500;color:#4b5563">${escape(roleLabel)}${` · ${t.label}`}</div>` : `<div style="margin-top:1px;font-size:12px;font-weight:500;color:#4b5563">${t.label}</div>`}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:6px 0;border-top:1px solid ${t.rule}">
+            <div style="font-size:12px">${contactParts.join(' &nbsp;&middot;&nbsp; ')}</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:6px 0 0 0;border-top:1px solid ${t.rule}">
+            <div style="font-size:12px;font-weight:600;color:${t.accentInk}">${t.label}</div>
+            <div style="margin-top:2px;font-size:11px;color:${t.subtle}">
+              <a href="https://${t.website}" style="color:${t.subtle};text-decoration:none">${t.website}</a>
+              &nbsp;&middot;&nbsp;
+              <a href="mailto:${t.email}" style="color:${t.subtle};text-decoration:none">${t.email}</a>
+            </div>
+          </td>
+        </tr>
+      </table>
     </td>
   </tr>
 </table>`.trim();
 
   const fromName = fullName || t.label;
-
   return { html, fromName };
 }
 
-/**
- * Indirizzo aziendale da mostrare in firma per il brand corrente.
- * - Se la mail di profilo è già sul dominio del brand, ne riusa il local part.
- * - Altrimenti compone nome.cognome@<dominio>.
- * - Restituisce null se non c'è abbastanza per costruire un local part valido
- *   (il chiamante ricade sull'indirizzo generico hello@<dominio>).
- */
 function companyEmailForBrand(
   profile: AutoSignatureProfile,
   domain: string,
@@ -156,7 +155,7 @@ function localPartFromName(a: string | null, b: string | null): string | null {
   const parts = [a, b]
     .filter(Boolean)
     .join(" ")
-    .normalize("NFD").replace(/[̀-ͯ]/g, "") // togli accenti
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ".")
     .replace(/^\.+|\.+$/g, "");

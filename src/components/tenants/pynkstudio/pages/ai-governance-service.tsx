@@ -63,17 +63,34 @@ export function PynkAiGovernanceServicePage({ slug }: { slug: string }) {
         <section className="pynk-section">
           <div className="pynk-container pynk-ai-split">
             <div>
-              <h2 className="pynk-section-title pynk-section-title-left">Descrizione</h2>
+              <h2 className="pynk-section-title pynk-section-title-left">{isLiteracy ? "Il percorso" : "Descrizione"}</h2>
               <p className="pynk-section-lead pynk-section-lead-left pynk-ai-service-description">{service.description}</p>
             </div>
-            <div className="pynk-panel pynk-double-bezel">
-              <h3 className="pynk-panel-title">Comprende</h3>
-              <div className="pynk-ai-token-list">
-                {scopeItems.map((item) => (
-                  <span key={item}>{item}</span>
-                ))}
+            {isLiteracy ? (
+              <div className="pynk-panel pynk-double-bezel">
+                <h3 className="pynk-panel-title">Come si svolge</h3>
+                <div className="pynk-pills pynk-pills-left pynk-mt-12">
+                  {adoptionFormats.map((format) => (
+                    <span key={format} className="pynk-pill">{format}</span>
+                  ))}
+                </div>
+                <h3 className="pynk-panel-title pynk-mt-24">Modulato per ruolo</h3>
+                <div className="pynk-ai-role-grid pynk-mt-12">
+                  {adoptionRoles.map((role) => (
+                    <span key={role}>{role}</span>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="pynk-panel pynk-double-bezel">
+                <h3 className="pynk-panel-title">Comprende</h3>
+                <div className="pynk-ai-token-list">
+                  {scopeItems.map((item) => (
+                    <span key={item}>{item}</span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -118,27 +135,6 @@ export function PynkAiGovernanceServicePage({ slug }: { slug: string }) {
                   </article>
                 ))}
               </PynkCarousel>
-
-              <div className="pynk-adoption-meta">
-                <div className="pynk-panel">
-                  <h3 className="pynk-panel-title-sm">Come si svolge</h3>
-                  <div className="pynk-pills pynk-pills-left pynk-mt-12">
-                    {adoptionFormats.map((format) => (
-                      <span key={format} className="pynk-pill">
-                        {format}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="pynk-panel">
-                  <h3 className="pynk-panel-title-sm">Modulato per ruolo</h3>
-                  <div className="pynk-ai-role-grid pynk-mt-12">
-                    {adoptionRoles.map((role) => (
-                      <span key={role}>{role}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
           </section>
         )}

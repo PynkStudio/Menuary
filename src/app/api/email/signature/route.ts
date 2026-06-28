@@ -39,7 +39,7 @@ async function loadComposerProfile(userId: string): Promise<AutoSignatureProfile
   const admin = createSupabaseAdminClient();
   const { data } = await admin
     .from("siteadmin")
-    .select("role, email, display_name, first_name, last_name, phone, work_hours")
+    .select("role, email, display_name, first_name, last_name, phone, work_hours, signature_role")
     .eq("user_id", userId)
     .eq("enabled", true)
     .maybeSingle();

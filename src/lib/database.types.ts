@@ -3610,6 +3610,7 @@ export type Database = {
           last_name: string | null
           phone: string | null
           role: Database["public"]["Enums"]["siteadmin_role"]
+          signature_role: string | null
           user_id: string
           work_hours: string | null
         }
@@ -3625,6 +3626,7 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["siteadmin_role"]
+          signature_role?: string | null
           user_id: string
           work_hours?: string | null
         }
@@ -3640,6 +3642,7 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["siteadmin_role"]
+          signature_role?: string | null
           user_id?: string
           work_hours?: string | null
         }
