@@ -16,14 +16,19 @@ export type PynkGovernanceService = {
   cta: string;
 };
 
+import { blogContent, type PynkArticleSection } from "./ai-governance-blog-content";
+
 export type PynkBlogArticle = {
   slug: string;
   title: string;
   description: string;
   readingTime: string;
   topics: string[];
-  sections: Array<{ title: string; body: string }>;
+  intro: string;
+  sections: PynkArticleSection[];
+  takeaways: string[];
   faq: Array<{ q: string; a: string }>;
+  related: string[];
 };
 
 export const PYNK_ORIGIN = "https://pynkstudio.it";
@@ -461,25 +466,7 @@ export const aiActFaq = [
   },
 ];
 
-const baseArticleSections = [
-  {
-    title: "Implicazioni architetturali",
-    body:
-      "La scelta tecnica va collegata a dati, permessi, logging, valutazione e manutenzione. Un sistema AI professionale deve rendere espliciti input, contesto, output, limiti e responsabilità operative.",
-  },
-  {
-    title: "Controlli di governance",
-    body:
-      "Inventario, classificazione del rischio, owner di processo, accessi, versionamento e audit trail sono i controlli minimi per evitare shadow AI e decisioni non tracciate.",
-  },
-  {
-    title: "Come lo implementiamo",
-    body:
-      "Partiamo da un caso d'uso reale, costruiamo un prototipo misurabile, definiamo dataset di valutazione, integriamo i sistemi necessari e rilasciamo con monitoraggio e procedure operative.",
-  },
-];
-
-export const governanceBlogArticles: PynkBlogArticle[] = [
+const blogArticleMeta: Array<[string, string, string, string[]]> = [
   ["come-funzionano-gli-llm", "Come funzionano gli LLM", "Token, contesto, probabilità, embedding e limiti pratici dei Large Language Model in azienda.", ["LLM", "token", "contesto"]],
   ["cos-e-un-token", "Cos'è un token", "Perché i token influenzano costo, contesto, qualità del prompt e progettazione delle knowledge base.", ["token", "costi", "prompt"]],
   ["cos-e-il-contesto", "Cos'è il contesto negli LLM", "Finestra di contesto, memoria apparente, retrieval e gestione delle informazioni durante una conversazione.", ["contesto", "RAG", "memoria"]],
@@ -510,24 +497,23 @@ export const governanceBlogArticles: PynkBlogArticle[] = [
   ["auditing-sistemi-ai", "Auditing dei sistemi AI", "Audit trail, evidenze tecniche, versioni, cambi modello e verifiche periodiche.", ["auditing", "versionamento", "governance"]],
   ["architetture-ai", "Architetture AI", "Pattern cloud, hybrid, on-premise, RAG, agenti, workflow e integrazioni enterprise.", ["architettura", "hybrid", "RAG"]],
   ["workflow-ai", "Workflow AI", "Come trasformare un caso d'uso AI in processo operativo con owner, stati e controlli.", ["workflow", "automazioni", "processi"]],
-].map(([slug, title, description, topics]) => ({
-  slug,
-  title,
-  description,
-  readingTime: "8 min",
-  topics,
-  sections: baseArticleSections,
-  faq: [
-    {
-      q: "Da dove conviene partire?",
-      a: "Da un caso d'uso delimitato, dati disponibili e metriche di qualità. La tecnologia va scelta dopo aver chiarito processo e rischio.",
-    },
-    {
-      q: "Serve una policy prima del progetto?",
-      a: "Serve almeno una regola minima su dati, accessi e supervisione. Policy e architettura devono evolvere insieme.",
-    },
-  ],
-})) as PynkBlogArticle[];
+];
+
+export const governanceBlogArticles: PynkBlogArticle[] = blogArticleMeta.map(([slug, title, description, topics]) => {
+  const content = blogContent[slug];
+  return {
+    slug,
+    title,
+    description,
+    topics,
+    readingTime: content?.readingTime ?? "8 min",
+    intro: content?.intro ?? description,
+    sections: content?.sections ?? [],
+    takeaways: content?.takeaways ?? [],
+    faq: content?.faq ?? [],
+    related: content?.related ?? [],
+  };
+});
 
 export function getGovernanceArticle(slug: string) {
   return governanceBlogArticles.find((article) => article.slug === slug);

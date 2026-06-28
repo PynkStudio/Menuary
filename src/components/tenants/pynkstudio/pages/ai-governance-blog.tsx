@@ -27,11 +27,12 @@ export function PynkAiGovernanceBlogPage() {
           <div className="pynk-glow pynk-glow-tr" aria-hidden />
           <div className="pynk-container-wide pynk-ai-blog-hero-grid">
             <div>
-              <p className="pynk-eyebrow pynk-eyebrow-chip">Blog · AI Governance</p>
-              <h1 className="pynk-hero-title pynk-ai-hero-title">Articoli tecnici su AI, architettura e governance</h1>
+              <p className="pynk-eyebrow pynk-eyebrow-chip">Blog tecnico · {governanceBlogArticles.length} guide</p>
+              <h1 className="pynk-hero-title pynk-ai-hero-title">Guide tecniche su AI, architettura e governance</h1>
             </div>
             <p className="pynk-hero-subtitle pynk-ai-hero-copy">
-              Pillar tecnici per capire LLM, RAG, agenti, tool calling, AI Act, logging, auditing e processi di adozione professionale.
+              Risorse di riferimento scritte da chi i sistemi AI li costruisce: LLM, RAG, agenti, tool calling, MCP, vector
+              database, guardrail, logging, AI Act e adozione. Niente pagine SEO: contenuti per capire e decidere.
             </p>
           </div>
         </section>

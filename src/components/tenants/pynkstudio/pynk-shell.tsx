@@ -102,6 +102,12 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
   const pathname = usePathname() ?? "/";
   const href = useTenantLocalizedHref();
 
+  // Il toggle "Nerd" agisce sui copy plain/nerd: ha senso solo in home.
+  // Ignora l'eventuale prefisso lingua (es. /it, /en) prima di valutare la radice.
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const segmentsWithoutLocale = pathSegments[0]?.length === 2 ? pathSegments.slice(1) : pathSegments;
+  const isHome = segmentsWithoutLocale.length === 0;
+
   const navLinks = [
     { label: copy.nav.servizi, to: "/servizi" },
     { label: "AI Governance", to: "/ai-governance" },
@@ -126,17 +132,19 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
               {link.label}
             </Link>
           ))}
-          <button
-            type="button"
-            onClick={toggleNerd}
-            className={`pynk-nerd-toggle${nerd ? " is-on" : ""}`}
-            aria-pressed={nerd}
-            aria-label={nerd ? copy.nerdToggle.disable : copy.nerdToggle.enable}
-            title={copy.nerdToggle.hint}
-          >
-            <Code2 className="pynk-icon-sm" />
-            <span className="pynk-nerd-label">Nerd</span>
-          </button>
+          {isHome && (
+            <button
+              type="button"
+              onClick={toggleNerd}
+              className={`pynk-nerd-toggle${nerd ? " is-on" : ""}`}
+              aria-pressed={nerd}
+              aria-label={nerd ? copy.nerdToggle.disable : copy.nerdToggle.enable}
+              title={copy.nerdToggle.hint}
+            >
+              <Code2 className="pynk-icon-sm" />
+              <span className="pynk-nerd-label">Nerd</span>
+            </button>
+          )}
           <button type="button" onClick={onToggleTheme} className="pynk-theme-toggle" aria-label="Cambia tema">
             {theme === "dark" ? <Sun className="pynk-icon-sm" /> : <Moon className="pynk-icon-sm" />}
           </button>
@@ -163,10 +171,12 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
             </Link>
           ))}
           <div className="pynk-nav-mobile-row">
-            <button type="button" onClick={toggleNerd} className={`pynk-nerd-toggle${nerd ? " is-on" : ""}`} aria-pressed={nerd}>
-              <Code2 className="pynk-icon-sm" />
-              <span>Nerd</span>
-            </button>
+            {isHome && (
+              <button type="button" onClick={toggleNerd} className={`pynk-nerd-toggle${nerd ? " is-on" : ""}`} aria-pressed={nerd}>
+                <Code2 className="pynk-icon-sm" />
+                <span>Nerd</span>
+              </button>
+            )}
             <button type="button" onClick={onToggleTheme} className="pynk-theme-toggle" aria-label="Cambia tema">
               {theme === "dark" ? <Sun className="pynk-icon-sm" /> : <Moon className="pynk-icon-sm" />}
             </button>
