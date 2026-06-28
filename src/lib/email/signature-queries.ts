@@ -137,12 +137,14 @@ export function buildAutoSignature(
   return { html, fromName };
 }
 
+const GENERIC_LOCALS = new Set(["hello", "info", "support", "noreply", "admin", "contact"]);
+
 function companyEmailForBrand(
   profile: AutoSignatureProfile,
   domain: string,
 ): string | null {
   const profileLocal = profile.email?.split("@");
-  if (profileLocal && profileLocal.length === 2 && profileLocal[1].toLowerCase() === domain.toLowerCase()) {
+  if (profileLocal && profileLocal.length === 2 && profileLocal[1].toLowerCase() === domain.toLowerCase() && !GENERIC_LOCALS.has(profileLocal[0].toLowerCase())) {
     return `${profileLocal[0]}@${domain}`;
   }
 

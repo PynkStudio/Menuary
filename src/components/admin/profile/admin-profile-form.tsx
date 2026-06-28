@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { RotateCcw, Save } from "lucide-react";
 import { useDraftPersistence } from "@/lib/hooks/use-draft-persistence";
 import { useUnsavedChangesWarning } from "@/lib/hooks/use-unsaved-changes-warning";
@@ -32,6 +33,7 @@ export function AdminProfileForm({
   initial: Initial;
   canEditSignatureRole?: boolean;
 }) {
+  const router = useRouter();
   const [firstName,     setFirstName]     = useState(initial.firstName);
   const [lastName,      setLastName]      = useState(initial.lastName);
   const [phone,         setPhone]         = useState(initial.phone);
@@ -78,6 +80,7 @@ export function AdminProfileForm({
         }
         setSaved(true);
         draft.clearDraft();
+        router.refresh();
       } catch {
         setError("Errore di rete.");
       }
