@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Bot, BrainCircuit, CheckCircle2, Database, FileCheck2, GitBranch, ShieldCheck, Wrench } from "lucide-react";
+import { AlertTriangle, ArrowRight, Bot, BrainCircuit, CheckCircle2, Database, FileCheck2, GitBranch, ShieldCheck, Wrench } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { governanceServices, leadMagnets } from "../ai-governance-data";
 import { PynkJsonLd } from "../pynk-json-ld";
@@ -41,10 +41,9 @@ const governanceSignals = [
 ] as const;
 
 const operatingLayers = [
-  { label: "Business", detail: "caso d'uso, owner, impatto" },
-  { label: "Data", detail: "fonti, permessi, qualità" },
-  { label: "Model", detail: "LLM, RAG, agenti, eval" },
-  { label: "Control", detail: "policy, log, audit, review" },
+  { label: "Business", detail: "caso d'uso · owner · impatto" },
+  { label: "Data", detail: "fonti · permessi · qualità" },
+  { label: "Model", detail: "LLM · RAG · agenti · eval" },
 ] as const;
 
 const governanceFlow = [
@@ -110,7 +109,8 @@ export function PynkAiGovernancePage() {
                 AI Governance <span className="pynk-accent">per aziende</span>
               </h1>
               <p className="pynk-hero-subtitle pynk-ai-hero-copy">
-                Progettiamo, implementiamo e governiamo sistemi di Intelligenza Artificiale conformi alle normative europee e realmente utili al business.
+                Dall&apos;assessment all&apos;architettura fino alla manutenzione: progettiamo, costruiamo e governiamo i tuoi sistemi AI.
+                Tracciabili, sicuri e conformi all&apos;AI Act, senza rallentare il business.
               </p>
               <div className="pynk-hero-ctas pynk-hero-ctas-left">
                 <Link href={href("/prenota-call")} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-btn-island pynk-group">
@@ -135,22 +135,27 @@ export function PynkAiGovernancePage() {
                 <span>operating model</span>
                 <strong>AI in produzione</strong>
               </div>
-              <div className="pynk-ai-orbit" aria-hidden>
-                <div className="pynk-ai-orbit-core">
-                  <strong>AI</strong>
-                  <span>governata</span>
-                </div>
-                {operatingLayers.map((layer, index) => (
-                  <div key={layer.label} className={`pynk-ai-orbit-node pynk-ai-orbit-node-${index + 1}`}>
-                    <b>{layer.label}</b>
-                    <small>{layer.detail}</small>
+              <div className="pynk-ai-stack">
+                <div className="pynk-ai-stack-control">
+                  <div className="pynk-ai-stack-control-head">
+                    <span className="pynk-ai-stack-control-name">Control</span>
+                    <small>policy · log · audit · review</small>
+                    <span className="pynk-ai-stack-chip">AI governata</span>
                   </div>
-                ))}
+                  <div className="pynk-ai-stack-layers">
+                    {operatingLayers.map((layer) => (
+                      <div key={layer.label} className="pynk-ai-stack-layer">
+                        <b>{layer.label}</b>
+                        <small>{layer.detail}</small>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div className="pynk-ai-system-stream">
-                <span>model: openai / claude / llama</span>
-                <span>risk: role + use case</span>
-                <span>trace: enabled</span>
+                <span><i>model</i> openai · claude · llama</span>
+                <span><i>risk</i> ruolo + caso d&apos;uso</span>
+                <span><i>trace</i> attiva</span>
               </div>
             </motion.div>
           </div>
@@ -188,6 +193,9 @@ export function PynkAiGovernancePage() {
           <div className="pynk-container-wide">
             <div className="pynk-section-head">
               <h2 className="pynk-section-title">Il metodo in quattro passaggi</h2>
+              <p className="pynk-section-lead">
+                Un percorso lineare: prima capiamo dove l&apos;AI è già entrata, poi la mettiamo sotto controllo. Niente progetti astratti, solo passi che portano in produzione.
+              </p>
             </div>
             <div className="pynk-ai-flow-map">
               {governanceFlow.map(([number, title, detail], index) => (
@@ -210,7 +218,7 @@ export function PynkAiGovernancePage() {
             <div className="pynk-ai-risk-grid">
               {problems.map((problem) => (
                 <article key={problem.title} className="pynk-panel pynk-panel-sm pynk-ai-risk-card">
-                  <ShieldCheck className="pynk-icon-sm pynk-check" />
+                  <AlertTriangle className="pynk-icon-sm pynk-ai-risk-icon" />
                   <h3>{problem.title}</h3>
                   <p>{problem.body}</p>
                 </article>
@@ -282,6 +290,9 @@ export function PynkAiGovernancePage() {
           <div className="pynk-container">
             <div className="pynk-section-head">
               <h2 className="pynk-section-title">Implementiamo direttamente i sistemi AI</h2>
+              <p className="pynk-section-lead">
+                Governance e sviluppo sotto lo stesso tetto: chi disegna le regole costruisce anche i sistemi. Per questo i controlli non restano sulla carta, ma entrano nel codice che mandiamo live.
+              </p>
             </div>
             <div className="pynk-ai-signal-grid">
               {governanceSignals.map(([title, body]) => (

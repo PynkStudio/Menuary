@@ -756,73 +756,115 @@
     background: color-mix(in srgb, var(--pynk-primary) 18%, var(--pynk-bg));
     color: var(--pynk-fg);
   }
-  .pynk-ai-orbit {
+  /* Operating-model: governance envelope (Control) che racchiude i layer AI.
+     Layout in-flow: niente posizionamento assoluto, nessuna sovrapposizione di testo. */
+  .pynk-ai-stack {
     position: relative;
     z-index: 1;
-    min-height: 420px;
-    margin-top: 24px;
-    border-radius: 28px;
-    background:
-      radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--pynk-primary) 16%, transparent), transparent 27%),
-      radial-gradient(circle at 50% 50%, transparent 0 34%, color-mix(in srgb, var(--pynk-primary) 14%, transparent) 34.2% 34.7%, transparent 35%),
-      radial-gradient(circle at 50% 50%, transparent 0 47%, color-mix(in srgb, var(--pynk-border) 50%, transparent) 47.2% 47.7%, transparent 48%);
+    margin-top: 26px;
   }
-  .pynk-ai-orbit-core {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    display: grid;
-    place-items: center;
-    width: 132px;
-    height: 132px;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--pynk-primary) 42%, transparent);
+  .pynk-ai-stack-control {
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--pynk-primary) 34%, transparent);
     background:
-      radial-gradient(circle at 30% 20%, color-mix(in srgb, white 12%, transparent), transparent 35%),
-      color-mix(in srgb, var(--pynk-primary) 18%, var(--pynk-bg));
-    transform: translate(-50%, -50%);
+      radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--pynk-primary) 16%, transparent), transparent 46%),
+      color-mix(in srgb, var(--pynk-bg) 42%, transparent);
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, white 16%, transparent),
-      0 18px 70px -34px color-mix(in srgb, var(--pynk-primary) 70%, transparent);
-    animation: pynk-orbit-core 5s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+      inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+      0 26px 80px -58px color-mix(in srgb, var(--pynk-primary) 70%, transparent);
+    padding: 16px 16px 18px;
   }
-  .pynk-ai-orbit-core strong {
-    margin-top: 18px;
-    font-size: 32px;
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: -0.06em;
+  .pynk-ai-stack-control-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 4px 4px 14px;
+    border-bottom: 1px dashed color-mix(in srgb, var(--pynk-border) 62%, transparent);
   }
-  .pynk-ai-orbit-core span {
-    margin-top: -26px;
+  .pynk-ai-stack-control-name {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--pynk-fg);
+  }
+  .pynk-ai-stack-control-head small {
+    font-size: 11px;
+    letter-spacing: 0.03em;
     color: var(--pynk-muted-fg);
-    font-size: 12px;
   }
-  @keyframes pynk-orbit-core {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.035); }
+  .pynk-ai-stack-chip {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--pynk-primary) 40%, transparent);
+    background: color-mix(in srgb, var(--pynk-primary) 15%, transparent);
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--pynk-fg);
+    white-space: nowrap;
   }
-  .pynk-ai-orbit-node {
-    position: absolute;
+  .pynk-ai-stack-chip::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--pynk-primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--pynk-primary) 22%, transparent);
+    animation: pynk-ai-pulse 2.4s ease-in-out infinite;
+  }
+  .pynk-ai-stack-layers {
     display: grid;
-    gap: 5px;
-    width: min(42%, 178px);
-    border-radius: 18px;
-    border: 1px solid color-mix(in srgb, var(--pynk-border) 38%, transparent);
-    background: color-mix(in srgb, var(--pynk-bg) 58%, transparent);
-    padding: 14px;
-    box-shadow: inset 0 1px 0 color-mix(in srgb, white 7%, transparent);
-    animation: pynk-float-node 7s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+    gap: 8px;
+    margin-top: 14px;
   }
-  .pynk-ai-orbit-node b { color: var(--pynk-fg); font-size: 14px; font-weight: 400; }
-  .pynk-ai-orbit-node small { color: var(--pynk-muted-fg); font-size: 11px; line-height: 1.35; }
-  .pynk-ai-orbit-node-1 { left: 7%; top: 14%; }
-  .pynk-ai-orbit-node-2 { right: 3%; top: 18%; animation-delay: -1.4s; }
-  .pynk-ai-orbit-node-3 { left: 4%; bottom: 16%; animation-delay: -2.2s; }
-  .pynk-ai-orbit-node-4 { right: 8%; bottom: 12%; animation-delay: -3.1s; }
-  @keyframes pynk-float-node {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+  .pynk-ai-stack-layer {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    align-items: center;
+    gap: 12px;
+    border-radius: 15px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 42%, transparent);
+    background: color-mix(in srgb, var(--pynk-bg) 50%, transparent);
+    padding: 13px 15px;
+    transition: border-color 0.45s cubic-bezier(0.32, 0.72, 0, 1), transform 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .pynk-ai-stack-layer:hover {
+    border-color: color-mix(in srgb, var(--pynk-primary) 46%, transparent);
+    transform: translateX(4px);
+  }
+  .pynk-ai-stack-layer b {
+    position: relative;
+    padding-left: 17px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--pynk-fg);
+  }
+  .pynk-ai-stack-layer b::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--pynk-primary) 72%, transparent);
+    transform: translateY(-50%);
+  }
+  .pynk-ai-stack-layer small {
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--pynk-muted-fg);
+  }
+  @keyframes pynk-ai-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.82); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pynk-ai-stack-chip::before { animation: none; }
   }
   .pynk-ai-contrast-section { padding-top: 150px; }
   .pynk-ai-contrast-head {
@@ -1035,6 +1077,10 @@
     min-height: 180px;
     padding: 22px;
   }
+  .pynk-ai-risk-icon {
+    color: color-mix(in srgb, var(--pynk-primary) 78%, white 22%);
+    flex-shrink: 0;
+  }
   .pynk-ai-risk-card h3 {
     margin: 18px 0 0;
     color: var(--pynk-fg);
@@ -1111,10 +1157,24 @@
     z-index: 1;
     display: grid;
     gap: 7px;
-    margin-top: 28px;
+    margin-top: 26px;
     color: var(--pynk-muted-fg);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
+  }
+  .pynk-ai-system-stream span {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .pynk-ai-system-stream i {
+    flex-shrink: 0;
+    width: 46px;
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--pynk-fg) 55%, transparent);
   }
   .pynk-double-bezel {
     box-shadow:
