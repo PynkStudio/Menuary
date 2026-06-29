@@ -139,6 +139,9 @@ export function CascinaErranteHomePage() {
           <span><Compass size={21} /><strong>Innovazione</strong>Tecnologia al servizio della tradizione</span>
           <span><Sparkles size={21} /><strong>Eccellenza</strong>Qualità senza compromessi in ogni dettaglio</span>
         </div>
+        <Link href={href("/chi-siamo")} className="ce-button ce-button-outline-forest">
+          Leggi il manifesto completo
+        </Link>
       </section>
 
       <section className="ce-final-cta">

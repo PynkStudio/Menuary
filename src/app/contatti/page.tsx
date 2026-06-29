@@ -4,11 +4,10 @@ import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/plat
 import {
   BIZERY_MARKETING_DESCRIPTION,
   BIZERY_ORIGIN,
-  MENUARY_MARKETING_DESCRIPTION,
   MENUARY_ORIGIN,
   marketingAlternates,
 } from "@/lib/marketing-seo";
-import { getLocale } from "@/i18n";
+import { getLocale, getTranslations } from "@/i18n";
 import { MarketingContactsPage } from "@/components/marketing/pages/contatti";
 import { BizeryContattiPage } from "@/components/bizery/pages/contatti";
 import { BeporkContactsPage } from "@/components/tenants/bepork/pages/contatti";
@@ -26,13 +25,15 @@ export async function generateMetadata(): Promise<Metadata> {
         "Contatta Cascina Errante per visite, tavoli, eventi, catering e prodotti della bottega.",
     };
   }
-  return mode === "marketing"
-    ? {
-        title: "Contatti per siti web ristoranti",
-        description: `Raccontaci il tuo ristorante, bar o pizzeria e scopri come Menuary può trasformarlo in un sito su misura. ${MENUARY_MARKETING_DESCRIPTION}`,
-        alternates: marketingAlternates(MENUARY_ORIGIN, "/contatti", await getLocale()),
-      }
-    : mode === "marketing-bizery"
+  if (mode === "marketing") {
+    const seo = (await getTranslations("marketing")).seo.contact;
+    return {
+      title: seo.title,
+      description: seo.description,
+      alternates: marketingAlternates(MENUARY_ORIGIN, "/contatti", await getLocale()),
+    };
+  }
+  return mode === "marketing-bizery"
       ? {
         title: "Contatti per siti web aziende",
         description: `Raccontaci il tuo studio, salone o azienda di servizi e scopri come Bizery può trasformarlo in un sito su misura. ${BIZERY_MARKETING_DESCRIPTION}`,

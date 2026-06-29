@@ -179,6 +179,8 @@
   },
   "active": "fc7beeb89cbc0bda",
   "lastOpenFiles": [
+    "public/valentina-orciuoli/sfondo-valentina.webp",
+    "public/valentina-orciuoli/hero-valentina-cosmos.png",
     "tsconfig.tsbuildinfo",
     "node_modules/eslint-plugin-import/docs/rules/no-namespace.md",
     "node_modules/eslint-plugin-import/README.md",
@@ -215,7 +217,6 @@
     "docs/kb",
     "docs/04-decisions/README.md",
     "Senza nome 1.canvas",
-    "Senza nome.canvas",
-    "docs/templates"
+    "Senza nome.canvas"
   ]
 }

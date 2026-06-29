@@ -420,6 +420,28 @@ export const messages = {
         ] as { q: string; a: string }[],
       },
     },
+    seo: {
+      home: {
+        title: "Menuary - websites for restaurants, bars and pizzerias",
+        description:
+          "Menuary builds websites for restaurants, bars, pizzerias, trattorias and venues: digital menu, online bookings, orders, Google reviews and simple management.",
+      },
+      about: {
+        title: "Studio for restaurant websites",
+        description:
+          "Menuary is a digital studio for restaurants, bars, pizzerias and venues. We design bespoke websites and keep them alive over time.",
+      },
+      pricing: {
+        title: "Restaurant website pricing",
+        description:
+          "Three Menuary plans for restaurants, bars and pizzerias: bespoke website, digital menu, online bookings and full management. Zero commission on orders and bookings.",
+      },
+      contact: {
+        title: "Contact us for restaurant websites",
+        description:
+          "Tell us about your restaurant, bar or pizzeria and discover how Menuary can turn it into a bespoke website with digital menu, bookings and Google management.",
+      },
+    },
   },
 
   bizery: {

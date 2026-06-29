@@ -420,6 +420,28 @@ export const messages = {
         ] as { q: string; a: string }[],
       },
     },
+    seo: {
+      home: {
+        title: "Menuary - siti web per ristoranti, bar e pizzerie",
+        description:
+          "Menuary crea siti web per ristoranti, bar, pizzerie, trattorie e locali: menu digitale, prenotazioni online, ordini, recensioni Google e gestione semplice.",
+      },
+      about: {
+        title: "Studio per siti web ristoranti",
+        description:
+          "Menuary è uno studio digitale per ristoranti, bar, pizzerie e locali. Disegniamo siti web su misura e li teniamo vivi nel tempo.",
+      },
+      pricing: {
+        title: "Prezzi siti web per ristoranti",
+        description:
+          "Tre piani Menuary per ristoranti, bar e pizzerie: sito su misura, menu digitale, prenotazioni online e gestionale completo. Zero commissioni su ordini e prenotazioni.",
+      },
+      contact: {
+        title: "Contatti per siti web ristoranti",
+        description:
+          "Raccontaci il tuo ristorante, bar o pizzeria e scopri come Menuary può trasformarlo in un sito su misura con menu digitale, prenotazioni e gestione Google.",
+      },
+    },
   },
 
   bizery: {

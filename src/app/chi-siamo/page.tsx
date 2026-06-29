@@ -6,7 +6,7 @@ import {
   MENUARY_ORIGIN,
   marketingAlternates,
 } from "@/lib/marketing-seo";
-import { getLocale } from "@/i18n";
+import { getLocale, getTranslations } from "@/i18n";
 import { MarketingAboutPage } from "@/components/marketing/pages/chi-siamo";
 import { BizeryAboutPage } from "@/components/bizery/pages/chi-siamo";
 import { BeporkAboutPage } from "@/components/tenants/bepork/pages/chi-siamo";
@@ -17,10 +17,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
   if (mode === "marketing") {
+    const seo = (await getTranslations("marketing")).seo.about;
     return {
-      title: "Studio per siti web ristoranti",
-      description:
-        "Menuary è uno studio digitale per ristoranti, bar, pizzerie e locali. Disegniamo siti web su misura e li teniamo vivi nel tempo.",
+      title: seo.title,
+      description: seo.description,
       alternates: marketingAlternates(MENUARY_ORIGIN, "/chi-siamo", await getLocale()),
     };
   }

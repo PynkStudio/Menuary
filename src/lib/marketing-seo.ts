@@ -6,6 +6,31 @@ export const MENUARY_ORIGIN = "https://menuary.it";
 export const BIZERY_ORIGIN = "https://bizery.it";
 export const ORPHEO_ORIGIN = "https://weuseorpheo.com";
 
+// Open Graph locale (language_TERRITORY) per lingua supportata, per il tag og:locale.
+const OG_LOCALE: Record<AppLocale, string> = {
+  it: "it_IT",
+  en: "en_GB",
+  fr: "fr_FR",
+  es: "es_ES",
+  de: "de_DE",
+  pt: "pt_PT",
+  nl: "nl_NL",
+  da: "da_DK",
+  sv: "sv_SE",
+  nb: "nb_NO",
+  fi: "fi_FI",
+  pl: "pl_PL",
+  cs: "cs_CZ",
+  sl: "sl_SI",
+  hr: "hr_HR",
+  sq: "sq_AL",
+  el: "el_GR",
+};
+
+export function ogLocale(locale: AppLocale): string {
+  return OG_LOCALE[locale] ?? "it_IT";
+}
+
 export const MENUARY_MARKETING_DESCRIPTION =
   "Menuary crea siti web per ristoranti, bar, pizzerie, trattorie e locali: menu digitale, prenotazioni online, ordini, recensioni Google e gestione semplice.";
 

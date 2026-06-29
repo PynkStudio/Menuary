@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient, purgeSupabaseAuthCookies } from "@/lib/supabase/client";
 import { resolveDestination, type LoginFrom } from "@/lib/login-url";
 import { resolveUserAccess } from "@/lib/user-access";
 import { notifyParentAndClose } from "@/lib/login-popup";
@@ -84,10 +84,14 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
       // lock interno per serializzare le operazioni auth: senza questa opzione,
       // signInWithPassword aspetterebbe il lock del refresh — che può bloccarsi
       // per sempre in caso di rate-limit 429 o loop su token ruotato.
-      const supabase = createSupabaseBrowserClient({ autoRefreshToken: false });
+      // Bonifica sincrona di eventuali cookie di sessione residui/duplicati
+      // (host-only + domain-scoped) PRIMA di creare il client. Sostituisce il
+      // vecchio `signOut({ scope: "local" })` che poteva bloccarsi sul lock
+      // interno di GoTrue su cookie corrotti — è proprio ciò che costringeva a
+      // cancellare i cookie dai devtools per sbloccare "Accesso in corso…".
+      purgeSupabaseAuthCookies();
 
-      // Azzera ogni sessione residua prima del nuovo login.
-      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+      const supabase = createSupabaseBrowserClient({ autoRefreshToken: false });
 
       // Timeout esplicito: se Supabase non risponde in 20 s, mostra errore e sblocca il form.
       const { data, error } = await Promise.race([

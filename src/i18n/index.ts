@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { type AppLocale, isAppLocale, DEFAULT_LOCALE, LOCALE_HEADER } from "./locales";
+import { mergeMessages } from "./messages/_merge";
 import { messages as it } from "./messages/it";
 import { messages as en } from "./messages/en";
 import { messages as fr } from "./messages/fr";
@@ -21,25 +22,27 @@ import { messages as el } from "./messages/el";
 export type { AppLocale };
 export { SUPPORTED_LOCALES, DEFAULT_LOCALE } from "./locales";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ALL: Record<AppLocale, any> = {
+// Ogni lingua è un override parziale sull'italiano: le chiavi non ancora
+// tradotte (es. about/pricing in alcune lingue) ricadono sull'italiano invece
+// di rompere la pagina con un valore undefined.
+const ALL: Record<AppLocale, typeof it> = {
   it,
-  en,
-  fr,
-  es,
-  de,
-  pt,
-  nl,
-  da,
-  sv,
-  nb,
-  fi,
-  pl,
-  cs,
-  sl,
-  hr,
-  sq,
-  el,
+  en: mergeMessages(it, en),
+  fr: mergeMessages(it, fr),
+  es: mergeMessages(it, es),
+  de: mergeMessages(it, de),
+  pt: mergeMessages(it, pt),
+  nl: mergeMessages(it, nl),
+  da: mergeMessages(it, da),
+  sv: mergeMessages(it, sv),
+  nb: mergeMessages(it, nb),
+  fi: mergeMessages(it, fi),
+  pl: mergeMessages(it, pl),
+  cs: mergeMessages(it, cs),
+  sl: mergeMessages(it, sl),
+  hr: mergeMessages(it, hr),
+  sq: mergeMessages(it, sq),
+  el: mergeMessages(it, el),
 };
 
 export async function getLocale(): Promise<AppLocale> {

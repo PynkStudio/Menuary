@@ -31,6 +31,7 @@ import { buildIconSet, buildTenantIconSet, themeColor } from "@/lib/favicon";
 import { CLIENTS_PUBLIC_ORIGIN, clientsSite } from "@/lib/clients-config";
 import { STUDIO_PUBLIC_ORIGIN, studioSite } from "@/lib/studio-config";
 import { isAppLocale, DEFAULT_LOCALE, LOCALE_HEADER } from "@/i18n/locales";
+import { getTranslations } from "@/i18n";
 import {
   BIZERY_MARKETING_DESCRIPTION,
   BIZERY_ORIGIN,
@@ -42,6 +43,7 @@ import {
   ORPHEO_ORIGIN,
   ORPHEO_KEYWORDS,
   marketingAlternates,
+  ogLocale,
   marketingFaqSchema,
   marketingOrganizationSchema,
   marketingServiceSchema,
@@ -299,6 +301,11 @@ export async function generateMetadata(): Promise<Metadata> {
             : `${tenant.name} - servizi, appuntamenti e listino prezzi`
         : `${tenant.name} - Burger, Pizza e Cucina italiana`;
 
+  const marketingHome =
+    mode === "marketing"
+      ? (await getTranslations("marketing")).seo.home
+      : { title: "Menuary", description: MENUARY_MARKETING_DESCRIPTION };
+
   return {
     metadataBase: new URL(
       mode === "marketing"
@@ -310,7 +317,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title:
       mode === "marketing"
         ? {
-            default: "Menuary - siti web per ristoranti, bar e pizzerie",
+            default: marketingHome.title,
             template: "%s · Menuary",
           }
         : {
@@ -319,7 +326,7 @@ export async function generateMetadata(): Promise<Metadata> {
           },
     description:
       mode === "marketing"
-        ? MENUARY_MARKETING_DESCRIPTION
+        ? marketingHome.description
         : content.description,
     keywords:
       mode === "marketing"
@@ -393,11 +400,11 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title:
         mode === "marketing"
-          ? "Menuary - siti web per ristoranti, bar e pizzerie"
+          ? marketingHome.title
           : tenantTitle,
       description:
         mode === "marketing"
-          ? MENUARY_MARKETING_DESCRIPTION
+          ? marketingHome.description
           : content.description,
       url:
         mode === "marketing"
@@ -406,7 +413,10 @@ export async function generateMetadata(): Promise<Metadata> {
             ? `${tenantOrigin}${tenantPublicPath}`
             : content.url,
       siteName: mode === "marketing" ? "Menuary" : tenant.name,
-      locale: "it_IT",
+      locale:
+        mode === "marketing"
+          ? ogLocale(isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE)
+          : "it_IT",
       type: "website",
       ...(mode === "marketing"
         ? {}
@@ -421,7 +431,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: mode === "marketing" ? "Menuary" : tenant.name,
       description:
         mode === "marketing"
-          ? MENUARY_MARKETING_DESCRIPTION
+          ? marketingHome.description
           : content.description,
       ...(mode === "marketing" ? {} : { images: [content.showcaseLogoSrc] }),
     },

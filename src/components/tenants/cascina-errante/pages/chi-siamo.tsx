@@ -11,6 +11,13 @@ const values = [
   [Award, "Eccellenza", "Standard elevati in ogni dettaglio, dalla coltivazione all'ospitalità, senza mai scendere a compromessi."],
 ] as const;
 
+const team = [
+  ["Fondatori", "Visionari che hanno trasformato un progetto agricolo in una casa per ospitalità, cucina e natura."],
+  ["Chef Team", "Maestri della cucina vegetale e territoriale che costruiscono ogni servizio come un racconto."],
+  ["Agronomi", "Esperti di coltivazioni innovative, idroponica e filiere leggere ad alta qualità."],
+  ["Hospitality Crew", "Professionisti dell'accoglienza che curano ritmo, dettagli e relazione con gli ospiti."],
+] as const;
+
 export function CascinaErranteAboutPage() {
   const href = useTenantLocalizedHref();
 
@@ -60,6 +67,26 @@ export function CascinaErranteAboutPage() {
           </ul>
         </div>
         <div className="ce-innovation-mark">E</div>
+      </section>
+
+      <section className="ce-team-section">
+        <div className="ce-heading">
+          <p>Il Nostro Team</p>
+          <h2>Competenze diverse, una visione comune.</h2>
+          <span>
+            Un gruppo di professionisti che condivide la stessa idea di qualità:
+            materia prima viva, servizio attento e ricerca continua.
+          </span>
+        </div>
+        <div className="ce-team-grid">
+          {team.map(([role, description]) => (
+            <article key={role}>
+              <span><Users size={29} /></span>
+              <h3>{role}</h3>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="ce-collaboration">

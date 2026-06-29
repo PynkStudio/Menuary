@@ -6,7 +6,6 @@ import { fetchPricingAddons, fetchPricingPlans } from "@/lib/marketing-data";
 import { DEFAULT_MARKET, MARKET_HEADER, getMarket, normalizeMarketCode } from "@/lib/markets";
 import { getLocale, getTranslations } from "@/i18n";
 import {
-  MENUARY_MARKETING_DESCRIPTION,
   MENUARY_ORIGIN,
   marketingAlternates,
 } from "@/lib/marketing-seo";
@@ -18,10 +17,10 @@ import {
 } from "@/components/marketing/marketing-sections";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const seo = (await getTranslations("marketing")).seo.pricing;
   return {
-    title: "Prezzi siti web per ristoranti",
-    description:
-      `Tre piani Menuary per ristoranti, bar e pizzerie: sito su misura, menu digitale, prenotazioni e gestionale completo. ${MENUARY_MARKETING_DESCRIPTION}`,
+    title: seo.title,
+    description: seo.description,
     alternates: marketingAlternates(MENUARY_ORIGIN, "/pricing", await getLocale()),
   };
 }
