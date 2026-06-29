@@ -32,9 +32,6 @@ export function ValentinaOrciuoliHomePage() {
       </div>
       <section id="top" className="vo-hero">
         <div className="vo-hero-cosmos" aria-hidden="true" />
-        <div className="vo-hero-portrait" aria-hidden="true">
-          <img src="/valentina-orciuoli/valentina-autrice.webp" alt="" />
-        </div>
         <div className="vo-hero-shade" aria-hidden="true" />
 
         <div className="vo-hero-inner">
