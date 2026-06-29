@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Månedligt: €{price}/måned · Setup {setup}",
         vatNote: "Ekskl. moms · Årlig kontrakt · Aktivering inden for 7 dage",
         aiEyebrow: "Tilkøb tilgængeligt for alle",
-        aiTitle: "AI-telefonassistent +€60/måned",
+        aiTitle: "AI-telefonassistent · €0,30 pr. opkald + 3% ordrer",
         aiDesc:
-          "24/7 stemmeassistent, der svarer med din forretnings stemme, tager imod bookinger og håndterer ordrer. Tilgængelig fra planerne Bookinger og Drift. Månedlig minutkvote inkluderet; derudover afregnes til kostpris uden tillæg.",
+          "24/7 stemmeassistent, der svarer med din forretnings stemme, tager imod bookinger og håndterer ordrer. Tilgængelig fra planerne Bookinger og Drift. Ingen fast afgift: €0,30 pr. opkald plus 3% af ordrer modtaget via opkald.",
         aiCta: "Opdag",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Fra planen {plan} og op",
         h2: "AI-integration på telefonen.",
-        perMonth: "/måned",
-        quotaTitle: "Månedlig minutkvote inkluderet.",
-        quotaBody: "Over grænsen faktureres til kostpris — uden tillæg.",
+        perMonth: "pr. opkald",
+        commission: "+ {pct}% af ordrer modtaget via opkald",
+        quotaTitle: "3% kommission på ordrer.",
+        quotaBody: "Kun på bekræftede ordrer håndteret af AI'en. Ingen fast afgift.",
         cta: "Opdag AI-integrationen",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Vi viser dig en demo af din egen side med alle funktioner. Online på 7 dage, og du betaler kun, hvis du kan lide den.",
       finalCtaDemo: "Anmod om demo",
       finalCtaPlans: "Se planer",
+    },
+    seo: {
+      home: {
+        title: "Bizery - websites til klinikker, saloner og servicevirksomheder",
+        description:
+          "Bizery laver websites til lægeklinikker, skønhedssaloner, barbershops, advokatfirmaer, revisorer og servicevirksomheder: onlinebooking af tider, digital prisliste, CRM og Google Maps.",
+      },
+      about: {
+        title: "Studie til websites for servicevirksomheder",
+        description:
+          "Bizery er den digitale platform for lægeklinikker, saloner, barbershops, advokatfirmaer, revisorer og servicevirksomheder. Skræddersyede websites, tidsbestilling og lokal tilstedeværelse ét sted.",
+      },
+      pricing: {
+        title: "Priser på websites til klinikker, saloner og virksomheder",
+        description:
+          "Bizery-planer til lægeklinikker, skønhedssaloner, barbershops, advokatfirmaer, revisorer og servicevirksomheder: website, tidsbestilling, prisliste og CRM. Nul kommission.",
+      },
+      contact: {
+        title: "Kontakt for virksomhedswebsites",
+        description:
+          "Fortæl os om din klinik, salon eller servicevirksomhed, og opdag, hvordan Bizery kan forvandle den til et skræddersyet website med onlinebooking, prisliste og Google-styring.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - platform til kunstnere og kreative fagfolk",
+        description:
+          "Orpheo laver websites og styringsværktøjer til kunstnere, forfattere, musikere, skuespillere, instruktører og kreative fagfolk: press kit, værkkatalog, booking, rettigheder, anmeldelser og fanbase.",
+      },
+      pricing: {
+        title: "Orpheo-priser til kunstnere, forfattere og kreative",
+        description:
+          "Orpheo-planer til kunstnere, forfattere, musikere, skuespillere, instruktører og kreative fagfolk: press kit, værkkatalog, booking, rettigheder, royalties, anmeldelser og fanbase.",
+      },
+      contact: {
+        title: "Kontakt Orpheo",
+        description:
+          "Anmod om en Orpheo-demo til kunstnere, forfattere, musikere, skuespillere, instruktører og kreative fagfolk.",
+      },
     },
   },
 } as const);

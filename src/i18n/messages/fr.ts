@@ -121,9 +121,9 @@ export const messages = {
         monthlyLabel: "Mensuel : {price} €/mois · Setup {setup}",
         vatNote: "TVA exclue · Contrat annuel · Activation sous 7 jours",
         aiEyebrow: "Add-on disponible pour tous",
-        aiTitle: "IA téléphonique +60 €/mois",
+        aiTitle: "IA téléphonique · 0,30 € par appel + 3% commandes",
         aiDesc:
-          "Assistant vocal 24/7 qui répond avec la voix de votre établissement, prend des réservations et gère les commandes. Disponible à partir des plans Réservations et Opérationnel. Quota de minutes mensuel inclus ; au-delà du seuil, facturation au prix coûtant sans majoration.",
+          "Assistant vocal 24/7 qui répond avec la voix de votre établissement, prend des réservations et gère les commandes. Disponible à partir des plans Réservations et Opérationnel. Aucun forfait fixe : 0,30 € par appel plus 3% sur les commandes reçues par appel.",
         aiCta: "Découvrir",
         plans: [
           {
@@ -362,9 +362,10 @@ export const messages = {
       ai: {
         label: "À partir du plan {plan}",
         h2: "Intégration IA au téléphone.",
-        perMonth: "/mois",
-        quotaTitle: "Quota de minutes mensuel inclus.",
-        quotaBody: "Au-delà du seuil, facturation au prix coûtant — sans majoration.",
+        perMonth: "par appel",
+        commission: "+ {pct}% sur les commandes reçues par appel",
+        quotaTitle: "Commission de 3% sur les commandes.",
+        quotaBody: "Uniquement sur les commandes confirmées gérées par l'IA. Aucun forfait fixe.",
         cta: "Découvrir l'intégration IA",
       },
       conditions: {
@@ -574,6 +575,48 @@ export const messages = {
         "Nous vous montrons une démo de votre propre site avec toutes les fonctionnalités. En ligne en 7 jours, et vous payez seulement si ça vous plaît.",
       finalCtaDemo: "Demander une démo",
       finalCtaPlans: "Voir les plans",
+    },
+    seo: {
+      home: {
+        title: "Bizery - sites web pour cabinets, salons et entreprises de services",
+        description:
+          "Bizery crée des sites web pour cabinets médicaux, salons de beauté, barbiers, cabinets d'avocats, experts-comptables et entreprises de services : rendez-vous en ligne, tarifs numériques, CRM et Google Maps.",
+      },
+      about: {
+        title: "Studio de sites web pour entreprises de services",
+        description:
+          "Bizery est la plateforme numérique pour cabinets médicaux, salons, barbiers, cabinets d'avocats, experts-comptables et entreprises de services. Sites sur mesure, rendez-vous et présence locale en un seul endroit.",
+      },
+      pricing: {
+        title: "Tarifs des sites web pour cabinets, salons et entreprises",
+        description:
+          "Forfaits Bizery pour cabinets médicaux, salons de beauté, barbiers, cabinets d'avocats, experts-comptables et entreprises de services : site, rendez-vous, tarifs et CRM. Zéro commission.",
+      },
+      contact: {
+        title: "Contact pour sites web d'entreprises",
+        description:
+          "Parlez-nous de votre cabinet, salon ou entreprise de services et découvrez comment Bizery peut le transformer en un site sur mesure avec rendez-vous en ligne, tarifs et gestion Google.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - plateforme pour artistes et professionnels créatifs",
+        description:
+          "Orpheo crée des sites et des outils de gestion pour artistes, auteurs, musiciens, acteurs, réalisateurs et professionnels créatifs : press kit, catalogue d'œuvres, booking, droits, avis et fanbase.",
+      },
+      pricing: {
+        title: "Tarifs Orpheo pour artistes, auteurs et créatifs",
+        description:
+          "Forfaits Orpheo pour artistes, auteurs, musiciens, acteurs, réalisateurs et professionnels créatifs : press kit, catalogue d'œuvres, booking, droits, royalties, avis et fanbase.",
+      },
+      contact: {
+        title: "Contact Orpheo",
+        description:
+          "Demandez une démo Orpheo pour artistes, auteurs, musiciens, acteurs, réalisateurs et professionnels créatifs.",
+      },
     },
   },
 } as const;

@@ -51,7 +51,7 @@ export async function getLocale(): Promise<AppLocale> {
   return isAppLocale(v) ? v : DEFAULT_LOCALE;
 }
 
-export async function getTranslations<K extends "marketing" | "bizery">(
+export async function getTranslations<K extends "marketing" | "bizery" | "orpheo">(
   ns: K,
 ): Promise<typeof it[K]> {
   const locale = await getLocale();

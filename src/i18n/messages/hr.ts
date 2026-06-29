@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Mjesečno: €{price}/mjesec · Postavljanje {setup}",
         vatNote: "Bez PDV-a · Godišnji ugovor · Aktivacija unutar 7 dana",
         aiEyebrow: "Dodatak dostupan svima",
-        aiTitle: "Telefonski AI asistent +60 €/mjesec",
+        aiTitle: "Telefonski AI asistent · 0,30 €/poziv + 3% narudžbi",
         aiDesc:
-          "Glasovni asistent 24/7 koji odgovara glasom vašeg lokala, prima rezervacije i upravlja narudžbama. Dostupan od paketa Rezervacije i Operativa. Mjesečna kvota minuta uključena; iznad praga naplata po vlastitoj cijeni bez marže.",
+          "Glasovni asistent 24/7 koji odgovara glasom vašeg lokala, prima rezervacije i upravlja narudžbama. Dostupan od paketa Rezervacije i Operativa. Bez fiksne naknade: 0,30 € po pozivu plus 3% na narudžbe zaprimljene putem poziva.",
         aiCta: "Otkrijte",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Od plana {plan} naviše",
         h2: "AI integracija na telefonu.",
-        perMonth: "/mjesec",
-        quotaTitle: "Mjesečna kvota minuta uključena.",
-        quotaBody: "Iznad praga naplaćuje se po nabavnoj cijeni — bez marže.",
+        perMonth: "po pozivu",
+        commission: "+ {pct}% na narudžbe putem poziva",
+        quotaTitle: "3% provizije na narudžbe.",
+        quotaBody: "Samo na potvrđene narudžbe koje obradi AI. Bez fiksne naknade.",
         cta: "Otkrij AI integraciju",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Pokazujemo vam demo vaše vlastite stranice sa svim funkcijama. Online za 7 dana, a plaćate samo ako vam se sviđa.",
       finalCtaDemo: "Zatraži demo",
       finalCtaPlans: "Pogledajte pakete",
+    },
+    seo: {
+      home: {
+        title: "Bizery - web stranice za ordinacije, salone i uslužne tvrtke",
+        description:
+          "Bizery izrađuje web stranice za liječničke ordinacije, kozmetičke salone, brijačnice, odvjetničke urede, knjigovođe i uslužne tvrtke: online naručivanje, digitalni cjenik, CRM i Google Maps.",
+      },
+      about: {
+        title: "Studio za web stranice uslužnih tvrtki",
+        description:
+          "Bizery je digitalna platforma za liječničke ordinacije, salone, brijačnice, odvjetničke urede, knjigovođe i uslužne tvrtke. Web stranice po mjeri, naručivanje i lokalna prisutnost na jednom mjestu.",
+      },
+      pricing: {
+        title: "Cijene web stranica za ordinacije, salone i tvrtke",
+        description:
+          "Bizery planovi za liječničke ordinacije, kozmetičke salone, brijačnice, odvjetničke urede, knjigovođe i uslužne tvrtke: web stranica, naručivanje, cjenik i CRM. Bez provizije.",
+      },
+      contact: {
+        title: "Kontakt za web stranice tvrtki",
+        description:
+          "Recite nam o svojoj ordinaciji, salonu ili uslužnoj tvrtki i otkrijte kako Bizery od nje može napraviti web stranicu po mjeri s online naručivanjem, cjenikom i Google upravljanjem.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - platforma za umjetnike i kreativne profesionalce",
+        description:
+          "Orpheo izrađuje web stranice i alate za upravljanje za umjetnike, autore, glazbenike, glumce, redatelje i kreativne profesionalce: press kit, katalog djela, booking, prava, recenzije i fanbase.",
+      },
+      pricing: {
+        title: "Cijene Orpheo za umjetnike, autore i kreativce",
+        description:
+          "Orpheo planovi za umjetnike, autore, glazbenike, glumce, redatelje i kreativne profesionalce: press kit, katalog djela, booking, prava, tantijeme, recenzije i fanbase.",
+      },
+      contact: {
+        title: "Kontakt Orpheo",
+        description:
+          "Zatraži demo Orpheo za umjetnike, autore, glazbenike, glumce, redatelje i kreativne profesionalce.",
+      },
     },
   },
 } as const);

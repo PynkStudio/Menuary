@@ -4,13 +4,13 @@ import {
   BIZERY_ORIGIN,
   marketingAlternates,
 } from "@/lib/marketing-seo";
-import { getLocale } from "@/i18n";
+import { getLocale, getTranslations } from "@/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const seo = (await getTranslations("bizery")).seo.about;
   return {
-    title: "Studio per siti web aziende di servizi",
-    description:
-      "Bizery è la piattaforma digitale per studi medici, saloni, barbieri, studi legali, commercialisti e aziende di servizi. Siti su misura, appuntamenti e presenza locale in un posto solo.",
+    title: seo.title,
+    description: seo.description,
     alternates: marketingAlternates(BIZERY_ORIGIN, "/chi-siamo", await getLocale()),
   };
 }

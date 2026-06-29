@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Kuukausittain: €{price}/kk · Asennus {setup}",
         vatNote: "ALV 0 % · Vuosisopimus · Aktivointi 7 päivässä",
         aiEyebrow: "Lisäosa saatavilla kaikille",
-        aiTitle: "AI-puhelinassistentti +60 €/kk",
+        aiTitle: "AI-puhelinassistentti · 0,30 €/puhelu + 3% tilaukset",
         aiDesc:
-          "24/7-ääniassistentti, joka vastaa yrityksesi äänellä, ottaa vastaan varauksia ja hallitsee tilauksia. Saatavilla Varaukset- ja Toiminta-paketeista alkaen. Kuukausittainen minuuttikiintiö sisältyy; sen ylittävältä osalta veloitus omakustannehintaan ilman katetta.",
+          "24/7-ääniassistentti, joka vastaa yrityksesi äänellä, ottaa vastaan varauksia ja hallitsee tilauksia. Saatavilla Varaukset- ja Toiminta-paketeista alkaen. Ei kiinteää maksua: 0,30 € per puhelu sekä 3% puheluiden kautta saaduista tilauksista.",
         aiCta: "Tutustu",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Paketista {plan} ylöspäin",
         h2: "Puhelin-AI-integraatio.",
-        perMonth: "/kk",
-        quotaTitle: "Kuukausittainen minuuttikiintiö sisältyy.",
-        quotaBody: "Rajan yli veloitukset omakustannushintaan — ilman katetta.",
+        perMonth: "/puhelu",
+        commission: "+ {pct}% puheluiden kautta saaduista tilauksista",
+        quotaTitle: "3% komissio tilauksista.",
+        quotaBody: "Vain tekoälyn käsittelemistä vahvistetuista tilauksista. Ei kiinteää maksua.",
         cta: "Tutustu AI-integraatioon",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Näytämme demon omasta sivustostasi kaikilla toiminnoilla. Verkossa 7 päivässä, ja maksat vain, jos pidät siitä.",
       finalCtaDemo: "Pyydä demo",
       finalCtaPlans: "Katso paketit",
+    },
+    seo: {
+      home: {
+        title: "Bizery - verkkosivut klinikoille, salongeille ja palveluyrityksille",
+        description:
+          "Bizery tekee verkkosivut lääkäriasemille, kauneussalongeille, parturiliikkeille, asianajotoimistoille, kirjanpitäjille ja palveluyrityksille: ajanvaraukset verkossa, digitaalinen hinnasto, CRM ja Google Maps.",
+      },
+      about: {
+        title: "Studio palveluyritysten verkkosivuille",
+        description:
+          "Bizery on digitaalinen alusta lääkäriasemille, salongeille, parturiliikkeille, asianajotoimistoille, kirjanpitäjille ja palveluyrityksille. Räätälöidyt verkkosivut, ajanvaraukset ja paikallinen näkyvyys yhdessä paikassa.",
+      },
+      pricing: {
+        title: "Verkkosivujen hinnat klinikoille, salongeille ja yrityksille",
+        description:
+          "Bizery-paketit lääkäriasemille, kauneussalongeille, parturiliikkeille, asianajotoimistoille, kirjanpitäjille ja palveluyrityksille: verkkosivu, ajanvaraukset, hinnasto ja CRM. Ei provisiota.",
+      },
+      contact: {
+        title: "Yhteystiedot yritysten verkkosivuille",
+        description:
+          "Kerro meille klinikastasi, salongistasi tai palveluyrityksestäsi ja katso, miten Bizery voi muuttaa sen räätälöidyksi verkkosivuksi, jossa on verkkoajanvaraus, hinnasto ja Google-hallinta.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - alusta taiteilijoille ja luoville ammattilaisille",
+        description:
+          "Orpheo tekee verkkosivut ja hallintatyökalut taiteilijoille, kirjailijoille, muusikoille, näyttelijöille, ohjaajille ja luoville ammattilaisille: press kit, teosluettelo, booking, oikeudet, arvostelut ja fanikunta.",
+      },
+      pricing: {
+        title: "Orpheo-hinnat taiteilijoille, kirjailijoille ja luoville",
+        description:
+          "Orpheo-paketit taiteilijoille, kirjailijoille, muusikoille, näyttelijöille, ohjaajille ja luoville ammattilaisille: press kit, teosluettelo, booking, oikeudet, rojaltit, arvostelut ja fanikunta.",
+      },
+      contact: {
+        title: "Yhteystiedot Orpheo",
+        description:
+          "Pyydä Orpheo-demo taiteilijoille, kirjailijoille, muusikoille, näyttelijöille, ohjaajille ja luoville ammattilaisille.",
+      },
     },
   },
 } as const);

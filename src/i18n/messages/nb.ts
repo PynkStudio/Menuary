@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Månedlig: €{price}/måned · Setup {setup}",
         vatNote: "Ekskl. mva · Årlig kontrakt · Aktivering innen 7 dager",
         aiEyebrow: "Tillegg tilgjengelig for alle",
-        aiTitle: "AI-telefonassistent +€60/måned",
+        aiTitle: "AI-telefonassistent · €0,30 per anrop + 3% bestillinger",
         aiDesc:
-          "Døgnåpen stemmeassistent som svarer med virksomhetens stemme, tar imot bookinger og håndterer bestillinger. Tilgjengelig fra planene Bookinger og Drift. Månedlig minuttkvote inkludert; utover dette belastes til kostpris uten påslag.",
+          "Døgnåpen stemmeassistent som svarer med virksomhetens stemme, tar imot bookinger og håndterer bestillinger. Tilgjengelig fra planene Bookinger og Drift. Ingen fast avgift: €0,30 per anrop pluss 3% av bestillinger via anrop.",
         aiCta: "Oppdag",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Fra planen {plan} og opp",
         h2: "AI-integrasjon på telefonen.",
-        perMonth: "/måned",
-        quotaTitle: "Månedlig minuttkvote inkludert.",
-        quotaBody: "Over grensen faktureres til kostpris — uten påslag.",
+        perMonth: "per anrop",
+        commission: "+ {pct}% av bestillinger via anrop",
+        quotaTitle: "3% provisjon på bestillinger.",
+        quotaBody: "Kun på bekreftede bestillinger håndtert av AI-en. Ingen fast avgift.",
         cta: "Oppdag AI-integrasjonen",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Vi viser deg en demo av din egen nettside med alle funksjoner. Online på 7 dager, og du betaler kun hvis du liker den.",
       finalCtaDemo: "Be om demo",
       finalCtaPlans: "Se planer",
+    },
+    seo: {
+      home: {
+        title: "Bizery - nettsider for klinikker, salonger og tjenestebedrifter",
+        description:
+          "Bizery lager nettsider for legekontorer, skjønnhetssalonger, barbershops, advokatfirmaer, regnskapsførere og tjenestebedrifter: onlinebooking av timer, digital prisliste, CRM og Google Maps.",
+      },
+      about: {
+        title: "Studio for nettsider til tjenestebedrifter",
+        description:
+          "Bizery er den digitale plattformen for legekontorer, salonger, barbershops, advokatfirmaer, regnskapsførere og tjenestebedrifter. Skreddersydde nettsider, timebestilling og lokal tilstedeværelse på ett sted.",
+      },
+      pricing: {
+        title: "Priser på nettsider til klinikker, salonger og bedrifter",
+        description:
+          "Bizery-planer for legekontorer, skjønnhetssalonger, barbershops, advokatfirmaer, regnskapsførere og tjenestebedrifter: nettside, timebestilling, prisliste og CRM. Null provisjon.",
+      },
+      contact: {
+        title: "Kontakt for bedriftsnettsider",
+        description:
+          "Fortell oss om klinikken, salongen eller tjenestebedriften din, og oppdag hvordan Bizery kan gjøre den til en skreddersydd nettside med onlinebooking, prisliste og Google-styring.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - plattform for artister og kreative fagfolk",
+        description:
+          "Orpheo lager nettsider og styringsverktøy for artister, forfattere, musikere, skuespillere, regissører og kreative fagfolk: press kit, verkskatalog, booking, rettigheter, anmeldelser og fanbase.",
+      },
+      pricing: {
+        title: "Orpheo-priser for artister, forfattere og kreative",
+        description:
+          "Orpheo-planer for artister, forfattere, musikere, skuespillere, regissører og kreative fagfolk: press kit, verkskatalog, booking, rettigheter, royalties, anmeldelser og fanbase.",
+      },
+      contact: {
+        title: "Kontakt Orpheo",
+        description:
+          "Be om en Orpheo-demo for artister, forfattere, musikere, skuespillere, regissører og kreative fagfolk.",
+      },
     },
   },
 } as const);

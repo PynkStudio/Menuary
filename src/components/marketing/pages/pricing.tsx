@@ -40,6 +40,7 @@ export type PricingCopy = {
     label: string;
     h2: string;
     perMonth: string;
+    commission: string;
     quotaTitle: string;
     quotaBody: string;
     cta: string;
@@ -170,10 +171,16 @@ export function MarketingPricingPage({
               </p>
               <div className="mt-8 inline-flex items-baseline gap-2">
                 <span className="menuary-display text-[3rem] leading-none">
-                  +{formatPlanPrice(aiAddon.monthly, aiAddon.currency ?? displayCurrency, priceLocale)}
+                  {formatPlanPrice(aiAddon.per_call ?? AI_ADDON.per_call ?? 0, aiAddon.currency ?? displayCurrency, priceLocale)}
                 </span>
                 <span className="text-sm text-[var(--menuary-muted)]">{copy.ai.perMonth}</span>
               </div>
+              <p className="mt-2 menuary-display text-lg text-[var(--menuary-ink)]">
+                {copy.ai.commission.replace(
+                  "{pct}",
+                  String(aiAddon.commission_pct ?? AI_ADDON.commission_pct ?? 3),
+                )}
+              </p>
               <p className="mt-3 max-w-sm text-sm leading-[1.65] text-[var(--menuary-muted)]">
                 {aiAddon.minutesNote}
               </p>

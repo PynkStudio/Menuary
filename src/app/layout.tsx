@@ -33,13 +33,11 @@ import { STUDIO_PUBLIC_ORIGIN, studioSite } from "@/lib/studio-config";
 import { isAppLocale, DEFAULT_LOCALE, LOCALE_HEADER } from "@/i18n/locales";
 import { getTranslations } from "@/i18n";
 import {
-  BIZERY_MARKETING_DESCRIPTION,
   BIZERY_ORIGIN,
   BIZERY_KEYWORDS,
   MENUARY_MARKETING_DESCRIPTION,
   MENUARY_ORIGIN,
   MENUARY_KEYWORDS,
-  ORPHEO_MARKETING_DESCRIPTION,
   ORPHEO_ORIGIN,
   ORPHEO_KEYWORDS,
   marketingAlternates,
@@ -174,26 +172,27 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   if (mode === "marketing-bizery") {
+    const seo = (await getTranslations("bizery")).seo.home;
     return {
       metadataBase: new URL(BIZERY_ORIGIN),
       title: {
-        default: "Bizery - siti web per studi, saloni e aziende di servizi",
+        default: seo.title,
         template: "%s · Bizery",
       },
-      description: BIZERY_MARKETING_DESCRIPTION,
+      description: seo.description,
       keywords: BIZERY_KEYWORDS,
       openGraph: {
-        title: "Bizery - siti web per studi, saloni e aziende di servizi",
-        description: BIZERY_MARKETING_DESCRIPTION,
+        title: seo.title,
+        description: seo.description,
         url: BIZERY_ORIGIN,
         siteName: "Bizery",
-        locale: "it_IT",
+        locale: ogLocale(isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE),
         type: "website",
       },
       twitter: {
         card: "summary_large_image",
-        title: "Bizery - siti web per aziende di servizi",
-        description: BIZERY_MARKETING_DESCRIPTION,
+        title: seo.title,
+        description: seo.description,
       },
       alternates: marketingAlternates(
         BIZERY_ORIGIN,
@@ -205,26 +204,27 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   if (mode === "marketing-orpheo") {
+    const seo = (await getTranslations("orpheo")).seo.home;
     return {
       metadataBase: new URL(ORPHEO_ORIGIN),
       title: {
-        default: "Orpheo - piattaforma per artisti e professionisti creativi",
+        default: seo.title,
         template: "%s · Orpheo",
       },
-      description: ORPHEO_MARKETING_DESCRIPTION,
+      description: seo.description,
       keywords: ORPHEO_KEYWORDS,
       openGraph: {
-        title: "Orpheo - piattaforma per artisti e professionisti creativi",
-        description: ORPHEO_MARKETING_DESCRIPTION,
+        title: seo.title,
+        description: seo.description,
         url: ORPHEO_ORIGIN,
         siteName: "Orpheo",
-        locale: "it_IT",
+        locale: ogLocale(isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE),
         type: "website",
       },
       twitter: {
         card: "summary_large_image",
-        title: "Orpheo - artisti, autori e creativi",
-        description: ORPHEO_MARKETING_DESCRIPTION,
+        title: seo.title,
+        description: seo.description,
       },
       alternates: marketingAlternates(
         ORPHEO_ORIGIN,

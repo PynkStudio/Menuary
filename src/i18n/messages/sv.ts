@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Månadsvis: €{price}/månad · Setup {setup}",
         vatNote: "Exkl. moms · Årsavtal · Aktivering inom 7 dagar",
         aiEyebrow: "Tillval tillgängligt för alla",
-        aiTitle: "AI-telefonassistent +€60/månad",
+        aiTitle: "AI-telefonassistent · €0,30 per samtal + 3% beställningar",
         aiDesc:
-          "Röstassistent dygnet runt som svarar med din verksamhets röst, tar emot bokningar och hanterar beställningar. Tillgänglig från planerna Bokningar och Drift. Månatlig minutkvot ingår; därutöver debiteras till självkostnadspris utan påslag.",
+          "Röstassistent dygnet runt som svarar med din verksamhets röst, tar emot bokningar och hanterar beställningar. Tillgänglig från planerna Bokningar och Drift. Ingen fast avgift: €0,30 per samtal plus 3% på beställningar via samtal.",
         aiCta: "Upptäck",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Från planen {plan} och uppåt",
         h2: "AI-integration i telefonen.",
-        perMonth: "/månad",
-        quotaTitle: "Månatlig minutkvot inkluderad.",
-        quotaBody: "Över gränsen debiteras till självkostnadspris — utan påslag.",
+        perMonth: "per samtal",
+        commission: "+ {pct}% på beställningar via samtal",
+        quotaTitle: "3% provision på beställningar.",
+        quotaBody: "Endast på bekräftade beställningar som hanteras av AI:n. Ingen fast avgift.",
         cta: "Upptäck AI-integrationen",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Vi visar dig en demo av din egen webbplats med alla funktioner. Online på 7 dagar, och du betalar bara om du gillar den.",
       finalCtaDemo: "Begär en demo",
       finalCtaPlans: "Se planer",
+    },
+    seo: {
+      home: {
+        title: "Bizery - webbplatser för kliniker, salonger och tjänsteföretag",
+        description:
+          "Bizery skapar webbplatser för läkarmottagningar, skönhetssalonger, barbershops, advokatbyråer, revisorer och tjänsteföretag: onlinebokning av tider, digital prislista, CRM och Google Maps.",
+      },
+      about: {
+        title: "Studio för webbplatser för tjänsteföretag",
+        description:
+          "Bizery är den digitala plattformen för läkarmottagningar, salonger, barbershops, advokatbyråer, revisorer och tjänsteföretag. Skräddarsydda webbplatser, tidsbokning och lokal närvaro på ett ställe.",
+      },
+      pricing: {
+        title: "Priser för webbplatser till kliniker, salonger och företag",
+        description:
+          "Bizery-planer för läkarmottagningar, skönhetssalonger, barbershops, advokatbyråer, revisorer och tjänsteföretag: webbplats, tidsbokning, prislista och CRM. Noll provision.",
+      },
+      contact: {
+        title: "Kontakt för företagswebbplatser",
+        description:
+          "Berätta om din klinik, salong eller ditt tjänsteföretag och upptäck hur Bizery kan göra den till en skräddarsydd webbplats med onlinebokning, prislista och Google-hantering.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - plattform för artister och kreativa yrkespersoner",
+        description:
+          "Orpheo skapar webbplatser och hanteringsverktyg för artister, författare, musiker, skådespelare, regissörer och kreativa yrkespersoner: press kit, verkkatalog, booking, rättigheter, recensioner och fanbase.",
+      },
+      pricing: {
+        title: "Orpheo-priser för artister, författare och kreatörer",
+        description:
+          "Orpheo-planer för artister, författare, musiker, skådespelare, regissörer och kreativa yrkespersoner: press kit, verkkatalog, booking, rättigheter, royalties, recensioner och fanbase.",
+      },
+      contact: {
+        title: "Kontakt Orpheo",
+        description:
+          "Begär en Orpheo-demo för artister, författare, musiker, skådespelare, regissörer och kreativa yrkespersoner.",
+      },
     },
   },
 } as const);

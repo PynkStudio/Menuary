@@ -15,17 +15,17 @@ import {
 } from "lucide-react";
 import { OrpheoShell } from "@/components/orpheo/orpheo-shell";
 import {
-  ORPHEO_MARKETING_DESCRIPTION,
   ORPHEO_ORIGIN,
   ORPHEO_KEYWORDS,
   marketingAlternates,
 } from "@/lib/marketing-seo";
-import { getLocale } from "@/i18n";
+import { getLocale, getTranslations } from "@/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const seo = (await getTranslations("orpheo")).seo.home;
   return {
-    title: "Orpheo - piattaforma per artisti e professionisti creativi",
-    description: ORPHEO_MARKETING_DESCRIPTION,
+    title: seo.title,
+    description: seo.description,
     keywords: ORPHEO_KEYWORDS,
     alternates: marketingAlternates(ORPHEO_ORIGIN, "", await getLocale()),
   };

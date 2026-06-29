@@ -121,9 +121,9 @@ export const messages = {
         monthlyLabel: "Monatlich: {price} €/Monat · Setup {setup}",
         vatNote: "Zzgl. MwSt. · Jahresvertrag · Aktivierung innerhalb von 7 Tagen",
         aiEyebrow: "Add-on für alle verfügbar",
-        aiTitle: "KI-Telefonassistent +60 €/Monat",
+        aiTitle: "KI-Telefonassistent · 0,30 €/Anruf + 3% Bestellungen",
         aiDesc:
-          "24/7-Sprachassistent, der mit der Stimme des Lokals antwortet, Reservierungen annimmt und Bestellungen verwaltet. Verfügbar ab den Plänen Reservierungen und Betrieb. Monatliches Minutenkontingent inklusive; darüber hinaus Abrechnung zum Selbstkostenpreis ohne Aufschlag.",
+          "24/7-Sprachassistent, der mit der Stimme des Lokals antwortet, Reservierungen annimmt und Bestellungen verwaltet. Verfügbar ab den Plänen Reservierungen und Betrieb. Keine Grundgebühr: 0,30 € pro Anruf plus 3% auf die per Anruf erhaltenen Bestellungen.",
         aiCta: "Entdecken",
         plans: [
           {
@@ -362,9 +362,10 @@ export const messages = {
       ai: {
         label: "Ab dem Plan {plan}",
         h2: "KI-Integration am Telefon.",
-        perMonth: "/Monat",
-        quotaTitle: "Monatliches Minutenkontingent inklusive.",
-        quotaBody: "Über dem Limit Abrechnung zum Selbstkostenpreis — ohne Aufschlag.",
+        perMonth: "pro Anruf",
+        commission: "+ {pct}% auf per Anruf erhaltene Bestellungen",
+        quotaTitle: "3% Provision auf Bestellungen.",
+        quotaBody: "Nur auf bestätigte, von der KI bearbeitete Bestellungen. Keine Grundgebühr.",
         cta: "KI-Integration entdecken",
       },
       conditions: {
@@ -574,6 +575,48 @@ export const messages = {
         "Wir zeigen Ihnen eine Demo Ihrer eigenen Website mit allen Funktionen. In 7 Tagen online, und Sie zahlen nur, wenn sie Ihnen gefällt.",
       finalCtaDemo: "Demo anfragen",
       finalCtaPlans: "Pläne ansehen",
+    },
+    seo: {
+      home: {
+        title: "Bizery - Websites für Praxen, Salons und Dienstleister",
+        description:
+          "Bizery erstellt Websites für Arztpraxen, Beauty-Salons, Barbershops, Anwaltskanzleien, Steuerberater und Dienstleister: Online-Termine, digitale Preisliste, CRM und Google Maps.",
+      },
+      about: {
+        title: "Studio für Websites von Dienstleistern",
+        description:
+          "Bizery ist die digitale Plattform für Arztpraxen, Salons, Barbershops, Anwaltskanzleien, Steuerberater und Dienstleister. Maßgeschneiderte Websites, Termine und lokale Präsenz an einem Ort.",
+      },
+      pricing: {
+        title: "Preise für Websites von Praxen, Salons und Unternehmen",
+        description:
+          "Bizery-Pläne für Arztpraxen, Beauty-Salons, Barbershops, Anwaltskanzleien, Steuerberater und Dienstleister: Website, Termine, Preisliste und CRM. Null Provision.",
+      },
+      contact: {
+        title: "Kontakt für Unternehmens-Websites",
+        description:
+          "Erzählen Sie uns von Ihrer Praxis, Ihrem Salon oder Dienstleistungsunternehmen und entdecken Sie, wie Bizery daraus eine maßgeschneiderte Website mit Online-Terminen, Preisliste und Google-Verwaltung macht.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - Plattform für Künstler und Kreativprofis",
+        description:
+          "Orpheo erstellt Websites und Management-Tools für Künstler, Autoren, Musiker, Schauspieler, Regisseure und Kreativprofis: Pressekit, Werkkatalog, Booking, Rechte, Bewertungen und Fanbase.",
+      },
+      pricing: {
+        title: "Orpheo-Preise für Künstler, Autoren und Kreative",
+        description:
+          "Orpheo-Pläne für Künstler, Autoren, Musiker, Schauspieler, Regisseure und Kreativprofis: Pressekit, Werkkatalog, Booking, Rechte, Tantiemen, Bewertungen und Fanbase.",
+      },
+      contact: {
+        title: "Kontakt Orpheo",
+        description:
+          "Fordern Sie eine Orpheo-Demo für Künstler, Autoren, Musiker, Schauspieler, Regisseure und Kreativprofis an.",
+      },
     },
   },
 } as const;

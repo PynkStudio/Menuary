@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Miesięcznie: €{price}/mies. · Setup {setup}",
         vatNote: "Ceny netto · Umowa roczna · Aktywacja w 7 dni",
         aiEyebrow: "Dodatek dostępny dla wszystkich",
-        aiTitle: "Telefoniczny asystent AI +€60/mies.",
+        aiTitle: "Telefoniczny asystent AI · €0,30 za połączenie + 3% zamówień",
         aiDesc:
-          "Asystent głosowy 24/7, który odpowiada głosem Twojego lokalu, przyjmuje rezerwacje i obsługuje zamówienia. Dostępny od planów Rezerwacje i Operacje. Miesięczny limit minut w cenie; powyżej limitu rozliczenie po kosztach, bez marży.",
+          "Asystent głosowy 24/7, który odpowiada głosem Twojego lokalu, przyjmuje rezerwacje i obsługuje zamówienia. Dostępny od planów Rezerwacje i Operacje. Bez stałej opłaty: €0,30 za połączenie plus 3% od zamówień otrzymanych przez połączenia.",
         aiCta: "Odkryj",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Od planu {plan} wzwyż",
         h2: "Integracja AI przez telefon.",
-        perMonth: "/mies.",
-        quotaTitle: "Miesięczny limit minut w cenie.",
-        quotaBody: "Powyżej progu opłaty po kosztach — bez marży.",
+        perMonth: "za połączenie",
+        commission: "+ {pct}% od zamówień z połączeń",
+        quotaTitle: "3% prowizji od zamówień.",
+        quotaBody: "Tylko od potwierdzonych zamówień obsłużonych przez AI. Bez stałej opłaty.",
         cta: "Poznaj integrację AI",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Pokazujemy Ci demo Twojej własnej strony ze wszystkimi funkcjami. Online w 7 dni, a płacisz tylko, jeśli Ci się spodoba.",
       finalCtaDemo: "Poproś o demo",
       finalCtaPlans: "Zobacz plany",
+    },
+    seo: {
+      home: {
+        title: "Bizery - strony internetowe dla gabinetów, salonów i firm usługowych",
+        description:
+          "Bizery tworzy strony internetowe dla gabinetów lekarskich, salonów kosmetycznych, barbershopów, kancelarii prawnych, księgowych i firm usługowych: rezerwacja wizyt online, cyfrowy cennik, CRM i Google Maps.",
+      },
+      about: {
+        title: "Studio stron internetowych dla firm usługowych",
+        description:
+          "Bizery to cyfrowa platforma dla gabinetów lekarskich, salonów, barbershopów, kancelarii prawnych, księgowych i firm usługowych. Strony na miarę, rezerwacje i lokalna obecność w jednym miejscu.",
+      },
+      pricing: {
+        title: "Cennik stron internetowych dla gabinetów, salonów i firm",
+        description:
+          "Plany Bizery dla gabinetów lekarskich, salonów kosmetycznych, barbershopów, kancelarii prawnych, księgowych i firm usługowych: strona, rezerwacje, cennik i CRM. Zero prowizji.",
+      },
+      contact: {
+        title: "Kontakt w sprawie stron dla firm",
+        description:
+          "Opowiedz nam o swoim gabinecie, salonie lub firmie usługowej i zobacz, jak Bizery może przekształcić ją w stronę na miarę z rezerwacją wizyt online, cennikiem i zarządzaniem Google.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - platforma dla artystów i profesjonalistów kreatywnych",
+        description:
+          "Orpheo tworzy strony i narzędzia do zarządzania dla artystów, autorów, muzyków, aktorów, reżyserów i profesjonalistów kreatywnych: press kit, katalog dzieł, booking, prawa, recenzje i fanbase.",
+      },
+      pricing: {
+        title: "Cennik Orpheo dla artystów, autorów i twórców",
+        description:
+          "Plany Orpheo dla artystów, autorów, muzyków, aktorów, reżyserów i profesjonalistów kreatywnych: press kit, katalog dzieł, booking, prawa, tantiemy, recenzje i fanbase.",
+      },
+      contact: {
+        title: "Kontakt Orpheo",
+        description:
+          "Poproś o demo Orpheo dla artystów, autorów, muzyków, aktorów, reżyserów i profesjonalistów kreatywnych.",
+      },
     },
   },
 } as const);

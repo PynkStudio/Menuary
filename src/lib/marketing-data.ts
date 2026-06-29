@@ -196,6 +196,8 @@ export async function fetchPricingAddons(marketCode: MarketCode = DEFAULT_MARKET
       tagline: String(row.tagline ?? ""),
       description: String(row.marketing_description ?? ""),
       monthly: Number(market?.price_monthly ?? row.price_monthly ?? 0),
+      per_call: AI_ADDON.per_call,
+      commission_pct: AI_ADDON.commission_pct,
       currency: String(market?.currency ?? fallbackMarket.currency),
       minPlan: String(row.min_package_slug ?? "prenotazioni"),
       setup_from: market?.setup_from != null ? String(market.setup_from) : (row.setup_from ? String(row.setup_from) : undefined),

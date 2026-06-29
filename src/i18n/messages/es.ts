@@ -121,9 +121,9 @@ export const messages = {
         monthlyLabel: "Mensual: {price} €/mes · Setup {setup}",
         vatNote: "IVA no incluido · Contrato anual · Activación en 7 días",
         aiEyebrow: "Add-on disponible para todos",
-        aiTitle: "IA por teléfono +60 €/mes",
+        aiTitle: "IA por teléfono · 0,30 € por llamada + 3% pedidos",
         aiDesc:
-          "Asistente de voz 24/7 que responde con la voz del local, toma reservas y gestiona pedidos. Disponible desde los planes Reservas y Operatividad. Cuota de minutos mensual incluida; superado el umbral, cargos a precio de coste sin margen.",
+          "Asistente de voz 24/7 que responde con la voz del local, toma reservas y gestiona pedidos. Disponible desde los planes Reservas y Operatividad. Sin cuota fija: 0,30 € por llamada más un 3% sobre los pedidos recibidos por llamada.",
         aiCta: "Descubrir",
         plans: [
           {
@@ -362,9 +362,10 @@ export const messages = {
       ai: {
         label: "Desde el plan {plan}",
         h2: "Integración IA en el teléfono.",
-        perMonth: "/mes",
-        quotaTitle: "Cuota mensual de minutos incluida.",
-        quotaBody: "Por encima del umbral, cargos a precio de coste — sin recargo.",
+        perMonth: "por llamada",
+        commission: "+ {pct}% sobre los pedidos recibidos por llamada",
+        quotaTitle: "Comisión del 3% sobre los pedidos.",
+        quotaBody: "Solo sobre los pedidos confirmados gestionados por la IA. Sin cuota fija.",
         cta: "Descubre la integración IA",
       },
       conditions: {
@@ -574,6 +575,48 @@ export const messages = {
         "Te mostramos una demo de tu propio sitio con todas las funciones. En línea en 7 días, y pagas solo si te gusta.",
       finalCtaDemo: "Solicitar una demo",
       finalCtaPlans: "Ver los planes",
+    },
+    seo: {
+      home: {
+        title: "Bizery - webs para consultas, salones y empresas de servicios",
+        description:
+          "Bizery crea webs para consultas médicas, salones de belleza, barberías, despachos de abogados, asesores fiscales y empresas de servicios: citas online, lista de precios digital, CRM y Google Maps.",
+      },
+      about: {
+        title: "Estudio de webs para empresas de servicios",
+        description:
+          "Bizery es la plataforma digital para consultas médicas, salones, barberías, despachos de abogados, asesores fiscales y empresas de servicios. Webs a medida, citas y presencia local en un solo lugar.",
+      },
+      pricing: {
+        title: "Precios de webs para consultas, salones y empresas",
+        description:
+          "Planes Bizery para consultas médicas, salones de belleza, barberías, despachos de abogados, asesores fiscales y empresas de servicios: web, citas, lista de precios y CRM. Cero comisiones.",
+      },
+      contact: {
+        title: "Contacto para webs de empresas",
+        description:
+          "Cuéntanos sobre tu consulta, salón o empresa de servicios y descubre cómo Bizery puede convertirlo en una web a medida con citas online, lista de precios y gestión de Google.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - plataforma para artistas y profesionales creativos",
+        description:
+          "Orpheo crea webs y herramientas de gestión para artistas, autores, músicos, actores, directores y profesionales creativos: press kit, catálogo de obras, booking, derechos, reseñas y fanbase.",
+      },
+      pricing: {
+        title: "Precios Orpheo para artistas, autores y creativos",
+        description:
+          "Planes Orpheo para artistas, autores, músicos, actores, directores y profesionales creativos: press kit, catálogo de obras, booking, derechos, royalties, reseñas y fanbase.",
+      },
+      contact: {
+        title: "Contacto Orpheo",
+        description:
+          "Solicita una demo Orpheo para artistas, autores, músicos, actores, directores y profesionales creativos.",
+      },
     },
   },
 } as const;

@@ -121,9 +121,9 @@ export const messages = {
         monthlyLabel: "Mensile: €{price}/mese · Setup {setup}",
         vatNote: "IVA esclusa · Contratto annuale · Attivazione entro 7 giorni",
         aiEyebrow: "Add-on disponibile per tutti",
-        aiTitle: "IA al telefono +€60/mese",
+        aiTitle: "IA al telefono · € 0,30 a chiamata + 3% ordini",
         aiDesc:
-          "Assistente vocale 24/7 che risponde con la voce del locale, prende prenotazioni e gestisce ordini. Disponibile dai piani Prenotazioni e Operatività. Quota minuti mensile inclusa; oltre la soglia, addebiti a prezzo di costo senza markup.",
+          "Assistente vocale 24/7 che risponde con la voce del locale, prende prenotazioni e gestisce ordini. Disponibile dai piani Prenotazioni e Operatività. Nessun canone fisso: € 0,30 a chiamata più il 3% sugli ordini ricevuti tramite le chiamate.",
         aiCta: "Scopri",
         plans: [
           {
@@ -362,9 +362,10 @@ export const messages = {
       ai: {
         label: "Dal piano {plan} in su",
         h2: "Integrazione AI al telefono.",
-        perMonth: "/mese",
-        quotaTitle: "Quota minuti mensile inclusa.",
-        quotaBody: "Oltre la soglia, addebiti a prezzo di costo — senza markup.",
+        perMonth: "per chiamata",
+        commission: "+ {pct}% sugli ordini ricevuti dalle chiamate",
+        quotaTitle: "Commissione del 3% sugli ordini.",
+        quotaBody: "Solo sugli ordini confermati gestiti dall'IA. Nessun canone fisso.",
         cta: "Scopri l'integrazione IA",
       },
       conditions: {
@@ -574,6 +575,149 @@ export const messages = {
         "Ti mostriamo una demo del tuo sito su misura con tutte le funzionalità. Online in 7 giorni, e paghi solo se ti piace.",
       finalCtaDemo: "Richiedi una demo",
       finalCtaPlans: "Vedi i piani",
+    },
+    about: {
+      hero: {
+        label: "Lo studio",
+        h1a: "Ogni studio merita",
+        h1b: "un sito che lo rappresenti.",
+        sub: "Bizery è la piattaforma digitale per studi professionali e aziende di servizi. Niente template, niente identità in serie. Ogni sito nasce da un design system costruito sullo studio — sui suoi servizi, sulla sua clientela, sul suo modo di lavorare.",
+      },
+      manifesto: {
+        label: "Manifesto",
+        quote: "Uno studio professionale cura ogni dettaglio — la consulenza, la comunicazione, il rapporto col cliente. Il sito deve fare lo stesso. Non meno, mai di meno.",
+        body: "Crediamo che il digitale sia un'estensione dello studio, non una brochure online. Per questo non usiamo template: costruiamo un sistema visivo che nasce dall'identità del cliente e la porta avanti su ogni schermo.",
+      },
+      principles: [
+        { title: "Uno studio alla volta", body: "Non scaliamo a forza. Ogni progetto inizia ascoltando il titolare, capendo i servizi, il tipo di clientela e il modo in cui lo studio si distingue. Solo dopo arriviamo al sito." },
+        { title: "Niente template", body: "Non esiste una versione base da personalizzare. Il sito nasce da zero — font, palette, gerarchia, tono di voce — rispecchiando l'identità dello studio, non quella di un tema WordPress da €49." },
+        { title: "Design system prima del codice", body: "Prima di scrivere una riga definiamo il sistema visivo: tipografia, scala cromatica, spaziatura, micro-interazioni. Uno studio professionale merita un sito che porta avanti la sua identità, non che la appiattisce." },
+        { title: "La tecnica non si vede", body: "Velocità, sicurezza, manutenzione restano un nostro problema. Tu vedi un sito ordinato che fa quello che serve — e che su Google si comporta meglio dei concorrenti." },
+        { title: "Tempo lungo", body: "Non consegniamo un sito e spariamo. Lo teniamo vivo: aggiornamenti stagionali, nuove funzioni, evoluzioni del prodotto. Anno per anno, come un rapporto professionale." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Perché adesso",
+        h2a: "A cosa serve un sito",
+        h2b: "nel 2026?",
+        sub: "Non a “esserci online”. Serve a controllare come vieni trovato, come vieni percepito e quanti appuntamenti passano per piattaforme che prendono la commissione invece di arrivare direttamente da te.",
+        cta: "Parliamone",
+        items: [
+          { title: "Google ti giudica prima del cliente", body: "L'86% delle persone cerca un professionista o uno studio online prima di contattarlo. Scheda Google, recensioni, sito: decidono se si prenota da te o dal concorrente." },
+          { title: "Le piattaforme prendono la commissione, tu fai il lavoro", body: "Booking, marketplace di settore e OTA trattengono fino al 15-20% per prenotazione. Il tuo sito non prende nulla. Un appuntamento diretto al giorno già copre il canone annuale." },
+          { title: "LinkedIn e Instagram non bastano", body: "Non gestiscono appuntamenti, non appaiono nelle ricerche Google Maps, non sono tuoi. Il sito è un asset che possiedi e che si accumula nel tempo." },
+          { title: "Il sito è la prima sala d'attesa", body: "Prima ancora di chiamarti, il potenziale cliente passa dal tuo sito. Se la cura è quella di un volantino fotocopiato, è già un segnale sbagliato." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Il processo",
+        h2a: "Come nasce",
+        h2b: "il tuo sito.",
+        sub: "Non iniziamo dall'editor. Iniziamo dall'identità — poi costruiamo il sistema che la porta avanti.",
+        steps: [
+          { n: "01", title: "Ascolto", body: "Una chiamata (o una visita). Capiamo lo studio, i servizi, la clientela, il tono di voce. Non facciamo brief generici." },
+          { n: "02", title: "Identità visiva", body: "Palette cromatica, tipografia, fotografia. Elementi che nascono da quello che lo studio già è — non da quello che sembrano i concorrenti." },
+          { n: "03", title: "Design system", body: "Prima di aprire l'editor definiamo le regole: componenti, spaziatura, scala. Il sistema poi scala su ogni pagina senza perdere coerenza." },
+          { n: "04", title: "Sviluppo", body: "Sito, listino servizi, appuntamenti, Google Maps. Tutto integrato nella stessa piattaforma — niente plugin di terze parti." },
+          { n: "05", title: "Go-live & oltre", body: "Online entro 7 giorni dalla firma. Poi aggiornamenti continui: nuovi servizi, prezzi, eventi, promozioni — senza aprire un ticket." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Cosa offriamo",
+        h2a: "Quattro mestieri",
+        h2b: "sotto un solo tetto.",
+        sub: "Quello che un tempo richiedeva tre fornitori diversi — agenzia creativa, sviluppatore, consulente digitale — oggi vive in un solo posto, con chi conosce il settore dei servizi professionali.",
+        items: [
+          { title: "Design", body: "Identità visiva costruita sullo studio: font, palette, fotografia. Ogni elemento nasce da quello che sei, non da ciò che sembrano i concorrenti." },
+          { title: "Sviluppo", body: "Sito, listino servizi, appuntamenti, Google Maps. Una sola piattaforma integrata — niente plugin di terze parti che si rompono da soli." },
+          { title: "Gestione", body: "Aggiornamenti di orari, servizi, tariffe, news. Dal pannello, senza aprire un ticket, anche dallo smartphone tra un appuntamento e l'altro." },
+          { title: "Presenza locale", body: "Google Business, recensioni, Yelp, TripAdvisor. Tutto aggiornato da un unico pannello — il cliente trova informazioni corrette ovunque cerchi." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Template vs. su misura",
+        templateTitle: "Un template",
+        templateItems: [
+          "Struttura uguale a migliaia di altri siti",
+          "Personalizzabile nei colori, non nell'identità",
+          "Plugin che si aggiornano (e si rompono) da soli",
+          "Google non premia i siti lenti e generici",
+          "Rappresenta una categoria, non il tuo studio",
+        ] as string[],
+        customTitle: "Su misura con Bizery",
+        customItems: [
+          "Design system costruito sull'identità dello studio",
+          "Font, palette e struttura originali",
+          "Una sola piattaforma integrata — niente plugin",
+          "Velocità tecnica e SEO curati nel codice",
+          "Riconoscibile: sembra te, non un tema",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Domande frequenti",
+        title: "Tutto quello che ci viene chiesto — prima di iniziare.",
+        notFound: "Non hai trovato quello che cercavi?",
+        ctaLink: "Scrivici",
+        items: [
+          { q: "A cosa serve davvero un sito nel 2026 per uno studio professionale?", a: "Serve a controllare la tua presenza online invece di affidarla ad altri. Google ti giudica prima ancora che il cliente chiami: orari aggiornati, recensioni, foto, posizione. Un sito ben fatto su una piattaforma solida si posiziona meglio di un profilo social, raccoglie appuntamenti senza commissioni e rappresenta il tuo studio 24 ore su 24." },
+          { q: "Non bastano LinkedIn e Instagram?", a: "No, per due motivi fondamentali. Primo: Google non indicizza i contenuti di LinkedIn o Instagram — se qualcuno cerca 'avvocato vicino a me' o 'fisioterapista a Milano', il tuo profilo social non appare. Secondo: queste piattaforme non sono tue; l'algoritmo può cambiare, l'account può essere sospeso, i follower possono diminuire. Il sito è un asset che possiedi e che cresce nel tempo." },
+          { q: "Qual è la differenza tra un vostro sito e un template WordPress?", a: "Un template è un vestito confezionato in serie: puoi cambiare i colori, ma la struttura è quella di migliaia di altri siti. I nostri siti nascono da un design system costruito sull'identità dello studio — font, palette, gerarchia visiva, tono di voce. Quando guardi il sito devi pensare 'questo sembra noi', non 'ho già visto questa struttura da qualche parte'." },
+          { q: "Cosa significa 'design system identitario'?", a: "Prima del sito definiamo le regole visive dello studio: la coppia tipografica, la scala di colori, le proporzioni degli spazi. Queste regole si applicano poi a ogni pagina, ogni card, ogni bottone — creando un'esperienza coerente, riconoscibile, professionale." },
+          { q: "Quando un sito si ripaga?", a: "Prima di quanto pensi. Marketplace e piattaforme di settore trattengono fino al 15-20% per appuntamento. Se il tuo sito porta anche solo un appuntamento diretto al giorno — invece che passare da una piattaforma — su base annua il risparmio supera ampiamente il costo del canone." },
+          { q: "Quanto ci vuole per andare online?", a: "Entro 7 giorni dalla firma del contratto. La configurazione iniziale — onboarding, design, personalizzazione — avviene prima, in media 2–4 settimane." },
+          { q: "Come nasce il design del mio sito?", a: "Inizia con una chiamata. Guardiamo lo studio, i servizi, il materiale esistente, il tono di voce. Poi costruiamo un sistema visivo coerente — non scegliamo font e colori a caso, li ricaviamo da quello che lo studio già è. Solo allora iniziamo a scrivere codice." },
+          { q: "Posso aggiornare il sito da solo?", a: "Sì. Listino, orari, foto, servizi, eventi: tutto si aggiorna dal pannello senza toccare il codice, anche dallo smartphone tra un appuntamento e l'altro." },
+          { q: "Lavorate solo a Milano?", a: "No. Lo studio è a Milano, ma seguiamo studi e aziende in tutta Italia. La maggior parte del lavoro avviene da remoto. Quando ha senso, veniamo da voi." },
+          { q: "Il sito è disponibile in più lingue?", a: "Sì. Ogni sito viene realizzato in versione multilingua di default, coprendo le principali lingue europee: italiano, inglese, francese, tedesco e spagnolo. Su richiesta è possibile aggiungere altre lingue in base all'utenza tipica dello studio — ad esempio russo, arabo, cinese o giapponese. Il costo delle lingue aggiuntive viene concordato in fase di preventivo." },
+        ] as { q: string; a: string }[],
+      },
+      cta: {
+        h2a: "Vuoi vedere come lavoriamo?",
+        h2b: "Parla con lo studio.",
+        requestProposal: "Richiedi una proposta",
+        seeOffer: "Vedi l'offerta",
+      },
+    },
+    seo: {
+      home: {
+        title: "Bizery - siti web per studi, saloni e aziende di servizi",
+        description:
+          "Bizery crea siti web per studi medici, saloni di bellezza, barbieri, studi legali, commercialisti e aziende di servizi: appuntamenti online, listino digitale, CRM e Google Maps.",
+      },
+      about: {
+        title: "Studio per siti web aziende di servizi",
+        description:
+          "Bizery è la piattaforma digitale per studi medici, saloni, barbieri, studi legali, commercialisti e aziende di servizi. Siti su misura, appuntamenti e presenza locale in un posto solo.",
+      },
+      pricing: {
+        title: "Prezzi siti web per studi, saloni e aziende",
+        description:
+          "Piani Bizery per studi medici, saloni di bellezza, barbieri, studi legali, commercialisti e aziende di servizi: sito, appuntamenti, listino e CRM. Zero commissioni.",
+      },
+      contact: {
+        title: "Contatti per siti web aziende",
+        description:
+          "Raccontaci il tuo studio, salone o azienda di servizi e scopri come Bizery può trasformarlo in un sito su misura con appuntamenti online, listino e gestione Google.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - piattaforma per artisti e professionisti creativi",
+        description:
+          "Orpheo crea siti e strumenti gestionali per artisti, autori, musicisti, attori, registi e professionisti creativi: press kit, catalogo opere, booking, diritti, recensioni e fanbase.",
+      },
+      pricing: {
+        title: "Prezzi Orpheo per artisti, autori e creativi",
+        description:
+          "Piani Orpheo per artisti, autori, musicisti, attori, registi e professionisti creativi: press kit, catalogo opere, booking, diritti, royalty, recensioni e fanbase.",
+      },
+      contact: {
+        title: "Contatti Orpheo",
+        description:
+          "Richiedi una demo Orpheo per artisti, autori, musicisti, attori, registi e professionisti creativi.",
+      },
     },
   },
 } as const;

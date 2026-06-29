@@ -5,16 +5,16 @@ import { DEFAULT_MARKET, MARKET_HEADER, getMarket, normalizeMarketCode } from "@
 import { OrpheoPricingPage } from "@/components/orpheo/pages/pricing";
 import { OrpheoShell } from "@/components/orpheo/orpheo-shell";
 import {
-  ORPHEO_MARKETING_DESCRIPTION,
   ORPHEO_ORIGIN,
   marketingAlternates,
 } from "@/lib/marketing-seo";
-import { getLocale } from "@/i18n";
+import { getLocale, getTranslations } from "@/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const seo = (await getTranslations("orpheo")).seo.pricing;
   return {
-    title: "Prezzi Orpheo per artisti, autori e creativi",
-    description: `Piani Orpheo per artisti, autori, musicisti, attori, registi e professionisti creativi: press kit, catalogo opere, booking, diritti, royalty, recensioni e fanbase. ${ORPHEO_MARKETING_DESCRIPTION}`,
+    title: seo.title,
+    description: seo.description,
     alternates: marketingAlternates(ORPHEO_ORIGIN, "/pricing", await getLocale()),
   };
 }

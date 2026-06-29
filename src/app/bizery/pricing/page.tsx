@@ -4,17 +4,17 @@ import { BizeryPricingPage } from "@/components/bizery/pages/pricing";
 import { BizeryShell } from "@/components/bizery/bizery-shell";
 import { headers } from "next/headers";
 import { DEFAULT_MARKET, MARKET_HEADER, getMarket, normalizeMarketCode } from "@/lib/markets";
-import { getLocale } from "@/i18n";
+import { getLocale, getTranslations } from "@/i18n";
 import {
-  BIZERY_MARKETING_DESCRIPTION,
   BIZERY_ORIGIN,
   marketingAlternates,
 } from "@/lib/marketing-seo";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const seo = (await getTranslations("bizery")).seo.pricing;
   return {
-    title: "Prezzi siti web per studi, saloni e aziende",
-    description: `Piani Bizery per studi medici, saloni di bellezza, barbieri, studi legali, commercialisti e aziende di servizi: sito, appuntamenti, listino e CRM. ${BIZERY_MARKETING_DESCRIPTION}`,
+    title: seo.title,
+    description: seo.description,
     alternates: marketingAlternates(BIZERY_ORIGIN, "/pricing", await getLocale()),
   };
 }

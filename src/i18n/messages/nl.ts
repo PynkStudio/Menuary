@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Maandelijks: €{price}/maand · Setup {setup}",
         vatNote: "Excl. btw · Jaarcontract · Activering binnen 7 dagen",
         aiEyebrow: "Add-on beschikbaar voor iedereen",
-        aiTitle: "AI-telefoonassistent +€60/maand",
+        aiTitle: "AI-telefoonassistent · €0,30 per oproep + 3% bestellingen",
         aiDesc:
-          "24/7 spraakassistent die antwoordt in de stem van uw zaak, reserveringen aanneemt en bestellingen beheert. Beschikbaar vanaf de plannen Reserveringen en Operaties. Maandelijks belminutentegoed inbegrepen; daarboven kosten tegen kostprijs zonder toeslag.",
+          "24/7 spraakassistent die antwoordt in de stem van uw zaak, reserveringen aanneemt en bestellingen beheert. Beschikbaar vanaf de plannen Reserveringen en Operaties. Geen vast tarief: €0,30 per oproep plus 3% over de via oproepen ontvangen bestellingen.",
         aiCta: "Ontdek",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Vanaf het pakket {plan}",
         h2: "AI-integratie aan de telefoon.",
-        perMonth: "/maand",
-        quotaTitle: "Maandelijks minutentegoed inbegrepen.",
-        quotaBody: "Boven de drempel facturatie tegen kostprijs — zonder opslag.",
+        perMonth: "per oproep",
+        commission: "+ {pct}% over bestellingen via oproepen",
+        quotaTitle: "3% commissie op bestellingen.",
+        quotaBody: "Alleen op bevestigde, door de AI afgehandelde bestellingen. Geen vast tarief.",
         cta: "Ontdek de AI-integratie",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Wij tonen u een demo van uw eigen site met alle functies. Online in 7 dagen, en u betaalt alleen als het u bevalt.",
       finalCtaDemo: "Vraag een demo aan",
       finalCtaPlans: "Bekijk plannen",
+    },
+    seo: {
+      home: {
+        title: "Bizery - websites voor praktijken, salons en dienstverleners",
+        description:
+          "Bizery maakt websites voor huisartsenpraktijken, schoonheidssalons, barbershops, advocatenkantoren, accountants en dienstverleners: online afspraken, digitale prijslijst, CRM en Google Maps.",
+      },
+      about: {
+        title: "Studio voor websites van dienstverleners",
+        description:
+          "Bizery is het digitale platform voor huisartsenpraktijken, salons, barbershops, advocatenkantoren, accountants en dienstverleners. Websites op maat, afspraken en lokale aanwezigheid op één plek.",
+      },
+      pricing: {
+        title: "Prijzen voor websites van praktijken, salons en bedrijven",
+        description:
+          "Bizery-pakketten voor huisartsenpraktijken, schoonheidssalons, barbershops, advocatenkantoren, accountants en dienstverleners: website, afspraken, prijslijst en CRM. Geen commissie.",
+      },
+      contact: {
+        title: "Contact voor bedrijfswebsites",
+        description:
+          "Vertel ons over je praktijk, salon of dienstverlenend bedrijf en ontdek hoe Bizery er een website op maat van kan maken met online afspraken, prijslijst en Google-beheer.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - platform voor artiesten en creatieve professionals",
+        description:
+          "Orpheo maakt websites en beheertools voor artiesten, auteurs, muzikanten, acteurs, regisseurs en creatieve professionals: press kit, werkcatalogus, booking, rechten, reviews en fanbase.",
+      },
+      pricing: {
+        title: "Orpheo-prijzen voor artiesten, auteurs en creatieven",
+        description:
+          "Orpheo-pakketten voor artiesten, auteurs, muzikanten, acteurs, regisseurs en creatieve professionals: press kit, werkcatalogus, booking, rechten, royalty's, reviews en fanbase.",
+      },
+      contact: {
+        title: "Contact Orpheo",
+        description:
+          "Vraag een Orpheo-demo aan voor artiesten, auteurs, muzikanten, acteurs, regisseurs en creatieve professionals.",
+      },
     },
   },
 } as const);

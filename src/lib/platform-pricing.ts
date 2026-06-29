@@ -57,6 +57,7 @@ export type PricingAddon = {
   tagline: string;
   description: string;
   monthly: number;
+  per_call?: number;
   commission_pct?: number;
   currency?: string;
   minPlan: string;
@@ -78,23 +79,24 @@ export type PricingAddon = {
 export const AI_ADDON: PricingAddon = {
   slug: "ai-phone",
   marketing_name: "Assistente vocale AI",
-  tagline: "IA al telefono · 3% sugli ordini confermati",
+  tagline: "IA al telefono · € 0,30 a chiamata + 3% ordini",
   monthly: 0,
+  per_call: 0.3,
   commission_pct: 3,
   minPlan: "prenotazioni" as const,
   description:
-    "Assistente IA al telefono disponibile 24/7 per Menuary. Risponde con la voce e il tono del tuo locale, prende prenotazioni e le scrive in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce le richieste fuori orario. Nessun canone fisso: si applica il 3% sugli ordini confermati gestiti dall'IA.",
+    "Assistente IA al telefono disponibile 24/7 per Menuary. Risponde con la voce e il tono del tuo locale, prende prenotazioni e le scrive in agenda, accetta ordini d'asporto, suggerisce i piatti del giorno e gestisce le richieste fuori orario. Nessun canone fisso: € 0,30 per ogni chiamata gestita dall'IA più il 3% sugli ordini ricevuti tramite le chiamate.",
   items: [
     "Risponde al telefono 24/7 con la voce del locale",
     "Prenotazioni autonome direttamente in agenda",
     "Ordini d'asporto e gestione richieste fuori orario",
-    "Nessun canone fisso mensile: 3% sugli ordini confermati",
+    "Nessun canone fisso: € 0,30 a chiamata + 3% sugli ordini ricevuti",
     "Suggerisce piatti del giorno e promozioni",
     "Cloning vocale opzionale",
     "Multilingua nativa: IT, EN, FR, ES, DE",
   ],
   minutesNote:
-    "L'add-on non ha canone fisso mensile. La commissione del 3% si applica solo agli ordini confermati gestiti dall'IA; i costi vivi di chiamata restano a prezzo di costo, senza markup.",
+    "L'add-on non ha canone fisso mensile: € 0,30 per ogni chiamata gestita dall'IA, più una commissione del 3% sugli ordini ricevuti tramite le chiamate.",
   settings: {
     includedMinutes: 120,
     overageMode: "cost",

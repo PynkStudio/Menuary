@@ -121,9 +121,9 @@ export const messages = {
         monthlyLabel: "Monthly: €{price}/month · Setup {setup}",
         vatNote: "VAT excluded · Annual contract · Activation within 7 days",
         aiEyebrow: "Add-on available for all",
-        aiTitle: "AI phone assistant +€60/month",
+        aiTitle: "AI phone assistant · €0.30 per call + 3% on orders",
         aiDesc:
-          "24/7 voice assistant that answers in the venue's voice, takes bookings and manages orders. Available from the Bookings and Operations plans. Monthly minute quota included; beyond the threshold, charges at cost price with no markup.",
+          "24/7 voice assistant that answers in the venue's voice, takes bookings and manages orders. Available from the Bookings and Operations plans. No fixed fee: €0.30 per call plus 3% on orders received through the calls.",
         aiCta: "Discover",
         plans: [
           {
@@ -362,9 +362,10 @@ export const messages = {
       ai: {
         label: "From the {plan} plan upwards",
         h2: "AI phone integration.",
-        perMonth: "/month",
-        quotaTitle: "Monthly minute quota included.",
-        quotaBody: "Beyond the threshold, charges at cost price — no markup.",
+        perMonth: "per call",
+        commission: "+ {pct}% on orders received via calls",
+        quotaTitle: "3% commission on orders.",
+        quotaBody: "Only on confirmed orders handled by the AI. No fixed fee.",
         cta: "Discover the AI integration",
       },
       conditions: {
@@ -574,6 +575,48 @@ export const messages = {
         "We show you a demo of your own site with every feature. Online in 7 days, and you pay only if you like it.",
       finalCtaDemo: "Request a demo",
       finalCtaPlans: "View plans",
+    },
+    seo: {
+      home: {
+        title: "Bizery - websites for studios, salons and service businesses",
+        description:
+          "Bizery builds websites for medical practices, beauty salons, barbershops, law firms, accountants and service businesses: online appointments, digital price list, CRM and Google Maps.",
+      },
+      about: {
+        title: "Studio for service-business websites",
+        description:
+          "Bizery is the digital platform for medical practices, salons, barbershops, law firms, accountants and service businesses. Bespoke websites, appointments and local presence in one place.",
+      },
+      pricing: {
+        title: "Pricing for studio, salon and business websites",
+        description:
+          "Bizery plans for medical practices, beauty salons, barbershops, law firms, accountants and service businesses: website, appointments, price list and CRM. Zero commission.",
+      },
+      contact: {
+        title: "Contact us for business websites",
+        description:
+          "Tell us about your studio, salon or service business and discover how Bizery can turn it into a bespoke website with online appointments, price list and Google management.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - platform for artists and creative professionals",
+        description:
+          "Orpheo builds websites and management tools for artists, authors, musicians, actors, directors and creative professionals: press kit, works catalogue, booking, rights, reviews and fanbase.",
+      },
+      pricing: {
+        title: "Orpheo pricing for artists, authors and creatives",
+        description:
+          "Orpheo plans for artists, authors, musicians, actors, directors and creative professionals: press kit, works catalogue, booking, rights, royalties, reviews and fanbase.",
+      },
+      contact: {
+        title: "Contact Orpheo",
+        description:
+          "Request an Orpheo demo for artists, authors, musicians, actors, directors and creative professionals.",
+      },
     },
   },
 } as const;

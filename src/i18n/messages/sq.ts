@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Mujore: €{price}/muaj · Setup {setup}",
         vatNote: "Pa TVSH · Kontratë vjetore · Aktivizim brenda 7 ditësh",
         aiEyebrow: "Shtesë e disponueshme për të gjithë",
-        aiTitle: "Asistent telefonik AI +60 €/muaj",
+        aiTitle: "Asistent telefonik AI · 0,30 € për telefonatë + 3% porosi",
         aiDesc:
-          "Asistent zanor 24/7 që përgjigjet me zërin e lokalit tuaj, merr rezervime dhe menaxhon porositë. I disponueshëm nga planet Rezervime dhe Operacione. Kuotë mujore minutash e përfshirë; mbi kufirin, tarifohet me çmim kostoje pa shtesë.",
+          "Asistent zanor 24/7 që përgjigjet me zërin e lokalit tuaj, merr rezervime dhe menaxhon porositë. I disponueshëm nga planet Rezervime dhe Operacione. Pa tarifë fikse: 0,30 € për telefonatë plus 3% mbi porositë e marra nga telefonatat.",
         aiCta: "Zbuloni",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Nga plani {plan} e lart",
         h2: "Integrim AI në telefon.",
-        perMonth: "/muaj",
-        quotaTitle: "Kuota mujore e minutave e përfshirë.",
-        quotaBody: "Mbi pragun, tarifohet me çmim kosto — pa shtesë.",
+        perMonth: "për telefonatë",
+        commission: "+ {pct}% mbi porositë nga telefonatat",
+        quotaTitle: "Komision 3% mbi porositë.",
+        quotaBody: "Vetëm mbi porositë e konfirmuara të menaxhuara nga IA. Pa tarifë fikse.",
         cta: "Zbulo integrimin AI",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Ju tregojmë një demo të faqes suaj me të gjitha funksionet. Online për 7 ditë, dhe paguani vetëm nëse ju pëlqen.",
       finalCtaDemo: "Kërko demo",
       finalCtaPlans: "Shihni planet",
+    },
+    seo: {
+      home: {
+        title: "Bizery - faqe interneti për klinika, sallone dhe biznese shërbimesh",
+        description:
+          "Bizery krijon faqe interneti për klinika mjekësore, sallone bukurie, berber, zyra avokatësh, kontabilistë dhe biznese shërbimesh: rezervime online, listë çmimesh dixhitale, CRM dhe Google Maps.",
+      },
+      about: {
+        title: "Studio për faqe interneti biznesesh shërbimesh",
+        description:
+          "Bizery është platforma dixhitale për klinika mjekësore, sallone, berber, zyra avokatësh, kontabilistë dhe biznese shërbimesh. Faqe interneti të personalizuara, rezervime dhe prani lokale në një vend të vetëm.",
+      },
+      pricing: {
+        title: "Çmimet e faqeve për klinika, sallone dhe biznese",
+        description:
+          "Plane Bizery për klinika mjekësore, sallone bukurie, berber, zyra avokatësh, kontabilistë dhe biznese shërbimesh: faqe, rezervime, listë çmimesh dhe CRM. Zero komision.",
+      },
+      contact: {
+        title: "Kontakt për faqe interneti biznesesh",
+        description:
+          "Na tregoni për klinikën, sallonin ose biznesin tuaj të shërbimeve dhe zbuloni si Bizery mund ta kthejë në një faqe të personalizuar me rezervime online, listë çmimesh dhe menaxhim Google.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - platformë për artistë dhe profesionistë kreativë",
+        description:
+          "Orpheo krijon faqe interneti dhe mjete menaxhimi për artistë, autorë, muzikantë, aktorë, regjisorë dhe profesionistë kreativë: press kit, katalog veprash, booking, të drejta, vlerësime dhe fanbase.",
+      },
+      pricing: {
+        title: "Çmimet Orpheo për artistë, autorë dhe kreativë",
+        description:
+          "Plane Orpheo për artistë, autorë, muzikantë, aktorë, regjisorë dhe profesionistë kreativë: press kit, katalog veprash, booking, të drejta, honorare, vlerësime dhe fanbase.",
+      },
+      contact: {
+        title: "Kontakt Orpheo",
+        description:
+          "Kërko një demo Orpheo për artistë, autorë, muzikantë, aktorë, regjisorë dhe profesionistë kreativë.",
+      },
     },
   },
 } as const);

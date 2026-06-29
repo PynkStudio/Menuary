@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { OrpheoShell } from "@/components/orpheo/orpheo-shell";
 import { ORPHEO_ORIGIN, marketingAlternates } from "@/lib/marketing-seo";
-import { getLocale } from "@/i18n";
+import { getLocale, getTranslations } from "@/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const seo = (await getTranslations("orpheo")).seo.contact;
   return {
-    title: "Contatti Orpheo",
-    description: "Richiedi una demo Orpheo per artisti, autori, musicisti, attori, registi e professionisti creativi.",
+    title: seo.title,
+    description: seo.description,
     alternates: marketingAlternates(ORPHEO_ORIGIN, "/contatti", await getLocale()),
   };
 }

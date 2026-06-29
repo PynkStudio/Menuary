@@ -23,7 +23,7 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { fetchPricingAddons, fetchPricingPlans, type MarketingReview, type MarketingTenant } from "@/lib/marketing-data";
+import { fetchPricingPlans, type MarketingReview, type MarketingTenant } from "@/lib/marketing-data";
 import { DEFAULT_MARKET, MARKET_HEADER, getMarket, normalizeMarketCode } from "@/lib/markets";
 import { formatPricingAmount, formatSetupFrom, replacePriceToken } from "@/lib/pricing-format";
 import { headers } from "next/headers";
@@ -1917,11 +1917,7 @@ export async function HomePricingSection() {
   const h = await headers();
   const marketCode = normalizeMarketCode(h.get(MARKET_HEADER)) ?? DEFAULT_MARKET;
   const market = getMarket(marketCode);
-  const [pricingPlans, pricingAddons] = await Promise.all([
-    fetchPricingPlans(marketCode),
-    fetchPricingAddons(marketCode),
-  ]);
-  const aiAddon = pricingAddons[0];
+  const pricingPlans = await fetchPricingPlans(marketCode);
   const perMonthLabel = t.perMonth.replace(/[€$£]\s*/, "");
   const copyById = new Map(t.plans.map((plan) => [plan.id, plan]));
   const plans = pricingPlans.map((plan) => {
@@ -2065,12 +2061,7 @@ export async function HomePricingSection() {
               <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
                 {t.aiEyebrow}
               </p>
-              <p className="menuary-display text-lg">
-                {t.aiTitle.replace(
-                  /\+\s*[€$£]?\d+/,
-                  `+${formatPricingAmount(aiAddon.monthly, aiAddon.currency ?? market.currency, market.locale)}`,
-                )}
-              </p>
+              <p className="menuary-display text-lg">{t.aiTitle}</p>
             </div>
           </div>
           <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">

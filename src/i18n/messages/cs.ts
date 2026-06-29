@@ -117,9 +117,9 @@ export const messages = mergeMessages(en, {
         monthlyLabel: "Měsíčně: €{price}/měsíc · Zřízení {setup}",
         vatNote: "Bez DPH · Roční smlouva · Aktivace do 7 dnů",
         aiEyebrow: "Doplněk dostupný pro všechny",
-        aiTitle: "Telefonní AI asistent +€60/měsíc",
+        aiTitle: "Telefonní AI asistent · €0,30 za hovor + 3% objednávek",
         aiDesc:
-          "Hlasový asistent 24/7, který odpovídá hlasem vašeho podniku, přijímá rezervace a spravuje objednávky. Dostupný od plánů Rezervace a Provoz. Měsíční kvóta minut v ceně; nad limit se účtuje za nákladovou cenu bez přirážky.",
+          "Hlasový asistent 24/7, který odpovídá hlasem vašeho podniku, přijímá rezervace a spravuje objednávky. Dostupný od plánů Rezervace a Provoz. Bez fixního poplatku: €0,30 za hovor plus 3% z objednávek přijatých přes hovory.",
         aiCta: "Objevit",
         plans: [
           {
@@ -357,9 +357,10 @@ export const messages = mergeMessages(en, {
       ai: {
         label: "Od plánu {plan} výše",
         h2: "AI integrace na telefonu.",
-        perMonth: "/měsíc",
-        quotaTitle: "Měsíční kvóta minut v ceně.",
-        quotaBody: "Nad limit účtováno v nákladové ceně — bez marže.",
+        perMonth: "za hovor",
+        commission: "+ {pct}% z objednávek z hovorů",
+        quotaTitle: "3% provize z objednávek.",
+        quotaBody: "Pouze z potvrzených objednávek zpracovaných AI. Bez fixního poplatku.",
         cta: "Objevte AI integraci",
       },
       conditions: {
@@ -561,6 +562,48 @@ export const messages = mergeMessages(en, {
       finalCtaSub: "Ukážeme vám demo vašeho vlastního webu se všemi funkcemi. Online za 7 dní a platíte jen, pokud se vám líbí.",
       finalCtaDemo: "Vyžádat demo",
       finalCtaPlans: "Zobrazit plány",
+    },
+    seo: {
+      home: {
+        title: "Bizery - webové stránky pro ordinace, salony a služby",
+        description:
+          "Bizery tvoří webové stránky pro lékařské ordinace, kosmetické salony, holičství, advokátní kanceláře, účetní a firmy poskytující služby: online objednání, digitální ceník, CRM a Google Maps.",
+      },
+      about: {
+        title: "Studio webových stránek pro firmy poskytující služby",
+        description:
+          "Bizery je digitální platforma pro lékařské ordinace, salony, holičství, advokátní kanceláře, účetní a firmy poskytující služby. Weby na míru, objednání a místní přítomnost na jednom místě.",
+      },
+      pricing: {
+        title: "Ceny webových stránek pro ordinace, salony a firmy",
+        description:
+          "Plány Bizery pro lékařské ordinace, kosmetické salony, holičství, advokátní kanceláře, účetní a firmy poskytující služby: web, objednání, ceník a CRM. Nulové provize.",
+      },
+      contact: {
+        title: "Kontakt pro firemní webové stránky",
+        description:
+          "Řekněte nám o své ordinaci, salonu nebo firmě a zjistěte, jak z ní Bizery může vytvořit web na míru s online objednáním, ceníkem a správou Google.",
+      },
+    },
+  },
+
+  orpheo: {
+    seo: {
+      home: {
+        title: "Orpheo - platforma pro umělce a kreativní profesionály",
+        description:
+          "Orpheo tvoří weby a nástroje pro správu pro umělce, autory, hudebníky, herce, režiséry a kreativní profesionály: press kit, katalog děl, booking, práva, recenze a fanouškovskou základnu.",
+      },
+      pricing: {
+        title: "Ceny Orpheo pro umělce, autory a kreativce",
+        description:
+          "Plány Orpheo pro umělce, autory, hudebníky, herce, režiséry a kreativní profesionály: press kit, katalog děl, booking, práva, tantiémy, recenze a fanouškovskou základnu.",
+      },
+      contact: {
+        title: "Kontakt Orpheo",
+        description:
+          "Vyžádejte si demo Orpheo pro umělce, autory, hudebníky, herce, režiséry a kreativní profesionály.",
+      },
     },
   },
 } as const);
