@@ -2133,8 +2133,8 @@
     inset: 0;
     z-index: -4;
     background:
-      linear-gradient(90deg, rgba(3, 3, 5, 0.14), rgba(3, 3, 5, 0.02) 48%, rgba(3, 3, 5, 0.08)),
-      url("/valentina-orciuoli/hero-valentina-cosmos.png") center / cover no-repeat;
+      linear-gradient(90deg, rgba(3, 3, 5, 0.08), rgba(3, 3, 5, 0.01) 48%, rgba(3, 3, 5, 0.04)),
+      url("/valentina-orciuoli/sfondo-valentina.webp") center / cover no-repeat;
   }
 
   .vo-home-site .vo-hero-shade {
@@ -2150,7 +2150,7 @@
     min-height: 7.4rem;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     margin-top: 0;
-    gap: clamp(1.7rem, 3.2vw, 4.6rem);
+    gap: clamp(1.2rem, 2.3vw, 3.2rem);
     border: 0;
     background: linear-gradient(180deg, rgba(3, 3, 5, 0.88), transparent);
     padding: 0 0.8rem;
@@ -2159,13 +2159,13 @@
   }
 
   .vo-home-site .vo-nav {
-    justify-content: space-between;
-    gap: clamp(1rem, 2vw, 2.4rem);
+    justify-content: center;
+    gap: clamp(0.75rem, 1.25vw, 1.45rem);
     color: #d9aa55;
-    font-family: var(--font-cascina-heading), "Cormorant Garamond", Georgia, serif;
+    font-family: "The Seasons Light", "The Seasons", var(--font-cascina-heading), "Cormorant Garamond", Georgia, serif;
     font-size: clamp(0.82rem, 0.9vw, 1.02rem);
     font-weight: 400;
-    letter-spacing: 0.17em;
+    letter-spacing: 0.13em;
     text-transform: uppercase;
   }
 
@@ -2200,7 +2200,7 @@
     overflow: visible;
     border: 0;
     color: #d49a43;
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: "The Seasons Light", "The Seasons", Georgia, "Times New Roman", serif;
     font-size: 4.7rem;
     line-height: 1;
     text-shadow: 0 0 1.4rem rgba(190, 116, 42, 0.42);
@@ -2211,13 +2211,13 @@
     width: min(100% - 7rem, 1390px);
     min-height: max(46rem, 100svh);
     align-items: center;
-    padding: 10rem 0 4rem;
+    padding: 8.8rem 0 5.2rem;
   }
 
   .vo-home-site .vo-hero-copy {
     width: min(47vw, 42rem);
     max-width: none;
-    padding-top: 1rem;
+    padding-top: clamp(3rem, 8vh, 6.4rem);
     text-align: center;
   }
 
@@ -2225,6 +2225,8 @@
     display: grid;
     margin: 0;
     color: #b37a2c;
+    font-family: "The Seasons Light", "The Seasons", Georgia, "Times New Roman", serif;
+    font-weight: 300;
     font-size: clamp(4.6rem, 7vw, 7.7rem);
     letter-spacing: -0.045em;
     line-height: 0.82;
@@ -2241,7 +2243,7 @@
     grid-template-columns: 1fr auto 1fr;
     gap: 1.2rem;
     align-items: center;
-    margin: 2.2rem 0 1.35rem;
+    margin: 2.55rem 0 1.08rem;
   }
 
   .vo-home-site .vo-hero-byline span {
@@ -2255,8 +2257,10 @@
 
   .vo-home-site .vo-hero-byline p {
     color: #bd8433;
+    font-family: "The Seasons Light", "The Seasons", Georgia, "Times New Roman", serif;
     font-size: clamp(0.95rem, 1.25vw, 1.25rem);
-    letter-spacing: 0.22em;
+    font-weight: 300;
+    letter-spacing: 0.19em;
     line-height: 1;
     text-transform: uppercase;
   }
@@ -2264,16 +2268,20 @@
   .vo-home-site .vo-hero-series {
     margin: 0;
     color: #813b91;
+    font-family: "The Seasons Light", "The Seasons", Georgia, "Times New Roman", serif;
     font-size: clamp(1.05rem, 1.65vw, 1.55rem);
-    letter-spacing: 0.21em;
+    font-weight: 300;
+    letter-spacing: 0.18em;
     line-height: 1.2;
     text-transform: uppercase;
   }
 
   .vo-home-site .vo-hero-manifesto {
-    margin: 2.7rem auto 0;
+    margin: 1.85rem auto 0;
     color: #c88c37;
+    font-family: "The Seasons Light", "The Seasons", Georgia, "Times New Roman", serif;
     font-size: clamp(1.08rem, 1.45vw, 1.45rem);
+    font-weight: 300;
     line-height: 1.42;
     text-align: center;
   }
@@ -2292,7 +2300,7 @@
     background: rgba(12, 8, 16, 0.48);
     box-shadow: inset 0 0 1.7rem rgba(94, 32, 109, 0.14);
     color: #d7a24e;
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: "The Seasons Light", "The Seasons", Georgia, "Times New Roman", serif;
     font-size: 0.88rem;
     font-weight: 400;
     letter-spacing: 0.2em;
@@ -2317,9 +2325,9 @@
     }
 
     .vo-home-site .vo-nav {
-      gap: clamp(0.75rem, 1.4vw, 1.3rem);
+      gap: clamp(0.55rem, 0.95vw, 1rem);
       font-size: clamp(0.72rem, 1vw, 0.9rem);
-      letter-spacing: 0.13em;
+      letter-spacing: 0.1em;
     }
 
     .vo-home-site .vo-nav-secondary {
@@ -2366,7 +2374,7 @@
       display: inline-flex;
       border: 0;
       color: #c68c39;
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: "The Seasons Light", "The Seasons", Georgia, "Times New Roman", serif;
       font-size: 0.66rem;
       font-weight: 400;
       letter-spacing: 0.2em;
@@ -2376,7 +2384,7 @@
     .vo-home-site .vo-hero-cosmos {
       background:
         linear-gradient(180deg, rgba(3, 3, 5, 0.28) 0%, rgba(3, 3, 5, 0.1) 45%, #030305 100%),
-        url("/valentina-orciuoli/hero-valentina-cosmos.png") 67% center / cover no-repeat;
+        url("/valentina-orciuoli/sfondo-valentina.webp") 67% center / cover no-repeat;
     }
 
     .vo-home-site .vo-hero-inner {
@@ -2388,7 +2396,7 @@
 
     .vo-home-site .vo-hero-copy {
       width: 100%;
-      padding-top: 0;
+      padding-top: 1.5rem;
     }
 
     .vo-home-site .vo-hero-copy h1 {
@@ -2402,7 +2410,8 @@
     }
 
     .vo-home-site .vo-hero-byline {
-      margin-top: 1.6rem;
+      margin-top: 1.85rem;
+      margin-bottom: 0.95rem;
     }
 
     .vo-home-site .vo-hero-series {
