@@ -19,6 +19,7 @@ import {
   instagramHref,
   tiktokHref,
   trilogy,
+  valentinaBasePath,
 } from "@/components/tenants/valentina-orciuoli/content";
 
 export function ValentinaOrciuoliHomePage() {
@@ -47,22 +48,37 @@ export function ValentinaOrciuoliHomePage() {
             </h1>
             <div className="vo-hero-byline">
               <span aria-hidden="true" />
-              <p>Autrice di</p>
+              <p>Autrice italiana</p>
               <span aria-hidden="true" />
             </div>
-            <p className="vo-hero-series">The Emotion Dragons Trilogy</p>
+            <p className="vo-hero-series">Fantasy romance e noir psicologico</p>
             <p className="vo-hero-manifesto">
-              Dove le emozioni prendono forma.
+              Le storie sono specchi.
               <br />
-              Dove i draghi non sono solo leggenda,
+              Attraverso metafore e simboli raccontano
               <br />
-              ma parte di noi.
+              ciò che spesso non riusciamo a dire.
             </p>
             <div className="vo-hero-actions">
               <a className="vo-btn vo-btn-primary vo-btn-trilogy" href="#libri">
-                Scopri il mio mondo <span aria-hidden="true">✦</span>
+                Scopri i miei libri <span aria-hidden="true">✦</span>
               </a>
             </div>
+          </motion.div>
+          <motion.div
+            className="vo-hero-portrait-wrap"
+            initial={{ opacity: 0, scale: 0.96, y: 22 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.15, ease: "easeOut" }}
+          >
+            <Link
+              className="vo-hero-portrait-link"
+              href={`${valentinaBasePath}/autrice`}
+              aria-label="Vai alla pagina Chi sono di Valentina Orciuoli"
+            >
+              <img src="/valentina-orciuoli/sfondo-valentina.webp" alt="Valentina Orciuoli" />
+              <span aria-hidden="true">Chi sono</span>
+            </Link>
           </motion.div>
         </div>
         <span className="vo-hero-signature" aria-hidden="true">VO✦</span>
