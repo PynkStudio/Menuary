@@ -576,6 +576,79 @@ export const messages = {
       finalCtaDemo: "Solicitar una demo",
       finalCtaPlans: "Ver los planes",
     },
+    about: {
+      hero: { label: "El estudio", h1a: "Cada consulta merece", h1b: "una web que la represente.", sub: "Bizery es la plataforma digital para consultas profesionales y empresas de servicios. Sin plantillas, sin identidad en serie. Cada web nace de un design system construido sobre la consulta — sobre sus servicios, su clientela, su forma de trabajar." },
+      manifesto: { label: "Manifiesto", quote: "Una consulta profesional cuida cada detalle — el asesoramiento, la comunicación, la relación con el cliente. La web debe hacer lo mismo. Ni menos, nunca menos.", body: "Creemos que lo digital es una extensión de la consulta, no un folleto online. Por eso no usamos plantillas: construimos un sistema visual que nace de la identidad del cliente y la mantiene en cada pantalla." },
+      principles: [
+        { title: "Una consulta cada vez", body: "No escalamos a la fuerza. Cada proyecto empieza escuchando al titular, entendiendo los servicios, el tipo de clientela y lo que distingue a la consulta. Solo después llegamos a la web." },
+        { title: "Sin plantillas", body: "No existe una versión base que personalizar. La web nace de cero — tipografía, paleta, jerarquía, tono de voz — reflejando la identidad de la consulta, no la de un tema WordPress de 49 €." },
+        { title: "El design system antes que el código", body: "Antes de escribir una línea definimos el sistema visual: tipografía, escala cromática, espaciado, microinteracciones. Una consulta profesional merece una web que mantenga su identidad, no que la aplane." },
+        { title: "La técnica no se ve", body: "Velocidad, seguridad, mantenimiento siguen siendo nuestro problema. Tú ves una web ordenada que hace lo necesario — y que en Google se comporta mejor que la competencia." },
+        { title: "Tiempo largo", body: "No entregamos una web y desaparecemos. La mantenemos viva: actualizaciones de temporada, nuevas funciones, evoluciones del producto. Año tras año, como una relación profesional." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Por qué ahora", h2a: "¿Para qué sirve una web", h2b: "en 2026?", sub: "No para «estar online». Sirve para controlar cómo te encuentran, cómo te perciben y cuántas citas pasan por plataformas que se llevan la comisión en lugar de llegar directamente a ti.", cta: "Hablemos",
+        items: [
+          { title: "Google te juzga antes que el cliente", body: "El 86 % de las personas busca a un profesional o una consulta online antes de contactarlo. Ficha de Google, reseñas, web: deciden si reservan contigo o con un competidor." },
+          { title: "Las plataformas se llevan la comisión, tú haces el trabajo", body: "Los sitios de reservas, marketplaces del sector y OTA retienen hasta el 15-20 % por reserva. Tu web no se lleva nada. Una cita directa al día ya cubre la cuota anual." },
+          { title: "LinkedIn e Instagram no bastan", body: "No gestionan citas, no aparecen en las búsquedas de Google Maps y no son tuyos. La web es un activo que posees y que se acumula con el tiempo." },
+          { title: "La web es la primera sala de espera", body: "Antes incluso de llamarte, el cliente potencial pasa por tu web. Si el cuidado es el de un folleto fotocopiado, ya es una mala señal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "El proceso", h2a: "Cómo nace", h2b: "tu web.", sub: "No empezamos por el editor. Empezamos por la identidad — luego construimos el sistema que la mantiene.",
+        steps: [
+          { n: "01", title: "Escucha", body: "Una llamada (o una visita). Entendemos la consulta, los servicios, la clientela, el tono de voz. No hacemos briefs genéricos." },
+          { n: "02", title: "Identidad visual", body: "Paleta cromática, tipografía, fotografía. Elementos que nacen de lo que la consulta ya es — no de lo que parecen los competidores." },
+          { n: "03", title: "Design system", body: "Antes de abrir el editor definimos las reglas: componentes, espaciado, escala. El sistema se aplica luego en cada página sin perder coherencia." },
+          { n: "04", title: "Desarrollo", body: "Web, lista de servicios, citas, Google Maps. Todo integrado en la misma plataforma — sin plugins de terceros." },
+          { n: "05", title: "Lanzamiento y más allá", body: "Online en 7 días desde la firma. Luego actualizaciones continuas: nuevos servicios, precios, eventos, promociones — sin abrir un ticket." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Qué ofrecemos", h2a: "Cuatro oficios", h2b: "bajo un mismo techo.", sub: "Lo que antes requería tres proveedores distintos — agencia creativa, desarrollador, consultor digital — hoy vive en un solo lugar, con quien conoce el sector de los servicios profesionales.",
+        items: [
+          { title: "Diseño", body: "Identidad visual construida sobre la consulta: tipografía, paleta, fotografía. Cada elemento nace de lo que eres, no de lo que parecen los competidores." },
+          { title: "Desarrollo", body: "Web, lista de servicios, citas, Google Maps. Una sola plataforma integrada — sin plugins de terceros que se rompen solos." },
+          { title: "Gestión", body: "Actualizaciones de horarios, servicios, tarifas, novedades. Desde el panel, sin abrir un ticket, también desde el móvil entre cita y cita." },
+          { title: "Presencia local", body: "Google Business, reseñas, Yelp, TripAdvisor. Todo actualizado desde un único panel — el cliente encuentra información correcta dondequiera que busque." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Plantilla vs a medida", templateTitle: "Una plantilla",
+        templateItems: [
+          "Estructura igual a la de miles de webs",
+          "Personalizable en los colores, no en la identidad",
+          "Plugins que se actualizan (y se rompen) solos",
+          "Google no premia las webs lentas y genéricas",
+          "Representa una categoría, no tu consulta",
+        ] as string[],
+        customTitle: "A medida con Bizery",
+        customItems: [
+          "Design system construido sobre la identidad de la consulta",
+          "Tipografía, paleta y estructura originales",
+          "Una sola plataforma integrada — sin plugins",
+          "Velocidad técnica y SEO cuidados en el código",
+          "Reconocible: parece tú, no una plantilla",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Preguntas frecuentes", title: "Todo lo que nos preguntan — antes de empezar.", notFound: "¿No encontraste lo que buscabas?", ctaLink: "Escríbenos",
+        items: [
+          { q: "¿Para qué sirve realmente una web en 2026 para una consulta profesional?", a: "Sirve para controlar tu presencia online en vez de dejarla en manos de otros. Google te juzga antes incluso de que el cliente llame: horarios actualizados, reseñas, fotos, ubicación. Una web bien hecha sobre una plataforma sólida se posiciona mejor que un perfil social, recoge citas sin comisiones y representa tu consulta las 24 horas." },
+          { q: "¿No bastan LinkedIn e Instagram?", a: "No, por dos motivos fundamentales. Primero: Google no indexa los contenidos de LinkedIn o Instagram — si alguien busca «abogado cerca de mí» o «fisioterapeuta en Milán», tu perfil social no aparece. Segundo: estas plataformas no son tuyas; el algoritmo puede cambiar, la cuenta puede suspenderse, los seguidores pueden disminuir. La web es un activo que posees y que crece con el tiempo." },
+          { q: "¿Cuál es la diferencia entre vuestra web y una plantilla de WordPress?", a: "Una plantilla es un traje confeccionado en serie: puedes cambiar los colores, pero la estructura es la de miles de webs. Nuestras webs nacen de un design system construido sobre la identidad de la consulta — tipografía, paleta, jerarquía visual, tono de voz. Cuando miras la web debes pensar «esto parece nosotros», no «ya he visto esta estructura en alguna parte»." },
+          { q: "¿Qué significa «design system identitario»?", a: "Antes de la web definimos las reglas visuales de la consulta: la pareja tipográfica, la escala de colores, las proporciones de los espacios. Esas reglas se aplican luego a cada página, cada tarjeta, cada botón — creando una experiencia coherente, reconocible, profesional." },
+          { q: "¿Cuándo se amortiza una web?", a: "Antes de lo que crees. Los marketplaces y plataformas del sector retienen hasta el 15-20 % por cita. Si tu web aporta aunque sea una cita directa al día — en vez de pasar por una plataforma — el ahorro anual supera ampliamente el coste de la cuota." },
+          { q: "¿Cuánto se tarda en estar online?", a: "En 7 días desde la firma del contrato. La configuración inicial — onboarding, diseño, personalización — ocurre antes, de media 2-4 semanas." },
+          { q: "¿Cómo nace el diseño de mi web?", a: "Empieza con una llamada. Miramos la consulta, los servicios, el material existente, el tono de voz. Luego construimos un sistema visual coherente — no elegimos tipografías y colores al azar, los extraemos de lo que la consulta ya es. Solo entonces empezamos a escribir código." },
+          { q: "¿Puedo actualizar la web yo mismo?", a: "Sí. Lista de servicios, horarios, fotos, servicios, eventos: todo se actualiza desde el panel sin tocar el código, también desde el móvil entre cita y cita." },
+          { q: "¿Trabajáis solo en Milán?", a: "No. El estudio está en Milán, pero atendemos consultas y empresas en toda Italia. La mayor parte del trabajo se hace en remoto. Cuando tiene sentido, vamos a vuestro local." },
+          { q: "¿La web está disponible en varios idiomas?", a: "Sí. Cada web se realiza en versión multilingüe por defecto, cubriendo los principales idiomas europeos: italiano, inglés, francés, alemán y español. Bajo petición se pueden añadir otros idiomas según la clientela típica de la consulta — por ejemplo ruso, árabe, chino o japonés. El coste de los idiomas adicionales se acuerda en la fase de presupuesto." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "¿Quieres ver cómo trabajamos?", h2b: "Habla con el estudio.", requestProposal: "Solicitar propuesta", seeOffer: "Ver la oferta" },
+    },
     seo: {
       home: {
         title: "Bizery - webs para consultas, salones y empresas de servicios",

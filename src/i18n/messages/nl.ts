@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Vraag een demo aan",
       finalCtaPlans: "Bekijk plannen",
     },
+    about: {
+      hero: { label: "De studio", h1a: "Elke praktijk verdient", h1b: "een website die haar vertegenwoordigt.", sub: "Bizery is het digitale platform voor professionele praktijken en dienstverleners. Geen templates, geen identiteit van de plank. Elke website ontstaat uit een design system dat is opgebouwd rond de praktijk — rond haar diensten, haar klantenkring, haar manier van werken." },
+      manifesto: { label: "Manifest", quote: "Een professionele praktijk besteedt zorg aan elk detail — het advies, de communicatie, de klantrelatie. De website moet hetzelfde doen. Niet minder, nooit minder.", body: "Wij geloven dat digitaal een verlengstuk is van de praktijk, geen online brochure. Daarom gebruiken we geen templates: we bouwen een visueel systeem dat voortkomt uit de identiteit van de klant en dat op elk scherm voortzet." },
+      principles: [
+        { title: "Eén praktijk tegelijk", body: "We schalen niet met geweld. Elk project begint met luisteren naar de eigenaar, de diensten begrijpen, het type klantenkring en wat de praktijk onderscheidt. Pas daarna komt de website." },
+        { title: "Geen templates", body: "Er bestaat geen basisversie om aan te passen. De website ontstaat vanaf nul — lettertype, palet, hiërarchie, tone of voice — en weerspiegelt de identiteit van de praktijk, niet die van een WordPress-thema van 49 €." },
+        { title: "Het design system vóór de code", body: "Voordat we één regel schrijven, definiëren we het visuele systeem: typografie, kleurschaal, witruimte, micro-interacties. Een professionele praktijk verdient een website die haar identiteit voortzet, niet afvlakt." },
+        { title: "De techniek blijft onzichtbaar", body: "Snelheid, beveiliging, onderhoud blijven ons probleem. Jij ziet een verzorgde website die doet wat nodig is — en die het op Google beter doet dan de concurrentie." },
+        { title: "Lange termijn", body: "We leveren geen website op om daarna te verdwijnen. We houden hem levend: seizoensupdates, nieuwe functies, productevoluties. Jaar na jaar, als een professionele relatie." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Waarom nu", h2a: "Waar dient een website voor", h2b: "in 2026?", sub: "Niet om «online te zijn». Het dient om te bepalen hoe je gevonden wordt, hoe je wordt waargenomen en hoeveel afspraken via platforms lopen die de commissie pakken in plaats van rechtstreeks bij jou te komen.", cta: "Laten we praten",
+        items: [
+          { title: "Google beoordeelt je vóór de klant", body: "86 % van de mensen zoekt een professional of praktijk online voordat ze contact opnemen. Google-vermelding, reviews, website: ze bepalen of ze bij jou of bij een concurrent boeken." },
+          { title: "De platforms pakken de commissie, jij doet het werk", body: "Boekingssites, sectorplatforms en OTA's houden tot 15-20 % per boeking in. Jouw website pakt niets. Eén directe afspraak per dag dekt al het jaarabonnement." },
+          { title: "LinkedIn en Instagram zijn niet genoeg", body: "Ze beheren geen afspraken, verschijnen niet in Google Maps-zoekopdrachten en zijn niet van jou. De website is een bezit dat je in handen hebt en dat zich in de loop van de tijd opbouwt." },
+          { title: "De website is de eerste wachtkamer", body: "Nog voordat hij je belt, komt de potentiële klant langs jouw website. Als de zorg die van een gekopieerde flyer is, is dat al een verkeerd signaal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Het proces", h2a: "Hoe jouw website", h2b: "ontstaat.", sub: "We beginnen niet bij de editor. We beginnen bij de identiteit — daarna bouwen we het systeem dat deze voortzet.",
+        steps: [
+          { n: "01", title: "Luisteren", body: "Een gesprek (of een bezoek). We begrijpen de praktijk, de diensten, de klantenkring, de tone of voice. Geen generieke briefings." },
+          { n: "02", title: "Visuele identiteit", body: "Kleurenpalet, typografie, fotografie. Elementen die voortkomen uit wat de praktijk al is — niet uit hoe de concurrenten eruitzien." },
+          { n: "03", title: "Design system", body: "Voordat we de editor openen, definiëren we de regels: componenten, witruimte, schaal. Het systeem schaalt daarna over elke pagina zonder samenhang te verliezen." },
+          { n: "04", title: "Ontwikkeling", body: "Website, dienstenlijst, afspraken, Google Maps. Alles geïntegreerd in hetzelfde platform — geen plug-ins van derden." },
+          { n: "05", title: "Livegang & daarna", body: "Online binnen 7 dagen na ondertekening. Daarna doorlopende updates: nieuwe diensten, prijzen, evenementen, promoties — zonder een ticket te openen." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Wat we bieden", h2a: "Vier vakgebieden", h2b: "onder één dak.", sub: "Wat vroeger drie verschillende leveranciers vergde — creatief bureau, ontwikkelaar, digitaal adviseur — leeft vandaag op één plek, met iemand die de sector van professionele diensten kent.",
+        items: [
+          { title: "Design", body: "Visuele identiteit opgebouwd rond de praktijk: lettertype, palet, fotografie. Elk element komt voort uit wat je bent, niet uit hoe de concurrenten eruitzien." },
+          { title: "Ontwikkeling", body: "Website, dienstenlijst, afspraken, Google Maps. Eén geïntegreerd platform — geen plug-ins van derden die vanzelf stukgaan." },
+          { title: "Beheer", body: "Updates van openingstijden, diensten, tarieven, nieuws. Vanuit het dashboard, zonder een ticket te openen, ook vanaf je telefoon tussen twee afspraken." },
+          { title: "Lokale aanwezigheid", body: "Google Business, reviews, Yelp, TripAdvisor. Alles bijgewerkt vanaf één dashboard — de klant vindt overal correcte informatie." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Template vs op maat", templateTitle: "Een template",
+        templateItems: [
+          "Structuur identiek aan duizenden andere sites",
+          "Aanpasbaar in de kleuren, niet in de identiteit",
+          "Plug-ins die zichzelf updaten (en stukgaan)",
+          "Google beloont geen trage, generieke sites",
+          "Vertegenwoordigt een categorie, niet jouw praktijk",
+        ] as string[],
+        customTitle: "Op maat met Bizery",
+        customItems: [
+          "Design system opgebouwd rond de identiteit van de praktijk",
+          "Origineel lettertype, palet en structuur",
+          "Eén geïntegreerd platform — geen plug-ins",
+          "Technische snelheid en SEO verzorgd in de code",
+          "Herkenbaar: het lijkt op jou, niet op een thema",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Veelgestelde vragen", title: "Alles wat men ons vraagt — voordat we beginnen.", notFound: "Niet gevonden wat je zocht?", ctaLink: "Schrijf ons",
+        items: [
+          { q: "Waar dient een website in 2026 echt voor bij een professionele praktijk?", a: "Het dient om je online aanwezigheid te beheren in plaats van die aan anderen over te laten. Google beoordeelt je nog voordat de klant belt: actuele openingstijden, reviews, foto's, locatie. Een goed gemaakte website op een solide platform positioneert zich beter dan een social profiel, verzamelt afspraken zonder commissies en vertegenwoordigt je praktijk de klok rond." },
+          { q: "Zijn LinkedIn en Instagram niet genoeg?", a: "Nee, om twee fundamentele redenen. Ten eerste: Google indexeert de inhoud van LinkedIn of Instagram niet — als iemand «advocaat bij mij in de buurt» of «fysiotherapeut in Milaan» zoekt, verschijnt jouw social profiel niet. Ten tweede: deze platforms zijn niet van jou; het algoritme kan veranderen, het account kan worden geschorst, volgers kunnen afnemen. De website is een bezit dat je in handen hebt en dat groeit over tijd." },
+          { q: "Wat is het verschil tussen jullie website en een WordPress-template?", a: "Een template is een confectiepak van de plank: je kunt de kleuren veranderen, maar de structuur is die van duizenden andere sites. Onze sites ontstaan uit een design system dat is opgebouwd rond de identiteit van de praktijk — lettertype, palet, visuele hiërarchie, tone of voice. Wanneer je naar de site kijkt, moet je denken «dit lijkt op ons», niet «deze structuur heb ik ergens al gezien»." },
+          { q: "Wat betekent «identiteitsbepalend design system»?", a: "Vóór de website definiëren we de visuele regels van de praktijk: het lettertypepaar, de kleurschaal, de verhoudingen van de witruimte. Die regels gelden daarna voor elke pagina, elke kaart, elke knop — en creëren een samenhangende, herkenbare, professionele ervaring." },
+          { q: "Wanneer verdient een website zichzelf terug?", a: "Eerder dan je denkt. Marktplaatsen en sectorplatforms houden tot 15-20 % per afspraak in. Als jouw website ook maar één directe afspraak per dag oplevert — in plaats van via een platform te lopen — overtreft de jaarlijkse besparing ruimschoots de kosten van het abonnement." },
+          { q: "Hoe lang duurt het om online te gaan?", a: "Binnen 7 dagen na ondertekening van het contract. De initiële configuratie — onboarding, design, personalisatie — gebeurt eerder, gemiddeld 2-4 weken." },
+          { q: "Hoe ontstaat het design van mijn website?", a: "Het begint met een gesprek. We kijken naar de praktijk, de diensten, het bestaande materiaal, de tone of voice. Daarna bouwen we een samenhangend visueel systeem — we kiezen lettertypes en kleuren niet willekeurig, we leiden ze af uit wat de praktijk al is. Pas dan beginnen we code te schrijven." },
+          { q: "Kan ik de website zelf bijwerken?", a: "Ja. Dienstenlijst, openingstijden, foto's, diensten, evenementen: alles wordt bijgewerkt vanuit het dashboard zonder de code aan te raken, ook vanaf je telefoon tussen afspraken door." },
+          { q: "Werken jullie alleen in Milaan?", a: "Nee. De studio is in Milaan, maar we begeleiden praktijken en bedrijven in heel Italië. Het grootste deel van het werk gebeurt op afstand. Wanneer het zinvol is, komen we naar je toe." },
+          { q: "Is de website in meerdere talen beschikbaar?", a: "Ja. Elke website wordt standaard meertalig gemaakt en dekt de belangrijkste Europese talen: Italiaans, Engels, Frans, Duits en Spaans. Op verzoek kunnen andere talen worden toegevoegd op basis van de typische klantenkring van de praktijk — bijvoorbeeld Russisch, Arabisch, Chinees of Japans. De kosten voor extra talen worden in de offertefase afgesproken." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Wil je zien hoe we werken?", h2b: "Praat met de studio.", requestProposal: "Een voorstel aanvragen", seeOffer: "Bekijk het aanbod" },
+    },
     seo: {
       home: {
         title: "Bizery - websites voor praktijken, salons en dienstverleners",

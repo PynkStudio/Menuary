@@ -576,6 +576,79 @@ export const messages = {
       finalCtaDemo: "Pedir uma demo",
       finalCtaPlans: "Ver os planos",
     },
+    about: {
+      hero: { label: "O estúdio", h1a: "Cada consultório merece", h1b: "um site que o represente.", sub: "A Bizery é a plataforma digital para consultórios profissionais e empresas de serviços. Sem templates, sem identidade em série. Cada site nasce de um design system construído sobre o consultório — sobre os seus serviços, a sua clientela, a sua forma de trabalhar." },
+      manifesto: { label: "Manifesto", quote: "Um consultório profissional cuida de cada detalhe — o aconselhamento, a comunicação, a relação com o cliente. O site deve fazer o mesmo. Não menos, nunca menos.", body: "Acreditamos que o digital é uma extensão do consultório, não um folheto online. Por isso não usamos templates: construímos um sistema visual que nasce da identidade do cliente e a mantém em cada ecrã." },
+      principles: [
+        { title: "Um consultório de cada vez", body: "Não crescemos à força. Cada projeto começa por ouvir o titular, perceber os serviços, o tipo de clientela e o que distingue o consultório. Só depois chegamos ao site." },
+        { title: "Sem templates", body: "Não existe uma versão base para personalizar. O site nasce do zero — tipografia, paleta, hierarquia, tom de voz — refletindo a identidade do consultório, não a de um tema WordPress de 49 €." },
+        { title: "O design system antes do código", body: "Antes de escrever uma linha definimos o sistema visual: tipografia, escala cromática, espaçamento, microinterações. Um consultório profissional merece um site que mantém a sua identidade, não que a achata." },
+        { title: "A técnica não se vê", body: "Velocidade, segurança, manutenção continuam a ser o nosso problema. Você vê um site organizado que faz o necessário — e que no Google se comporta melhor do que a concorrência." },
+        { title: "Tempo longo", body: "Não entregamos um site e desaparecemos. Mantemo-lo vivo: atualizações sazonais, novas funções, evoluções do produto. Ano após ano, como uma relação profissional." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Porquê agora", h2a: "Para que serve um site", h2b: "em 2026?", sub: "Não para «estar online». Serve para controlar como é encontrado, como é percebido e quantas marcações passam por plataformas que ficam com a comissão em vez de chegarem diretamente a si.", cta: "Vamos falar",
+        items: [
+          { title: "O Google julga-o antes do cliente", body: "86 % das pessoas procuram um profissional ou um consultório online antes de o contactar. Ficha do Google, avaliações, site: decidem se marcam consigo ou com um concorrente." },
+          { title: "As plataformas ficam com a comissão, você faz o trabalho", body: "Os sites de marcação, marketplaces do setor e OTA retêm até 15-20 % por marcação. O seu site não fica com nada. Uma marcação direta por dia já cobre a mensalidade anual." },
+          { title: "LinkedIn e Instagram não bastam", body: "Não gerem marcações, não aparecem nas pesquisas do Google Maps e não são seus. O site é um ativo que possui e que se acumula ao longo do tempo." },
+          { title: "O site é a primeira sala de espera", body: "Antes mesmo de o contactar, o potencial cliente passa pelo seu site. Se o cuidado é o de um folheto fotocopiado, já é um mau sinal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "O processo", h2a: "Como nasce", h2b: "o seu site.", sub: "Não começamos pelo editor. Começamos pela identidade — depois construímos o sistema que a mantém.",
+        steps: [
+          { n: "01", title: "Escuta", body: "Uma chamada (ou uma visita). Percebemos o consultório, os serviços, a clientela, o tom de voz. Não fazemos briefings genéricos." },
+          { n: "02", title: "Identidade visual", body: "Paleta cromática, tipografia, fotografia. Elementos que nascem do que o consultório já é — não do que parecem os concorrentes." },
+          { n: "03", title: "Design system", body: "Antes de abrir o editor definimos as regras: componentes, espaçamento, escala. O sistema aplica-se depois a cada página sem perder coerência." },
+          { n: "04", title: "Desenvolvimento", body: "Site, lista de serviços, marcações, Google Maps. Tudo integrado na mesma plataforma — sem plugins de terceiros." },
+          { n: "05", title: "Lançamento e além", body: "Online em 7 dias após a assinatura. Depois atualizações contínuas: novos serviços, preços, eventos, promoções — sem abrir um ticket." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "O que oferecemos", h2a: "Quatro ofícios", h2b: "sob o mesmo teto.", sub: "O que antes exigia três fornecedores diferentes — agência criativa, programador, consultor digital — vive hoje num só lugar, com quem conhece o setor dos serviços profissionais.",
+        items: [
+          { title: "Design", body: "Identidade visual construída sobre o consultório: tipografia, paleta, fotografia. Cada elemento nasce do que você é, não do que parecem os concorrentes." },
+          { title: "Desenvolvimento", body: "Site, lista de serviços, marcações, Google Maps. Uma só plataforma integrada — sem plugins de terceiros que se partem sozinhos." },
+          { title: "Gestão", body: "Atualizações de horários, serviços, tarifas, novidades. A partir do painel, sem abrir um ticket, também do telemóvel entre marcações." },
+          { title: "Presença local", body: "Google Business, avaliações, Yelp, TripAdvisor. Tudo atualizado a partir de um único painel — o cliente encontra informação correta onde quer que procure." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Template vs à medida", templateTitle: "Um template",
+        templateItems: [
+          "Estrutura igual à de milhares de sites",
+          "Personalizável nas cores, não na identidade",
+          "Plugins que se atualizam (e se partem) sozinhos",
+          "O Google não premeia sites lentos e genéricos",
+          "Representa uma categoria, não o seu consultório",
+        ] as string[],
+        customTitle: "À medida com a Bizery",
+        customItems: [
+          "Design system construído sobre a identidade do consultório",
+          "Tipografia, paleta e estrutura originais",
+          "Uma só plataforma integrada — sem plugins",
+          "Velocidade técnica e SEO cuidados no código",
+          "Reconhecível: parece você, não um tema",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Perguntas frequentes", title: "Tudo o que nos perguntam — antes de começar.", notFound: "Não encontrou o que procurava?", ctaLink: "Escreva-nos",
+        items: [
+          { q: "Para que serve realmente um site em 2026 para um consultório profissional?", a: "Serve para controlar a sua presença online em vez de a entregar a outros. O Google julga-o antes mesmo de o cliente ligar: horários atualizados, avaliações, fotos, localização. Um site bem feito numa plataforma sólida posiciona-se melhor do que um perfil social, recolhe marcações sem comissões e representa o seu consultório 24 horas por dia." },
+          { q: "Não bastam o LinkedIn e o Instagram?", a: "Não, por dois motivos fundamentais. Primeiro: o Google não indexa os conteúdos do LinkedIn ou do Instagram — se alguém procurar «advogado perto de mim» ou «fisioterapeuta em Milão», o seu perfil social não aparece. Segundo: estas plataformas não são suas; o algoritmo pode mudar, a conta pode ser suspensa, os seguidores podem diminuir. O site é um ativo que possui e que cresce ao longo do tempo." },
+          { q: "Qual é a diferença entre o vosso site e um template WordPress?", a: "Um template é um fato confecionado em série: pode mudar as cores, mas a estrutura é a de milhares de sites. Os nossos sites nascem de um design system construído sobre a identidade do consultório — tipografia, paleta, hierarquia visual, tom de voz. Quando olha para o site deve pensar «isto parece-se connosco», não «já vi esta estrutura algures»." },
+          { q: "O que significa «design system identitário»?", a: "Antes do site definimos as regras visuais do consultório: o par tipográfico, a escala de cores, as proporções dos espaços. Essas regras aplicam-se depois a cada página, cada cartão, cada botão — criando uma experiência coerente, reconhecível, profissional." },
+          { q: "Quando é que um site se paga?", a: "Mais cedo do que pensa. Os marketplaces e plataformas do setor retêm até 15-20 % por marcação. Se o seu site trouxer apenas uma marcação direta por dia — em vez de passar por uma plataforma — a poupança anual supera amplamente o custo da mensalidade." },
+          { q: "Quanto tempo demora a ficar online?", a: "Em 7 dias após a assinatura do contrato. A configuração inicial — onboarding, design, personalização — acontece antes, em média 2-4 semanas." },
+          { q: "Como nasce o design do meu site?", a: "Começa com uma chamada. Olhamos para o consultório, os serviços, o material existente, o tom de voz. Depois construímos um sistema visual coerente — não escolhemos tipos de letra e cores ao acaso, extraímo-los do que o consultório já é. Só então começamos a escrever código." },
+          { q: "Posso atualizar o site sozinho?", a: "Sim. Lista de serviços, horários, fotos, serviços, eventos: tudo se atualiza a partir do painel sem tocar no código, também do telemóvel entre marcações." },
+          { q: "Trabalham apenas em Milão?", a: "Não. O estúdio é em Milão, mas acompanhamos consultórios e empresas em toda a Itália. A maior parte do trabalho é feita à distância. Quando faz sentido, vamos ter consigo." },
+          { q: "O site está disponível em vários idiomas?", a: "Sim. Cada site é realizado em versão multilíngue por defeito, cobrindo os principais idiomas europeus: italiano, inglês, francês, alemão e espanhol. Mediante pedido é possível adicionar outros idiomas conforme a clientela típica do consultório — por exemplo russo, árabe, chinês ou japonês. O custo dos idiomas adicionais é acordado na fase de orçamento." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Quer ver como trabalhamos?", h2b: "Fale com o estúdio.", requestProposal: "Pedir uma proposta", seeOffer: "Ver a oferta" },
+    },
     seo: {
       home: {
         title: "Bizery - sites para consultórios, salões e empresas de serviços",

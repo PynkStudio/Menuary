@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Anmod om demo",
       finalCtaPlans: "Se planer",
     },
+    about: {
+      hero: { label: "Studiet", h1a: "Hver klinik fortjener", h1b: "et website, der repræsenterer den.", sub: "Bizery er den digitale platform for professionelle klinikker og servicevirksomheder. Ingen skabeloner, ingen identitet fra hylden. Hvert website opstår af et design system bygget på klinikken — på dens ydelser, dens kundekreds, dens måde at arbejde på." },
+      manifesto: { label: "Manifest", quote: "En professionel klinik lægger omhu i hver detalje — rådgivningen, kommunikationen, kunderelationen. Websitet skal gøre det samme. Ikke mindre, aldrig mindre.", body: "Vi tror, at det digitale er en forlængelse af klinikken, ikke en online-brochure. Derfor bruger vi ikke skabeloner: vi bygger et visuelt system, der opstår af kundens identitet og fører den videre på hver skærm." },
+      principles: [
+        { title: "Én klinik ad gangen", body: "Vi skalerer ikke med vold. Hvert projekt begynder med at lytte til ejeren, forstå ydelserne, kundekredsen og hvad der adskiller klinikken. Først derefter når vi til websitet." },
+        { title: "Ingen skabeloner", body: "Der findes ingen basisversion at tilpasse. Websitet opstår fra bunden — skrifttype, palet, hierarki, tone — og afspejler klinikkens identitet, ikke et WordPress-temas til 49 €." },
+        { title: "Design systemet før koden", body: "Før vi skriver en linje, definerer vi det visuelle system: typografi, farveskala, mellemrum, mikrointeraktioner. En professionel klinik fortjener et website, der fører dens identitet videre, ikke fladgør den." },
+        { title: "Teknikken forbliver usynlig", body: "Hastighed, sikkerhed, vedligehold er fortsat vores problem. Du ser et ryddeligt website, der gør det nødvendige — og som klarer sig bedre end konkurrenterne på Google." },
+        { title: "Lang tid", body: "Vi leverer ikke et website og forsvinder. Vi holder det levende: sæsonopdateringer, nye funktioner, produktudvikling. År efter år, som en professionel relation." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Hvorfor nu", h2a: "Hvad skal et website bruges til", h2b: "i 2026?", sub: "Ikke til at «være online». Det skal styre, hvordan du bliver fundet, hvordan du bliver opfattet, og hvor mange aftaler der går gennem platforme, som tager kommissionen i stedet for at komme direkte til dig.", cta: "Lad os tale sammen",
+        items: [
+          { title: "Google bedømmer dig før kunden", body: "86 % af folk søger en fagperson eller klinik online, før de kontakter den. Google-profil, anmeldelser, website: de afgør, om man booker hos dig eller hos en konkurrent." },
+          { title: "Platformene tager kommissionen, du gør arbejdet", body: "Bookingsider, brancheplatforme og OTA'er beholder op til 15-20 % pr. booking. Dit website tager ingenting. Én direkte aftale om dagen dækker allerede årsabonnementet." },
+          { title: "LinkedIn og Instagram er ikke nok", body: "De håndterer ikke aftaler, vises ikke i Google Maps-søgninger og er ikke dine. Websitet er et aktiv, du ejer, og som bygger sig op over tid." },
+          { title: "Websitet er det første venteværelse", body: "Allerede før han ringer til dig, kommer den potentielle kunde forbi dit website. Hvis omhuen er som en fotokopieret flyer, er det allerede et forkert signal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Processen", h2a: "Hvordan dit website", h2b: "opstår.", sub: "Vi begynder ikke ved editoren. Vi begynder ved identiteten — derefter bygger vi systemet, der fører den videre.",
+        steps: [
+          { n: "01", title: "Lytning", body: "Et opkald (eller et besøg). Vi forstår klinikken, ydelserne, kundekredsen, tonen. Ingen generiske briefs." },
+          { n: "02", title: "Visuel identitet", body: "Farvepalet, typografi, fotografi. Elementer, der opstår af det, klinikken allerede er — ikke af, hvordan konkurrenterne ser ud." },
+          { n: "03", title: "Design system", body: "Før vi åbner editoren, definerer vi reglerne: komponenter, mellemrum, skala. Systemet skalerer derefter over hver side uden at miste sammenhæng." },
+          { n: "04", title: "Udvikling", body: "Website, ydelsesliste, aftaler, Google Maps. Alt integreret i samme platform — ingen tredjeparts-plugins." },
+          { n: "05", title: "Go-live & derefter", body: "Online inden for 7 dage efter underskrift. Derefter løbende opdateringer: nye ydelser, priser, events, kampagner — uden at åbne en sag." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Hvad vi tilbyder", h2a: "Fire fag", h2b: "under ét tag.", sub: "Det, der før krævede tre forskellige leverandører — kreativt bureau, udvikler, digital konsulent — lever i dag ét sted, med nogen, der kender branchen for professionelle tjenester.",
+        items: [
+          { title: "Design", body: "Visuel identitet bygget på klinikken: skrifttype, palet, fotografi. Hvert element opstår af det, du er, ikke af, hvordan konkurrenterne ser ud." },
+          { title: "Udvikling", body: "Website, ydelsesliste, aftaler, Google Maps. Én integreret platform — ingen tredjeparts-plugins, der går i stykker af sig selv." },
+          { title: "Administration", body: "Opdateringer af åbningstider, ydelser, priser, nyheder. Fra dashboardet, uden at åbne en sag, også fra din telefon mellem to aftaler." },
+          { title: "Lokal tilstedeværelse", body: "Google Business, anmeldelser, Yelp, TripAdvisor. Alt opdateret fra ét dashboard — kunden finder korrekte oplysninger, uanset hvor han søger." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Skabelon vs. skræddersyet", templateTitle: "En skabelon",
+        templateItems: [
+          "Struktur identisk med tusindvis af andre websites",
+          "Kan tilpasses i farverne, ikke i identiteten",
+          "Plugins, der opdaterer (og går i stykker) af sig selv",
+          "Google belønner ikke langsomme, generiske websites",
+          "Repræsenterer en kategori, ikke din klinik",
+        ] as string[],
+        customTitle: "Skræddersyet med Bizery",
+        customItems: [
+          "Design system bygget på klinikkens identitet",
+          "Original skrifttype, palet og struktur",
+          "Én integreret platform — ingen plugins",
+          "Teknisk hastighed og SEO plejet i koden",
+          "Genkendelig: det ligner dig, ikke et tema",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Ofte stillede spørgsmål", title: "Alt det, vi bliver spurgt om — før vi går i gang.", notFound: "Fandt du ikke det, du ledte efter?", ctaLink: "Skriv til os",
+        items: [
+          { q: "Hvad skal et website egentlig bruges til i 2026 for en professionel klinik?", a: "Det skal styre din online-tilstedeværelse i stedet for at overlade den til andre. Google bedømmer dig, allerede før kunden ringer: opdaterede åbningstider, anmeldelser, fotos, placering. Et veludført website på en solid platform placerer sig bedre end en social profil, samler aftaler uden kommission og repræsenterer din klinik døgnet rundt." },
+          { q: "Er LinkedIn og Instagram ikke nok?", a: "Nej, af to grundlæggende årsager. For det første: Google indekserer ikke indhold fra LinkedIn eller Instagram — hvis nogen søger «advokat i nærheden af mig» eller «fysioterapeut i Milano», vises din sociale profil ikke. For det andet: disse platforme er ikke dine; algoritmen kan ændre sig, kontoen kan suspenderes, følgere kan falde. Websitet er et aktiv, du ejer, og som vokser over tid." },
+          { q: "Hvad er forskellen mellem jeres website og en WordPress-skabelon?", a: "En skabelon er et konfektionssæt fra hylden: du kan ændre farverne, men strukturen er den samme som tusindvis af andre websites. Vores websites opstår af et design system bygget på klinikkens identitet — skrifttype, palet, visuelt hierarki, tone. Når du ser på websitet, skal du tænke «det ligner os», ikke «den struktur har jeg set et eller andet sted før»." },
+          { q: "Hvad betyder «identitetsskabende design system»?", a: "Før websitet definerer vi klinikkens visuelle regler: skriftparret, farveskalaen, mellemrummenes proportioner. Disse regler gælder derefter for hver side, hvert kort, hver knap — og skaber en sammenhængende, genkendelig, professionel oplevelse." },
+          { q: "Hvornår tjener et website sig hjem?", a: "Hurtigere end du tror. Markedspladser og brancheplatforme beholder op til 15-20 % pr. aftale. Hvis dit website blot giver én direkte aftale om dagen — i stedet for at gå gennem en platform — overstiger den årlige besparelse langt abonnementets pris." },
+          { q: "Hvor lang tid tager det at komme online?", a: "Inden for 7 dage efter kontraktunderskrift. Den indledende opsætning — onboarding, design, tilpasning — sker inden, i gennemsnit 2-4 uger." },
+          { q: "Hvordan opstår designet af mit website?", a: "Det begynder med et opkald. Vi ser på klinikken, ydelserne, det eksisterende materiale, tonen. Derefter bygger vi et sammenhængende visuelt system — vi vælger ikke skrifttyper og farver tilfældigt, vi udleder dem af det, klinikken allerede er. Først da begynder vi at skrive kode." },
+          { q: "Kan jeg selv opdatere websitet?", a: "Ja. Ydelsesliste, åbningstider, fotos, ydelser, events: alt opdateres fra dashboardet uden at røre koden, også fra din telefon mellem aftaler." },
+          { q: "Arbejder I kun i Milano?", a: "Nej. Studiet er i Milano, men vi følger klinikker og virksomheder i hele Italien. Det meste af arbejdet foregår på afstand. Når det giver mening, kommer vi til jer." },
+          { q: "Er websitet tilgængeligt på flere sprog?", a: "Ja. Hvert website laves som standard flersproget og dækker de vigtigste europæiske sprog: italiensk, engelsk, fransk, tysk og spansk. På anmodning kan andre sprog tilføjes efter klinikkens typiske kundekreds — for eksempel russisk, arabisk, kinesisk eller japansk. Prisen for ekstra sprog aftales i tilbudsfasen." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Vil du se, hvordan vi arbejder?", h2b: "Tal med studiet.", requestProposal: "Anmod om et forslag", seeOffer: "Se tilbuddet" },
+    },
     seo: {
       home: {
         title: "Bizery - websites til klinikker, saloner og servicevirksomheder",

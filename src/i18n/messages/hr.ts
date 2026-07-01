@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Zatraži demo",
       finalCtaPlans: "Pogledajte pakete",
     },
+    about: {
+      hero: { label: "Studio", h1a: "Svaka ordinacija zaslužuje", h1b: "web stranicu koja je predstavlja.", sub: "Bizery je digitalna platforma za profesionalne ordinacije i uslužne tvrtke. Bez predložaka, bez serijskog identiteta. Svaka web stranica nastaje iz design systema izgrađenog na ordinaciji — na njezinim uslugama, njezinoj klijenteli, njezinom načinu rada." },
+      manifesto: { label: "Manifest", quote: "Profesionalna ordinacija posvećuje pažnju svakom detalju — savjetovanju, komunikaciji, odnosu s klijentom. Web stranica mora činiti isto. Ne manje, nikad manje.", body: "Vjerujemo da je digitalno produžetak ordinacije, a ne online brošura. Zato ne koristimo predloške: gradimo vizualni sustav koji nastaje iz identiteta klijenta i prenosi ga na svaki zaslon." },
+      principles: [
+        { title: "Jedna ordinacija po jedna", body: "Ne skaliramo na silu. Svaki projekt počinje slušanjem vlasnika, razumijevanjem usluga, vrste klijentele i onoga po čemu se ordinacija razlikuje. Tek nakon toga dolazimo do web stranice." },
+        { title: "Bez predložaka", body: "Ne postoji osnovna verzija za prilagodbu. Web stranica nastaje od nule — font, paleta, hijerarhija, ton glasa — odražavajući identitet ordinacije, ne identitet WordPress teme od 49 €." },
+        { title: "Design system prije koda", body: "Prije nego napišemo redak, definiramo vizualni sustav: tipografija, kromatska skala, razmaci, mikrointerakcije. Profesionalna ordinacija zaslužuje web stranicu koja prenosi njezin identitet, a ne spljošti." },
+        { title: "Tehnika ostaje nevidljiva", body: "Brzina, sigurnost, održavanje ostaju naš problem. Ti vidiš urednu web stranicu koja radi što treba — i koja se na Googleu snalazi bolje od konkurencije." },
+        { title: "Dugo vrijeme", body: "Ne isporučimo web stranicu i nestanemo. Održavamo je živom: sezonska ažuriranja, nove funkcije, razvoj proizvoda. Godinu za godinom, kao profesionalni odnos." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Zašto sada", h2a: "Čemu služi web stranica", h2b: "u 2026.?", sub: "Ne tome da «budeš online». Služi za kontrolu nad time kako te pronalaze, kako te doživljavaju i koliko termina prolazi kroz platforme koje uzimaju proviziju umjesto da dođu izravno tebi.", cta: "Razgovarajmo",
+        items: [
+          { title: "Google te ocjenjuje prije klijenta", body: "86 % ljudi traži stručnjaka ili ordinaciju online prije kontakta. Google profil, recenzije, web stranica: odlučuju hoće li rezervirati kod tebe ili kod konkurenta." },
+          { title: "Platforme uzimaju proviziju, ti radiš posao", body: "Rezervacijske stranice, sektorske platforme i OTA zadržavaju do 15-20 % po rezervaciji. Tvoja web stranica ne uzima ništa. Jedan izravni termin dnevno već pokriva godišnju pretplatu." },
+          { title: "LinkedIn i Instagram nisu dovoljni", body: "Ne upravljaju terminima, ne pojavljuju se u Google Maps pretragama i nisu tvoji. Web stranica je imovina koju posjeduješ i koja se nakuplja tijekom vremena." },
+          { title: "Web stranica je prva čekaonica", body: "Još prije nego što te nazove, potencijalni klijent prolazi tvojom web stranicom. Ako je pažnja kao kod fotokopiranog letka, to je već pogrešan signal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Proces", h2a: "Kako nastaje", h2b: "tvoja web stranica.", sub: "Ne počinjemo s editorom. Počinjemo s identitetom — zatim gradimo sustav koji ga prenosi.",
+        steps: [
+          { n: "01", title: "Slušanje", body: "Poziv (ili posjet). Razumijemo ordinaciju, usluge, klijentelu, ton glasa. Ne radimo generičke briefove." },
+          { n: "02", title: "Vizualni identitet", body: "Kromatska paleta, tipografija, fotografija. Elementi koji nastaju iz onoga što ordinacija već jest — ne iz onoga kako izgleda konkurencija." },
+          { n: "03", title: "Design system", body: "Prije nego otvorimo editor, definiramo pravila: komponente, razmaci, skala. Sustav se zatim skalira na svakoj stranici bez gubitka dosljednosti." },
+          { n: "04", title: "Razvoj", body: "Web stranica, popis usluga, termini, Google Maps. Sve integrirano u istu platformu — bez dodataka trećih strana." },
+          { n: "05", title: "Pokretanje & dalje", body: "Online u 7 dana od potpisa. Zatim kontinuirana ažuriranja: nove usluge, cijene, događaji, akcije — bez otvaranja zahtjeva." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Što nudimo", h2a: "Četiri zanata", h2b: "pod jednim krovom.", sub: "Ono što je nekad zahtijevalo tri različita dobavljača — kreativnu agenciju, programera, digitalnog savjetnika — danas živi na jednom mjestu, s nekim tko poznaje branšu profesionalnih usluga.",
+        items: [
+          { title: "Design", body: "Vizualni identitet izgrađen na ordinaciji: font, paleta, fotografija. Svaki element nastaje iz onoga što jesi, ne iz onoga kako izgleda konkurencija." },
+          { title: "Razvoj", body: "Web stranica, popis usluga, termini, Google Maps. Jedna integrirana platforma — bez dodataka trećih strana koji se sami kvare." },
+          { title: "Upravljanje", body: "Ažuriranja radnog vremena, usluga, cijena, novosti. Iz ploče, bez otvaranja zahtjeva, i s telefona između dva termina." },
+          { title: "Lokalna prisutnost", body: "Google Business, recenzije, Yelp, TripAdvisor. Sve ažurirano s jedne ploče — klijent pronalazi točne informacije gdje god tražio." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Predložak vs po mjeri", templateTitle: "Predložak",
+        templateItems: [
+          "Struktura identična tisućama drugih stranica",
+          "Prilagodljiva u bojama, ne u identitetu",
+          "Dodaci koji se sami ažuriraju (i kvare)",
+          "Google ne nagrađuje spore, generičke stranice",
+          "Predstavlja kategoriju, a ne tvoju ordinaciju",
+        ] as string[],
+        customTitle: "Po mjeri s Bizery",
+        customItems: [
+          "Design system izgrađen na identitetu ordinacije",
+          "Izvorni font, paleta i struktura",
+          "Jedna integrirana platforma — bez dodataka",
+          "Tehnička brzina i SEO uređeni u kodu",
+          "Prepoznatljiva: izgleda kao ti, ne kao tema",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Česta pitanja", title: "Sve što nas pitaju — prije nego počnemo.", notFound: "Nisi pronašao ono što si tražio?", ctaLink: "Piši nam",
+        items: [
+          { q: "Čemu web stranica zaista služi u 2026. za profesionalnu ordinaciju?", a: "Služi za kontrolu nad tvojom online prisutnošću umjesto da je prepustiš drugima. Google te ocjenjuje još prije nego što klijent nazove: ažurirano radno vrijeme, recenzije, fotografije, lokacija. Dobro napravljena web stranica na čvrstoj platformi pozicionira se bolje od profila na društvenoj mreži, prikuplja termine bez provizija i predstavlja tvoju ordinaciju neprekidno." },
+          { q: "Zar nisu dovoljni LinkedIn i Instagram?", a: "Ne, iz dva temeljna razloga. Prvo: Google ne indeksira sadržaj LinkedIna ni Instagrama — ako netko traži «odvjetnik blizu mene» ili «fizioterapeut u Milanu», tvoj profil na društvenoj mreži se ne pojavljuje. Drugo: te platforme nisu tvoje; algoritam se može promijeniti, račun se može suspendirati, pratitelji mogu opadati. Web stranica je imovina koju posjeduješ i koja raste tijekom vremena." },
+          { q: "Koja je razlika između vaše web stranice i WordPress predloška?", a: "Predložak je konfekcijsko odijelo s police: možeš promijeniti boje, ali struktura je ista kao kod tisuća drugih stranica. Naše web stranice nastaju iz design systema izgrađenog na identitetu ordinacije — font, paleta, vizualna hijerarhija, ton glasa. Kad gledaš stranicu, trebaš pomisliti «ovo izgleda kao mi», ne «ovu strukturu sam već negdje vidio»." },
+          { q: "Što znači «identitetski design system»?", a: "Prije web stranice definiramo vizualna pravila ordinacije: tipografski par, skalu boja, proporcije prostora. Ta pravila zatim vrijede za svaku stranicu, svaku karticu, svaki gumb — stvarajući dosljedno, prepoznatljivo, profesionalno iskustvo." },
+          { q: "Kada se web stranica isplati?", a: "Prije nego što misliš. Tržnice i sektorske platforme zadržavaju do 15-20 % po terminu. Ako tvoja web stranica donese makar jedan izravni termin dnevno — umjesto da prolazi kroz platformu — godišnja ušteda znatno premašuje trošak pretplate." },
+          { q: "Koliko treba da bude online?", a: "U 7 dana od potpisa ugovora. Početna konfiguracija — onboarding, dizajn, prilagodba — odvija se prije, u prosjeku 2-4 tjedna." },
+          { q: "Kako nastaje dizajn moje web stranice?", a: "Počinje pozivom. Gledamo ordinaciju, usluge, postojeći materijal, ton glasa. Zatim gradimo dosljedan vizualni sustav — fontove i boje ne biramo nasumično, izvodimo ih iz onoga što ordinacija već jest. Tek tada počinjemo pisati kod." },
+          { q: "Mogu li sam ažurirati web stranicu?", a: "Da. Popis usluga, radno vrijeme, fotografije, usluge, događaji: sve se ažurira iz ploče bez diranja koda, i s telefona između termina." },
+          { q: "Radite li samo u Milanu?", a: "Ne. Studio je u Milanu, ali brinemo o ordinacijama i tvrtkama diljem Italije. Većina posla odvija se na daljinu. Kad ima smisla, dolazimo k vama." },
+          { q: "Je li web stranica dostupna na više jezika?", a: "Da. Svaka web stranica izrađuje se zadano u višejezičnoj verziji, pokrivajući glavne europske jezike: talijanski, engleski, francuski, njemački i španjolski. Na zahtjev je moguće dodati druge jezike prema tipičnoj klijenteli ordinacije — primjerice ruski, arapski, kineski ili japanski. Trošak dodatnih jezika dogovara se u fazi ponude." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Želiš vidjeti kako radimo?", h2b: "Razgovaraj sa studiom.", requestProposal: "Zatraži prijedlog", seeOffer: "Pogledaj ponudu" },
+    },
     seo: {
       home: {
         title: "Bizery - web stranice za ordinacije, salone i uslužne tvrtke",

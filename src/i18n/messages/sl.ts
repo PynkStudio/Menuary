@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Zahtevaj demo",
       finalCtaPlans: "Oglejte si pakete",
     },
+    about: {
+      hero: { label: "Studio", h1a: "Vsaka ordinacija si zasluži", h1b: "spletno stran, ki jo predstavlja.", sub: "Bizery je digitalna platforma za profesionalne ordinacije in storitvena podjetja. Brez predlog, brez serijske identitete. Vsaka spletna stran nastane iz design systema, zgrajenega na ordinaciji — na njenih storitvah, njeni stranki, njenem načinu dela." },
+      manifesto: { label: "Manifest", quote: "Profesionalna ordinacija posveti skrb vsaki podrobnosti — svetovanju, komunikaciji, odnosu s stranko. Spletna stran mora storiti enako. Ne manj, nikoli manj.", body: "Verjamemo, da je digitalno podaljšek ordinacije, ne spletna brošura. Zato ne uporabljamo predlog: gradimo vizualni sistem, ki nastane iz identitete stranke in jo prenese na vsak zaslon." },
+      principles: [
+        { title: "Ena ordinacija naenkrat", body: "Ne skaliramo na silo. Vsak projekt se začne s poslušanjem lastnika, razumevanjem storitev, vrste strank in tega, kaj ordinacijo razlikuje. Šele nato pridemo do spletne strani." },
+        { title: "Brez predlog", body: "Ne obstaja osnovna različica za prilagajanje. Spletna stran nastane iz nič — pisava, paleta, hierarhija, ton glasu — odraža identiteto ordinacije, ne identitete WordPress teme za 49 €." },
+        { title: "Design system pred kodo", body: "Preden napišemo vrstico, določimo vizualni sistem: tipografija, barvna lestvica, razmiki, mikrointerakcije. Profesionalna ordinacija si zasluži spletno stran, ki prenese njeno identiteto, ne sploščí." },
+        { title: "Tehnika ostaja nevidna", body: "Hitrost, varnost, vzdrževanje ostajajo naš problem. Ti vidiš urejeno spletno stran, ki naredi, kar je treba — in ki se na Googlu odreže bolje kot konkurenca." },
+        { title: "Dolg čas", body: "Ne dostavimo spletne strani in izginemo. Ohranjamo jo živo: sezonske posodobitve, nove funkcije, razvoj izdelka. Leto za letom, kot profesionalen odnos." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Zakaj zdaj", h2a: "Čemu služi spletna stran", h2b: "leta 2026?", sub: "Ne temu, da «si na spletu». Služi nadzoru nad tem, kako vas najdejo, kako vas dojemajo in koliko terminov gre prek platform, ki vzamejo provizijo, namesto da bi prišli naravnost k vam.", cta: "Pogovorimo se",
+        items: [
+          { title: "Google vas oceni pred stranko", body: "86 % ljudi išče strokovnjaka ali ordinacijo na spletu, preden ga kontaktira. Google profil, ocene, spletna stran: odločajo, ali rezervirajo pri vas ali pri konkurentu." },
+          { title: "Platforme vzamejo provizijo, vi opravite delo", body: "Rezervacijske strani, panožne platforme in OTA zadržijo do 15-20 % na rezervacijo. Vaša spletna stran ne vzame nič. En neposreden termin na dan že pokrije letno naročnino." },
+          { title: "LinkedIn in Instagram nista dovolj", body: "Ne upravljata terminov, se ne pojavljata v iskanjih Google Maps in nista vaša. Spletna stran je premoženje, ki ga imate v lasti in ki se kopiči skozi čas." },
+          { title: "Spletna stran je prva čakalnica", body: "Še preden vas pokliče, potencialna stranka obišče vašo spletno stran. Če je skrb kot pri fotokopiranem letaku, je to že napačen signal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Proces", h2a: "Kako nastane", h2b: "vaša spletna stran.", sub: "Ne začnemo z urejevalnikom. Začnemo z identiteto — nato zgradimo sistem, ki jo prenese.",
+        steps: [
+          { n: "01", title: "Poslušanje", body: "Klic (ali obisk). Razumemo ordinacijo, storitve, stranke, ton glasu. Ne delamo generičnih briefov." },
+          { n: "02", title: "Vizualna identiteta", body: "Barvna paleta, tipografija, fotografija. Elementi, ki nastanejo iz tega, kar ordinacija že je — ne iz tega, kako izgleda konkurenca." },
+          { n: "03", title: "Design system", body: "Preden odpremo urejevalnik, določimo pravila: komponente, razmiki, lestvica. Sistem se nato skalira na vsaki strani brez izgube doslednosti." },
+          { n: "04", title: "Razvoj", body: "Spletna stran, seznam storitev, termini, Google Maps. Vse integrirano v isto platformo — brez vtičnikov tretjih oseb." },
+          { n: "05", title: "Zagon & naprej", body: "Na spletu v 7 dneh po podpisu. Nato stalne posodobitve: nove storitve, cene, dogodki, akcije — brez odpiranja zahtevka." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Kaj ponujamo", h2a: "Štiri obrti", h2b: "pod eno streho.", sub: "To, kar je nekoč zahtevalo tri različne ponudnike — kreativno agencijo, razvijalca, digitalnega svetovalca — danes živi na enem mestu, z nekom, ki pozna panogo profesionalnih storitev.",
+        items: [
+          { title: "Design", body: "Vizualna identiteta, zgrajena na ordinaciji: pisava, paleta, fotografija. Vsak element nastane iz tega, kar ste, ne iz tega, kako izgleda konkurenca." },
+          { title: "Razvoj", body: "Spletna stran, seznam storitev, termini, Google Maps. Ena integrirana platforma — brez vtičnikov tretjih oseb, ki se sami pokvarijo." },
+          { title: "Upravljanje", body: "Posodobitve delovnega časa, storitev, cen, novic. Iz plošče, brez odpiranja zahtevka, tudi s telefona med dvema terminoma." },
+          { title: "Lokalna prisotnost", body: "Google Business, ocene, Yelp, TripAdvisor. Vse posodobljeno z ene plošče — stranka najde pravilne informacije, kjerkoli išče." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Predloga vs po meri", templateTitle: "Predloga",
+        templateItems: [
+          "Struktura enaka tisočim drugim spletnim stranem",
+          "Prilagodljiva v barvah, ne v identiteti",
+          "Vtičniki, ki se sami posodabljajo (in kvarijo)",
+          "Google ne nagrajuje počasnih, generičnih strani",
+          "Predstavlja kategorijo, ne vaše ordinacije",
+        ] as string[],
+        customTitle: "Po meri z Bizery",
+        customItems: [
+          "Design system, zgrajen na identiteti ordinacije",
+          "Izvirna pisava, paleta in struktura",
+          "Ena integrirana platforma — brez vtičnikov",
+          "Tehnična hitrost in SEO urejena v kodi",
+          "Prepoznavna: izgleda kot vi, ne kot tema",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Pogosta vprašanja", title: "Vse, kar nas sprašujejo — preden začnemo.", notFound: "Niste našli, kar ste iskali?", ctaLink: "Pišite nam",
+        items: [
+          { q: "Čemu spletna stran resnično služi leta 2026 za profesionalno ordinacijo?", a: "Služi nadzoru nad vašo spletno prisotnostjo, namesto da bi jo prepustili drugim. Google vas oceni, še preden stranka pokliče: posodobljen delovni čas, ocene, fotografije, lokacija. Dobro narejena spletna stran na trdni platformi se uvrsti bolje kot profil na družbenem omrežju, zbira termine brez provizij in vas predstavlja neprekinjeno." },
+          { q: "Ali nista LinkedIn in Instagram dovolj?", a: "Ne, iz dveh temeljnih razlogov. Prvič: Google ne indeksira vsebine LinkedIna ali Instagrama — če nekdo išče «odvetnik blizu mene» ali «fizioterapevt v Milanu», se vaš profil na družbenem omrežju ne pojavi. Drugič: te platforme niso vaše; algoritem se lahko spremeni, račun je lahko suspendiran, sledilci lahko upadejo. Spletna stran je premoženje, ki ga imate v lasti in ki raste skozi čas." },
+          { q: "Kakšna je razlika med vašo spletno stranjo in WordPress predlogo?", a: "Predloga je konfekcijska obleka s police: barve lahko spremenite, a struktura je enaka tisočim drugim stranem. Naše spletne strani nastanejo iz design systema, zgrajenega na identiteti ordinacije — pisava, paleta, vizualna hierarhija, ton glasu. Ko gledate stran, morate pomisliti «to izgleda kot mi», ne «to strukturo sem že nekje videl»." },
+          { q: "Kaj pomeni «identitetni design system»?", a: "Pred spletno stranjo določimo vizualna pravila ordinacije: tipografski par, barvno lestvico, razmerja prostorov. Ta pravila nato veljajo za vsako stran, vsako kartico, vsak gumb — ustvarjajo dosledno, prepoznavno, profesionalno izkušnjo." },
+          { q: "Kdaj se spletna stran povrne?", a: "Prej, kot mislite. Tržnice in panožne platforme zadržijo do 15-20 % na termin. Če vaša spletna stran prinese le en neposreden termin na dan — namesto da bi šla prek platforme — letni prihranek znatno presega strošek naročnine." },
+          { q: "Koliko časa traja, da je stran na spletu?", a: "V 7 dneh po podpisu pogodbe. Začetna konfiguracija — onboarding, oblikovanje, prilagoditev — poteka prej, povprečno 2-4 tedne." },
+          { q: "Kako nastane oblikovanje moje spletne strani?", a: "Začne se s klicem. Pogledamo ordinacijo, storitve, obstoječi material, ton glasu. Nato zgradimo dosleden vizualni sistem — pisav in barv ne izbiramo naključno, izpeljemo jih iz tega, kar ordinacija že je. Šele nato začnemo pisati kodo." },
+          { q: "Ali lahko spletno stran posodabljam sam?", a: "Da. Seznam storitev, delovni čas, fotografije, storitve, dogodki: vse se posodablja iz plošče brez poseganja v kodo, tudi s telefona med termini." },
+          { q: "Ali delate samo v Milanu?", a: "Ne. Studio je v Milanu, a skrbimo za ordinacije in podjetja po vsej Italiji. Večina dela poteka na daljavo. Ko je smiselno, pridemo k vam." },
+          { q: "Ali je spletna stran na voljo v več jezikih?", a: "Da. Vsaka spletna stran je privzeto izdelana v večjezični različici, ki pokriva glavne evropske jezike: italijanščino, angleščino, francoščino, nemščino in španščino. Na zahtevo je mogoče dodati druge jezike glede na tipično stranko ordinacije — na primer ruščino, arabščino, kitajščino ali japonščino. Strošek dodatnih jezikov se dogovori v fazi ponudbe." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Želite videti, kako delamo?", h2b: "Pogovorite se s studiem.", requestProposal: "Zahtevajte predlog", seeOffer: "Oglejte si ponudbo" },
+    },
     seo: {
       home: {
         title: "Bizery - spletne strani za ordinacije, salone in storitvena podjetja",

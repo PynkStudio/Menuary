@@ -576,6 +576,79 @@ export const messages = {
       finalCtaDemo: "Demo anfragen",
       finalCtaPlans: "Pläne ansehen",
     },
+    about: {
+      hero: { label: "Das Studio", h1a: "Jede Praxis verdient", h1b: "eine Website, die sie repräsentiert.", sub: "Bizery ist die digitale Plattform für professionelle Praxen und Dienstleister. Keine Templates, keine Identität von der Stange. Jede Website entsteht aus einem Design-System, das auf der Praxis aufbaut — auf ihren Leistungen, ihrer Kundschaft, ihrer Arbeitsweise." },
+      manifesto: { label: "Manifest", quote: "Eine professionelle Praxis kümmert sich um jedes Detail — die Beratung, die Kommunikation, die Kundenbeziehung. Die Website muss dasselbe tun. Nicht weniger, niemals weniger.", body: "Wir glauben, dass das Digitale eine Erweiterung der Praxis ist, keine Online-Broschüre. Deshalb verwenden wir keine Templates: Wir bauen ein visuelles System, das aus der Identität des Kunden entsteht und sie auf jedem Bildschirm weiterträgt." },
+      principles: [
+        { title: "Eine Praxis nach der anderen", body: "Wir skalieren nicht mit Gewalt. Jedes Projekt beginnt damit, dem Inhaber zuzuhören, die Leistungen zu verstehen, die Art der Kundschaft und was die Praxis auszeichnet. Erst danach kommt die Website." },
+        { title: "Keine Templates", body: "Es gibt keine Basisversion zum Anpassen. Die Website entsteht von Grund auf — Schrift, Palette, Hierarchie, Tonfall — und spiegelt die Identität der Praxis wider, nicht die eines WordPress-Themes für 49 €." },
+        { title: "Das Design-System vor dem Code", body: "Bevor wir eine Zeile schreiben, definieren wir das visuelle System: Typografie, Farbskala, Abstände, Mikrointeraktionen. Eine professionelle Praxis verdient eine Website, die ihre Identität weiterträgt, nicht verflacht." },
+        { title: "Die Technik bleibt unsichtbar", body: "Geschwindigkeit, Sicherheit, Wartung bleiben unser Problem. Sie sehen eine aufgeräumte Website, die tut, was nötig ist — und die sich bei Google besser schlägt als die Konkurrenz." },
+        { title: "Lange Zeit", body: "Wir liefern keine Website und verschwinden dann. Wir halten sie lebendig: saisonale Updates, neue Funktionen, Produktweiterentwicklungen. Jahr für Jahr, wie eine berufliche Beziehung." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Warum jetzt", h2a: "Wofür braucht man eine Website", h2b: "im Jahr 2026?", sub: "Nicht um „online zu sein“. Sie dient dazu, zu steuern, wie Sie gefunden und wahrgenommen werden und wie viele Termine über Plattformen laufen, die Provision nehmen, statt direkt bei Ihnen anzukommen.", cta: "Sprechen wir darüber",
+        items: [
+          { title: "Google beurteilt Sie vor dem Kunden", body: "86 % der Menschen suchen einen Fachmann oder eine Praxis online, bevor sie ihn kontaktieren. Google-Eintrag, Bewertungen, Website: Sie entscheiden, ob man bei Ihnen oder bei einem Wettbewerber bucht." },
+          { title: "Die Plattformen nehmen die Provision, Sie machen die Arbeit", body: "Buchungsportale, Branchen-Marktplätze und OTAs behalten bis zu 15-20 % pro Buchung ein. Ihre Website nimmt nichts. Ein Direkttermin pro Tag deckt bereits das Jahresabo." },
+          { title: "LinkedIn und Instagram reichen nicht", body: "Sie verwalten keine Termine, erscheinen nicht in Google-Maps-Suchen und gehören Ihnen nicht. Die Website ist ein Vermögenswert, den Sie besitzen und der sich über die Zeit ansammelt." },
+          { title: "Die Website ist das erste Wartezimmer", body: "Noch bevor er Sie anruft, geht der potenzielle Kunde über Ihre Website. Wenn die Sorgfalt die eines kopierten Flyers ist, ist das schon ein falsches Signal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Der Prozess", h2a: "Wie Ihre Website", h2b: "entsteht.", sub: "Wir beginnen nicht mit dem Editor. Wir beginnen mit der Identität — dann bauen wir das System, das sie weiterträgt.",
+        steps: [
+          { n: "01", title: "Zuhören", body: "Ein Anruf (oder ein Besuch). Wir verstehen die Praxis, die Leistungen, die Kundschaft, den Tonfall. Keine generischen Briefings." },
+          { n: "02", title: "Visuelle Identität", body: "Farbpalette, Typografie, Fotografie. Elemente, die aus dem entstehen, was die Praxis bereits ist — nicht aus dem, wie die Konkurrenz aussieht." },
+          { n: "03", title: "Design-System", body: "Bevor wir den Editor öffnen, definieren wir die Regeln: Komponenten, Abstände, Skala. Das System skaliert dann über jede Seite, ohne an Kohärenz zu verlieren." },
+          { n: "04", title: "Entwicklung", body: "Website, Leistungsverzeichnis, Termine, Google Maps. Alles in dieselbe Plattform integriert — keine Drittanbieter-Plugins." },
+          { n: "05", title: "Go-live & darüber hinaus", body: "Online innerhalb von 7 Tagen nach Unterschrift. Danach laufende Updates: neue Leistungen, Preise, Events, Aktionen — ohne ein Ticket zu öffnen." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Was wir bieten", h2a: "Vier Handwerke", h2b: "unter einem Dach.", sub: "Was früher drei verschiedene Dienstleister erforderte — Kreativagentur, Entwickler, Digitalberater — lebt heute an einem einzigen Ort, mit jemandem, der die Branche der professionellen Dienstleistungen kennt.",
+        items: [
+          { title: "Design", body: "Visuelle Identität, aufgebaut auf der Praxis: Schrift, Palette, Fotografie. Jedes Element entsteht aus dem, was Sie sind, nicht aus dem, wie die Konkurrenz aussieht." },
+          { title: "Entwicklung", body: "Website, Leistungsverzeichnis, Termine, Google Maps. Eine einzige integrierte Plattform — keine Drittanbieter-Plugins, die von selbst kaputtgehen." },
+          { title: "Verwaltung", body: "Updates von Öffnungszeiten, Leistungen, Preisen, News. Über das Dashboard, ohne ein Ticket zu öffnen, auch vom Smartphone zwischen zwei Terminen." },
+          { title: "Lokale Präsenz", body: "Google Business, Bewertungen, Yelp, TripAdvisor. Alles über ein einziges Dashboard aktualisiert — der Kunde findet überall korrekte Informationen." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Template vs. maßgeschneidert", templateTitle: "Ein Template",
+        templateItems: [
+          "Struktur identisch mit Tausenden anderer Websites",
+          "Anpassbar in den Farben, nicht in der Identität",
+          "Plugins, die sich von selbst aktualisieren (und kaputtgehen)",
+          "Google belohnt keine langsamen, generischen Websites",
+          "Repräsentiert eine Kategorie, nicht Ihre Praxis",
+        ] as string[],
+        customTitle: "Maßgeschneidert mit Bizery",
+        customItems: [
+          "Design-System, aufgebaut auf der Identität der Praxis",
+          "Originale Schrift, Palette und Struktur",
+          "Eine einzige integrierte Plattform — keine Plugins",
+          "Technische Geschwindigkeit und SEO im Code gepflegt",
+          "Wiedererkennbar: sie sieht aus wie Sie, nicht wie ein Theme",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Häufige Fragen", title: "Alles, was man uns fragt — bevor es losgeht.", notFound: "Haben Sie nicht gefunden, was Sie suchten?", ctaLink: "Schreiben Sie uns",
+        items: [
+          { q: "Wofür braucht eine professionelle Praxis 2026 wirklich eine Website?", a: "Sie dient dazu, Ihre Online-Präsenz zu steuern, statt sie anderen zu überlassen. Google beurteilt Sie, noch bevor der Kunde anruft: aktuelle Öffnungszeiten, Bewertungen, Fotos, Standort. Eine gut gemachte Website auf einer soliden Plattform positioniert sich besser als ein Social-Profil, sammelt Termine ohne Provision und repräsentiert Ihre Praxis rund um die Uhr." },
+          { q: "Reichen LinkedIn und Instagram nicht?", a: "Nein, aus zwei grundlegenden Gründen. Erstens: Google indexiert die Inhalte von LinkedIn oder Instagram nicht — wenn jemand „Anwalt in meiner Nähe“ oder „Physiotherapeut in Mailand“ sucht, erscheint Ihr Social-Profil nicht. Zweitens: Diese Plattformen gehören Ihnen nicht; der Algorithmus kann sich ändern, das Konto kann gesperrt werden, Follower können abnehmen. Die Website ist ein Vermögenswert, den Sie besitzen und der über die Zeit wächst." },
+          { q: "Was ist der Unterschied zwischen Ihrer Website und einem WordPress-Template?", a: "Ein Template ist ein Konfektionsanzug von der Stange: Sie können die Farben ändern, aber die Struktur ist die von Tausenden anderer Websites. Unsere Websites entstehen aus einem Design-System, das auf der Identität der Praxis aufbaut — Schrift, Palette, visuelle Hierarchie, Tonfall. Wenn Sie die Website ansehen, sollen Sie denken „das sieht aus wie wir“, nicht „diese Struktur habe ich schon irgendwo gesehen“." },
+          { q: "Was bedeutet „identitätsstiftendes Design-System“?", a: "Vor der Website definieren wir die visuellen Regeln der Praxis: das Schriftpaar, die Farbskala, die Proportionen der Abstände. Diese Regeln gelten dann für jede Seite, jede Karte, jeden Button — und schaffen ein kohärentes, wiedererkennbares, professionelles Erlebnis." },
+          { q: "Wann rechnet sich eine Website?", a: "Früher, als Sie denken. Marktplätze und Branchenplattformen behalten bis zu 15-20 % pro Termin ein. Wenn Ihre Website auch nur einen Direkttermin pro Tag bringt — statt über eine Plattform zu laufen — übersteigt die jährliche Ersparnis die Abokosten bei Weitem." },
+          { q: "Wie lange dauert es bis online?", a: "Innerhalb von 7 Tagen nach Vertragsunterschrift. Die Ersteinrichtung — Onboarding, Design, Anpassung — erfolgt vorher, im Schnitt 2-4 Wochen." },
+          { q: "Wie entsteht das Design meiner Website?", a: "Es beginnt mit einem Anruf. Wir betrachten die Praxis, die Leistungen, das vorhandene Material, den Tonfall. Dann bauen wir ein kohärentes visuelles System — wir wählen Schriften und Farben nicht zufällig, wir leiten sie aus dem ab, was die Praxis bereits ist. Erst dann schreiben wir Code." },
+          { q: "Kann ich die Website selbst aktualisieren?", a: "Ja. Leistungsverzeichnis, Öffnungszeiten, Fotos, Leistungen, Events: alles wird über das Dashboard aktualisiert, ohne den Code anzufassen, auch vom Smartphone zwischen zwei Terminen." },
+          { q: "Arbeiten Sie nur in Mailand?", a: "Nein. Das Studio ist in Mailand, aber wir betreuen Praxen und Unternehmen in ganz Italien. Der Großteil der Arbeit erfolgt remote. Wenn es sinnvoll ist, kommen wir zu Ihnen." },
+          { q: "Ist die Website in mehreren Sprachen verfügbar?", a: "Ja. Jede Website wird standardmäßig mehrsprachig erstellt und deckt die wichtigsten europäischen Sprachen ab: Italienisch, Englisch, Französisch, Deutsch und Spanisch. Auf Anfrage können weitere Sprachen je nach typischer Kundschaft der Praxis hinzugefügt werden — zum Beispiel Russisch, Arabisch, Chinesisch oder Japanisch. Die Kosten für zusätzliche Sprachen werden in der Angebotsphase vereinbart." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Möchten Sie sehen, wie wir arbeiten?", h2b: "Sprechen Sie mit dem Studio.", requestProposal: "Angebot anfragen", seeOffer: "Zum Angebot" },
+    },
     seo: {
       home: {
         title: "Bizery - Websites für Praxen, Salons und Dienstleister",

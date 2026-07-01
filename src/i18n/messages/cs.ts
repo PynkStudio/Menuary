@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Vyžádat demo",
       finalCtaPlans: "Zobrazit plány",
     },
+    about: {
+      hero: { label: "Studio", h1a: "Každá ordinace si zaslouží", h1b: "web, který ji reprezentuje.", sub: "Bizery je digitální platforma pro profesionální ordinace a firmy poskytující služby. Žádné šablony, žádná sériová identita. Každý web vzniká z design systemu postaveného na ordinaci — na jejích službách, její klientele, jejím způsobu práce." },
+      manifesto: { label: "Manifest", quote: "Profesionální ordinace věnuje péči každému detailu — poradenství, komunikaci, vztahu s klientem. Web musí dělat totéž. Ne méně, nikdy ne méně.", body: "Věříme, že digitální je rozšířením ordinace, ne online brožura. Proto nepoužíváme šablony: stavíme vizuální systém, který vzniká z identity klienta a přenáší ji na každou obrazovku." },
+      principles: [
+        { title: "Jedna ordinace po druhé", body: "Neškálujeme silou. Každý projekt začíná nasloucháním majiteli, pochopením služeb, typu klientely a toho, čím se ordinace odlišuje. Teprve potom se dostáváme k webu." },
+        { title: "Žádné šablony", body: "Neexistuje základní verze k přizpůsobení. Web vzniká od nuly — písmo, paleta, hierarchie, tón hlasu — odráží identitu ordinace, ne identitu WordPress šablony za 49 €." },
+        { title: "Design system před kódem", body: "Než napíšeme řádek, definujeme vizuální systém: typografie, barevná škála, mezery, mikrointerakce. Profesionální ordinace si zaslouží web, který přenáší její identitu, ne zplošťuje." },
+        { title: "Technika zůstává neviditelná", body: "Rychlost, bezpečnost, údržba zůstávají naším problémem. Ty vidíš uspořádaný web, který dělá, co je třeba — a který si na Googlu vede lépe než konkurence." },
+        { title: "Dlouhý čas", body: "Nedodáme web a nezmizíme. Udržujeme ho při životě: sezónní aktualizace, nové funkce, vývoj produktu. Rok co rok, jako profesionální vztah." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Proč teď", h2a: "K čemu slouží web", h2b: "v roce 2026?", sub: "Ne k tomu, abyste «byli online». Slouží k ovládání toho, jak vás najdou, jak vás vnímají a kolik objednávek prochází přes platformy, které berou provizi, místo aby přišly přímo k vám.", cta: "Promluvme si",
+        items: [
+          { title: "Google vás hodnotí dřív než klient", body: "86 % lidí hledá odborníka nebo ordinaci online, než ho kontaktují. Profil Google, recenze, web: rozhodují, zda si objednají u vás, nebo u konkurenta." },
+          { title: "Platformy berou provizi, vy děláte práci", body: "Rezervační weby, oborové platformy a OTA si nechávají až 15-20 % z rezervace. Váš web nebere nic. Jedna přímá objednávka denně už pokryje roční předplatné." },
+          { title: "LinkedIn a Instagram nestačí", body: "Nespravují objednávky, neobjevují se ve vyhledávání Google Maps a nejsou vaše. Web je aktivum, které vlastníte a které se hromadí v čase." },
+          { title: "Web je první čekárna", body: "Ještě než vám zavolá, potenciální klient projde vaším webem. Pokud je péče jako u okopírovaného letáku, je to už špatný signál." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Proces", h2a: "Jak vzniká", h2b: "váš web.", sub: "Nezačínáme editorem. Začínáme identitou — pak stavíme systém, který ji přenáší.",
+        steps: [
+          { n: "01", title: "Naslouchání", body: "Hovor (nebo návštěva). Pochopíme ordinaci, služby, klientelu, tón hlasu. Neděláme generické brífy." },
+          { n: "02", title: "Vizuální identita", body: "Barevná paleta, typografie, fotografie. Prvky, které vznikají z toho, čím ordinace už je — ne z toho, jak vypadá konkurence." },
+          { n: "03", title: "Design system", body: "Než otevřeme editor, definujeme pravidla: komponenty, mezery, škála. Systém se pak škáluje na každé stránce bez ztráty soudržnosti." },
+          { n: "04", title: "Vývoj", body: "Web, seznam služeb, objednávky, Google Maps. Vše integrované do jedné platformy — žádné pluginy třetích stran." },
+          { n: "05", title: "Spuštění & dál", body: "Online do 7 dnů od podpisu. Pak průběžné aktualizace: nové služby, ceny, akce, promo — bez otevírání tiketu." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Co nabízíme", h2a: "Čtyři řemesla", h2b: "pod jednou střechou.", sub: "To, co dřív vyžadovalo tři různé dodavatele — kreativní agenturu, vývojáře, digitálního konzultanta — dnes žije na jednom místě, s někým, kdo zná obor profesionálních služeb.",
+        items: [
+          { title: "Design", body: "Vizuální identita postavená na ordinaci: písmo, paleta, fotografie. Každý prvek vzniká z toho, kdo jste, ne z toho, jak vypadá konkurence." },
+          { title: "Vývoj", body: "Web, seznam služeb, objednávky, Google Maps. Jedna integrovaná platforma — žádné pluginy třetích stran, které se samy rozbíjejí." },
+          { title: "Správa", body: "Aktualizace otevírací doby, služeb, cen, novinek. Z panelu, bez otevírání tiketu, i z telefonu mezi dvěma objednávkami." },
+          { title: "Místní přítomnost", body: "Google Business, recenze, Yelp, TripAdvisor. Vše aktualizováno z jednoho panelu — klient najde správné informace, ať hledá kdekoli." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Šablona vs na míru", templateTitle: "Šablona",
+        templateItems: [
+          "Struktura identická s tisíci dalších webů",
+          "Přizpůsobitelná v barvách, ne v identitě",
+          "Pluginy, které se samy aktualizují (a rozbíjejí)",
+          "Google neodměňuje pomalé, generické weby",
+          "Reprezentuje kategorii, ne vaši ordinaci",
+        ] as string[],
+        customTitle: "Na míru s Bizery",
+        customItems: [
+          "Design system postavený na identitě ordinace",
+          "Originální písmo, paleta a struktura",
+          "Jedna integrovaná platforma — žádné pluginy",
+          "Technická rychlost a SEO ošetřené v kódu",
+          "Rozpoznatelný: vypadá jako vy, ne jako šablona",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Časté dotazy", title: "Vše, na co se nás ptají — než začneme.", notFound: "Nenašli jste, co jste hledali?", ctaLink: "Napište nám",
+        items: [
+          { q: "K čemu vlastně web v roce 2026 slouží pro profesionální ordinaci?", a: "Slouží k ovládání vaší online přítomnosti, místo abyste ji svěřili jiným. Google vás hodnotí dřív, než klient zavolá: aktuální otevírací doba, recenze, fotky, poloha. Dobře udělaný web na solidní platformě se umisťuje lépe než profil na sociální síti, sbírá objednávky bez provizí a reprezentuje vaši ordinaci nepřetržitě." },
+          { q: "Nestačí LinkedIn a Instagram?", a: "Ne, ze dvou zásadních důvodů. Zaprvé: Google neindexuje obsah LinkedInu ani Instagramu — pokud někdo hledá «advokát v okolí» nebo «fyzioterapeut v Miláně», váš profil na sociální síti se neobjeví. Zadruhé: tyto platformy nejsou vaše; algoritmus se může změnit, účet může být pozastaven, sledující mohou ubývat. Web je aktivum, které vlastníte a které roste v čase." },
+          { q: "Jaký je rozdíl mezi vaším webem a šablonou WordPress?", a: "Šablona je konfekční oblek z regálu: můžete změnit barvy, ale struktura je stejná jako u tisíců dalších webů. Naše weby vznikají z design systemu postaveného na identitě ordinace — písmo, paleta, vizuální hierarchie, tón hlasu. Když se na web díváte, máte si myslet «tohle vypadá jako my», ne «tuhle strukturu jsem už někde viděl»." },
+          { q: "Co znamená «identitní design system»?", a: "Před webem definujeme vizuální pravidla ordinace: typografickou dvojici, barevnou škálu, proporce prostorů. Tato pravidla se pak uplatňují na každé stránce, každé kartě, každém tlačítku — vytvářejí soudržný, rozpoznatelný, profesionální zážitek." },
+          { q: "Kdy se web zaplatí?", a: "Dřív, než si myslíte. Marketplace a oborové platformy si nechávají až 15-20 % z objednávky. Pokud váš web přinese byť jen jednu přímou objednávku denně — místo aby procházela přes platformu — roční úspora výrazně převyšuje náklady na předplatné." },
+          { q: "Jak dlouho trvá, než je web online?", a: "Do 7 dnů od podpisu smlouvy. Úvodní konfigurace — onboarding, design, přizpůsobení — probíhá předtím, v průměru 2-4 týdny." },
+          { q: "Jak vzniká design mého webu?", a: "Začíná hovorem. Podíváme se na ordinaci, služby, existující materiály, tón hlasu. Pak stavíme soudržný vizuální systém — nevybíráme písma a barvy náhodně, odvozujeme je z toho, čím ordinace už je. Teprve pak začínáme psát kód." },
+          { q: "Můžu web aktualizovat sám?", a: "Ano. Seznam služeb, otevírací doba, fotky, služby, akce: vše se aktualizuje z panelu bez zásahu do kódu, i z telefonu mezi objednávkami." },
+          { q: "Pracujete jen v Miláně?", a: "Ne. Studio je v Miláně, ale staráme se o ordinace a firmy po celé Itálii. Většina práce probíhá na dálku. Když to dává smysl, přijedeme za vámi." },
+          { q: "Je web dostupný ve více jazycích?", a: "Ano. Každý web je standardně vytvořen ve vícejazyčné verzi, pokrývající hlavní evropské jazyky: italštinu, angličtinu, francouzštinu, němčinu a španělštinu. Na požádání lze přidat další jazyky podle typické klientely ordinace — například ruštinu, arabštinu, čínštinu nebo japonštinu. Náklady na další jazyky se sjednávají ve fázi nabídky." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Chcete vidět, jak pracujeme?", h2b: "Promluvte si se studiem.", requestProposal: "Vyžádat návrh", seeOffer: "Zobrazit nabídku" },
+    },
     seo: {
       home: {
         title: "Bizery - webové stránky pro ordinace, salony a služby",

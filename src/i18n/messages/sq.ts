@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Kërko demo",
       finalCtaPlans: "Shihni planet",
     },
+    about: {
+      hero: { label: "Studio", h1a: "Çdo klinikë meriton", h1b: "një faqe interneti që e përfaqëson.", sub: "Bizery është platforma dixhitale për klinika profesionale dhe biznese shërbimesh. Pa shabllone, pa identitet serial. Çdo faqe interneti lind nga një design system i ndërtuar mbi klinikën — mbi shërbimet e saj, klientelën e saj, mënyrën e saj të punës." },
+      manifesto: { label: "Manifest", quote: "Një klinikë profesionale kushton kujdes çdo detaji — këshillimit, komunikimit, marrëdhënies me klientin. Faqja e internetit duhet të bëjë të njëjtën gjë. Jo më pak, kurrë më pak.", body: "Besojmë se dixhitalja është një zgjatim i klinikës, jo një broshurë online. Prandaj nuk përdorim shabllone: ndërtojmë një sistem vizual që lind nga identiteti i klientit dhe e çon atë përpara në çdo ekran." },
+      principles: [
+        { title: "Një klinikë në një kohë", body: "Nuk shkallëzojmë me forcë. Çdo projekt fillon duke dëgjuar pronarin, duke kuptuar shërbimet, llojin e klientelës dhe çfarë e dallon klinikën. Vetëm pas kësaj arrijmë te faqja." },
+        { title: "Pa shabllone", body: "Nuk ekziston një version bazë për t'u personalizuar. Faqja lind nga zeroja — fonti, paleta, hierarkia, toni i zërit — duke pasqyruar identitetin e klinikës, jo atë të një teme WordPress prej 49 €." },
+        { title: "Design system përpara kodit", body: "Para se të shkruajmë një rresht, përcaktojmë sistemin vizual: tipografia, shkalla e ngjyrave, hapësirat, mikro-ndërveprimet. Një klinikë profesionale meriton një faqe që e çon përpara identitetin e saj, jo që e rrafshon." },
+        { title: "Teknika mbetet e padukshme", body: "Shpejtësia, siguria, mirëmbajtja mbeten problemi ynë. Ti sheh një faqe të rregullt që bën atë që duhet — dhe që në Google sillet më mirë se konkurrentët." },
+        { title: "Kohë e gjatë", body: "Nuk dorëzojmë një faqe dhe zhdukemi. E mbajmë të gjallë: përditësime sezonale, funksione të reja, evolucione të produktit. Vit pas viti, si një marrëdhënie profesionale." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Pse tani", h2a: "Për çfarë shërben një faqe", h2b: "në 2026?", sub: "Jo për të «qenë online». Shërben për të kontrolluar se si gjendesh, si perceptohesh dhe sa takime kalojnë nëpër platforma që marrin komisionin në vend që të vijnë drejtpërdrejt te ti.", cta: "Le të flasim",
+        items: [
+          { title: "Google të gjykon para klientit", body: "86 % e njerëzve kërkojnë një profesionist ose klinikë online para se ta kontaktojnë. Profili Google, vlerësimet, faqja: vendosin nëse rezervojnë te ti apo te një konkurrent." },
+          { title: "Platformat marrin komisionin, ti bën punën", body: "Faqet e rezervimit, platformat e sektorit dhe OTA-të mbajnë deri në 15-20 % për rezervim. Faqja jote nuk merr asgjë. Një takim i drejtpërdrejtë në ditë mbulon tashmë abonimin vjetor." },
+          { title: "LinkedIn dhe Instagram nuk mjaftojnë", body: "Nuk menaxhojnë takime, nuk shfaqen në kërkimet e Google Maps dhe nuk janë tuajt. Faqja është një pasuri që e zotëron dhe që grumbullohet me kalimin e kohës." },
+          { title: "Faqja është dhoma e parë e pritjes", body: "Para se të të telefonojë, klienti potencial kalon nga faqja jote. Nëse kujdesi është si i një fletëpalosjeje të fotokopjuar, është tashmë një sinjal i gabuar." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Procesi", h2a: "Si lind", h2b: "faqja jote.", sub: "Nuk fillojmë nga editori. Fillojmë nga identiteti — pastaj ndërtojmë sistemin që e çon përpara.",
+        steps: [
+          { n: "01", title: "Dëgjimi", body: "Një telefonatë (ose një vizitë). Kuptojmë klinikën, shërbimet, klientelën, tonin e zërit. Nuk bëjmë brief-e gjenerike." },
+          { n: "02", title: "Identiteti vizual", body: "Paleta e ngjyrave, tipografia, fotografia. Elemente që lindin nga ajo që klinika tashmë është — jo nga ajo si duken konkurrentët." },
+          { n: "03", title: "Design system", body: "Para se të hapim editorin, përcaktojmë rregullat: komponentët, hapësirat, shkalla. Sistemi pastaj shkallëzohet në çdo faqe pa humbur koherencën." },
+          { n: "04", title: "Zhvillimi", body: "Faqe interneti, lista e shërbimeve, takime, Google Maps. Gjithçka e integruar në të njëjtën platformë — pa shtojca palësh të treta." },
+          { n: "05", title: "Nisja & më tej", body: "Online brenda 7 ditësh nga firma. Pastaj përditësime të vazhdueshme: shërbime të reja, çmime, evente, promocione — pa hapur një kërkesë." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Çfarë ofrojmë", h2a: "Katër zanate", h2b: "nën një çati.", sub: "Ajo që dikur kërkonte tre ofrues të ndryshëm — agjenci kreative, zhvillues, konsulent dixhital — sot jeton në një vend të vetëm, me dikë që e njeh sektorin e shërbimeve profesionale.",
+        items: [
+          { title: "Design", body: "Identitet vizual i ndërtuar mbi klinikën: font, paletë, fotografi. Çdo element lind nga ajo që je, jo nga ajo si duken konkurrentët." },
+          { title: "Zhvillim", body: "Faqe interneti, lista e shërbimeve, takime, Google Maps. Një platformë e vetme e integruar — pa shtojca palësh të treta që prishen vetë." },
+          { title: "Menaxhim", body: "Përditësime të orareve, shërbimeve, çmimeve, lajmeve. Nga paneli, pa hapur një kërkesë, edhe nga telefoni mes dy takimeve." },
+          { title: "Prania lokale", body: "Google Business, vlerësime, Yelp, TripAdvisor. Gjithçka e përditësuar nga një panel — klienti gjen informacion të saktë kudo që kërkon." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Shabllon vs i personalizuar", templateTitle: "Një shabllon",
+        templateItems: [
+          "Strukturë identike me mijëra faqe të tjera",
+          "I personalizueshëm në ngjyra, jo në identitet",
+          "Shtojca që përditësohen (dhe prishen) vetë",
+          "Google nuk shpërblen faqet e ngadalta, gjenerike",
+          "Përfaqëson një kategori, jo klinikën tënde",
+        ] as string[],
+        customTitle: "I personalizuar me Bizery",
+        customItems: [
+          "Design system i ndërtuar mbi identitetin e klinikës",
+          "Font, paletë dhe strukturë origjinale",
+          "Një platformë e vetme e integruar — pa shtojca",
+          "Shpejtësi teknike dhe SEO të kujdesura në kod",
+          "I dallueshëm: duket si ti, jo si një temë",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Pyetje të shpeshta", title: "Gjithçka që na pyesin — para se të fillojmë.", notFound: "Nuk gjetët atë që kërkonit?", ctaLink: "Na shkruani",
+        items: [
+          { q: "Për çfarë shërben vërtet një faqe në 2026 për një klinikë profesionale?", a: "Shërben për të kontrolluar praninë tënde online në vend që ta lësh atë në duart e të tjerëve. Google të gjykon para se klienti të telefonojë: oraret e përditësuara, vlerësimet, fotot, vendndodhja. Një faqe e bërë mirë mbi një platformë solide pozicionohet më mirë se një profil në rrjet social, mbledh takime pa komisione dhe të përfaqëson klinikën pandërprerë." },
+          { q: "A nuk mjaftojnë LinkedIn dhe Instagram?", a: "Jo, për dy arsye thelbësore. Së pari: Google nuk e indekson përmbajtjen e LinkedIn ose Instagram — nëse dikush kërkon «avokat pranë meje» ose «fizioterapist në Milano», profili yt social nuk shfaqet. Së dyti: këto platforma nuk janë tuajt; algoritmi mund të ndryshojë, llogaria mund të pezullohet, ndjekësit mund të bien. Faqja është një pasuri që e zotëron dhe që rritet me kalimin e kohës." },
+          { q: "Cili është ndryshimi mes faqes suaj dhe një shablloni WordPress?", a: "Një shabllon është një kostum konfeksioni nga rafti: mund të ndryshosh ngjyrat, por struktura është e njëjtë me mijëra faqe të tjera. Faqet tona lindin nga një design system i ndërtuar mbi identitetin e klinikës — font, paletë, hierarki vizuale, ton zëri. Kur shikon faqen, duhet të mendosh «kjo duket si ne», jo «këtë strukturë e kam parë diku më parë»." },
+          { q: "Çfarë do të thotë «design system identitar»?", a: "Para faqes përcaktojmë rregullat vizuale të klinikës: çiftin tipografik, shkallën e ngjyrave, përpjesëtimet e hapësirave. Këto rregulla zbatohen pastaj në çdo faqe, çdo kartë, çdo buton — duke krijuar një përvojë koherente, të dallueshme, profesionale." },
+          { q: "Kur shlyhet një faqe?", a: "Më herët se sa mendon. Tregjet dhe platformat e sektorit mbajnë deri në 15-20 % për takim. Nëse faqja jote sjell qoftë edhe një takim të drejtpërdrejtë në ditë — në vend që të kalojë nëpër një platformë — kursimi vjetor tejkalon ndjeshëm koston e abonimit." },
+          { q: "Sa kohë duhet për të dalë online?", a: "Brenda 7 ditësh nga firma e kontratës. Konfigurimi fillestar — onboarding, dizajn, personalizim — ndodh më parë, mesatarisht 2-4 javë." },
+          { q: "Si lind dizajni i faqes sime?", a: "Fillon me një telefonatë. Shohim klinikën, shërbimet, materialin ekzistues, tonin e zërit. Pastaj ndërtojmë një sistem vizual koherent — nuk i zgjedhim fontet dhe ngjyrat rastësisht, i nxjerrim nga ajo që klinika tashmë është. Vetëm atëherë fillojmë të shkruajmë kod." },
+          { q: "A mund ta përditësoj vetë faqen?", a: "Po. Lista e shërbimeve, oraret, fotot, shërbimet, eventet: gjithçka përditësohet nga paneli pa prekur kodin, edhe nga telefoni mes takimeve." },
+          { q: "A punoni vetëm në Milano?", a: "Jo. Studio është në Milano, por kujdesemi për klinika dhe biznese në të gjithë Italinë. Pjesa më e madhe e punës bëhet në distancë. Kur ka kuptim, vijmë te ju." },
+          { q: "A është faqja e disponueshme në disa gjuhë?", a: "Po. Çdo faqe realizohet si parazgjedhje në version shumëgjuhësh, duke mbuluar gjuhët kryesore evropiane: italisht, anglisht, frëngjisht, gjermanisht dhe spanjisht. Me kërkesë mund të shtohen gjuhë të tjera sipas klientelës tipike të klinikës — për shembull rusisht, arabisht, kinezisht ose japonisht. Kostoja e gjuhëve shtesë caktohet në fazën e ofertës." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Doni të shihni si punojmë?", h2b: "Flisni me studion.", requestProposal: "Kërko një propozim", seeOffer: "Shiko ofertën" },
+    },
     seo: {
       home: {
         title: "Bizery - faqe interneti për klinika, sallone dhe biznese shërbimesh",

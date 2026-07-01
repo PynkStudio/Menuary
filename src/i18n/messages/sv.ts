@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Begär en demo",
       finalCtaPlans: "Se planer",
     },
+    about: {
+      hero: { label: "Studion", h1a: "Varje mottagning förtjänar", h1b: "en webbplats som representerar den.", sub: "Bizery är den digitala plattformen för professionella mottagningar och tjänsteföretag. Inga mallar, ingen identitet från hyllan. Varje webbplats föds ur ett design system byggt på mottagningen — på dess tjänster, dess kundkrets, dess sätt att arbeta." },
+      manifesto: { label: "Manifest", quote: "En professionell mottagning lägger omsorg i varje detalj — rådgivningen, kommunikationen, kundrelationen. Webbplatsen ska göra detsamma. Inte mindre, aldrig mindre.", body: "Vi tror att det digitala är en förlängning av mottagningen, inte en broschyr online. Därför använder vi inte mallar: vi bygger ett visuellt system som föds ur kundens identitet och för den vidare på varje skärm." },
+      principles: [
+        { title: "En mottagning i taget", body: "Vi skalar inte med våld. Varje projekt börjar med att lyssna på ägaren, förstå tjänsterna, kundkretsen och vad som utmärker mottagningen. Först därefter når vi webbplatsen." },
+        { title: "Inga mallar", body: "Det finns ingen basversion att anpassa. Webbplatsen föds från grunden — typsnitt, palett, hierarki, tonfall — och speglar mottagningens identitet, inte ett WordPress-temas för 49 €." },
+        { title: "Design systemet före koden", body: "Innan vi skriver en rad definierar vi det visuella systemet: typografi, färgskala, mellanrum, mikrointeraktioner. En professionell mottagning förtjänar en webbplats som för dess identitet vidare, inte plattar till den." },
+        { title: "Tekniken förblir osynlig", body: "Hastighet, säkerhet, underhåll förblir vårt problem. Du ser en ordnad webbplats som gör det som behövs — och som klarar sig bättre än konkurrenterna på Google." },
+        { title: "Lång tid", body: "Vi levererar inte en webbplats och försvinner. Vi håller den levande: säsongsuppdateringar, nya funktioner, produktutveckling. År efter år, som en professionell relation." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Varför nu", h2a: "Vad är en webbplats till för", h2b: "år 2026?", sub: "Inte för att «vara online». Den ska styra hur du hittas, hur du uppfattas och hur många bokningar som går genom plattformar som tar provisionen i stället för att komma direkt till dig.", cta: "Låt oss prata",
+        items: [
+          { title: "Google bedömer dig före kunden", body: "86 % av människorna söker en yrkesperson eller mottagning online innan de kontaktar den. Google-profil, recensioner, webbplats: de avgör om man bokar hos dig eller hos en konkurrent." },
+          { title: "Plattformarna tar provisionen, du gör jobbet", body: "Bokningssajter, branschplattformar och OTA:er behåller upp till 15-20 % per bokning. Din webbplats tar ingenting. En direktbokning om dagen täcker redan årsabonnemanget." },
+          { title: "LinkedIn och Instagram räcker inte", body: "De hanterar inte bokningar, syns inte i Google Maps-sökningar och är inte dina. Webbplatsen är en tillgång du äger och som byggs upp över tid." },
+          { title: "Webbplatsen är det första väntrummet", body: "Redan innan han ringer dig passerar den potentiella kunden din webbplats. Om omsorgen är som ett fotokopierat flygblad är det redan en felaktig signal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Processen", h2a: "Hur din webbplats", h2b: "föds.", sub: "Vi börjar inte vid editorn. Vi börjar vid identiteten — sedan bygger vi systemet som för den vidare.",
+        steps: [
+          { n: "01", title: "Lyssna", body: "Ett samtal (eller ett besök). Vi förstår mottagningen, tjänsterna, kundkretsen, tonfallet. Inga generiska briefer." },
+          { n: "02", title: "Visuell identitet", body: "Färgpalett, typografi, fotografi. Element som föds ur det mottagningen redan är — inte ur hur konkurrenterna ser ut." },
+          { n: "03", title: "Design system", body: "Innan vi öppnar editorn definierar vi reglerna: komponenter, mellanrum, skala. Systemet skalar sedan över varje sida utan att tappa sammanhang." },
+          { n: "04", title: "Utveckling", body: "Webbplats, tjänstelista, bokningar, Google Maps. Allt integrerat i samma plattform — inga tredjepartstillägg." },
+          { n: "05", title: "Lansering & därefter", body: "Online inom 7 dagar efter signering. Sedan löpande uppdateringar: nya tjänster, priser, evenemang, kampanjer — utan att öppna ett ärende." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Vad vi erbjuder", h2a: "Fyra yrken", h2b: "under ett tak.", sub: "Det som förr krävde tre olika leverantörer — kreativ byrå, utvecklare, digital konsult — lever idag på ett ställe, med någon som kan branschen för professionella tjänster.",
+        items: [
+          { title: "Design", body: "Visuell identitet byggd på mottagningen: typsnitt, palett, fotografi. Varje element föds ur det du är, inte ur hur konkurrenterna ser ut." },
+          { title: "Utveckling", body: "Webbplats, tjänstelista, bokningar, Google Maps. En integrerad plattform — inga tredjepartstillägg som går sönder av sig själva." },
+          { title: "Hantering", body: "Uppdateringar av öppettider, tjänster, priser, nyheter. Från panelen, utan att öppna ett ärende, även från din telefon mellan två bokningar." },
+          { title: "Lokal närvaro", body: "Google Business, recensioner, Yelp, TripAdvisor. Allt uppdaterat från en panel — kunden hittar korrekt information var han än söker." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Mall vs skräddarsytt", templateTitle: "En mall",
+        templateItems: [
+          "Struktur identisk med tusentals andra webbplatser",
+          "Anpassningsbar i färgerna, inte i identiteten",
+          "Tillägg som uppdaterar (och går sönder) av sig själva",
+          "Google belönar inte långsamma, generiska webbplatser",
+          "Representerar en kategori, inte din mottagning",
+        ] as string[],
+        customTitle: "Skräddarsytt med Bizery",
+        customItems: [
+          "Design system byggt på mottagningens identitet",
+          "Originellt typsnitt, palett och struktur",
+          "En integrerad plattform — inga tillägg",
+          "Teknisk hastighet och SEO vårdade i koden",
+          "Igenkännbar: den ser ut som du, inte som ett tema",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Vanliga frågor", title: "Allt vi får frågor om — innan vi börjar.", notFound: "Hittade du inte det du sökte?", ctaLink: "Skriv till oss",
+        items: [
+          { q: "Vad är egentligen en webbplats till för år 2026 för en professionell mottagning?", a: "Den ska styra din närvaro online i stället för att överlåta den till andra. Google bedömer dig redan innan kunden ringer: uppdaterade öppettider, recensioner, foton, plats. En välgjord webbplats på en stabil plattform placerar sig bättre än en social profil, samlar bokningar utan provision och representerar din mottagning dygnet runt." },
+          { q: "Räcker inte LinkedIn och Instagram?", a: "Nej, av två grundläggande skäl. För det första: Google indexerar inte innehåll från LinkedIn eller Instagram — om någon söker «advokat nära mig» eller «fysioterapeut i Milano» visas inte din sociala profil. För det andra: dessa plattformar är inte dina; algoritmen kan ändras, kontot kan stängas av, följare kan minska. Webbplatsen är en tillgång du äger och som växer över tid." },
+          { q: "Vad är skillnaden mellan er webbplats och en WordPress-mall?", a: "En mall är en konfektionskostym från hyllan: du kan ändra färgerna, men strukturen är densamma som tusentals andra webbplatser. Våra webbplatser föds ur ett design system byggt på mottagningens identitet — typsnitt, palett, visuell hierarki, tonfall. När du ser på webbplatsen ska du tänka «det här ser ut som vi», inte «den här strukturen har jag sett någonstans förut»." },
+          { q: "Vad betyder «identitetsskapande design system»?", a: "Före webbplatsen definierar vi mottagningens visuella regler: typsnittsparet, färgskalan, mellanrummens proportioner. Dessa regler gäller sedan för varje sida, varje kort, varje knapp — och skapar en sammanhängande, igenkännbar, professionell upplevelse." },
+          { q: "När betalar sig en webbplats?", a: "Tidigare än du tror. Marknadsplatser och branschplattformar behåller upp till 15-20 % per bokning. Om din webbplats ger bara en direktbokning om dagen — i stället för att gå genom en plattform — överstiger den årliga besparingen vida abonnemangets kostnad." },
+          { q: "Hur lång tid tar det att komma online?", a: "Inom 7 dagar efter kontraktsignering. Den inledande konfigurationen — onboarding, design, anpassning — sker innan, i genomsnitt 2-4 veckor." },
+          { q: "Hur föds designen av min webbplats?", a: "Den börjar med ett samtal. Vi tittar på mottagningen, tjänsterna, det befintliga materialet, tonfallet. Sedan bygger vi ett sammanhängande visuellt system — vi väljer inte typsnitt och färger på måfå, vi härleder dem ur det mottagningen redan är. Först då börjar vi skriva kod." },
+          { q: "Kan jag uppdatera webbplatsen själv?", a: "Ja. Tjänstelista, öppettider, foton, tjänster, evenemang: allt uppdateras från panelen utan att röra koden, även från din telefon mellan bokningar." },
+          { q: "Arbetar ni bara i Milano?", a: "Nej. Studion ligger i Milano, men vi följer mottagningar och företag i hela Italien. Det mesta av arbetet sker på distans. När det är meningsfullt kommer vi till er." },
+          { q: "Finns webbplatsen på flera språk?", a: "Ja. Varje webbplats görs flerspråkig som standard och täcker de viktigaste europeiska språken: italienska, engelska, franska, tyska och spanska. På begäran kan andra språk läggas till efter mottagningens typiska kundkrets — till exempel ryska, arabiska, kinesiska eller japanska. Kostnaden för ytterligare språk avtalas i offertfasen." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Vill du se hur vi arbetar?", h2b: "Prata med studion.", requestProposal: "Begär ett förslag", seeOffer: "Se erbjudandet" },
+    },
     seo: {
       home: {
         title: "Bizery - webbplatser för kliniker, salonger och tjänsteföretag",

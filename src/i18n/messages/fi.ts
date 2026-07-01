@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Pyydä demo",
       finalCtaPlans: "Katso paketit",
     },
+    about: {
+      hero: { label: "Studio", h1a: "Jokainen vastaanotto ansaitsee", h1b: "verkkosivun, joka edustaa sitä.", sub: "Bizery on digitaalinen alusta ammatillisille vastaanotoille ja palveluyrityksille. Ei valmiita malleja, ei sarjatuotettua identiteettiä. Jokainen verkkosivu syntyy design systemistä, joka rakentuu vastaanoton päälle — sen palvelujen, sen asiakaskunnan, sen työskentelytavan ympärille." },
+      manifesto: { label: "Manifesti", quote: "Ammatillinen vastaanotto panostaa jokaiseen yksityiskohtaan — neuvontaan, viestintään, asiakassuhteeseen. Verkkosivun on tehtävä samoin. Ei vähempää, ei koskaan vähempää.", body: "Uskomme, että digitaalinen on vastaanoton jatke, ei verkkoesite. Siksi emme käytä valmiita malleja: rakennamme visuaalisen järjestelmän, joka syntyy asiakkaan identiteetistä ja vie sitä eteenpäin jokaisella näytöllä." },
+      principles: [
+        { title: "Yksi vastaanotto kerrallaan", body: "Emme skaalaa väkisin. Jokainen projekti alkaa omistajan kuuntelusta, palvelujen ymmärtämisestä, asiakaskunnasta ja siitä, mikä erottaa vastaanoton. Vasta sitten päästään verkkosivuun." },
+        { title: "Ei valmiita malleja", body: "Ei ole perusversiota muokattavaksi. Verkkosivu syntyy tyhjästä — fontti, paletti, hierarkia, äänensävy — heijastaen vastaanoton identiteettiä, ei 49 euron WordPress-teeman identiteettiä." },
+        { title: "Design system ennen koodia", body: "Ennen kuin kirjoitamme riviäkään, määrittelemme visuaalisen järjestelmän: typografia, väriskaala, välistys, mikrovuorovaikutukset. Ammatillinen vastaanotto ansaitsee verkkosivun, joka vie identiteettiä eteenpäin, ei litistä sitä." },
+        { title: "Tekniikka pysyy näkymättömänä", body: "Nopeus, turvallisuus, ylläpito jäävät meidän ongelmaksemme. Sinä näet siistin verkkosivun, joka tekee tarvittavan — ja joka pärjää Googlessa kilpailijoita paremmin." },
+        { title: "Pitkä aika", body: "Emme toimita verkkosivua ja katoa. Pidämme sen elossa: kausipäivitykset, uudet toiminnot, tuotekehitys. Vuosi vuoden jälkeen, kuin ammatillinen suhde." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Miksi nyt", h2a: "Mihin verkkosivua tarvitaan", h2b: "vuonna 2026?", sub: "Ei siihen, että «olisi verkossa». Se auttaa hallitsemaan, miten sinut löydetään, miten sinut koetaan ja kuinka monta ajanvarausta kulkee alustojen kautta, jotka ottavat komission sen sijaan, että ne tulisivat suoraan sinulle.", cta: "Jutellaan",
+        items: [
+          { title: "Google arvioi sinut ennen asiakasta", body: "86 % ihmisistä etsii ammattilaista tai vastaanottoa verkosta ennen yhteydenottoa. Google-profiili, arvostelut, verkkosivu: ne ratkaisevat, varaavatko he sinulta vai kilpailijalta." },
+          { title: "Alustat ottavat komission, sinä teet työn", body: "Varaussivustot, alan alustat ja OTA:t pidättävät jopa 15-20 % varaukselta. Verkkosivusi ei ota mitään. Yksi suora ajanvaraus päivässä kattaa jo vuositilauksen." },
+          { title: "LinkedIn ja Instagram eivät riitä", body: "Ne eivät hallitse ajanvarauksia, eivät näy Google Maps -hauissa eivätkä ole sinun. Verkkosivu on omistamasi pääoma, joka kertyy ajan myötä." },
+          { title: "Verkkosivu on ensimmäinen odotushuone", body: "Jo ennen kuin hän soittaa sinulle, potentiaalinen asiakas käy verkkosivullasi. Jos huolellisuus on valokopioidun mainoksen tasolla, se on jo väärä signaali." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Prosessi", h2a: "Miten verkkosivusi", h2b: "syntyy.", sub: "Emme aloita editorista. Aloitamme identiteetistä — sitten rakennamme järjestelmän, joka vie sitä eteenpäin.",
+        steps: [
+          { n: "01", title: "Kuuntelu", body: "Puhelu (tai vierailu). Ymmärrämme vastaanoton, palvelut, asiakaskunnan, äänensävyn. Emme tee geneerisiä briefejä." },
+          { n: "02", title: "Visuaalinen identiteetti", body: "Väripaletti, typografia, valokuvaus. Elementit, jotka syntyvät siitä, mitä vastaanotto jo on — ei siitä, miltä kilpailijat näyttävät." },
+          { n: "03", title: "Design system", body: "Ennen editorin avaamista määrittelemme säännöt: komponentit, välistys, skaala. Järjestelmä skaalautuu sitten jokaiselle sivulle menettämättä johdonmukaisuutta." },
+          { n: "04", title: "Kehitys", body: "Verkkosivu, palveluluettelo, ajanvaraukset, Google Maps. Kaikki integroitu samaan alustaan — ei kolmannen osapuolen lisäosia." },
+          { n: "05", title: "Julkaisu & sen jälkeen", body: "Verkossa 7 päivässä allekirjoituksesta. Sitten jatkuvat päivitykset: uudet palvelut, hinnat, tapahtumat, kampanjat — avaamatta tikettiä." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Mitä tarjoamme", h2a: "Neljä ammattia", h2b: "saman katon alla.", sub: "Se, mikä ennen vaati kolme eri toimittajaa — luova toimisto, kehittäjä, digitaalinen konsultti — elää nykyään yhdessä paikassa, ammatillisten palvelujen alan tuntevan kanssa.",
+        items: [
+          { title: "Design", body: "Vastaanoton päälle rakennettu visuaalinen identiteetti: fontti, paletti, valokuvaus. Jokainen elementti syntyy siitä, mitä olet, ei siitä, miltä kilpailijat näyttävät." },
+          { title: "Kehitys", body: "Verkkosivu, palveluluettelo, ajanvaraukset, Google Maps. Yksi integroitu alusta — ei kolmannen osapuolen lisäosia, jotka hajoavat itsestään." },
+          { title: "Hallinta", body: "Aukioloaikojen, palvelujen, hintojen, uutisten päivitykset. Paneelista, avaamatta tikettiä, myös puhelimesta kahden ajanvarauksen välissä." },
+          { title: "Paikallinen näkyvyys", body: "Google Business, arvostelut, Yelp, TripAdvisor. Kaikki päivitetty yhdestä paneelista — asiakas löytää oikean tiedon mistä tahansa hän etsiikin." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Malli vs. räätälöity", templateTitle: "Valmis malli",
+        templateItems: [
+          "Rakenne identtinen tuhansien muiden sivujen kanssa",
+          "Muokattavissa väreissä, ei identiteetissä",
+          "Lisäosat, jotka päivittyvät (ja hajoavat) itsestään",
+          "Google ei palkitse hitaita, geneerisiä sivuja",
+          "Edustaa kategoriaa, ei vastaanottoasi",
+        ] as string[],
+        customTitle: "Räätälöity Bizeryn kanssa",
+        customItems: [
+          "Vastaanoton identiteetille rakennettu design system",
+          "Alkuperäinen fontti, paletti ja rakenne",
+          "Yksi integroitu alusta — ei lisäosia",
+          "Tekninen nopeus ja SEO hoidettu koodissa",
+          "Tunnistettava: se näyttää sinulta, ei teemalta",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Usein kysytyt kysymykset", title: "Kaikki, mitä meiltä kysytään — ennen kuin aloitamme.", notFound: "Etkö löytänyt etsimääsi?", ctaLink: "Kirjoita meille",
+        items: [
+          { q: "Mihin verkkosivua todella tarvitaan vuonna 2026 ammatilliselle vastaanotolle?", a: "Se auttaa hallitsemaan verkkonäkyvyyttäsi sen sijaan, että jättäisit sen muiden käsiin. Google arvioi sinut jo ennen kuin asiakas soittaa: ajantasaiset aukioloajat, arvostelut, valokuvat, sijainti. Hyvin tehty verkkosivu vakaalla alustalla sijoittuu paremmin kuin sosiaalisen median profiili, kerää ajanvarauksia ilman komissioita ja edustaa vastaanottoasi vuorokauden ympäri." },
+          { q: "Eivätkö LinkedIn ja Instagram riitä?", a: "Eivät, kahdesta perustavasta syystä. Ensinnäkin: Google ei indeksoi LinkedInin tai Instagramin sisältöä — jos joku etsii «asianajaja lähelläni» tai «fysioterapeutti Milanossa», sosiaalinen profiilisi ei näy. Toiseksi: nämä alustat eivät ole sinun; algoritmi voi muuttua, tili voidaan jäädyttää, seuraajat voivat vähentyä. Verkkosivu on omistamasi pääoma, joka kasvaa ajan myötä." },
+          { q: "Mikä on ero teidän verkkosivunne ja WordPress-mallin välillä?", a: "Valmis malli on sarjatuotettu puku: voit vaihtaa värit, mutta rakenne on sama kuin tuhansilla muilla sivuilla. Verkkosivumme syntyvät vastaanoton identiteetille rakennetusta design systemistä — fontti, paletti, visuaalinen hierarkia, äänensävy. Kun katsot sivua, sinun pitäisi ajatella «tämä näyttää meiltä», ei «olen nähnyt tämän rakenteen jossain aiemmin»." },
+          { q: "Mitä «identiteettiä luova design system» tarkoittaa?", a: "Ennen verkkosivua määrittelemme vastaanoton visuaaliset säännöt: fonttiparin, väriskaalan, tilojen mittasuhteet. Nämä säännöt pätevät sitten jokaisella sivulla, jokaisessa kortissa, jokaisessa painikkeessa — luoden johdonmukaisen, tunnistettavan, ammattimaisen kokemuksen." },
+          { q: "Milloin verkkosivu maksaa itsensä takaisin?", a: "Aiemmin kuin luulet. Markkinapaikat ja alan alustat pidättävät jopa 15-20 % ajanvaraukselta. Jos verkkosivusi tuo edes yhden suoran ajanvarauksen päivässä — sen sijaan, että se kulkisi alustan kautta — vuotuinen säästö ylittää selvästi tilauksen kustannuksen." },
+          { q: "Kuinka kauan verkkoon pääsy kestää?", a: "7 päivän sisällä sopimuksen allekirjoittamisesta. Alkukonfigurointi — perehdytys, design, räätälöinti — tapahtuu ennen sitä, keskimäärin 2-4 viikkoa." },
+          { q: "Miten verkkosivuni design syntyy?", a: "Se alkaa puhelulla. Katsomme vastaanottoa, palveluja, olemassa olevaa materiaalia, äänensävyä. Sitten rakennamme johdonmukaisen visuaalisen järjestelmän — emme valitse fontteja ja värejä sattumanvaraisesti, johdamme ne siitä, mitä vastaanotto jo on. Vasta sitten alamme kirjoittaa koodia." },
+          { q: "Voinko päivittää verkkosivua itse?", a: "Kyllä. Palveluluettelo, aukioloajat, valokuvat, palvelut, tapahtumat: kaikki päivitetään paneelista koskematta koodiin, myös puhelimesta ajanvarausten välissä." },
+          { q: "Työskentelettekö vain Milanossa?", a: "Emme. Studio on Milanossa, mutta seuraamme vastaanottoja ja yrityksiä koko Italiassa. Suurin osa työstä tehdään etänä. Kun se on järkevää, tulemme luoksenne." },
+          { q: "Onko verkkosivu saatavilla useilla kielillä?", a: "Kyllä. Jokainen verkkosivu tehdään oletuksena monikieliseksi, kattaen tärkeimmät eurooppalaiset kielet: italia, englanti, ranska, saksa ja espanja. Pyynnöstä voidaan lisätä muita kieliä vastaanoton tyypillisen asiakaskunnan mukaan — esimerkiksi venäjä, arabia, kiina tai japani. Lisäkielien kustannus sovitaan tarjousvaiheessa." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Haluatko nähdä, miten työskentelemme?", h2b: "Puhu studion kanssa.", requestProposal: "Pyydä ehdotus", seeOffer: "Katso tarjous" },
+    },
     seo: {
       home: {
         title: "Bizery - verkkosivut klinikoille, salongeille ja palveluyrityksille",

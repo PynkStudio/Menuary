@@ -576,6 +576,79 @@ export const messages = {
       finalCtaDemo: "Demander une démo",
       finalCtaPlans: "Voir les plans",
     },
+    about: {
+      hero: { label: "Le studio", h1a: "Chaque cabinet mérite", h1b: "un site qui le représente.", sub: "Bizery est la plateforme numérique pour les cabinets professionnels et les entreprises de services. Pas de template, pas d'identité en série. Chaque site naît d'un design system construit sur le cabinet — sur ses services, sa clientèle, sa façon de travailler." },
+      manifesto: { label: "Manifeste", quote: "Un cabinet professionnel soigne chaque détail — le conseil, la communication, la relation client. Le site doit faire de même. Pas moins, jamais moins.", body: "Nous croyons que le numérique est une extension du cabinet, pas une brochure en ligne. C'est pourquoi nous n'utilisons pas de template : nous construisons un système visuel qui naît de l'identité du client et le prolonge sur chaque écran." },
+      principles: [
+        { title: "Un cabinet à la fois", body: "Nous ne grandissons pas à marche forcée. Chaque projet commence par l'écoute du titulaire, la compréhension des services, du type de clientèle et de ce qui distingue le cabinet. Le site vient seulement après." },
+        { title: "Pas de template", body: "Il n'existe pas de version de base à personnaliser. Le site naît de zéro — police, palette, hiérarchie, ton de voix — reflétant l'identité du cabinet, pas celle d'un thème WordPress à 49 €." },
+        { title: "Le design system avant le code", body: "Avant d'écrire une ligne, nous définissons le système visuel : typographie, échelle chromatique, espacement, micro-interactions. Un cabinet professionnel mérite un site qui prolonge son identité, pas qui l'aplatit." },
+        { title: "La technique ne se voit pas", body: "Vitesse, sécurité, maintenance restent notre problème. Vous voyez un site soigné qui fait ce qu'il faut — et qui se comporte mieux que les concurrents sur Google." },
+        { title: "Le temps long", body: "Nous ne livrons pas un site pour disparaître ensuite. Nous le gardons vivant : mises à jour saisonnières, nouvelles fonctions, évolutions du produit. Année après année, comme une relation professionnelle." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Pourquoi maintenant", h2a: "À quoi sert un site", h2b: "en 2026 ?", sub: "Pas à « être en ligne ». Il sert à contrôler comment vous êtes trouvé, comment vous êtes perçu et combien de rendez-vous passent par des plateformes qui prennent une commission au lieu d'arriver directement chez vous.", cta: "Parlons-en",
+        items: [
+          { title: "Google vous juge avant le client", body: "86 % des gens cherchent un professionnel ou un cabinet en ligne avant de le contacter. Fiche Google, avis, site : ils décident si l'on réserve chez vous ou chez un concurrent." },
+          { title: "Les plateformes prennent la commission, vous faites le travail", body: "Les sites de réservation, marketplaces sectorielles et OTA retiennent jusqu'à 15-20 % par réservation. Votre site ne prend rien. Un rendez-vous direct par jour couvre déjà l'abonnement annuel." },
+          { title: "LinkedIn et Instagram ne suffisent pas", body: "Ils ne gèrent pas les rendez-vous, n'apparaissent pas dans les recherches Google Maps et ne vous appartiennent pas. Le site est un actif que vous possédez et qui s'accumule dans le temps." },
+          { title: "Le site est la première salle d'attente", body: "Avant même de vous appeler, le client potentiel passe par votre site. Si le soin est celui d'un dépliant photocopié, c'est déjà un mauvais signal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Le processus", h2a: "Comment naît", h2b: "votre site.", sub: "Nous ne commençons pas par l'éditeur. Nous commençons par l'identité — puis nous construisons le système qui la prolonge.",
+        steps: [
+          { n: "01", title: "Écoute", body: "Un appel (ou une visite). Nous comprenons le cabinet, les services, la clientèle, le ton de voix. Pas de brief générique." },
+          { n: "02", title: "Identité visuelle", body: "Palette chromatique, typographie, photographie. Des éléments qui naissent de ce que le cabinet est déjà — pas de ce à quoi ressemblent les concurrents." },
+          { n: "03", title: "Design system", body: "Avant d'ouvrir l'éditeur, nous définissons les règles : composants, espacement, échelle. Le système se décline ensuite sur chaque page sans perdre en cohérence." },
+          { n: "04", title: "Développement", body: "Site, liste de services, rendez-vous, Google Maps. Tout intégré dans la même plateforme — pas de plugins tiers." },
+          { n: "05", title: "Mise en ligne & au-delà", body: "En ligne sous 7 jours après la signature. Puis des mises à jour continues : nouveaux services, tarifs, événements, promotions — sans ouvrir de ticket." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Ce que nous offrons", h2a: "Quatre métiers", h2b: "sous un seul toit.", sub: "Ce qui demandait autrefois trois prestataires différents — agence créative, développeur, consultant numérique — vit aujourd'hui en un seul endroit, avec quelqu'un qui connaît le secteur des services professionnels.",
+        items: [
+          { title: "Design", body: "Identité visuelle construite sur le cabinet : police, palette, photographie. Chaque élément naît de ce que vous êtes, pas de ce à quoi ressemblent les concurrents." },
+          { title: "Développement", body: "Site, liste de services, rendez-vous, Google Maps. Une seule plateforme intégrée — pas de plugins tiers qui se cassent tout seuls." },
+          { title: "Gestion", body: "Mises à jour des horaires, services, tarifs, actualités. Depuis le tableau de bord, sans ouvrir de ticket, même depuis votre téléphone entre deux rendez-vous." },
+          { title: "Présence locale", body: "Google Business, avis, Yelp, TripAdvisor. Tout mis à jour depuis un seul tableau de bord — le client trouve des informations correctes partout où il cherche." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Template vs sur mesure", templateTitle: "Un template",
+        templateItems: [
+          "Structure identique à des milliers d'autres sites",
+          "Personnalisable dans les couleurs, pas dans l'identité",
+          "Des plugins qui se mettent à jour (et se cassent) tout seuls",
+          "Google ne récompense pas les sites lents et génériques",
+          "Représente une catégorie, pas votre cabinet",
+        ] as string[],
+        customTitle: "Sur mesure avec Bizery",
+        customItems: [
+          "Design system construit sur l'identité du cabinet",
+          "Police, palette et structure originales",
+          "Une seule plateforme intégrée — pas de plugins",
+          "Vitesse technique et SEO soignés dans le code",
+          "Reconnaissable : il vous ressemble, pas un thème",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Questions fréquentes", title: "Tout ce qu'on nous demande — avant de commencer.", notFound: "Vous n'avez pas trouvé ce que vous cherchiez ?", ctaLink: "Écrivez-nous",
+        items: [
+          { q: "À quoi sert vraiment un site en 2026 pour un cabinet professionnel ?", a: "Il sert à contrôler votre présence en ligne au lieu de la confier à d'autres. Google vous juge avant même que le client appelle : horaires à jour, avis, photos, position. Un site bien fait sur une plateforme solide se positionne mieux qu'un profil social, recueille des rendez-vous sans commissions et représente votre cabinet 24 heures sur 24." },
+          { q: "LinkedIn et Instagram ne suffisent pas ?", a: "Non, pour deux raisons fondamentales. Premièrement : Google n'indexe pas les contenus de LinkedIn ou d'Instagram — si quelqu'un cherche « avocat près de moi » ou « kinésithérapeute à Milan », votre profil social n'apparaît pas. Deuxièmement : ces plateformes ne vous appartiennent pas ; l'algorithme peut changer, le compte peut être suspendu, les abonnés peuvent diminuer. Le site est un actif que vous possédez et qui grandit dans le temps." },
+          { q: "Quelle est la différence entre votre site et un template WordPress ?", a: "Un template est un vêtement confectionné en série : vous pouvez changer les couleurs, mais la structure est celle de milliers d'autres sites. Nos sites naissent d'un design system construit sur l'identité du cabinet — police, palette, hiérarchie visuelle, ton de voix. Quand vous regardez le site, vous devez penser « ça nous ressemble », pas « j'ai déjà vu cette structure quelque part »." },
+          { q: "Que signifie « design system identitaire » ?", a: "Avant le site, nous définissons les règles visuelles du cabinet : le couple typographique, l'échelle de couleurs, les proportions des espaces. Ces règles s'appliquent ensuite à chaque page, chaque carte, chaque bouton — créant une expérience cohérente, reconnaissable, professionnelle." },
+          { q: "Quand un site est-il rentabilisé ?", a: "Plus tôt que vous ne le pensez. Les marketplaces et plateformes sectorielles retiennent jusqu'à 15-20 % par rendez-vous. Si votre site apporte ne serait-ce qu'un rendez-vous direct par jour — au lieu de passer par une plateforme — l'économie annuelle dépasse largement le coût de l'abonnement." },
+          { q: "Combien de temps faut-il pour aller en ligne ?", a: "Sous 7 jours après la signature du contrat. La configuration initiale — onboarding, design, personnalisation — a lieu avant, en moyenne 2-4 semaines." },
+          { q: "Comment naît le design de mon site ?", a: "Il commence par un appel. Nous regardons le cabinet, les services, le matériel existant, le ton de voix. Puis nous construisons un système visuel cohérent — nous ne choisissons pas les polices et couleurs au hasard, nous les tirons de ce que le cabinet est déjà. Ce n'est qu'alors que nous commençons à écrire du code." },
+          { q: "Puis-je mettre à jour le site moi-même ?", a: "Oui. Liste de services, horaires, photos, services, événements : tout se met à jour depuis le tableau de bord sans toucher au code, même depuis votre téléphone entre deux rendez-vous." },
+          { q: "Travaillez-vous seulement à Milan ?", a: "Non. Le studio est à Milan, mais nous suivons des cabinets et des entreprises dans toute l'Italie. La plupart du travail se fait à distance. Quand cela a du sens, nous venons chez vous." },
+          { q: "Le site est-il disponible en plusieurs langues ?", a: "Oui. Chaque site est réalisé en version multilingue par défaut, couvrant les principales langues européennes : italien, anglais, français, allemand et espagnol. Sur demande, d'autres langues peuvent être ajoutées selon la clientèle typique du cabinet — par exemple russe, arabe, chinois ou japonais. Le coût des langues supplémentaires est convenu lors du devis." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Envie de voir comment nous travaillons ?", h2b: "Parlez au studio.", requestProposal: "Demander une proposition", seeOffer: "Voir l'offre" },
+    },
     seo: {
       home: {
         title: "Bizery - sites web pour cabinets, salons et entreprises de services",

@@ -563,6 +563,79 @@ export const messages = mergeMessages(en, {
       finalCtaDemo: "Poproś o demo",
       finalCtaPlans: "Zobacz plany",
     },
+    about: {
+      hero: { label: "Studio", h1a: "Każdy gabinet zasługuje", h1b: "na stronę, która go reprezentuje.", sub: "Bizery to cyfrowa platforma dla profesjonalnych gabinetów i firm usługowych. Żadnych szablonów, żadnej seryjnej tożsamości. Każda strona powstaje z design systemu zbudowanego wokół gabinetu — wokół jego usług, jego klienteli, jego sposobu pracy." },
+      manifesto: { label: "Manifest", quote: "Profesjonalny gabinet dba o każdy szczegół — doradztwo, komunikację, relację z klientem. Strona musi robić to samo. Nie mniej, nigdy mniej.", body: "Wierzymy, że cyfrowe jest przedłużeniem gabinetu, a nie broszurą online. Dlatego nie używamy szablonów: budujemy system wizualny, który rodzi się z tożsamości klienta i przenosi ją na każdy ekran." },
+      principles: [
+        { title: "Jeden gabinet naraz", body: "Nie skalujemy na siłę. Każdy projekt zaczyna się od wysłuchania właściciela, zrozumienia usług, rodzaju klienteli i tego, co wyróżnia gabinet. Dopiero potem dochodzimy do strony." },
+        { title: "Żadnych szablonów", body: "Nie istnieje wersja bazowa do personalizacji. Strona powstaje od zera — font, paleta, hierarchia, ton głosu — odzwierciedlając tożsamość gabinetu, a nie motywu WordPress za 49 €." },
+        { title: "Design system przed kodem", body: "Zanim napiszemy linijkę, definiujemy system wizualny: typografia, skala kolorów, odstępy, mikrointerakcje. Profesjonalny gabinet zasługuje na stronę, która przenosi jego tożsamość, a nie spłaszcza." },
+        { title: "Technika pozostaje niewidoczna", body: "Szybkość, bezpieczeństwo, utrzymanie pozostają naszym problemem. Ty widzisz uporządkowaną stronę, która robi to, co trzeba — i która w Google radzi sobie lepiej niż konkurencja." },
+        { title: "Długi czas", body: "Nie dostarczamy strony i nie znikamy. Utrzymujemy ją przy życiu: aktualizacje sezonowe, nowe funkcje, rozwój produktu. Rok po roku, jak relacja zawodowa." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Dlaczego teraz", h2a: "Do czego służy strona", h2b: "w 2026 roku?", sub: "Nie do «bycia online». Służy do kontrolowania, jak jesteś znajdowany, jak jesteś postrzegany i ile wizyt przechodzi przez platformy pobierające prowizję, zamiast trafiać bezpośrednio do ciebie.", cta: "Porozmawiajmy",
+        items: [
+          { title: "Google ocenia cię przed klientem", body: "86 % osób szuka specjalisty lub gabinetu online przed skontaktowaniem się. Wizytówka Google, opinie, strona: decydują, czy zarezerwują u ciebie, czy u konkurenta." },
+          { title: "Platformy biorą prowizję, ty wykonujesz pracę", body: "Serwisy rezerwacyjne, platformy branżowe i OTA zatrzymują do 15-20 % od rezerwacji. Twoja strona nie bierze nic. Jedna bezpośrednia wizyta dziennie pokrywa już roczny abonament." },
+          { title: "LinkedIn i Instagram nie wystarczą", body: "Nie zarządzają wizytami, nie pojawiają się w wyszukiwaniach Google Maps i nie są twoje. Strona to majątek, który posiadasz i który kumuluje się z czasem." },
+          { title: "Strona to pierwsza poczekalnia", body: "Jeszcze zanim do ciebie zadzwoni, potencjalny klient wchodzi na twoją stronę. Jeśli staranność jest jak u skserowanej ulotki, to już zły sygnał." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "Proces", h2a: "Jak powstaje", h2b: "twoja strona.", sub: "Nie zaczynamy od edytora. Zaczynamy od tożsamości — potem budujemy system, który ją przenosi.",
+        steps: [
+          { n: "01", title: "Słuchanie", body: "Rozmowa (lub wizyta). Rozumiemy gabinet, usługi, klientelę, ton głosu. Nie robimy ogólnikowych briefów." },
+          { n: "02", title: "Tożsamość wizualna", body: "Paleta kolorów, typografia, fotografia. Elementy, które rodzą się z tego, czym gabinet już jest — a nie z tego, jak wyglądają konkurenci." },
+          { n: "03", title: "Design system", body: "Zanim otworzymy edytor, definiujemy zasady: komponenty, odstępy, skala. System skaluje się następnie na każdej stronie bez utraty spójności." },
+          { n: "04", title: "Rozwój", body: "Strona, lista usług, wizyty, Google Maps. Wszystko zintegrowane w jednej platformie — żadnych wtyczek innych firm." },
+          { n: "05", title: "Uruchomienie & dalej", body: "Online w ciągu 7 dni od podpisania. Potem ciągłe aktualizacje: nowe usługi, ceny, wydarzenia, promocje — bez otwierania zgłoszenia." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "Co oferujemy", h2a: "Cztery zawody", h2b: "pod jednym dachem.", sub: "To, co kiedyś wymagało trzech różnych dostawców — agencji kreatywnej, programisty, konsultanta cyfrowego — dziś żyje w jednym miejscu, z kimś, kto zna branżę usług profesjonalnych.",
+        items: [
+          { title: "Design", body: "Tożsamość wizualna zbudowana wokół gabinetu: font, paleta, fotografia. Każdy element rodzi się z tego, kim jesteś, a nie z tego, jak wyglądają konkurenci." },
+          { title: "Rozwój", body: "Strona, lista usług, wizyty, Google Maps. Jedna zintegrowana platforma — żadnych wtyczek innych firm, które same się psują." },
+          { title: "Zarządzanie", body: "Aktualizacje godzin, usług, cen, aktualności. Z panelu, bez otwierania zgłoszenia, także z telefonu między dwiema wizytami." },
+          { title: "Obecność lokalna", body: "Google Business, opinie, Yelp, TripAdvisor. Wszystko aktualizowane z jednego panelu — klient znajduje poprawne informacje, gdziekolwiek szuka." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Szablon vs na miarę", templateTitle: "Szablon",
+        templateItems: [
+          "Struktura identyczna z tysiącami innych stron",
+          "Personalizowalny w kolorach, nie w tożsamości",
+          "Wtyczki, które same się aktualizują (i psują)",
+          "Google nie nagradza wolnych, generycznych stron",
+          "Reprezentuje kategorię, a nie twój gabinet",
+        ] as string[],
+        customTitle: "Na miarę z Bizery",
+        customItems: [
+          "Design system zbudowany wokół tożsamości gabinetu",
+          "Oryginalny font, paleta i struktura",
+          "Jedna zintegrowana platforma — żadnych wtyczek",
+          "Szybkość techniczna i SEO zadbane w kodzie",
+          "Rozpoznawalny: wygląda jak ty, a nie jak motyw",
+        ] as string[],
+      },
+      faq: {
+        kicker: "Często zadawane pytania", title: "Wszystko, o co nas pytają — zanim zaczniemy.", notFound: "Nie znalazłeś tego, czego szukałeś?", ctaLink: "Napisz do nas",
+        items: [
+          { q: "Do czego naprawdę służy strona w 2026 roku dla profesjonalnego gabinetu?", a: "Służy do kontrolowania twojej obecności online, zamiast powierzać ją innym. Google ocenia cię, zanim klient zadzwoni: aktualne godziny, opinie, zdjęcia, lokalizacja. Dobrze wykonana strona na solidnej platformie pozycjonuje się lepiej niż profil społecznościowy, zbiera wizyty bez prowizji i reprezentuje twój gabinet całą dobę." },
+          { q: "Czy LinkedIn i Instagram nie wystarczą?", a: "Nie, z dwóch zasadniczych powodów. Po pierwsze: Google nie indeksuje treści LinkedIn ani Instagrama — jeśli ktoś szuka «prawnik w pobliżu» lub «fizjoterapeuta w Mediolanie», twój profil społecznościowy się nie pojawia. Po drugie: te platformy nie są twoje; algorytm może się zmienić, konto może zostać zawieszone, obserwujący mogą zmaleć. Strona to majątek, który posiadasz i który rośnie z czasem." },
+          { q: "Jaka jest różnica między waszą stroną a szablonem WordPress?", a: "Szablon to garnitur konfekcyjny z półki: możesz zmienić kolory, ale struktura jest taka sama jak tysięcy innych stron. Nasze strony powstają z design systemu zbudowanego wokół tożsamości gabinetu — font, paleta, hierarchia wizualna, ton głosu. Kiedy patrzysz na stronę, masz pomyśleć «to wygląda jak my», a nie «już gdzieś widziałem tę strukturę»." },
+          { q: "Co oznacza «tożsamościowy design system»?", a: "Przed stroną definiujemy zasady wizualne gabinetu: parę typograficzną, skalę kolorów, proporcje przestrzeni. Te zasady stosują się następnie do każdej strony, każdej karty, każdego przycisku — tworząc spójne, rozpoznawalne, profesjonalne doświadczenie." },
+          { q: "Kiedy strona się zwraca?", a: "Wcześniej, niż myślisz. Marketplace'y i platformy branżowe zatrzymują do 15-20 % od wizyty. Jeśli twoja strona przyniesie choćby jedną bezpośrednią wizytę dziennie — zamiast przechodzić przez platformę — roczna oszczędność znacznie przewyższa koszt abonamentu." },
+          { q: "Ile czasu zajmuje wejście online?", a: "W ciągu 7 dni od podpisania umowy. Wstępna konfiguracja — onboarding, projekt, personalizacja — odbywa się wcześniej, średnio 2-4 tygodnie." },
+          { q: "Jak powstaje projekt mojej strony?", a: "Zaczyna się od rozmowy. Patrzymy na gabinet, usługi, istniejące materiały, ton głosu. Potem budujemy spójny system wizualny — nie wybieramy fontów i kolorów przypadkowo, wyprowadzamy je z tego, czym gabinet już jest. Dopiero wtedy zaczynamy pisać kod." },
+          { q: "Czy mogę sam aktualizować stronę?", a: "Tak. Lista usług, godziny, zdjęcia, usługi, wydarzenia: wszystko aktualizuje się z panelu bez dotykania kodu, także z telefonu między wizytami." },
+          { q: "Pracujecie tylko w Mediolanie?", a: "Nie. Studio jest w Mediolanie, ale obsługujemy gabinety i firmy w całych Włoszech. Większość pracy odbywa się zdalnie. Gdy ma to sens, przyjeżdżamy do was." },
+          { q: "Czy strona jest dostępna w wielu językach?", a: "Tak. Każda strona jest tworzona domyślnie w wersji wielojęzycznej, obejmując główne języki europejskie: włoski, angielski, francuski, niemiecki i hiszpański. Na życzenie można dodać inne języki w zależności od typowej klienteli gabinetu — na przykład rosyjski, arabski, chiński lub japoński. Koszt dodatkowych języków jest ustalany na etapie wyceny." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Chcesz zobaczyć, jak pracujemy?", h2b: "Porozmawiaj ze studiem.", requestProposal: "Poproś o propozycję", seeOffer: "Zobacz ofertę" },
+    },
     seo: {
       home: {
         title: "Bizery - strony internetowe dla gabinetów, salonów i firm usługowych",

@@ -576,6 +576,79 @@ export const messages = {
       finalCtaDemo: "Request a demo",
       finalCtaPlans: "View plans",
     },
+    about: {
+      hero: { label: "The studio", h1a: "Every studio deserves", h1b: "a website that represents it.", sub: "Bizery is the digital platform for professional studios and service businesses. No templates, no off-the-shelf identity. Every website is built from a design system rooted in the studio — its services, its clientele, the way it works." },
+      manifesto: { label: "Manifesto", quote: "A professional studio cares about every detail — the advice, the communication, the client relationship. The website must do the same. No less, never less.", body: "We believe digital is an extension of the studio, not an online brochure. That's why we don't use templates: we build a visual system born from the client's identity and carry it across every screen." },
+      principles: [
+        { title: "One studio at a time", body: "We don't scale by force. Every project starts by listening to the owner, understanding the services, the type of clientele and what sets the studio apart. Only then do we get to the website." },
+        { title: "No templates", body: "There is no base version to customize. The website is built from scratch — font, palette, hierarchy, tone of voice — reflecting the studio's identity, not that of a €49 WordPress theme." },
+        { title: "Design system before code", body: "Before writing a line we define the visual system: typography, colour scale, spacing, micro-interactions. A professional studio deserves a website that carries its identity forward, not one that flattens it." },
+        { title: "The tech stays invisible", body: "Speed, security, maintenance remain our problem. You see a tidy website that does what's needed — and that performs better than competitors on Google." },
+        { title: "The long run", body: "We don't deliver a website and disappear. We keep it alive: seasonal updates, new features, product evolutions. Year after year, like a professional relationship." },
+      ] as { title: string; body: string }[],
+      why: {
+        label: "Why now", h2a: "What is a website for", h2b: "in 2026?", sub: "Not to “be online”. It's about controlling how you're found, how you're perceived and how many appointments go through platforms that take a commission instead of coming directly to you.", cta: "Let's talk",
+        items: [
+          { title: "Google judges you before the client", body: "86% of people search for a professional or studio online before contacting them. Google listing, reviews, website: they decide whether they book with you or with a competitor." },
+          { title: "Platforms take the commission, you do the work", body: "Booking sites, industry marketplaces and OTAs keep up to 15-20% per booking. Your website takes nothing. One direct appointment a day already covers the annual fee." },
+          { title: "LinkedIn and Instagram aren't enough", body: "They don't manage appointments, don't appear in Google Maps searches, and aren't yours. The website is an asset you own that builds up over time." },
+          { title: "The website is the first waiting room", body: "Before even calling you, the potential client passes through your website. If the care is that of a photocopied flyer, it's already the wrong signal." },
+        ] as { title: string; body: string }[],
+      },
+      process: {
+        label: "The process", h2a: "How your website", h2b: "is built.", sub: "We don't start from the editor. We start from identity — then we build the system that carries it forward.",
+        steps: [
+          { n: "01", title: "Listening", body: "A call (or a visit). We understand the studio, the services, the clientele, the tone of voice. We don't do generic briefs." },
+          { n: "02", title: "Visual identity", body: "Colour palette, typography, photography. Elements born from what the studio already is — not from what competitors look like." },
+          { n: "03", title: "Design system", body: "Before opening the editor we define the rules: components, spacing, scale. The system then scales across every page without losing coherence." },
+          { n: "04", title: "Development", body: "Website, service price list, appointments, Google Maps. All integrated into the same platform — no third-party plugins." },
+          { n: "05", title: "Go-live & beyond", body: "Online within 7 days of signing. Then continuous updates: new services, prices, events, promotions — without opening a ticket." },
+        ] as { n: string; title: string; body: string }[],
+      },
+      offer: {
+        label: "What we offer", h2a: "Four crafts", h2b: "under one roof.", sub: "What once required three different suppliers — creative agency, developer, digital consultant — now lives in one place, with someone who knows the professional-services sector.",
+        items: [
+          { title: "Design", body: "Visual identity built on the studio: font, palette, photography. Every element is born from what you are, not from what competitors look like." },
+          { title: "Development", body: "Website, service price list, appointments, Google Maps. One integrated platform — no third-party plugins that break on their own." },
+          { title: "Management", body: "Updates to hours, services, rates, news. From the dashboard, without opening a ticket, even from your phone between appointments." },
+          { title: "Local presence", body: "Google Business, reviews, Yelp, TripAdvisor. All updated from a single dashboard — the client finds correct information wherever they search." },
+        ] as { title: string; body: string }[],
+      },
+      compare: {
+        label: "Template vs bespoke", templateTitle: "A template",
+        templateItems: [
+          "Structure identical to thousands of other sites",
+          "Customizable in colours, not in identity",
+          "Plugins that update (and break) on their own",
+          "Google doesn't reward slow, generic sites",
+          "Represents a category, not your studio",
+        ] as string[],
+        customTitle: "Bespoke with Bizery",
+        customItems: [
+          "Design system built on the studio's identity",
+          "Original font, palette and structure",
+          "One integrated platform — no plugins",
+          "Technical speed and SEO cared for in the code",
+          "Recognizable: it looks like you, not a theme",
+        ] as string[],
+      },
+      faq: {
+        kicker: "FAQ", title: "Everything we're asked — before we begin.", notFound: "Didn't find what you were looking for?", ctaLink: "Write to us",
+        items: [
+          { q: "What is a website really for in 2026 for a professional studio?", a: "It's about controlling your online presence instead of leaving it to others. Google judges you before the client even calls: up-to-date hours, reviews, photos, location. A well-made website on a solid platform ranks better than a social profile, collects appointments without commissions and represents your studio around the clock." },
+          { q: "Aren't LinkedIn and Instagram enough?", a: "No, for two fundamental reasons. First: Google doesn't index LinkedIn or Instagram content — if someone searches 'lawyer near me' or 'physiotherapist in Milan', your social profile doesn't appear. Second: these platforms aren't yours; the algorithm can change, the account can be suspended, followers can drop. The website is an asset you own and that grows over time." },
+          { q: "What's the difference between your website and a WordPress template?", a: "A template is an off-the-rack suit: you can change the colours, but the structure is that of thousands of other sites. Our sites are born from a design system built on the studio's identity — font, palette, visual hierarchy, tone of voice. When you look at the site you should think 'this looks like us', not 'I've seen this structure somewhere before'." },
+          { q: "What does 'identity design system' mean?", a: "Before the website we define the studio's visual rules: the typographic pair, the colour scale, the proportions of spaces. These rules then apply to every page, every card, every button — creating a coherent, recognizable, professional experience." },
+          { q: "When does a website pay for itself?", a: "Sooner than you think. Marketplaces and industry platforms keep up to 15-20% per appointment. If your website brings even one direct appointment a day — instead of going through a platform — the annual saving far exceeds the cost of the fee." },
+          { q: "How long does it take to go online?", a: "Within 7 days of signing the contract. The initial setup — onboarding, design, customization — happens before, on average 2-4 weeks." },
+          { q: "How is my website's design created?", a: "It starts with a call. We look at the studio, the services, the existing material, the tone of voice. Then we build a coherent visual system — we don't pick fonts and colours at random, we derive them from what the studio already is. Only then do we start writing code." },
+          { q: "Can I update the website myself?", a: "Yes. Price list, hours, photos, services, events: everything updates from the dashboard without touching the code, even from your phone between one appointment and the next." },
+          { q: "Do you work only in Milan?", a: "No. The studio is in Milan, but we follow studios and businesses across Italy. Most of the work happens remotely. When it makes sense, we come to you." },
+          { q: "Is the website available in multiple languages?", a: "Yes. Every website is built multilingual by default, covering the main European languages: Italian, English, French, German and Spanish. On request, other languages can be added based on the studio's typical clientele — for example Russian, Arabic, Chinese or Japanese. The cost of additional languages is agreed during the quote phase." },
+        ] as { q: string; a: string }[],
+      },
+      cta: { h2a: "Want to see how we work?", h2b: "Talk to the studio.", requestProposal: "Request a proposal", seeOffer: "See the offer" },
+    },
     seo: {
       home: {
         title: "Bizery - websites for studios, salons and service businesses",
