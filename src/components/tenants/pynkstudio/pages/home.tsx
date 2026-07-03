@@ -7,6 +7,8 @@ import { ArrowRight, Brain, ChevronDown, FileCheck2, Globe, Link2, Map, Monitor,
 import { PynkShell, usePynkNerd } from "../pynk-shell";
 import { PynkPortfolioCard, PynkStackChips } from "../pynk-cards";
 import { pickPynkPortfolioPreview } from "../portfolio";
+import { PynkJsonLd } from "../pynk-json-ld";
+import { organizationSchema } from "../pynk-seo";
 import { pynkT, usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
@@ -295,6 +297,7 @@ function HomeInner() {
 export function PynkStudioHomePage() {
   return (
     <PynkShell>
+      <PynkJsonLd data={[organizationSchema()]} />
       <HomeInner />
     </PynkShell>
   );

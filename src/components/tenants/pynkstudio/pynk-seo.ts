@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PYNK_ORIGIN } from "./ai-governance-data";
+import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 
 // Date di pubblicazione/aggiornamento del corpus AI Governance.
 // Fisse e versionate nel codice: niente new Date() (cambierebbe a ogni build e
@@ -8,6 +9,15 @@ export const PYNK_ARTICLE_PUBLISHED = "2026-06-15T09:00:00+02:00";
 export const PYNK_ARTICLE_MODIFIED = "2026-06-28T09:00:00+02:00";
 
 const DEFAULT_OG_IMAGE = `${PYNK_ORIGIN}/pynkstudio/pynk-logo-transparent.png`;
+
+// Il sito è servito solo sotto /<locale> (vedi tenant-locales.ts): le pagine reali
+// vivono su /it/..., mai su path nudi. Ogni URL usato in metadata/JSON-LD deve
+// includere questo prefisso, altrimenti il canonical punta a un path che fa 302.
+const PYNK_LOCALE = getTenantLocaleConfig("pynkstudio")?.defaultLocale ?? "it";
+
+function pynkUrl(path: string): string {
+  return path === "/" ? `${PYNK_ORIGIN}/${PYNK_LOCALE}` : `${PYNK_ORIGIN}/${PYNK_LOCALE}${path}`;
+}
 
 type PynkMetadataInput = {
   title: string;
@@ -30,7 +40,7 @@ export function pynkMetadata({
   publishedTime,
   modifiedTime,
 }: PynkMetadataInput): Metadata {
-  const url = `${PYNK_ORIGIN}${path}`;
+  const url = pynkUrl(path);
   return {
     title: { absolute: title },
     description,
@@ -72,17 +82,28 @@ export function pynkMetadata({
 export function organizationSchema() {
   return {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    // ProfessionalService (sottotipo LocalBusiness) abilita i segnali local SEO:
+    // l'indirizzo deve restare identico a quello della Google Business Profile.
+    "@type": ["Organization", "ProfessionalService"],
     name: "PYNK STUDIO",
     alternateName: "Pynk Studio - AI Engineering Company",
     url: PYNK_ORIGIN,
     logo: `${PYNK_ORIGIN}/pynkstudio/pynk-logo-transparent.png`,
+    image: `${PYNK_ORIGIN}/pynkstudio/pynk-logo-transparent.png`,
     description:
       "AI Engineering Company: progettiamo, sviluppiamo, integriamo e governiamo sistemi di Intelligenza Artificiale per le aziende.",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Via Gino Severini 1",
+      addressLocality: "Milano",
+      addressRegion: "MI",
+      addressCountry: "IT",
+    },
     knowsAbout: [
       "AI Governance",
       "AI Act",
       "Intelligenza Artificiale aziendale",
+      "Formazione AI per dipendenti",
       "Architetture AI",
       "RAG",
       "Agenti AI",
@@ -102,6 +123,39 @@ export function organizationSchema() {
   };
 }
 
+// Schema Course per le pagine di formazione: Google richiede provider e
+// hasCourseInstance per considerare l'entità corso.
+export function courseSchema(input: { name: string; description: string; path: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: input.name,
+    description: input.description,
+    url: pynkUrl(input.path),
+    inLanguage: "it-IT",
+    provider: {
+      "@type": "Organization",
+      name: "PYNK STUDIO",
+      url: PYNK_ORIGIN,
+    },
+    hasCourseInstance: {
+      "@type": "CourseInstance",
+      courseMode: ["onsite", "online"],
+      location: {
+        "@type": "Place",
+        name: "PYNK STUDIO — Milano, oppure presso la sede del cliente",
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: "Via Gino Severini 1",
+          addressLocality: "Milano",
+          addressRegion: "MI",
+          addressCountry: "IT",
+        },
+      },
+    },
+  };
+}
+
 export function breadcrumbSchema(items: Array<{ name: string; path: string }>) {
   return {
     "@context": "https://schema.org",
@@ -110,7 +164,7 @@ export function breadcrumbSchema(items: Array<{ name: string; path: string }>) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `${PYNK_ORIGIN}${item.path}`,
+      item: pynkUrl(item.path),
     })),
   };
 }
@@ -121,7 +175,7 @@ export function serviceSchema(name: string, description: string, path: string, s
     "@type": "Service",
     name,
     description,
-    url: `${PYNK_ORIGIN}${path}`,
+    url: pynkUrl(path),
     provider: {
       "@type": "Organization",
       name: "PYNK STUDIO",
@@ -146,7 +200,7 @@ export function offerCatalogSchema(
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
     name: catalogName,
-    url: `${PYNK_ORIGIN}/ai-governance`,
+    url: pynkUrl("/ai-governance"),
     itemListElement: services.map((service, index) => ({
       "@type": "Offer",
       position: index + 1,
@@ -154,7 +208,7 @@ export function offerCatalogSchema(
         "@type": "Service",
         name: service.name,
         description: service.description,
-        url: `${PYNK_ORIGIN}${service.path}`,
+        url: pynkUrl(service.path),
         provider: { "@type": "Organization", name: "PYNK STUDIO", url: PYNK_ORIGIN },
       },
     })),
@@ -171,7 +225,7 @@ export function itemListSchema(name: string, items: Array<{ name: string; path: 
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      url: `${PYNK_ORIGIN}${item.path}`,
+      url: pynkUrl(item.path),
     })),
   };
 }
@@ -185,7 +239,7 @@ export function articleSchema(input: {
   modifiedTime?: string;
   image?: string;
 }) {
-  const url = `${PYNK_ORIGIN}${input.path}`;
+  const url = pynkUrl(input.path);
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",

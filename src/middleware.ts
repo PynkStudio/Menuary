@@ -430,6 +430,10 @@ const PREVIEW_GLOBAL_TENANT_ROUTES = new Set([
   "per-le-aziende",
   "metodo",
   "ad",
+  "ai-governance",
+  "soluzioni",
+  "ai-act",
+  "blog",
 ]);
 
 function handlePreviewTenantLocale(

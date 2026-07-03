@@ -14,6 +14,9 @@ export type PynkGovernanceService = {
   deliverables?: string[];
   faq: Array<{ q: string; a: string }>;
   cta: string;
+  // Servizio con componente legale/normativa: mostra la nota di partnership
+  // con lo Studio Legale Aranzulla nella pagina.
+  legalPartner?: boolean;
 };
 
 import { blogContent, type PynkArticleSection } from "./ai-governance-blog-content";
@@ -82,6 +85,7 @@ export const governanceServices: PynkGovernanceService[] = [
       },
     ],
     cta: "Richiedi un AI Assessment",
+    legalPartner: true,
   },
   {
     slug: "ai-governance-framework",
@@ -127,6 +131,7 @@ export const governanceServices: PynkGovernanceService[] = [
       },
     ],
     cta: "Progetta la governance AI",
+    legalPartner: true,
   },
   {
     slug: "ai-literacy",
@@ -178,6 +183,7 @@ export const governanceServices: PynkGovernanceService[] = [
       },
     ],
     cta: "Pianifica AI Literacy",
+    legalPartner: true,
   },
   {
     slug: "ai-policy",
@@ -223,6 +229,7 @@ export const governanceServices: PynkGovernanceService[] = [
       },
     ],
     cta: "Crea le policy AI",
+    legalPartner: true,
   },
   {
     slug: "ai-risk-assessment",
@@ -268,6 +275,7 @@ export const governanceServices: PynkGovernanceService[] = [
       },
     ],
     cta: "Analizza i rischi AI",
+    legalPartner: true,
   },
   {
     slug: "ai-architecture",
@@ -448,6 +456,7 @@ export const governanceServices: PynkGovernanceService[] = [
       },
     ],
     cta: "Valuta gli obblighi AI Act",
+    legalPartner: true,
   },
 ];
 

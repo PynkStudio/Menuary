@@ -7,7 +7,8 @@ import { PynkShell } from "../pynk-shell";
 import { getPynkSolution } from "../pynk-solutions";
 import { getGovernanceArticle, getGovernanceService } from "../ai-governance-data";
 import { PynkJsonLd } from "../pynk-json-ld";
-import { breadcrumbSchema, faqSchema, organizationSchema, serviceSchema } from "../pynk-seo";
+import { PynkLegalPartnerNote } from "../pynk-legal-partner";
+import { breadcrumbSchema, courseSchema, faqSchema, organizationSchema, serviceSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 export function PynkSolutionPage({ slug }: { slug: string }) {
@@ -28,6 +29,9 @@ export function PynkSolutionPage({ slug }: { slug: string }) {
       { name: solution.h1, path },
     ]),
     faqSchema(solution.faq),
+    ...(solution.slug === "formazione-ai-dipendenti"
+      ? [courseSchema({ name: solution.h1, description: solution.metaDescription, path })]
+      : []),
   ];
 
   return (
@@ -121,6 +125,8 @@ export function PynkSolutionPage({ slug }: { slug: string }) {
             </ul>
           </div>
         </section>
+
+        {solution.legalPartner && <PynkLegalPartnerNote />}
 
         <section className="pynk-section pynk-section-alt">
           <div className="pynk-container">

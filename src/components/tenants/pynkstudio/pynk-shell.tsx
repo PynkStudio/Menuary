@@ -232,6 +232,8 @@ function PynkFooter() {
           <span>·</span>
           <span>{copy.footer.piva}</span>
           <span>·</span>
+          <span>{copy.footer.address}</span>
+          <span>·</span>
           <a href="https://www.linkedin.com/company/pynkstudio" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="pynk-footer-social">
             <Linkedin className="pynk-icon-xs" />
           </a>

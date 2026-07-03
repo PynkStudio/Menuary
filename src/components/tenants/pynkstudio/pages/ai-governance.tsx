@@ -547,7 +547,12 @@ export function PynkAiGovernancePage() {
               <h2 className="pynk-section-title pynk-section-title-left">La conformità è una conseguenza, non il punto di partenza.</h2>
               <p className="pynk-panel-desc">
                 Le aziende che progettano bene l&apos;AI sono anche quelle che arrivano più facilmente alla conformità. Ruoli,
-                rischio e documentazione si gestiscono meglio quando architettura, dati e logging sono già fatti bene.
+                rischio e documentazione si gestiscono meglio quando architettura, dati e logging sono già fatti bene. Per
+                gli aspetti legali e normativi collaboriamo con lo{" "}
+                <a href="https://www.studiolegalearanzulla.it" target="_blank" rel="noopener noreferrer">
+                  Studio Legale Aranzulla
+                </a>
+                , specializzato in diritto IT e delle nuove tecnologie.
               </p>
               <Link href={href("/ai-act")} className="pynk-link-cta pynk-mt-24">
                 Leggi la sezione AI Act <ArrowRight className="pynk-icon-xs" />

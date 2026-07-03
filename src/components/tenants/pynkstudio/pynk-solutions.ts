@@ -22,6 +22,11 @@ export type PynkSolution = {
   relatedServices: string[];
   relatedArticles: string[];
   cta: string;
+  // Keyword extra per il meta tag della pagina (oltre alle generiche).
+  metaKeywords?: string[];
+  // Soluzione con componente legale/normativa: mostra la nota di partnership
+  // con lo Studio Legale Aranzulla nella pagina.
+  legalPartner?: boolean;
 };
 
 export const pynkSolutions: PynkSolution[] = [
@@ -71,6 +76,7 @@ export const pynkSolutions: PynkSolution[] = [
     relatedServices: ["ai-policy", "ai-literacy"],
     relatedArticles: ["chatgpt-in-azienda", "ai-act-pmi"],
     cta: "Parla con noi di ChatGPT in azienda",
+    legalPartner: true,
   },
   {
     slug: "ai-ufficio-tecnico",
@@ -165,6 +171,7 @@ export const pynkSolutions: PynkSolution[] = [
     relatedServices: ["ai-architecture", "ai-risk-assessment", "ai-policy"],
     relatedArticles: ["knowledge-base-ai", "human-in-the-loop"],
     cta: "Richiedi una soluzione per lo studio legale",
+    legalPartner: true,
   },
   {
     slug: "automazione-documenti",
@@ -306,16 +313,17 @@ export const pynkSolutions: PynkSolution[] = [
     relatedServices: ["valutazione-obblighi-ai-act", "ai-literacy", "ai-policy"],
     relatedArticles: ["ai-act-pmi", "sistemi-ai-ad-alto-rischio", "ai-literacy-articolo-4"],
     cta: "Verifica se sei in regola con l'AI Act",
+    legalPartner: true,
   },
   {
     slug: "formazione-ai-dipendenti",
-    eyebrow: "Formazione · AI Literacy",
-    h1: "Formazione AI per i dipendenti",
-    metaTitle: "Formazione AI per i dipendenti: percorsi per ruolo | PYNK STUDIO",
+    eyebrow: "Corsi di formazione · AI Literacy",
+    h1: "Corsi di formazione IA per i dipendenti",
+    metaTitle: "Corsi di formazione IA per dipendenti e aziende — Milano e online | PYNK STUDIO",
     metaDescription:
-      "Formazione AI per i tuoi dipendenti, modulata per ruolo: usare l'AI bene e in sicurezza e rispettare l'Articolo 4 dell'AI Act. Workshop, affiancamento e casi reali.",
+      "Corsi di formazione sull'intelligenza artificiale (IA) per i dipendenti, modulati per ruolo: usare l'AI bene e in sicurezza e rispettare l'Articolo 4 dell'AI Act. In aula a Milano, in azienda o da remoto.",
     intro:
-      "Vuoi che i tuoi dipendenti usino l'AI bene, in sicurezza e nel rispetto delle regole? Costruiamo percorsi di formazione su misura, diversi per ruolo, con esercizi sui casi reali della tua azienda.",
+      "Vuoi che i tuoi dipendenti usino l'intelligenza artificiale bene, in sicurezza e nel rispetto delle regole? Costruiamo corsi di formazione IA su misura, diversi per ruolo, con esercizi sui casi reali della tua azienda — nella nostra sede di Milano, presso di voi o da remoto.",
     painsTitle: "Il problema oggi",
     pains: [
       "Dipendenti che usano l'AI a caso, o per niente.",
@@ -323,10 +331,10 @@ export const pynkSolutions: PynkSolution[] = [
       "Obbligo di formazione dell'AI Act (Articolo 4).",
       "Corsi generici che non lasciano nulla.",
     ],
-    howTitle: "Come funziona il percorso",
+    howTitle: "Come funziona il corso",
     how: [
       { title: "Partiamo dai ruoli", body: "Direzione, IT, marketing, customer care, HR: ognuno impara ciò che gli serve davvero." },
-      { title: "Teoria e pratica insieme", body: "Fondamenti, prompting, sicurezza dei dati, AI Act, più laboratori su casi veri." },
+      { title: "Teoria e pratica insieme", body: "Fondamenti di intelligenza artificiale, prompting, sicurezza dei dati, AI Act, più laboratori su casi veri." },
       { title: "Affiancamento, non solo aula", body: "Workshop, office hours, revisione di prompt e workflow reali." },
     ],
     deliverTitle: "Cosa ottieni",
@@ -338,8 +346,8 @@ export const pynkSolutions: PynkSolution[] = [
     ],
     faq: [
       {
-        q: "La formazione AI è obbligatoria?",
-        a: "L'Articolo 4 dell'AI Act richiede un livello adeguato di competenza per chi usa l'AI in azienda. Un percorso documentato e proporzionato al ruolo soddisfa questo requisito.",
+        q: "La formazione IA è obbligatoria?",
+        a: "L'Articolo 4 dell'AI Act richiede un livello adeguato di competenza per chi usa l'intelligenza artificiale in azienda. Un corso documentato e proporzionato al ruolo soddisfa questo requisito.",
       },
       {
         q: "Serve anche se usiamo poco l'AI?",
@@ -347,12 +355,26 @@ export const pynkSolutions: PynkSolution[] = [
       },
       {
         q: "Quanto dura?",
-        a: "Si lavora per moduli combinabili: un percorso base per tutti e approfondimenti per ruolo, distribuiti nel tempo con affiancamento.",
+        a: "Si lavora per moduli combinabili: un corso base per tutti e approfondimenti per ruolo, distribuiti nel tempo con affiancamento.",
+      },
+      {
+        q: "Fate i corsi in presenza a Milano?",
+        a: "Sì: la nostra sede è in via Gino Severini 1 a Milano. Teniamo i corsi lì, presso la vostra azienda in tutta Italia oppure da remoto — anche in formula mista.",
       },
     ],
     relatedServices: ["ai-literacy", "valutazione-obblighi-ai-act"],
     relatedArticles: ["ai-literacy-articolo-4", "ai-act-pmi"],
-    cta: "Pianifica la formazione AI",
+    cta: "Pianifica il corso di formazione IA",
+    metaKeywords: [
+      "corsi formazione IA",
+      "corso formazione intelligenza artificiale",
+      "formazione IA dipendenti",
+      "formazione AI dipendenti",
+      "formazione IA Milano",
+      "corso AI aziende",
+      "formazione AI Act Articolo 4",
+    ],
+    legalPartner: true,
   },
 ];
 

@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props) {
     title: solution.metaTitle,
     description: solution.metaDescription,
     path: `/soluzioni/${solution.slug}`,
-    keywords: [solution.h1, "AI per aziende", "intelligenza artificiale", "AI Act"],
+    keywords: [solution.h1, "AI per aziende", "intelligenza artificiale", "AI Act", ...(solution.metaKeywords ?? [])],
   });
 }
 

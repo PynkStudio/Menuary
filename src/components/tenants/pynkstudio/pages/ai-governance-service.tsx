@@ -8,6 +8,7 @@ import { getGovernanceService } from "../ai-governance-data";
 import { PynkCarousel } from "../pynk-carousel";
 import { adoptionFormats, adoptionModules, adoptionRoles } from "../pynk-adoption-program";
 import { PynkJsonLd } from "../pynk-json-ld";
+import { PynkLegalPartnerNote } from "../pynk-legal-partner";
 import { breadcrumbSchema, faqSchema, organizationSchema, serviceSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
@@ -193,6 +194,8 @@ export function PynkAiGovernanceServicePage({ slug }: { slug: string }) {
             )}
           </div>
         </section>
+
+        {service.legalPartner && <PynkLegalPartnerNote />}
 
         <section className="pynk-section pynk-section-alt">
           <div className="pynk-container">

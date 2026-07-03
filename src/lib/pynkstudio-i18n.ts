@@ -22,6 +22,8 @@ const it = {
   },
   footer: {
     piva: "P.IVA 13577530960",
+    // NAP: deve coincidere con l'indirizzo della Google Business Profile.
+    address: "Via Gino Severini 1, Milano",
     staff: "Area staff",
     poweredBy: "Powered by",
   },

@@ -5,6 +5,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { aiActFaq } from "../ai-governance-data";
 import { PynkJsonLd } from "../pynk-json-ld";
+import { PynkLegalPartnerNote } from "../pynk-legal-partner";
 import { breadcrumbSchema, faqSchema, organizationSchema, serviceSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
@@ -128,6 +129,8 @@ export function PynkAiActPage() {
             </Link>
           </div>
         </section>
+
+        <PynkLegalPartnerNote />
 
         <section className="pynk-section">
           <div className="pynk-container">
