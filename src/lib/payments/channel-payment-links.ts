@@ -58,6 +58,14 @@ function serviceDb() {
   return db;
 }
 
+// TODO: baseUrl() è globale (menuary.it), non del tenant. Nessun chiamante oggi
+// raggiunge createStripeDirect/createWithPlatform senza orderId (i flussi ordine
+// reali passano da createCheckoutPageLink → tenantCheckoutUrl, corretto), quindi
+// il redirect /pagamenti qui sotto è codice morto. Se in futuro si costruisce un
+// flusso pagamento senza ordine (es. acconto prenotazione), il redirect Stripe
+// DEVE puntare al dominio del tenant (vedi tenantCheckoutUrl in
+// @/lib/orders/checkout-url), mai a menuary.it — e va creata la pagina di
+// destinazione, che oggi non esiste.
 function baseUrl(): string {
   return (
     process.env.NEXT_PUBLIC_SITE_URL ??

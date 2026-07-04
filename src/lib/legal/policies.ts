@@ -25,6 +25,8 @@ export type PolicyController = {
   address: string;
   phone: string;
   email?: string;
+  piva?: string;
+  pec?: string;
 };
 
 const hasAnyOrdering = (f: PolicyModuleFlags) =>
@@ -83,11 +85,11 @@ function dataControllerBlock(controller?: PolicyController): PolicySection {
     title: "Titolare del trattamento",
     body: [
       "Il titolare del trattamento dei dati personali raccolti attraverso il sito e le funzionalità connesse è, ai sensi dell’art. 4 n. 7 GDPR:",
-      `${owner.name} — ${owner.address}. Contatti: telefono ${owner.phone}${
+      `${owner.name} — ${owner.address}${owner.piva ? `. P.IVA ${owner.piva}` : ""}. Contatti: telefono ${owner.phone}${
         owner.email
           ? `, e-mail ${owner.email}.`
           : " (per richieste inerenti la privacy preferire contatto telefonico o canale che indicheremo su richiesta)."
-      }`,
+      }${owner.pec ? ` PEC: ${owner.pec}.` : ""}`,
     ],
   };
 }

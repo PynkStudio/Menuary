@@ -22,7 +22,7 @@ Per documentare in dettaglio una singola integrazione usa [[integration-template
 | **OpenAI** | Funzioni IA (menu, WhatsApp lead) | `ai/*`, `OPENAI_API_KEY`, `OPENAI_*_MODEL` |
 | **OpenWA** | Worker WhatsApp | `scripts/openwa/`, script `whatsapp:worker`, `Dockerfile.openwa` |
 | **QZ Tray** | Stampa comande USB (ponte locale) | dipendenza `qz-tray`, `src/lib/printing/`, `api/gestione/printers`, servizio locale sul PC cassa (`wss://localhost`) |
-| **SUNMI Cloud Printer** | Stampa comande cloud (server-side) | `src/lib/printing/sunmi-cloud.ts`, callback `api/printing/sunmi/pull`, `SUNMI_CLOUD_APP_ID`, `SUNMI_CLOUD_APP_KEY`, `SUNMI_CLOUD_API_BASE`, `SUNMI_CLOUD_PUSH_PATH` |
+| **SUNMI Cloud Printer** | Stampa comande cloud (server-side, API V2 push diretto) | `src/lib/printing/sunmi-cloud.ts`, `src/lib/printing/dispatch.ts`, `SUNMI_CLOUD_APP_ID`, `SUNMI_CLOUD_APP_KEY`, `SUNMI_CLOUD_API_BASE` |
 | **MapLibre** | Mappe | dipendenza `maplibre-gl`, `tenant/[tenantId]/map` |
 | **Vercel Analytics** | Analytics | dipendenza `@vercel/analytics` |
 
@@ -46,14 +46,17 @@ Modulo `printStations` ("Stampanti e reparti"). Il ponte verso la stampante è *
 
 ## SUNMI Cloud Printer — stampa comande server-side
 
-Alternativa a QZ per il modulo `printStations` (`tenant_printers.connection = 'sunmi_cloud'`, SN in `device_sn`). La stampante si collega da sola a internet/cloud SUNMI: **nessun PC, nessuna pagina aperta**. Flusso:
+Alternativa a QZ per il modulo `printStations` (`tenant_printers.connection = 'sunmi_cloud'`, SN in `device_sn`). La stampante si collega da sola a internet/cloud SUNMI: **nessun PC, nessuna pagina aperta**. Usa l'API **SUNMI Cloud Printer V2**, modalità **"Cloud to Cloud" / push diretto** (il contenuto passa da SUNMI, che lo inoltra alla stampante — nessun endpoint di callback lato nostro). Flusso:
 
-1. All'accettazione di un ordine (sito/WhatsApp/Retell) il server chiama `dispatchComandaForOrder` (`src/lib/printing/dispatch.ts`), che fa un **push firmato (MD5)** alla stampante per SN (`src/lib/printing/sunmi-cloud.ts`).
-2. Per privacy SUNMI non trasporta il contenuto: la stampante si ricollega al **callback pubblico** `POST/GET /api/printing/sunmi/pull` e scarica la comanda in **ESC/POS**.
-3. Dedup via `orders.comanda_printed_at` (prenotato al push, rollback se il push fallisce).
+1. All'accettazione di un ordine (sito/WhatsApp/Retell) il server chiama `dispatchComandaForOrder` (`src/lib/printing/dispatch.ts`): carica ordine+righe, costruisce l'ESC/POS (`buildComandaEscPos`) e chiama `pushPrintContent` (`src/lib/printing/sunmi-cloud.ts`).
+2. `pushPrintContent` invia `POST https://openapi.sunmi.com/v2/printer/open/open/device/pushContent` con il contenuto ESC/POS convertito in **esadecimale (UTF-8)** nel campo `content`; body JSON `{ trade_no, sn, order_type, content, count }`.
+3. Auth via **header HTTP**: `Sunmi-Appid`, `Sunmi-Timestamp` (unix 10 cifre), `Sunmi-Nonce` (6 cifre), `Sunmi-Sign = HMAC-SHA256(jsonBody + appid + timestamp + nonce, appkey)` (hex), `Source: openapi`. Successo = risposta `{ code: 1, msg: "success" }`.
+4. `trade_no` = id ordine (UUID) senza trattini = 32 hex; funge da chiave dedup lato SUNMI. Dedup nostro via `orders.comanda_printed_at` (prenotato al push, rollback se il push fallisce).
 
-- Env (per-piattaforma, una sola SUNMI partner app): `SUNMI_CLOUD_APP_ID`, `SUNMI_CLOUD_APP_KEY`, `SUNMI_CLOUD_API_BASE`, `SUNMI_CLOUD_PUSH_PATH`.
-- **Stato:** implementazione "a secco" — **non testata**. ⚠️ Da verificare con account partner SUNMI e doc autenticata: URL/parametri esatti del push, composizione precisa del `sign`, e formato della risposta del pull (ESC/POS raw vs JSON/base64). Tutti i punti incerti sono marcati `TODO(verify)` nel codice.
+- Env (per-piattaforma, una sola SUNMI partner app): `SUNMI_CLOUD_APP_ID`, `SUNMI_CLOUD_APP_KEY`, `SUNMI_CLOUD_API_BASE` (default `https://openapi.sunmi.com`).
+- Portale SUNMI: capability **"Cloud Printed"** collegata all'app cloud. In modalità push diretto **non serve** compilare *Order Request Address* né *Device status callback address*; **IP Whitelist vuoto** (IP di uscita Vercel dinamici).
+- **Stato:** allineato alla doc autenticata Cloud Printer V2 ([§3 API integration development](https://docs.sunmi.com/en-US/cdixeghjk491/xffdeghjk524)). ⚠️ Ancora **non testato su device reale**: da confermare col primo push che la stampante sia bound al channel/shop (errore `10071704 "not belong to this channel"`) e la resa del template ESC/POS su carta 80mm.
+- Modalità alternativa non implementata: **"Device to Cloud" / callback** (doc [§4](https://docs.sunmi.com/en-US/cdixeghjk491/xfffeghjk535)) — la stampante scarica da endpoint partner `printTicket/getPrintTicketOrderId|getPrintTicketInfo|updatePrintTicketStatus`, firma **MD5** `MD5(keyvalue + app_key)`, con l'URL base in *Order Request Address*. Da valutare solo se serve non far transitare i dati da SUNMI.
 - **Costo/licenza da confermare:** la stampa **silenziosa** in produzione (senza popup di conferma) richiede un certificato di firma QZ commerciale. In dev/unsigned QZ chiede conferma all'utente una volta per origine (`setCertificatePromise`/`setSignaturePromise` oggi non firmati). Nessuna env server dedicata: il ponte è interamente lato browser↔localhost.
 
 ## Da confermare

@@ -79,7 +79,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     : routes;
   return localizedRoutes.map((path) => ({
     url: `${base}${path}`,
-    lastModified: new Date(),
     ...seoFor(routeOf(path)),
   }));
 }

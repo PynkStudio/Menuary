@@ -58,7 +58,11 @@ export const TRACKING_EVENT_COLORS: Record<ResendTrackingEventType, string> = {
 /** Determina il brand dal from address dell'email di tracking. */
 export function detectBrandFromSender(fromAddress: string): InboundEmailBrand {
   const addr = fromAddress.toLowerCase();
-  if (addr.includes("@pynkstudio.it") || addr.includes("@pynkstudio.com")) return "pynkstudio";
+  if (
+    addr.includes("@pynkstudio.it") ||
+    addr.includes("@pynkstudio.com") ||
+    addr.includes("@pynkstudio.eu")
+  ) return "pynkstudio";
   if (addr.includes("@weuseorpheo.com")) return "orpheo";
   if (addr.includes("@bizery.it")) return "bizery";
   return "menuary";

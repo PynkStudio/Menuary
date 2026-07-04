@@ -155,7 +155,7 @@ const BRAND_DOMAINS: Record<InboundEmail["brand"], string[]> = {
   menuary:    ["menuary.it"],
   bizery:     ["bizery.it"],
   orpheo:     ["weuseorpheo.com"],
-  pynkstudio: ["pynkstudio.it", "pynkstudio.com"],
+  pynkstudio: ["pynkstudio.it", "pynkstudio.com", "pynkstudio.eu"],
 };
 
 function pickReplyFromAddress(email: InboundEmail, tenantFromAddress?: string): string | undefined {

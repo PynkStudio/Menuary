@@ -161,7 +161,7 @@ export function BizeryMassimoCard() {
         <div className="mt-5 text-center">
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href="/bizery/team/massimo/vcard"
+            href="/team/massimo/vcard"
             className="text-[12px] underline underline-offset-2 transition-colors"
             style={{ color: "var(--menuary-muted)" }}
             onMouseEnter={(e) =>

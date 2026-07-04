@@ -75,7 +75,7 @@ export function buildRecoveryCallbackUrl(from: LoginFrom): string {
  * Previene open redirect su pagine di conferma e redirect intermedi.
  */
 const SAFE_DESTINATION_RE =
-  /^https:\/\/[a-z0-9-]+\.(menuary\.it|pynkstudio\.it|pynkstudio\.com)(\/.*)?$/;
+  /^https:\/\/[a-z0-9-]+\.(menuary\.it|pynkstudio\.it|pynkstudio\.com|pynkstudio\.eu)(\/.*)?$/;
 
 export function isSafeDestination(url: string | null | undefined): url is string {
   if (!url) return false;

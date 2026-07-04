@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-const ALLOWED_DEST = /^https:\/\/[a-z0-9-]+\.(menuary\.it|pynkstudio\.it|pynkstudio\.com)(\/.*)?$/;
+const ALLOWED_DEST = /^https:\/\/[a-z0-9-]+\.(menuary\.it|pynkstudio\.it|pynkstudio\.com|pynkstudio\.eu)(\/.*)?$/;
 
 function safeDestination(raw: string | null): string {
   if (!raw) return "https://admin.menuary.it";
@@ -17,6 +17,7 @@ function cookieDomain(request: Request): string | undefined {
   const host = new URL(request.url).hostname;
   if (host === "login.menuary.it" || host.endsWith(".menuary.it")) return ".menuary.it";
   if (host.endsWith(".pynkstudio.com")) return ".pynkstudio.com";
+  if (host.endsWith(".pynkstudio.eu")) return ".pynkstudio.eu";
   if (host.endsWith(".pynkstudio.it")) return ".pynkstudio.it";
   return undefined;
 }

@@ -1,3 +1,5 @@
+import { PLATFORM_OPERATOR } from "@/lib/legal/platform-operator";
+
 export type TenantSoul = {
   id: string;
   kicker: string;
@@ -41,6 +43,20 @@ export type TenantContent = {
     city: string;
     province: string;
     full: string;
+  };
+  /**
+   * Identità del titolare del trattamento per le pagine legali (privacy/cookie),
+   * quando diversa dal nome/indirizzo commerciale del tenant (es. ditta individuale
+   * dietro un nome commerciale). Se assente, le pagine legali derivano titolare e
+   * indirizzo da name/address/contact del tenant.
+   */
+  legal?: {
+    name: string;
+    address: string;
+    phone: string;
+    email?: string;
+    piva?: string;
+    pec?: string;
   };
   maps: {
     searchUrl: string;
@@ -1501,6 +1517,14 @@ const pynkstudioContent: TenantContent = {
     city: "Milano",
     province: "MI",
     full: "Milano (MI) · P.IVA 13577530960",
+  },
+  legal: {
+    name: `PYNK STUDIO di ${PLATFORM_OPERATOR.legalName}`,
+    address: PLATFORM_OPERATOR.address,
+    phone: "+39 351 376 8607",
+    email: "info@pynkstudio.it",
+    piva: PLATFORM_OPERATOR.piva,
+    pec: PLATFORM_OPERATOR.pec,
   },
   maps: {
     searchUrl: "https://www.google.com/maps/search/?api=1&query=Milano",

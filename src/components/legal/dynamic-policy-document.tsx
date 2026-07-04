@@ -30,7 +30,7 @@ export function DynamicPolicyDocument({
   const controller = useMemo(
     () =>
       content
-        ? {
+        ? content.legal ?? {
             name: tenant?.name ?? "",
             address: content.address.full,
             phone: content.contact.phone,

@@ -102,9 +102,13 @@ async function OrpheoFooter() {
           ]} />
         </div>
         <div className="menuary-rule mt-14" />
-        <p className="mt-6 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)]">
-          © {year} · Orpheo · PynkStudio
-        </p>
+        <div className="mt-6 flex flex-col gap-3 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] sm:flex-row sm:items-center sm:justify-between">
+          <p>© {year} · Orpheo · PynkStudio</p>
+          <div className="flex gap-6">
+            <Link href="/privacy" className="hover:text-[var(--menuary-ink)]">Privacy</Link>
+            <Link href="/cookie" className="hover:text-[var(--menuary-ink)]">Cookie</Link>
+          </div>
+        </div>
       </div>
     </footer>
   );

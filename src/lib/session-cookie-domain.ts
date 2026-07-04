@@ -11,7 +11,9 @@ export function isPynkstudioHost(host: string | null | undefined): boolean {
     normalized === "pynkstudio.it" ||
     normalized.endsWith(".pynkstudio.it") ||
     normalized === "pynkstudio.com" ||
-    normalized.endsWith(".pynkstudio.com")
+    normalized.endsWith(".pynkstudio.com") ||
+    normalized === "pynkstudio.eu" ||
+    normalized.endsWith(".pynkstudio.eu")
   );
 }
 
@@ -20,6 +22,9 @@ export function resolveSessionCookieDomain(host: string | null | undefined): str
   const normalized = host?.split(":")[0].toLowerCase();
   if (normalized === "pynkstudio.com" || normalized?.endsWith(".pynkstudio.com")) {
     return ".pynkstudio.com";
+  }
+  if (normalized === "pynkstudio.eu" || normalized?.endsWith(".pynkstudio.eu")) {
+    return ".pynkstudio.eu";
   }
   if (isPynkstudioHost(host)) return ".pynkstudio.it";
   return undefined;

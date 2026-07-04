@@ -188,11 +188,15 @@ export async function generateMetadata(): Promise<Metadata> {
         siteName: "Bizery",
         locale: ogLocale(isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE),
         type: "website",
+        images: [
+          { url: `${BIZERY_ORIGIN}/api/og?brand=bizery`, width: 1200, height: 630, alt: seo.title },
+        ],
       },
       twitter: {
         card: "summary_large_image",
         title: seo.title,
         description: seo.description,
+        images: [`${BIZERY_ORIGIN}/api/og?brand=bizery`],
       },
       alternates: marketingAlternates(
         BIZERY_ORIGIN,
@@ -220,11 +224,15 @@ export async function generateMetadata(): Promise<Metadata> {
         siteName: "Orpheo",
         locale: ogLocale(isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE),
         type: "website",
+        images: [
+          { url: `${ORPHEO_ORIGIN}/api/og?brand=orpheo`, width: 1200, height: 630, alt: seo.title },
+        ],
       },
       twitter: {
         card: "summary_large_image",
         title: seo.title,
         description: seo.description,
+        images: [`${ORPHEO_ORIGIN}/api/og?brand=orpheo`],
       },
       alternates: marketingAlternates(
         ORPHEO_ORIGIN,
@@ -419,7 +427,16 @@ export async function generateMetadata(): Promise<Metadata> {
           : "it_IT",
       type: "website",
       ...(mode === "marketing"
-        ? {}
+        ? {
+            images: [
+              {
+                url: `${MENUARY_ORIGIN}/api/og?brand=menuary`,
+                width: 1200,
+                height: 630,
+                alt: marketingHome.title,
+              },
+            ],
+          }
         : {
             images: [
               { url: content.showcaseLogoSrc, alt: content.showcaseLogoAlt },
@@ -428,12 +445,14 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: mode === "marketing" ? "Menuary" : tenant.name,
+      title: mode === "marketing" ? marketingHome.title : tenant.name,
       description:
         mode === "marketing"
           ? marketingHome.description
           : content.description,
-      ...(mode === "marketing" ? {} : { images: [content.showcaseLogoSrc] }),
+      ...(mode === "marketing"
+        ? { images: [`${MENUARY_ORIGIN}/api/og?brand=menuary`] }
+        : { images: [content.showcaseLogoSrc] }),
     },
     ...(isTenantPreview
       ? {

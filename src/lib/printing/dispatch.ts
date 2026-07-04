@@ -2,18 +2,29 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { loadDefaultPrinter } from "./config";
-import { isSunmiConfigured, pushPrintMessage } from "./sunmi-cloud";
+import { buildComandaEscPos } from "./comanda";
+import { isSunmiConfigured, pushPrintContent } from "./sunmi-cloud";
+import { dbLinesToOrderLines, dbRowToOrder, type DbOrder, type DbOrderLine } from "@/lib/api/orders";
 
 // Dispatch server-side della stampa comanda per un ordine appena accettato.
 //
-// - connection 'sunmi_cloud' → notifica la stampante cloud (push by SN); la
-//   stampante scaricherà l'ESC/POS dal callback /api/printing/sunmi/pull.
+// - connection 'sunmi_cloud' → push diretto (Cloud to Cloud): costruiamo l'ESC/POS
+//   e lo inviamo a SUNMI con pushContent; SUNMI lo inoltra alla stampante (per SN).
 // - connection 'qz' → no-op: la stampa USB è gestita dal watcher client nella
 //   pagina Operativo → Ordini (la stampante USB non è raggiungibile dal server).
 //
 // Idempotente: marca `comanda_printed_at` quando prende in carico l'ordine, così
 // non viene rilanciato (né dal doppio trigger creazione/conferma, né dal watcher).
 // Non lancia mai: la stampa non deve far fallire la creazione/conferma ordine.
+
+const ORDER_COLUMNS =
+  "id, tenant_id, location_id, code, type, table_label, session_id, session_code, diner_client_id, diner_nickname, customer_name, customer_email, pickup_time, notes, total, status, created_at, dine_option, payment_method, payment_status, confirmation_expires_at, confirmed_at, auto_accepted";
+
+// trade_no SUNMI: max 32 caratteri. L'id ordine è un UUID (36 con trattini); senza
+// trattini sono 32 hex esatti, univoci → chiave dedup/idempotenza per SUNMI.
+function tradeNoFor(orderId: string): string {
+  return orderId.replace(/-/g, "");
+}
 
 export type DispatchResult =
   | { dispatched: false; reason: string }
@@ -38,8 +49,8 @@ export async function dispatchComandaForOrder(
       if (!isSunmiConfigured() || !printer.deviceSn) {
         return { dispatched: false, reason: "sunmi_not_configured" };
       }
-      // Prenota l'ordine (anti doppio push). Il callback userà trace_id=orderId
-      // per recuperare la comanda anche dopo questo flag.
+
+      // Prenota l'ordine (anti doppio push) prima di costruire/inviare la comanda.
       const { data: claimed } = await supabase
         .from("orders")
         .update({ comanda_printed_at: new Date().toISOString() })
@@ -50,15 +61,47 @@ export async function dispatchComandaForOrder(
         .maybeSingle();
       if (!claimed) return { dispatched: false, reason: "already_dispatched" };
 
-      const res = await pushPrintMessage({ sn: printer.deviceSn, traceId: orderId });
-      if (!res.ok) {
-        // Rollback del claim: riproveremo (es. al prossimo evento/cron).
+      const rollbackClaim = async () => {
         await supabase
           .from("orders")
           .update({ comanda_printed_at: null })
           .eq("tenant_id", tenantId)
           .eq("id", orderId);
-        return { dispatched: false, reason: `sunmi_push_failed_${res.status}` };
+      };
+
+      const { data: orderRow } = await supabase
+        .from("orders")
+        .select(ORDER_COLUMNS)
+        .eq("tenant_id", tenantId)
+        .eq("id", orderId)
+        .maybeSingle();
+      if (!orderRow) {
+        await rollbackClaim();
+        return { dispatched: false, reason: "order_not_found" };
+      }
+
+      const { data: lineRows } = await supabase
+        .from("order_lines")
+        .select("*")
+        .eq("order_id", orderId)
+        .order("position", { ascending: true });
+
+      const order = dbRowToOrder(
+        orderRow as unknown as DbOrder,
+        dbLinesToOrderLines((lineRows ?? []) as unknown as DbOrderLine[]),
+      );
+      const escpos = buildComandaEscPos(order, printer);
+
+      const res = await pushPrintContent({
+        sn: printer.deviceSn,
+        tradeNo: tradeNoFor(orderId),
+        escpos,
+        copies: printer.copies,
+      });
+      if (!res.ok) {
+        // Rollback del claim: riproveremo (es. al prossimo evento/cron).
+        await rollbackClaim();
+        return { dispatched: false, reason: `sunmi_push_failed_${res.code ?? res.status}` };
       }
       return { dispatched: true, via: "sunmi_cloud" };
     }

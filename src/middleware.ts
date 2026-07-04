@@ -47,6 +47,7 @@ import {
   resolveLocalizedSegment,
   type MarketingRouteKey,
 } from "@/lib/marketing-slugs";
+import { isRouteModuleAllowed } from "@/lib/tenant-route-modules";
 
 const LOCALE_SET = new Set<string>(SUPPORTED_LOCALES);
 const TENANT_LOCALE_REWRITE_HEADER = "x-tenant-locale-rewrite";
@@ -129,6 +130,64 @@ function isCrawler(request: NextRequest): boolean {
 }
 
 /**
+ * Segmenti extra serviti sui siti marketing oltre alle route marketing vere e
+ * proprie: sono URL raggiunti da link esterni già in circolazione (redirect
+ * Stripe, setup link inviati via email, footer legale, biglietti da visita).
+ */
+const MENUARY_MARKETING_PASSTHROUGH = new Set([
+  "payment",
+  "configurazione",
+  "pagamenti",
+  "privacy",
+  "cookie",
+  "team",
+]);
+const BIZERY_MARKETING_PASSTHROUGH = new Set(["payment", "privacy", "cookie", "team"]);
+const ORPHEO_MARKETING_PASSTHROUGH = new Set(["payment", "privacy", "cookie"]);
+
+/**
+ * 404 servito direttamente dal middleware. Il root layout renderizza le pagine
+ * dentro <Suspense>, quindi un notFound() lanciato da una pagina arriva al
+ * client con status 200 (soft-404): sui siti marketing i path fuori allowlist
+ * (route dei tenant, junk dei crawler) devono invece rispondere 404 reale.
+ */
+function marketingNotFoundResponse(mode: PlatformMode): NextResponse {
+  const brand =
+    mode === "marketing-bizery" ? "Bizery" : mode === "marketing-orpheo" ? "Orpheo" : "Menuary";
+  const html = `<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pagina non trovata · ${brand}</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F5F0EA;color:#111;font-family:system-ui,-apple-system,sans-serif;text-align:center}
+main{padding:40px 20px}
+p.brand{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(0,0,0,.4);margin:0}
+h1{font-size:44px;letter-spacing:-.02em;margin:16px 0 0}
+p.desc{max-width:420px;color:rgba(0,0,0,.6);margin:20px auto 0}
+a{display:inline-block;margin-top:32px;background:#000;color:#fff;font-size:14px;font-weight:700;text-decoration:none;border-radius:9999px;padding:12px 24px}
+</style>
+</head>
+<body><main>
+<p class="brand">${brand}</p>
+<h1>Pagina non trovata</h1>
+<p class="desc">La pagina che cerchi non esiste, è stata spostata o non è più accessibile.</p>
+<a href="/">Torna alla home</a>
+</main></body>
+</html>`;
+  return new NextResponse(html, {
+    status: 404,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+      "x-robots-tag": "noindex",
+    },
+  });
+}
+
+/**
  * Routing lingua dei siti marketing. Il path nudo (es. /chi-siamo) è la lingua
  * di default (it) e DEVE restare 200 per i crawler: è l'URL canonico/x-default.
  * Gli umani non-italiani vengono rediretti alla loro lingua; i crawler no, così
@@ -139,6 +198,7 @@ function handleMarketingLocale(
   request: NextRequest,
   mode: PlatformMode,
   mapPath: (publicPath: string) => string,
+  passthrough: ReadonlySet<string>,
 ): NextResponse {
   const { pathname } = request.nextUrl;
   const { locale, rest } = extractLocaleFromPath(pathname);
@@ -169,7 +229,15 @@ function handleMarketingLocale(
         return NextResponse.redirect(url, 301);
       }
     }
-    return rewriteWithLocale(request, mapPath(rest), locale, mode);
+    if (passthrough.has(seg)) {
+      return rewriteWithLocale(request, mapPath(rest), locale, mode);
+    }
+    return marketingNotFoundResponse(mode);
+  }
+
+  const seg = pathname.split("/").filter(Boolean)[0] ?? "";
+  if (seg && !(MARKETING_ROUTE_KEYS as readonly string[]).includes(seg) && !passthrough.has(seg)) {
+    return marketingNotFoundResponse(mode);
   }
 
   const detected = isCrawler(request) ? DEFAULT_LOCALE : detectLocaleFromRequest(request);
@@ -564,6 +632,26 @@ async function getSessionUserAndSiteadminRole(
   }
 }
 
+/**
+ * Segmento URL del "modulo" richiesto per una route preview (/[previewSlug]/…),
+ * saltando l'eventuale prefisso di lingua del tenant.
+ */
+function moduleSegmentAfterPreviewSlug(pathname: string, locales?: readonly string[]): string {
+  const parts = pathname.split("/").filter(Boolean).slice(1);
+  if (locales && parts[0] && (locales as string[]).includes(parts[0])) return parts[1] ?? "";
+  return parts[0] ?? "";
+}
+
+/**
+ * Segmento URL del "modulo" richiesto su dominio custom del tenant, saltando
+ * l'eventuale prefisso di lingua del tenant.
+ */
+function moduleSegmentForTenantHost(pathname: string, locales?: readonly string[]): string {
+  const parts = pathname.split("/").filter(Boolean);
+  if (locales && parts[0] && (locales as string[]).includes(parts[0])) return parts[1] ?? "";
+  return parts[0] ?? "";
+}
+
 /** Redirect a login.menuary.it con from + next */
 function loginRedirect(
   request: NextRequest,
@@ -594,6 +682,15 @@ export async function middleware(request: NextRequest) {
 
   if (pathPreviewTenant) {
     const localeConfig = getTenantLocaleConfig(pathPreviewTenant.id);
+    if (
+      (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") &&
+      !isRouteModuleAllowed(
+        moduleSegmentAfterPreviewSlug(pathname, localeConfig?.locales),
+        pathPreviewTenant.features,
+      )
+    ) {
+      return NextResponse.redirect(new URL(`/${pathPreviewTenant.previewSlug}`, request.url));
+    }
     if (localeConfig) {
       const localizedPreview = handlePreviewTenantLocale(
         request,
@@ -884,7 +981,7 @@ export async function middleware(request: NextRequest) {
     // Short-link di piattaforma: non soggetto a locale redirect.
     // Senza questo bypass i browser non-italiani verrebbero rediretti su /en/c/<token> → 404.
     if (pathname.startsWith("/c/")) return NextResponse.next();
-    return handleMarketingLocale(request, mode, (p) => p);
+    return handleMarketingLocale(request, mode, (p) => p, MENUARY_MARKETING_PASSTHROUGH);
   }
 
   // ── Marketing Bizery (bizery.it) ─────────────────────────────────────────
@@ -892,7 +989,12 @@ export async function middleware(request: NextRequest) {
     if (isInternalPlatformPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
-    return handleMarketingLocale(request, mode, (p) => "/bizery" + (p === "/" ? "" : p));
+    return handleMarketingLocale(
+      request,
+      mode,
+      (p) => "/bizery" + (p === "/" ? "" : p),
+      BIZERY_MARKETING_PASSTHROUGH,
+    );
   }
 
   // ── Marketing Orpheo (weuseorpheo.com) ───────────────────────────────────
@@ -900,7 +1002,12 @@ export async function middleware(request: NextRequest) {
     if (isInternalPlatformPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
-    return handleMarketingLocale(request, mode, (p) => "/orpheo" + (p === "/" ? "" : p));
+    return handleMarketingLocale(
+      request,
+      mode,
+      (p) => "/orpheo" + (p === "/" ? "" : p),
+      ORPHEO_MARKETING_PASSTHROUGH,
+    );
   }
 
   // ── Studio (deprecato) → reindirizza tutto su gestione.menuary.it ──────
@@ -964,6 +1071,12 @@ export async function middleware(request: NextRequest) {
   // custom con location subdomain.
   const tenant = resolveTenantFromHost(host);
   const tenantLocaleConfig = getTenantLocaleConfig(tenant.id);
+  if (
+    mode === "tenant" &&
+    !isRouteModuleAllowed(moduleSegmentForTenantHost(pathname, tenantLocaleConfig?.locales), tenant.features)
+  ) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
   if (mode === "tenant" && tenantLocaleConfig) {
     const localizedTenant = handleCustomTenantLocale(request, mode, tenant.id, tenantLocaleConfig);
     if (localizedTenant) return localizedTenant;

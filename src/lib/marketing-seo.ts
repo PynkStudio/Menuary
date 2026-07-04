@@ -126,14 +126,14 @@ export function marketingAlternates(origin: string, path: string, locale: AppLoc
   };
 }
 
+// Niente lastModified: valorizzarlo con "adesso" a ogni fetch insegna a Google
+// a ignorare il segnale. Meglio ometterlo finché non c'è una data di modifica reale.
 export function marketingSitemap(origin: string): MetadataRoute.Sitemap {
-  const now = new Date();
   return MARKETING_ROUTES.flatMap((path) =>
     SUPPORTED_LOCALES.map((locale) => {
       const publicPath = localizedPath(path, locale);
       return {
         url: `${origin}${publicPath === "/" ? "" : publicPath}`,
-        lastModified: now,
         changeFrequency: path === "" ? "weekly" : "monthly",
         priority: path === "" ? 1 : path === "/pricing" ? 0.9 : 0.8,
         alternates: {

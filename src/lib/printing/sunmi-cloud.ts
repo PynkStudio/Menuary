@@ -1,85 +1,102 @@
 import "server-only";
 
-import { createHash } from "crypto";
+import { createHmac } from "crypto";
 
-// Client per le stampanti cloud SUNMI (modulo printStations, connection 'sunmi_cloud').
+// Client per le stampanti cloud SUNMI — API "Cloud Printer V2", modalità
+// "Cloud to Cloud" / push diretto (modulo printStations, connection 'sunmi_cloud').
 //
-// Modello (da docs SUNMI Cloud Printer Partner):
-//  1) il nostro server "pusha" un messaggio firmato a una stampante (per SN);
-//  2) per privacy SUNMI NON trasporta il contenuto: la stampante si ricollega al
-//     NOSTRO endpoint di callback e SCARICA il contenuto ESC/POS da stampare
-//     (vedi src/app/api/printing/sunmi/pull/route.ts).
+// Flusso: costruiamo la comanda in ESC/POS, la convertiamo in esadecimale (UTF-8)
+// e la inviamo a SUNMI OpenAPI con `pushContent`. SUNMI la inoltra alla stampante
+// identificata per SN. Nessun endpoint di callback lato nostro (a differenza della
+// modalità "Device to Cloud", qui non serve).
 //
-// Credenziali (per-piattaforma, una sola SUNMI partner app):
-//   SUNMI_CLOUD_APP_ID, SUNMI_CLOUD_APP_KEY
-//   SUNMI_CLOUD_API_BASE  (host API SUNMI)
+// Auth via header HTTP:
+//   Sunmi-Appid      = APP_ID
+//   Sunmi-Timestamp  = unix a 10 cifre
+//   Sunmi-Nonce      = 6 cifre casuali
+//   Sunmi-Sign       = HMAC-SHA256(jsonBody + appid + timestamp + nonce, appkey) hex
+//   Source           = "openapi" (valore fisso)
+// Content-Type: application/json. Risposta di successo: { code: 1, msg: "success" }.
 //
-// ⚠️ TODO(verify): endpoint esatto, nomi dei parametri del push e composizione
-// precisa del `sign` vanno confermati sulla doc autenticata SUNMI / col partner
-// account prima del go-live. Tutto ciò che è incerto è isolato qui sotto.
-// Doc: https://docs.sunmi.com/en/  (Cloud Printer Product R&D Instruction)
+// Credenziali (per-piattaforma, una sola partner app SUNMI):
+//   SUNMI_CLOUD_APP_ID, SUNMI_CLOUD_APP_KEY, SUNMI_CLOUD_API_BASE
+// Doc: https://docs.sunmi.com/en-US/cdixeghjk491/xffdeghjk524 (Cloud Printer V2 §3)
 
 const APP_ID = process.env.SUNMI_CLOUD_APP_ID ?? "";
 const APP_KEY = process.env.SUNMI_CLOUD_APP_KEY ?? "";
-// TODO(verify): base host corretto dell'OpenAPI SUNMI per il cloud printer.
-const API_BASE = process.env.SUNMI_CLOUD_API_BASE ?? "https://open.sunmi.com";
-// TODO(verify): path dell'endpoint "push message" del cloud printer.
-const PUSH_PATH = process.env.SUNMI_CLOUD_PUSH_PATH ?? "/v2/printer/cloudprinter/pushContent";
+const API_BASE = process.env.SUNMI_CLOUD_API_BASE ?? "https://openapi.sunmi.com";
+const PUSH_PATH = "/v2/printer/open/open/device/pushContent";
 
 export function isSunmiConfigured(): boolean {
   return Boolean(APP_ID && APP_KEY);
 }
 
-/**
- * sign = MD5 (UPPERCASE, 32 char) dei parametri ordinati per chiave nella forma
- * key=value&... con app_key in coda.
- * ⚠️ TODO(verify): la doc SUNMI specifica l'esatta stringa-base del sign; questa
- * è l'implementazione tipica SUNMI ma va confermata col partner account.
- */
-export function sunmiSign(params: Record<string, string>): string {
-  const base = Object.keys(params)
-    .filter((k) => k !== "sign" && params[k] !== "" && params[k] != null)
-    .sort()
-    .map((k) => `${k}=${params[k]}`)
-    .join("&");
-  return createHash("md5").update(`${base}&app_key=${APP_KEY}`).digest("hex").toUpperCase();
+// Nonce a 6 cifre: solo anti-replay lato SUNMI, non serve robustezza crittografica.
+function nonce6(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-/** Verifica la firma di una richiesta in ingresso (callback di pull). */
-export function verifySunmiSign(params: Record<string, string>, provided: string | null): boolean {
-  if (!provided) return false;
-  return sunmiSign(params).toUpperCase() === provided.toUpperCase();
+// Sunmi-Sign = HMAC-SHA256(json-body + appid + timestamp + nonce, appkey), hex minuscolo.
+// La firma copre ESATTAMENTE la stringa JSON inviata: usare lo stesso `jsonBody` per
+// firma e body della richiesta, senza ri-serializzare.
+function signBody(jsonBody: string, timestamp: string, nonce: string): string {
+  return createHmac("sha256", APP_KEY)
+    .update(jsonBody + APP_ID + timestamp + nonce)
+    .digest("hex");
 }
 
-export type SunmiPushResult = { ok: boolean; status: number; raw: string };
+export type SunmiPushResult = { ok: boolean; status: number; code: number | null; raw: string };
 
 /**
- * Notifica alla stampante (per SN) che c'è una comanda da stampare. Il contenuto
- * NON viene inviato qui: la stampante lo scaricherà dal nostro callback usando
- * `traceId` per identificare l'ordine.
+ * Invia il contenuto ESC/POS di una comanda alla stampante cloud (per SN) via
+ * pushContent. `tradeNo` è l'ID univoco per shop (max 32 caratteri): funge anche
+ * da chiave di dedup lato SUNMI — stesso tradeNo = stesso contenuto, non ristampa.
  */
-export async function pushPrintMessage(input: {
+export async function pushPrintContent(input: {
   sn: string;
-  traceId: string;
+  tradeNo: string;
+  escpos: string;
+  copies?: number;
+  orderType?: number; // 1 nuovo, 2 annullo, 3 sollecito, 4 storno, 5 altro
 }): Promise<SunmiPushResult> {
   if (!isSunmiConfigured()) {
-    return { ok: false, status: 0, raw: "sunmi_not_configured" };
+    return { ok: false, status: 0, code: null, raw: "sunmi_not_configured" };
   }
 
-  // ⚠️ TODO(verify): nomi esatti dei campi (sn / printerName / msgType / trace_id).
-  const params: Record<string, string> = {
-    app_id: APP_ID,
+  // SUNMI richiede il contenuto come esadecimale della codifica UTF-8 (ESC/POS incluso).
+  const contentHex = Buffer.from(input.escpos, "utf8").toString("hex");
+
+  const jsonBody = JSON.stringify({
+    trade_no: input.tradeNo,
     sn: input.sn,
-    timestamp: String(Math.floor(Date.now() / 1000)),
-    trace_id: input.traceId,
-  };
-  params.sign = sunmiSign(params);
+    order_type: input.orderType ?? 1,
+    content: contentHex,
+    count: input.copies ?? 1,
+  });
+
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const nonce = nonce6();
+  const sign = signBody(jsonBody, timestamp, nonce);
 
   const res = await fetch(`${API_BASE}${PUSH_PATH}`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams(params).toString(),
+    headers: {
+      "Content-Type": "application/json",
+      "Sunmi-Appid": APP_ID,
+      "Sunmi-Timestamp": timestamp,
+      "Sunmi-Nonce": nonce,
+      "Sunmi-Sign": sign,
+      Source: "openapi",
+    },
+    body: jsonBody,
   });
+
   const raw = await res.text().catch(() => "");
-  return { ok: res.ok, status: res.status, raw };
+  let code: number | null = null;
+  try {
+    code = (JSON.parse(raw) as { code?: number }).code ?? null;
+  } catch {
+    /* risposta non-JSON: lasciamo code = null */
+  }
+  return { ok: res.ok && code === 1, status: res.status, code, raw };
 }

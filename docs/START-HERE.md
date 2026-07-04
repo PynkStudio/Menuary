@@ -35,7 +35,7 @@ Documenti già popolati a partire dai file della repo:
 
 Non compilate perché **non deducibili con certezza** dalla repo (nessun contenuto inventato):
 
-- `04-decisions/` — nessun ADR formale presente nel codice. Usa [[adr-template]] per i futuri.
+- `04-decisions/` — [[adr-0001-route-module-gating]] (redirect alla home per route di modulo non attivo). Usa [[adr-template]] per i futuri.
 - `05-roadmap/` — nessuna roadmap certa nel codice (non inventata).
 - `09-meetings/` — nessun verbale presente. Usa [[meeting-template]].
 
