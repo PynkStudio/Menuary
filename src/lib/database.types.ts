@@ -653,6 +653,35 @@ export type Database = {
         }
         Relationships: []
       }
+      email_spam_senders: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          tenant_id: string | null
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          tenant_id?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_spam_senders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_tracking_events: {
         Row: {
           brand: string | null
@@ -1087,6 +1116,7 @@ export type Database = {
           lead_id: string | null
           message_id: string | null
           read: boolean
+          spam: boolean
           starred: boolean
           subject: string
           tenant_id: string | null
@@ -1107,6 +1137,7 @@ export type Database = {
           lead_id?: string | null
           message_id?: string | null
           read?: boolean
+          spam?: boolean
           starred?: boolean
           subject?: string
           tenant_id?: string | null
@@ -1127,6 +1158,7 @@ export type Database = {
           lead_id?: string | null
           message_id?: string | null
           read?: boolean
+          spam?: boolean
           starred?: boolean
           subject?: string
           tenant_id?: string | null
@@ -3184,7 +3216,8 @@ export type Database = {
           endpoint: string
           id: string
           p256dh: string
-          tenant_id: string
+          siteadmin_id: string | null
+          tenant_id: string | null
           user_agent: string | null
           user_id: string
         }
@@ -3194,7 +3227,8 @@ export type Database = {
           endpoint: string
           id?: string
           p256dh: string
-          tenant_id: string
+          siteadmin_id?: string | null
+          tenant_id?: string | null
           user_agent?: string | null
           user_id: string
         }
@@ -3204,11 +3238,19 @@ export type Database = {
           endpoint?: string
           id?: string
           p256dh?: string
-          tenant_id?: string
+          siteadmin_id?: string | null
+          tenant_id?: string | null
           user_agent?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_siteadmin_id_fkey"
+            columns: ["siteadmin_id"]
+            isOneToOne: false
+            referencedRelation: "siteadmin"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "push_subscriptions_tenant_id_fkey"
             columns: ["tenant_id"]

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
-import { Archive, ArrowLeft, Download, ExternalLink, File, FileText, ImageIcon, Link2, Paperclip, Reply, Search, Star, Trash2, UserCheck, X } from "lucide-react";
+import { Archive, ArrowLeft, Download, ExternalLink, File, FileText, ImageIcon, Link2, Paperclip, Reply, Search, ShieldAlert, ShieldCheck, Star, Trash2, UserCheck, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { markEmailRead, starEmail, archiveEmail, deleteEmail, assignEmail } from "@/lib/email/inbound-queries";
+import { markEmailRead, starEmail, archiveEmail, deleteEmail, assignEmail, markEmailSpam } from "@/lib/email/inbound-queries";
 import { findLeadsByEmails, searchLeads, linkInboundEmailToLead, getLeadsByIds } from "@/lib/email/lead-link-queries";
 import { getSiteadminForAssignment, type SiteadminAssignee } from "@/lib/email/assignment-queries";
 import { buildEmailSrcDoc } from "@/lib/email/render-html";
@@ -640,6 +640,20 @@ export function EmailDetail({ email, threadEmails, onClose, onMutated, onReply, 
     });
   }
 
+  function handleSpam() {
+    if (
+      !email.spam &&
+      !confirm("Segnare come spam? Le prossime email di questo mittente finiranno automaticamente nello spam.")
+    ) {
+      return;
+    }
+    startTransition(async () => {
+      await markEmailSpam(email.id, !email.spam, scope);
+      onClose();
+      onMutated();
+    });
+  }
+
   function handleMarkUnread() {
     startTransition(async () => {
       await markEmailRead(email.id, false, scope);
@@ -692,6 +706,15 @@ export function EmailDetail({ email, threadEmails, onClose, onMutated, onReply, 
             <Reply size={16} />
           </button>
         )}
+
+        <button
+          onClick={handleSpam}
+          disabled={isPending}
+          className={cn("menuary-admin-nav-link !w-auto !px-2 !py-1.5", email.spam ? "text-emerald-600" : "text-orange-500")}
+          title={email.spam ? "Non è spam: sblocca il mittente" : "Segna come spam e blocca il mittente"}
+        >
+          {email.spam ? <ShieldCheck size={16} /> : <ShieldAlert size={16} />}
+        </button>
 
         <button
           onClick={handleArchive}

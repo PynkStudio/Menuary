@@ -11,10 +11,18 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 export type PushPayload = {
   title: string;
   body: string;
-  /** URL aperto al click sulla notifica (default: agenda admin). */
+  /** URL aperto al click sulla notifica (default: "/"). */
   url?: string;
   tag?: string;
 };
+
+/**
+ * Destinatario della push: tutte le subscription di un tenant
+ * (pannelli gestione/tenant) oppure di un utente siteadmin (pannello admin).
+ */
+export type PushTarget =
+  | { tenantId: string }
+  | { siteadminId: string };
 
 let vapidReady: boolean | null = null;
 
@@ -32,8 +40,12 @@ function ensureVapid(): boolean {
   return true;
 }
 
-/** Invia una push a tutte le subscription di un tenant. Ritorna il numero di invii riusciti. */
-export async function sendWebPush(tenantId: string, payload: PushPayload): Promise<number> {
+/**
+ * Invia una push a tutte le subscription del target. Ritorna il numero di
+ * invii riusciti. Punto d'ingresso unico per ogni nuova notifica del portale:
+ * aggiungere qui eventuali nuovi tipi di target, non duplicare l'invio.
+ */
+export async function sendWebPushTo(target: PushTarget, payload: PushPayload): Promise<number> {
   if (!ensureVapid()) {
     console.warn("[push] VAPID non configurate: notifica saltata.", payload.title);
     return 0;
@@ -44,16 +56,19 @@ export async function sendWebPush(tenantId: string, payload: PushPayload): Promi
     return 0;
   }
 
-  const { data: subs, error } = await svc
+  let query = svc
     .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
-    .eq("tenant_id", tenantId);
+    .select("id, endpoint, p256dh, auth");
+  query = "tenantId" in target
+    ? query.eq("tenant_id", target.tenantId)
+    : query.eq("siteadmin_id", target.siteadminId);
+  const { data: subs, error } = await query;
   if (error || !subs?.length) return 0;
 
   const body = JSON.stringify({
     title: payload.title,
     body: payload.body,
-    url: payload.url ?? "/admin-pynkstudio/agenda",
+    url: payload.url ?? "/",
     tag: payload.tag,
   });
 
@@ -80,4 +95,15 @@ export async function sendWebPush(tenantId: string, payload: PushPayload): Promi
     await svc.from("push_subscriptions").delete().in("id", deadIds);
   }
   return sent;
+}
+
+/** Invia una push a tutte le subscription di un tenant. Ritorna il numero di invii riusciti. */
+export async function sendWebPush(tenantId: string, payload: PushPayload): Promise<number> {
+  // I chiamanti storici (agenda Pynk) contavano sul default agenda: preservato.
+  return sendWebPushTo({ tenantId }, { ...payload, url: payload.url ?? "/admin-pynkstudio/agenda" });
+}
+
+/** Invia una push a tutti i dispositivi registrati di un utente siteadmin. */
+export async function sendWebPushToSiteadmin(siteadminId: string, payload: PushPayload): Promise<number> {
+  return sendWebPushTo({ siteadminId }, payload);
 }

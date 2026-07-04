@@ -5,7 +5,7 @@ roles: ["siteadmin", "tenant_admin"]
 tags: ["ui", "mail", "inbox", "gestione", "admin"]
 route: "/admin/inbox, /gestione/[tenantSlug]/mail"
 source: "src/app/admin/inbox/page.tsx, src/app/gestione/[tenantSlug]/mail/page.tsx, src/components/admin/inbox/mail-app.tsx, src/components/admin/inbox/email-list.tsx, src/components/admin/inbox/email-detail.tsx, src/components/admin/inbox/mail-sidebar.tsx"
-last_updated: "2026-06-28"
+last_updated: "2026-07-04"
 owner: ""
 ---
 
@@ -31,7 +31,7 @@ La voce **Mail** nel pannello Gestione e' visibile solo quando il tenant ha acce
 
 # Elementi della schermata
 
-- Sidebar con le viste **Arrivo**, **Le mie**, **Inviata**, **Stellate**, **Archivio**. In modalita' tenant non compare **Le mie**.
+- Sidebar con le viste **Arrivo**, **Non lette**, **Le mie**, **Inviata**, **Stellate**, **Spam**, **Archivio**. In modalita' tenant non compare **Le mie**.
 - Filtri brand nella inbox globale: **Tutte**, **PynkStudio**, **Menuary**, **Bizery**, **Orpheo**, **Supporto**.
 - Lista conversazioni: le email inbound sono raggruppate in thread. Ogni riga mostra mittente, oggetto, anteprima, data, eventuale badge con numero messaggi e badge allegati.
 - Dettaglio thread: mostra tutti i messaggi della conversazione in ordine cronologico. La pagina non ha titolo/sottotitolo sopra la mail app, cosi' il reader usa quasi tutta l'altezza disponibile.
@@ -43,16 +43,20 @@ La voce **Mail** nel pannello Gestione e' visibile solo quando il tenant ha acce
 | Etichetta UI | Cosa fa | Dove si trova |
 |---|---|---|
 | **Scrivi** | Apre il drawer di composizione email. | Sidebar desktop o pulsante mobile in basso a destra. |
-| **Arrivo** | Mostra la posta in arrivo non archiviata. | Sidebar / filtri mobile. |
+| **Arrivo** | Mostra la posta in arrivo non archiviata e non spam. | Sidebar / filtri mobile. |
+| **Non lette** | Mostra solo le email in arrivo non ancora lette. | Sidebar / filtri mobile. |
 | **Le mie** | Mostra le email assegnate all'utente siteadmin corrente. | Sidebar admin piattaforma. |
 | **Inviata** | Mostra le email inviate. | Sidebar / filtri mobile. |
 | **Stellate** | Mostra le email contrassegnate con stella. | Sidebar / filtri mobile. |
+| **Spam** | Mostra le email segnate come spam. | Sidebar / filtri mobile. |
 | **Archivio** | Mostra le email archiviate. | Sidebar / filtri mobile. |
 | **Aggiorna** | Ricarica la lista corrente. | Toolbar sopra la lista. |
 | **Indietro** | Chiude il dettaglio email e torna alla lista. | Toolbar dettaglio. |
 | **Non letta** | Segna il messaggio selezionato come non letto. | Toolbar dettaglio. |
 | Icona stella | Aggiunge o rimuove la stella. | Toolbar dettaglio. |
 | Icona risposta | Apre la composizione precompilata per rispondere. | Toolbar dettaglio. |
+| Icona scudo (arancione) | Segna l'email come spam e blocca il mittente: le prossime email di quel mittente finiscono automaticamente nello spam. Chiede conferma. | Toolbar dettaglio. |
+| Icona scudo con spunta (verde) | Toglie lo stato spam e sblocca il mittente. Visibile solo su email gia' spam. | Toolbar dettaglio. |
 | Icona archivio | Archivia l'email selezionata. | Toolbar dettaglio. |
 | Icona cestino | Elimina definitivamente l'email selezionata dopo conferma. | Toolbar dettaglio. |
 | **Assegna** / nome persona | Assegna la mail a un siteadmin o cambia assegnazione. | Pulsante compatto nell'header del dettaglio, solo admin piattaforma. |
@@ -66,9 +70,22 @@ La voce **Mail** nel pannello Gestione e' visibile solo quando il tenant ha acce
 
 | Campo/filtro | Valori | Note |
 |---|---|---|
-| Vista cassetta | **Arrivo**, **Le mie**, **Inviata**, **Stellate**, **Archivio** | **Le mie** e' solo admin piattaforma. |
+| Vista cassetta | **Arrivo**, **Non lette**, **Le mie**, **Inviata**, **Stellate**, **Spam**, **Archivio** | **Le mie** e' solo admin piattaforma. |
 | Brand | **Tutte**, **PynkStudio**, **Menuary**, **Bizery**, **Orpheo**, **Supporto** | Solo admin piattaforma. |
 | Cerca per nome o email | Testo libero | Presente nei pannelli di collegamento lead. |
+
+# Notifiche push
+
+- Quando una mail viene assegnata (automaticamente dal webhook o manualmente dal pulsante **Assegna**) al siteadmin destinatario arriva una notifica push, se ha attivato le notifiche dal pulsante in fondo alla sidebar admin ("Attiva notifiche admin").
+- Su iPhone la notifica arriva anche ad app chiusa solo se il portale e' stato aggiunto alla schermata Home (iOS 16.4+) e il permesso e' stato concesso dall'interno della web app installata.
+- Infrastruttura riusabile per altre notifiche admin: vedi [[integrazioni-attive]] sezione "Web Push (VAPID)".
+
+# Gestione spam
+
+- Segnando spam da admin piattaforma il blocco del mittente e' globale; segnando spam dal pannello Gestione di un tenant il blocco vale solo per le email di quel tenant (tabella `email_spam_senders`).
+- Il webhook inbound controlla la blocklist: le email di mittenti bloccati arrivano gia' con flag spam, senza auto-assegnazione e senza creare ticket di supporto.
+- Le email spam non compaiono in **Arrivo** e non contano nei badge non lette; restano visibili nella vista **Spam**.
+- "Non e' spam" ripristina l'email in Arrivo e rimuove il mittente dalla blocklist (nello stesso scope).
 
 # Stati possibili
 

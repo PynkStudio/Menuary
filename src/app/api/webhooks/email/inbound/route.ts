@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { sendWebPushToSiteadmin } from "@/lib/push/send";
 import {
   type ResendInboundPayload,
   type ResendInboundHeader,
@@ -151,6 +152,28 @@ async function resolveEmailAssignment(
   return activeUser?.id ?? null;
 }
 
+async function isBlockedSpamSender(
+  fromAddress: string,
+  tenantId: string | null,
+  svc: NonNullable<ReturnType<typeof createSupabaseServiceClient>>,
+): Promise<boolean> {
+  let query = svc
+    .from("email_spam_senders")
+    .select("id")
+    .eq("address", fromAddress.trim().toLowerCase())
+    .limit(1);
+  // Blocco globale (tenant_id null) vale per tutti; blocco tenant vale solo per le sue email
+  query = tenantId
+    ? query.or(`tenant_id.is.null,tenant_id.eq.${tenantId}`)
+    : query.is("tenant_id", null);
+  const { data, error } = await query.maybeSingle();
+  if (error) {
+    console.error("[webhook:inbound] Errore lookup blocklist spam:", error.message);
+    return false;
+  }
+  return Boolean(data);
+}
+
 async function resolveTenantIdFromRecipients(
   toAddresses: string[],
   svc: NonNullable<ReturnType<typeof createSupabaseServiceClient>>,
@@ -274,6 +297,7 @@ async function handleInbound(
   const tenantId = await resolveTenantIdFromRecipients(toAddresses, svc);
   const assignedToUserId = await resolveEmailAssignment(toAddresses, svc);
   const { name: fromName, address: fromAddress } = parseEmailAddress(from);
+  const isSpam     = await isBlockedSpamSender(fromAddress, tenantId, svc);
   const headers    = normalizeHeaders(source.headers);
   const messageId  = (typeof source.message_id === "string" && source.message_id) || extractMessageId(headers);
   const htmlBody   = extractHtmlBody(source);
@@ -294,7 +318,8 @@ async function handleInbound(
     attachments:          attachments as unknown as never,
     brand,
     tenant_id:            tenantId,
-    assigned_to_user_id:  assignedToUserId,
+    assigned_to_user_id:  isSpam ? null : assignedToUserId,
+    spam:                 isSpam,
   }).select("id").single();
 
   if (error) {
@@ -302,7 +327,17 @@ async function handleInbound(
     return NextResponse.json({ error: "Errore salvataggio." }, { status: 500 });
   }
 
-  if (isSupportRecipient(toAddresses)) {
+  if (!isSpam && assignedToUserId) {
+    const subjectLine = (typeof source.subject === "string" ? source.subject : payload.subject) ?? "(nessun oggetto)";
+    await sendWebPushToSiteadmin(assignedToUserId, {
+      title: "Nuova mail assegnata",
+      body: `${fromName ?? fromAddress}: ${subjectLine}`,
+      url: "/admin/inbox",
+      tag: `admin-inbox-${inboundRow?.id ?? messageId ?? Date.now()}`,
+    }).catch((err) => console.warn("[webhook:inbound] push fallita:", err));
+  }
+
+  if (!isSpam && isSupportRecipient(toAddresses)) {
     const { data: ticket, error: ticketError } = await (svc as unknown as {
       from: (table: "support_tickets") => {
         insert: (row: Record<string, unknown>) => {

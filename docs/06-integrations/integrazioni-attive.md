@@ -59,6 +59,18 @@ Alternativa a QZ per il modulo `printStations` (`tenant_printers.connection = 's
 - Modalità alternativa non implementata: **"Device to Cloud" / callback** (doc [§4](https://docs.sunmi.com/en-US/cdixeghjk491/xfffeghjk535)) — la stampante scarica da endpoint partner `printTicket/getPrintTicketOrderId|getPrintTicketInfo|updatePrintTicketStatus`, firma **MD5** `MD5(keyvalue + app_key)`, con l'URL base in *Order Request Address*. Da valutare solo se serve non far transitare i dati da SUNMI.
 - **Costo/licenza da confermare:** la stampa **silenziosa** in produzione (senza popup di conferma) richiede un certificato di firma QZ commerciale. In dev/unsigned QZ chiede conferma all'utente una volta per origine (`setCertificatePromise`/`setSignaturePromise` oggi non firmati). Nessuna env server dedicata: il ponte è interamente lato browser↔localhost.
 
+## Web Push (VAPID) — modello target riusabile
+
+Infrastruttura unica per tutte le notifiche push del portale (tenant e admin piattaforma). Punto d'ingresso: `sendWebPushTo(target, payload)` in `src/lib/push/send.ts` (con wrapper `sendWebPush(tenantId, payload)` e `sendWebPushToSiteadmin(siteadminId, payload)` per compatibilità/leggibilità). Nessun-op sicuro se `WEB_PUSH_PRIVATE_KEY`/`NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY` non sono configurate; le subscription morte (404/410) vengono rimosse dal DB a ogni invio.
+
+- **Tabella** `push_subscriptions`: una riga per dispositivo/browser, legata a `tenant_id` (flussi tenant: agenda, ordini operativi) **oppure** `siteadmin_id` (flussi admin piattaforma, es. mail assegnate). Vincolo: almeno uno dei due valorizzato.
+- **Registrazione** (`POST /api/push/subscribe`): body `{ scope: "tenant", tenantId } | { scope: "siteadmin" }` + `endpoint`/`keys` della subscription browser. Per `scope: "siteadmin"` l'id non è mai preso dal client: viene derivato server-side dall'utente autenticato (`siteadmin.user_id = auth.uid()`). Retrocompatibile: se `scope` è assente ma `tenantId` è presente, si assume `"tenant"` (usato da `push-enable-toggle.tsx` di PynkStudio, non toccato).
+- **Rimozione** (`POST /api/push/unsubscribe`): body `{ endpoint }`, cancella la subscription del dispositivo per l'utente autenticato.
+- **Hook client riusabile**: `usePushSubscription({ swPath, target })` in `src/lib/push/use-push-subscription.ts` — incapsula registrazione service worker, richiesta permesso, `PushManager.subscribe()` e chiamata alle route sopra. Usato da `AdminPushNotifications` (pannello admin piattaforma, `swPath: "/admin-sw.js"`, `target: { scope: "siteadmin" }`).
+- **Service worker per portale**: `public/admin-sw.js` (admin piattaforma, generico per qualsiasi notifica admin), `public/menuary-sw.js` (alert operativi tenant), `public/pynk-sw.js` (agenda PynkStudio). Stesso contratto payload (`title`, `body`, `url`, `tag`).
+- **Per aggiungere una nuova notifica push admin**: nel punto server dove si verifica l'evento, chiamare `sendWebPushToSiteadmin(siteadminId, { title, body, url, tag })`. Non serve nuova infrastruttura. Esempio attivo: mail assegnata (webhook `webhooks/email/inbound` all'auto-assegnazione, `assignEmail` in `src/lib/email/inbound-queries.ts` all'assegnazione manuale) → notifica su `/admin/inbox`.
+- **Limite iOS**: su iPhone la web app deve essere aggiunta alla schermata Home (iOS 16.4+) e il permesso notifiche va concesso dall'interno della PWA; Safari "in tab" non riceve Web Push.
+
 ## Da confermare
 
 - Quali integrazioni sono effettivamente in produzione vs in setup/sandbox.

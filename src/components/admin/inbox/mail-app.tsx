@@ -63,6 +63,7 @@ function sentToListItem(e: SentEmail): InboundEmail {
     read:                 true,
     starred:              false,
     archived:             false,
+    spam:                 false,
     lead_id:              e.lead_id,
     assigned_to_user_id:  null,
   };
@@ -236,8 +237,10 @@ export function MailApp({
         } else {
           const fresh = await getInboundEmails({
             brand:             b,
+            onlyUnread:        v === "unread",
             onlyStarred:       v === "starred",
             archived:          v === "archived",
+            spam:              v === "spam",
             assignedToUserId:  v === "mine" && currentSiteadminId ? currentSiteadminId : undefined,
             scope,
           });
@@ -377,8 +380,8 @@ export function MailApp({
               {/* Mobile: filtri brand + vista */}
               <div className="flex flex-wrap gap-1 lg:hidden">
                 {(mode === "tenant"
-                  ? (["inbox","sent","starred","archived"] as MailView[])
-                  : (["inbox","mine","sent","starred","archived"] as MailView[])
+                  ? (["inbox","unread","sent","starred","spam","archived"] as MailView[])
+                  : (["inbox","unread","mine","sent","starred","spam","archived"] as MailView[])
                 ).map((v) => (
                   <button
                     key={v}
@@ -390,7 +393,7 @@ export function MailApp({
                         : "bg-[var(--ma-surface)] text-[var(--ma-muted)]",
                     )}
                   >
-                    {v === "inbox" ? "Arrivo" : v === "mine" ? "Le mie" : v === "sent" ? "Inviata" : v === "starred" ? "Stellate" : "Archivio"}
+                    {v === "inbox" ? "Arrivo" : v === "unread" ? "Non lette" : v === "mine" ? "Le mie" : v === "sent" ? "Inviata" : v === "starred" ? "Stellate" : v === "spam" ? "Spam" : "Archivio"}
                   </button>
                 ))}
                 {mode === "platform" && (["all","pynkstudio","menuary","bizery","orpheo","support"] as BrandFilter[]).map((b) => (

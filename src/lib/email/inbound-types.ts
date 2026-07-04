@@ -56,6 +56,7 @@ export type InboundEmail = {
   read: boolean;
   starred: boolean;
   archived: boolean;
+  spam: boolean;
   lead_id: string | null;
   assigned_to_user_id: string | null;
 };

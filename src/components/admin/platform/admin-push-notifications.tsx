@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Bell, BellOff } from "lucide-react";
 import { hasAdminPermission, type SiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { usePushSubscription } from "@/lib/push/use-push-subscription";
 import { cn } from "@/lib/utils";
+
+const ADMIN_SW_PATH = "/admin-sw.js";
 
 type AdminPushNotificationsProps = {
   role: SiteadminRole | null;
@@ -29,11 +32,6 @@ const ZERO_COUNTS: CountSnapshot = {
 
 function notificationAvailable() {
   return typeof window !== "undefined" && "Notification" in window;
-}
-
-function getPermission(): NotificationPermission | "unsupported" {
-  if (!notificationAvailable()) return "unsupported";
-  return Notification.permission;
 }
 
 function text(row: EventRow | null | undefined, key: string): string | null {
@@ -83,9 +81,9 @@ async function fetchCount(path: string): Promise<number> {
 }
 
 export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificationsProps) {
-  const [permission, setPermission] = useState<NotificationPermission | "unsupported">("unsupported");
   const countsRef = useRef<CountSnapshot | null>(null);
   const mountedAtRef = useRef(Date.now());
+  const push = usePushSubscription({ swPath: ADMIN_SW_PATH, target: { scope: "siteadmin" } });
 
   const canInbox = hasAdminPermission(role, "inbox:view");
   const canSupport = hasAdminPermission(role, "support:manage");
@@ -93,12 +91,10 @@ export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificat
   const canSubscriptions = hasAdminPermission(role, "subscriptions:view");
   const canNotify = canInbox || canSupport || canCrm || canSubscriptions;
 
-  const enabled = permission === "granted";
-  const blocked = permission === "denied";
-
-  useEffect(() => {
-    setPermission(getPermission());
-  }, []);
+  // "granted" copre sia il toast in-tab (Notification API) sia la Web Push reale
+  // (necessaria per ricevere le notifiche a app chiusa, es. su iPhone da schermata Home).
+  const enabled = push.status === "granted";
+  const blocked = push.status === "denied";
 
   const notify = useCallback(
     (title: string, body: string, tag: string, url: string) => {
@@ -235,22 +231,14 @@ export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificat
     };
   }, [canCrm, canInbox, canNotify, canSubscriptions, canSupport, notify, siteadminId]);
 
-  async function requestPermission() {
-    if (!notificationAvailable()) {
-      setPermission("unsupported");
-      return;
-    }
-    const result = await Notification.requestPermission();
-    setPermission(result);
-  }
-
   const label = useMemo(() => {
     if (!canNotify) return "Notifiche non disponibili";
-    if (permission === "unsupported") return "Notifiche non supportate";
+    if (push.status === "unsupported") return "Notifiche non supportate";
+    if (push.status === "working") return "Attivazione…";
     if (blocked) return "Notifiche bloccate dal browser";
     if (enabled) return "Notifiche admin attive";
     return "Attiva notifiche admin";
-  }, [blocked, canNotify, enabled, permission]);
+  }, [blocked, canNotify, enabled, push.status]);
 
   if (!canNotify) return null;
 
@@ -258,11 +246,12 @@ export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificat
     <button
       type="button"
       onClick={() => {
-        if (!enabled && !blocked) void requestPermission();
+        if (!enabled && !blocked && push.status !== "working") void push.enable();
       }}
+      disabled={push.status === "working"}
       className={cn("menuary-admin-nav-link mx-3 mb-1", enabled && "text-[var(--ma-accent)]")}
       aria-pressed={enabled}
-      title={label}
+      title={push.error ?? label}
     >
       {enabled ? <Bell size={18} /> : <BellOff size={18} />}
       {label}

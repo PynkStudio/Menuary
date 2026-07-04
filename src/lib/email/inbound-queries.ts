@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { sendWebPushToSiteadmin } from "@/lib/push/send";
 import { parseEmailAddress, type InboundEmail, type InboundEmailBrand, type ResendInboundAttachment, type ResendInboundHeader } from "./inbound-types";
 import type { TenantEmailScope } from "./tenant-email-scope";
 
@@ -12,6 +13,7 @@ export type InboxFilter = {
   onlyUnread?: boolean;
   onlyStarred?: boolean;
   archived?: boolean;
+  spam?: boolean;
   page?: number;
   /** Se presente, mostra solo le email assegnate a questo siteadmin.id */
   assignedToUserId?: string;
@@ -51,8 +53,12 @@ export async function getInboundEmails(filter: InboxFilter = {}): Promise<InboxP
   if (filter.onlyStarred) query = query.eq("starred", true);
   if (filter.assignedToUserId) query = query.eq("assigned_to_user_id", filter.assignedToUserId);
 
-  // Di default esclude archiviate, salvo quando si richiede esplicitamente
-  query = query.eq("archived", filter.archived ?? false);
+  // Di default esclude spam e archiviate, salvo vista dedicata
+  if (filter.spam) {
+    query = query.eq("spam", true);
+  } else {
+    query = query.eq("spam", false).eq("archived", filter.archived ?? false);
+  }
 
   const { data, count, error } = await query;
 
@@ -82,7 +88,8 @@ export async function getInboxUnreadCounts(): Promise<InboxCounts> {
     .from("inbound_emails")
     .select("brand", { count: "exact" })
     .eq("read", false)
-    .eq("archived", false);
+    .eq("archived", false)
+    .eq("spam", false);
 
   if (error) throw new Error(error.message);
 
@@ -102,7 +109,8 @@ export async function getTenantInboxUnreadCount(scope: TenantEmailScope): Promis
     .select("*", { count: "exact", head: true })
     .eq("tenant_id", scope.tenantId)
     .eq("read", false)
-    .eq("archived", false);
+    .eq("archived", false)
+    .eq("spam", false);
   if (error) throw new Error(error.message);
   return count ?? 0;
 }
@@ -287,6 +295,39 @@ export async function archiveEmail(id: string, scope?: TenantEmailScope): Promis
   if (error) throw new Error(error.message);
 }
 
+/**
+ * Segna/rimuove lo stato spam. Marcando spam il mittente entra nella blocklist
+ * (globale se senza scope, per-tenant se con scope): le prossime email di quel
+ * mittente arrivano già flaggate spam dal webhook inbound.
+ */
+export async function markEmailSpam(id: string, spam: boolean, scope?: TenantEmailScope): Promise<void> {
+  const email = await getInboundEmailById(id, scope);
+  if (!email) throw new Error("Email non trovata.");
+
+  const admin = createSupabaseAdminClient();
+  let query = admin
+    .from("inbound_emails")
+    .update(spam ? { spam: true, read: true } : { spam: false })
+    .eq("id", id);
+  if (scope) query = query.eq("tenant_id", scope.tenantId);
+  const { error } = await query;
+  if (error) throw new Error(error.message);
+
+  const address = email.from_address.trim().toLowerCase();
+  const tenantId = scope?.tenantId ?? null;
+  if (spam) {
+    const { error: blockError } = await admin
+      .from("email_spam_senders")
+      .upsert({ address, tenant_id: tenantId }, { onConflict: "address,tenant_id" });
+    if (blockError) throw new Error(blockError.message);
+  } else {
+    let unblock = admin.from("email_spam_senders").delete().eq("address", address);
+    unblock = tenantId ? unblock.eq("tenant_id", tenantId) : unblock.is("tenant_id", null);
+    const { error: unblockError } = await unblock;
+    if (unblockError) throw new Error(unblockError.message);
+  }
+}
+
 export async function deleteEmail(id: string, scope?: TenantEmailScope): Promise<void> {
   const admin = createSupabaseAdminClient();
   let query = admin
@@ -301,11 +342,22 @@ export async function deleteEmail(id: string, scope?: TenantEmailScope): Promise
 /** Assegna (o rimuove l'assegnazione di) un'email a un utente siteadmin. */
 export async function assignEmail(id: string, siteadminId: string | null): Promise<void> {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin
+  const { data, error } = await admin
     .from("inbound_emails")
     .update({ assigned_to_user_id: siteadminId })
-    .eq("id", id);
+    .eq("id", id)
+    .select("from_address, from_name, subject")
+    .maybeSingle();
   if (error) throw new Error(error.message);
+
+  if (siteadminId && data) {
+    await sendWebPushToSiteadmin(siteadminId, {
+      title: "Mail assegnata a te",
+      body: `${data.from_name ?? data.from_address}: ${data.subject}`,
+      url: "/admin/inbox",
+      tag: `admin-inbox-${id}`,
+    }).catch((err) => console.warn("[assignEmail] push fallita:", err));
+  }
 }
 
 /** Conta le email non lette assegnate a un utente specifico. */
@@ -316,7 +368,8 @@ export async function getInboxUnreadCountForUser(siteadminId: string): Promise<n
     .select("*", { count: "exact", head: true })
     .eq("assigned_to_user_id", siteadminId)
     .eq("read", false)
-    .eq("archived", false);
+    .eq("archived", false)
+    .eq("spam", false);
   if (error) throw new Error(error.message);
   return count ?? 0;
 }
