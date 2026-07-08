@@ -3213,9 +3213,11 @@ export type Database = {
         Row: {
           auth: string
           created_at: string
+          device_id: string | null
           endpoint: string
           id: string
           p256dh: string
+          page_url: string | null
           siteadmin_id: string | null
           tenant_id: string | null
           user_agent: string | null
@@ -3224,9 +3226,11 @@ export type Database = {
         Insert: {
           auth: string
           created_at?: string
+          device_id?: string | null
           endpoint: string
           id?: string
           p256dh: string
+          page_url?: string | null
           siteadmin_id?: string | null
           tenant_id?: string | null
           user_agent?: string | null
@@ -3235,9 +3239,11 @@ export type Database = {
         Update: {
           auth?: string
           created_at?: string
+          device_id?: string | null
           endpoint?: string
           id?: string
           p256dh?: string
+          page_url?: string | null
           siteadmin_id?: string | null
           tenant_id?: string | null
           user_agent?: string | null
@@ -5201,6 +5207,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tenant_linktree_links_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_mail_device_filters: {
+        Row: {
+          created_at: string
+          device_id: string
+          id: string
+          label: string | null
+          local_parts: string[]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          id?: string
+          label?: string | null
+          local_parts?: string[]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          id?: string
+          label?: string | null
+          local_parts?: string[]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_mail_device_filters_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

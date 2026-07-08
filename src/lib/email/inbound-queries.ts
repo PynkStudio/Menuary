@@ -17,6 +17,8 @@ export type InboxFilter = {
   page?: number;
   /** Se presente, mostra solo le email assegnate a questo siteadmin.id */
   assignedToUserId?: string;
+  /** Filtro leggero "per dispositivo" lato tenant: local-part (prima della @) a cui limitare i risultati. */
+  matchLocalParts?: string[];
 };
 
 export type InboxPage = {
@@ -64,9 +66,23 @@ export async function getInboundEmails(filter: InboxFilter = {}): Promise<InboxP
 
   if (error) throw new Error(error.message);
 
+  let emails = (data ?? []) as unknown as InboundEmail[];
+  let total = count ?? 0;
+
+  // Filtro "per dispositivo" (nessuna colonna dedicata: si applica sul batch
+  // già filtrato/paginato lato server, coerente col fatto che questa mail app
+  // non ha ancora una UI di paginazione reale).
+  if (filter.matchLocalParts?.length) {
+    const wanted = new Set(filter.matchLocalParts.map((p) => p.toLowerCase()));
+    emails = emails.filter((email) =>
+      email.to_addresses.some((address) => wanted.has(address.split("@")[0]?.toLowerCase() ?? "")),
+    );
+    total = emails.length;
+  }
+
   return {
-    emails: (data ?? []) as unknown as InboundEmail[],
-    total: count ?? 0,
+    emails,
+    total,
     page,
     pageSize: PAGE_SIZE,
   };
@@ -102,17 +118,33 @@ export async function getInboxUnreadCounts(): Promise<InboxCounts> {
   return { unread_menuary, unread_bizery, unread_orpheo, unread_pynkstudio, unread_total: unread_menuary + unread_bizery + unread_orpheo + unread_pynkstudio };
 }
 
-export async function getTenantInboxUnreadCount(scope: TenantEmailScope): Promise<number> {
+export async function getTenantInboxUnreadCount(scope: TenantEmailScope, matchLocalParts?: string[]): Promise<number> {
   const admin = createSupabaseAdminClient();
-  const { count, error } = await admin
+
+  if (!matchLocalParts?.length) {
+    const { count, error } = await admin
+      .from("inbound_emails")
+      .select("*", { count: "exact", head: true })
+      .eq("tenant_id", scope.tenantId)
+      .eq("read", false)
+      .eq("archived", false)
+      .eq("spam", false);
+    if (error) throw new Error(error.message);
+    return count ?? 0;
+  }
+
+  const wanted = new Set(matchLocalParts.map((p) => p.toLowerCase()));
+  const { data, error } = await admin
     .from("inbound_emails")
-    .select("*", { count: "exact", head: true })
+    .select("to_addresses")
     .eq("tenant_id", scope.tenantId)
     .eq("read", false)
     .eq("archived", false)
     .eq("spam", false);
   if (error) throw new Error(error.message);
-  return count ?? 0;
+  return (data ?? []).filter((row) =>
+    (row.to_addresses as string[]).some((address) => wanted.has(address.split("@")[0]?.toLowerCase() ?? "")),
+  ).length;
 }
 
 // ─── Single email ─────────────────────────────────────────────────────────────

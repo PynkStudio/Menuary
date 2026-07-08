@@ -11,7 +11,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 export type PushPayload = {
   title: string;
   body: string;
-  /** URL aperto al click sulla notifica (default: "/"). */
+  /** URL aperto al click sulla notifica. Se assente, si usa la page_url salvata sulla subscription al subscribe, poi "/". */
   url?: string;
   tag?: string;
 };
@@ -23,6 +23,14 @@ export type PushPayload = {
 export type PushTarget =
   | { tenantId: string }
   | { siteadminId: string };
+
+type SubscriptionRow = {
+  id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  page_url?: string | null;
+};
 
 let vapidReady: boolean | null = null;
 
@@ -38,6 +46,47 @@ function ensureVapid(): boolean {
   webpush.setVapidDetails(subject, publicKey, privateKey);
   vapidReady = true;
   return true;
+}
+
+/**
+ * Invia il payload alle subscription indicate (già filtrate/risolte dal
+ * chiamante) e ripulisce quelle morte (404/410). Helper interno condiviso da
+ * tutti i punti d'ingresso pubblici di questo file.
+ */
+async function deliver(
+  svc: NonNullable<ReturnType<typeof createSupabaseServiceClient>>,
+  subs: SubscriptionRow[],
+  payload: PushPayload,
+): Promise<number> {
+  const deadIds: string[] = [];
+  let sent = 0;
+
+  await Promise.all(
+    subs.map(async (s) => {
+      const body = JSON.stringify({
+        title: payload.title,
+        body: payload.body,
+        url: payload.url ?? s.page_url ?? "/",
+        tag: payload.tag,
+      });
+      try {
+        await webpush.sendNotification(
+          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+          body,
+        );
+        sent++;
+      } catch (err) {
+        const statusCode = (err as { statusCode?: number })?.statusCode;
+        if (statusCode === 404 || statusCode === 410) deadIds.push(s.id);
+        else console.warn("[push] invio fallito:", statusCode ?? err);
+      }
+    }),
+  );
+
+  if (deadIds.length) {
+    await svc.from("push_subscriptions").delete().in("id", deadIds);
+  }
+  return sent;
 }
 
 /**
@@ -58,43 +107,41 @@ export async function sendWebPushTo(target: PushTarget, payload: PushPayload): P
 
   let query = svc
     .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth");
+    .select("id, endpoint, p256dh, auth, page_url");
   query = "tenantId" in target
     ? query.eq("tenant_id", target.tenantId)
     : query.eq("siteadmin_id", target.siteadminId);
   const { data: subs, error } = await query;
   if (error || !subs?.length) return 0;
 
-  const body = JSON.stringify({
-    title: payload.title,
-    body: payload.body,
-    url: payload.url ?? "/",
-    tag: payload.tag,
-  });
+  return deliver(svc, subs, payload);
+}
 
-  const deadIds: string[] = [];
-  let sent = 0;
-
-  await Promise.all(
-    subs.map(async (s) => {
-      try {
-        await webpush.sendNotification(
-          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-          body,
-        );
-        sent++;
-      } catch (err) {
-        const statusCode = (err as { statusCode?: number })?.statusCode;
-        if (statusCode === 404 || statusCode === 410) deadIds.push(s.id);
-        else console.warn("[push] invio fallito:", statusCode ?? err);
-      }
-    }),
-  );
-
-  if (deadIds.length) {
-    await svc.from("push_subscriptions").delete().in("id", deadIds);
+/**
+ * Invia una push a un sottoinsieme esplicito di subscription (per id).
+ * Primitiva riusabile per feature che devono calcolare da sole il targeting
+ * (es. filtri per-dispositivo): il chiamante risolve gli id, questa funzione
+ * si occupa solo dell'invio/pulizia, senza duplicare quella logica.
+ */
+export async function sendWebPushToSubscriptions(subscriptionIds: string[], payload: PushPayload): Promise<number> {
+  if (!subscriptionIds.length) return 0;
+  if (!ensureVapid()) {
+    console.warn("[push] VAPID non configurate: notifica saltata.", payload.title);
+    return 0;
   }
-  return sent;
+  const svc = createSupabaseServiceClient();
+  if (!svc) {
+    console.warn("[push] Supabase service client non configurato.");
+    return 0;
+  }
+
+  const { data: subs, error } = await svc
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth, page_url")
+    .in("id", subscriptionIds);
+  if (error || !subs?.length) return 0;
+
+  return deliver(svc, subs, payload);
 }
 
 /** Invia una push a tutte le subscription di un tenant. Ritorna il numero di invii riusciti. */

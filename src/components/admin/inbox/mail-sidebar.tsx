@@ -31,9 +31,13 @@ type Props = {
   unreadMine: number;
   canCompose: boolean;
   mode?: "platform" | "tenant";
+  /** Se false nasconde la vista "Le mie" (tenant senza filtro dispositivo configurato). Default true. */
+  mineAvailable?: boolean;
   onViewChange: (v: MailView) => void;
   onBrandChange: (b: BrandFilter) => void;
   onCompose: () => void;
+  /** Tenant: apre il pannello di configurazione filtro/notifiche per questo dispositivo. */
+  onOpenDeviceSettings?: () => void;
 };
 
 const VIEWS: { value: MailView; label: string; icon: React.ElementType }[] = [
@@ -55,8 +59,8 @@ const BRANDS: { value: BrandFilter; label: string; icon: React.ElementType }[] =
   { value: "support",    label: "Supporto",    icon: LifeBuoy },
 ];
 
-export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, mode = "platform", onViewChange, onBrandChange, onCompose }: Props) {
-  const views = mode === "tenant" ? VIEWS.filter((item) => item.value !== "mine") : VIEWS;
+export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, mode = "platform", mineAvailable = true, onViewChange, onBrandChange, onCompose, onOpenDeviceSettings }: Props) {
+  const views = VIEWS.filter((item) => item.value !== "mine" || mineAvailable);
   return (
     <div className="flex h-full w-52 shrink-0 flex-col border-r border-black/10 bg-white/55 p-3 backdrop-blur-xl">
       {/* Scrivi */}
@@ -142,6 +146,16 @@ export function MailSidebar({ view, brand, unreadCount, unreadMine, canCompose, 
             <Settings size={15} />
             Profilo e firma
           </Link>
+        )}
+        {mode === "tenant" && onOpenDeviceSettings && (
+          <button
+            type="button"
+            onClick={onOpenDeviceSettings}
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-[var(--ma-muted)] transition-colors hover:bg-white/65 hover:text-[var(--ma-ink)]"
+          >
+            <Settings size={15} />
+            Questo dispositivo
+          </button>
         )}
       </div>
     </div>

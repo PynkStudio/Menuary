@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { getDeviceId } from "./device-id";
 
 /**
  * Hook riusabile per attivare/disattivare Web Push su un dispositivo, per
@@ -78,6 +79,8 @@ export function usePushSubscription({ swPath, target }: Options) {
           endpoint: json.endpoint,
           keys: json.keys,
           userAgent: navigator.userAgent,
+          deviceId: getDeviceId(),
+          pageUrl: window.location.pathname,
         }),
       });
       if (!res.ok) throw new Error("subscribe_failed");

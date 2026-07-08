@@ -4,7 +4,7 @@ module: "mail"
 roles: ["siteadmin", "tenant_admin"]
 tags: ["ui", "mail", "inbox", "gestione", "admin"]
 route: "/admin/inbox, /gestione/[tenantSlug]/mail"
-source: "src/app/admin/inbox/page.tsx, src/app/gestione/[tenantSlug]/mail/page.tsx, src/components/admin/inbox/mail-app.tsx, src/components/admin/inbox/email-list.tsx, src/components/admin/inbox/email-detail.tsx, src/components/admin/inbox/mail-sidebar.tsx"
+source: "src/app/admin/inbox/page.tsx, src/app/gestione/[tenantSlug]/mail/page.tsx, src/components/admin/inbox/mail-app.tsx, src/components/admin/inbox/email-list.tsx, src/components/admin/inbox/email-detail.tsx, src/components/admin/inbox/mail-sidebar.tsx, src/components/admin/inbox/tenant-mail-device-settings.tsx, src/lib/email/mail-device-filters.ts"
 last_updated: "2026-07-04"
 owner: ""
 ---
@@ -31,7 +31,7 @@ La voce **Mail** nel pannello Gestione e' visibile solo quando il tenant ha acce
 
 # Elementi della schermata
 
-- Sidebar con le viste **Arrivo**, **Non lette**, **Le mie**, **Inviata**, **Stellate**, **Spam**, **Archivio**. In modalita' tenant non compare **Le mie**.
+- Sidebar con le viste **Arrivo**, **Non lette**, **Le mie**, **Inviata**, **Stellate**, **Spam**, **Archivio**. In modalita' tenant **Le mie** compare solo se sul dispositivo corrente e' stato configurato un filtro (vedi "Filtro per dispositivo" piu' sotto); di default e' nascosta.
 - Filtri brand nella inbox globale: **Tutte**, **PynkStudio**, **Menuary**, **Bizery**, **Orpheo**, **Supporto**.
 - Lista conversazioni: le email inbound sono raggruppate in thread. Ogni riga mostra mittente, oggetto, anteprima, data, eventuale badge con numero messaggi e badge allegati.
 - Dettaglio thread: mostra tutti i messaggi della conversazione in ordine cronologico. La pagina non ha titolo/sottotitolo sopra la mail app, cosi' il reader usa quasi tutta l'altezza disponibile.
@@ -45,7 +45,8 @@ La voce **Mail** nel pannello Gestione e' visibile solo quando il tenant ha acce
 | **Scrivi** | Apre il drawer di composizione email. | Sidebar desktop o pulsante mobile in basso a destra. |
 | **Arrivo** | Mostra la posta in arrivo non archiviata e non spam. | Sidebar / filtri mobile. |
 | **Non lette** | Mostra solo le email in arrivo non ancora lette. | Sidebar / filtri mobile. |
-| **Le mie** | Mostra le email assegnate all'utente siteadmin corrente. | Sidebar admin piattaforma. |
+| **Le mie** | Admin piattaforma: mostra le email assegnate all'utente siteadmin corrente. Tenant: mostra solo le email per le local-part assegnate a questo dispositivo (visibile solo se configurato, vedi "Questo dispositivo"). | Sidebar. |
+| **Questo dispositivo** | Apre il pannello di impostazioni del dispositivo corrente: attivazione notifiche push e filtro local-part. | Fondo sidebar desktop (tenant) o icona ingranaggio nella toolbar mobile. |
 | **Inviata** | Mostra le email inviate. | Sidebar / filtri mobile. |
 | **Stellate** | Mostra le email contrassegnate con stella. | Sidebar / filtri mobile. |
 | **Spam** | Mostra le email segnate come spam. | Sidebar / filtri mobile. |
@@ -70,15 +71,27 @@ La voce **Mail** nel pannello Gestione e' visibile solo quando il tenant ha acce
 
 | Campo/filtro | Valori | Note |
 |---|---|---|
-| Vista cassetta | **Arrivo**, **Non lette**, **Le mie**, **Inviata**, **Stellate**, **Spam**, **Archivio** | **Le mie** e' solo admin piattaforma. |
+| Vista cassetta | **Arrivo**, **Non lette**, **Le mie**, **Inviata**, **Stellate**, **Spam**, **Archivio** | **Le mie** lato tenant compare solo con un filtro dispositivo configurato. |
 | Brand | **Tutte**, **PynkStudio**, **Menuary**, **Bizery**, **Orpheo**, **Supporto** | Solo admin piattaforma. |
 | Cerca per nome o email | Testo libero | Presente nei pannelli di collegamento lead. |
 
 # Notifiche push
 
+## Admin piattaforma
+
 - Quando una mail viene assegnata (automaticamente dal webhook o manualmente dal pulsante **Assegna**) al siteadmin destinatario arriva una notifica push, se ha attivato le notifiche dal pulsante in fondo alla sidebar admin ("Attiva notifiche admin").
+
+## Gestione tenant
+
+- Nessun sistema di account: per default **ogni dispositivo del tenant che ha attivato le notifiche riceve la push per ogni mail in arrivo** (broadcast a tutto il tenant).
+- Dal pannello **Questo dispositivo** (icona ingranaggio, fondo sidebar desktop o toolbar mobile) si attivano le notifiche push per il dispositivo corrente.
+- Nello stesso pannello, un **filtro avanzato opzionale** permette di assegnare al dispositivo una o piu' local-part (es. "fatturazione, prenotazioni"): da quel momento il dispositivo riceve la push solo per le mail dirette a quelle local-part, e nella sidebar compare la vista **Le mie** filtrata allo stesso modo. Rimuovendo il filtro il dispositivo torna a ricevere tutto.
+- E' un'identita' per dispositivo (browser), non un account: se si cancellano i dati del browser o si cambia dispositivo, il filtro va riconfigurato. Un sistema con account/profili veri (come quello dell'admin piattaforma) e' un TODO futuro.
+
+## Comune
+
 - Su iPhone la notifica arriva anche ad app chiusa solo se il portale e' stato aggiunto alla schermata Home (iOS 16.4+) e il permesso e' stato concesso dall'interno della web app installata.
-- Infrastruttura riusabile per altre notifiche admin: vedi [[integrazioni-attive]] sezione "Web Push (VAPID)".
+- Infrastruttura riusabile per altre notifiche (admin e tenant): vedi [[integrazioni-attive]] sezione "Web Push (VAPID)".
 
 # Gestione spam
 
@@ -110,3 +123,6 @@ La voce **Mail** nel pannello Gestione e' visibile solo quando il tenant ha acce
 - Sidebar e filtri: `src/components/admin/inbox/mail-sidebar.tsx`
 - Query inbound: `src/lib/email/inbound-queries.ts`
 - Tipi inbound/allegati: `src/lib/email/inbound-types.ts`
+- Pannello dispositivo tenant (push + filtro): `src/components/admin/inbox/tenant-mail-device-settings.tsx`
+- Filtri mail per dispositivo (CRUD + targeting push): `src/lib/email/mail-device-filters.ts`
+- Invio push: `src/lib/push/send.ts`, `src/lib/push/use-push-subscription.ts`

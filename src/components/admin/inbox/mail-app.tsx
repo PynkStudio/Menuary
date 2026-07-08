@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useCallback, useEffect, useRef } from "react";
-import { Mail, RefreshCw } from "lucide-react";
+import { Mail, RefreshCw, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { MailSidebar } from "./mail-sidebar";
@@ -9,11 +9,14 @@ import { EmailList } from "./email-list";
 import { EmailDetail } from "./email-detail";
 import { SentDetail } from "./sent-detail";
 import { ComposeDrawer, type ComposeAttachment } from "./compose-drawer";
+import { TenantMailDeviceSettings } from "./tenant-mail-device-settings";
 
-import { getInboundEmails, markEmailRead } from "@/lib/email/inbound-queries";
+import { getInboundEmails, getTenantInboxUnreadCount, markEmailRead } from "@/lib/email/inbound-queries";
 import { getSentEmails } from "@/lib/email/sent-queries";
 import { getTrackingSummariesForEmails } from "@/lib/email/tracking-queries";
 import type { TrackingSummary } from "@/lib/email/tracking-queries";
+import { getDeviceId } from "@/lib/push/device-id";
+import { getMailDeviceFilter, type MailDeviceFilter } from "@/lib/email/mail-device-filters";
 
 import type { InboxPage } from "@/lib/email/inbound-queries";
 import type { SentPage, SentEmail } from "@/lib/email/sent-queries";
@@ -200,8 +203,11 @@ export function MailApp({
   const [composePrefill, setComposePrefill]   = useState<ComposePrefill>({});
   const [sentTrackingMap, setSentTrackingMap] = useState<Record<string, TrackingSummary>>({});
   const [isPending, startTransition]          = useTransition();
+  const [deviceFilter, setDeviceFilter]       = useState<MailDeviceFilter | null>(null);
+  const [deviceSettingsOpen, setDeviceSettingsOpen] = useState(false);
 
   const prevInboxIdsRef = useRef<Set<string>>(new Set(initialInbox.emails.map((e) => e.id)));
+  const mineAvailable = mode !== "tenant" || Boolean(deviceFilter?.localParts.length);
 
   useEffect(() => {
     const ids = initialSent.emails.map((e) => e.resend_message_id).filter(Boolean) as string[];
@@ -210,8 +216,28 @@ export function MailApp({
     }
   }, [initialSent]);
 
+  // Filtro "per dispositivo" (tenant, senza account): caricato dal localStorage/DB al mount.
+  useEffect(() => {
+    if (mode !== "tenant" || !tenantId) return;
+    let cancelled = false;
+    getMailDeviceFilter(tenantId, getDeviceId())
+      .then((filter) => { if (!cancelled) setDeviceFilter(filter?.localParts.length ? filter : null); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [mode, tenantId]);
+
   const refreshSidebarCounters = useCallback(async () => {
     try {
+      if (mode === "tenant") {
+        if (!scope) return;
+        const [inboxUnread, mineUnread] = await Promise.all([
+          getTenantInboxUnreadCount(scope),
+          deviceFilter?.localParts.length ? getTenantInboxUnreadCount(scope, deviceFilter.localParts) : Promise.resolve(0),
+        ]);
+        setUnread(inboxUnread);
+        setUnreadMyCount(mineUnread);
+        return;
+      }
       const [inboxAll, mineAll] = await Promise.all([
         getInboundEmails({ brand: "all", scope }),
         currentSiteadminId
@@ -223,7 +249,7 @@ export function MailApp({
     } catch {
       /* noop */
     }
-  }, [currentSiteadminId, scope]);
+  }, [currentSiteadminId, scope, mode, deviceFilter]);
 
   const reload = useCallback(
     (v: MailView = view, b: BrandFilter = brand) => {
@@ -241,7 +267,8 @@ export function MailApp({
             onlyStarred:       v === "starred",
             archived:          v === "archived",
             spam:              v === "spam",
-            assignedToUserId:  v === "mine" && currentSiteadminId ? currentSiteadminId : undefined,
+            assignedToUserId:  v === "mine" && mode !== "tenant" && currentSiteadminId ? currentSiteadminId : undefined,
+            matchLocalParts:   v === "mine" && mode === "tenant" ? deviceFilter?.localParts : undefined,
             scope,
           });
           setInbox(fresh);
@@ -257,8 +284,14 @@ export function MailApp({
         await refreshSidebarCounters();
       });
     },
-    [view, brand, currentSiteadminId, refreshSidebarCounters, scope],
+    [view, brand, currentSiteadminId, refreshSidebarCounters, scope, mode, deviceFilter],
   );
+
+  function handleDeviceFilterChange(filter: MailDeviceFilter | null) {
+    setDeviceFilter(filter);
+    void refreshSidebarCounters();
+    if (view === "mine") reload("mine", brand);
+  }
 
   // Polling + refresh su focus per aggiornamento automatico inbox.
   useEffect(() => {
@@ -364,9 +397,11 @@ export function MailApp({
               unreadMine={unreadMyCount}
               canCompose={canCompose}
               mode={mode}
+              mineAvailable={mineAvailable}
               onViewChange={handleViewChange}
               onBrandChange={handleBrandChange}
               onCompose={openBlankCompose}
+              onOpenDeviceSettings={mode === "tenant" && tenantId ? () => setDeviceSettingsOpen(true) : undefined}
             />
           </div>
 
@@ -379,10 +414,9 @@ export function MailApp({
             <div className="flex items-center justify-between border-b border-black/10 bg-white/45 px-4 py-2.5 backdrop-blur-xl">
               {/* Mobile: filtri brand + vista */}
               <div className="flex flex-wrap gap-1 lg:hidden">
-                {(mode === "tenant"
-                  ? (["inbox","unread","sent","starred","spam","archived"] as MailView[])
-                  : (["inbox","unread","mine","sent","starred","spam","archived"] as MailView[])
-                ).map((v) => (
+                {(["inbox","unread","mine","sent","starred","spam","archived"] as MailView[])
+                  .filter((v) => v !== "mine" || mineAvailable)
+                  .map((v) => (
                   <button
                     key={v}
                     onClick={() => handleViewChange(v)}
@@ -414,14 +448,25 @@ export function MailApp({
               <p className="hidden text-xs font-medium text-[var(--ma-muted)] lg:block">
                 {isSentView ? sent.total : `${inboundThreads.length} thread`} · {isSentView ? "email" : `${inbox.total} email`}
               </p>
-              <button
-                onClick={() => reload()}
-                disabled={isPending}
-                className="menuary-admin-nav-link !w-auto !p-1.5"
-                title="Aggiorna"
-              >
-                <RefreshCw size={13} className={isPending ? "animate-spin" : ""} />
-              </button>
+              <div className="flex items-center gap-1">
+                {mode === "tenant" && tenantId && (
+                  <button
+                    onClick={() => setDeviceSettingsOpen(true)}
+                    className="menuary-admin-nav-link !w-auto !p-1.5 lg:hidden"
+                    title="Questo dispositivo"
+                  >
+                    <Settings size={13} />
+                  </button>
+                )}
+                <button
+                  onClick={() => reload()}
+                  disabled={isPending}
+                  className="menuary-admin-nav-link !w-auto !p-1.5"
+                  title="Aggiorna"
+                >
+                  <RefreshCw size={13} className={isPending ? "animate-spin" : ""} />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto">
@@ -496,6 +541,15 @@ export function MailApp({
         onClose={() => setComposeOpen(false)}
         onSent={() => { if (view === "sent") reload("sent", brand); }}
       />
+
+      {mode === "tenant" && tenantId && (
+        <TenantMailDeviceSettings
+          open={deviceSettingsOpen}
+          tenantId={tenantId}
+          onClose={() => setDeviceSettingsOpen(false)}
+          onFilterChange={handleDeviceFilterChange}
+        />
+      )}
     </>
   );
 }

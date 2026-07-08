@@ -15,6 +15,10 @@ type Body = {
   endpoint: string;
   keys: { p256dh: string; auth: string };
   userAgent?: string;
+  /** Id dispositivo generato lato client (localStorage), per correlare filtri per-dispositivo (es. mail tenant). */
+  deviceId?: string;
+  /** Pagina da cui ci si è iscritti, usata come fallback del click-through se il payload non specifica un url. */
+  pageUrl?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -71,6 +75,8 @@ export async function POST(req: NextRequest) {
       p256dh: body.keys.p256dh,
       auth: body.keys.auth,
       user_agent: body.userAgent ?? null,
+      device_id: body.deviceId ?? null,
+      page_url: body.pageUrl ?? null,
     },
     { onConflict: "user_id,endpoint" },
   );

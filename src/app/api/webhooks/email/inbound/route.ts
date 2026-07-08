@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { sendWebPushToSiteadmin } from "@/lib/push/send";
+import { sendWebPushToSiteadmin, sendWebPushToSubscriptions } from "@/lib/push/send";
+import { resolveTenantMailPushTargets } from "@/lib/email/mail-device-filters";
 import {
   type ResendInboundPayload,
   type ResendInboundHeader,
@@ -305,13 +306,14 @@ async function handleInbound(
   const attachments = resendEmailId
     ? await fetchReceivedAttachments(resendEmailId)
     : ((payload.attachments ?? []) as ResendInboundAttachment[]);
+  const subjectLine = (typeof source.subject === "string" ? source.subject : payload.subject) ?? "(nessun oggetto)";
 
   const { data: inboundRow, error } = await svc.from("inbound_emails").insert({
     message_id:           messageId,
     from_address:         fromAddress,
     from_name:            fromName,
     to_addresses:         toAddresses,
-    subject:              (typeof source.subject === "string" ? source.subject : payload.subject) ?? "(nessun oggetto)",
+    subject:              subjectLine,
     text_body:            textBody,
     html_body:            htmlBody,
     headers:              headers as unknown as never,
@@ -328,13 +330,29 @@ async function handleInbound(
   }
 
   if (!isSpam && assignedToUserId) {
-    const subjectLine = (typeof source.subject === "string" ? source.subject : payload.subject) ?? "(nessun oggetto)";
     await sendWebPushToSiteadmin(assignedToUserId, {
       title: "Nuova mail assegnata",
       body: `${fromName ?? fromAddress}: ${subjectLine}`,
       url: "/admin/inbox",
       tag: `admin-inbox-${inboundRow?.id ?? messageId ?? Date.now()}`,
     }).catch((err) => console.warn("[webhook:inbound] push fallita:", err));
+  }
+
+  if (!isSpam && tenantId) {
+    const targetIds = await resolveTenantMailPushTargets(tenantId, toAddresses).catch((err) => {
+      console.warn("[webhook:inbound] resolveTenantMailPushTargets fallita:", err);
+      return [] as string[];
+    });
+    if (targetIds.length) {
+      // Nessun url esplicito: ogni dispositivo apre la pagina da cui si è
+      // iscritto (page_url salvata al subscribe), coerente coi vari domini
+      // gestione possibili per tenant.
+      await sendWebPushToSubscriptions(targetIds, {
+        title: "Nuova mail",
+        body: `${fromName ?? fromAddress}: ${subjectLine}`,
+        tag: `tenant-mail-${inboundRow?.id ?? messageId ?? Date.now()}`,
+      }).catch((err) => console.warn("[webhook:inbound] push tenant fallita:", err));
+    }
   }
 
   if (!isSpam && isSupportRecipient(toAddresses)) {
