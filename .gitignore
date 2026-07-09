@@ -9,6 +9,8 @@ out
 *.tsbuildinfo
 .DS_Store
 *.log
+local.properties
+**/local.properties
 .vercel
 public/uploads/*
 !public/uploads/.gitkeep

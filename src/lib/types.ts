@@ -201,7 +201,7 @@ export type TenantOrderSettings = {
 // Ponte verso la stampante: QZ Tray locale sul PC cassa (vedi lib/printing).
 // Schema predisposto multi-stampante (station/categories) ma la UI gestisce
 // una sola stampante per locale. TODO(multi-printer).
-export type PrinterConnection = "qz" | "network_eposprint" | "printnode" | "sunmi_cloud";
+export type PrinterConnection = "qz" | "network_eposprint" | "printnode" | "sunmi_cloud" | "sunmi_pos";
 export type PrinterStation = "cucina" | "bar" | "pizzeria" | "banco";
 
 export type TenantPrinter = {

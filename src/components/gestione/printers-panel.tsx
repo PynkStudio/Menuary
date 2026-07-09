@@ -21,7 +21,7 @@ import {
   printRawEscPos,
 } from "@/lib/printing/qz-client";
 
-type PrinterConnectionUI = "qz" | "sunmi_cloud";
+type PrinterConnectionUI = "qz" | "sunmi_cloud" | "sunmi_pos";
 
 type FormState = {
   name: string;
@@ -77,7 +77,10 @@ export function PrintersPanel() {
       if (def) {
         const next: FormState = {
           name: def.name,
-          connection: def.connection === "sunmi_cloud" ? "sunmi_cloud" : "qz",
+          connection:
+            def.connection === "sunmi_cloud" || def.connection === "sunmi_pos"
+              ? def.connection
+              : "qz",
           qzPrinterName: def.qzPrinterName,
           deviceSn: def.deviceSn,
           charWidth: def.charWidth,
@@ -186,7 +189,8 @@ export function PrintersPanel() {
         <p className="mt-2 text-sm text-zinc-500">
           Collega la stampante delle comande del locale. Con <strong>QZ Tray</strong>{" "}
           usi una stampante USB sul PC cassa; con una <strong>stampante cloud SUNMI</strong>{" "}
-          la stampa è automatica e server-side, senza PC.
+          la stampa è server-side; con un <strong>POS SUNMI locale</strong> la stampa passa
+          dall'app installata sul terminale.
         </p>
       </header>
 
@@ -279,6 +283,7 @@ export function PrintersPanel() {
             >
               <option value="qz">USB sul PC cassa (QZ Tray)</option>
               <option value="sunmi_cloud">Stampante cloud SUNMI</option>
+              <option value="sunmi_pos">POS SUNMI locale</option>
             </select>
           </label>
 
@@ -306,7 +311,7 @@ export function PrintersPanel() {
                 ))}
               </select>
             </label>
-          ) : (
+          ) : form.connection === "sunmi_cloud" ? (
             <label className="block">
               <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 SN stampante SUNMI
@@ -319,6 +324,11 @@ export function PrintersPanel() {
                 className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-900"
               />
             </label>
+          ) : (
+            <div className="rounded-xl bg-zinc-50 p-3 text-sm text-zinc-600">
+              Installa Menuary Print Agent sul POS SUNMI e accedi con le credenziali
+              del ristorante. Non serve inserire il seriale cloud.
+            </div>
           )}
 
           <label className="block">
@@ -363,6 +373,8 @@ export function PrintersPanel() {
               <span className="block text-xs text-zinc-500">
                 {form.connection === "sunmi_cloud"
                   ? "Stampa la comanda appena un ordine viene accettato. Server-side: nessun PC da tenere acceso."
+                  : form.connection === "sunmi_pos"
+                    ? "Stampa la comanda appena un ordine viene accettato. Richiede Menuary Print Agent attivo sul POS SUNMI."
                   : "Stampa la comanda appena arriva un nuovo ordine (richiede la pagina Operativo → Ordini aperta sul PC cassa)."}
               </span>
             </span>
@@ -392,11 +404,17 @@ export function PrintersPanel() {
               <TestTube2 size={16} /> {testing ? "Stampo…" : "Stampa di prova"}
             </button>
           </div>
-        ) : (
+        ) : form.connection === "sunmi_cloud" ? (
           <p className="mt-5 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-500">
             La stampante cloud SUNMI stampa lato server appena un ordine viene
             accettato: collega il device dal portale SUNMI e inserisci qui il suo SN.
             La stampa di prova dal browser non è disponibile per le cloud.
+          </p>
+        ) : (
+          <p className="mt-5 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-500">
+            Il POS SUNMI locale stampa tramite l'app Android Menuary Print Agent.
+            Lascia l'app installata e abbinata: resta attiva in background e polla
+            la coda comande del server.
           </p>
         )}
       </section>

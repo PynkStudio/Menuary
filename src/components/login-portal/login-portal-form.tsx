@@ -12,6 +12,15 @@ import { tenantSlugFromFrom } from "@/lib/login-url";
 
 function loginErrorMessage(message: string) {
   const normalized = message.toLowerCase();
+  if (normalized.includes("passkey_disabled")) {
+    return "Le passkey non sono abilitate per questo progetto.";
+  }
+  if (normalized.includes("webauthn_credential_not_found")) {
+    return "Nessuna passkey valida trovata per questo account.";
+  }
+  if (normalized.includes("notallowederror") || normalized.includes("not allowed")) {
+    return "Accesso con passkey annullato o non consentito dal browser.";
+  }
   if (normalized.includes("email not confirmed")) {
     return "Il tuo indirizzo email non è ancora confermato. Apri l'email di conferma ricevuta o richiedi un nuovo link.";
   }
@@ -50,6 +59,7 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(initialError ?? null);
   const [loading, setLoading] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
 
   // Reset loading se il browser ripristina la pagina dalla bfcache (tasto Back).
   // Senza questo, il bottone resta bloccato su "Accesso in corso…" indefinitamente.
@@ -152,6 +162,66 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
     }
   }
 
+  async function handlePasskeyLogin() {
+    setPasskeyLoading(true);
+    setError(null);
+
+    try {
+      purgeSupabaseAuthCookies();
+      const supabase = createSupabaseBrowserClient({ autoRefreshToken: false });
+      const { data, error } = await Promise.race([
+        supabase.auth.signInWithPasskey(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 20_000),
+        ),
+      ]);
+
+      if (error || !data.user || !data.session) {
+        setError(loginErrorMessage(error?.message ?? ""));
+        return;
+      }
+
+      const access = await resolveUserAccess(supabase, data.user.id);
+      const accessError = portalAccessError(from);
+      const isWrongPortal =
+        (from === "admin" && !access.isSiteadmin) ||
+        (from === "studio" && !access.isSiteadmin && !access.tenantId) ||
+        (from?.startsWith("gestione") && !access.isSiteadmin && access.tenantId !== slug);
+
+      if (accessError && isWrongPortal) {
+        setError(accessError);
+        return;
+      }
+
+      const destination = resolveDestination({
+        from,
+        next,
+        isSiteadmin: access.isSiteadmin,
+        tenantId: access.tenantId,
+      });
+
+      if (popup) {
+        notifyParentAndClose({
+          from: from ?? "clienti",
+          parentOrigin,
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+        });
+      } else {
+        window.location.href =
+          `/api/auth/elevate-session?destination=${encodeURIComponent(destination)}`;
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message === "timeout") {
+        setError("Il server non risponde. Controlla la connessione e riprova.");
+      } else {
+        setError(loginErrorMessage(err instanceof Error ? err.message : ""));
+      }
+    } finally {
+      setPasskeyLoading(false);
+    }
+  }
+
   // Link "password dimenticata" con from preservato
   const recoveryHref = from
     ? `/recupera-password?from=${encodeURIComponent(from)}${next ? `&next=${encodeURIComponent(next)}` : ""}`
@@ -216,8 +286,17 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
       )}
 
       <button
+        type="button"
+        onClick={handlePasskeyLogin}
+        disabled={loading || passkeyLoading}
+        className="w-full rounded-xl border border-black/10 bg-white py-3 text-sm font-bold text-black transition-colors hover:bg-black/[0.03] disabled:opacity-50"
+      >
+        {passkeyLoading ? "Accesso con passkey..." : "Accedi con passkey"}
+      </button>
+
+      <button
         type="submit"
-        disabled={loading}
+        disabled={loading || passkeyLoading}
         style={{ backgroundColor: "var(--login-accent, #B8332E)" }}
         className="w-full rounded-xl py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
       >

@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import "@/lib/mailapp-runtime";
 import { MailApp } from "@pynkstudio/mailapp/react";
 import { getInboundEmails, getInboxUnreadCounts, getTenantInboxUnreadCount } from "@pynkstudio/mailapp/email";
-import { getSentEmails, buildTenantEmailScope } from "@pynkstudio/mailapp/email";
+import { getSentDeliveryIssueCount, getSentEmails, buildTenantEmailScope } from "@pynkstudio/mailapp/email";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { isDemoHost } from "@/lib/platform";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
@@ -71,10 +71,11 @@ export default async function GestioneMailPage({
   // pynkstudio con companyPatrimoniale vede l'inbox globale (tutti i domini aziendali),
   // non solo la casella del tenant.
   const scope = access.canManagePatrimoniale ? undefined : buildTenantEmailScope(tenant);
-  const [inbox, sent, unreadResult] = await Promise.all([
+  const [inbox, sent, unreadResult, deliveryIssueCount] = await Promise.all([
     getInboundEmails({ archived: false, scope }),
     getSentEmails("all", 1, scope),
     scope ? getTenantInboxUnreadCount(scope) : getInboxUnreadCounts().then((c) => c.unread_total),
+    getSentDeliveryIssueCount("all", scope),
   ]);
   const unread = unreadResult;
 
@@ -87,6 +88,7 @@ export default async function GestioneMailPage({
         initialSent={sent}
         unreadTotal={unread}
         unreadMine={0}
+        deliveryIssueCount={deliveryIssueCount}
         currentSiteadminId={isGlobalInbox ? (sa?.id as string | null ?? null) : null}
         canCompose={Boolean(ta || sa)}
         mode={isGlobalInbox ? undefined : "tenant"}

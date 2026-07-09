@@ -12,6 +12,8 @@ import { dbLinesToOrderLines, dbRowToOrder, type DbOrder, type DbOrderLine } fro
 //   e lo inviamo a SUNMI con pushContent; SUNMI lo inoltra alla stampante (per SN).
 // - connection 'qz' → no-op: la stampa USB è gestita dal watcher client nella
 //   pagina Operativo → Ordini (la stampante USB non è raggiungibile dal server).
+// - connection 'sunmi_pos' → no-op: stampa locale sul terminale POS SUNMI tramite
+//   app Android Menuary Print Agent, che polla la coda server.
 //
 // Idempotente: marca `comanda_printed_at` quando prende in carico l'ordine, così
 // non viene rilanciato (né dal doppio trigger creazione/conferma, né dal watcher).
@@ -42,8 +44,9 @@ export async function dispatchComandaForOrder(
       return { dispatched: false, reason: "no_active_printer" };
     }
 
-    // QZ: gestito lato client (watcher), non dal server.
+    // QZ/SUNMI POS: gestiti lato client, non dal server.
     if (printer.connection === "qz") return { dispatched: false, reason: "qz_client_side" };
+    if (printer.connection === "sunmi_pos") return { dispatched: false, reason: "sunmi_pos_client_side" };
 
     if (printer.connection === "sunmi_cloud") {
       if (!isSunmiConfigured() || !printer.deviceSn) {

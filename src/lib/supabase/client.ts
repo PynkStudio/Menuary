@@ -18,7 +18,10 @@ export function createSupabaseBrowserClient(opts?: { autoRefreshToken?: boolean 
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      ...(opts ? { auth: opts } : {}),
+      auth: {
+        ...(opts ?? {}),
+        experimental: { passkey: true },
+      },
       ...(domain ? { cookieOptions: { domain } } : {}),
     },
   );

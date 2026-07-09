@@ -4,6 +4,7 @@ import { AdminProfileForm } from "@/components/admin/profile/admin-profile-form"
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { buildAutoSignature } from "@/lib/email/signature-queries";
+import { buildPasskeysUrl } from "@/lib/login-url";
 import type { InboundEmailBrand } from "@/lib/email/inbound-types";
 
 export const metadata: Metadata = {
@@ -63,6 +64,18 @@ export default async function AdminProfiloPage() {
         }}
         canEditSignatureRole={canEditSignatureRole}
       />
+
+      <section className="menuary-admin-card mt-6 p-6">
+        <h2 className="menuary-admin-page-title" style={{ fontSize: "1.25rem" }}>
+          Passkey
+        </h2>
+        <p className="menuary-admin-page-subtitle">
+          Crea una passkey per accedere con biometria, PIN dispositivo o chiave di sicurezza.
+        </p>
+        <a href={buildPasskeysUrl({ from: "admin", next: "/profilo" })} className="menuary-admin-action-btn mt-4 inline-flex">
+          Gestisci passkey
+        </a>
+      </section>
 
       <div className="mt-10 space-y-4">
         <h2 className="menuary-admin-page-title" style={{ fontSize: "1.25rem" }}>

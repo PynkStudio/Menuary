@@ -24,7 +24,7 @@ type PrinterPatch = {
   enabled?: boolean;
 };
 
-const VALID_CONNECTIONS = ["qz", "network_eposprint", "printnode", "sunmi_cloud"];
+const VALID_CONNECTIONS = ["qz", "network_eposprint", "printnode", "sunmi_cloud", "sunmi_pos"];
 
 function tenantFrom(req: NextRequest, body?: PrinterPatch | null) {
   return req.nextUrl.searchParams.get("tenantId") ?? body?.tenantId ?? "";
@@ -54,16 +54,16 @@ async function resolveLocation(tenantId: string, requested: string | null, isDem
 export async function GET(req: NextRequest) {
   const tenantId = tenantFrom(req);
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
-  if (!assertPrintStationsEnabled(tenantId)) {
-    return NextResponse.json({ error: "module_disabled" }, { status: 403 });
-  }
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!assertPrintStationsEnabled(tenantId) && (auth.isDemo || !auth.isPlatformAdmin)) {
+    return NextResponse.json({ error: "module_disabled" }, { status: 403 });
+  }
 
   const requested = locationFrom(req);
   const locationId = await resolveLocation(tenantId, requested, auth.isDemo);
-  if (!auth.isDemo && requested && requested !== locationId) {
+  if (!auth.isDemo && !auth.isPlatformAdmin && requested && requested !== locationId) {
     return NextResponse.json({ error: "location_mismatch" }, { status: 403 });
   }
 
@@ -78,16 +78,16 @@ export async function PUT(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as PrinterPatch | null;
   const tenantId = tenantFrom(req, body);
   if (!tenantId || !body) return NextResponse.json({ error: "invalid_request" }, { status: 400 });
-  if (!assertPrintStationsEnabled(tenantId)) {
-    return NextResponse.json({ error: "module_disabled" }, { status: 403 });
-  }
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!assertPrintStationsEnabled(tenantId) && (auth.isDemo || !auth.isPlatformAdmin)) {
+    return NextResponse.json({ error: "module_disabled" }, { status: 403 });
+  }
 
   const requested = locationFrom(req, body);
   const locationId = await resolveLocation(tenantId, requested, auth.isDemo);
-  if (!auth.isDemo && requested && requested !== locationId) {
+  if (!auth.isDemo && !auth.isPlatformAdmin && requested && requested !== locationId) {
     return NextResponse.json({ error: "location_mismatch" }, { status: 403 });
   }
 

@@ -4,6 +4,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { TENANTS } from "@/lib/tenant-registry";
 import { loadDefaultPrinter } from "@/lib/printing/config";
+import { buildComandaEscPos } from "@/lib/printing/comanda";
 import { dbLinesToOrderLines, dbRowToOrder, type DbOrder, type DbOrderLine } from "@/lib/api/orders";
 
 // Coda di stampa comande per la postazione di stampa (modulo printStations).
@@ -35,10 +36,12 @@ function moduleEnabled(tenantId: string) {
 export async function GET(req: NextRequest) {
   const tenantId = tenantFrom(req);
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
-  if (!moduleEnabled(tenantId)) return NextResponse.json({ error: "module_disabled" }, { status: 403 });
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!moduleEnabled(tenantId) && (auth.isDemo || !auth.isPlatformAdmin)) {
+    return NextResponse.json({ error: "module_disabled" }, { status: 403 });
+  }
 
   const locationId = req.nextUrl.searchParams.get("locationId");
 
@@ -46,14 +49,15 @@ export async function GET(req: NextRequest) {
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
 
   const printer = await loadDefaultPrinter(supabase, tenantId, locationId);
-  // Questa coda serve SOLO le stampanti QZ (USB lato client). Le stampanti cloud
-  // (es. SUNMI) sono gestite server-side dal dispatch, non dal watcher.
+  // Questa coda serve le stampanti locali lato client: QZ sul PC cassa e SUNMI POS
+  // tramite app Android. Le stampanti cloud SUNMI restano gestite server-side.
+  const localConnection = printer?.connection === "qz" || printer?.connection === "sunmi_pos";
   if (
     !printer ||
-    printer.connection !== "qz" ||
+    !localConnection ||
     !printer.enabled ||
     !printer.autoPrint ||
-    !printer.qzPrinterName
+    (printer.connection === "qz" && !printer.qzPrinterName)
   ) {
     return NextResponse.json({ printer, orders: [] });
   }
@@ -93,6 +97,16 @@ export async function GET(req: NextRequest) {
     dbRowToOrder(row, dbLinesToOrderLines(linesByOrder.get(row.id) ?? [])),
   );
 
+  if (req.nextUrl.searchParams.get("format") === "escpos") {
+    const jobs = orders.map((order) => ({
+      orderId: order.id,
+      code: order.code,
+      escposBase64: Buffer.from(buildComandaEscPos(order, printer), "latin1").toString("base64"),
+      copies: printer.copies,
+    }));
+    return NextResponse.json({ printer, orders, jobs });
+  }
+
   return NextResponse.json({ printer, orders });
 }
 
@@ -102,10 +116,12 @@ export async function POST(req: NextRequest) {
   if (!tenantId || !body?.orderIds?.length) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
-  if (!moduleEnabled(tenantId)) return NextResponse.json({ error: "module_disabled" }, { status: 403 });
 
   const auth = await authorizeGestione(tenantId);
   if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!moduleEnabled(tenantId) && (auth.isDemo || !auth.isPlatformAdmin)) {
+    return NextResponse.json({ error: "module_disabled" }, { status: 403 });
+  }
 
   const supabase = createSupabaseServiceClient();
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });

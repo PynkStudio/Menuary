@@ -47,6 +47,16 @@ export function buildLoginUrl(options: {
   return url.toString();
 }
 
+export function buildPasskeysUrl(options: {
+  from: LoginFrom;
+  next?: string;
+}): string {
+  const url = new URL("/passkeys", LOGIN_BASE);
+  url.searchParams.set("from", options.from);
+  if (options.next) url.searchParams.set("next", options.next);
+  return url.toString();
+}
+
 const LOGIN_BASE_URL =
   process.env.NODE_ENV === "production"
     ? "https://login.menuary.it"

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
+import { buildPasskeysUrl } from "@/lib/login-url";
 
 export function ClientsSettingsPanel() {
   const router = useRouter();
@@ -43,6 +44,21 @@ export function ClientsSettingsPanel() {
         <div className="mt-6 max-w-md">
           <ChangePasswordForm />
         </div>
+      </section>
+
+      <hr className="border-[var(--menuary-line)]" />
+
+      <section>
+        <h2 className="menuary-display text-xl">Passkey</h2>
+        <p className="mt-1 text-sm text-[var(--menuary-muted)]">
+          Crea una passkey per accedere con Face ID, Touch ID, Windows Hello o una chiave di sicurezza.
+        </p>
+        <a
+          href={buildPasskeysUrl({ from: "clienti", next: "/impostazioni" })}
+          className="menuary-button menuary-button-accent mt-6 inline-flex"
+        >
+          Gestisci passkey
+        </a>
       </section>
 
       <hr className="border-[var(--menuary-line)]" />

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { buildLoginUrl, type LoginFrom } from "@/lib/login-url";
+import { buildLoginUrl, buildPasskeysUrl, type LoginFrom } from "@/lib/login-url";
 import { useSettingsStore } from "@/store/settings-store";
 
 type SubscriptionSummary = {
@@ -91,6 +91,7 @@ export function GestioneSettingsPanel({
   isDemo = false,
 }: Props) {
   const router = useRouter();
+  const passkeysLoginFrom = loginFrom ?? (`gestione.${tenantSlug}` as LoginFrom);
   const settings = useSettingsStore();
   const setSettings = useSettingsStore((state) => state.set);
   const [customCurrency, setCustomCurrency] = useState("");
@@ -280,6 +281,27 @@ export function GestioneSettingsPanel({
         <div className="mt-5">
           <ChangePasswordForm className="gestione-password-form" />
         </div>
+      </section>
+
+      <section id="passkeys" className="ga-card">
+        <div className="ga-section-head">
+          <div>
+            <h2 className="ga-section-title">
+              <KeyRound size={16} /> Passkey
+            </h2>
+            <p className="ga-card-hint">
+              Crea o rimuovi una passkey per accedere senza password al tuo account personale.
+            </p>
+          </div>
+        </div>
+        {isDemo ? (
+          <p className="ga-card-hint mt-4">Le passkey sono disponibili solo sugli account reali.</p>
+        ) : (
+          <a href={buildPasskeysUrl({ from: passkeysLoginFrom, next: "/impostazioni" })} className="ga-btn ga-btn-primary mt-5 inline-flex">
+            <KeyRound size={14} />
+            Gestisci passkey
+          </a>
+        )}
       </section>
 
       <section className="ga-card ga-danger-zone">

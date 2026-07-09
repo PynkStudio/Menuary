@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import "@/lib/mailapp-runtime";
 import { MailApp } from "@pynkstudio/mailapp/react";
 import { getInboundEmails, getInboxUnreadCounts, getInboxUnreadCountForUser } from "@pynkstudio/mailapp/email";
-import { getSentEmails } from "@pynkstudio/mailapp/email";
+import { getSentDeliveryIssueCount, getSentEmails } from "@pynkstudio/mailapp/email";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -47,11 +47,12 @@ export default async function AdminInboxPage() {
     // accesso degradato: nessuna personalizzazione
   }
 
-  const [inbox, sent, counts, unreadMine] = await Promise.all([
+  const [inbox, sent, counts, unreadMine, deliveryIssueCount] = await Promise.all([
     getInboundEmails({ archived: false }),
     getSentEmails(),
     getInboxUnreadCounts(),
     currentSiteadminId ? getInboxUnreadCountForUser(currentSiteadminId) : Promise.resolve(0),
+    getSentDeliveryIssueCount(),
   ]);
 
   return (
@@ -61,6 +62,7 @@ export default async function AdminInboxPage() {
         initialSent={sent}
         unreadTotal={counts.unread_total}
         unreadMine={unreadMine}
+        deliveryIssueCount={deliveryIssueCount}
         currentSiteadminId={currentSiteadminId}
         canCompose={canCompose}
         currentUserEmail={currentUserEmail}
