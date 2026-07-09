@@ -5,6 +5,7 @@ import { getActiveGestioneLocation } from "@/lib/gestione-location";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { TENANTS } from "@/lib/tenant-registry";
 import { loadPrinters } from "@/lib/printing/config";
+import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 
 // Config stampanti comande (modulo printStations).
 // F1: la UI gestisce UNA stampante predefinita per locale. Lo schema DB è già
@@ -62,7 +63,19 @@ export async function GET(req: NextRequest) {
   }
 
   const requested = locationFrom(req);
-  const locationId = await resolveLocation(tenantId, requested, auth.isDemo);
+  const locationId = await resolveLocation(tenantId, requested, auth.isDemo).catch(async (error) => {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "gestione",
+      tenantId,
+      flow: "printer_settings",
+      operation: "resolve_location",
+      title: "Stampanti: risoluzione sede fallita",
+      httpStatus: 500,
+      metadata: { requestedLocationId: requested, isDemo: auth.isDemo },
+    }).catch(() => undefined);
+    throw error;
+  });
   if (!auth.isDemo && !auth.isPlatformAdmin && requested && requested !== locationId) {
     return NextResponse.json({ error: "location_mismatch" }, { status: 403 });
   }
@@ -70,7 +83,19 @@ export async function GET(req: NextRequest) {
   const supabase = createSupabaseServiceClient();
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
 
-  const printers = await loadPrinters(supabase, tenantId, locationId);
+  const printers = await loadPrinters(supabase, tenantId, locationId).catch(async (error) => {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "gestione",
+      tenantId,
+      locationId,
+      flow: "printer_settings",
+      operation: "load_printers",
+      title: "Stampanti: lettura configurazione fallita",
+      httpStatus: 500,
+    }).catch(() => undefined);
+    throw error;
+  });
   return NextResponse.json({ printers });
 }
 
@@ -86,7 +111,19 @@ export async function PUT(req: NextRequest) {
   }
 
   const requested = locationFrom(req, body);
-  const locationId = await resolveLocation(tenantId, requested, auth.isDemo);
+  const locationId = await resolveLocation(tenantId, requested, auth.isDemo).catch(async (error) => {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "gestione",
+      tenantId,
+      flow: "printer_settings",
+      operation: "resolve_location",
+      title: "Stampanti: risoluzione sede durante salvataggio fallita",
+      httpStatus: 500,
+      metadata: { requestedLocationId: requested, isDemo: auth.isDemo },
+    }).catch(() => undefined);
+    throw error;
+  });
   if (!auth.isDemo && !auth.isPlatformAdmin && requested && requested !== locationId) {
     return NextResponse.json({ error: "location_mismatch" }, { status: 403 });
   }
@@ -107,7 +144,19 @@ export async function PUT(req: NextRequest) {
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
 
   // F1: una sola stampante (default) per (tenant, location). Upsert manuale.
-  const existing = (await loadPrinters(supabase, tenantId, locationId)).find((p) => p.isDefault);
+  const existing = (await loadPrinters(supabase, tenantId, locationId).catch(async (error) => {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "gestione",
+      tenantId,
+      locationId,
+      flow: "printer_settings",
+      operation: "load_existing_printers",
+      title: "Stampanti: lettura configurazione prima del salvataggio fallita",
+      httpStatus: 500,
+    }).catch(() => undefined);
+    throw error;
+  })).find((p) => p.isDefault);
 
   const fields = {
     name: body.name ?? existing?.name ?? "Cucina",
@@ -122,7 +171,20 @@ export async function PUT(req: NextRequest) {
 
   if (existing) {
     const { error } = await supabase.from("tenant_printers").update(fields).eq("id", existing.id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      await recordPlatformErrorFromRequest(req, {
+        error,
+        source: "gestione",
+        tenantId,
+        locationId,
+        flow: "printer_settings",
+        operation: "update_printer",
+        title: "Stampanti: aggiornamento configurazione fallito",
+        httpStatus: 500,
+        metadata: { printerId: existing.id, fields },
+      }).catch(() => undefined);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   } else {
     const { error } = await supabase.from("tenant_printers").insert({
       tenant_id: tenantId,
@@ -130,7 +192,20 @@ export async function PUT(req: NextRequest) {
       is_default: true,
       ...fields,
     });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      await recordPlatformErrorFromRequest(req, {
+        error,
+        source: "gestione",
+        tenantId,
+        locationId,
+        flow: "printer_settings",
+        operation: "insert_printer",
+        title: "Stampanti: creazione configurazione fallita",
+        httpStatus: 500,
+        metadata: { fields },
+      }).catch(() => undefined);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   }
 
   const printers = await loadPrinters(supabase, tenantId, locationId);

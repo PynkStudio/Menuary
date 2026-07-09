@@ -20,6 +20,7 @@ const EXCLUDED_MODES = new Set([
   "marketing-orpheo",
   "clients",
   "studio",
+  "support",
   "platform-admin",
   "preview",
   "preview-bizery",
@@ -36,6 +37,7 @@ function isInternal(pathname: string | null): boolean {
   if (!pathname) return false;
   return (
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/support") ||
     pathname.startsWith("/cucina") ||
     pathname.startsWith("/k/")
   );

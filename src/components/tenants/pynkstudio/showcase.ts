@@ -17,6 +17,9 @@ const PLATFORM_BY_VERTICAL: Record<TenantVertical, ShowcaseTenant["platform"]> =
   creative: "Orpheo",
 };
 
+// Demo tenants can have a production domain but should not be shown as customer work.
+const SHOWCASE_EXCLUDED_TENANT_IDS = new Set(["cascina-errante"]);
+
 /** Primo dominio pubblico reale del tenant (esclude localhost / .local / 127.0.0.1). */
 function firstPublicDomain(domains: string[]): string | null {
   return (
@@ -43,7 +46,7 @@ function firstPublicDomain(domains: string[]): string | null {
  */
 export async function getActiveTenantSites(): Promise<ShowcaseTenant[]> {
   const candidates = TENANTS.flatMap((tenant) => {
-    if (tenant.id === "pynkstudio") return [];
+    if (tenant.id === "pynkstudio" || SHOWCASE_EXCLUDED_TENANT_IDS.has(tenant.id)) return [];
     const domain = firstPublicDomain(tenant.domains);
     if (!domain) return [];
     return [{ tenant, domain }];

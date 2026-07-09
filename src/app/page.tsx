@@ -9,6 +9,7 @@ import { StudioShell } from "@/components/studio/studio-shell";
 import { BizeryStudioHomePage } from "@/components/bizery-studio/bizery-studio-home-page";
 import { BizeryStudioShell } from "@/components/bizery-studio/bizery-studio-shell";
 import { PreviewNoSlug } from "@/components/preview/preview-no-slug";
+import { AppDownloadPage } from "@/components/app-download/app-download-page";
 import { PynkStudioHomePage } from "@/components/tenants/pynkstudio/pages/home";
 import { CascinaErranteHomePage } from "@/components/tenants/cascina-errante/pages/home";
 import { findTenantById } from "@/lib/tenant-registry";
@@ -19,6 +20,7 @@ export default async function HomePage() {
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
 
   if (mode === "marketing") return <MarketingHomePage />;
+  if (mode === "app") return <AppDownloadPage />;
   // marketing-bizery → gestito dal middleware con rewrite su /bizery
   if (mode === "preview") return <PreviewNoSlug mode="preview" />;
   if (mode === "preview-bizery") return <PreviewNoSlug mode="preview-bizery" />;

@@ -126,6 +126,15 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
+  if (mode === "support") {
+    return {
+      metadataBase: new URL("https://support.menuary.it"),
+      title: { default: "Menuary · support", template: "%s · Menuary Support" },
+      robots: { index: false, follow: false },
+      icons: buildIconSet(mode, tenant),
+    };
+  }
+
   if (mode === "gestione" || mode === "gestione-custom") {
     return {
       metadataBase: new URL(mode === "gestione-custom" ? `https://gestione.${tenant.domains[0] ?? "menuary.it"}` : "https://gestione.menuary.it"),

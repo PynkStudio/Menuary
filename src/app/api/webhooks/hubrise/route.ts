@@ -13,6 +13,7 @@ import {
   recordCustomerEvent,
   updateExistingHubriseCustomer,
 } from "@/lib/crm/customer-identity";
+import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 import type {
   HubriseCustomerPayload,
   HubriseOrderPayload,
@@ -45,6 +46,16 @@ export async function POST(req: NextRequest) {
       signature,
       rawBody: raw,
     });
+    await recordPlatformErrorFromRequest(req, {
+      error: new Error("invalid_hubrise_signature"),
+      source: "webhook",
+      severity: "warning",
+      flow: "hubrise_webhook",
+      operation: "verify_signature",
+      title: "HubRise webhook: firma non valida",
+      httpStatus: 401,
+      metadata: { signaturePresent: Boolean(signature), rawPreview: raw.slice(0, 1000) },
+    }).catch(() => undefined);
     return NextResponse.json({ error: "invalid_signature" }, { status: 401 });
   }
 
@@ -53,6 +64,16 @@ export async function POST(req: NextRequest) {
     event = JSON.parse(raw) as HubriseWebhookEvent;
   } catch {
     await logInbound({ status: "processing_error", reason: "invalid_json", rawBody: raw });
+    await recordPlatformErrorFromRequest(req, {
+      error: new Error("invalid_json"),
+      source: "webhook",
+      severity: "warning",
+      flow: "hubrise_webhook",
+      operation: "parse_body",
+      title: "HubRise webhook: payload JSON non valido",
+      httpStatus: 400,
+      metadata: { rawPreview: raw.slice(0, 2000) },
+    }).catch(() => undefined);
     return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
   }
 
@@ -63,6 +84,17 @@ export async function POST(req: NextRequest) {
       reason: `Nessun hubrise_links per ${event.location_id}`,
       event,
     });
+    await recordPlatformErrorFromRequest(req, {
+      error: new Error("hubrise_location_unmatched"),
+      source: "webhook",
+      severity: "warning",
+      flow: "hubrise_webhook",
+      operation: "resolve_link",
+      title: "HubRise webhook: location non collegata",
+      httpStatus: 200,
+      externalRef: event.resource_id,
+      metadata: { event, hubriseLocationId: event.location_id },
+    }).catch(() => undefined);
     return NextResponse.json({ ok: true, skipped: "no_active_link" });
   }
   if (link.status !== "active" || !link.ordersInboundEnabled) {
@@ -95,6 +127,22 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await logInbound({ status: "processing_error", reason: message.slice(0, 500), event });
+    await recordPlatformErrorFromRequest(req, {
+      error: err,
+      source: "webhook",
+      tenantId: link.tenantId,
+      locationId: link.locationId,
+      flow: "hubrise_webhook",
+      operation: event.event,
+      title: "HubRise webhook: elaborazione evento fallita",
+      httpStatus: 500,
+      externalRef: event.resource_id,
+      metadata: {
+        event,
+        linkId: link.id,
+        hubriseLocationId: event.location_id,
+      },
+    }).catch(() => undefined);
     throw err;
   }
 

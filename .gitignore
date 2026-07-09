@@ -11,6 +11,8 @@ out
 *.log
 local.properties
 **/local.properties
+**/.gradle/
+**/build/
 .vercel
 public/uploads/*
 !public/uploads/.gitkeep

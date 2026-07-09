@@ -190,7 +190,7 @@ export function PrintersPanel() {
           Collega la stampante delle comande del locale. Con <strong>QZ Tray</strong>{" "}
           usi una stampante USB sul PC cassa; con una <strong>stampante cloud SUNMI</strong>{" "}
           la stampa è server-side; con un <strong>POS SUNMI locale</strong> la stampa passa
-          dall'app installata sul terminale.
+          dall&apos;app installata sul terminale.
         </p>
       </header>
 
@@ -412,8 +412,8 @@ export function PrintersPanel() {
           </p>
         ) : (
           <p className="mt-5 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-500">
-            Il POS SUNMI locale stampa tramite l'app Android Menuary Print Agent.
-            Lascia l'app installata e abbinata: resta attiva in background e polla
+            Il POS SUNMI locale stampa tramite l&apos;app Android Menuary Print Agent.
+            Lascia l&apos;app installata e abbinata: resta attiva in background e polla
             la coda comande del server.
           </p>
         )}

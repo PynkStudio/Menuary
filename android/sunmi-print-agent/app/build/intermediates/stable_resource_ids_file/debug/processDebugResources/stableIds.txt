@@ -1,1 +1,5 @@
-it.menuary.sunmiprintagent:style/AppTheme = 0x7f010000
+it.menuary.sunmiprintagent:style/AppTheme = 0x7f030000
+it.menuary.sunmiprintagent:mipmap/ic_launcher_foreground = 0x7f020001
+it.menuary.sunmiprintagent:mipmap/ic_launcher_round = 0x7f020002
+it.menuary.sunmiprintagent:mipmap/ic_launcher = 0x7f020000
+it.menuary.sunmiprintagent:color/menuary_icon_background = 0x7f010000

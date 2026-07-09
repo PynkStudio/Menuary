@@ -28,6 +28,7 @@ import {
   UserPlus,
   FileSignature,
   Palette,
+  ServerCrash,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -63,6 +64,7 @@ const PLATFORM_ADMIN_NAV: NavItem[] = [
   { href: "/admin/inbox", label: "Posta in arrivo", icon: Mail, permission: "inbox:view" },
   { href: "/admin/messaggi-wa", label: "Messaggi WA", icon: MessageCircle, permission: "support:manage" },
   { href: "/admin/supporto", label: "Supporto", icon: LifeBuoy, permission: "support:manage" },
+  { href: "/admin/errori", label: "Errori operativi", icon: ServerCrash, permission: "errors:view" },
   { href: "/admin/crm", label: "CRM Lead", icon: Users, permission: "crm:view" },
   { href: "/admin/crm/nuovo", label: "Nuovo lead", icon: UserPlus, permission: "crm:create" },
   { href: "/admin/pacchetti", label: "Pacchetti", icon: Package, permission: "packages:manage" },

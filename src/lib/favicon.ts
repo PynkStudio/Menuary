@@ -25,6 +25,7 @@ function faviconBase(mode: PlatformMode, tenant: TenantProfile): string {
   if (mode === "platform-admin") return "/favicons/menuary";
   if (mode === "clients")        return "/favicons/menuary";
   if (mode === "studio")         return "/favicons/menuary";
+  if (mode === "support")        return "/favicons/menuary";
   if (mode === "login")          return "/favicons/menuary";
   if (mode === "gestione")       return "/favicons/menuary";
   if (mode === "preview")        return "/favicons/menuary";
@@ -87,6 +88,7 @@ export function themeColor(mode: PlatformMode, tenant: TenantProfile): string {
   if (mode === "platform-admin") return "#18231f";
   if (mode === "clients")        return "#18231f";
   if (mode === "studio")         return "#18231f";
+  if (mode === "support")        return "#18231f";
   if (mode === "login")          return "#18231f";
   if (mode === "gestione")       return "#18231f";
   if (mode === "preview")        return "#18231f";

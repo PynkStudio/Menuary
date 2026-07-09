@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:1:1-40:12
-INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:1:1-40:12
-INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:1:1-40:12
-INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:1:1-40:12
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:1:1-42:12
+INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:1:1-42:12
+INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:1:1-42:12
+INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:1:1-42:12
 	package
 		INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml
 	android:versionName
@@ -43,54 +43,58 @@ ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunm
 	android:name
 		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:11:22-78
 application
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:13:5-39:19
-INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:13:5-39:19
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:13:5-41:19
+INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:13:5-41:19
 	android:extractNativeLibs
 		INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml
 	android:label
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:15:9-44
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:16:9-44
+	android:roundIcon
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:17:9-54
+	android:icon
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:15:9-43
 	android:allowBackup
 		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:14:9-36
 	android:theme
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:16:9-40
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:18:9-40
 activity#it.menuary.sunmiprintagent.MainActivity
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:17:9-24:20
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:19:9-26:20
 	android:exported
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:19:13-36
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:21:13-36
 	android:name
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:18:13-41
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:20:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:20:13-23:29
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:22:13-25:29
 action#android.intent.action.MAIN
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:21:17-69
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:23:17-69
 	android:name
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:21:25-66
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:23:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:22:17-77
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:24:17-77
 	android:name
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:22:27-74
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:24:27-74
 service#it.menuary.sunmiprintagent.PrintPollService
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:26:9-29:56
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:28:9-31:56
 	android:exported
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:28:13-37
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:30:13-37
 	android:foregroundServiceType
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:29:13-53
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:31:13-53
 	android:name
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:27:13-45
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:29:13-45
 receiver#it.menuary.sunmiprintagent.BootReceiver
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:31:9-38:20
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:33:9-40:20
 	android:enabled
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:33:13-35
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:35:13-35
 	android:exported
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:34:13-37
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:36:13-37
 	android:name
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:32:13-41
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:34:13-41
 intent-filter#action:name:android.intent.action.BOOT_COMPLETED
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:35:13-37:29
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:37:13-39:29
 action#android.intent.action.BOOT_COMPLETED
-ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:36:17-79
+ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:38:17-79
 	android:name
-		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:36:25-76
+		ADDED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:38:25-76
 uses-sdk
 INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml

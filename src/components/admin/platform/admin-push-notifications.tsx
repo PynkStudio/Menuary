@@ -19,6 +19,7 @@ type CountSnapshot = {
   support: number;
   contracts: number;
   payments: number;
+  errors: number;
 };
 
 type EventRow = Record<string, unknown>;
@@ -28,6 +29,7 @@ const ZERO_COUNTS: CountSnapshot = {
   support: 0,
   contracts: 0,
   payments: 0,
+  errors: 0,
 };
 
 function notificationAvailable() {
@@ -89,7 +91,8 @@ export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificat
   const canSupport = hasAdminPermission(role, "support:manage");
   const canCrm = hasAdminPermission(role, "crm:view");
   const canSubscriptions = hasAdminPermission(role, "subscriptions:view");
-  const canNotify = canInbox || canSupport || canCrm || canSubscriptions;
+  const canErrors = hasAdminPermission(role, "errors:view");
+  const canNotify = canInbox || canSupport || canCrm || canSubscriptions || canErrors;
 
   // "granted" copre sia il toast in-tab (Notification API) sia la Web Push reale
   // (necessaria per ricevere le notifiche a app chiusa, es. su iPhone da schermata Home).
@@ -125,6 +128,9 @@ export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificat
       next.contracts = contracts;
       next.payments = payments;
     }
+    if (canErrors) {
+      next.errors = await fetchCount("/api/support/error-events/active-count");
+    }
 
     const prev = countsRef.current;
     countsRef.current = next;
@@ -133,7 +139,8 @@ export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificat
     if (next.support > prev.support) notify("Nuovo ticket supporto", "C'e un ticket aperto che richiede attenzione.", "admin-support", "/admin/supporto");
     if (next.contracts > prev.contracts) notify("Contratto da controfirmare", "Un contratto richiede un aggiornamento operativo.", "admin-contracts", "/admin/contratti");
     if (next.payments > prev.payments) notify("Pagamento da fatturare", "Un pagamento completato richiede la fattura.", "admin-payments", "/admin/abbonamenti");
-  }, [canInbox, canNotify, canSubscriptions, canSupport, notify]);
+    if (next.errors > prev.errors) notify("Nuovo errore operativo", "Un flusso interno ha registrato un errore da analizzare.", "admin-errors", "/admin/errori");
+  }, [canErrors, canInbox, canNotify, canSubscriptions, canSupport, notify]);
 
   useEffect(() => {
     if (!canNotify) return;
@@ -225,11 +232,29 @@ export function AdminPushNotifications({ role, siteadminId }: AdminPushNotificat
         );
     }
 
+    if (canErrors) {
+      channel.on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "platform_error_events" },
+        (payload) => {
+          const row = payload.new as EventRow | undefined;
+          if (!isFresh(row, mountedAt)) return;
+          window.dispatchEvent(new Event("platform-errors:refresh"));
+          notify(
+            text(row, "severity") === "critical" ? "Errore critico Menuary" : "Nuovo errore operativo",
+            text(row, "title") ?? "Un flusso interno ha registrato un errore.",
+            `admin-error-${text(row, "id") ?? Date.now()}`,
+            "/admin/errori",
+          );
+        },
+      );
+    }
+
     channel.subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [canCrm, canInbox, canNotify, canSubscriptions, canSupport, notify, siteadminId]);
+  }, [canCrm, canErrors, canInbox, canNotify, canSubscriptions, canSupport, notify, siteadminId]);
 
   const label = useMemo(() => {
     if (!canNotify) return "Notifiche non disponibili";

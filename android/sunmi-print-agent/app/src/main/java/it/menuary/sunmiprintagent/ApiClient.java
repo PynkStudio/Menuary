@@ -91,10 +91,12 @@ final class ApiClient {
     static final class OrdersSnapshot {
         final List<OrderSummary> recent;
         final List<OrderSummary> history;
+        final String warning;
 
-        OrdersSnapshot(List<OrderSummary> recent, List<OrderSummary> history) {
+        OrdersSnapshot(List<OrderSummary> recent, List<OrderSummary> history, String warning) {
             this.recent = recent;
             this.history = history;
+            this.warning = warning;
         }
     }
 
@@ -214,7 +216,8 @@ final class ApiClient {
         JSONObject json = readJson(conn);
         return new OrdersSnapshot(
             parseOrderSummaries(json.optJSONArray("recent")),
-            parseOrderSummaries(json.optJSONArray("history"))
+            parseOrderSummaries(json.optJSONArray("history")),
+            json.optString("warning", "")
         );
     }
 

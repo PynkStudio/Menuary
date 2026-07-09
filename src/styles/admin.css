@@ -1961,7 +1961,8 @@
      Token --ma-* mappati sulla palette Menuary (paper + rame).
      Scoped a platform-admin per non sporcare gli altri tenant.
      ============================================================ */
-  html[data-platform="platform-admin"] {
+  html[data-platform="platform-admin"],
+  html[data-platform="support"] {
     --ma-paper:   #fffaf2;
     --ma-surface: #f3efe7;
     --ma-line:    rgba(24, 35, 31, 0.12);

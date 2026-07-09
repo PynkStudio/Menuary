@@ -6,6 +6,7 @@ import { TENANTS } from "@/lib/tenant-registry";
 import { loadDefaultPrinter } from "@/lib/printing/config";
 import { buildComandaEscPos } from "@/lib/printing/comanda";
 import { dbLinesToOrderLines, dbRowToOrder, type DbOrder, type DbOrderLine } from "@/lib/api/orders";
+import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 
 // Coda di stampa comande per la postazione di stampa (modulo printStations).
 //
@@ -48,7 +49,19 @@ export async function GET(req: NextRequest) {
   const supabase = createSupabaseServiceClient();
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
 
-  const printer = await loadDefaultPrinter(supabase, tenantId, locationId);
+  const printer = await loadDefaultPrinter(supabase, tenantId, locationId).catch(async (error) => {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "gestione",
+      tenantId,
+      locationId,
+      flow: "print_queue",
+      operation: "load_default_printer",
+      title: "Coda stampa: caricamento stampante fallito",
+      httpStatus: 500,
+    }).catch(() => undefined);
+    throw error;
+  });
   // Questa coda serve le stampanti locali lato client: QZ sul PC cassa e SUNMI POS
   // tramite app Android. Le stampanti cloud SUNMI restano gestite server-side.
   const localConnection = printer?.connection === "qz" || printer?.connection === "sunmi_pos";
@@ -74,7 +87,20 @@ export async function GET(req: NextRequest) {
     .gte("created_at", since)
     .order("created_at", { ascending: true })
     .limit(25);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "gestione",
+      tenantId,
+      locationId,
+      flow: "print_queue",
+      operation: "load_unprinted_orders",
+      title: "Coda stampa: lettura ordini da stampare fallita",
+      httpStatus: 500,
+      metadata: { printerId: printer.id, connection: printer.connection },
+    }).catch(() => undefined);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   const rows = (orderRows ?? []) as unknown as DbOrder[];
   if (rows.length === 0) return NextResponse.json({ printer, orders: [] });
@@ -132,7 +158,19 @@ export async function POST(req: NextRequest) {
     .eq("tenant_id", tenantId)
     .is("comanda_printed_at", null)
     .in("id", body.orderIds.slice(0, 50));
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "gestione",
+      tenantId,
+      flow: "print_queue",
+      operation: "mark_printed",
+      title: "Coda stampa: marcatura comande stampate fallita",
+      httpStatus: 500,
+      metadata: { orderIds: body.orderIds.slice(0, 50) },
+    }).catch(() => undefined);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { resolveKioskDevice } from "@/lib/kiosk-auth";
+import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 
 type Body = {
   type: "tavolo" | "asporto";
@@ -26,7 +27,22 @@ export async function POST(req: NextRequest) {
   const device = await resolveKioskDevice(svc, token);
   if (!device) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const body = (await req.json().catch(() => null)) as Body | null;
+  const body = (await req.json().catch((error) => {
+    void recordPlatformErrorFromRequest(req, {
+      error,
+      source: "api",
+      severity: "warning",
+      tenantId: device.tenant_id,
+      locationId: device.location_id,
+      deviceId: device.id,
+      flow: "kiosk_order",
+      operation: "parse_body",
+      title: "Kiosk: body ordine non valido",
+      httpStatus: 400,
+      metadata: { kioskName: device.name },
+    }).catch(() => undefined);
+    return null;
+  })) as Body | null;
   if (!body || !body.type || !Array.isArray(body.lines) || body.lines.length === 0) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
@@ -36,7 +52,21 @@ export async function POST(req: NextRequest) {
     p_tenant_id: device.tenant_id,
     p_prefix: "K",
   });
-  if (codeErr) return NextResponse.json({ error: codeErr.message }, { status: 500 });
+  if (codeErr) {
+    await recordPlatformErrorFromRequest(req, {
+      error: codeErr,
+      source: "api",
+      tenantId: device.tenant_id,
+      locationId: device.location_id,
+      deviceId: device.id,
+      flow: "kiosk_order",
+      operation: "next_order_code",
+      title: "Kiosk: generazione codice ordine fallita",
+      httpStatus: 500,
+      metadata: { kioskName: device.name, paymentMethod: body.paymentMethod, linesCount: body.lines.length },
+    }).catch(() => undefined);
+    return NextResponse.json({ error: codeErr.message }, { status: 500 });
+  }
 
   const { data: order, error: orderErr } = await svc
     .from("orders")
@@ -54,6 +84,24 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (orderErr || !order) {
+    await recordPlatformErrorFromRequest(req, {
+      error: orderErr ?? new Error("order_create_failed"),
+      source: "api",
+      tenantId: device.tenant_id,
+      locationId: device.location_id,
+      deviceId: device.id,
+      flow: "kiosk_order",
+      operation: "insert_order",
+      title: "Kiosk: creazione ordine fallita",
+      httpStatus: 500,
+      metadata: {
+        kioskName: device.name,
+        paymentMethod: body.paymentMethod,
+        total: body.total,
+        orderType: body.type,
+        linesCount: body.lines.length,
+      },
+    }).catch(() => undefined);
     return NextResponse.json({ error: orderErr?.message ?? "order_create_failed" }, { status: 500 });
   }
 
@@ -68,7 +116,22 @@ export async function POST(req: NextRequest) {
     position: i,
   }));
   const { error: linesErr } = await svc.from("order_lines").insert(lineRows);
-  if (linesErr) return NextResponse.json({ error: linesErr.message }, { status: 500 });
+  if (linesErr) {
+    await recordPlatformErrorFromRequest(req, {
+      error: linesErr,
+      source: "api",
+      tenantId: device.tenant_id,
+      locationId: device.location_id,
+      deviceId: device.id,
+      orderId: order.id,
+      flow: "kiosk_order",
+      operation: "insert_order_lines",
+      title: "Kiosk: inserimento righe ordine fallito",
+      httpStatus: 500,
+      metadata: { kioskName: device.name, orderCode: order.code, linesCount: lineRows.length },
+    }).catch(() => undefined);
+    return NextResponse.json({ error: linesErr.message }, { status: 500 });
+  }
 
   return NextResponse.json({ id: order.id, code: order.code }, { status: 201 });
 }

@@ -3,6 +3,7 @@ import { cartLinesToDbRows } from "@/lib/api/orders";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
+import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 import type { CartLine } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -52,7 +53,20 @@ export async function POST(
     .eq("order_id", order.id)
     .order("position", { ascending: false })
     .limit(1);
-  if (linesLoadError) return NextResponse.json({ error: linesLoadError.message }, { status: 500 });
+  if (linesLoadError) {
+    await recordPlatformErrorFromRequest(req, {
+      error: linesLoadError,
+      source: "api",
+      tenantId: order.tenantId,
+      orderId: order.id,
+      flow: "checkout_append",
+      operation: "load_last_line",
+      title: "Checkout: lettura righe ordine per upsell fallita",
+      httpStatus: 500,
+      metadata: { code, orderCode: order.code },
+    }).catch(() => undefined);
+    return NextResponse.json({ error: linesLoadError.message }, { status: 500 });
+  }
 
   const offset = (existingLines?.[0]?.position ?? -1) + 1;
   const rows = cartLinesToDbRows(order.id, body.lines).map((row, index) => ({
@@ -63,7 +77,20 @@ export async function POST(
   const nextTotal = order.total + addedTotal;
 
   const { error: insertError } = await db.from("order_lines").insert(rows);
-  if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 });
+  if (insertError) {
+    await recordPlatformErrorFromRequest(req, {
+      error: insertError,
+      source: "api",
+      tenantId: order.tenantId,
+      orderId: order.id,
+      flow: "checkout_append",
+      operation: "insert_upsell_lines",
+      title: "Checkout: aggiunta prodotti upsell fallita",
+      httpStatus: 500,
+      metadata: { code, orderCode: order.code, linesCount: rows.length, addedTotal },
+    }).catch(() => undefined);
+    return NextResponse.json({ error: insertError.message }, { status: 500 });
+  }
 
   const { error: updateError } = await db
     .from("orders")
@@ -74,7 +101,20 @@ export async function POST(
     } as never)
     .eq("id", order.id)
     .eq("tenant_id", order.tenantId);
-  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+  if (updateError) {
+    await recordPlatformErrorFromRequest(req, {
+      error: updateError,
+      source: "api",
+      tenantId: order.tenantId,
+      orderId: order.id,
+      flow: "checkout_append",
+      operation: "update_order_total",
+      title: "Checkout: aggiornamento totale dopo upsell fallito",
+      httpStatus: 500,
+      metadata: { code, orderCode: order.code, addedTotal, nextTotal },
+    }).catch(() => undefined);
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
 
   void notifyCustomerOrderStatus({
     tenantId: order.tenantId,

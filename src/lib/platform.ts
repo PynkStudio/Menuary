@@ -10,7 +10,9 @@
 // "clients"           → clienti.menuary.it      area personale clienti
 // "studio"            → studio.menuary.it       fatturazione e abbonamenti B2B (food)
 // "studio-bizery"     → studio.bizery.it        fatturazione e abbonamenti B2B (services)
+// "support"           → support.menuary.it      registro errori operativo interno
 // "login"             → login.menuary.it        auth centralizzato (popup + redirect)
+// "app"               → app.menuary.it          download app operative native
 // "gestione"          → gestione.menuary.it     pannello gestione tenant food
 // "gestione-bizery"   → gestione.bizery.it      pannello gestione tenant bizery (cross-domain popup auth)
 // "gestione-custom"   → gestione.[dominio]      pannello gestione sul dominio del tenant
@@ -35,7 +37,9 @@ export type PlatformMode =
   | "clients"
   | "studio"
   | "studio-bizery"
+  | "support"
   | "login"
+  | "app"
   | "gestione"
   | "gestione-bizery"
   | "gestione-custom"
@@ -60,7 +64,9 @@ export const PLATFORM_HOSTS = {
   clients:            ["clienti.menuary.it", "clienti.menuary.localhost"],
   studio:             ["studio.menuary.it", "studio.menuary.localhost"],
   "studio-bizery":    ["studio.bizery.it", "studio.bizery.localhost"],
+  support:            ["support.menuary.it", "support.mennuary.it", "support.menuary.localhost"],
   login:              ["login.menuary.it", "login.menuary.localhost"],
+  app:                ["app.menuary.it", "app.menuary.localhost"],
   gestione:           ["gestione.menuary.it", "gestione.menuary.localhost"],
   "gestione-bizery":  ["gestione.bizery.it", "gestione.bizery.localhost"],
 } as const;
@@ -79,7 +85,9 @@ const PLATFORM_MODES: PlatformMode[] = [
   "clients",
   "studio",
   "studio-bizery",
+  "support",
   "login",
+  "app",
   "gestione",
   "gestione-bizery",
   "gestione-custom",
@@ -114,7 +122,9 @@ export function getPlatformModeFromHost(
   if (PLATFORM_HOSTS.clients.includes(normalized as never))            return "clients";
   if (PLATFORM_HOSTS.studio.includes(normalized as never))             return "studio";
   if (PLATFORM_HOSTS["studio-bizery"].includes(normalized as never))   return "studio-bizery";
+  if (PLATFORM_HOSTS.support.includes(normalized as never))            return "support";
   if (PLATFORM_HOSTS.login.includes(normalized as never))              return "login";
+  if (PLATFORM_HOSTS.app.includes(normalized as never))                return "app";
   if (PLATFORM_HOSTS.gestione.includes(normalized as never))           return "gestione";
   if (PLATFORM_HOSTS["gestione-bizery"].includes(normalized as never)) return "gestione-bizery";
   if (normalized.startsWith("gestione."))                              return "gestione-custom";

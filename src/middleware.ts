@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import {
   canAccessAdminPath,
   getDefaultAdminPath,
+  hasAdminPermission,
   isSiteadminRole,
   type SiteadminRole,
 } from "@/lib/admin-permissions";
@@ -265,6 +266,7 @@ const LOGIN_BASE = "https://login.menuary.it";
 function isInternalPlatformPath(pathname: string): boolean {
   return (
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/support") ||
     pathname.startsWith("/gestione") ||
     pathname.startsWith("/k/") ||
     pathname === "/cucina" ||
@@ -846,6 +848,33 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ── Support portal (support.menuary.it) ─────────────────────────────────
+  if (mode === "support") {
+    const effectivePath = pathname.startsWith("/support")
+      ? pathname
+      : "/support" + (pathname === "/" ? "" : pathname);
+
+    let response: NextResponse;
+    if (!pathname.startsWith("/support")) {
+      const rewritten = request.nextUrl.clone();
+      rewritten.pathname = effectivePath;
+      response = NextResponse.rewrite(rewritten);
+    } else {
+      response = NextResponse.next({ request });
+    }
+    const { user, role } = await getSessionUserAndSiteadminRole(request, response, cookieDomain);
+    if (!user) {
+      return loginRedirect(request, "support", pathname);
+    }
+    if (!hasAdminPermission(role, "errors:view")) {
+      return NextResponse.redirect(new URL("https://admin.menuary.it/admin", request.url));
+    }
+    if ((effectivePath.replace(/\/+$/, "") || "/support") === "/support") {
+      return response;
+    }
+    return response;
+  }
+
   // ── Portale clienti (clienti.menuary.it) ─────────────────────────────────
   if (mode === "clients") {
     if (!CLIENTS_PATHS.has(pathname)) {
@@ -982,6 +1011,11 @@ export async function middleware(request: NextRequest) {
     // Senza questo bypass i browser non-italiani verrebbero rediretti su /en/c/<token> → 404.
     if (pathname.startsWith("/c/")) return NextResponse.next();
     return handleMarketingLocale(request, mode, (p) => p, MENUARY_MARKETING_PASSTHROUGH);
+  }
+
+  // ── App download (app.menuary.it) ─────────────────────────────────────────
+  if (mode === "app") {
+    return NextResponse.next();
   }
 
   // ── Marketing Bizery (bizery.it) ─────────────────────────────────────────

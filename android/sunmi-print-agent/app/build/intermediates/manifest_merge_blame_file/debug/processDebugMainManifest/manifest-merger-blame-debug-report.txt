@@ -35,57 +35,61 @@
 20-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:11:22-78
 21
 22    <application
-22-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:13:5-39:19
+22-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:13:5-41:19
 23        android:allowBackup="false"
 23-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:14:9-36
 24        android:debuggable="true"
 25        android:extractNativeLibs="false"
-26        android:label="Menuary Print Agent"
-26-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:15:9-44
-27        android:theme="@style/AppTheme" >
-27-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:16:9-40
-28        <activity
-28-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:17:9-24:20
-29            android:name="it.menuary.sunmiprintagent.MainActivity"
-29-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:18:13-41
-30            android:exported="true" >
-30-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:19:13-36
-31            <intent-filter>
-31-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:20:13-23:29
-32                <action android:name="android.intent.action.MAIN" />
-32-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:21:17-69
-32-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:21:25-66
-33
-34                <category android:name="android.intent.category.LAUNCHER" />
-34-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:22:17-77
-34-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:22:27-74
-35            </intent-filter>
-36        </activity>
-37
-38        <service
-38-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:26:9-29:56
-39            android:name="it.menuary.sunmiprintagent.PrintPollService"
-39-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:27:13-45
-40            android:exported="false"
-40-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:28:13-37
-41            android:foregroundServiceType="dataSync" />
-41-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:29:13-53
-42
-43        <receiver
-43-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:31:9-38:20
-44            android:name="it.menuary.sunmiprintagent.BootReceiver"
-44-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:32:13-41
-45            android:enabled="true"
-45-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:33:13-35
-46            android:exported="false" >
-46-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:34:13-37
-47            <intent-filter>
-47-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:35:13-37:29
-48                <action android:name="android.intent.action.BOOT_COMPLETED" />
-48-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:36:17-79
-48-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:36:25-76
-49            </intent-filter>
-50        </receiver>
-51    </application>
-52
-53</manifest>
+26        android:icon="@mipmap/ic_launcher"
+26-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:15:9-43
+27        android:label="Menuary Print Agent"
+27-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:16:9-44
+28        android:roundIcon="@mipmap/ic_launcher_round"
+28-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:17:9-54
+29        android:theme="@style/AppTheme" >
+29-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:18:9-40
+30        <activity
+30-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:19:9-26:20
+31            android:name="it.menuary.sunmiprintagent.MainActivity"
+31-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:20:13-41
+32            android:exported="true" >
+32-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:21:13-36
+33            <intent-filter>
+33-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:22:13-25:29
+34                <action android:name="android.intent.action.MAIN" />
+34-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:23:17-69
+34-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:23:25-66
+35
+36                <category android:name="android.intent.category.LAUNCHER" />
+36-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:24:17-77
+36-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:24:27-74
+37            </intent-filter>
+38        </activity>
+39
+40        <service
+40-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:28:9-31:56
+41            android:name="it.menuary.sunmiprintagent.PrintPollService"
+41-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:29:13-45
+42            android:exported="false"
+42-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:30:13-37
+43            android:foregroundServiceType="dataSync" />
+43-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:31:13-53
+44
+45        <receiver
+45-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:33:9-40:20
+46            android:name="it.menuary.sunmiprintagent.BootReceiver"
+46-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:34:13-41
+47            android:enabled="true"
+47-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:35:13-35
+48            android:exported="false" >
+48-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:36:13-37
+49            <intent-filter>
+49-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:37:13-39:29
+50                <action android:name="android.intent.action.BOOT_COMPLETED" />
+50-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:38:17-79
+50-->/Users/mpernozzoli/Documents/Unreal Projects/siti/BePork/android/sunmi-print-agent/app/src/main/AndroidManifest.xml:38:25-76
+51            </intent-filter>
+52        </receiver>
+53    </application>
+54
+55</manifest>

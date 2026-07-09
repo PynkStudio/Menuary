@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
+import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -97,7 +98,29 @@ export async function PATCH(
     .eq("id", order.id)
     .eq("tenant_id", order.tenantId);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "api",
+      tenantId: order.tenantId,
+      orderId: order.id,
+      flow: "checkout_update",
+      operation: "update_order_details",
+      title: "Checkout: aggiornamento dettagli ordine fallito",
+      httpStatus: 500,
+      metadata: {
+        code,
+        orderCode: order.code,
+        fields: Object.keys(patch),
+        hasPickupTime,
+        hasAddress,
+        hasName,
+        hasPhone,
+        hasNotes,
+      },
+    }).catch(() => undefined);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

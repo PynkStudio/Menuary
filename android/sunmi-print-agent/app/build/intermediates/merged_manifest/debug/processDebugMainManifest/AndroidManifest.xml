@@ -23,7 +23,9 @@
         android:allowBackup="false"
         android:debuggable="true"
         android:extractNativeLibs="false"
+        android:icon="@mipmap/ic_launcher"
         android:label="Menuary Print Agent"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme" >
         <activity
             android:name="it.menuary.sunmiprintagent.MainActivity"

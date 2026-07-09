@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 
 export const maxDuration = 60;
@@ -40,6 +41,15 @@ export async function GET(req: Request) {
     .select("id, tenant_id, code");
 
   if (error) {
+    await recordPlatformErrorFromRequest(req, {
+      error,
+      source: "cron",
+      flow: "expire_pending_orders",
+      operation: "update_expired_orders",
+      title: "Cron ordini: scadenza pending fallita",
+      httpStatus: 500,
+      metadata: { nowIso },
+    }).catch(() => undefined);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

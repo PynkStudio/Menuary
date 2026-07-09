@@ -17,6 +17,7 @@ import { validateMenuItemsForOrderChannel } from "@/lib/menu-order-channels";
 import { COPERTO_ITEM_ID } from "@/lib/coperto";
 import { findTenantById } from "@/lib/tenant-registry";
 import { notifyOperationalNewOrder } from "@/lib/notifications/operational-order-push";
+import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 import type { CartLine, OrderDineOption } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
 
@@ -62,11 +63,47 @@ export type CreateOrderBody = {
   deliveryNotes?: string;
 };
 
+async function logOrderApiError(
+  req: NextRequest,
+  error: unknown,
+  context: {
+    tenantId?: string | null;
+    locationId?: string | null;
+    orderId?: string | null;
+    operation: string;
+    title: string;
+    httpStatus?: number;
+    metadata?: Record<string, unknown>;
+  },
+) {
+  await recordPlatformErrorFromRequest(req, {
+    error,
+    source: "api",
+    severity: context.httpStatus && context.httpStatus < 500 ? "warning" : "error",
+    tenantId: context.tenantId ?? null,
+    locationId: context.locationId ?? null,
+    orderId: context.orderId ?? null,
+    flow: "orders",
+    operation: context.operation,
+    title: context.title,
+    httpStatus: context.httpStatus ?? 500,
+    metadata: context.metadata as Record<string, never>,
+  }).catch(() => undefined);
+}
+
 export async function POST(req: NextRequest) {
   const supabase = createSupabaseServiceClient();
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });
 
-  const body: CreateOrderBody = await req.json();
+  const body: CreateOrderBody = await req.json().catch((error) => {
+    void logOrderApiError(req, error, {
+      operation: "parse_body",
+      title: "Creazione ordine: body JSON non valido",
+      httpStatus: 400,
+    });
+    return null as unknown as CreateOrderBody;
+  });
+  if (!body) return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   const { tenantId, type, lines, total, locationId, ...rest } = body;
 
   if (!tenantId || !type || !lines?.length) {
@@ -95,7 +132,16 @@ export async function POST(req: NextRequest) {
     p_tenant_id: tenantId,
     p_prefix: "B",
   });
-  if (codeErr) return NextResponse.json({ error: codeErr.message }, { status: 500 });
+  if (codeErr) {
+    await logOrderApiError(req, codeErr, {
+      tenantId,
+      locationId,
+      operation: "next_order_code",
+      title: "Creazione ordine: generazione codice fallita",
+      metadata: { orderType: type, total, customerPhone: rest.customerPhone ?? null },
+    });
+    return NextResponse.json({ error: codeErr.message }, { status: 500 });
+  }
 
   const identity = await resolveCustomerIdentity({
     tenantId,
@@ -205,7 +251,27 @@ export async function POST(req: NextRequest) {
     .select("id, code, public_token, customer_phone")
     .single();
 
-  if (orderErr || !order) return NextResponse.json({ error: orderErr?.message }, { status: 500 });
+  if (orderErr || !order) {
+    await logOrderApiError(req, orderErr ?? new Error("order_insert_empty"), {
+      tenantId,
+      locationId,
+      operation: "insert_order",
+      title: "Creazione ordine: inserimento ordine fallito",
+      metadata: {
+        orderType: type,
+        total,
+        linesCount: lines.length,
+        customerName: rest.customerName ?? null,
+        customerPhone: rest.customerPhone ?? null,
+        tableId: rest.tableId ?? null,
+        sessionId: rest.sessionId ?? null,
+        dineOption: rest.dineOption ?? null,
+        autoAccepted,
+        initialStatus,
+      },
+    });
+    return NextResponse.json({ error: orderErr?.message }, { status: 500 });
+  }
 
   if (identity) {
     await recordCustomerEvent({
@@ -228,13 +294,32 @@ export async function POST(req: NextRequest) {
   const lineRows = cartLinesToDbRows(order.id, lines);
   if (lineRows.length > 0) {
     const { error: linesErr } = await supabase.from("order_lines").insert(lineRows);
-    if (linesErr) return NextResponse.json({ error: linesErr.message }, { status: 500 });
+    if (linesErr) {
+      await logOrderApiError(req, linesErr, {
+        tenantId,
+        locationId,
+        orderId: order.id,
+        operation: "insert_order_lines",
+        title: "Creazione ordine: inserimento righe fallito",
+        metadata: { orderCode: order.code, linesCount: lineRows.length, itemIds: lines.map((line) => line.itemId) },
+      });
+      return NextResponse.json({ error: linesErr.message }, { status: 500 });
+    }
   }
 
   // Stampa comanda server-side (es. stampante cloud SUNMI) per ordini accettati.
   // QZ è gestito lato client; dispatch è no-op se non configurato. Mai bloccante.
   if (autoAccepted) {
-    void dispatchComandaForOrder(supabase, tenantId, order.id, locationId ?? null).catch(() => {});
+    void dispatchComandaForOrder(supabase, tenantId, order.id, locationId ?? null).catch((error) => {
+      void logOrderApiError(req, error, {
+        tenantId,
+        locationId,
+        orderId: order.id,
+        operation: "dispatch_comanda",
+        title: "Stampa comanda automatica fallita",
+        metadata: { orderCode: order.code, autoAccepted, channel: "web" },
+      });
+    });
   }
 
   void notifyOperationalNewOrder({
@@ -298,7 +383,15 @@ export async function GET(req: NextRequest) {
   if (sessionId) query = query.eq("session_id", sessionId);
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    await logOrderApiError(req, error, {
+      tenantId,
+      operation: "list_orders",
+      title: "Ordini: lettura elenco fallita",
+      metadata: { status, sessionId },
+    });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   const orders = (data ?? []).map((row) => {
  const { order_lines: dbLines, ...orderRow } =
