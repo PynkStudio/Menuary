@@ -35,7 +35,7 @@ import {
 } from "@/lib/platform-crm-types";
 import { nextLeadAction, NEXT_ACTION_TONE_CLASSES } from "@/lib/platform/lead-next-action";
 import { cn } from "@/lib/utils";
-import { MailLink } from "@/components/admin/inbox/mail-launcher";
+import { MailLink } from "@pynkstudio/mailapp/react";
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 

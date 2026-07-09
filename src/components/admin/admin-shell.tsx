@@ -32,7 +32,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { clearAdminSession } from "@/lib/admin-auth";
-import { MailLauncherProvider } from "@/components/admin/inbox/mail-launcher";
+import { MailLauncherProvider } from "@pynkstudio/mailapp/react";
 import { AdminPushNotifications } from "@/components/admin/platform/admin-push-notifications";
 import { hasAdminPermission, type AdminPermission, type SiteadminRole } from "@/lib/admin-permissions";
 import { cn } from "@/lib/utils";

@@ -73,7 +73,7 @@ import { getTenantModulesForVertical } from "@/lib/tenant-modules";
 import { nextLeadAction, NEXT_ACTION_TONE_CLASSES } from "@/lib/platform/lead-next-action";
 import type { TenantFeatureKey } from "@/lib/tenant";
 import { getTenantGestioneExternalHref } from "@/lib/gestione-routing";
-import { useMailLauncher } from "@/components/admin/inbox/mail-launcher";
+import { useMailLauncher } from "@pynkstudio/mailapp/react";
 import { getMarket, normalizeMarketCode } from "@/lib/markets";
 
 type Tab = "anagrafica" | "fatturazione" | "proposta" | "abbonamento" | "pagamenti" | "note";

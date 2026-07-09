@@ -1,9 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { MailApp } from "@/components/admin/inbox/mail-app";
-import { getInboundEmails, getInboxUnreadCounts, getTenantInboxUnreadCount } from "@/lib/email/inbound-queries";
-import { getSentEmails } from "@/lib/email/sent-queries";
-import { buildTenantEmailScope } from "@/lib/email/tenant-email-scope";
+import "@/lib/mailapp-runtime";
+import { MailApp } from "@pynkstudio/mailapp/react";
+import { getInboundEmails, getInboxUnreadCounts, getTenantInboxUnreadCount } from "@pynkstudio/mailapp/email";
+import { getSentEmails, buildTenantEmailScope } from "@pynkstudio/mailapp/email";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { isDemoHost } from "@/lib/platform";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";

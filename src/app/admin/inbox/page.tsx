@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { MailApp } from "@/components/admin/inbox/mail-app";
-import { getInboundEmails, getInboxUnreadCounts, getInboxUnreadCountForUser } from "@/lib/email/inbound-queries";
-import { getSentEmails } from "@/lib/email/sent-queries";
+import "@/lib/mailapp-runtime";
+import { MailApp } from "@pynkstudio/mailapp/react";
+import { getInboundEmails, getInboxUnreadCounts, getInboxUnreadCountForUser } from "@pynkstudio/mailapp/email";
+import { getSentEmails } from "@pynkstudio/mailapp/email";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
