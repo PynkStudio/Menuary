@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, Fragment } from "react";
-import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus, Pencil, Check, Clock, ChefHat, Bike, Loader2, Home, ShoppingBag, RotateCcw, type LucideIcon } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Phone, MessageCircle, AlertCircle, ArrowRight, X, Plus, Pencil, Check, Clock, ChefHat, Bike, Loader2, Home, ShoppingBag, RotateCcw, Banknote, CreditCard, type LucideIcon } from "lucide-react";
 import type { PublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import type { CheckoutUpsellSuggestion } from "@/lib/orders/checkout-upsell";
 import type { TenantVertical } from "@/lib/tenant";
+import type { PaymentMethod } from "@/lib/types";
 
 const CANCEL_WINDOW_SEC = 120;   // 2 minuti
 const UPSELL_WINDOW_SEC = 300;   // 5 minuti
@@ -741,6 +742,7 @@ type CheckoutStatusPayload = {
   paymentStatus?: string;
   updatedAt?: string;
   confirmationExpiresAt?: string | null;
+  paymentMethod?: PaymentMethod | null;
   total?: number;
   lines?: PublicCheckoutOrder["lines"];
 };
@@ -876,6 +878,7 @@ export function CheckoutClient({
   const [markingDelivered, setMarkingDelivered] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(order.status);
   const [currentPaymentStatus, setCurrentPaymentStatus] = useState(order.paymentStatus);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(order.paymentMethod ?? "on_delivery_cash");
   const [statusUpdatedAt, setStatusUpdatedAt] = useState(order.updatedAt);
   const [confirmationExpiresAt, setConfirmationExpiresAt] = useState(order.confirmationExpiresAt);
 
@@ -923,6 +926,7 @@ export function CheckoutClient({
         if (!active) return;
         if (json.status) setCurrentStatus(json.status);
         if (json.paymentStatus) setCurrentPaymentStatus(json.paymentStatus);
+        if (json.paymentMethod) setSelectedPaymentMethod(json.paymentMethod);
         if (json.updatedAt) setStatusUpdatedAt(json.updatedAt);
         if ("confirmationExpiresAt" in json) setConfirmationExpiresAt(json.confirmationExpiresAt ?? null);
         // Riallinea righe e totale solo se il server è cambiato e l'utente non sta
@@ -1090,6 +1094,32 @@ export function CheckoutClient({
       window.location.href = json.url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "errore");
+      setLoading(false);
+    }
+  };
+
+  const confirmOnDeliveryPayment = async () => {
+    if (selectedPaymentMethod === "online") {
+      await startPayment();
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/checkout/${encodeURIComponent(order.code)}/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId, token, paymentMethod: selectedPaymentMethod }),
+      });
+      const json = (await res.json()) as { ok?: boolean; status?: string; error?: string };
+      if (!res.ok || !json.ok) throw new Error(json.error ?? "confirm_failed");
+      setCurrentStatus(json.status ?? "nuovo");
+      setCurrentPaymentStatus("not_required");
+      setConfirmationExpiresAt(null);
+      setStatusUpdatedAt(new Date().toISOString());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "errore");
+    } finally {
       setLoading(false);
     }
   };
@@ -1326,7 +1356,81 @@ export function CheckoutClient({
                 </p>
               </div>
             )}
-            {stripeEnabled && (
+            {currentStatus === "pending_confirmation" && (
+              <section className="mt-4 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
+                <div className="text-sm font-black" style={{ color: c.ink }}>Come vuoi pagare?</div>
+                <div className="mt-3 grid gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod("on_delivery_cash")}
+                    className="flex items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-bold transition"
+                    style={{
+                      backgroundColor: selectedPaymentMethod === "on_delivery_cash" ? c.accentSoft : c.bgSoft,
+                      color: c.ink,
+                      boxShadow: selectedPaymentMethod === "on_delivery_cash" ? `0 0 0 2px ${c.accent}` : `0 0 0 1px ${c.ring}`,
+                    }}
+                  >
+                    <Banknote size={18} style={{ color: c.accent }} />
+                    <span className="min-w-0 flex-1">Alla consegna in contanti</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod("on_delivery_card")}
+                    className="flex items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-bold transition"
+                    style={{
+                      backgroundColor: selectedPaymentMethod === "on_delivery_card" ? c.accentSoft : c.bgSoft,
+                      color: c.ink,
+                      boxShadow: selectedPaymentMethod === "on_delivery_card" ? `0 0 0 2px ${c.accent}` : `0 0 0 1px ${c.ring}`,
+                    }}
+                  >
+                    <CreditCard size={18} style={{ color: c.accent }} />
+                    <span className="min-w-0 flex-1">Alla consegna con carta</span>
+                  </button>
+                  {stripeEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod("online")}
+                      className="flex items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-bold transition"
+                      style={{
+                        backgroundColor: selectedPaymentMethod === "online" ? c.accentSoft : c.bgSoft,
+                        color: c.ink,
+                        boxShadow: selectedPaymentMethod === "online" ? `0 0 0 2px ${c.accent}` : `0 0 0 1px ${c.ring}`,
+                      }}
+                    >
+                      <ShieldCheck size={18} style={{ color: c.accent }} />
+                      <span className="min-w-0 flex-1">Subito online con carta</span>
+                    </button>
+                  )}
+                </div>
+                {selectedPaymentMethod === "online" && (
+                  <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-xl p-3 text-xs" style={{ backgroundColor: c.bgSoft, color: c.ink }}>
+                    <input
+                      type="checkbox"
+                      checked={accepted}
+                      onChange={(e) => setAccepted(e.target.checked)}
+                      className="mt-0.5 h-4 w-4"
+                      style={{ accentColor: c.accent }}
+                    />
+                    <span>Accetto privacy e condizioni per procedere al pagamento online.</span>
+                  </label>
+                )}
+                <button
+                  type="button"
+                  onClick={confirmOnDeliveryPayment}
+                  disabled={loading || (selectedPaymentMethod === "online" && !accepted)}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-black text-white transition disabled:cursor-not-allowed disabled:opacity-40"
+                  style={{ backgroundColor: c.accent }}
+                >
+                  {loading ? <Loader2 size={16} className="animate-spin" /> : selectedPaymentMethod === "online" ? <ShieldCheck size={16} /> : <CheckCircle2 size={16} />}
+                  {loading
+                    ? "Conferma in corso..."
+                    : selectedPaymentMethod === "online"
+                      ? `Paga online ${eur(liveTotal)}`
+                      : "Conferma e invia al locale"}
+                </button>
+              </section>
+            )}
+            {stripeEnabled && currentStatus !== "pending_confirmation" && (
             <section className="mt-4 rounded-3xl p-4 shadow-sm" style={{ backgroundColor: c.surface, boxShadow: `0 0 0 1px ${c.ring}` }}>
               <div className="flex items-start gap-3">
                 <ShieldCheck size={18} className="mt-0.5" style={{ color: c.accent }} />

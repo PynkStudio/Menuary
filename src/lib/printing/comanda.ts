@@ -26,24 +26,23 @@ function originLabel(order: Order): string {
 // Riga pagamento per la comanda: stato (pagato/non pagato) + metodo (contanti/carta).
 function paymentLabel(order: Order): string {
   const paid = order.paymentStatus === "paid";
-  if (order.paymentMethod === "on_delivery_cash") return paid ? "PAGATO · CONTANTI" : "NON PAGATO · CONTANTI";
-  if (order.paymentMethod === "on_delivery_card") return paid ? "PAGATO · CARTA" : "NON PAGATO · CARTA";
-  if (order.paymentMethod === "online") return paid ? "PAGATO · CARTA" : "NON PAGATO · CARTA (online)";
-  // Metodo non specificato: ci basiamo sul solo stato.
-  return paid ? "PAGATO" : "NON PAGATO";
+  if (paid) return "PAGATO";
+  if (order.paymentMethod === "on_delivery_card") return "DA PAGARE - POS";
+  return "DA PAGARE - CASH";
 }
 
 function lineBlock(line: OrderLine, width: number): string {
-  const head = `${line.qty}x ${line.name}${line.variantLabel ? ` (${line.variantLabel})` : ""}`;
+  const head = `${line.qty}x ${line.name}`;
   const parts: string[] = [CMD.boldOn + asciiFold(head) + CMD.boldOff + "\n"];
 
+  if (line.variantLabel) {
+    parts.push(`  - variante: ${asciiFold(line.variantLabel)}\n`);
+  }
   for (const extra of line.addedExtras ?? []) {
     parts.push(`  + ${asciiFold(extra.name)}\n`);
   }
-  // removedIngredients sono id: senza il menu non risolviamo i nomi qui.
-  // TODO(comanda): risolvere i nomi degli ingredienti rimossi col menu del tenant.
-  if ((line.removedIngredients ?? []).length > 0) {
-    parts.push(`  - senza: ${line.removedIngredients!.length} ingred.\n`);
+  for (const removed of line.removedIngredients ?? []) {
+    parts.push(`  - senza ${asciiFold(removed)}\n`);
   }
   if (line.note) {
     for (const w of wrap(`>> ${line.note}`, width)) parts.push(`  ${w}\n`);
@@ -71,11 +70,17 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
     out += CMD.alignLeft;
   }
   out += CMD.alignCenter + CMD.sizeDouble + CMD.boldOn;
-  out += asciiFold(originLabel(order)) + "\n";
+  out += "MENUARY\n";
   out += CMD.sizeNormal + CMD.boldOff;
+  out += `Ordine N. ${asciiFold(order.code ?? "")}\n`;
   out += CMD.alignLeft;
-  out += justify(`#${asciiFold(order.code ?? "")}`, time, w) + "\n";
-  if (order.customerName) out += asciiFold(order.customerName) + "\n";
+  out += justify(asciiFold(originLabel(order)), time, w) + "\n";
+  out += rule(w) + "\n";
+  if (order.customerName) out += `Cliente: ${asciiFold(order.customerName)}\n`;
+  if (order.deliveryAddress) {
+    for (const wline of wrap(asciiFold(order.deliveryAddress), w)) out += `${wline}\n`;
+  }
+  if (order.customerPhone) out += `${asciiFold(order.customerPhone)}\n`;
   if (order.pickupTime) out += `Ritiro: ${asciiFold(order.pickupTime)}\n`;
   out += rule(w) + "\n";
 
@@ -88,6 +93,7 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
     return out;
   }
 
+  out += CMD.boldOn + "ORDINE:\n" + CMD.boldOff;
   for (const line of order.lines ?? []) {
     out += lineBlock(line, w);
   }
@@ -100,6 +106,7 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
 
   // Riga pagamento sempre in fondo, in evidenza.
   out += rule(w) + "\n";
+  out += justify("Totale:", `EUR ${Number(order.total).toFixed(2).replace(".", ",")}`, w) + "\n";
   out += CMD.boldOn + asciiFold(paymentLabel(order)) + CMD.boldOff + "\n";
 
   out += feed(1) + CMD.cut;

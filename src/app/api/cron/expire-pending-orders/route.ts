@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { finalizePendingOrder } from "@/lib/orders/finalize-pending";
 
 export const maxDuration = 60;
 
@@ -13,11 +14,11 @@ function isAuthorized(req: Request): boolean {
 }
 
 /**
- * Marca come `expired` tutti gli ordini in `pending_confirmation` la cui
- * finestra di conferma è già scaduta. Idempotente: gira ogni minuto.
+ * Finalizza gli ordini in `pending_confirmation` la cui finestra di modifica è
+ * scaduta. Per gli ordini Retell/WhatsApp non aperti dal cliente il default è
+ * contanti: diventano `nuovo`, entrano in operativo/fatturazione e vengono stampati.
  *
- * Realtime già publication-ato → la pagina /ordina/attesa del cliente vede
- * il cambio di stato istantaneamente e mostra "tempo scaduto".
+ * Idempotente: gira ogni minuto.
  */
 export async function GET(req: Request) {
   if (!isAuthorized(req)) {
@@ -31,14 +32,12 @@ export async function GET(req: Request) {
 
   const nowIso = new Date().toISOString();
 
-  // Solo righe che sono ancora pending e con expires < now.
-  // .select() per ricevere il count e l'elenco aggiornato.
   const { data, error } = await supabase
     .from("orders")
-    .update({ status: "expired", updated_at: nowIso })
+    .select("id, tenant_id, code")
     .eq("status", "pending_confirmation")
     .lt("confirmation_expires_at", nowIso)
-    .select("id, tenant_id, code");
+    .limit(100);
 
   if (error) {
     await recordPlatformErrorFromRequest(req, {
@@ -53,9 +52,23 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const finalized: Array<{ id: string; tenant_id: string; code: string }> = [];
+  const failed: Array<{ id: string; error: string }> = [];
+  for (const order of data ?? []) {
+    const result = await finalizePendingOrder(supabase, {
+      orderId: order.id,
+      tenantId: order.tenant_id,
+      paymentMethod: "on_delivery_cash",
+    });
+    if (result.ok) finalized.push(order);
+    else failed.push({ id: order.id, error: result.error ?? result.reason });
+  }
+
   return NextResponse.json({
     ok: true,
-    expiredCount: data?.length ?? 0,
-    expired: data ?? [],
+    finalizedCount: finalized.length,
+    failedCount: failed.length,
+    finalized,
+    failed,
   });
 }

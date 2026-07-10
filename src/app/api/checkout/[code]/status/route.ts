@@ -21,6 +21,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   return NextResponse.json({
     status: order.status,
     paymentStatus: order.paymentStatus,
+    paymentMethod: order.paymentMethod,
     updatedAt: order.updatedAt,
     confirmationExpiresAt: order.confirmationExpiresAt,
     total: order.total,

@@ -318,7 +318,7 @@ export async function createChannelPaymentRequest(
 
       const kind = input.paymentRequired === false ? "order_summary" : "payment_link";
       const greeting = input.paymentRequired === false
-        ? `Riepilogo del tuo ordine: ${stripe.paymentUrl}`
+        ? `Totale da pagare: ${formatEuro(input.amount)}. Metodo predefinito: contanti alla consegna/ritiro. Apri il link entro pochi minuti per controllare l'ordine o cambiare metodo di pagamento: ${stripe.paymentUrl}`
         : input.onSiteAvailable
           ? `Puoi pagare l'ordine con carta cliccando sul link qui sotto: ${stripe.paymentUrl}`
           : `Clicca sul link per procedere al pagamento e confermare l'ordine: ${stripe.paymentUrl}`;

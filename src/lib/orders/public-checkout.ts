@@ -2,6 +2,7 @@ import "server-only";
 
 import { timingSafeEqual } from "node:crypto";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import type { PaymentMethod } from "@/lib/types";
 
 // Lettura pubblica di un ordine via codice + token. Usata dalla pagina
 // /checkout/[code] linkata in SMS/WhatsApp/Retell.
@@ -14,6 +15,7 @@ export type PublicCheckoutOrder = {
   updatedAt: string;
   paymentStatus: string;
   paymentProvider: string | null;
+  paymentMethod: PaymentMethod | null;
   total: number;
   currency: string;
   dineOption: string | null;
@@ -60,7 +62,7 @@ export async function getPublicCheckoutOrder(input: {
   const { data, error } = await db
     .from("orders")
     .select(
-      "id, tenant_id, code, status, updated_at, type, table_id, total, dine_option, fulfillment_type, confirmation_expires_at, customer_name, customer_phone, pickup_time, delivery_address, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, order_lines(id, item_id, name, qty, unit_price, line_total, note, added_extras, removed_ingredients)",
+      "id, tenant_id, code, status, updated_at, type, table_id, total, dine_option, fulfillment_type, confirmation_expires_at, customer_name, customer_phone, pickup_time, delivery_address, notes, created_at, source, menuary_user_id, public_token, payment_status, payment_provider, payment_method, order_lines(id, item_id, name, qty, unit_price, line_total, note, added_extras, removed_ingredients)",
     )
     .eq("tenant_id", input.tenantId)
     .eq("code", input.code)
@@ -92,6 +94,7 @@ export async function getPublicCheckoutOrder(input: {
     public_token: string;
     payment_status: string;
     payment_provider: string | null;
+    payment_method: string | null;
     order_lines: Array<{
       id: string;
       item_id: string;
@@ -117,6 +120,7 @@ export async function getPublicCheckoutOrder(input: {
     tableId: row.table_id,
     paymentStatus: row.payment_status,
     paymentProvider: row.payment_provider,
+    paymentMethod: parsePaymentMethod(row.payment_method),
     total: Number(row.total),
     currency: "EUR",
     dineOption: row.dine_option ?? row.fulfillment_type,
@@ -141,6 +145,38 @@ export async function getPublicCheckoutOrder(input: {
       removedIngredients: parseRemovedIngredients(l.removed_ingredients),
     })),
   };
+}
+
+function parsePaymentMethod(value: string | null): PaymentMethod | null {
+  return value === "online" || value === "on_delivery_cash" || value === "on_delivery_card" ? value : null;
+}
+
+export async function extendPublicCheckoutWindowOnOpen(input: {
+  tenantId: string;
+  code: string;
+  token: string;
+}): Promise<void> {
+  const order = await getPublicCheckoutOrder(input);
+  if (!order || order.status !== "pending_confirmation" || !order.confirmationExpiresAt) return;
+
+  const now = Date.now();
+  const currentExpiry = new Date(order.confirmationExpiresAt).getTime();
+  if (!Number.isFinite(currentExpiry) || currentExpiry < now) return;
+
+  const openedExpiry = new Date(new Date(order.createdAt).getTime() + 5 * 60 * 1000).toISOString();
+  if (new Date(openedExpiry).getTime() <= currentExpiry) return;
+
+  const db = createSupabaseServiceClient();
+  if (!db) throw new Error("supabase_service_unconfigured");
+  await db
+    .from("orders")
+    .update({
+      confirmation_expires_at: openedExpiry,
+      updated_at: new Date().toISOString(),
+    } as never)
+    .eq("id", order.id)
+    .eq("tenant_id", order.tenantId)
+    .eq("status", "pending_confirmation");
 }
 
 function parseAddedExtras(value: unknown): Array<{ id: string; name: string; price: number }> {

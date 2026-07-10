@@ -6,10 +6,13 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,6 +74,7 @@ public class PrintPollService extends Service {
     private void pollOnce() {
         if (polling) return;
         polling = true;
+        PowerManager.WakeLock wakeLock = acquireWakeLock();
         try {
             SharedPreferences prefs = AgentPrefs.get(this);
             String apiBase = prefs.getString("apiBase", "");
@@ -79,31 +83,74 @@ public class PrintPollService extends Service {
             String token = prefs.getString("accessToken", "");
 
             ApiClient client = new ApiClient(apiBase, BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY);
+            LocalPrintQueue queue = new LocalPrintQueue(this);
             token = refreshSessionIfNeeded(client, prefs, token);
+
+            List<String> pendingAck = queue.pendingAckIds();
+            if (!pendingAck.isEmpty()) {
+                client.ack(tenantId, pendingAck, token);
+                queue.removeAcked(pendingAck);
+            }
+
+            List<ApiClient.PrintJob> jobs = client.fetchJobs(tenantId, locationId, token);
+            queue.addFetched(jobs);
+
             if (!printer.isReady()) {
-                update("Stampante non pronta", "Riprovo il collegamento al servizio SUNMI");
+                update("Stampante non pronta", "Comande in coda: " + queue.size());
                 printer.bind(this);
                 return;
             }
 
-            List<ApiClient.PrintJob> jobs = client.fetchJobs(tenantId, locationId, token);
-            if (jobs.isEmpty()) {
+            int printedNow = drainQueue(client, queue, tenantId, token);
+            int remaining = queue.size();
+            if (printedNow == 0 && remaining == 0) {
                 update("Attivo", "Nessuna comanda in coda");
                 return;
             }
-
-            List<String> printed = new ArrayList<>();
-            for (ApiClient.PrintJob job : jobs) {
-                update("Stampa in corso", job.code.isEmpty() ? job.orderId : "#" + job.code);
-                printer.print(job.data, job.copies);
-                printed.add(job.orderId);
-            }
-            client.ack(tenantId, printed, token);
-            update("Attivo", "Stampate " + printed.size() + " comande");
+            update("Attivo", "Stampate " + printedNow + ", in coda " + remaining);
         } catch (Exception e) {
             update("Errore", e.getMessage() == null ? "Polling fallito" : e.getMessage());
         } finally {
+            if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
             polling = false;
+        }
+    }
+
+    private int drainQueue(ApiClient client, LocalPrintQueue queue, String tenantId, String token) throws Exception {
+        int printedNow = 0;
+        while (true) {
+            LocalPrintQueue.Item item = queue.nextUnprinted();
+            if (item == null) return printedNow;
+            update("Stampa in corso", item.code.isEmpty() ? item.orderId : "#" + item.code);
+            try {
+                playChimeIfEnabled();
+                printer.print(item.data, item.copies);
+                queue.markPrinted(item.orderId);
+                List<String> printed = Collections.singletonList(item.orderId);
+                client.ack(tenantId, printed, token);
+                queue.removeAcked(printed);
+                printedNow++;
+            } catch (Exception e) {
+                update("Stampante occupata", "Comanda in coda " + (item.code.isEmpty() ? item.orderId : "#" + item.code));
+                return printedNow;
+            }
+        }
+    }
+
+    private void playChimeIfEnabled() {
+        if (!AgentPrefs.isChimeEnabled(this)) return;
+        try {
+            ToneGenerator tone = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 90);
+            tone.startTone(ToneGenerator.TONE_PROP_ACK, 250);
+            new Thread(() -> {
+                try {
+                    Thread.sleep(350);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                tone.release();
+            }).start();
+        } catch (RuntimeException ignored) {
         }
     }
 
@@ -147,5 +194,16 @@ public class PrintPollService extends Service {
             NotificationManager.IMPORTANCE_LOW
         );
         getSystemService(NotificationManager.class).createNotificationChannel(channel);
+    }
+
+    private PowerManager.WakeLock acquireWakeLock() {
+        PowerManager powerManager = getSystemService(PowerManager.class);
+        if (powerManager == null) return null;
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "MenuaryPrintAgent:poll"
+        );
+        wakeLock.acquire(TimeUnit.SECONDS.toMillis(45));
+        return wakeLock;
     }
 }

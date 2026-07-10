@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 final class AgentPrefs {
     private static final String NAME = "menuary_print_agent";
+    static final String KEY_CHIME_ENABLED = "chimeEnabled";
 
     private AgentPrefs() {}
 
@@ -17,5 +18,9 @@ final class AgentPrefs {
         return !prefs.getString("apiBase", "").isEmpty()
             && !prefs.getString("tenantId", "").isEmpty()
             && !prefs.getString("accessToken", "").isEmpty();
+    }
+
+    static boolean isChimeEnabled(Context context) {
+        return get(context).getBoolean(KEY_CHIME_ENABLED, true);
     }
 }

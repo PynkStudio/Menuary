@@ -92,7 +92,7 @@ export async function PATCH(
     JSON.stringify([...line.removedIngredients].sort());
   const isSubstantialEdit = extrasChanged || ingredientsChanged;
 
-  const CONFIRMATION_WINDOW_SEC = 600;
+  const CONFIRMATION_WINDOW_SEC = 300;
   const orderPatch: Record<string, unknown> = {
     total: newTotal,
     updated_at: new Date().toISOString(),
@@ -106,7 +106,7 @@ export async function PATCH(
       orderPatch.status = "pending_confirmation";
       orderPatch.confirmed_at = null;
       orderPatch.confirmation_expires_at = new Date(
-        Date.now() + CONFIRMATION_WINDOW_SEC * 1000,
+        new Date(order.createdAt).getTime() + CONFIRMATION_WINDOW_SEC * 1000,
       ).toISOString();
     }
   }

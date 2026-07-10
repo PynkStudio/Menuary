@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
-import { getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
+import { extendPublicCheckoutWindowOnOpen, getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
 import { loadCheckoutUpsellSuggestions } from "@/lib/orders/checkout-upsell";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
@@ -25,12 +25,15 @@ export default async function PublicCheckoutPage({
   const host = h.get("host");
   const tenant = resolveTenantFromHost(host);
 
-  const order = await getPublicCheckoutOrder({
+  let order = await getPublicCheckoutOrder({
     tenantId: tenant.id,
     code,
     token: t,
   });
 
+  if (!order) notFound();
+  await extendPublicCheckoutWindowOnOpen({ tenantId: tenant.id, code, token: t }).catch(() => undefined);
+  order = await getPublicCheckoutOrder({ tenantId: tenant.id, code, token: t });
   if (!order) notFound();
 
   // Disclosure aggiuntiva richiesta solo per ordini provenienti da canali AI

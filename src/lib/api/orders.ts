@@ -35,6 +35,8 @@ export function dbRowToOrder(row: DbOrder, lines: OrderLine[]): Order {
     dinerNickname: row.diner_nickname ?? undefined,
     customerName: row.customer_name ?? undefined,
     customerEmail: row.customer_email ?? undefined,
+    customerPhone: row.customer_phone ?? undefined,
+    deliveryAddress: row.delivery_address ?? row.delivery_address_text ?? undefined,
     pickupTime: row.pickup_time ?? undefined,
     notes: row.notes ?? undefined,
     lines,
@@ -95,6 +97,8 @@ export type DbOrder = {
   diner_nickname: string | null;
   customer_name: string | null;
   customer_email: string | null;
+  customer_phone: string | null;
+  delivery_address: string | null;
   pickup_time: string | null;
   notes: string | null;
   total: number | string;

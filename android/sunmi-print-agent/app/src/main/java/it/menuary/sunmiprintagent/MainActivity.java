@@ -94,7 +94,8 @@ public class MainActivity extends android.app.Activity {
                     .putString("email", email.getText().toString().trim())
                     .putString("accessToken", session.accessToken)
                     .putString("refreshToken", session.refreshToken)
-                    .putLong("expiresAt", System.currentTimeMillis() + (session.expiresInSeconds * 1000L));
+                    .putLong("expiresAt", System.currentTimeMillis() + (session.expiresInSeconds * 1000L))
+                    .putBoolean("isPlatformAdmin", bootstrap.isPlatformAdmin);
 
                 if (bootstrap.tenants.size() == 1) {
                     ApiClient.Tenant tenant = bootstrap.tenants.get(0);
@@ -122,6 +123,10 @@ public class MainActivity extends android.app.Activity {
             Button b = secondary(tenant.name + "\n" + tenant.id);
             b.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
             b.setOnClickListener(v -> {
+                String previousTenant = AgentPrefs.get(this).getString("tenantId", "");
+                if (!previousTenant.isEmpty() && !previousTenant.equals(tenant.id)) {
+                    new LocalPrintQueue(this).clear();
+                }
                 AgentPrefs.get(this).edit()
                     .putString("tenantId", tenant.id)
                     .putString("tenantName", tenant.name)
@@ -156,6 +161,22 @@ public class MainActivity extends android.app.Activity {
         row.addView(space(10));
         row.addView(stop, new LinearLayout.LayoutParams(0, dp(52), 1));
         header.addView(row);
+        if (prefs.getBoolean("isPlatformAdmin", false)) {
+            Button switchTenant = secondary("Cambia locale");
+            switchTenant.setOnClickListener(v -> showSuperAdminTenantChange());
+            LinearLayout.LayoutParams switchLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52));
+            switchLp.setMargins(0, dp(10), 0, 0);
+            header.addView(switchTenant, switchLp);
+        }
+        Button chime = secondary(AgentPrefs.isChimeEnabled(this) ? "Chime ordine: attivo" : "Chime ordine: disattivo");
+        chime.setOnClickListener(v -> {
+            boolean next = !AgentPrefs.isChimeEnabled(this);
+            AgentPrefs.get(this).edit().putBoolean(AgentPrefs.KEY_CHIME_ENABLED, next).apply();
+            ((Button) v).setText(next ? "Chime ordine: attivo" : "Chime ordine: disattivo");
+        });
+        LinearLayout.LayoutParams chimeLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52));
+        chimeLp.setMargins(0, dp(10), 0, 0);
+        header.addView(chime, chimeLp);
         root.addView(header);
 
         status = text("Carico ordini...", 14, MUTED, false);
@@ -262,12 +283,73 @@ public class MainActivity extends android.app.Activity {
         else startService(service);
     }
 
-    private void logout() {
+    private void stopAgent() {
         Intent service = new Intent(this, PrintPollService.class);
         service.setAction(PrintPollService.ACTION_STOP);
         startService(service);
+    }
+
+    private void logout() {
+        stopAgent();
         AgentPrefs.get(this).edit().clear().apply();
         showLogin();
+    }
+
+    private void showSuperAdminTenantChange() {
+        SharedPreferences prefs = AgentPrefs.get(this);
+        LinearLayout root = page();
+        root.setGravity(Gravity.CENTER_VERTICAL);
+        root.addView(text("Conferma super admin", 28, INK, true));
+        TextView copy = text("Per cambiare il locale di stampa reinserisci la password di " + prefs.getString("email", "hello@menuary.it") + ".", 15, MUTED, false);
+        copy.setPadding(0, dp(8), 0, dp(18));
+        root.addView(copy);
+
+        password = input("Password");
+        password.setInputType(0x00000081);
+        status = text("", 14, MUTED, false);
+        status.setPadding(0, dp(12), 0, 0);
+        primaryButton = primary("Conferma e scegli locale");
+        primaryButton.setOnClickListener(v -> confirmSuperAdminTenantChange());
+        Button cancel = secondary("Annulla");
+        cancel.setOnClickListener(v -> showDashboard());
+
+        root.addView(password);
+        root.addView(space(16));
+        root.addView(primaryButton);
+        root.addView(space(10));
+        root.addView(cancel);
+        root.addView(status);
+        setContentView(wrap(root));
+    }
+
+    private void confirmSuperAdminTenantChange() {
+        setBusy(true, "Verifico credenziali...");
+        new Thread(() -> {
+            try {
+                SharedPreferences prefs = AgentPrefs.get(this);
+                String apiBase = prefs.getString("apiBase", BuildConfig.MENUARY_API_BASE);
+                String currentEmail = prefs.getString("email", "");
+                ApiClient client = new ApiClient(apiBase, BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY);
+                ApiClient.Session session = client.login(currentEmail, password.getText().toString());
+                ApiClient.Bootstrap bootstrap = client.bootstrap(session.accessToken);
+                if (!bootstrap.isPlatformAdmin) throw new IllegalStateException("Questo account non e super admin.");
+                if (bootstrap.tenants.isEmpty()) throw new IllegalStateException("Nessun tenant disponibile.");
+
+                stopAgent();
+                new LocalPrintQueue(this).clear();
+                prefs.edit()
+                    .putString("accessToken", session.accessToken)
+                    .putString("refreshToken", session.refreshToken)
+                    .putLong("expiresAt", System.currentTimeMillis() + (session.expiresInSeconds * 1000L))
+                    .putBoolean("isPlatformAdmin", true)
+                    .remove("tenantId")
+                    .remove("tenantName")
+                    .apply();
+                runOnUiThread(() -> showTenantPicker(bootstrap.tenants));
+            } catch (Exception e) {
+                runOnUiThread(() -> setBusy(false, e.getMessage() == null ? "Verifica fallita." : e.getMessage()));
+            }
+        }).start();
     }
 
     private String refreshSessionIfNeeded(ApiClient client, SharedPreferences prefs) throws Exception {

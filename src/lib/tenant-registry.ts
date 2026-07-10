@@ -260,7 +260,7 @@ export const KIMOS_MODULE_FLAGS: TenantFeatureFlags = {
   deliveryHub: true,
   cashRegister: false,
   inventoryFoodCost: false,
-  printStations: false,
+  printStations: true,
   staffRoles: false,
   multiLocation: false,
   favorites: true,

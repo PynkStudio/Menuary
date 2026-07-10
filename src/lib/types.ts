@@ -147,6 +147,8 @@ export type Order = {
   dinerNickname?: string;
   customerName?: string;
   customerEmail?: string;
+  customerPhone?: string;
+  deliveryAddress?: string;
   pickupTime?: string;
   notes?: string;
   lines: OrderLine[];

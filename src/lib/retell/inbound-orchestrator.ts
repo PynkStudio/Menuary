@@ -14,7 +14,6 @@ import { tenantUsesStripeDemoSandbox } from "@/lib/payments/stripe/sandbox-polic
 import { suggestTableForReservation, type ReservationSlot, type TableForPlanner } from "@/lib/reservations/engine";
 import { normalizePhone, recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
 import { loadOrderSettings } from "@/lib/orders/order-settings";
-import { dispatchComandaForOrder } from "@/lib/printing/dispatch";
 import { resolveDeliveryAvailability, resolveDeliveryWindowsForDate } from "@/lib/orders/ordering-window";
 import type { MenuOrderChannel, PaymentMethod } from "@/lib/types";
 import { isMenuOrderChannel } from "@/lib/menu-channels";
@@ -1367,9 +1366,9 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   } else if (requestedMethod === "on_delivery_cash" || requestedMethod === "on_delivery_card") {
     paymentMethod = requestedMethod;
   } else {
-    // Nessuna scelta esplicita: se l'online è disponibile lo proponiamo (link "Paga"),
-    // altrimenti contanti alla consegna.
-    paymentMethod = onlineAllowed ? "online" : "on_delivery_cash";
+    // Nessuna scelta esplicita: il default operativo per gli ordini Retell è contanti
+    // alla consegna/ritiro. Il link permette al cliente di cambiare metodo.
+    paymentMethod = "on_delivery_cash";
   }
 
   // effectivePaymentMethod / shouldRequestPayment vengono derivati DOPO il calcolo del
@@ -1514,18 +1513,18 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   if (scheduledFuture && timeCheck.ok && (!desiredTime || !/^\d{4}-\d{2}-\d{2}/.test(desiredTime))) {
     desiredTime = timeCheck.whenSpoken ? `${timeCheck.date} ${timeCheck.whenSpoken}` : timeCheck.date;
   }
-  // Nuovo modello pagamento:
-  //  - online → l'ordine ATTENDE il pagamento: resta pending_confirmation senza scadenza,
-  //    va in cucina/stampa solo quando il webhook Stripe lo porta a "nuovo".
-  //  - alla consegna (contanti/carta) → accettazione automatica: "nuovo" subito → stampa.
-  //  - programmato a giorno futuro → resta "ricevuto" (pending senza scadenza).
+  // Modello Retell con modifica rapida:
+  //  - l'ordine parte pending e NON viene inviato/stampato subito;
+  //  - senza apertura link scade dopo 2 minuti e viene auto-finalizzato cash;
+  //  - se il cliente apre il link, il checkout estende a 5 minuti;
+  //  - online resta pending fino al pagamento Stripe.
   const waitsForPayment = shouldRequestPayment;
-  const autoAccepted = !scheduledFuture && !waitsForPayment;
-  const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
-  // Nessuna scadenza 120s per gli ordini telefonici: online attende il pagamento,
-  // on-delivery è già accettato, programmato attende l'accettazione manuale.
-  const confirmationExpiresAt = null;
-  const confirmedAt = autoAccepted ? new Date().toISOString() : null;
+  const autoAccepted = false;
+  const initialStatus = "pending_confirmation";
+  const confirmationExpiresAt = scheduledFuture || waitsForPayment
+    ? null
+    : new Date(Date.now() + 2 * 60 * 1000).toISOString();
+  const confirmedAt = null;
 
   const { data: codeRow, error: codeErr } = await db.rpc("next_order_code", {
     p_tenant_id: input.tenantId,
@@ -1573,11 +1572,8 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     rows.map(({ row }) => ({ ...row, order_id: order.id })),
   );
   if (linesErr) throw new Error(linesErr.message);
-  // Stampa comanda server-side (es. stampante cloud SUNMI) per ordini accettati.
-  // No-op se non configurato / QZ. Mai bloccante per la creazione ordine.
-  if (autoAccepted) {
-    void dispatchComandaForOrder(db, input.tenantId, order.id, locationId).catch(() => {});
-  }
+  // La comanda parte solo alla finalizzazione: conferma manuale dal link, pagamento
+  // Stripe riuscito o cron di scadenza. Qui salviamo solo il riepilogo modificabile.
   void notifyOperationalNewOrder({
     tenantId: input.tenantId,
     orderCode: order.code,
@@ -1613,6 +1609,9 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   // (online → "paga ora", on_site → "vedi riepilogo"), gestito in createChannelPaymentRequest.
   const canSendLink = Boolean(input.customerPhone?.trim());
   if (canSendLink) {
+    const orderSummary = rows
+      .map(({ row }) => `${row.qty}x ${row.name}`)
+      .join(", ");
     payment = await createChannelPaymentRequest({
       tenantId: input.tenantId,
       orderId: order.id,
@@ -1620,7 +1619,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       recipientPhone: input.customerPhone!,
       amount: total,
       currency: "EUR",
-      description: `Ordine ${order.code}`,
+      description: `Ordine ${order.code}: ${orderSummary}`,
       paymentRequired: effectivePaymentMethod === "online",
       onSiteAvailable: effectivePaymentMethod === "online" && policy === "both",
       fulfillmentType,

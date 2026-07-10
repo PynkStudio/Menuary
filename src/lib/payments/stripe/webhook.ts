@@ -3,6 +3,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getTenantByStripeAccount, upsertTenantPaymentAccount } from "./accounts";
+import { finalizePendingOrder } from "@/lib/orders/finalize-pending";
 
 // Verifica firma Stripe (Stripe-Signature: t=...,v1=...).
 // Implementiamo a mano per evitare dipendenza dall'SDK Stripe.
@@ -167,26 +168,11 @@ async function handleCheckoutCompleted(
     .eq("id", orderId)
     .eq("tenant_id", tenantId);
 
-  await (serviceDb() as unknown as {
-    from: (t: "orders") => {
-      update: (row: Record<string, unknown>) => {
-        eq: (k: string, v: string) => {
-          eq: (k: string, v: string) => {
-            eq: (k: string, v: string) => Promise<{ error: { message: string } | null }>;
-          };
-        };
-      };
-    };
-  })
-    .from("orders")
-    .update({
-      status: "nuovo",
-      confirmed_at: nowIso,
-      updated_at: nowIso,
-    })
-    .eq("id", orderId)
-    .eq("tenant_id", tenantId)
-    .eq("status", "pending_confirmation");
+  await finalizePendingOrder(serviceDb(), {
+    orderId,
+    tenantId,
+    paymentMethod: "online",
+  });
 
   // Aggiorna anche eventuale channel_payment_request collegato.
   const dbCh = serviceDb() as unknown as {

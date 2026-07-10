@@ -75,6 +75,7 @@ export async function POST(
       await db
         .from("orders")
         .update({
+          payment_method: "online",
           payment_status: "pending",
           payment_provider: "stripe",
           stripe_account_id: session.stripeAccountId,
