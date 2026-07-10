@@ -17,7 +17,7 @@ export default async function CheckoutRoute({
   if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo") notFound();
 
   const { previewSlug } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug);
 
   if (!tenant || tenant.previewSlug !== previewSlug) notFound();
   if (tenant.id !== "libritech" || !tenant.features.shop) notFound();

@@ -970,7 +970,7 @@ export async function middleware(request: NextRequest) {
   if (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") {
     const match = pathname.match(/^\/([a-z0-9-]+)\/gestione(\/.*)?$/);
     if (match) {
-      const tenant = findTenantById(match[1]) ?? resolveTenantFromPreviewSlug(match[1], host);
+      const tenant = findTenantById(match[1]) ?? resolveTenantFromPreviewSlug(match[1]);
       if (!tenant) return NextResponse.next();
       const rest = match[2] ?? "";
       const rewritten = request.nextUrl.clone();
@@ -983,7 +983,7 @@ export async function middleware(request: NextRequest) {
     // Demo portali operativi: demo.menuary.it/[slug]/ordini|cassa|kiosk.
     const operationalMatch = pathname.match(/^\/([a-z0-9-]+)\/(ordini|cassa|kiosk)(\/.*)?$/);
     if (operationalMatch) {
-      const tenant = findTenantById(operationalMatch[1]) ?? resolveTenantFromPreviewSlug(operationalMatch[1], host);
+      const tenant = findTenantById(operationalMatch[1]) ?? resolveTenantFromPreviewSlug(operationalMatch[1]);
       if (!tenant) return NextResponse.next();
       const section = operationalMatch[2];
       const rest = operationalMatch[3] ?? "";

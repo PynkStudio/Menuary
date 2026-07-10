@@ -18,7 +18,7 @@ export default async function PreviewOrdinaAttesaRoute({
   if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo" && !isLocalPreviewDev) notFound();
 
   const { previewSlug } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug);
   if (!tenant || tenant.previewSlug !== previewSlug) notFound();
   const themeVars = tenantThemeCssVars(tenant.theme);
 

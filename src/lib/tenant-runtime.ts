@@ -30,7 +30,6 @@ export function resolveTenantFromPrefixedHost(
 
 export function resolveTenantFromPreviewSlug(
   slug: string | null | undefined,
-  _host?: string | null,
 ): TenantProfile | undefined {
   if (!slug) return undefined;
   return findTenantByPreviewSlug(slug);

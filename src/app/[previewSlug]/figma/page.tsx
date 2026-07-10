@@ -13,7 +13,7 @@ export default async function FigmaPreviewPage({
   if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo") notFound();
 
   const { previewSlug } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug);
   if (!tenant || tenant.previewSlug !== previewSlug) notFound();
 
   // L'HTML Anima viene servito come file statico da public/(slug)/anima/index.html.

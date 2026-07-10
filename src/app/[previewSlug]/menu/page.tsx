@@ -20,7 +20,7 @@ export default async function PreviewTenantMenu({
   if (mode !== "preview" && !isLocalPreviewDev) notFound();
 
   const { previewSlug } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug);
   if (!tenant || tenant.previewSlug !== previewSlug) notFound();
   const themeVars = tenantThemeCssVars(tenant.theme);
 

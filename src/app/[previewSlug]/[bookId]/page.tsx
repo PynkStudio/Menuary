@@ -23,7 +23,7 @@ export default async function BookDetailRoute({
   if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo" && !isLocalPreviewDev) notFound();
 
   const { previewSlug, bookId } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug);
 
   if (!tenant || tenant.previewSlug !== previewSlug) notFound();
 

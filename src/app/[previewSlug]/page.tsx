@@ -41,7 +41,7 @@ export async function generateMetadata({
   const host = requestHeaders.get("host");
   const mode = getPlatformModeFromHost(host);
   const { previewSlug } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug);
   if (!tenant || tenant.previewSlug !== previewSlug) {
     return {
       title: "Preview non trovata",
@@ -141,7 +141,7 @@ export default async function PreviewTenantHome({
   if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo" && !isLocalPreviewDev) notFound();
 
   const { previewSlug } = await params;
-  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug);
   if (!tenant || tenant.previewSlug !== previewSlug) notFound();
 
   const themeVars = tenantThemeCssVars(tenant.theme);

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import {
   Bagel_Fat_One,
@@ -36,7 +35,6 @@ import { getTranslations } from "@/i18n";
 import {
   BIZERY_ORIGIN,
   BIZERY_KEYWORDS,
-  MENUARY_MARKETING_DESCRIPTION,
   MENUARY_ORIGIN,
   MENUARY_KEYWORDS,
   ORPHEO_ORIGIN,

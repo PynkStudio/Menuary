@@ -30,7 +30,7 @@ export default async function PreviewOrderCheckoutPage({
   const mode = getPlatformModeFromHost(host);
   if (mode !== "preview" && mode !== "preview-bizery" && mode !== "preview-orpheo") notFound();
 
-  const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  const tenant = resolveTenantFromPreviewSlug(previewSlug);
   if (!tenant || tenant.previewSlug !== previewSlug) notFound();
 
   const order = await getPublicCheckoutOrder({ tenantId: tenant.id, code, token: t });
