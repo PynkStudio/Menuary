@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const host = h.get("host");
   const tenant = resolveTenantFromHost(host);
+  if (!tenant) return [];
   const tenantLocaleConfig = getTenantLocaleConfig(tenant.id);
   const base =
     tenantLocaleConfig && host

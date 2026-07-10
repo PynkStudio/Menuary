@@ -19,7 +19,7 @@ import type { TenantProfile } from "@/lib/tenant";
 type IconSet = NonNullable<Metadata["icons"]>;
 
 /** Restituisce il prefisso della cartella favicon in /public per un dato sito. */
-function faviconBase(mode: PlatformMode, tenant: TenantProfile): string {
+function faviconBase(mode: PlatformMode, tenant?: TenantProfile | null): string {
   // Piattaforma Menuary — tutti i sottodomini di sistema usano il nostro brand.
   if (mode === "marketing")      return "/favicons/menuary";
   if (mode === "platform-admin") return "/favicons/menuary";
@@ -27,6 +27,7 @@ function faviconBase(mode: PlatformMode, tenant: TenantProfile): string {
   if (mode === "studio")         return "/favicons/menuary";
   if (mode === "support")        return "/favicons/menuary";
   if (mode === "login")          return "/favicons/menuary";
+  if (mode === "app")            return "/favicons/menuary";
   if (mode === "gestione")       return "/favicons/menuary";
   if (mode === "preview")        return "/favicons/menuary";
 
@@ -41,7 +42,7 @@ function faviconBase(mode: PlatformMode, tenant: TenantProfile): string {
   if (mode === "preview-orpheo")   return "/favicons/bizery";
 
   // Sito del singolo tenant — unico caso in cui usiamo l'identità del tenant.
-  return `/favicons/${tenant.id}`;
+  return `/favicons/${tenant?.id ?? "menuary"}`;
 }
 
 /**
@@ -49,7 +50,7 @@ function faviconBase(mode: PlatformMode, tenant: TenantProfile): string {
  * Usa SVG come formato principale (preferito dai browser moderni).
  * Aggiunge PNG come fallback se presenti.
  */
-export function buildIconSet(mode: PlatformMode, tenant: TenantProfile): IconSet {
+export function buildIconSet(mode: PlatformMode, tenant?: TenantProfile | null): IconSet {
   const base = faviconBase(mode, tenant);
 
   return {
@@ -82,7 +83,7 @@ export function buildTenantIconSet(tenant: TenantProfile): IconSet {
  * Colori del tema di sfondo per il <meta name="theme-color">.
  * Corrisponde al colore della tab/barra browser su mobile.
  */
-export function themeColor(mode: PlatformMode, tenant: TenantProfile): string {
+export function themeColor(mode: PlatformMode, tenant?: TenantProfile | null): string {
   // Piattaforma Menuary
   if (mode === "marketing")      return "#18231f";
   if (mode === "platform-admin") return "#18231f";
@@ -90,6 +91,7 @@ export function themeColor(mode: PlatformMode, tenant: TenantProfile): string {
   if (mode === "studio")         return "#18231f";
   if (mode === "support")        return "#18231f";
   if (mode === "login")          return "#18231f";
+  if (mode === "app")            return "#18231f";
   if (mode === "gestione")       return "#18231f";
   if (mode === "preview")        return "#18231f";
 
@@ -104,5 +106,5 @@ export function themeColor(mode: PlatformMode, tenant: TenantProfile): string {
   if (mode === "preview-orpheo")   return "#17111F";
 
   // Sito del singolo tenant
-  return tenant.theme.ink;
+  return tenant?.theme.ink ?? "#18231f";
 }

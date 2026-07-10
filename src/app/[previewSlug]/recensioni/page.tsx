@@ -23,7 +23,7 @@ export default async function PreviewTenantReviews({
 
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
-  if (tenant.previewSlug !== previewSlug) notFound();
+  if (!tenant || tenant.previewSlug !== previewSlug) notFound();
 
   const themeVars = tenantThemeCssVars(tenant.theme);
   const reviews = getReviewsForTenant(tenant.id);

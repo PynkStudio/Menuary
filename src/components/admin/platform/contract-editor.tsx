@@ -1000,6 +1000,37 @@ export function ContractEditor({ contractId }: Props) {
             })()}
           </div>
         )}
+        <label className="rate-toggle">
+          <input
+            type="checkbox"
+            checked={data.economiche.periodoProva}
+            onChange={(e) =>
+              setData((d) => ({
+                ...d,
+                economiche: { ...d.economiche, periodoProva: e.target.checked },
+              }))
+            }
+          />
+          Periodo di prova
+        </label>
+        {data.economiche.periodoProva && (
+          <div className="rate-box">
+            <label>Deposito cauzionale (€)</label>
+            <LocalizedMoneyInput
+              value={data.economiche.depositoCauzionale}
+              onValueChange={(value) =>
+                setData((d) => ({
+                  ...d,
+                  economiche: { ...d.economiche, depositoCauzionale: value },
+                }))
+              }
+            />
+            <p className="muted">
+              Se il cliente conferma, il deposito viene imputato al primo pagamento. Se non procede,
+              viene restituito al netto del canone del mese di prova e dei costi a consumo.
+            </p>
+          </div>
+        )}
         {annuale && (
           <>
             <label>Sconto annuale (%)</label>
@@ -1456,6 +1487,14 @@ export function ContractEditor({ contractId }: Props) {
                 </span>
               ) : null}
             </dd>
+            {data.economiche.periodoProva && (
+              <>
+                <dt>Periodo di prova</dt>
+                <dd>
+                  1 mese con deposito cauzionale di {formatEUR(data.economiche.depositoCauzionale)}
+                </dd>
+              </>
+            )}
             <dt>Canone</dt>
             <dd>
               {annuale
@@ -1493,7 +1532,10 @@ export function ContractEditor({ contractId }: Props) {
                 <dt>Causale</dt>
                 <dd>{paymentDescription}</dd>
                 <dt>Primo pagamento complessivo</dt>
-                <dd>{formatEUR(firstPayment)}</dd>
+                <dd>
+                  {formatEUR(firstPayment)}
+                  {data.economiche.periodoProva ? " deposito cauzionale" : ""}
+                </dd>
                 <dt>Pagamenti successivi complessivi</dt>
                 <dd>{formatEUR(recurringPayment)} / {annuale ? "anno" : "mese"}</dd>
               </>
@@ -1764,6 +1806,7 @@ const CONTRACT_STYLES = `
 .rate-toggle input { width: auto !important; margin: 0 !important; }
 .contract-form .hint { font-size: 11px; color: #6b7280; margin: 0 0 8px; }
 .rate-box { border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+.rate-box .muted { margin: 8px 0 0; color: #6b7280; font-size: 12px; line-height: 1.45; }
 .rate-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
 .rate-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6b7280; }
 .rate-row span { width: 48px; flex-shrink: 0; }

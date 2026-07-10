@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
 import { MarketingHomePage } from "@/components/marketing/pages/home";
 import { TenantHomePage } from "@/components/tenants/_shared/pages/home";
@@ -49,6 +50,7 @@ export default async function HomePage() {
   // Tenant con sito proprio sul dominio custom: dispatch per id.
   const tenant =
     findTenantById(h.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(h.get("host"));
+  if (!tenant) notFound();
   if (tenant.id === "pynkstudio") return <PynkStudioHomePage />;
   if (tenant.id === "cascina-errante") return <CascinaErranteHomePage />;
 

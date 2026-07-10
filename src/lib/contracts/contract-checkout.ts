@@ -88,7 +88,9 @@ async function createStripeCheckout(
           unit_amount: amountCents,
           product_data: {
             name: description,
-            description: `Primo pagamento: setup + canone ${data.economiche.cicloFatturazione === "yearly" ? "annuale" : "mensile"}`,
+            description: data.economiche.periodoProva
+              ? "Deposito cauzionale per periodo di prova"
+              : `Primo pagamento: setup + canone ${data.economiche.cicloFatturazione === "yearly" ? "annuale" : "mensile"}`,
           },
         },
       },

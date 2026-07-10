@@ -40,7 +40,7 @@ export async function POST(
   if (order.paymentStatus === "paid") {
     return NextResponse.json({ error: "already_paid" }, { status: 409 });
   }
-  if (["annullato", "expired", "pronto", "consegnato"].includes(order.status)) {
+  if (order.status !== "pending_confirmation") {
     return NextResponse.json({ error: `order_${order.status}` }, { status: 409 });
   }
 

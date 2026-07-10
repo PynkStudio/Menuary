@@ -42,6 +42,12 @@ export async function generateMetadata({
   const mode = getPlatformModeFromHost(host);
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
+  if (!tenant || tenant.previewSlug !== previewSlug) {
+    return {
+      title: "Preview non trovata",
+      robots: { index: false, follow: false },
+    };
+  }
   const content = getTenantContent(tenant.id);
   const localeConfig = getTenantLocaleConfig(tenant.id);
   const locale = requestHeaders.get(LOCALE_HEADER) ?? localeConfig?.defaultLocale;
@@ -136,7 +142,7 @@ export default async function PreviewTenantHome({
 
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
-  if (tenant.previewSlug !== previewSlug) notFound();
+  if (!tenant || tenant.previewSlug !== previewSlug) notFound();
 
   const themeVars = tenantThemeCssVars(tenant.theme);
 

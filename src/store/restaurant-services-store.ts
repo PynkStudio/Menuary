@@ -7,7 +7,7 @@ import { createBrowserLocalJSONStorage } from "@/lib/zustand-json-storage";
 const LEGACY_STORAGE_KEY = "bepork-restaurant-services-v1";
 const STORAGE_KEY_PREFIX = "menuary-restaurant-services-v1";
 const FALLBACK_STORAGE_KEY = `${STORAGE_KEY_PREFIX}:unscoped`;
-const DEFAULT_TENANT_ID = "bepork";
+const DEFAULT_TENANT_ID = "junior-food";
 
 let activeRestaurantServicesTenantId: string | null = null;
 
@@ -337,7 +337,7 @@ function buildInitial(tenantId = DEFAULT_TENANT_ID): RestaurantServicesSnapshot 
 } {
   return {
     currentTenantId: tenantId,
-    ...(tenantId === "faak" ? faakSeed() : beporkSeed()),
+    ...(tenantId === "bepork" ? beporkSeed() : faakSeed()),
   };
 }
 

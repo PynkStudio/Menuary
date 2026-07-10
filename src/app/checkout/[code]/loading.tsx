@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 
@@ -9,6 +10,7 @@ import { tenantThemeCssVars } from "@/lib/tenant-theme";
 export default async function CheckoutLoading() {
   const h = await headers();
   const tenant = resolveTenantFromHost(h.get("host"));
+  if (!tenant) notFound();
 
   const bar = "rgb(var(--tenant-ink) / 0.08)";
 

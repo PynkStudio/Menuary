@@ -3,27 +3,14 @@ import {
   findTenantByManagementHost,
   findTenantByPrefixedHost,
   findTenantByPreviewSlug,
-  getDefaultTenantForVertical,
 } from "./tenant-registry";
-import { getPlatformModeFromHost } from "./platform";
 import type { TenantProfile } from "./tenant";
 
-function verticalFromMode(mode: ReturnType<typeof getPlatformModeFromHost>): TenantProfile["vertical"] {
-  if (mode === "marketing-orpheo" || mode === "preview-orpheo") return "creative";
-  if (mode === "marketing-bizery" || mode === "preview-bizery" || mode === "gestione-bizery") {
-    return "services";
-  }
-  return "food";
-}
-
-export function resolveTenantFromHost(host: string | null | undefined): TenantProfile {
-  if (!host) return getDefaultTenantForVertical("food");
+export function resolveTenantFromHost(host: string | null | undefined): TenantProfile | undefined {
+  if (!host) return undefined;
   const managementTenant = findTenantByManagementHost(host);
   if (managementTenant) return managementTenant;
-  const tenant = findTenantByDomain(host);
-  if (tenant) return tenant;
-  const vertical = verticalFromMode(getPlatformModeFromHost(host));
-  return getDefaultTenantForVertical(vertical);
+  return findTenantByDomain(host);
 }
 
 export function resolveTenantFromManagementHost(
@@ -43,12 +30,10 @@ export function resolveTenantFromPrefixedHost(
 
 export function resolveTenantFromPreviewSlug(
   slug: string | null | undefined,
-  host?: string | null,
-): TenantProfile {
-  if (!slug) return getDefaultTenantForVertical(host ? verticalFromMode(getPlatformModeFromHost(host)) : "food");
-  return findTenantByPreviewSlug(slug) ?? getDefaultTenantForVertical(
-    host ? verticalFromMode(getPlatformModeFromHost(host)) : "food",
-  );
+  _host?: string | null,
+): TenantProfile | undefined {
+  if (!slug) return undefined;
+  return findTenantByPreviewSlug(slug);
 }
 
 /** Sede opzionale da query (?loc=slug) per multi-sede senza cambiare host. */

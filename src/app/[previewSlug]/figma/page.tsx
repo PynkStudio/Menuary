@@ -14,7 +14,7 @@ export default async function FigmaPreviewPage({
 
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
-  if (tenant.previewSlug !== previewSlug) notFound();
+  if (!tenant || tenant.previewSlug !== previewSlug) notFound();
 
   // L'HTML Anima viene servito come file statico da public/(slug)/anima/index.html.
   // I path relativi delle risorse (immagini, CSS, font) si risolvono automaticamente

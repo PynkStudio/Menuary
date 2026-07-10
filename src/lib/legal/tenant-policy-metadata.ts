@@ -14,6 +14,12 @@ export async function tenantPolicyMetadata(
   const tenant =
     findTenantById(h.get("x-preview-tenant-id") ?? "") ??
     resolveTenantFromHost(host);
+  if (!tenant) {
+    return {
+      title: page === "privacy" ? "Privacy policy" : "Cookie policy",
+      robots: { index: false, follow: false },
+    };
+  }
   const isPreview = Boolean(h.get("x-preview-tenant-id"));
   const content = getTenantContent(tenant.id);
   const localeConfig = getTenantLocaleConfig(tenant.id);

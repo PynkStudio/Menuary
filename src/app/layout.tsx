@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import {
   Bagel_Fat_One,
@@ -109,8 +110,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const modeHeader = h.get(PLATFORM_MODE_HEADER);
   const localeHeader = h.get(LOCALE_HEADER);
   const previewTenantId = h.get("x-preview-tenant-id");
-  const tenant = findTenantById(previewTenantId ?? "") ?? resolveTenantFromHost(host);
   const mode = getPlatformModeFromHeaderValue(modeHeader, host);
+  const tenant = findTenantById(previewTenantId ?? "") ?? resolveTenantFromHost(host);
   const isTenantPreview =
     mode === "preview" ||
     mode === "preview-bizery" ||
@@ -135,7 +136,39 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
+  if (mode === "app") {
+    return {
+      metadataBase: new URL("https://app.menuary.it"),
+      title: {
+        default: "Menuary Print Agent",
+        template: "%s · Menuary",
+      },
+      description: "Download dell'app Android Menuary Print Agent per POS SUNMI.",
+      openGraph: {
+        title: "Menuary Print Agent",
+        description: "App Android per ricevere e stampare automaticamente gli ordini su POS SUNMI.",
+        url: "https://app.menuary.it",
+        siteName: "Menuary",
+        locale: "it_IT",
+        type: "website",
+      },
+      alternates: {
+        canonical: "https://app.menuary.it",
+      },
+      robots: { index: false, follow: false },
+      icons: buildIconSet(mode, tenant),
+    };
+  }
+
   if (mode === "gestione" || mode === "gestione-custom") {
+    if (!tenant) {
+      return {
+        metadataBase: new URL("https://gestione.menuary.it"),
+        title: { default: "Menuary · gestione", template: "%s · Menuary" },
+        robots: { index: false, follow: false },
+        icons: buildIconSet(mode),
+      };
+    }
     return {
       metadataBase: new URL(mode === "gestione-custom" ? `https://gestione.${tenant.domains[0] ?? "menuary.it"}` : "https://gestione.menuary.it"),
       title: { default: `${tenant.name} · gestione`, template: `%s · ${tenant.name}` },
@@ -288,6 +321,55 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
 
+  if (mode === "marketing") {
+    const marketingHome = (await getTranslations("marketing")).seo.home;
+    return {
+      metadataBase: new URL(MENUARY_ORIGIN),
+      title: {
+        default: marketingHome.title,
+        template: "%s · Menuary",
+      },
+      description: marketingHome.description,
+      keywords: MENUARY_KEYWORDS,
+      openGraph: {
+        title: marketingHome.title,
+        description: marketingHome.description,
+        url: MENUARY_ORIGIN,
+        siteName: "Menuary",
+        locale: ogLocale(isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE),
+        type: "website",
+        images: [
+          {
+            url: `${MENUARY_ORIGIN}/api/og?brand=menuary`,
+            width: 1200,
+            height: 630,
+            alt: marketingHome.title,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: marketingHome.title,
+        description: marketingHome.description,
+        images: [`${MENUARY_ORIGIN}/api/og?brand=menuary`],
+      },
+      alternates: marketingAlternates(
+        MENUARY_ORIGIN,
+        "",
+        isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE,
+      ),
+      icons: buildIconSet(mode),
+    };
+  }
+
+  if (!tenant) {
+    return {
+      title: "Pagina non trovata",
+      robots: { index: false, follow: false },
+      icons: buildIconSet(mode),
+    };
+  }
+
   const content = getTenantContent(tenant.id);
   const tenantLocaleConfig = getTenantLocaleConfig(tenant.id);
   const tenantPublicPath = h.get("x-tenant-public-path") ?? "/";
@@ -318,37 +400,19 @@ export async function generateMetadata(): Promise<Metadata> {
             : `${tenant.name} - servizi, appuntamenti e listino prezzi`
         : `${tenant.name} - Burger, Pizza e Cucina italiana`;
 
-  const marketingHome =
-    mode === "marketing"
-      ? (await getTranslations("marketing")).seo.home
-      : { title: "Menuary", description: MENUARY_MARKETING_DESCRIPTION };
-
   return {
     metadataBase: new URL(
-      mode === "marketing"
-        ? MENUARY_ORIGIN
-        : tenantLocaleConfig
-          ? tenantOrigin
-          : content.url,
+      tenantLocaleConfig
+        ? tenantOrigin
+        : content.url,
     ),
-    title:
-      mode === "marketing"
-        ? {
-            default: marketingHome.title,
-            template: "%s · Menuary",
-          }
-        : {
-            default: tenantTitle,
-            template: `%s · ${tenant.name}`,
-          },
-    description:
-      mode === "marketing"
-        ? marketingHome.description
-        : content.description,
+    title: {
+      default: tenantTitle,
+      template: `%s · ${tenant.name}`,
+    },
+    description: content.description,
     keywords:
-      mode === "marketing"
-        ? MENUARY_KEYWORDS
-        : tenant.id === "faak"
+      tenant.id === "faak"
           ? [
               tenant.name,
               "FAAK Milano",
@@ -415,53 +479,23 @@ export async function generateMetadata(): Promise<Metadata> {
               "pizza all'assassina",
             ],
     openGraph: {
-      title:
-        mode === "marketing"
-          ? marketingHome.title
-          : tenantTitle,
-      description:
-        mode === "marketing"
-          ? marketingHome.description
-          : content.description,
-      url:
-        mode === "marketing"
-          ? MENUARY_ORIGIN
-          : tenantLocaleConfig
-            ? `${tenantOrigin}${tenantPublicPath}`
-            : content.url,
-      siteName: mode === "marketing" ? "Menuary" : tenant.name,
-      locale:
-        mode === "marketing"
-          ? ogLocale(isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE)
-          : "it_IT",
+      title: tenantTitle,
+      description: content.description,
+      url: tenantLocaleConfig
+        ? `${tenantOrigin}${tenantPublicPath}`
+        : content.url,
+      siteName: tenant.name,
+      locale: "it_IT",
       type: "website",
-      ...(mode === "marketing"
-        ? {
-            images: [
-              {
-                url: `${MENUARY_ORIGIN}/api/og?brand=menuary`,
-                width: 1200,
-                height: 630,
-                alt: marketingHome.title,
-              },
-            ],
-          }
-        : {
-            images: [
-              { url: content.showcaseLogoSrc, alt: content.showcaseLogoAlt },
-            ],
-          }),
+      images: [
+        { url: content.showcaseLogoSrc, alt: content.showcaseLogoAlt },
+      ],
     },
     twitter: {
       card: "summary_large_image",
-      title: mode === "marketing" ? marketingHome.title : tenant.name,
-      description:
-        mode === "marketing"
-          ? marketingHome.description
-          : content.description,
-      ...(mode === "marketing"
-        ? { images: [`${MENUARY_ORIGIN}/api/og?brand=menuary`] }
-        : { images: [content.showcaseLogoSrc] }),
+      title: tenant.name,
+      description: content.description,
+      images: [content.showcaseLogoSrc],
     },
     ...(isTenantPreview
       ? {
@@ -473,34 +507,20 @@ export async function generateMetadata(): Promise<Metadata> {
         }
       : {}),
     alternates: {
-      canonical: mode === "marketing"
-        ? marketingAlternates(
-            MENUARY_ORIGIN,
-            "",
-            isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE,
-          ).canonical
-        : tenantLocaleConfig && tenantLocale
-          ? `${tenantOrigin}${tenantPublicPath}`
-          : content.url,
-      ...(mode === "marketing"
+      canonical: tenantLocaleConfig && tenantLocale
+        ? `${tenantOrigin}${tenantPublicPath}`
+        : content.url,
+      ...(tenantLocaleConfig && tenantLocale
         ? {
-            languages: marketingAlternates(
-              MENUARY_ORIGIN,
-              "",
-              isAppLocale(localeHeader) ? localeHeader : DEFAULT_LOCALE,
-            ).languages,
+            languages: tenantLanguageAlternates({
+              origin: tenantOrigin,
+              pathname: tenantPublicPath,
+              previewSlug: tenantMetadataPreviewSlug,
+              locales: tenantLocaleConfig.locales,
+              defaultLocale: tenantLocaleConfig.defaultLocale,
+            }),
           }
-        : tenantLocaleConfig && tenantLocale
-          ? {
-              languages: tenantLanguageAlternates({
-                origin: tenantOrigin,
-                pathname: tenantPublicPath,
-                previewSlug: tenantMetadataPreviewSlug,
-                locales: tenantLocaleConfig.locales,
-                defaultLocale: tenantLocaleConfig.defaultLocale,
-              }),
-            }
-          : {}),
+        : {}),
     },
     icons: previewTenantId ? buildTenantIconSet(tenant) : buildIconSet(mode, tenant),
   };
@@ -586,8 +606,44 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const reqHeaders = await headers();
   const host = reqHeaders.get("host");
-  const tenant = findTenantById(reqHeaders.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(host);
   const mode = getPlatformModeFromHeaderValue(reqHeaders.get(PLATFORM_MODE_HEADER), host);
+  const localeHeader = reqHeaders.get(LOCALE_HEADER);
+  const lang = isAppLocale(localeHeader) ? localeHeader : "it";
+
+  if (mode === "app") {
+    return (
+      <html
+        lang={lang}
+        className={`${menuaryDisplay.variable} ${menuaryBody.variable}`}
+        data-platform={mode}
+      >
+        <body>
+          <Analytics />
+          <PlatformModeProvider mode={mode}>
+            <PageTransitionShell>{children}</PageTransitionShell>
+          </PlatformModeProvider>
+        </body>
+      </html>
+    );
+  }
+
+  const tenant = findTenantById(reqHeaders.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(host);
+  if (!tenant) {
+    return (
+      <html
+        lang={lang}
+        className={`${menuaryDisplay.variable} ${menuaryBody.variable}`}
+        data-platform={mode}
+      >
+        <body>
+          <Analytics />
+          <PlatformModeProvider mode={mode}>
+            <PageTransitionShell>{children}</PageTransitionShell>
+          </PlatformModeProvider>
+        </body>
+      </html>
+    );
+  }
   const themeVars = tenantThemeCssVars(tenant.theme);
 
   // Su dominio di produzione lo stato di abilitazione/sospensione vive sul DB
@@ -612,8 +668,6 @@ export default async function RootLayout({
 
   // Slug sede da sottodominio tenant (es. sede.example.it → "sede"), impostato dal middleware.
   const locationSlug = reqHeaders.get("x-location-slug") ?? undefined;
-  const localeHeader = reqHeaders.get(LOCALE_HEADER);
-  const lang = isAppLocale(localeHeader) ? localeHeader : "it";
   // Per i mode Bizery il contenuto tenant non è rilevante (shell propria, nessun JSON-LD).
   const isBizeryMode =
     mode === "marketing-bizery" || mode === "gestione-bizery" || mode === "preview-bizery";

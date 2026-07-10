@@ -188,6 +188,7 @@ function buildRow(
   const setupRateale = Boolean(economiche?.setupRateale);
   const setupRate = (economiche?.setupRate as number[]) ?? [setup];
   const esenzioneIva = Boolean(economiche?.esenzioneIva);
+  const periodoProva = Boolean(economiche?.periodoProva);
 
   // Calcola canone netto (mese o anno con eventuale sconto)
   const canoneNetto = cicloFatturazione === "yearly"
@@ -201,7 +202,9 @@ function buildRow(
 
   // Importo lordo (IVA inclusa) — quanto il cliente deve effettivamente pagare
   const netAmount = rawAmount; // rawAmount è già canone + setup (senza IVA)
-  const grossAmount = esenzioneIva
+  const grossAmount = periodoProva && kind === "first"
+    ? round2(rawAmount)
+    : esenzioneIva
     ? round2((netAmount + MARCA_BOLLO) * (1 + RIVALSA_INPS_RATE))
     : round2(netAmount * (1 + IVA_RATE));
 

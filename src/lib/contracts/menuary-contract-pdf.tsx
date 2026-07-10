@@ -204,6 +204,12 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
                 : `${formatEUR(data.economiche.setup)} ${taxSuffix(data.economiche)}`
             }
           />
+          {data.economiche.periodoProva && (
+            <SummaryItem
+              dt="Periodo di prova"
+              dd={`1 mese con deposito cauzionale di ${formatEUR(data.economiche.depositoCauzionale)}`}
+            />
+          )}
           <SummaryItem
             dt="Canone"
             dd={
@@ -232,7 +238,7 @@ export function MenuaryContractPdf({ data, overrides }: Props) {
               <SummaryItem dt="Causale" dd={contractPaymentDescription(data)} />
               <SummaryItem
                 dt="Primo pagamento complessivo"
-                dd={formatEUR(computeFirstPaymentTotal(data.economiche))}
+                dd={`${formatEUR(computeFirstPaymentTotal(data.economiche))}${data.economiche.periodoProva ? " deposito cauzionale" : ""}`}
               />
               <SummaryItem
                 dt="Pagamenti successivi complessivi"

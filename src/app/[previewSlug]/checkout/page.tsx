@@ -19,7 +19,7 @@ export default async function CheckoutRoute({
   const { previewSlug } = await params;
   const tenant = resolveTenantFromPreviewSlug(previewSlug, host);
 
-  if (tenant.previewSlug !== previewSlug) notFound();
+  if (!tenant || tenant.previewSlug !== previewSlug) notFound();
   if (tenant.id !== "libritech" || !tenant.features.shop) notFound();
 
   const themeVars = tenantThemeCssVars(tenant.theme);

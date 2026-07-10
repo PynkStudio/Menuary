@@ -38,7 +38,7 @@ export async function PATCH(
   if (order.paymentStatus === "paid") {
     return NextResponse.json({ error: "already_paid" }, { status: 409 });
   }
-  const blockedStatuses = ["annullato", "in_preparazione", "pronto", "consegnato", "expired"];
+  const blockedStatuses = ["nuovo", "annullato", "in_preparazione", "pronto", "consegnato", "expired"];
   if (blockedStatuses.includes(order.status)) {
     return NextResponse.json({ error: `blocked_status_${order.status}` }, { status: 409 });
   }
@@ -101,8 +101,7 @@ export async function PATCH(
   if (isSubstantialEdit) {
     // Modifica sostanziale: richiede (ri-)approvazione dal locale.
     // Se gia' pending_confirmation, resetta solo il timer.
-    // Se "nuovo", riporta a pending_confirmation.
-    if (order.status === "pending_confirmation" || order.status === "nuovo") {
+    if (order.status === "pending_confirmation") {
       orderPatch.status = "pending_confirmation";
       orderPatch.confirmed_at = null;
       orderPatch.confirmation_expires_at = new Date(
@@ -120,7 +119,7 @@ export async function PATCH(
   if (orderError) return NextResponse.json({ error: orderError.message }, { status: 500 });
 
   const needsApproval = isSubstantialEdit &&
-    (order.status === "pending_confirmation" || order.status === "nuovo");
+    order.status === "pending_confirmation";
 
   return NextResponse.json({
     ok: true,

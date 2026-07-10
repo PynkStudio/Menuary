@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { Gallery } from "@/components/modules/gallery/gallery";
@@ -9,6 +10,7 @@ import { CascinaErranteGalleryPage } from "@/components/tenants/cascina-errante/
 
 export async function generateMetadata(): Promise<Metadata> {
   const tenant = resolveTenantFromHost((await headers()).get("host"));
+  if (!tenant) return { title: "Pagina non trovata", robots: { index: false, follow: false } };
   if (tenant.id === "cascina-errante") {
     return {
       title: "Galleria",
@@ -39,7 +41,9 @@ const photos = [
 
 export default async function GalleriaPage() {
   const tenant = resolveTenantFromHost((await headers()).get("host"));
+  if (!tenant) notFound();
   if (tenant.id === "cascina-errante") return <CascinaErranteGalleryPage />;
+  if (tenant.id !== "bepork") notFound();
   return (
     <>
       <section className="bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">

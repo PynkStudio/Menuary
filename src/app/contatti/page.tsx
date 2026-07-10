@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
 import {
   BIZERY_MARKETING_DESCRIPTION,
@@ -18,7 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const h = await headers();
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
   const tenant = resolveTenantFromHost(h.get("host"));
-  if (mode !== "marketing" && mode !== "marketing-bizery" && tenant.id === "cascina-errante") {
+  if (!tenant && mode !== "marketing" && mode !== "marketing-bizery") {
+    return { title: "Pagina non trovata", robots: { index: false, follow: false } };
+  }
+  if (mode !== "marketing" && mode !== "marketing-bizery" && tenant?.id === "cascina-errante") {
     return {
       title: "Contatti & Prenotazioni",
       description:
@@ -52,6 +56,8 @@ export default async function ContattiPage() {
   if (mode === "marketing") return <MarketingContactsPage />;
   if (mode === "marketing-bizery") return <BizeryContattiPage />;
   const tenant = resolveTenantFromHost(h.get("host"));
+  if (!tenant) notFound();
   if (tenant.id === "cascina-errante") return <CascinaErranteContactsPage />;
+  if (tenant.id !== "bepork") notFound();
   return <BeporkContactsPage />;
 }

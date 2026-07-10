@@ -749,11 +749,11 @@ type CheckoutStatusPayload = {
 
 // Stati in cui l'ordine è ancora modificabile dal cliente (extra, ingredienti,
 // orario, annullo). Da "in_preparazione" in poi la cucina ci sta lavorando: stop.
-const MODIFIABLE_STATUSES = ["pending_confirmation", "nuovo"];
+const MODIFIABLE_STATUSES = ["pending_confirmation"];
 // Stati in cui si possono ancora AGGIUNGERE piatti: anche durante la preparazione,
 // ma non quando l'ordine è "pronto" (anche se la finestra a tempo è ancora aperta).
-const ADDABLE_STATUSES = ["pending_confirmation", "nuovo", "in_preparazione"];
-const DETAIL_EDITABLE_STATUSES = ["pending_confirmation", "nuovo", "in_preparazione", "pronto"];
+const ADDABLE_STATUSES = ["pending_confirmation"];
+const DETAIL_EDITABLE_STATUSES = ["pending_confirmation"];
 
 const ORDER_STATUS_COPY: Record<string, { label: string; description: string }> = {
   pending_confirmation: {

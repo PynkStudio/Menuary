@@ -26,6 +26,7 @@ const EXCLUDED_MODES = new Set([
   "preview-bizery",
   "preview-orpheo",
   "login",
+  "app",
   "gestione",
   "gestione-bizery",
   "gestione-custom",
@@ -49,6 +50,10 @@ function isPathPreview(pathname: string | null): boolean {
   return !!findTenantByPreviewSlug(slug);
 }
 
+function isPlatformAppPath(pathname: string | null): boolean {
+  return pathname === "/app" || Boolean(pathname?.startsWith("/app/"));
+}
+
 /**
  * Shell globale per i siti tenant: monta navbar, footer, drawer e overlay
  * in base ai moduli effettivamente attivi nel profilo del tenant.
@@ -70,6 +75,7 @@ export function SiteChrome() {
 
   if (
     isInternal(pathname) ||
+    isPlatformAppPath(pathname) ||
     EXCLUDED_MODES.has(mode as never) ||
     isPathPreview(pathname) ||
     !features ||
@@ -95,6 +101,7 @@ export function SiteFooterGate() {
 
   if (
     isInternal(pathname) ||
+    isPlatformAppPath(pathname) ||
     EXCLUDED_MODES.has(mode as never) ||
     isPathPreview(pathname) ||
     (tenant && OWN_SHELL_TENANTS.has(tenant.id))

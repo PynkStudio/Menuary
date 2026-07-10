@@ -11,7 +11,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
   const host = h.get("host");
   // Stesso calcolo origin di sitemap.ts: sui domini custom dei tenant serve l'host
-  // reale, non siteConfig.url (fallback demo BePork) altrimenti il robots.txt
+  // reale, non siteConfig.url, altrimenti il robots.txt
   // dichiara la sitemap di un altro tenant.
   const origin =
     mode === "marketing"
@@ -22,6 +22,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
           ? ORPHEO_ORIGIN
           : (() => {
               const tenant = resolveTenantFromHost(host);
+              if (!tenant) return MENUARY_ORIGIN;
               const tenantLocaleConfig = getTenantLocaleConfig(tenant.id);
               return tenantLocaleConfig && host
                 ? `${host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https"}://${host}`

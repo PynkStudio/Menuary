@@ -112,6 +112,27 @@ export default async function NotFound() {
     findTenantById(previewTenantId ?? "") ??
     findTenantByPreviewSlug(previewSlug) ??
     resolveTenantFromHost(host);
+  if (!tenant) {
+    return (
+      <section className="flex min-h-screen flex-col items-center justify-center bg-[#F5F0EA] px-5 py-32 text-center">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-black/40">
+          Menuary
+        </p>
+        <h1 className="mt-4 text-5xl font-bold tracking-tight sm:text-6xl">
+          Pagina non trovata
+        </h1>
+        <p className="mt-5 max-w-md text-black/60">
+          Questo dominio non è associato a nessun tenant attivo.
+        </p>
+        <Link
+          href="/"
+          className="mt-8 rounded-full bg-black px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-80"
+        >
+          Torna alla home
+        </Link>
+      </section>
+    );
+  }
   const cssVars = tenantThemeCssVars(tenant.theme);
   const copy = tenantNotFoundCopyByVertical[tenant.vertical];
   const tenantSurfaceClass = tenantSurfaceClassById[tenant.id];

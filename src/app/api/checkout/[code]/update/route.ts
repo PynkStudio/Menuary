@@ -17,8 +17,8 @@ type UpdateBody = {
   notes?: string | null;
 };
 
-const TIMED_BLOCKED = ["annullato", "in_preparazione", "pronto", "consegnato", "in_consegna", "expired"];
-const DETAIL_BLOCKED = ["in_consegna", "consegnato", "annullato", "expired"];
+const TIMED_BLOCKED = ["nuovo", "annullato", "in_preparazione", "pronto", "consegnato", "in_consegna", "expired"];
+const DETAIL_BLOCKED = ["nuovo", "in_consegna", "consegnato", "annullato", "expired"];
 
 // PATCH /api/checkout/[code]/update
 // pickupTime: finestra 5 min + status modifiable

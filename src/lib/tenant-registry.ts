@@ -2,17 +2,14 @@ import type { TenantProfile } from "./tenant";
 import type { TenantFeatureFlags } from "./tenant";
 import { allTenantFeatures } from "./tenant-modules";
 
-/** Tenant demo del verticale food (Menuary). Usato come fallback per host non riconosciuti sul verticale food. */
-export const DEFAULT_FOOD_TENANT_ID = "bepork";
+/** Tenant demo del verticale food (Menuary). Non usare per risolvere host non riconosciuti. */
+export const DEFAULT_FOOD_TENANT_ID = "junior-food";
 
 /** Tenant services usato come fallback tecnico per host Bizery non riconosciuti. */
 export const DEFAULT_SERVICES_TENANT_ID = "officinakam";
 
 /** Tenant creative usato come fallback tecnico per host Orpheo non riconosciuti. */
 export const DEFAULT_CREATIVE_TENANT_ID = "orpheo-demo";
-
-/** @deprecated Usa getDefaultTenantForVertical(). Mantenuto per compatibilità con import esistenti. */
-export const DEFAULT_TENANT_ID = DEFAULT_FOOD_TENANT_ID;
 
 /** ThePork: tenant demo food con tutti i moduli piattaforma attivi (nei limiti dell’implementazione). */
 export const BEPORK_FULL_MODULE_FLAGS: TenantFeatureFlags = {
@@ -757,7 +754,7 @@ export function findTenantsByVertical(vertical: TenantProfile["vertical"]): Tena
   return TENANTS.filter((tenant) => tenant.vertical === vertical);
 }
 
-/** Restituisce il tenant demo appropriato per il verticale. Usare sempre questo come fallback al posto di getDefaultTenant(). */
+/** Restituisce il tenant demo esplicito appropriato per il verticale. Non usarlo per host non riconosciuti. */
 export function getDefaultTenantForVertical(vertical: TenantProfile["vertical"]): TenantProfile {
   const id =
     vertical === "creative"
@@ -766,9 +763,4 @@ export function getDefaultTenantForVertical(vertical: TenantProfile["vertical"])
         ? DEFAULT_SERVICES_TENANT_ID
         : DEFAULT_FOOD_TENANT_ID;
   return findTenantById(id) ?? findTenantsByVertical(vertical)[0] ?? TENANTS[0];
-}
-
-/** @deprecated Usa getDefaultTenantForVertical(vertical). Questo restituisce sempre il default food. */
-export function getDefaultTenant(): TenantProfile {
-  return getDefaultTenantForVertical("food");
 }

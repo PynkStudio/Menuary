@@ -971,6 +971,7 @@ export async function middleware(request: NextRequest) {
     const match = pathname.match(/^\/([a-z0-9-]+)\/gestione(\/.*)?$/);
     if (match) {
       const tenant = findTenantById(match[1]) ?? resolveTenantFromPreviewSlug(match[1], host);
+      if (!tenant) return NextResponse.next();
       const rest = match[2] ?? "";
       const rewritten = request.nextUrl.clone();
       rewritten.pathname = `/gestione/${tenant.id}${rest}`;
@@ -983,6 +984,7 @@ export async function middleware(request: NextRequest) {
     const operationalMatch = pathname.match(/^\/([a-z0-9-]+)\/(ordini|cassa|kiosk)(\/.*)?$/);
     if (operationalMatch) {
       const tenant = findTenantById(operationalMatch[1]) ?? resolveTenantFromPreviewSlug(operationalMatch[1], host);
+      if (!tenant) return NextResponse.next();
       const section = operationalMatch[2];
       const rest = operationalMatch[3] ?? "";
       const rewritten = request.nextUrl.clone();
@@ -1004,6 +1006,11 @@ export async function middleware(request: NextRequest) {
 
   // ── Marketing Menuary (menuary.it) ────────────────────────────────────────
   if (mode === "marketing") {
+    if (pathname === "/app" || pathname.startsWith("/app/")) {
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set(PLATFORM_MODE_HEADER, "app");
+      return NextResponse.next({ request: { headers: requestHeaders } });
+    }
     if (isInternalPlatformPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
@@ -1104,6 +1111,13 @@ export async function middleware(request: NextRequest) {
   // Funziona sia in mode "tenant" che in qualsiasi altra mode per i domini
   // custom con location subdomain.
   const tenant = resolveTenantFromHost(host);
+  if (!tenant) {
+    const requestHeaders = new Headers(request.headers);
+    if (pathPreviewTenant) {
+      requestHeaders.set("x-preview-tenant-id", pathPreviewTenant.id);
+    }
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
   const tenantLocaleConfig = getTenantLocaleConfig(tenant.id);
   if (
     mode === "tenant" &&

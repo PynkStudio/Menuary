@@ -8,14 +8,13 @@ import {
   type DbOrderLine,
 } from "@/lib/api/orders";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
-import { evaluateAutoAccept, loadOrderSettings, resolveOrderNoticeMinutes, resolvePendingTimeoutSeconds } from "@/lib/orders/order-settings";
+import { loadOrderSettings } from "@/lib/orders/order-settings";
 import { dispatchComandaForOrder } from "@/lib/printing/dispatch";
 import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 import { checkOrderingWindow, type OrderChannel } from "@/lib/orders/ordering-window";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
 import { validateMenuItemsForOrderChannel } from "@/lib/menu-order-channels";
 import { COPERTO_ITEM_ID } from "@/lib/coperto";
-import { findTenantById } from "@/lib/tenant-registry";
 import { notifyOperationalNewOrder } from "@/lib/notifications/operational-order-push";
 import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 import type { CartLine, OrderDineOption } from "@/lib/types";
@@ -181,38 +180,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const itemsCount = lines.reduce((acc, l) => acc + l.qty, 0);
-  const hasNotes =
-    Boolean(rest.notes && rest.notes.trim().length > 0) ||
-    lines.some((l) => Boolean(l.note && l.note.trim().length > 0));
-  const isReturningCustomer = Boolean(identity?.registered) || Boolean(identity?.customerId);
-  const crmEnabled = Boolean(findTenantById(tenantId)?.features.crm);
-  const noticeMinutes = resolveOrderNoticeMinutes({
-    pickupTime: rest.pickupTime,
-    pickupDate: rest.pickupDate,
-    desiredTime: rest.desiredTime,
-  });
   const desiredTime = normalizeDesiredOrderTime({
     pickupTime: rest.pickupTime,
     pickupDate: rest.pickupDate,
     desiredTime: rest.desiredTime,
   });
 
-  const autoAccepted = evaluateAutoAccept(settings, {
-    total,
-    itemsCount,
-    hasNotes,
-    isReturningCustomer,
-    crmEnabled,
-    noticeMinutes,
-  });
-
-  const initialStatus = autoAccepted ? "nuovo" : "pending_confirmation";
-  const pendingTimeoutSeconds = resolvePendingTimeoutSeconds(settings.pendingTimeoutSeconds);
-  const confirmationExpiresAt = autoAccepted
-    ? null
-    : new Date(Date.now() + pendingTimeoutSeconds * 1000).toISOString();
-  const confirmedAt = autoAccepted ? new Date().toISOString() : null;
+  const autoAccepted = true;
+  const initialStatus = "nuovo";
+  const pendingTimeoutSeconds = 0;
+  const confirmationExpiresAt = null;
+  const confirmedAt = new Date().toISOString();
 
   // Inserisci ordine
   const { data: order, error: orderErr } = await supabase

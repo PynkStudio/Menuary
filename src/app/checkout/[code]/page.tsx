@@ -24,6 +24,7 @@ export default async function PublicCheckoutPage({
 
   const host = h.get("host");
   const tenant = resolveTenantFromHost(host);
+  if (!tenant) notFound();
 
   let order = await getPublicCheckoutOrder({
     tenantId: tenant.id,

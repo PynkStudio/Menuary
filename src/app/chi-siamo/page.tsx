@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
 import {
   BIZERY_ORIGIN,
@@ -33,6 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
   const tenant = resolveTenantFromHost(h.get("host"));
+  if (!tenant) return { title: "Pagina non trovata", robots: { index: false, follow: false } };
   if (tenant.id === "cascina-errante") {
     return {
       title: "Chi siamo",
@@ -52,6 +54,8 @@ export default async function ChiSiamoPage() {
   if (mode === "marketing") return <MarketingAboutPage />;
   if (mode === "marketing-bizery") return <BizeryAboutPage />;
   const tenant = resolveTenantFromHost(h.get("host"));
+  if (!tenant) notFound();
   if (tenant.id === "cascina-errante") return <CascinaErranteAboutPage />;
+  if (tenant.id !== "bepork") notFound();
   return <BeporkAboutPage />;
 }

@@ -12,11 +12,11 @@ export async function requirePynkstudioTenant() {
   const h = await headers();
   const tenant =
     findTenantById(h.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(h.get("host"));
-  if (tenant.id !== "pynkstudio") notFound();
+  if (!tenant || tenant.id !== "pynkstudio") notFound();
   return tenant;
 }
 
 export function isPynkstudioRequest(previewTenantId: string | null, host: string | null) {
   const tenant = findTenantById(previewTenantId ?? "") ?? resolveTenantFromHost(host);
-  return tenant.id === "pynkstudio";
+  return tenant?.id === "pynkstudio";
 }

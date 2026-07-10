@@ -121,7 +121,7 @@ function buildPaymentEmailHtml(
     preheader: `Procedi al pagamento — contratto ${numero}`,
     title: "Contratto firmato — procedi al pagamento",
     body: `<p>Grazie per aver firmato il contratto <strong>${numero}</strong>!</p>
-<p>Per completare l'attivazione del servizio, proceda al pagamento del primo importo complessivo di <strong>${formatEUR(firstPayment)}</strong>.</p>
+<p>Per completare l'attivazione del servizio, proceda al pagamento ${data.economiche.periodoProva ? `del deposito cauzionale per il periodo di prova di <strong>${formatEUR(firstPayment)}</strong>` : `del primo importo complessivo di <strong>${formatEUR(firstPayment)}</strong>`}.</p>
 <p style="font-size:13px;color:${brand.muted}">Il pagamento verrà elaborato automaticamente alla conferma.</p>`,
     cta: { label: "Procedi al pagamento", url: checkoutUrl },
   });

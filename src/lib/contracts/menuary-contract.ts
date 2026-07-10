@@ -110,6 +110,10 @@ export type ContractData = {
      * conversazionali (telefono/WhatsApp), in punti percentuali. Default 3.
      */
     commissioneOrdiniPct: number;
+    /** Quando true, il contratto parte con un mese di prova coperto da deposito cauzionale. */
+    periodoProva: boolean;
+    /** Deposito cauzionale richiesto per il mese di prova, non trattato come canone/setup ordinario. */
+    depositoCauzionale: number;
   };
   fornitore: {
     ragioneSociale: string;
@@ -176,6 +180,8 @@ export function freshContractData(brand: ContractBrand): ContractData {
       // TODO: impostare false quando il fornitore passerà al regime ordinario/SRL.
       esenzioneIva: true,
       commissioneOrdiniPct: DEFAULT_ORDER_COMMISSION_PCT,
+      periodoProva: false,
+      depositoCauzionale: DEFAULT_TRIAL_DEPOSIT,
     },
     fornitore: {
       ragioneSociale: FORNITORE.ragioneSociale,
@@ -206,6 +212,8 @@ export function normalizeContractData(data: ContractData): ContractData {
       esenzioneIva: data.economiche.esenzioneIva ?? true,
       commissioneOrdiniPct:
         data.economiche.commissioneOrdiniPct ?? DEFAULT_ORDER_COMMISSION_PCT,
+      periodoProva: data.economiche.periodoProva ?? false,
+      depositoCauzionale: data.economiche.depositoCauzionale ?? DEFAULT_TRIAL_DEPOSIT,
     },
     fornitore: {
       ragioneSociale: data.fornitore?.ragioneSociale ?? FORNITORE.ragioneSociale,
@@ -248,6 +256,7 @@ export function computeYearlyTotal(canoneMensile: number, scontoPct: number): nu
 export const MAX_SETUP_RATE = 6;
 /** Commissione forfait di default sugli ordini confermati gestiti dai moduli IA. */
 export const DEFAULT_ORDER_COMMISSION_PCT = 3;
+export const DEFAULT_TRIAL_DEPOSIT = 500;
 export const IVA_RATE = 0.22;
 export const RIVALSA_INPS_RATE = 0.04;
 export const MARCA_BOLLO = 2;
@@ -296,6 +305,9 @@ export function computeCanoneAmount(economiche: ContractData['economiche']): num
 }
 
 export function computeFirstPayment(economiche: ContractData['economiche']): number {
+  if (economiche.periodoProva) {
+    return round2(economiche.depositoCauzionale);
+  }
   const canone = computeCanoneAmount(economiche);
   const setupPortion = economiche.setupRateale && economiche.setupRate.length > 1
     ? economiche.setupRate[0]
@@ -320,6 +332,9 @@ export function computePaymentTotal(
 export function computeFirstPaymentTotal(
   economiche: ContractData["economiche"],
 ): number {
+  if (economiche.periodoProva) {
+    return round2(economiche.depositoCauzionale);
+  }
   return computePaymentTotal(computeFirstPayment(economiche), economiche);
 }
 
@@ -335,7 +350,7 @@ export function contractPaymentDescription(data: ContractData): string {
     data.cliente.ragioneSociale.trim() ||
     data.servizio.pianoNome.trim() ||
     "tenant";
-  return `contratto ${data.numero} - ${tenantName}`;
+  return `${data.economiche.periodoProva ? "deposito prova" : "contratto"} ${data.numero} - ${tenantName}`;
 }
 
 export function paymentMethodLabel(m: PaymentMethod): string {

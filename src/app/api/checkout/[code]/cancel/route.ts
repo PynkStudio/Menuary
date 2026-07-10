@@ -36,7 +36,7 @@ export async function POST(
     return NextResponse.json({ error: "already_paid" }, { status: 409 });
   }
   // L'ordine non deve essere già annullato, accettato/in lavorazione o scaduto.
-  const blockedStatuses = ["annullato", "in_preparazione", "pronto", "consegnato", "expired"];
+  const blockedStatuses = ["nuovo", "annullato", "in_preparazione", "pronto", "consegnato", "expired"];
   if (blockedStatuses.includes(order.status)) {
     return NextResponse.json({ error: `already_${order.status}` }, { status: 409 });
   }

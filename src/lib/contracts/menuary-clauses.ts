@@ -38,6 +38,10 @@ export function hasUpsellingIa(data: ContractData): boolean {
   return getIaModules(data).upselling;
 }
 
+export function hasTrialPeriod(data: ContractData): boolean {
+  return Boolean(data.economiche.periodoProva);
+}
+
 /**
  * Ordine degli articoli numerati. Le clausole IA compaiono solo quando il
  * relativo modulo è attivo; di conseguenza la numerazione è dinamica e ogni
@@ -47,11 +51,9 @@ function numberedClauseOrder(data: ContractData): string[] {
   const ids = [
     "oggetto",
     "durata",
-    "corrispettivi",
-    "sospensione",
-    "upgrade",
-    "supporto",
   ];
+  if (hasTrialPeriod(data)) ids.push("periodo-prova");
+  ids.push("corrispettivi", "sospensione", "upgrade", "supporto");
   if (hasConversationalIa(data)) ids.push("moduli-ia");
   if (hasUpsellingIa(data)) ids.push("moduli-ia-upselling");
   ids.push(
@@ -96,6 +98,14 @@ export function buildClauses(data: ContractData): ClauseBlock[] {
     economiche.canoneMensile,
     economiche.scontoAnnuale,
   );
+  const ordinaryFirstPayment = economiche.setup + (annuale ? totaleAnnuale : economiche.canoneMensile);
+  const ordinaryFirstPaymentTotal = economiche.esenzioneIva
+    ? (ordinaryFirstPayment + 2) * 1.04
+    : ordinaryFirstPayment * 1.22;
+  const trialConfirmationBalance = Math.max(
+    0,
+    ordinaryFirstPaymentTotal - economiche.depositoCauzionale,
+  );
 
   const order = numberedClauseOrder(data);
   const n = (id: string) => order.indexOf(id) + 1;
@@ -135,9 +145,19 @@ Alla scadenza, il Contratto si rinnova tacitamente per ulteriori periodi di 12 (
 
 Il recesso non dà diritto ad alcun rimborso, totale o parziale, dei canoni e dei corrispettivi già versati, fatto salvo quanto eventualmente previsto da norme inderogabili di legge.`,
     },
+    "periodo-prova": {
+      title: "Periodo di prova e deposito cauzionale",
+      body: `Le Parti convengono che l'attivazione iniziale del servizio avvenga con un periodo di prova della durata di 1 (un) mese a decorrere dalla data di attivazione tecnica del servizio. Per accedere al periodo di prova, il Cliente versa al Fornitore un deposito cauzionale pari a ${formatEUR(economiche.depositoCauzionale)}, infruttifero e non produttivo di interessi.
+
+Durante il periodo di prova restano applicabili le condizioni tecniche, gli obblighi del Cliente, le limitazioni di responsabilità e, se presenti, le condizioni relative ai Moduli IA. Eventuali funzioni a consumo o costi variabili maturati durante la prova, inclusi a titolo esemplificativo chiamate telefoniche, messaggi, utilizzo di provider IA, trascrizioni, traffico o altri costi vivi imputabili all'utilizzo del servizio, restano a carico del Cliente.
+
+Alla scadenza del periodo di prova, qualora il Cliente confermi la prosecuzione del servizio, il Contratto prosegue secondo la durata e il rinnovo di cui all'art. ${n("durata")}. Il deposito cauzionale già versato viene imputato al primo pagamento dovuto e il Cliente salda la differenza residua rispetto all'importo ordinario di attivazione e primo canone, pari a ${formatEUR(ordinaryFirstPaymentTotal)}. Alla data di sottoscrizione, tale differenza è pari a ${formatEUR(trialConfirmationBalance)}, oltre agli eventuali costi a consumo maturati e non ancora fatturati.
+
+Qualora il Cliente comunichi per iscritto di non voler procedere oltre il periodo di prova, il Contratto cessa alla fine del mese di prova senza rinnovo. In tal caso il Fornitore restituisce il deposito cauzionale detraendo: (i) il canone mensile del mese di prova, pari a ${formatEUR(economiche.canoneMensile)} ${taxClauseSuffix(economiche)}; (ii) gli eventuali costi a consumo o costi vivi maturati durante la prova, incluse le funzioni IA a consumo e le chiamate, se presenti; (iii) eventuali importi rimasti insoluti. Se le somme dovute superano il deposito versato, il Cliente resta obbligato a corrispondere la differenza.`,
+    },
     corrispettivi: {
       title: "Corrispettivi e modalità di pagamento",
-      body: `Il Cliente si obbliga a corrispondere al Fornitore:
+      body: `${economiche.periodoProva ? `Per il periodo di prova si applica il deposito cauzionale disciplinato all'art. ${n("periodo-prova")}. In caso di conferma del servizio, il deposito sarà imputato al primo pagamento e il Cliente salderà la differenza residua secondo le modalità indicate nel medesimo articolo.\n\n` : ""}Il Cliente si obbliga a corrispondere al Fornitore:
   a) Una quota una tantum di attivazione (setup) pari a ${formatEUR(economiche.setup)} ${taxClauseSuffix(economiche)}${
     economiche.setupRateale && economiche.setupRate.length > 1
       ? `, suddivisa in ${economiche.setupRate.length} (${numberToItalian(economiche.setupRate.length)}) rate mensili consecutive secondo il piano riportato di seguito:\n${economiche.setupRate
@@ -336,6 +356,11 @@ export function buildVessatorieRif(data: ContractData): string[] {
     `${n("sospensione")} (sospensione per morosità)`,
     `${n("upgrade")} (divieto di downgrade in corso di contratto)`,
   ];
+  if (hasTrialPeriod(data)) {
+    rif.push(
+      `${n("periodo-prova")} (periodo di prova: deposito cauzionale, imputazione, trattenute e costi a consumo)`,
+    );
+  }
   if (hasConversationalIa(data)) {
     rif.push(
       `${n("moduli-ia")} (moduli IA: commissione sugli ordini, esclusioni di responsabilità e facoltà di sospensione)`,

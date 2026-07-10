@@ -256,7 +256,9 @@ function buildContractEmailHtml(
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-size:13px;line-height:1.8;">
           <tr><td style="padding:2px 0;color:#6b7280;width:120px;">Piano</td><td style="padding:2px 0;font-weight:600;">${data.servizio.pianoNome}</td></tr>
           <tr><td style="padding:2px 0;color:#6b7280;">Setup</td><td style="padding:2px 0;">${formatEUR(data.economiche.setup)} ${sTax}${data.economiche.setupRateale && data.economiche.setupRate.length > 1 ? ` (rateizzato in ${data.economiche.setupRate.length} mensilità)` : ""}</td></tr>
+          ${data.economiche.periodoProva ? `<tr><td style="padding:2px 0;color:#6b7280;">Periodo prova</td><td style="padding:2px 0;">1 mese con deposito cauzionale di ${formatEUR(data.economiche.depositoCauzionale)}</td></tr>` : ""}
           <tr><td style="padding:2px 0;color:#6b7280;">Canone</td><td style="padding:2px 0;">${canone}</td></tr>
+          <tr><td style="padding:2px 0;color:#6b7280;">Primo pagamento</td><td style="padding:2px 0;">${formatEUR(firstPayment)}${data.economiche.periodoProva ? " deposito cauzionale" : ""}</td></tr>
           <tr><td style="padding:2px 0;color:#6b7280;">Pagamento</td><td style="padding:2px 0;">${paymentMethodLabel(data.economiche.metodoPagamento)}</td></tr>
           <tr><td style="padding:2px 0;color:#6b7280;">Durata</td><td style="padding:2px 0;">12 mesi con rinnovo tacito</td></tr>
         </table>
