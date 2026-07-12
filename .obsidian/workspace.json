@@ -74,8 +74,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "064c9a3b2d2ca21f",
@@ -179,6 +178,7 @@
   },
   "active": "fc7beeb89cbc0bda",
   "lastOpenFiles": [
+    "Senza nome.md",
     "public/valentina-orciuoli/sfondo-valentina.webp",
     "public/valentina-orciuoli/hero-valentina-cosmos.png",
     "tsconfig.tsbuildinfo",

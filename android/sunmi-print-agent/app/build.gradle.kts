@@ -18,6 +18,15 @@ android {
     namespace = "it.menuary.sunmiprintagent"
     compileSdk = 35
 
+    signingConfigs {
+        create("localRelease") {
+            storeFile = rootProject.file("menuary-local-release.keystore")
+            storePassword = "menuarylocal"
+            keyAlias = "menuaryprintagent"
+            keyPassword = "menuarylocal"
+        }
+    }
+
     buildFeatures {
         aidl = true
         buildConfig = true
@@ -26,12 +35,23 @@ android {
     defaultConfig {
         applicationId = "it.menuary.sunmiprintagent"
         minSdk = 23
-        targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        targetSdk = 28
+        versionCode = 2
+        versionName = "0.1.1"
 
         buildConfigField("String", "MENUARY_API_BASE", "\"${prop("MENUARY_API_BASE")}\"")
         buildConfigField("String", "SUPABASE_URL", "\"${prop("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${prop("SUPABASE_ANON_KEY")}\"")
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("localRelease")
+            isMinifyEnabled = false
+        }
+    }
+
+    lint {
+        disable += "ExpiredTargetSdkVersion"
     }
 }
