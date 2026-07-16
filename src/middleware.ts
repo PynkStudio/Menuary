@@ -275,6 +275,40 @@ function isInternalPlatformPath(pathname: string): boolean {
   );
 }
 
+function canonicalInternalPlatformRedirect(
+  request: NextRequest,
+  mode: PlatformMode,
+): NextResponse | null {
+  const { pathname, search } = request.nextUrl;
+
+  if (
+    pathname.startsWith("/admin-pynkstudio") &&
+    mode !== "admin-pynkstudio"
+  ) {
+    return NextResponse.redirect(new URL(`https://admin.pynkstudio.it${pathname}${search}`));
+  }
+
+  if (pathname.startsWith("/admin") && mode !== "platform-admin") {
+    return NextResponse.redirect(new URL(`https://admin.menuary.it${pathname}${search}`));
+  }
+
+  if (pathname.startsWith("/support") && mode !== "support") {
+    return NextResponse.redirect(new URL(`https://support.menuary.it${pathname}${search}`));
+  }
+
+  if (
+    pathname.startsWith("/gestione") &&
+    mode !== "gestione" &&
+    mode !== "gestione-bizery" &&
+    mode !== "gestione-custom"
+  ) {
+    const publicGestionePath = pathname.replace(/^\/gestione/, "") || "/";
+    return NextResponse.redirect(new URL(`https://gestione.menuary.it${publicGestionePath}${search}`));
+  }
+
+  return null;
+}
+
 function allowStaticAssets(pathname: string) {
   if (pathname.startsWith("/_next")) return true;
   if (pathname.startsWith("/api")) return true;
@@ -675,6 +709,9 @@ export async function middleware(request: NextRequest) {
   const pathPreviewTenant = pathPreviewSlug ? findTenantByPreviewSlug(pathPreviewSlug) : undefined;
 
   if (allowStaticAssets(pathname)) return NextResponse.next();
+
+  const internalPlatformRedirect = canonicalInternalPlatformRedirect(request, mode);
+  if (internalPlatformRedirect) return internalPlatformRedirect;
 
   const demoPreviewSlug = getDemoPreviewSlug(mode, pathname);
   if (demoPreviewSlug) {
