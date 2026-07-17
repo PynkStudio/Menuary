@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { Users, Store, ShieldCheck, ArrowRight } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getUserPortalAccess, type PortalKey, type PortalEntry } from "@/lib/user-access";
+import type { PortalKey, PortalEntry } from "@/lib/user-access";
+import { portalEntriesForAccess, resolveUserAccessForUserId } from "@/lib/user-access-server";
 
 const ICONS: Record<PortalKey, React.ElementType> = {
   clienti: Users,
@@ -56,7 +57,8 @@ export default async function PortaliPage() {
 
   if (!user) redirect("/");
 
-  const portals = await getUserPortalAccess(supabase);
+  const access = await resolveUserAccessForUserId(user.id);
+  const portals = portalEntriesForAccess(access);
 
   if (portals.length === 0) {
     return (
@@ -72,7 +74,7 @@ export default async function PortaliPage() {
   }
 
   if (portals.length === 1) {
-    redirect(portals[0].href);
+    redirect(portalHref(portals[0]));
   }
 
   return (

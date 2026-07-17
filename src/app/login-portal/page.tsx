@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { parseFrom, parseNext, tenantSlugFromFrom, resolveDestination } from "@/lib/login-url";
-import { resolveUserAccess } from "@/lib/user-access";
+import { resolveUserAccessForUserId } from "@/lib/user-access-server";
 import { TENANTS } from "@/lib/tenant-registry";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { LoginPortalForm } from "@/components/login-portal/login-portal-form";
@@ -30,7 +30,7 @@ export default async function LoginPortalPage({
     if (user) {
       if (from) {
         // Aveva un from: prova a mandarlo alla destinazione corretta
-        const access = await resolveUserAccess(supabase, user.id);
+        const access = await resolveUserAccessForUserId(user.id);
         const destination = resolveDestination({
           from,
           next,

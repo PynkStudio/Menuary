@@ -3,7 +3,7 @@ import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
 import { PasskeySettingsPanel } from "@/components/shared/passkey-settings-panel";
 import { buildLoginUrl, parseFrom, parseNext, resolveDestination } from "@/lib/login-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { resolveUserAccess } from "@/lib/user-access";
+import { resolveUserAccessForUserId } from "@/lib/user-access-server";
 
 export default async function LoginPortalPasskeysPage({
   searchParams,
@@ -23,7 +23,7 @@ export default async function LoginPortalPasskeysPage({
     redirect(buildLoginUrl({ from }));
   }
 
-  const access = await resolveUserAccess(supabase, user.id);
+  const access = await resolveUserAccessForUserId(user.id);
   const returnHref = resolveDestination({
     from,
     next,

@@ -163,10 +163,10 @@ export function resolveDestination(options: {
 }): string {
   const { from, next, isSiteadmin, tenantId } = options;
 
-  if (from === "admin" && isSiteadmin) return `https://admin.menuary.it${next ?? ""}`;
+  if (from === "admin" && isSiteadmin) return `https://admin.menuary.it${next ?? "/admin"}`;
   if (from === "admin-pynkstudio" && isSiteadmin) return `https://admin.pynkstudio.it${next ?? ""}`;
   if (from === "studio") {
-    if (isSiteadmin) return "https://admin.menuary.it";
+    if (isSiteadmin) return "https://admin.menuary.it/admin";
     if (tenantId)    return `https://gestione.menuary.it/${tenantId}/fatturazione${next ?? ""}`;
   }
   if (from === "clienti") return `https://clienti.menuary.it${next ?? ""}`;
@@ -194,7 +194,7 @@ export function resolveDestination(options: {
   }
 
   // Fallback per ruolo
-  if (isSiteadmin) return "https://admin.menuary.it";
+  if (isSiteadmin) return "https://admin.menuary.it/admin";
   if (tenantId)    return `https://gestione.menuary.it/${tenantId}`;
   return "https://clienti.menuary.it";
 }

@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { parseFrom, parseNext, resolveDestination } from "@/lib/login-url";
-import { resolveUserAccess } from "@/lib/user-access";
+import type { UserAccess } from "@/lib/user-access";
 import { LoginPortalTheme } from "@/components/login-portal/login-portal-theme";
 
 const INVALID_INVITE_MESSAGE =
@@ -63,7 +63,7 @@ export default function ConfirmPage() {
           window.location.href = `/set-password?mode=recovery${from ? `&from=${from}` : ""}`;
           return;
         }
-        await redirectToDestination(supabase, data.user.id, from, next);
+        await redirectToDestination(from, next);
         return;
       }
 
@@ -84,7 +84,7 @@ export default function ConfirmPage() {
           window.location.href = `/set-password?mode=recovery${from ? `&from=${from}` : ""}`;
           return;
         }
-        await redirectToDestination(supabase, data.user.id, from, next);
+        await redirectToDestination(from, next);
         return;
       }
 
@@ -98,7 +98,7 @@ export default function ConfirmPage() {
           window.location.href = `/set-password?mode=recovery${from ? `&from=${from}` : ""}`;
           return;
         }
-        await redirectToDestination(supabase, data.user.id, from, next);
+        await redirectToDestination(from, next);
         return;
       }
 
@@ -135,13 +135,18 @@ export default function ConfirmPage() {
   );
 }
 
+async function fetchCurrentAccess(): Promise<UserAccess> {
+  const res = await fetch("/api/auth/access", { cache: "no-store" });
+  if (!res.ok) throw new Error("access_check_failed");
+  const json = await res.json() as { access: UserAccess };
+  return json.access;
+}
+
 async function redirectToDestination(
-  supabase: ReturnType<typeof createSupabaseBrowserClient>,
-  userId: string,
   from: ReturnType<typeof parseFrom>,
   next: string | null,
 ) {
-  const access = await resolveUserAccess(supabase, userId);
+  const access = await fetchCurrentAccess();
   const destination = resolveDestination({
     from,
     next,

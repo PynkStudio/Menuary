@@ -5,12 +5,12 @@ import { cookies } from "next/headers";
 const ALLOWED_DEST = /^https:\/\/[a-z0-9-]+\.(menuary\.it|pynkstudio\.it|pynkstudio\.com|pynkstudio\.eu)(\/.*)?$/;
 
 function safeDestination(raw: string | null): string {
-  if (!raw) return "https://admin.menuary.it";
+  if (!raw) return "https://admin.menuary.it/admin";
   try {
     const dest = decodeURIComponent(raw);
     if (ALLOWED_DEST.test(dest)) return dest;
   } catch {}
-  return "https://admin.menuary.it";
+  return "https://admin.menuary.it/admin";
 }
 
 function cookieDomain(request: Request): string | undefined {

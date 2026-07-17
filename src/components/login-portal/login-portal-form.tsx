@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient, purgeSupabaseAuthCookies } from "@/lib/supabase/client";
 import { resolveDestination, type LoginFrom } from "@/lib/login-url";
-import { resolveUserAccess } from "@/lib/user-access";
+import type { UserAccess } from "@/lib/user-access";
 import { notifyParentAndClose } from "@/lib/login-popup";
 import { useSearchParams } from "next/navigation";
 import { TENANTS } from "@/lib/tenant-registry";
@@ -41,6 +41,13 @@ function portalAccessError(from: LoginFrom | null) {
     return "Accesso riuscito, ma questo account non è abilitato a questo gestionale. Verifica di usare l'email invitata per il locale corretto.";
   }
   return null;
+}
+
+async function fetchCurrentAccess(): Promise<UserAccess> {
+  const res = await fetch("/api/auth/access", { cache: "no-store" });
+  if (!res.ok) throw new Error("access_check_failed");
+  const json = await res.json() as { access: UserAccess };
+  return json.access;
 }
 
 interface Props {
@@ -116,7 +123,7 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
         return;
       }
 
-      const access = await resolveUserAccess(supabase, data.user.id);
+      const access = await fetchCurrentAccess();
       const accessError = portalAccessError(from);
       const isWrongPortal =
         (from === "admin" && !access.isSiteadmin) ||
@@ -181,7 +188,7 @@ export function LoginPortalForm({ from, next, popup, error: initialError }: Prop
         return;
       }
 
-      const access = await resolveUserAccess(supabase, data.user.id);
+      const access = await fetchCurrentAccess();
       const accessError = portalAccessError(from);
       const isWrongPortal =
         (from === "admin" && !access.isSiteadmin) ||

@@ -655,6 +655,8 @@ async function getSessionUserAndSiteadminRole(
     );
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { user: null, role: null };
+    const serviceRole = await getSiteadminRoleWithService(user.id);
+    if (serviceRole) return { user, role: serviceRole };
     const { data: siteadmin } = await supabase
       .from("siteadmin")
       .select("role")
@@ -665,6 +667,33 @@ async function getSessionUserAndSiteadminRole(
     return { user, role };
   } catch {
     return { user: null, role: null };
+  }
+}
+
+async function getSiteadminRoleWithService(userId: string): Promise<SiteadminRole | null> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return null;
+
+  try {
+    const url = new URL("/rest/v1/siteadmin", supabaseUrl);
+    url.searchParams.set("select", "role");
+    url.searchParams.set("user_id", `eq.${userId}`);
+    url.searchParams.set("enabled", "eq.true");
+    url.searchParams.set("limit", "1");
+    const response = await fetch(url, {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const rows = await response.json() as Array<{ role?: string | null }>;
+    const role = rows[0]?.role;
+    return isSiteadminRole(role) ? role : null;
+  } catch {
+    return null;
   }
 }
 
@@ -867,9 +896,6 @@ export async function middleware(request: NextRequest) {
       }
       if (!role) {
         return NextResponse.redirect(new URL("/admin/login", request.url));
-      }
-      if ((effectivePath.replace(/\/+$/, "") || "/admin") === "/admin") {
-        return NextResponse.redirect(new URL(getDefaultAdminPath(role), request.url));
       }
       if (!canAccessAdminPath(role, effectivePath)) {
         return NextResponse.redirect(new URL(getDefaultAdminPath(role), request.url));

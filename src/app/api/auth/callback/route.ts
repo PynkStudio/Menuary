@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { parseFrom, parseNext, resolveDestination } from "@/lib/login-url";
-import { resolveUserAccess } from "@/lib/user-access";
+import { resolveUserAccessForUserId } from "@/lib/user-access-server";
 
 /**
  * Callback centralizzato per tutti i link email di Supabase.
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
       }
 
       // Signup confirm o magiclink: vai alla destinazione finale
-      const access = await resolveUserAccess(supabase, data.user.id);
+      const access = await resolveUserAccessForUserId(data.user.id);
       const destination = resolveDestination({
         from,
         next,
@@ -92,7 +92,7 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
 
     if (!error && data.user) {
-      const access = await resolveUserAccess(supabase, data.user.id);
+      const access = await resolveUserAccessForUserId(data.user.id);
       const destination = resolveDestination({
         from,
         next,
