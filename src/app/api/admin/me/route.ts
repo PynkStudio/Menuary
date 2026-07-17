@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isSiteadminRole } from "@/lib/admin-permissions";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 
 export async function GET() {
   const supabase = await createSupabaseServerClient();
@@ -10,8 +10,12 @@ export async function GET() {
     return NextResponse.json({ error: "Non autenticato." }, { status: 401 });
   }
 
-  const admin = createSupabaseAdminClient();
-  const { data: siteadmin, error } = await admin
+  const service = createSupabaseServiceClient();
+  if (!service) {
+    return NextResponse.json({ error: "Supabase service role non configurata." }, { status: 503 });
+  }
+
+  const { data: siteadmin, error } = await service
     .from("siteadmin")
     .select("id, role, email, display_name")
     .eq("user_id", user.id)

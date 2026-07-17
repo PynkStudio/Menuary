@@ -3,17 +3,27 @@ import "server-only";
 import type { EmployeeRole, SiteadminRole } from "@/lib/store-roles";
 import { TENANTS } from "@/lib/tenant-registry";
 import { buildTenantDemoManagementUrl, buildTenantManagementUrl } from "@/lib/login-url";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { PortalEntry, UserAccess } from "@/lib/user-access";
 
+export const EMPTY_USER_ACCESS: UserAccess = {
+  isSiteadmin: false,
+  siteadminRole: null,
+  tenantId: null,
+  employeeRole: null,
+  isCustomer: false,
+};
+
 export async function resolveUserAccessForUserId(userId: string): Promise<UserAccess> {
-  const admin = createSupabaseAdminClient();
+  const service = createSupabaseServiceClient();
+  if (!service) return EMPTY_USER_ACCESS;
+
   const [{ data: sa }, { data: ta }, { data: emp }, { data: cust }] = await Promise.all([
-    admin.from("siteadmin").select("role").eq("user_id", userId).eq("enabled", true).maybeSingle(),
-    admin.from("tenantadmin").select("tenant_id").eq("user_id", userId).eq("enabled", true).maybeSingle(),
-    admin.from("employee").select("tenant_id,role").eq("user_id", userId).eq("enabled", true).maybeSingle(),
-    admin.from("clients").select("user_id").eq("user_id", userId).maybeSingle(),
+    service.from("siteadmin").select("role").eq("user_id", userId).eq("enabled", true).maybeSingle(),
+    service.from("tenantadmin").select("tenant_id").eq("user_id", userId).eq("enabled", true).maybeSingle(),
+    service.from("employee").select("tenant_id,role").eq("user_id", userId).eq("enabled", true).maybeSingle(),
+    service.from("clients").select("user_id").eq("user_id", userId).maybeSingle(),
   ]);
 
   return {
