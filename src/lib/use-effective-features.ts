@@ -1,20 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTenant } from "@/components/core/tenant-provider";
+import { useTenantOrNull } from "@/components/core/tenant-provider";
 import {
   getLocalModuleEnabled,
   isModuleSuspensionActive,
   useSettingsStore,
 } from "@/store/settings-store";
-import type { TenantFeatureKey } from "@/lib/tenant";
+import type { TenantFeatureFlags, TenantFeatureKey } from "@/lib/tenant";
 import {
   resolveTenantFeatures,
   TENANT_MODULES,
 } from "@/lib/tenant-modules";
 
+const EMPTY_FEATURES = Object.fromEntries(
+  TENANT_MODULES.map((module) => [module.key, false]),
+) as TenantFeatureFlags;
+
 export function useEffectiveFeatures() {
-  const tenant = useTenant();
+  const tenant = useTenantOrNull();
   const allowTakeaway = useSettingsStore((state) => state.allowTakeaway);
   const allowTableOrders = useSettingsStore((state) => state.allowTableOrders);
   const kitchenDisplayEnabled = useSettingsStore(
@@ -56,21 +60,22 @@ export function useEffectiveFeatures() {
     ]),
   ) as Record<TenantFeatureKey, boolean>;
 
+  const baseFeatures = tenant?.features ?? EMPTY_FEATURES;
   const resolvedLocalFeatures = resolveTenantFeatures({
-    ...tenant.features,
+    ...baseFeatures,
     ...localFeatures,
   });
-  const resolvedTenantFeatures = resolveTenantFeatures(tenant.features);
+  const resolvedTenantFeatures = resolveTenantFeatures(baseFeatures);
 
   const enabled = (module: TenantFeatureKey) =>
     Boolean(
-      tenant.enabled &&
+      tenant?.enabled &&
         resolvedTenantFeatures[module] &&
         resolvedLocalFeatures[module],
     );
 
   return {
-    tenantEnabled: tenant.enabled,
+    tenantEnabled: Boolean(tenant?.enabled),
     modules: Object.fromEntries(
       TENANT_MODULES.map((module) => [module.key, enabled(module.key)]),
     ) as Record<TenantFeatureKey, boolean>,

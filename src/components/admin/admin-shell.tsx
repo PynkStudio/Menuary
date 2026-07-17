@@ -38,7 +38,7 @@ import { AdminPushNotifications } from "@/components/admin/platform/admin-push-n
 import { hasAdminPermission, type AdminPermission, type SiteadminRole } from "@/lib/admin-permissions";
 import { cn } from "@/lib/utils";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
-import { useTenant } from "@/components/core/tenant-provider";
+import { useTenantOrNull } from "@/components/core/tenant-provider";
 import { usePlatformMode } from "@/components/core/platform-mode-provider";
 
 type NavFlags = {
@@ -133,7 +133,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [invoiceTasks, setInvoiceTasks] = useState(0);
   const mode = usePlatformMode();
 
-  const tenant = useTenant();
+  const tenant = useTenantOrNull();
   const {
     allowTakeaway,
     allowTableOrders,
@@ -467,7 +467,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             href={adminEntryHref}
             className="headline text-2xl text-pork-mustard"
           >
-            {`${tenant.name} · gestione`}
+            {`${tenant?.name ?? "Gestione"} · gestione`}
           </Link>
           <button
             className="lg:hidden"
