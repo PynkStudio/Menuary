@@ -878,15 +878,14 @@ export async function middleware(request: NextRequest) {
       ? pathname
       : "/admin" + (pathname === "/" ? "" : pathname);
 
+    if (!pathname.startsWith("/admin")) {
+      const canonical = request.nextUrl.clone();
+      canonical.pathname = effectivePath;
+      return NextResponse.redirect(canonical, 307);
+    }
+
     if (!ADMIN_PUBLIC.has(effectivePath)) {
-      let response: NextResponse;
-      if (!pathname.startsWith("/admin")) {
-        const rewritten = request.nextUrl.clone();
-        rewritten.pathname = effectivePath;
-        response = NextResponse.rewrite(rewritten);
-      } else {
-        response = NextResponse.next({ request });
-      }
+      const response = NextResponse.next({ request });
       const { user, role } = await getSessionUserAndSiteadminRole(request, response, cookieDomain);
       if (!user) {
         const next = pathname.replace(/^\/admin/, "") || "/";
@@ -903,11 +902,6 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
-    if (!pathname.startsWith("/admin")) {
-      const rewritten = request.nextUrl.clone();
-      rewritten.pathname = effectivePath;
-      return NextResponse.rewrite(rewritten);
-    }
     return NextResponse.next();
   }
 
