@@ -10,6 +10,7 @@ import { PolicySectionsView } from "@/components/legal/policy-sections-view";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { useTenantOrNull } from "@/components/core/tenant-provider";
 import { getTenantContent } from "@/lib/tenant-content";
+import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 
 export function DynamicPolicyDocument({
   variant,
@@ -24,6 +25,7 @@ export function DynamicPolicyDocument({
     aiPhoneEnabled,
     aiWhatsappEnabled,
     upsellingEnabled,
+    modules,
   } = useEffectiveFeatures();
   const tenant = useTenantOrNull();
   const content = tenant ? getTenantContent(tenant.id) : null;
@@ -39,6 +41,10 @@ export function DynamicPolicyDocument({
     [content, tenant?.name],
   );
 
+  // Il sito ricorda la lingua solo se ne pubblica più di una: senza, quella riga
+  // dell'informativa descriverebbe un cookie che nessuno scrive.
+  const localeCookie = (getTenantLocaleConfig(tenant?.id ?? "")?.locales.length ?? 0) > 1;
+
   const flags: PolicyModuleFlags = useMemo(
     () => ({
       allowTakeaway,
@@ -48,6 +54,8 @@ export function DynamicPolicyDocument({
       aiPhoneEnabled,
       aiWhatsappEnabled,
       upsellingEnabled,
+      modules,
+      localeCookie,
     }),
     [
       allowTakeaway,
@@ -57,6 +65,8 @@ export function DynamicPolicyDocument({
       aiPhoneEnabled,
       aiWhatsappEnabled,
       upsellingEnabled,
+      localeCookie,
+      modules,
     ],
   );
 

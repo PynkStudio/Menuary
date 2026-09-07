@@ -124,6 +124,31 @@ Separata e indipendente dal modulo rider è la **presenza operativa**: la tabell
 
 Da `ARCHITECTURE.md`: i moduli dichiarano dipendenze (`requires`, `requiresAny`); un modulo è effettivo solo se anche le sue dipendenze sono abilitate. Le combinazioni esatte sono **da leggere** in `tenant-modules.ts`.
 
+## I moduli attivi compongono le note legali
+
+Privacy e cookie policy non sono un testo fisso: `src/lib/legal/policies.ts` le costruisce
+dai moduli davvero accesi per il tenant, che `DynamicPolicyDocument` gli passa leggendo
+`useEffectiveFeatures()`. Accendere o spegnere un modulo dal pannello cambia l'informativa
+senza toccare il codice.
+
+| Modulo acceso | Cosa aggiunge al documento |
+|---|---|
+| `favorites` (+ `onlineMenu`) | preferiti e contenuti del menu salvati sul dispositivo |
+| `takeaway` / `tableOrders` / `shop` | carrello e sessioni d'ordine |
+| `reservations` / `creativeBooking` | dati della richiesta di prenotazione o appuntamento |
+| `fanbaseCommunity` / `crm` | sezione «Newsletter»: consenso, doppio opt-in, revoca |
+| `blog` | sezione «Commenti agli articoli» e moderazione |
+| `analytics` | sezione «Statistiche di visita», aggregate e senza cookie |
+| `kitchenDisplay` | monitor di cucina |
+| `aiPhone` / `aiWhatsapp` | assistente conversazionale |
+| `upselling` | suggerimenti automatici |
+
+Il tenant multilingua aggiunge inoltre la riga sulla lingua ricordata sul dispositivo.
+
+**Quando aggiungi un modulo che raccoglie o memorizza qualcosa, aggiungi anche il suo copy
+in `policies.ts`**: senza, l'informativa del tenant descrive un sito diverso da quello che
+sta accompagnando. Vedi [[adr-0010-informativa-per-moduli-attivi]].
+
 ## Come documentare una singola feature
 
 Per ogni feature da approfondire crea un file usando [[feature-template]] e collega il modulo corrispondente.

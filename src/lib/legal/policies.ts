@@ -1,4 +1,5 @@
 import { siteConfig } from "@/lib/site-config";
+import type { TenantFeatureKey } from "@/lib/tenant";
 import type { SiteSettingsState } from "@/store/settings-store";
 
 export type PolicyModuleFlags = Pick<
@@ -11,7 +12,44 @@ export type PolicyModuleFlags = Pick<
   aiWhatsappEnabled?: boolean;
   /** IA di suggerimento/upselling attiva. */
   upsellingEnabled?: boolean;
+  /**
+   * I moduli davvero accesi sul sito del tenant.
+   *
+   * L'informativa nasceva HORECA: parlava di menu, preferiti e carrello a
+   * chiunque, anche a un sito d'autrice che non ha nessuna delle tre cose — e
+   * un'informativa che descrive trattamenti inesistenti è sbagliata quanto una
+   * che ne omette. Quando questa mappa c'è, ogni sezione compare solo se il
+   * modulo che la genera è attivo. Quando manca, il documento si comporta come
+   * prima: serve ai chiamanti che non conoscono i moduli del tenant.
+   */
+  modules?: Partial<Record<TenantFeatureKey, boolean>>;
+  /** Il sito pubblica più lingue e ricorda quella scelta sul dispositivo. */
+  localeCookie?: boolean;
 };
+
+/**
+ * Un modulo è attivo se la mappa lo dice. Senza mappa vale il comportamento
+ * storico, che è quello di un sito HORECA completo.
+ */
+function hasModule(f: PolicyModuleFlags, key: TenantFeatureKey, fallback: boolean) {
+  return f.modules ? Boolean(f.modules[key]) : fallback;
+}
+
+const hasMenu = (f: PolicyModuleFlags) => hasModule(f, "onlineMenu", true);
+const hasFavorites = (f: PolicyModuleFlags) => hasModule(f, "favorites", true);
+const hasShop = (f: PolicyModuleFlags) => hasModule(f, "shop", false);
+const hasBookings = (f: PolicyModuleFlags) =>
+  hasModule(f, "reservations", false) || hasModule(f, "creativeBooking", false);
+const hasNewsletter = (f: PolicyModuleFlags) =>
+  hasModule(f, "fanbaseCommunity", false) || hasModule(f, "crm", false);
+const hasBlog = (f: PolicyModuleFlags) => hasModule(f, "blog", false);
+const hasAnalytics = (f: PolicyModuleFlags) => hasModule(f, "analytics", false);
+
+/** "a, b e c" — l'elenco in riga di una informativa, non un elenco puntato. */
+function inline(items: string[]) {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} e ${items[items.length - 1]}`;
+}
 
 export type PolicySection = {
   id: string;
@@ -129,7 +167,20 @@ export function buildPrivacySections(
       ],
       bullets: [
         "dati tecnici minimi della navigazione sul sito e identificatori di sessione tramite tecnologie sul dispositivo (cookie o spazio locale del browser), necessari al funzionamento delle pagine;",
-        "preferiti salvati sul dispositivo per agevolare la consultazione del menu;",
+        ...(f.localeCookie
+          ? ["la lingua scelta per il sito, ricordata sul dispositivo per le visite successive;"]
+          : []),
+        "dati che ci invii spontaneamente tramite il modulo di contatto o gli indirizzi pubblicati: nome, recapito e contenuto del messaggio, trattati per rispondere alla tua richiesta;",
+        ...(hasFavorites(f)
+          ? [
+              hasMenu(f)
+                ? "preferiti salvati sul dispositivo per agevolare la consultazione del menu;"
+                : "preferiti salvati sul dispositivo per ritrovare i contenuti che hai messo da parte;",
+            ]
+          : []),
+        ...(hasBookings(f)
+          ? ["dati della richiesta di prenotazione o di appuntamento: nome, recapito, data e ora richieste ed eventuali note;"]
+          : []),
         ...orderBullets,
       ],
     },
@@ -174,6 +225,39 @@ export function buildPrivacySections(
     });
   }
 
+  // Ogni modulo che raccoglie qualcosa porta la sua sezione, prima dei diritti.
+  if (hasNewsletter(f)) {
+    sections.splice(sections.length - 1, 0, {
+      id: "newsletter",
+      title: "Newsletter",
+      body: [
+        "Se lasci il tuo indirizzo e-mail per ricevere la newsletter, il trattamento si basa sul tuo consenso, che presti spuntando la casella dedicata prima dell’invio.",
+        "L’iscrizione si perfeziona solo dopo che hai confermato l’indirizzo dal link che ti inviamo: fino ad allora l’e-mail resta in attesa e non riceve comunicazioni.",
+        "Puoi revocare il consenso in qualsiasi momento, dal link di disiscrizione presente in ogni messaggio o scrivendo ai recapiti del titolare. La revoca non pregiudica la liceità del trattamento svolto prima.",
+      ],
+    });
+  }
+  if (hasBlog(f)) {
+    sections.splice(sections.length - 1, 0, {
+      id: "commenti",
+      title: "Commenti agli articoli",
+      body: [
+        "Se lasci un commento sotto un articolo trattiamo il nome che scegli di indicare e il testo del commento, per pubblicarlo e moderarlo.",
+        "I commenti sono soggetti a moderazione prima della pubblicazione e restano visibili finché l’articolo resta online. Puoi chiederne la rimozione ai recapiti del titolare.",
+      ],
+    });
+  }
+  if (hasAnalytics(f)) {
+    sections.splice(sections.length - 1, 0, {
+      id: "statistiche",
+      title: "Statistiche di visita",
+      body: [
+        "Raccogliamo statistiche aggregate sulle pagine visitate per capire quali contenuti risultano utili. La misurazione non usa cookie di profilazione e non ricostruisce l’identità dei singoli visitatori.",
+        "La base giuridica è il legittimo interesse a mantenere e migliorare il sito.",
+      ],
+    });
+  }
+
   // Le sezioni IA precedono sempre i "Diritti degli interessati" (ultimo blocco).
   if (hasConversationalAi(f)) {
     sections.splice(sections.length - 1, 0, conversationalAiBlock(f));
@@ -194,9 +278,24 @@ export function buildPrivacySections(
 
 export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
   const techLines: string[] = [
-    "preferiti e contenuti parziali del menu memorizzati localmente sul dispositivo;",
-    "stato tecnico delle impostazioni pubbliche del sito (orari personalizzati dal titolare, quando applicabile);",
+    hasMenu(f)
+      ? "stato tecnico delle impostazioni pubbliche del sito (orari personalizzati dal titolare, quando applicabile);"
+      : "stato tecnico delle impostazioni pubbliche del sito;",
   ];
+
+  if (hasFavorites(f)) {
+    techLines.unshift(
+      hasMenu(f)
+        ? "preferiti e contenuti parziali del menu memorizzati localmente sul dispositivo;"
+        : "preferiti memorizzati localmente sul dispositivo;",
+    );
+  }
+  if (f.localeCookie) {
+    techLines.push("la lingua scelta per il sito;");
+  }
+  if (hasShop(f) && !hasAnyOrdering(f)) {
+    techLines.push("carrello e contenuti in attesa di acquisto;");
+  }
 
   if (hasAnyOrdering(f)) {
     techLines.push(
@@ -211,6 +310,12 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
       );
     }
   }
+
+  /** Che cosa si perde davvero svuotando i dati del sito. */
+  const removable: string[] = [];
+  if (hasAnyOrdering(f) || hasShop(f)) removable.push("il carrello e le sessioni di ordine");
+  if (hasFavorites(f)) removable.push("i preferiti");
+  if (f.localeCookie) removable.push("la lingua scelta");
 
   const sections: PolicySection[] = [
     {
@@ -233,16 +338,16 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
       id: "functional",
       title: "Funzionalità e misure di sicurezza locali",
       body: [
-        hasAnyOrdering(f)
-          ? "Senza queste tecnologie non è possibile completare il flusso di ordinazione sul dispositivo (carrello, invio ordine al locale)."
-          : "Queste tecnologie consentono di ricordare preferenze essenziali, preferiti e impostazioni necessarie alla corretta visualizzazione del sito.",
+        hasAnyOrdering(f) || hasShop(f)
+          ? "Senza queste tecnologie non è possibile completare il flusso di acquisto sul dispositivo (carrello, invio dell’ordine)."
+          : "Queste tecnologie consentono di ricordare le preferenze essenziali e le impostazioni necessarie alla corretta visualizzazione del sito.",
       ],
     },
     {
       id: "third",
       title: "Servizi di terze parti collegati",
       body: [
-        "Il sito può contenere link a WhatsApp, Instagram, Facebook e mappe esterne: aprendo tali link o incorporamenti potresti essere soggetto ai cookie e alle policy dei rispettivi fornitori.",
+        "Il sito può contenere link o contenuti incorporati di terze parti — social network, store esterni, mappe, video: aprendoli potresti essere soggetto ai cookie e alle policy dei rispettivi fornitori.",
         ...(hasConversationalAi(f)
           ? [
               `Se interagisci con l’assistente automatico ${
@@ -254,7 +359,9 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
               }, la conversazione è gestita tramite servizi di terzi (telefonia, messaggistica WhatsApp/Meta e fornitori di intelligenza artificiale) secondo le rispettive policy; il dettaglio del trattamento è descritto nell’informativa privacy.`,
             ]
           : []),
-        "Non utilizziamo pixel di remarketing né strumenti di analytics di terze parti di default nel codice pubblicato di questo progetto.",
+        hasAnalytics(f)
+          ? "Le statistiche di visita sono raccolte in forma aggregata e senza cookie di profilazione. Non utilizziamo pixel di remarketing."
+          : "Non utilizziamo pixel di remarketing né strumenti di analytics di terze parti.",
       ],
     },
     {
@@ -262,7 +369,9 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
       title: "Come gestire preferenze e revoche",
       body: [
         "Dal browser puoi cancellare cookie e dati dei siti in qualsiasi momento (Impostazioni → Privacy → Cookie / Dati siti).",
-        "La cancellazione può rimuovere carrello, preferiti e sessioni di ordine salvate sul dispositivo.",
+        removable.length > 0
+          ? `La cancellazione può rimuovere ${inline(removable)} che il sito ha salvato sul dispositivo.`
+          : "La cancellazione riporta il sito allo stato di una prima visita: non c’è nulla di personale salvato sul dispositivo che vada perso.",
       ],
     },
   ];
