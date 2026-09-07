@@ -20,6 +20,8 @@ import {
   instagramHref,
   tiktokHref,
   valentinaEmail,
+  valentinaUpcomingVolume,
+  valentinaWorkSection,
   type ValentinaCreativeWork,
 } from "@/components/tenants/valentina-orciuoli/content";
 import { DynamicPolicyDocument } from "@/components/legal/dynamic-policy-document";
@@ -84,11 +86,11 @@ function VoBlogSearchFace({ ctx }: { ctx: VoBookContext }) {
 
   return (
     <div className="vo-face vo-face-intro vo-face-notebook">
-      <span className="vo-face-kicker">I taccuini e le lettere</span>
+      <span className="vo-face-kicker">I taccuini di bordo</span>
       <h2>Dal taccuino</h2>
       <p className="vo-face-lead">
-        Gli appunti presi a margine della scrittura: i simboli, le domande rimaste
-        aperte, il mestiere di raccontare.
+        Gli appunti presi a margine della scrittura, le analisi sui simboli del mondo
+        moderno e le riflessioni aperte sul mestiere di raccontare.
       </p>
 
       <label className="vo-notebook-search">
@@ -180,8 +182,7 @@ function VoBlogListFace({ ctx }: { ctx: VoBookContext }) {
 /** Il testo della dedica, riga per riga: è la penna a deciderne il ritmo. */
 const VO_DEDICATION = [
   "Avvicinati e prendi posto.",
-  "Le storie migliori non iniziano mai per caso: cominciano quando qualcuno ha il coraggio di sedersi, fare silenzio e ascoltare ciò che si agita sottopelle.",
-  "Se hai aperto queste pagine, sei nel posto giusto.",
+  "Le storie migliori non iniziano mai per caso: cominciano quando qualcuno ha il coraggio di sedersi, fare silenzio e ascoltare ciò che si agita sottopelle. Se hai aperto queste pagine, sei nel posto giusto.",
 ];
 
 /**
@@ -333,69 +334,110 @@ function photoHand(slug: string, ordinal: number) {
   };
 }
 
-/** La scheda di un'opera: copertina a sinistra, testo e acquisto a destra. */
-function renderWorkFace(
-  work: ValentinaCreativeWork,
-  side: VoFaceSide,
-  ordinal: number,
-  ctx: VoBookContext,
-) {
-  if (side === "left") {
-    const hand = photoHand(work.slug, ordinal);
+/** La copertina di un'opera, incollata sulla carta come una foto. */
+function VoWorkPhoto({
+  work,
+  ordinal,
+  caption,
+}: {
+  work: ValentinaCreativeWork;
+  ordinal: number;
+  caption: string;
+}) {
+  const hand = photoHand(work.slug, ordinal);
+  if (!work.coverImageUrl) {
     return (
-      <div className="vo-face vo-face-work-cover">
-        {work.coverImageUrl ? (
-          <figure
-            className="vo-photo"
-            data-diagonal={hand.diagonal}
-            style={hand.style}
-          >
-            <span className="vo-photo-tape vo-photo-tape-a" aria-hidden="true" />
-            <span className="vo-photo-tape vo-photo-tape-b" aria-hidden="true" />
-            <span className="vo-photo-print">
-              <img src={work.coverImageUrl} alt={`Copertina di ${work.title}`} />
-              <span className="vo-photo-gloss" aria-hidden="true" />
-            </span>
-            <figcaption>{ROMAN[ordinal] ?? work.title}</figcaption>
-          </figure>
-        ) : (
-          <div className="vo-face-cover-placeholder" aria-hidden="true">
-            龍
-          </div>
-        )}
+      <div className="vo-face-cover-placeholder" aria-hidden="true">
+        龍
       </div>
     );
   }
+  return (
+    <figure className="vo-photo" data-diagonal={hand.diagonal} style={hand.style}>
+      <span className="vo-photo-tape vo-photo-tape-a" aria-hidden="true" />
+      <span className="vo-photo-tape vo-photo-tape-b" aria-hidden="true" />
+      <span className="vo-photo-print">
+        <img src={work.coverImageUrl} alt={`Copertina di ${work.title}`} />
+        <span className="vo-photo-gloss" aria-hidden="true" />
+      </span>
+      <figcaption>{caption}</figcaption>
+    </figure>
+  );
+}
+
+/**
+ * I due pulsanti di un volume pubblicato.
+ *
+ * L'indirizzo lo decide la gestione — è l'unico dato che cambia quando cambia il
+ * negozio — mentre le due etichette sono quelle approvate con l'autrice: leggere
+ * la trama e comprare il libro sono due intenzioni diverse, anche quando portano
+ * alla stessa scheda.
+ */
+function VoWorkCtas({ work, ctx }: { work: ValentinaCreativeWork; ctx: VoBookContext }) {
+  if (!work.ctaHref) return null;
+  const buy = work.secondaryCtaHref ?? work.ctaHref;
+  const external = (href: string) => href.startsWith("http");
+  return (
+    <div className="vo-face-ctas">
+      <a
+        className="vo-face-cta"
+        href={ctx.internalHref(work.ctaHref)}
+        target={external(work.ctaHref) ? "_blank" : undefined}
+        rel={external(work.ctaHref) ? "noopener noreferrer" : undefined}
+      >
+        {work.ctaLabel || "Leggi la trama"} <ArrowRight size={15} />
+      </a>
+      <a
+        className="vo-face-cta vo-face-cta-secondary"
+        href={ctx.internalHref(buy)}
+        target={external(buy) ? "_blank" : undefined}
+        rel={external(buy) ? "noopener noreferrer" : undefined}
+      >
+        {work.secondaryCtaLabel ?? "Porta a casa il libro"} <ArrowRight size={15} />
+      </a>
+    </div>
+  );
+}
+
+/**
+ * I volumi della trilogia, tutti sulla stessa facciata.
+ *
+ * L'ultimo non è ancora un libro: non ha una riga in gestione, quindi non ha né
+ * copertina né link, e si annuncia soltanto. Toglierlo lascerebbe una trilogia di
+ * due volumi, che è la cosa che non si può fare.
+ */
+function VoTrilogyFace({ ctx }: { ctx: VoBookContext }) {
+  const volumes = ctx.works.filter(
+    (work) => work.enabled && valentinaWorkSection(work.slug) === "trilogia",
+  );
 
   return (
-    <div className="vo-face vo-face-work">
-      <span className="vo-face-kicker">The Emotion Dragons</span>
-      <h2>{work.title}</h2>
-      <span className="vo-face-rule" aria-hidden="true" />
-      {work.description ? <p className="vo-face-lead">{work.description}</p> : null}
-      {work.secondaryText ? <p>{work.secondaryText}</p> : null}
-      {work.ctaHref ? (
-        <div className="vo-face-ctas">
-          <a
-            className="vo-face-cta"
-            href={ctx.internalHref(work.ctaHref)}
-            target={work.ctaHref.startsWith("http") ? "_blank" : undefined}
-            rel={work.ctaHref.startsWith("http") ? "noopener noreferrer" : undefined}
-          >
-            {work.ctaLabel} <ArrowRight size={15} />
-          </a>
-          {work.secondaryCtaHref ? (
-            <a
-              className="vo-face-cta vo-face-cta-secondary"
-              href={ctx.internalHref(work.secondaryCtaHref)}
-              target={work.secondaryCtaHref.startsWith("http") ? "_blank" : undefined}
-              rel={work.secondaryCtaHref.startsWith("http") ? "noopener noreferrer" : undefined}
-            >
-              {work.secondaryCtaLabel} <ArrowRight size={15} />
-            </a>
-          ) : null}
-        </div>
-      ) : null}
+    <div className="vo-face vo-face-volumes">
+      <span className="vo-face-kicker">I volumi</span>
+      <ol>
+        {volumes.map((work, index) => (
+          <li key={work.id}>
+            <span className="vo-volume-numeral" aria-hidden="true">
+              {ROMAN[index] ?? index + 1}
+            </span>
+            <div className="vo-volume-copy">
+              <h3>{work.title}</h3>
+              {work.description ? <p>{work.description}</p> : null}
+              <VoWorkCtas work={work} ctx={ctx} />
+            </div>
+          </li>
+        ))}
+        <li data-upcoming="true">
+          <span className="vo-volume-numeral" aria-hidden="true">
+            {ROMAN[volumes.length] ?? volumes.length + 1}
+          </span>
+          <div className="vo-volume-copy">
+            <h3>{valentinaUpcomingVolume.title}</h3>
+            <p>{valentinaUpcomingVolume.description}</p>
+            <span className="vo-volume-state">{valentinaUpcomingVolume.state}</span>
+          </div>
+        </li>
+      </ol>
     </div>
   );
 }
@@ -408,7 +450,50 @@ function renderWorkFace(
  * È anche l'unica pagina del volume in cui il contenuto può eccedere il foglio e
  * scorrere — un'informativa non si può accorciare per farla stare in pagina.
  */
-export function renderVoAppendixFace(entry: VoAppendix, side: VoFaceSide): ReactNode {
+export function renderVoAppendixFace(
+  entry: VoAppendix,
+  side: VoFaceSide,
+  ctx: VoBookContext,
+): ReactNode {
+  // L'errata non è una nota legale: è la pagina che non c'è. Sta nell'appendice
+  // perché è l'unico posto del volume fuori dalla sequenza sfogliabile, ma parla
+  // con la voce del libro invece che con quella del server.
+  if (entry.id === "errata") {
+    if (side === "left") {
+      return (
+        <div className="vo-face vo-face-intro">
+          <span className="vo-face-kicker">Errata corrige</span>
+          <h2>Questa pagina non è mai stata stampata.</h2>
+          <span className="vo-face-rule" aria-hidden="true" />
+          <p className="vo-face-lead">
+            Sarà rimasta fra le bozze, oppure l&apos;indirizzo che ti ha portato fin qui è
+            cambiato lungo la strada.
+          </p>
+          <span className="vo-face-glyph vo-face-glyph-watermark" aria-hidden="true">
+            龍
+          </span>
+        </div>
+      );
+    }
+    return (
+      <div className="vo-face vo-face-errata">
+        <span className="vo-face-kicker">Da dove riprendere</span>
+        <p>
+          Il resto del volume è al suo posto. Torna al frontespizio e ricomincia da capo,
+          oppure apri l&apos;indice e scegli tu da che pagina ripartire.
+        </p>
+        <div className="vo-face-ctas">
+          <VoInternalLink ctx={ctx} to="home" className="vo-face-cta">
+            Torna al frontespizio <ArrowRight size={15} />
+          </VoInternalLink>
+          <VoInternalLink ctx={ctx} to="libri" className="vo-face-cta vo-face-cta-secondary">
+            L&apos;indice dei libri <ArrowRight size={15} />
+          </VoInternalLink>
+        </div>
+      </div>
+    );
+  }
+
   if (side === "left") {
     return (
       <div className="vo-face vo-face-intro">
@@ -435,13 +520,6 @@ export function renderVoAppendixFace(entry: VoAppendix, side: VoFaceSide): React
 }
 
 export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookContext): ReactNode {
-  if (spread.kind === "work") {
-    // Il contenuto vivo arriva dalla gestione; la struttura delle pagine no.
-    const index = ctx.works.findIndex((entry) => entry.slug === spread.id);
-    const work = index === -1 ? undefined : ctx.works[index];
-    return work ? renderWorkFace(work, side, index, ctx) : null;
-  }
-
   const key = `${spread.id as VoStaticSpreadId}-${side}`;
   switch (key) {
     // ── Frontespizio ─────────────────────────────────────────────────────────
@@ -458,28 +536,25 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
         </div>
       );
     case "home-right":
+      // Nessun richiamo qui: l'invito a cominciare sta sulla pagina accanto, e
+      // ripeterlo a un centimetro di distanza lo indeboliva invece di rafforzarlo.
       return (
         <div className="vo-face vo-face-title">
           <span className="vo-face-kicker">Sito ufficiale dell&apos;autrice</span>
           <h1 className="vo-face-name">valentina orciuoli</h1>
           <span className="vo-face-rule" aria-hidden="true" />
           <div className="vo-face-announce">
-            <h2>C&apos;era una volta il bisogno antico di dare un senso al mondo attraverso il racconto.</h2>
+            <h2>
+              C&apos;era una volta il bisogno antico di dare un senso al mondo attraverso il
+              racconto.
+            </h2>
             <p>
               Mi chiamo Valentina Orciuoli e credo che le storie non servano solo a fuggire
-              dalla realta, ma a capirla davvero. Nei miei libri ogni simbolo, ogni figura e
-              ogni ombra sono metafore della nostra societa e dell&apos;intricato universo delle
-              emozioni umane. Scrivo per trasformare cio che non riusciamo a spiegare a voce
-              in viaggi indimenticabili.
+              dalla realtà, ma a capirla davvero. Nei miei libri ogni simbolo, ogni figura e
+              ogni ombra sono metafore della nostra società e dell&apos;intricato universo
+              delle emozioni umane. Scrivo per trasformare ciò che non riusciamo a spiegare a
+              voce in viaggi indimenticabili.
             </p>
-            <div className="vo-face-ctas">
-              <VoInternalLink ctx={ctx} to="libri" className="vo-face-cta">
-                La narrazione comincia adesso <ArrowRight size={15} />
-              </VoInternalLink>
-              <VoInternalLink ctx={ctx} to="libri" className="vo-face-cta-secondary">
-                Continua a sfogliare
-              </VoInternalLink>
-            </div>
           </div>
         </div>
       );
@@ -494,60 +569,107 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
     case "libri-left":
       return (
         <div className="vo-face vo-face-intro">
-          <span className="vo-face-kicker">The Emotion Dragons Trilogy</span>
+          <span className="vo-face-kicker">Indice</span>
           <h2>I libri</h2>
-          <p className="vo-face-lead">Cosa accadrebbe se le nostre emozioni diventassero dei poteri?</p>
-          <p>
-            In questa saga fantastica, i dragoni non sono nemici da abbattere, ma simboli
-            viventi di ci&ograve; che proviamo. Ogni volume della trilogia racconta un&apos;emozione
-            diversa: Anxiety, Fury e, in arrivo, Il Terzo Canto.
-          </p>
+          <span className="vo-face-rule" aria-hidden="true" />
           <span className="vo-face-glyph vo-face-glyph-watermark" aria-hidden="true">
             龍
           </span>
         </div>
       );
     case "libri-right":
+      // Due voci, non una per titolo: l'indice nomina le collane, e i volumi
+      // stanno nella pagina della collana a cui appartengono.
       return (
         <div className="vo-face vo-face-index">
-          <span className="vo-face-kicker">Indice</span>
+          <span className="vo-face-kicker">Sommario</span>
           <ol>
-            {ctx.works
-              .filter((work) => work.enabled)
-              .map((work) =>
-                ctx.hasPage(work.slug) ? (
-                  <li key={work.id}>
-                    <VoInternalLink ctx={ctx} to={work.slug}>
-                      <span className="vo-index-title">{work.title}</span>
-                      <span className="vo-index-dots" aria-hidden="true" />
-                      <span className="vo-index-folio">{ctx.folioFor(work.slug)}</span>
-                    </VoInternalLink>
-                  </li>
-                ) : (
-                  // Nessuna pagina nel volume: si manda dove il libro si compra.
-                  <li key={work.id}>
-                    <a
-                      href={ctx.internalHref(work.ctaHref)}
-                      target={work.ctaHref.startsWith("http") ? "_blank" : undefined}
-                      rel={work.ctaHref.startsWith("http") ? "noopener noreferrer" : undefined}
-                    >
-                      <span className="vo-index-title">{work.title}</span>
-                      <span className="vo-index-dots" aria-hidden="true" />
-                      <span className="vo-index-folio">→</span>
-                    </a>
-                  </li>
-                ),
-              )}
+            <li>
+              <VoInternalLink ctx={ctx} to="trilogia">
+                <span className="vo-index-title">The Emotion Dragons Trilogy</span>
+                <span className="vo-index-dots" aria-hidden="true" />
+                <span className="vo-index-folio">{ctx.folioFor("trilogia")}</span>
+              </VoInternalLink>
+            </li>
+            <li>
+              <VoInternalLink ctx={ctx} to="thriller">
+                <span className="vo-index-title">Thriller psicologico</span>
+                <span className="vo-index-dots" aria-hidden="true" />
+                <span className="vo-index-folio">{ctx.folioFor("thriller")}</span>
+              </VoInternalLink>
+            </li>
           </ol>
         </div>
       );
+
+    // ── La trilogia ──────────────────────────────────────────────────────────
+    case "trilogia-left":
+      return (
+        <div className="vo-face vo-face-intro">
+          <span className="vo-face-kicker">The Emotion Dragons Trilogy</span>
+          <h2>Cosa accadrebbe se le nostre emozioni diventassero dei poteri?</h2>
+          <span className="vo-face-rule" aria-hidden="true" />
+          <p className="vo-face-lead">
+            In questa saga fantastica, i dragoni non sono nemici da abbattere, ma simboli
+            viventi di ciò che proviamo.
+          </p>
+          <span className="vo-face-glyph vo-face-glyph-watermark" aria-hidden="true">
+            龍
+          </span>
+        </div>
+      );
+    case "trilogia-right":
+      return <VoTrilogyFace ctx={ctx} />;
+
+    // ── Il thriller ──────────────────────────────────────────────────────────
+    case "thriller-left": {
+      const work = ctx.works.find(
+        (entry) => entry.enabled && valentinaWorkSection(entry.slug) === "thriller",
+      );
+      return (
+        <div className="vo-face vo-face-work-cover">
+          {work ? <VoWorkPhoto work={work} ordinal={0} caption="In arrivo" /> : null}
+        </div>
+      );
+    }
+    case "thriller-right": {
+      const work = ctx.works.find(
+        (entry) => entry.enabled && valentinaWorkSection(entry.slug) === "thriller",
+      );
+      if (!work) return null;
+      const external = work.ctaHref.startsWith("http");
+      return (
+        <div className="vo-face vo-face-work">
+          {/* La collana giusta: questo libro non appartiene alla saga dei dragoni,
+              e dirlo qui è metà del suo posizionamento. */}
+          <span className="vo-face-kicker">Thriller psicologico · in arrivo</span>
+          <h2>{work.title}</h2>
+          <span className="vo-face-rule" aria-hidden="true" />
+          {work.description ? <p className="vo-face-lead">{work.description}</p> : null}
+          {work.secondaryText ? <p>{work.secondaryText}</p> : null}
+          {work.ctaHref ? (
+            <div className="vo-face-ctas">
+              <a
+                className="vo-face-cta"
+                href={ctx.internalHref(work.ctaHref)}
+                target={external ? "_blank" : undefined}
+                rel={external ? "noopener noreferrer" : undefined}
+              >
+                {work.ctaLabel} <ArrowRight size={15} />
+              </a>
+            </div>
+          ) : null}
+        </div>
+      );
+    }
 
     // ── Calendario ───────────────────────────────────────────────────────────
     case "eventi-left":
       return (
         <div className="vo-face vo-face-intro">
           <span className="vo-face-kicker">Calendario</span>
-          <h2>Eventi</h2>
+          <h2>Eventi, fiere &amp; presentazioni</h2>
+          <span className="vo-face-rule" aria-hidden="true" />
           <p className="vo-face-lead">
             Una storia prende respiro solo quando incontra lo sguardo di chi la legge.
           </p>
@@ -561,8 +683,9 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
             <h3>Nuove date in arrivo</h3>
             <p>
               Lungo il cammino lascio la scrivania per raggiungere librerie, fiere e festival
-              letterari. E in questi momenti dal vivo che ci confrontiamo, decifriamo insieme
-              i simboli nascosti tra le righe e diamo un volto a chi condivide questa passione.
+              letterari. È in questi momenti dal vivo che ci confrontiamo, decifriamo insieme
+              i simboli nascosti tra le righe e diamo un volto a chi condivide questa
+              passione.
             </p>
           </article>
         </div>

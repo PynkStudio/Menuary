@@ -31,8 +31,12 @@ export const voBookMemory = {
   back: false,
   /** true se la camera è sulla scrivania invece che sul volume. */
   desk: false,
-  /** Preferenza audio. */
-  sound: true,
+  /**
+   * true dopo che la cedola della newsletter è stata infilata fra le pagine.
+   * L'inserimento è un gesto d'apertura: rigiocarlo a ogni giro di pagina lo
+   * trasformerebbe in un elemento che lampeggia.
+   */
+  bookmarkSlipped: false,
   /**
    * La dedica si scrive una volta sola per sessione di lettura. Tornare sul
    * frontespizio sfogliando non deve far ricominciare la penna da capo: sarebbe

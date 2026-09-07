@@ -42,6 +42,8 @@ import {
 import {
   appendixByPathname,
   appendixHref,
+  isBookPathname,
+  voErrata,
   articleHref as voArticleHref,
   articleSlugFromPathname,
   backCoverHref,
@@ -53,6 +55,7 @@ import {
   voAppendix,
   voBackCover,
   voSpreads,
+  type VoAppendix,
   type VoSpread,
 } from "@/components/tenants/valentina-orciuoli/book/book-map";
 import {
@@ -140,10 +143,17 @@ function VoBookLink({
 export function ValentinaOrciuoliBookSite({
   initialSpread,
   initialNotes,
+  notFound = false,
 }: {
   initialSpread: number;
   /** Gli appunti già letti dal server, quando la route li conosce. */
   initialNotes?: VoNote[];
+  /**
+   * La route richiesta non esiste. Il volume si apre sull'errata invece di
+   * lasciare il posto a una schermata di sistema: un indirizzo sbagliato resta
+   * dentro il libro, e da lì si riprende la lettura.
+   */
+  notFound?: boolean;
 }) {
   const pathname = usePathname();
   // Prefisso host (preview vs dominio custom) e lingua: entrambi si leggono
@@ -157,7 +167,11 @@ export function ValentinaOrciuoliBookSite({
   const gestioneHref = getTenantGestioneExternalHref("valentina-orciuoli");
 
   const showsBackCover = isBackCoverPathname(pathname);
-  const appendix = appendixByPathname(pathname);
+  // L'errata vale finché l'URL non torna a nominare una pagina vera: appena si
+  // riprende la lettura, la posizione virtuale in fondo al volume deve sparire,
+  // o il libro continuerebbe a ripescarla.
+  const appendix =
+    notFound && !isBookPathname(pathname) ? voErrata : appendixByPathname(pathname);
   // Il singolo appunto non è una pagina del volume: è un foglio sulla scrivania.
   const articleSlug = articleSlugFromPathname(pathname);
   // Gli appunti arrivano dal server quando la route li conosce già, così stanno
@@ -237,16 +251,18 @@ export function ValentinaOrciuoliBookSite({
   }, [onDesk, pan]);
 
   const [insertOpen, setInsertOpen] = useState(false);
+  /**
+   * Una volta infilata, la cedola resta. Prima spariva appena il volume si
+   * chiudeva o si rigirava sulla quarta — e un segnalibro che si smaterializza
+   * quando chiudi il libro è l'unica cosa che un segnalibro non fa.
+   */
+  const [bookmarked, setBookmarked] = useState(() => !entry.ceremony);
+  useEffect(() => {
+    if (opened) setBookmarked(true);
+  }, [opened]);
   // Il modo lo decide lo shell, ma il flag serve alla radice: da lì il foglio di
   // stile veste testatina, comandi e piede oltre al libro.
   const [compact, setCompact] = useState(false);
-
-  const [soundEnabled, setSoundEnabled] = useState(
-    () => !voBookMemoryAvailable || voBookMemory.sound,
-  );
-  useEffect(() => {
-    voBookMemory.sound = soundEnabled;
-  }, [soundEnabled]);
 
   // Si segna *quando il libro si apre davvero*, non al montaggio: un flag scritto
   // al montaggio verrebbe consumato dal doppio montaggio di StrictMode e la
@@ -426,7 +442,14 @@ export function ValentinaOrciuoliBookSite({
     };
   }, []);
 
-  const currentSpread = spreadIndexByPathname(pathname);
+  // `spreadIndexByPathname` ripiega sul frontespizio per ogni URL che non sia
+  // una pagina sfogliabile: la quarta di copertina e l'appendice finivano così
+  // per accendere anche "Home" nel menu. Qui la sezione corrente può non
+  // esistere, ed è esattamente quello che serve alla testatina.
+  const currentSpreadId =
+    showsBackCover || appendix || onDesk
+      ? null
+      : (voSpreads[spreadIndexByPathname(pathname)]?.id ?? null);
 
   // Il segnalibro ricorda dov'eri: sulla quarta di copertina serve a rientrare
   // esattamente alla pagina che si stava leggendo.
@@ -507,6 +530,13 @@ export function ValentinaOrciuoliBookSite({
     [ctx],
   );
 
+  // L'errata ha due richiami che sfogliano: come le facciate del volume, anche
+  // l'appendice ha bisogno del contesto per farlo.
+  const renderAppendix = useCallback(
+    (entry: VoAppendix, side: "left" | "right") => renderVoAppendixFace(entry, side, ctx),
+    [ctx],
+  );
+
   // Sulla quarta il libro è chiuso e nessuno dei due gestori della rotella è
   // attivo. Senza questo, chi naviga scorrendo ci resterebbe intrappolato.
   // Il ref segue la pagina da riprendere: il gestore della rotella vive in un
@@ -567,7 +597,7 @@ export function ValentinaOrciuoliBookSite({
                 key={entry.id}
                 data-vo-nav={entry.id}
                 href={spreadHref(entry, route)}
-                aria-current={currentSpread === spreadIndexById(entry.id) ? "page" : undefined}
+                aria-current={currentSpreadId === entry.id ? "page" : undefined}
               >
                 {entry.navLabel}
               </VoBookLink>
@@ -613,16 +643,20 @@ export function ValentinaOrciuoliBookSite({
               coverProgress={coverProgress}
               turn={turn}
               backCover={<VoBackCover hidden={!showsBackCover} />}
-              soundEnabled={soundEnabled}
+              soundEnabled
               onCompactChange={setCompact}
               appendix={appendix}
-              renderAppendix={renderVoAppendixFace}
+              entryAppendix={notFound}
+              renderAppendix={renderAppendix}
               onLeaveAppendix={() =>
                 voPushUrl(spreadHref(resumeSpread, route))
               }
               insert={
-                opened && !showsBackCover ? (
-                  <VoNewsletterTab onPick={() => setInsertOpen(true)} />
+                bookmarked ? (
+                  <VoNewsletterTab
+                    onPick={() => setInsertOpen(true)}
+                    reversed={showsBackCover}
+                  />
                 ) : null
               }
               onBeforeFirstPage={closeBook}
@@ -657,35 +691,6 @@ export function ValentinaOrciuoliBookSite({
           </button>
         ) : null}
 
-        {opened || showsBackCover || appendix ? (
-          <div className="vo-book-controls" inert={onDesk || undefined}>
-              {appendix ? (
-                <VoBookLink href={spreadHref(resumeSpread, route)}>
-                  Torna alla lettura
-                </VoBookLink>
-              ) : showsBackCover ? (
-                <VoBookLink href={hrefFor("home")}>
-                  Rigira il libro
-                </VoBookLink>
-              ) : currentSpread === 0 ? (
-                <button type="button" onClick={closeBook}>
-                  Chiudi il libro
-                </button>
-              ) : (
-                <VoBookLink href={hrefFor("home")}>
-                  Torna al frontespizio
-                </VoBookLink>
-              )}
-              <button
-                type="button"
-                className="vo-sound-toggle"
-                onClick={() => setSoundEnabled((on) => !on)}
-                aria-pressed={soundEnabled}
-              >
-              {soundEnabled ? "Suono acceso" : "Suono spento"}
-            </button>
-          </div>
-        ) : null}
       </motion.div>
 
       {/* La seconda scena. Non sostituisce il volume: gli sta accanto, e la
@@ -714,8 +719,11 @@ export function ValentinaOrciuoliBookSite({
       ) : null}
       </div>
 
+      {/* Il piede segue la struttura standard della piattaforma: chi possiede il
+          sito, le note legali, l'area riservata e le due firme — lo studio che
+          l'ha fatto e il prodotto su cui gira. */}
       <footer className="vo-book-footer">
-        <span>Valentina Orciuoli · sito ufficiale</span>
+        <span>© {new Date().getFullYear()} Valentina Orciuoli</span>
         <span className="vo-book-footer-links">
           {voAppendix.map((entry) => (
             <VoBookLink
@@ -728,6 +736,16 @@ export function ValentinaOrciuoliBookSite({
           ))}
           <a href={gestioneHref} target="_blank" rel="noopener noreferrer">
             Gestione
+          </a>
+        </span>
+        <span className="vo-book-footer-signature">
+          Realizzato da{" "}
+          <a href="https://pynkstudio.eu" target="_blank" rel="noopener noreferrer">
+            PynkStudio
+          </a>
+          {" · "}
+          <a href="https://weuseorpheo.com" target="_blank" rel="noopener noreferrer">
+            Powered by Orpheo
           </a>
         </span>
       </footer>

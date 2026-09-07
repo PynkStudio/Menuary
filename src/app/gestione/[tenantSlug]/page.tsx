@@ -76,11 +76,19 @@ async function loadKpis(tenantSlug: string, locationId: string | null, isDemo: b
           .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
           .eq("reservation_date", today)
       : Promise.resolve({ data: [] }),
+    // Un tenant creative non ha un menu: le sue "voci" sono le opere, e stanno
+    // in un'altra tabella. Contando `menu_items` il pannello annunciava opere
+    // pubblicate che non esistono — righe rimaste da un altro modulo.
     features.canManageMenu
-      ? supabase
-          .from("menu_items")
-          .select("available")
-          .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
+      ? vertical === "creative"
+        ? supabase
+            .from("tenant_creative_works")
+            .select("enabled")
+            .eq("tenant_id", tenantSlug)
+        : supabase
+            .from("menu_items")
+            .select("available")
+            .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
       : Promise.resolve({ data: [] }),
     features.hasGoogleBusiness
       ? supabase
@@ -133,12 +141,26 @@ async function loadKpis(tenantSlug: string, locationId: string | null, isDemo: b
   }
 
   if (features.canManageMenu) {
-    const unavailable = menuRows.filter((item) => !item.available).length;
-    out.push({
-      label: vertical === "services" ? "Servizi non disponibili" : vertical === "creative" ? "Opere pubblicate" : "Piatti non disponibili",
-      value: String(vertical === "creative" ? menuRows.length : unavailable),
-      hint: vertical === "creative" ? "Catalogo pubblico" : unavailable > 0 ? "Richiedono un controllo" : "Tutta l'offerta è disponibile",
-    });
+    if (vertical === "creative") {
+      const works = menuRows as unknown as Array<{ enabled?: boolean | null }>;
+      const published = works.filter((work) => work.enabled !== false).length;
+      out.push({
+        label: "Opere pubblicate",
+        value: String(published),
+        hint:
+          works.length === published
+            ? "Tutto il catalogo è online"
+            : `${works.length - published} non pubblicate`,
+      });
+    } else {
+      const items = menuRows as unknown as Array<{ available?: boolean | null }>;
+      const unavailable = items.filter((item) => !item.available).length;
+      out.push({
+        label: vertical === "services" ? "Servizi non disponibili" : "Piatti non disponibili",
+        value: String(unavailable),
+        hint: unavailable > 0 ? "Richiedono un controllo" : "Tutta l'offerta è disponibile",
+      });
+    }
   }
 
   if (features.hasGoogleBusiness) {

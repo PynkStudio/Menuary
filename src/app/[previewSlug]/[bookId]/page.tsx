@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { TenantProvider } from "@/components/core/tenant-provider";
 import { LibritechBookDetailPage } from "@/components/tenants/libritech/pages/book-detail";
 import { ValentinaOrciuoliStaticPage } from "@/components/tenants/valentina-orciuoli/pages/static-page";
@@ -9,6 +9,7 @@ import { voAppendix, voSpreads } from "@/components/tenants/valentina-orciuoli/b
 import {
   valentinaCreativeWorks,
   valentinaOwnedSegments,
+  valentinaWorkSection,
   type ValentinaPageKind,
 } from "@/components/tenants/valentina-orciuoli/content";
 import { resolvePreviewSurface, resolveTenantFromPreviewSlug } from "@/lib/tenant-runtime";
@@ -16,11 +17,19 @@ import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 import { tenantLanguageAlternates } from "@/lib/tenant-localized-path";
 import { LOCALE_HEADER } from "@/i18n/locales";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
+import { buildTenantIconSet } from "@/lib/favicon";
 import { libritechCatalog } from "@/lib/libritech-catalog";
 import { CasaBramantiPiecePage } from "@/components/tenants/casabramanti/pages/piece";
 import { findCasabramantiPiece } from "@/lib/casabramanti-catalog";
 
 const valentinaPages = new Set<string>(valentinaOwnedSegments);
+
+/**
+ * Le opere avevano una pagina a testa; ora il volume le raccoglie per collana.
+ * I vecchi indirizzi restano validi e portano alla sezione giusta, perché sono
+ * già stati condivisi — e un link a un libro non deve finire su un 404.
+ */
+const valentinaWorkPaths = new Set(valentinaCreativeWorks.map((work) => work.slug));
 
 /**
  * Le pagine del libro sono route pubbliche vere sul dominio del tenant: ognuna
@@ -32,6 +41,16 @@ const VALENTINA_PAGE_SEO: Record<string, { title: string; description: string }>
     title: "Libri — Valentina Orciuoli",
     description:
       "Le opere di Valentina Orciuoli: The Emotion Dragons Trilogy e il thriller psicologico Tra fumo e ombre.",
+  },
+  trilogia: {
+    title: "The Emotion Dragons Trilogy — Valentina Orciuoli",
+    description:
+      "Anxiety, Fury e Il Terzo Canto: la trilogia in cui le emozioni diventano dragoni.",
+  },
+  thriller: {
+    title: "Thriller psicologico — Valentina Orciuoli",
+    description:
+      "Tra fumo e ombre: il thriller psicologico di Valentina Orciuoli, in arrivo.",
   },
   autrice: {
     title: "Chi sono — Valentina Orciuoli",
@@ -94,6 +113,9 @@ export async function generateMetadata({
     metadataBase: new URL(origin),
     title: { absolute: seo.title },
     description: seo.description,
+    // Ogni pagina del volume è una route a sé: senza questo prende l'icona della
+    // piattaforma e la scheda del browser cambia faccia sfogliando.
+    icons: buildTenantIconSet(tenant),
     robots: isPublicSite
       ? { index: bookId !== "link", follow: true }
       : { index: false, follow: false, nocache: true },
@@ -136,6 +158,14 @@ export default async function BookDetailRoute({
   if (!tenant || tenant.previewSlug !== previewSlug) notFound();
 
   const themeVars = tenantThemeCssVars(tenant.theme);
+
+  if (tenant.id === "valentina-orciuoli" && valentinaWorkPaths.has(bookId)) {
+    const surface = resolvePreviewSurface(host, previewSlug);
+    const locale =
+      (await headers()).get(LOCALE_HEADER) ?? getTenantLocaleConfig(tenant.id)?.defaultLocale;
+    const prefix = surface.kind === "tenant-domain" ? "" : `/${previewSlug}`;
+    redirect(`${prefix}${locale ? `/${locale}` : ""}/${valentinaWorkSection(bookId)}`);
+  }
 
   if (tenant.id === "valentina-orciuoli" && valentinaPages.has(bookId)) {
     // Le sezioni che sono pagine del libro entrano nella shell già aperte al

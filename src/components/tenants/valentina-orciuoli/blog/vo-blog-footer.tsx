@@ -28,12 +28,20 @@ export function VoBlogFooter({
           onSubmit={newsletter.handleNewsletterSubmit}
         />
       </div>
+      {/* Stessa struttura del piede del volume: proprietà, note legali, area
+          riservata e le due firme della piattaforma. */}
       <div className="vo-blog-footer-links">
-        <Link href={homeHref}>Valentina Orciuoli · sito ufficiale</Link>
+        <Link href={homeHref}>© {new Date().getFullYear()} Valentina Orciuoli</Link>
         <span>
           <Link href={privacyHref}>Privacy Policy</Link>
           <Link href={cookieHref}>Cookie Policy</Link>
           <a href={gestioneHref} target="_blank" rel="noopener noreferrer">Gestione</a>
+        </span>
+        <span>
+          Realizzato da{" "}
+          <a href="https://pynkstudio.eu" target="_blank" rel="noopener noreferrer">PynkStudio</a>
+          {" · "}
+          <a href="https://weuseorpheo.com" target="_blank" rel="noopener noreferrer">Powered by Orpheo</a>
         </span>
       </div>
     </footer>

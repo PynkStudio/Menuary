@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import type React from "react";
+import { TenantProvider } from "@/components/core/tenant-provider";
+import { ValentinaOrciuoliBookSite } from "@/components/tenants/valentina-orciuoli/book/book-site";
 import { getPlatformModeFromHost } from "@/lib/platform";
 import { findTenantById, findTenantByPreviewSlug } from "@/lib/tenant-registry";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
@@ -134,6 +136,24 @@ export default async function NotFound() {
     );
   }
   const cssVars = tenantThemeCssVars(tenant.theme);
+
+  // Il sito di valentina-orciuoli *è* un libro: una pagina che non esiste deve
+  // restare dentro il volume — l'errata in fondo — invece di sbattere su una
+  // schermata di sistema con un altro carattere e un altro fondo.
+  if (tenant.id === "valentina-orciuoli") {
+    return (
+      <TenantProvider tenant={tenant}>
+        <div
+          className="min-h-screen"
+          data-tenant-surface={tenant.id}
+          style={cssVars as React.CSSProperties}
+        >
+          <ValentinaOrciuoliBookSite initialSpread={0} notFound />
+        </div>
+      </TenantProvider>
+    );
+  }
+
   const copy = tenantNotFoundCopyByVertical[tenant.vertical];
   const tenantSurfaceClass = tenantSurfaceClassById[tenant.id];
   const homeHref = tenantHomeHref(tenant, mode, Boolean(previewTenantId || previewSlug));

@@ -1,16 +1,18 @@
-import { valentinaCreativeWorks } from "@/components/tenants/valentina-orciuoli/content";
-import { voHref, voRoute, type VoRoute } from "@/components/tenants/valentina-orciuoli/routes";
+import { voHref, voRoute, VALENTINA_TENANT_ID, type VoRoute } from "@/components/tenants/valentina-orciuoli/routes";
+import { findTenantById } from "@/lib/tenant-registry";
 
 /**
  * Il sito è un libro: ogni route pubblica corrisponde a una *doppia pagina* (spread).
  * L'ordine di questo array È l'ordine delle pagine nel volume — cambiarlo cambia
  * il numero di fogli che separano due sezioni, quindi anche l'animazione di salto.
  *
- * Ogni opera ha la sua doppia pagina. Prima stavano tutte in un elenco solo, che
- * traboccava e costringeva a scorrere dentro la carta: dentro un libro non si
- * scorre, si gira pagina.
+ * Le opere non hanno più una pagina a testa: il volume le raccoglie per collana,
+ * perché è così che si leggono. La trilogia sta tutta su una doppia pagina — i due
+ * volumi usciti e l'annuncio del terzo — e il thriller, che appartiene a un'altra
+ * storia, ne ha una sua. Una pagina per libro faceva sembrare "Tra fumo e ombre"
+ * il quarto capitolo di una saga a cui non appartiene.
  */
-export type VoSpreadKind = "static" | "work";
+export type VoSpreadKind = "static";
 
 export type VoSpread = {
   id: string;
@@ -20,33 +22,58 @@ export type VoSpread = {
   navLabel: string;
   /** Testatina corrente stampata in cima alle pagine. */
   runningHead: string;
-  /** Solo le sezioni compaiono nel menu; le schede delle opere si raggiungono sfogliando. */
+  /** Solo le sezioni compaiono nel menu; le altre pagine si raggiungono sfogliando. */
   inNav: boolean;
 };
 
-/** Le sezioni fisse, quelle che hanno una voce di menu. */
-export type VoStaticSpreadId = "home" | "libri" | "blog" | "eventi" | "contatti";
+/** Le sezioni del volume. */
+export type VoStaticSpreadId =
+  | "home"
+  | "libri"
+  | "trilogia"
+  | "thriller"
+  | "eventi"
+  | "blog"
+  | "contatti";
 
-const workSpreads: VoSpread[] = valentinaCreativeWorks.map((work) => ({
-  id: work.slug,
-  kind: "work",
-  path: `/${work.slug}`,
-  navLabel: work.title,
-  runningHead: work.title,
-  inNav: false,
-}));
+/**
+ * Il taccuino è una pagina del volume solo quando il modulo blog è acceso per il
+ * tenant. Spento, la sua doppia pagina non esiste proprio: sfogliando non la si
+ * incontra, il menu non la nomina e la rilegatura si accorcia di un foglio.
+ * Riaccendere il flag la rimette al suo posto, dopo gli eventi.
+ */
+const blogInVolume = Boolean(findTenantById(VALENTINA_TENANT_ID)?.features.blog);
+
+const blogSpread: VoSpread = {
+  id: "blog",
+  kind: "static",
+  path: "/blog",
+  navLabel: "Dal taccuino",
+  runningHead: "Dal taccuino",
+  inNav: true,
+};
 
 export const voSpreads: readonly VoSpread[] = [
   { id: "home", kind: "static", path: "", navLabel: "Home", runningHead: "Frontespizio", inNav: true },
   { id: "libri", kind: "static", path: "/libri", navLabel: "Libri", runningHead: "Le opere", inNav: true },
-  ...workSpreads,
-  /**
-   * Il taccuino. Sta *dentro* il volume — è la sezione da cui si prende un
-   * appunto — e da qui la lettura del singolo articolo esce di scena con una
-   * panoramica verso la scrivania, non con una navigazione.
-   */
-  { id: "blog", kind: "static", path: "/blog", navLabel: "Blog", runningHead: "Dal taccuino", inNav: true },
+  {
+    id: "trilogia",
+    kind: "static",
+    path: "/trilogia",
+    navLabel: "The Emotion Dragons Trilogy",
+    runningHead: "The Emotion Dragons Trilogy",
+    inNav: false,
+  },
+  {
+    id: "thriller",
+    kind: "static",
+    path: "/thriller",
+    navLabel: "Thriller psicologico",
+    runningHead: "Thriller psicologico",
+    inNav: false,
+  },
   { id: "eventi", kind: "static", path: "/eventi", navLabel: "Eventi", runningHead: "Calendario", inNav: true },
+  ...(blogInVolume ? [blogSpread] : []),
   { id: "contatti", kind: "static", path: "/contatti", navLabel: "Contatti", runningHead: "Scrivimi", inNav: true },
 ];
 
@@ -82,7 +109,7 @@ export function backCoverHref(route: VoRoute) {
  * mai dentro, esattamente come in un libro non si incappa nel colophon leggendo.
  * Ci si arriva solo dai richiami nel piede, e da lì si torna alla lettura.
  */
-export type VoAppendixId = "privacy" | "cookie";
+export type VoAppendixId = "privacy" | "cookie" | "errata";
 
 export type VoAppendix = {
   id: VoAppendixId;
@@ -105,6 +132,23 @@ export const voAppendix: readonly VoAppendix[] = [
     runningHead: "Note legali",
   },
 ];
+
+/**
+ * L'errata: la pagina che non è mai stata stampata.
+ *
+ * Sta nell'appendice per la stessa ragione delle note legali — è una posizione
+ * virtuale in fondo al volume, fuori dalla sequenza sfogliabile — ma **non** è
+ * in `voAppendix`: nessun richiamo la nomina nel piede, perché a un errata non
+ * ci si va, ci si finisce. La rende `not-found.tsx` quando la route che manca
+ * appartiene a questo tenant, così un indirizzo sbagliato resta dentro il libro
+ * invece di sbattere su una schermata di sistema.
+ */
+export const voErrata: VoAppendix = {
+  id: "errata",
+  path: "/errata",
+  navLabel: "Errata corrige",
+  runningHead: "Errata corrige",
+};
 
 export function appendixByPathname(pathname: string | null | undefined) {
   if (!pathname) return null;

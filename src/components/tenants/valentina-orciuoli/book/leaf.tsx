@@ -54,6 +54,13 @@ const SHEAR_PER_WHIP_DEG = 0.055;
 const DEG = Math.PI / 180;
 
 /**
+ * La z della pagina sinistra ferma (la applica `book-shell`). Un foglio sollevato
+ * da quella pila deve starle davanti, non complanare: due piani alla stessa
+ * distanza in una scena `preserve-3d` si contendono il posto e si vedono a chiazze.
+ */
+const LEFT_PAGE_DEPTH = 2;
+
+/**
  * La luce della scena: da sinistra, dall'alto, davanti. Non è una scelta libera —
  * è la stessa direzione da cui arrivano l'ombra ambientale sotto il volume e i
  * gradienti dei piatti, e se le due non coincidono il libro si sfalda in oggetti
@@ -147,6 +154,7 @@ export function VoLeaf({
   front,
   back,
   depth,
+  lifted = false,
   frontScroll = 0,
   backScroll = 0,
   carryKey = 0,
@@ -155,6 +163,12 @@ export function VoLeaf({
   front: ReactNode;
   back: ReactNode;
   depth: number;
+  /**
+   * Il foglio è stato *sollevato* dalla pila di sinistra invece che staccato da
+   * quella di destra: sta tornando indietro, quindi resta in cima per tutto il
+   * gesto. Vedi `z` più sotto.
+   */
+  lifted?: boolean;
   /** Posizione di lettura da riportare sulla faccia che copre la pagina lasciata. */
   frontScroll?: number;
   backScroll?: number;
@@ -227,12 +241,22 @@ export function VoLeaf({
   const backGlowFar = useTransform(far, ([a, k]: number[]) => glow(a, -1, k));
 
   /**
-   * La profondità del foglio rispetto al blocco pagine. Parte davanti alla pila
-   * di destra e finisce dietro a quella di sinistra: è la stessa strada che fa la
-   * carta vera, ed è ciò che fa sparire il foglio nel momento esatto in cui la
-   * pagina sotto prende il suo posto.
+   * La profondità del foglio rispetto al blocco pagine.
+   *
+   * Andando **avanti** parte davanti alla pila di destra e finisce dietro a
+   * quella di sinistra: è la strada che fa la carta vera, ed è ciò che fa sparire
+   * il foglio nel momento esatto in cui la pagina sotto prende il suo posto —
+   * lecito, perché le due portano lo stesso contenuto.
+   *
+   * Tornando **indietro** no. Lì il foglio non si posa a sinistra: viene
+   * sollevato da lì, e sotto di lui c'è già la pagina precedente, che è un'altra
+   * pagina. Con la stessa rampa il foglio partiva *dietro* al blocco e la pagina
+   * di sotto lo ritagliava per metà — il difetto che si vedeva avvicinando il
+   * puntatore al taglio sinistro. Un foglio in mano sta sopra la pila per tutto
+   * il gesto, e la sua z non cambia.
    */
-  const z = useTransform(progress, [0, 1], [depth, -depth]);
+  const backZ = depth + LEFT_PAGE_DEPTH;
+  const z = useTransform(progress, [0, 1], lifted ? [backZ, backZ] : [depth, -depth]);
 
   /** L'angolo libero anticipa il resto del taglio; in coda lo rincorre. */
   const shear = useTransform(

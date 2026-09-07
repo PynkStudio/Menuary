@@ -2,19 +2,59 @@
 
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect, useRef, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { voBookMemory } from "@/components/tenants/valentina-orciuoli/book/book-memory";
 import { ValentinaNewsletterForm } from "@/components/tenants/valentina-orciuoli/newsletter";
 
 /**
  * La cedola della newsletter è un oggetto fisico dentro il volume, non un popup
  * che aggredisce. È infilata fra le prime pagine e ne sporge solo la linguetta:
  * chi la nota la prende, chi non la vuole non la incontra mai.
+ *
+ * **Ci viene infilata sotto gli occhi.** Non era così: compariva già in pagina,
+ * e una cedola che c'è da sempre è un elemento d'interfaccia, non un foglietto
+ * lasciato lì da qualcuno. Alla prima apertura del volume scende dall'alto,
+ * ruotata, e si posa fra le pagine — il gesto di chi mette un segnalibro. Poi
+ * resta: il flag vive nella memoria della scheda, quindi non si ripete a ogni
+ * giro di pagina.
+ *
+ * Ha due facce perché sta *dentro* la scena 3D del volume: quando il libro si
+ * chiude e si gira per mostrare la quarta, il segnalibro gira con lui e da
+ * dietro se ne deve vedere il retro — carta bianca — invece di sparire.
  */
-export function VoNewsletterTab({ onPick }: { onPick: () => void }) {
+export function VoNewsletterTab({
+  onPick,
+  reversed = false,
+}: {
+  onPick: () => void;
+  /** Il volume è rigirato sulla quarta: del segnalibro si vede il retro. */
+  reversed?: boolean;
+}) {
+  // Si legge in un effetto e non durante il render: il doppio montaggio di
+  // StrictMode consumerebbe il flag e l'inserimento non si vedrebbe mai.
+  const [slipping, setSlipping] = useState(false);
+  useEffect(() => {
+    if (voBookMemory.bookmarkSlipped) return;
+    voBookMemory.bookmarkSlipped = true;
+    setSlipping(true);
+  }, []);
+
   return (
-    <button type="button" className="vo-insert-tab" onClick={onPick}>
-      <span className="vo-insert-tab-kicker">Newsletter</span>
-      <span className="vo-insert-tab-label">Resta aggiornato</span>
+    <button
+      type="button"
+      className="vo-insert-tab"
+      data-slipping={slipping || undefined}
+      // Chi decide quale faccia si vede è lo stato del volume, non il culling
+      // del browser: `backface-visibility` non regge dentro il 3D annidato del
+      // libro, e la linguetta si vedeva a specchio invece che dal retro.
+      data-reversed={reversed || undefined}
+      onClick={onPick}
+    >
+      <span className="vo-insert-tab-face">
+        <span className="vo-insert-tab-kicker">Newsletter</span>
+        <span className="vo-insert-tab-label">Resta aggiornato</span>
+      </span>
+      <span className="vo-insert-tab-verso" aria-hidden="true" />
     </button>
   );
 }
@@ -105,14 +145,8 @@ export function VoNewsletterInsert({
         <h2 id="vo-insert-title">Vuoi restare vicino al racconto?</h2>
         <p>
           Una corrispondenza diretta tra me e te. Niente rumore di fondo, solo frammenti
-          inediti, novita in anteprima e pensieri intimi che partono dal mio tavolo di
+          inediti, novità in anteprima e pensieri intimi che partono dal mio tavolo di
           lavoro per arrivare al tuo schermo.
-        </p>
-        <p>
-          La scrittura nasce sempre da una domanda. Qualche volta e una voce che non riesco a
-          tacere, un simbolo che insiste, un personaggio che chiede di essere ascoltato. Nel
-          blog troverai i miei primi appunti: riflessioni, scene, simboli, e tutto quello che
-          nasce tra le righe prima di diventare libro.
         </p>
         <ValentinaNewsletterForm compact sent={sent} pending={pending} error={error} onSubmit={onSubmit} />
         <span className="vo-insert-mark" aria-hidden="true">

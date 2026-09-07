@@ -113,6 +113,11 @@ const WHEEL_POINTER_ID = -1;
  */
 const OPEN_GRACE_MS = 750;
 const MAX_ANIMATED_LEAVES = 3;
+/**
+ * Oltre questo tempo un giro pagina si considera concluso comunque. La molla ci
+ * mette mezzo secondo scarso: è un margine, non un tempo di riferimento.
+ */
+const RUN_TIMEOUT_MS = 1800;
 const LEAF_STAGGER_MS = 90;
 /**
  * Di quanto il foglio in volo sta davanti al blocco pagine. Deve bastare a
@@ -282,6 +287,7 @@ export function VoBookShell({
   onPastLastPage,
   onCompactChange,
   appendix,
+  entryAppendix,
   onLeaveAppendix,
   renderAppendix,
 }: {
@@ -309,6 +315,13 @@ export function VoBookShell({
   onCompactChange?: (compact: boolean) => void;
   /** Appendice aperta dai richiami nel piede, fuori dalla sequenza sfogliabile. */
   appendix: VoAppendix | null;
+  /**
+   * L'appendice è il punto d'ingresso, non un salto: il volume ci si apre sopra
+   * senza sfogliare. Serve all'errata, che non ha un URL da inseguire — la
+   * pagina che manca non è un indirizzo del libro, e senza questo il volume
+   * resterebbe fermo dov'era mostrando tutt'altro.
+   */
+  entryAppendix?: boolean;
   /** Chiamata quando si esce dall'appendice tornando alla lettura. */
   onLeaveAppendix?: () => void;
   renderAppendix: (entry: VoAppendix, side: VoFaceSide) => ReactNode;
@@ -406,7 +419,9 @@ export function VoBookShell({
    * richiamo legale da un link diretto ci si trova già, senza sfogliata inutile.
    */
   const [atAppendix, setAtAppendix] = useState(
-    () => Boolean(appendix) && !(voBookMemoryAvailable && voBookMemory.opened),
+    () =>
+      Boolean(appendix) &&
+      (entryAppendix || !(voBookMemoryAvailable && voBookMemory.opened)),
   );
   const pos = atAppendix ? appendixPos : toPos(spread, half);
   /** Come `gestureRef`: la posizione che vale per un input arrivato prima del render. */
@@ -589,12 +604,22 @@ export function VoBookShell({
     [buildSheet, compact, sheetCache],
   );
 
+  /**
+   * Il gesto finisce, ma la carta resta dov'è.
+   *
+   * Prima qui si riavvolgevano i tre valori a zero. Sono scritture immediate,
+   * mentre lo smontaggio del foglio passa da un render: per un fotogramma il
+   * foglio appena posato a sinistra tornava spalancato sulla destra, e quello che
+   * si vedeva era il *recto* — cioè il contenuto della pagina da cui si era
+   * appena partiti, che lampeggiava alla fine di ogni giro.
+   *
+   * Riavvolgerli non serviva: ogni gesto nuovo porta il suo foglio al capo giusto
+   * della corsa prima di muoverlo (`beginDrag`, `hintAt`, e il riallineamento
+   * "stale" dell'effetto di corsa).
+   */
   const clearGesture = useCallback(() => {
     setGesture(null);
-    p0.set(0);
-    p1.set(0);
-    p2.set(0);
-  }, [p0, p1, p2, setGesture]);
+  }, [setGesture]);
 
   /**
    * Il passo chiesto mentre un foglio era ancora in volo. Prima veniva scartato:
@@ -749,6 +774,20 @@ export function VoBookShell({
     last.then(() => {
       if (!cancelled) commit(to);
     });
+    /**
+     * La rete di sicurezza del giro.
+     *
+     * `commit` è appeso alla promessa della molla, e una molla interrotta —
+     * scheda in secondo piano, animazione fermata da fuori — quella promessa non
+     * la risolve mai. Il gesto resterebbe in corsa per sempre, e un gesto in
+     * corsa blocca *ogni* input: rotella, frecce, tagli e link del menu. Da fuori
+     * è un libro che si pianta su una pagina e non si muove più.
+     */
+    timers.push(
+      window.setTimeout(() => {
+        if (!cancelled) commit(to);
+      }, RUN_TIMEOUT_MS + leaves.length * LEAF_STAGGER_MS),
+    );
     return () => {
       cancelled = true;
       // Un gesto annullato non deve continuare a frusciare: i timer sopravvivono
@@ -1141,8 +1180,13 @@ export function VoBookShell({
     stage.addEventListener("wheel", onWheel, { passive: false });
     return () => {
       stage.removeEventListener("wheel", onWheel);
-      const wheel = wheelRef.current;
-      if (wheel) window.clearTimeout(wheel.idle);
+      // L'ascoltatore si riscrive a ogni giro pagina (`beginDrag` cambia con la
+      // posizione). Se lo fa mentre una scorsa è ancora aperta, il timer di
+      // guardia muore con lui: senza chiudere il gesto qui, `wheelRef` restava
+      // pieno per sempre e ogni rotellata successiva finiva dentro un gesto che
+      // non poteva più concludersi — la rotella smetteva di girare le pagine e
+      // il libro sembrava bloccato su quella sezione.
+      if (wheelRef.current) endWheel();
     };
   }, [beginDrag, endWheel, open, reducedMotion, step, updateDrag]);
 
@@ -1394,6 +1438,9 @@ export function VoBookShell({
               // Il primo foglio a muoversi è quello in cima alla pila: parte più
               // vicino all'osservatore e ci resta anche dopo essere atterrato.
               depth={LEAF_BASE_DEPTH - order * LEAF_DEPTH_STEP}
+              // Tornando indietro il foglio viene preso dalla pila di sinistra:
+              // sotto di lui c'è già la pagina precedente, e deve restarle davanti.
+              lifted={gesture?.dir === -1}
               front={frontReal ? pageSheet(faces.front.spread, faces.front.side) : fillerSheet}
               back={
                 backReal

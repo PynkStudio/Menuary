@@ -104,7 +104,9 @@ export const VALENTINA_ORCIUOLI_MODULE_FLAGS: TenantFeatureFlags = {
   reputationReviews: false,
   fanbaseCommunity: true,
   linktree: true,
-  blog: true,
+  // Il taccuino resta scritto ma non pubblicato: fuori dal menu, fuori dal
+  // volume e fuori dalla sitemap finché l'autrice non ha i primi appunti.
+  blog: false,
 };
 
 /** Studio Legale Aranzulla: studio legale su verticale services. */

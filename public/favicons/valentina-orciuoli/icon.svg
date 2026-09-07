@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Valentina Orciuoli">
+  <rect width="64" height="64" fill="#15100D"/>
+  <rect x="4" y="4" width="56" height="56" fill="none" stroke="#D7A944" stroke-width="1.2" opacity="0.75"/>
+  <rect x="0" y="0" width="5" height="64" fill="#A12B24"/>
+  <text x="34" y="40" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', 'Playfair Display', serif"
+        font-size="24" letter-spacing="1" fill="#F1D17C">v.o.</text>
+</svg>

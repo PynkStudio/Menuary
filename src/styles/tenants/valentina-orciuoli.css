@@ -1542,40 +1542,50 @@
     font-weight: 700;
   }
 
+  /*
+   * Il pannello dell'autrice.
+   *
+   * Non è un cruscotto: è il registro del suo lavoro, e deve somigliare al
+   * volume che pubblica — carta scura, filetti d'oro sottili, titoli in
+   * graziato. Il rosso è l'inchiostro della correzione: lo prende solo ciò che
+   * agisce (un salvataggio, una cancellazione), mai la navigazione, che è
+   * silenziosa e si segna con un filetto dorato sotto la voce corrente.
+   */
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] {
-    --ga-bg: #050506;
-    --ga-surface: #100c09;
-    --ga-surface-2: #17100d;
-    --ga-surface-3: #050506;
-    --ga-surface-strong: #17100d;
-    --ga-border: rgba(216, 173, 90, 0.28);
-    --ga-border-soft: rgba(216, 173, 90, 0.16);
+    --ga-bg: #0a0705;
+    --ga-surface: #16100b;
+    --ga-surface-2: #1c140e;
+    --ga-surface-3: #0d0906;
+    --ga-surface-strong: #201710;
+    --ga-border: rgba(216, 173, 90, 0.22);
+    --ga-border-soft: rgba(216, 173, 90, 0.12);
     --ga-ink: #f7eedc;
-    --ga-ink-muted: rgba(247, 238, 220, 0.66);
-    --ga-ink-faint: rgba(247, 238, 220, 0.45);
-    --ga-ink-dim: rgba(247, 238, 220, 0.28);
+    --ga-ink-muted: rgba(247, 238, 220, 0.62);
+    --ga-ink-faint: rgba(247, 238, 220, 0.42);
+    --ga-ink-dim: rgba(247, 238, 220, 0.24);
     --ga-text: #f7eedc;
-    --ga-muted: rgba(247, 238, 220, 0.66);
+    --ga-muted: rgba(247, 238, 220, 0.62);
     --ga-accent: #a12b24;
-    --ga-accent-soft: rgba(161, 43, 36, 0.2);
+    --ga-accent-soft: rgba(161, 43, 36, 0.18);
     --ga-accent-ring: rgba(216, 173, 90, 0.34);
     --ga-accent-ink: #fff6dc;
+    --ga-gilt: #e0bb72;
     --ga-font-display: Georgia, "Times New Roman", serif;
     --ga-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     min-height: 100vh;
     background:
-      radial-gradient(circle at 18% 0%, rgba(161, 43, 36, 0.24), transparent 24rem),
-      radial-gradient(circle at 92% 12%, rgba(216, 173, 90, 0.18), transparent 22rem),
-      #050506;
+      radial-gradient(120% 60% at 12% -10%, rgba(161, 43, 36, 0.16), transparent 62%),
+      radial-gradient(90% 50% at 88% 0%, rgba(216, 173, 90, 0.09), transparent 60%),
+      var(--ga-bg);
     color: var(--ga-text);
     color-scheme: dark;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--ga-font-body);
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-header {
     border-bottom: 1px solid var(--ga-border);
-    background: rgba(5, 5, 6, 0.86);
-    box-shadow: 0 1.2rem 3.2rem rgba(0, 0, 0, 0.34);
+    background: rgba(10, 7, 5, 0.92);
+    box-shadow: 0 1rem 2.6rem rgba(0, 0, 0, 0.44);
     backdrop-filter: blur(16px);
   }
 
@@ -1593,9 +1603,40 @@
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-section-title,
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-kpi-value,
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-module-name {
-    color: #f1d17c;
-    font-family: Georgia, "Times New Roman", serif;
+    color: var(--ga-gilt);
+    font-family: var(--ga-font-display);
     font-weight: 400;
+  }
+
+  /* Il numero è il dato: sta grande, in graziato, come una cifra di colophon. */
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-kpi-value {
+    font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+
+  /* Le etichette sono didascalie di margine: maiuscoletto spaziato, mai grasse. */
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-brand-tag,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-eyebrow,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-kpi-label {
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+  }
+
+  /* Ogni sezione si apre con un filetto, come un capitolo. */
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--ga-border), transparent);
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-lead,
@@ -1608,20 +1649,31 @@
     border-top: 1px solid rgba(216, 173, 90, 0.16);
   }
 
-  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav-link,
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-profile-link,
-  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-icon-button,
-  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-pill {
-    border-color: rgba(216, 173, 90, 0.24);
-    background: rgba(5, 5, 6, 0.44);
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-icon-button {
+    border-color: var(--ga-border);
+    background: rgba(13, 9, 6, 0.6);
     color: var(--ga-text);
+  }
+
+  /* Le voci di menu non sono pulsanti: sono le linguette di un registro. Niente
+     riquadro, niente fondo — solo il filetto dorato sotto quella aperta. */
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav-link,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-pill {
+    border-color: transparent;
+    border-radius: 0;
+    background: none;
+    color: var(--ga-ink-muted);
+    box-shadow: inset 0 -1px 0 transparent;
+    transition: color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav-link[data-active="true"],
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-pill[data-active="true"] {
-    border-color: rgba(241, 209, 124, 0.64);
-    background: linear-gradient(180deg, rgba(161, 43, 36, 0.7), rgba(103, 23, 19, 0.7));
-    color: #fff6dc;
+    border-color: transparent;
+    background: none;
+    color: var(--ga-gilt);
+    box-shadow: inset 0 -1px 0 var(--ga-gilt);
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-main,
@@ -1639,20 +1691,28 @@
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-settings-popover,
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-table,
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-panel {
-    border: 1px solid var(--ga-border);
-    background:
-      radial-gradient(circle at 92% 0%, rgba(216, 173, 90, 0.1), transparent 12rem),
-      rgba(16, 12, 9, 0.76);
+    /* Il bordo superiore prende luce come il taglio di un foglio: è quello che
+       stacca la scheda dal fondo, che altrimenti la inghiotte. */
+    border: 1px solid var(--ga-border-soft);
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--ga-surface-2) 0%, var(--ga-surface) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(224, 187, 114, 0.14),
+      0 1.1rem 2.6rem rgba(0, 0, 0, 0.42);
     color: var(--ga-text);
-    box-shadow: 0 1.3rem 3rem rgba(0, 0, 0, 0.26);
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav-link:hover,
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-pill:hover {
+    color: var(--ga-text);
+    box-shadow: inset 0 -1px 0 rgba(224, 187, 114, 0.4);
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-quick:hover,
-  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-nav-link:hover,
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-profile-link:hover,
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .ga-icon-button:hover {
-    border-color: rgba(241, 209, 124, 0.58);
-    background: rgba(161, 43, 36, 0.22);
+    border-color: rgba(224, 187, 114, 0.5);
+    background: linear-gradient(180deg, var(--ga-surface-strong) 0%, var(--ga-surface-2) 100%);
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] input,
@@ -1741,12 +1801,30 @@
     gap: 1.5rem;
     align-items: start;
     border: 1px solid var(--ga-border);
+    /* L'illustrazione che stava qui era un fondale di repertorio: raccontava un
+       fantasy generico, non il catalogo di questa autrice. Al suo posto la carta
+       scura del volume e il carattere del drago in filigrana. */
     background:
-      linear-gradient(90deg, rgba(161, 43, 36, 0.22), transparent 42%),
-      url("/valentina-orciuoli/ink-trilogy-bg.png") center / cover no-repeat,
-      rgba(16, 12, 9, 0.82);
+      radial-gradient(70% 140% at 88% 0%, rgba(161, 43, 36, 0.2), transparent 62%),
+      linear-gradient(180deg, var(--ga-surface-2), var(--ga-surface));
+    border-radius: 3px;
+    box-shadow:
+      inset 0 1px 0 rgba(224, 187, 114, 0.16),
+      0 1.2rem 3rem rgba(0, 0, 0, 0.42);
     padding: clamp(1.4rem, 4vw, 2.2rem);
-    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.32);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-hero::after {
+    content: "龍";
+    position: absolute;
+    right: 1.2rem;
+    bottom: -3.2rem;
+    font-size: 10rem;
+    line-height: 1;
+    color: rgba(224, 187, 114, 0.06);
+    pointer-events: none;
   }
 
   .gestione-admin[data-gestione-tenant="valentina-orciuoli"] .vo-admin-works-actions {
@@ -2428,34 +2506,6 @@
     }
   }
 
-  .vo-book-controls {
-    position: absolute;
-    bottom: clamp(0.5rem, 2vh, 1.2rem);
-    display: flex;
-    gap: 1rem;
-  }
-
-  .vo-book-controls button,
-  .vo-book-controls a {
-    padding: 0.5rem 1.15rem;
-    border: 1px solid var(--vo-line);
-    border-radius: 999px;
-    background: rgba(11, 9, 8, 0.6);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(242, 216, 148, 0.72);
-    cursor: pointer;
-    transition: color 0.25s ease, border-color 0.25s ease;
-  }
-
-  .vo-book-controls button:hover,
-  .vo-book-controls a:hover {
-    color: var(--vo-gold-soft);
-    border-color: var(--vo-gold);
-  }
-
   /* ── Scena 3D ─────────────────────────────────────────────────────────────── */
   .vo-volume {
     display: grid;
@@ -2471,7 +2521,7 @@
        risolta su assi diversi (altezza del genitore per l'altezza, larghezza
        dell'elemento per il background) mandando in pezzi la geometria.
        Le 12rem sottratte sono testatina, comandi e piede. */
-    --vo-page-h: min(calc(100dvh - 13.5rem), 60vw);
+    --vo-page-h: min(calc(100dvh - 11rem), 62vw);
     /* Spessore del volume, ripartito fra il piatto anteriore (davanti al blocco
        pagine) e quello posteriore (dietro). Il dorso copre l'intera distanza fra
        i due: se questi tre valori non tornano, il libro girandosi si apre. */
@@ -2493,15 +2543,20 @@
     touch-action: pan-y;
   }
 
+  /* L'ombra di contatto. Non è centrata: la luce arriva da sinistra, quindi
+     l'ombra scivola a destra — e con il tavolo sotto è la cosa che dice quanto
+     il volume è spesso. */
   .vo-book-ambient {
     position: absolute;
     left: 50%;
     bottom: -7%;
-    width: 118%;
-    height: 16%;
-    transform: translateX(-50%);
-    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72), transparent 68%);
-    filter: blur(10px);
+    width: 122%;
+    height: 18%;
+    transform: translateX(-48%);
+    background:
+      radial-gradient(ellipse 46% 62% at 52% 30%, rgba(0, 0, 0, 0.8), transparent 70%),
+      radial-gradient(ellipse at center, rgba(24, 12, 4, 0.6), transparent 72%);
+    filter: blur(12px);
     pointer-events: none;
   }
 
@@ -3129,7 +3184,7 @@
   }
 
   .vo-face-glyph {
-    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-size: clamp(1.7rem, 3.2vw, 2.6rem);
     color: var(--vo-book-accent);
     opacity: 0.5;
   }
@@ -3148,14 +3203,17 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 1.6rem;
+    gap: clamp(0.8rem, 2vh, 1.3rem);
   }
 
+  /* La dedica è diventata un capoverso solo: con la misura di prima traboccava
+     dal foglio e si portava via il richiamo che le sta sotto. Riga più stretta,
+     interlinea meno larga, colonna un po' più lunga. */
   .vo-dedication {
-    max-width: 22ch;
-    font-size: clamp(1rem, 1.6vw, 1.35rem) !important;
+    max-width: 27ch;
+    font-size: clamp(0.9rem, 1.28vw, 1.12rem) !important;
     font-style: italic;
-    line-height: 1.9 !important;
+    line-height: 1.75 !important;
     color: rgba(42, 33, 25, 0.72) !important;
   }
 
@@ -3527,7 +3585,17 @@
 
   .vo-book-footer-links {
     display: flex;
-    gap: 1.2rem;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.2rem;
+  }
+
+  .vo-book-footer-signature {
+    margin-left: auto;
+    color: rgba(242, 216, 148, 0.32);
+  }
+
+  .vo-book-footer-signature a {
+    color: rgba(242, 216, 148, 0.52);
   }
 
   .vo-book-footer a:hover {
@@ -3537,7 +3605,7 @@
   /* ── Pagina singola sotto i 900px ─────────────────────────────────────────── */
   /* Modo compatto: lo decide il componente, non il CSS. */
     .vo-book-site[data-compact] .vo-book-stage {
-      --vo-page-h: min(calc(100dvh - 13rem), 128vw);
+      --vo-page-h: min(calc(100dvh - 10.5rem), 130vw);
       --vo-page-w: calc(var(--vo-page-h) / 1.5);
       --vo-cover-w: calc(var(--vo-page-w) * 1.03);
       width: var(--vo-page-w);
@@ -3926,27 +3994,12 @@
     filter: brightness(1.22);
   }
 
-  .vo-sound-toggle {
-    font-size: 0.62rem !important;
-    letter-spacing: 0.18em !important;
-    opacity: 0.62;
-  }
-
-  .vo-sound-toggle:hover {
-    opacity: 1;
-  }
-
   /* Modo compatto: lo decide il componente, non il CSS. */
     .vo-book-site[data-compact] .vo-bookmark {
       left: auto;
       right: 1.4rem;
     }
 
-    .vo-book-site[data-compact] .vo-book-controls {
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 0 1rem;
-    }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -4050,6 +4103,85 @@
 
   .vo-face-index a:hover .vo-index-title {
     color: var(--vo-book-accent);
+  }
+
+  /* ── I volumi della trilogia, tutti sulla stessa facciata ─────────────────── */
+  .vo-face-volumes {
+    justify-content: center;
+  }
+
+  .vo-face-volumes ol {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.9rem, 2.4vh, 1.6rem);
+    margin: 0.3rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .vo-face-volumes li {
+    display: flex;
+    gap: 0.85rem;
+    padding-bottom: clamp(0.9rem, 2.4vh, 1.6rem);
+    border-bottom: 1px solid var(--vo-book-rule);
+  }
+
+  .vo-face-volumes li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  /* Il volume non ancora uscito è un annuncio, non una scheda: tiene il posto
+     nella numerazione ma non pretende la stessa attenzione dei due pubblicati. */
+  .vo-face-volumes li[data-upcoming] {
+    opacity: 0.62;
+  }
+
+  .vo-volume-numeral {
+    flex: none;
+    min-width: 1.9rem;
+    padding-top: 0.15rem;
+    font-family: "The Seasons Light", "The Seasons", Georgia, serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    color: var(--vo-book-gilt);
+  }
+
+  .vo-volume-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+
+  .vo-volume-copy h3 {
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  }
+
+  .vo-volume-copy p {
+    font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+    line-height: 1.6;
+  }
+
+  .vo-volume-copy .vo-face-ctas {
+    margin-top: 0.35rem;
+    gap: 0.35rem 1rem;
+  }
+
+  .vo-volume-copy .vo-face-cta {
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+  }
+
+  .vo-volume-state {
+    align-self: flex-start;
+    margin-top: 0.2rem;
+    padding: 0.12rem 0.5rem;
+    border: 1px solid var(--vo-book-rule);
+    font-size: 0.58rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--vo-book-gilt);
   }
 
   /* Modo compatto: lo decide il componente, non il CSS. */
@@ -4297,22 +4429,18 @@
     top: -2.5rem;
     left: 56%;
     z-index: 4;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.1rem;
     width: clamp(124px, 27%, 196px);
-    padding: 0.5rem 0.75rem 1.6rem;
+    height: 4.1rem;
     /* Dietro il blocco pagine: quel che si vede è solo la parte che sporge dal
        taglio superiore, esattamente come un foglietto lasciato dentro un libro. */
     transform: translateZ(-3px) rotate(-1.6deg);
-    backface-visibility: hidden;
+    /* Ha due facce vere: quando il volume si chiude e si rigira, il segnalibro
+       gira con lui e da dietro se ne deve vedere il retro. Con una faccia sola e
+       `backface-visibility: hidden` spariva del tutto, che è il difetto. */
+    transform-style: preserve-3d;
+    padding: 0;
     border: 0;
-    border-radius: 2px 2px 0 0;
-    background: linear-gradient(180deg, #f6ecd2 0%, #ecdfbe 62%, #e2d3ad 100%);
-    box-shadow: 0 -3px 10px -4px rgba(28, 20, 12, 0.6);
-    font-family: Georgia, "Times New Roman", serif;
-    text-align: left;
+    background: none;
     cursor: pointer;
     transition: transform 0.32s cubic-bezier(0.34, 1.3, 0.5, 1);
   }
@@ -4320,6 +4448,71 @@
   .vo-insert-tab:hover,
   .vo-insert-tab:focus-visible {
     transform: translateZ(-3px) translateY(-0.5rem) rotate(-1.6deg);
+  }
+
+  .vo-insert-tab-face,
+  .vo-insert-tab-verso {
+    position: absolute;
+    inset: 0;
+    border-radius: 2px 2px 0 0;
+    background: linear-gradient(180deg, #f6ecd2 0%, #ecdfbe 62%, #e2d3ad 100%);
+    box-shadow: 0 -3px 10px -4px rgba(28, 20, 12, 0.6);
+    backface-visibility: hidden;
+  }
+
+  /* La rotazione esplicita a zero non è ridondante: senza una trasformata 3D
+     propria il browser non calcola il verso di questa faccia, e
+     `backface-visibility` non la nasconde quando il volume si gira — la
+     linguetta si vedeva a specchio invece che dal retro. */
+  .vo-insert-tab-face {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+    padding: 0.5rem 0.75rem 1.6rem;
+    transform: rotateY(0deg) translateZ(0.02px);
+    font-family: Georgia, "Times New Roman", serif;
+    text-align: left;
+  }
+
+  /* Il retro è carta e basta: un segnalibro non è stampato da entrambi i lati.
+     Non è il browser a scegliere quale faccia mostrare — dentro il 3D annidato
+     del volume `backface-visibility` non regge e la linguetta si vedeva a
+     specchio — ma lo stato del libro, via `data-reversed`. */
+  .vo-insert-tab-verso {
+    transform: rotateY(180deg) translateZ(0.02px);
+    background: linear-gradient(180deg, #efe3c6 0%, #e5d7b4 100%);
+  }
+
+  .vo-insert-tab[data-reversed] .vo-insert-tab-face {
+    visibility: hidden;
+  }
+
+  /* L'inserimento: scende dall'alto, sbanda e si posa fra le pagine. Parte dopo
+     la cerimonia d'apertura, perché è quello il momento in cui qualcuno infila
+     un segnalibro in un libro appena aperto. */
+  .vo-insert-tab[data-slipping] {
+    animation: vo-bookmark-slip 0.92s cubic-bezier(0.22, 1, 0.3, 1) 0.55s both;
+  }
+
+  @keyframes vo-bookmark-slip {
+    from {
+      transform: translateZ(-3px) translateY(-190%) rotate(-11deg);
+      opacity: 0;
+    }
+    45% {
+      opacity: 1;
+    }
+    to {
+      transform: translateZ(-3px) translateY(0) rotate(-1.6deg);
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vo-insert-tab[data-slipping] {
+      animation: none;
+    }
   }
 
   .vo-insert-tab-kicker {
@@ -4575,6 +4768,18 @@
    un'informativa non si accorcia per farla stare in pagina — e lo fa senza barra.
    ───────────────────────────────────────────────────────────────────────────── */
 @layer components {
+  /* L'errata: poche righe e due strade per rientrare nel volume. */
+  .vo-face-errata {
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .vo-face-errata .vo-face-ctas {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
   .vo-face-policy {
     gap: 0;
     font-size: 0.84rem;
@@ -4627,6 +4832,76 @@
     /* Il pezzo di volume che resta fuori quadro va tagliato dallo schermo, non
        disegnato sopra il piede della pagina. */
     overflow: hidden;
+  }
+
+  /*
+   * Il piano su cui il volume è appoggiato.
+   *
+   * Prima il libro stava sospeso nel nero: l'unica cosa che lo teneva a terra
+   * era l'ombra di contatto, e un'ombra senza pavimento è un ritaglio. Qui il
+   * tavolo c'è per davvero — un piano di legno visto quasi di taglio, con la
+   * linea del bordo dietro il volume e la stanza buia sopra. Non è un fondale
+   * dietro il libro: è la superficie *sotto*, ed è per questo che comincia
+   * all'altezza del taglio inferiore delle pagine e si apre verso chi guarda.
+   *
+   * Sta in un pseudo-elemento del mondo e non nel `background` della radice
+   * perché deve restare sotto entrambe le scene senza entrare nel loro
+   * impilamento: il volume è a z-index 2, la scrivania degli appunti a 1, il
+   * tavolo a 0.
+   */
+  .vo-world::before {
+    content: "";
+    position: absolute;
+    left: -14%;
+    right: -14%;
+    /* La linea d'orizzonte: il bordo lontano del tavolo. Non è un taglio netto —
+       una riga dritta da parte a parte legge come muro, non come piano — ma una
+       fascia in cui il legno emerge dal buio della stanza. */
+    top: 24%;
+    bottom: 0;
+    z-index: 0;
+    background:
+      /* La luce da sinistra: la stessa direzione della rampa sui fogli
+         (`LIGHT_X` in leaf.tsx). Se le due non coincidono, libro e tavolo
+         risultano illuminati da due soli diversi. */
+      radial-gradient(58% 96% at 14% 4%, rgba(214, 165, 92, 0.13), transparent 66%),
+      radial-gradient(80% 78% at 70% 112%, rgba(6, 4, 2, 0.8), transparent 74%),
+      linear-gradient(180deg, #23160a 0%, #1b1108 26%, #150d06 62%, #0d0704 100%);
+    /* Il piano emerge dal buio invece di cominciare con una riga. */
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 100%);
+    pointer-events: none;
+  }
+
+  /* La venatura del piano: rumore stirato in orizzontale, non righe regolari.
+     Verso il fondo si stringe, perché il legno visto in prospettiva si
+     compatta — è quel gradiente di maschera a dare la profondità del tavolo. */
+  .vo-world::after {
+    content: "";
+    position: absolute;
+    left: -14%;
+    right: -14%;
+    top: 24%;
+    bottom: 0;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='260'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.16' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='420' height='260' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size: 118% 46%;
+    background-repeat: repeat;
+    mix-blend-mode: overlay;
+    opacity: 0.24;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.55) 16%, #000 46%, rgba(0, 0, 0, 0.5) 100%);
+    mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.55) 16%, #000 46%, rgba(0, 0, 0, 0.5) 100%);
+    pointer-events: none;
+  }
+
+  @media (max-width: 899px) {
+    /* Su schermo stretto il volume occupa quasi tutto: il tavolo si vede solo
+       come la fascia da cui esce, e alzare l'orizzonte lo farebbe sembrare un
+       fondale dietro le pagine invece di un piano sotto. */
+    .vo-world::before,
+    .vo-world::after {
+      top: 40%;
+    }
   }
 
   .vo-world > .vo-book-viewport,

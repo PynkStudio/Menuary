@@ -38,8 +38,10 @@ export const valentinaCreativeWorks: ValentinaCreativeWork[] = [
     id: "44acaaba-1814-46ef-923d-a4f50aa11901",
     slug: "anxiety",
     title: "Anxiety",
-    description: "La nebbia fitta del dubbio, il peso sul petto che toglie il respiro ma costringe a guardarsi dentro con sincerita.",
-    secondaryText: "Quando non e piu possibile mentire a se stessi, quando il vero combatte per uscire allo scoperto il potere dell'ansia si sprigiona, piu feroce che mai.",
+    description:
+      "La nebbia fitta del dubbio, il peso sul petto che toglie il respiro ma costringe a guardarsi dentro con sincerità.",
+    secondaryText:
+      "Quando non è più possibile mentire a sé stessi, quando il vero combatte per uscire allo scoperto il potere dell'ansia si sprigiona, più feroce che mai.",
     coverImageUrl: anxietyCoverSrc,
     backgroundMediaUrl: "/valentina-orciuoli/sfondo-anxiety.webp",
     ctaLabel: "Leggi la trama",
@@ -52,8 +54,10 @@ export const valentinaCreativeWorks: ValentinaCreativeWork[] = [
     id: "44acaaba-1814-46ef-923d-a4f50aa11902",
     slug: "fury",
     title: "Fury",
-    description: "Il fuoco improvviso che brucia dentro: una rabbia che puo distruggere tutto oppure accendere il coraggio di cambiare.",
-    secondaryText: "Un secolo prima dell'apparizione del Dragone Nero dell'ansia, il Primo Long era l'incarnazione della rabbia.",
+    description:
+      "Il fuoco improvviso che brucia dentro: una rabbia che può distruggere tutto oppure accendere il coraggio di cambiare.",
+    secondaryText:
+      "Un secolo prima dell'apparizione del Dragone Nero dell'ansia, il Primo Long era l'incarnazione della rabbia.",
     coverImageUrl: furyCoverSrc,
     backgroundMediaUrl: "/valentina-orciuoli/sfondo-fury-girato.webp",
     ctaLabel: "Leggi la trama",
@@ -66,8 +70,10 @@ export const valentinaCreativeWorks: ValentinaCreativeWork[] = [
     id: "44acaaba-1814-46ef-923d-a4f50aa11903",
     slug: "tra-fumo-e-ombre",
     title: "Tra fumo e ombre",
-    description: "Il racconto cambia passo, abbandona i cieli del fantasy e scende nelle crepe piu intime della realta contemporanea. La protagonista si muove in un现viziodove convivono inquietudine e bisogno di giustizia, e ogni scena pesa come un passo nella nebbia.",
-    secondaryText: "Un thriller psicologico fitto di simboli, indizi sottili e ombre quotidiane. Un'indagine in cui ogni dettaglio e lo specchio della societa, un viaggio in cui le domande contano piu delle risposte e ogni pagina mette alla prova le tue certezze.",
+    description:
+      "Il racconto cambia passo, abbandona i cieli del fantasy e scende nelle crepe più intime della realtà contemporanea.",
+    secondaryText:
+      "Un thriller psicologico fitto di simboli, indizi sottili e ombre quotidiane. Un'indagine in cui ogni dettaglio è lo specchio della società e ogni pagina mette alla prova le tue certezze.",
     coverImageUrl: darkNoirCoverSrc,
     backgroundMediaUrl: "/valentina-orciuoli/sfondo-dark.webp",
     ctaLabel: "Preordina qui",
@@ -75,6 +81,32 @@ export const valentinaCreativeWorks: ValentinaCreativeWork[] = [
     enabled: true,
   },
 ];
+
+/**
+ * Il catalogo è uno, le pagine del volume sono due: la trilogia fantasy e il
+ * thriller non stanno sullo stesso foglio. Lo smistamento vive qui e non nel
+ * libro, perché dipende dall'opera — e un titolo aggiunto domani in gestione
+ * deve sapere da sola in quale delle due sezioni finisce.
+ */
+export type ValentinaWorkSection = "trilogia" | "thriller";
+
+const TRILOGY_SLUGS = new Set(["anxiety", "fury"]);
+
+export function valentinaWorkSection(slug: string): ValentinaWorkSection {
+  return TRILOGY_SLUGS.has(slug) ? "trilogia" : "thriller";
+}
+
+/**
+ * Il terzo volume non è ancora un libro: non ha ISBN, né copertina, né una
+ * riga nel catalogo di gestione. Sta comunque nella pagina della trilogia,
+ * perché una trilogia con due volumi non si capisce — ed è l'annuncio che
+ * tiene il posto.
+ */
+export const valentinaUpcomingVolume = {
+  title: "Il Terzo Canto",
+  description: "La trilogia troverà presto il suo compimento.",
+  state: "In arrivo",
+} as const;
 
 export const valentinaLinks = [
   {
@@ -129,7 +161,7 @@ export const trilogy: Array<{
   {
     n: "I",
     title: "Anxiety",
-    desc: "La nebbia fitta del dubbio, il peso sul petto che toglie il respiro ma costringe a guardarsi dentro con sincerita.",
+    desc: "La nebbia fitta del dubbio, il peso sul petto che toglie il respiro ma costringe a guardarsi dentro con sincerità.",
     state: "Disponibile su Kindle",
     href: amazonHref,
     coverSrc: anxietyCoverSrc,
@@ -138,7 +170,7 @@ export const trilogy: Array<{
   {
     n: "II",
     title: "Fury",
-    desc: "Il fuoco improvviso che brucia dentro: una rabbia che puo distruggere tutto oppure accendere il coraggio di cambiare.",
+    desc: "Il fuoco improvviso che brucia dentro: una rabbia che può distruggere tutto oppure accendere il coraggio di cambiare.",
     state: "Disponibile su Kindle",
     href: furyHref,
     coverSrc: furyCoverSrc,
@@ -147,7 +179,7 @@ export const trilogy: Array<{
   {
     n: "III",
     title: "Il Terzo Canto",
-    desc: "La trilogia trovera presto il suo compimento.",
+    desc: "La trilogia troverà presto il suo compimento.",
     state: "In arrivo",
     href: null,
     coverSrc: null,
@@ -165,6 +197,9 @@ export const trilogy: Array<{
  */
 export const valentinaOwnedSegments: readonly string[] = [
   ...valentinaStaticPageKinds,
+  // Le due sezioni in cui il volume raccoglie le opere.
+  "trilogia",
+  "thriller",
   ...valentinaCreativeWorks.map((work) => work.slug),
   // Le note legali del tenant vivono dentro il libro, non sulle route globali.
   "privacy",

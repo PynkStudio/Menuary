@@ -33,8 +33,16 @@ Estratti da `TENANTS[]` in `src/lib/tenant-registry.ts` (campi `id`, `name`, `ve
   `src/components/tenants/valentina-orciuoli/book/book-map.ts`. Vedi
   [[adr-0002-valentina-book-shell]]. `/autrice` non è una pagina ma la **quarta di
   copertina**: il volume si chiude e si rigira per mostrarla. La pagina `/link` (linktree)
-  resta fuori dal libro. **Il taccuino è una doppia pagina del volume**: "Blog" in nav
-  apre `/it/blog` dentro il libro, e il singolo appunto (`/it/blog/<slug>`) si legge sulla
+  resta fuori dal libro. **Le opere non hanno più una pagina a testa**: il volume le
+  raccoglie per collana in `/trilogia` (i due volumi usciti più l'annuncio del terzo) e
+  `/thriller`, e l'indice di `/libri` nomina le due collane. I vecchi indirizzi delle opere
+  (`/anxiety`, `/fury`, `/tra-fumo-e-ombre`) rimandano alla sezione giusta. Vedi
+  [[adr-0009-valentina-opere-per-collana]].
+  **Il taccuino è una doppia pagina del volume, oggi spenta**: il modulo `blog` è a
+  `false` finché non ci sono appunti da pubblicare, quindi la sezione non esiste nel volume,
+  non compare in menu e non entra in sitemap; riaccendendo il flag torna al suo posto
+  **dopo gli eventi**, con la voce di menu «Dal taccuino». Da acceso, "Dal taccuino" apre
+  `/it/blog` dentro il libro e il singolo appunto (`/it/blog/<slug>`) si legge sulla
   scrivania, con una panoramica di camera invece che con una navigazione — vedi
   [[adr-0006-valentina-taccuino-nel-libro]], che ha ribaltato la §5 di
   [[adr-0005-valentina-blog-fuori-dal-libro]]. Le pagine editoriali autonome nate con la
@@ -48,7 +56,12 @@ Estratti da `TENANTS[]` in `src/lib/tenant-registry.ts` (campi `id`, `name`, `ve
   si legge dal pathname (`voRoute`) invece che da una costante. Le stesse route servono due
   superfici con SEO opposta — preview `noindex`, dominio indicizzabile — e a distinguerle è
   `resolvePreviewSurface()`. Vedi [[adr-0007-valentina-dominio-custom]].
-  **Resta da fare l'utente**: puntare il DNS su Vercel e aggiungere il dominio al progetto.
+  **Note legali**: privacy e cookie policy si compongono sui moduli accesi del tenant, non
+  sul modello HORECA — vedi [[adr-0010-informativa-per-moduli-attivi]].
+  **404**: una route inesistente del tenant apre il volume sull'errata corrige invece della
+  schermata 404 di piattaforma (`not-found.tsx` → `ValentinaOrciuoliBookSite notFound`).
+  **Resta da fare l'utente**: puntare il DNS su Vercel e aggiungere il dominio al progetto;
+  decidere la nuova copertina del volume (oggi è ancora il cartoncino con il solo nome).
 
 - **`casabramanti`** — maison di moda demo del verticale services, usata per mostrare
   il modulo `shop` e l'integrazione **Slabbby** su un catalogo reale (otto capi in

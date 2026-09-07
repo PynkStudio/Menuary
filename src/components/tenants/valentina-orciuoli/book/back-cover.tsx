@@ -21,13 +21,13 @@ export function VoBackCover({ hidden }: { hidden: boolean }) {
           <span className="vo-back-kicker">L&apos;autrice</span>
           <h2>Valentina Orciuoli</h2>
           <p className="vo-back-blurb">
-            «Credo che le storie non servano solo a fuggire dalla realta, ma a capirla
+            «Credo che le storie non servano solo a fuggire dalla realtà, ma a capirla
             davvero.»
           </p>
           <p>
             Nei miei libri ogni simbolo, ogni figura e ogni ombra sono metafore della nostra
-            societa e dell&apos;intricato universo delle emozioni umane. Scrivo per trasformare
-            cio che non riusciamo a spiegare a voce in viaggi indimenticabili.
+            società e dell&apos;intricato universo delle emozioni umane. Scrivo per
+            trasformare ciò che non riusciamo a spiegare a voce in viaggi indimenticabili.
           </p>
         </div>
 
