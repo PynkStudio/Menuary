@@ -207,7 +207,7 @@ function CbIndexSheet({ open, onClose }: { open: boolean; onClose: () => void })
  *
  * Il marchio qui è l'h1 della collezione e ha una schermata tutta sua, che è
  * il modo di dargli aria senza gonfiarlo in testata. Nessun claim, nessun
- * bottone: si dichiarano fatti, incluso che cosa sia il nastro a sinistra.
+ * bottone: si dichiarano fatti, e le condizioni che servono per comprare.
  */
 export function CbFrontispiece() {
   const copy = useCasabramantiCopy();
@@ -229,7 +229,7 @@ export function CbFrontispiece() {
 
       <div className="cb-open-foot">
         <p className="cb-open-facts">{copy.home.plate.opening}</p>
-        <p className="cb-open-tape">{copy.home.opening.tape}</p>
+        <p className="cb-open-terms">{copy.home.opening.terms}</p>
         <span className="cb-open-scroll" aria-hidden="true" />
       </div>
     </section>

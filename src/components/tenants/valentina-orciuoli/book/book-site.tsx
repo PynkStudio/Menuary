@@ -241,6 +241,31 @@ export function ValentinaOrciuoliBookSite({
   // stile veste testatina, comandi e piede oltre al libro.
   const [compact, setCompact] = useState(false);
 
+  // Il suggerimento "sfoglia di lato": compare una volta sola per scheda, la
+  // prima volta che il libro si trova aperto su schermo stretto, e si spegne
+  // da sé. Il ref-cancello, non le dipendenze dell'effetto, decide se è già
+  // partito — altrimenti un ricalcolo di `compact` a metà mostra (il
+  // `ResizeObserver` dello shell) cancellerebbe il timeout e il suggerimento
+  // resterebbe appeso finché qualcos'altro non lo smonta.
+  const [showSwipeHint, setShowSwipeHint] = useState(false);
+  const swipeHintTriggeredRef = useRef(false);
+  const swipeHintTimeoutRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (swipeHintTriggeredRef.current) return;
+    if (!compact || !opened || showsBackCover || appendix || onDesk) return;
+    if (voBookMemoryAvailable && voBookMemory.swipeHintSeen) return;
+    swipeHintTriggeredRef.current = true;
+    voBookMemory.swipeHintSeen = true;
+    setShowSwipeHint(true);
+    swipeHintTimeoutRef.current = window.setTimeout(() => setShowSwipeHint(false), 3200);
+  }, [compact, opened, showsBackCover, appendix, onDesk]);
+  useEffect(
+    () => () => {
+      if (swipeHintTimeoutRef.current) window.clearTimeout(swipeHintTimeoutRef.current);
+    },
+    [],
+  );
+
   const [soundEnabled, setSoundEnabled] = useState(
     () => !voBookMemoryAvailable || voBookMemory.sound,
   );
@@ -684,6 +709,18 @@ export function ValentinaOrciuoliBookSite({
               >
               {soundEnabled ? "Suono acceso" : "Suono spento"}
             </button>
+          </div>
+        ) : null}
+
+        {showSwipeHint ? (
+          <div className="vo-swipe-hint" aria-hidden="true">
+            <span className="vo-swipe-hint-chevron" data-dir="prev">
+              ‹
+            </span>
+            <span className="vo-swipe-hint-label">scorri di lato per sfogliare</span>
+            <span className="vo-swipe-hint-chevron" data-dir="next">
+              ›
+            </span>
           </div>
         ) : null}
       </motion.div>

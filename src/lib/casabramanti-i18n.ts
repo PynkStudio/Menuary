@@ -23,8 +23,6 @@ export type CasaBramantiCopy = {
     indexAria: string;
     indexOpen: string;
     indexClose: string;
-    collection: string;
-    maison: string;
     cart: string;
     cartAria: string;
     skipToCollection: string;
@@ -42,8 +40,6 @@ export type CasaBramantiCopy = {
     measures: string;
     variants: string;
     sizes: string;
-    price: string;
-    inventory: string;
   };
 
   metro: {
@@ -52,29 +48,21 @@ export type CasaBramantiCopy = {
     oneSize: string;
     reducedNote: string;
     ariaLabel: string;
-    total: string;
   };
 
   home: {
     plate: {
-      house: string;
       city: string;
-      collection: string;
-      pieces: string;
-      variantsWord: string;
       opening: string;
     };
     /* Frontespizio: la prima schermata è tipografica, senza foto e senza claim. */
     opening: {
       house: string;
-      /** La riga che rende leggibile il metro a chi non sa cos'è. */
-      tape: string;
+      /** Le condizioni che servono prima di comprare: spedizione, reso, prova. */
+      terms: string;
     };
     indexHeading: string;
     indexHint: string;
-    peakEyebrow: string;
-    peakLine: string;
-    peakSub: string;
     inquiryHeading: string;
     inquiryLines: Array<{ key: string; value: string }>;
     inquiryCta: string;
@@ -89,8 +77,6 @@ export type CasaBramantiCopy = {
     added: string;
     save: string;
     saved: string;
-    saveHint: string;
-    measuresOn: string;
     nextObject: string;
     prevObject: string;
     shipping: string;
@@ -108,7 +94,6 @@ export type CasaBramantiCopy = {
     checkout: string;
     remove: string;
     quantity: string;
-    continue: string;
     itemsOne: string;
     itemsMany: string;
   };
@@ -118,7 +103,6 @@ export type CasaBramantiCopy = {
     intro: string;
     contact: string;
     delivery: string;
-    payment: string;
     name: string;
     email: string;
     phone: string;
@@ -139,10 +123,7 @@ export type CasaBramantiCopy = {
 
   footer: {
     house: string;
-    address: string;
-    rights: string;
     demoNote: string;
-    links: { maison: string; care: string; shipping: string; contact: string };
   };
 };
 
@@ -156,8 +137,6 @@ const it: CasaBramantiCopy = {
     indexAria: "Indice degli oggetti della collezione",
     indexOpen: "Apri l'indice della collezione",
     indexClose: "Chiudi l'indice",
-    collection: "Collezione",
-    maison: "La casa",
     cart: "Borsa",
     cartAria: "Apri la borsa",
     skipToCollection: "Vai alla collezione",
@@ -175,39 +154,29 @@ const it: CasaBramantiCopy = {
     measures: "Misure del capo",
     variants: "Varianti",
     sizes: "Taglie",
-    price: "Prezzo",
-    inventory: "Inventario",
   },
 
   metro: {
     title: "Metro da sarto",
     unit: "cm",
     oneSize: "Taglia unica",
-    reducedNote: "Misure dell'oggetto a schermo",
-    ariaLabel: "Metro da sarto: misure dell'oggetto in vista",
-    total: "Collezione",
+    reducedNote: "Misure del capo",
+    ariaLabel: "Misure del capo in centimetri",
   },
 
   home: {
     plate: {
-      house: "Casa Bramanti",
       city: "Milano",
-      collection: "Collezione",
-      pieces: "oggetti",
-      variantsWord: "varianti",
       opening: "Showroom su appuntamento, via Solferino 18",
     },
     opening: {
       /* "Milanese" no: Milano è già scritto nella riga sopra il marchio. */
       house: "Maison fondata da Elia Bramanti",
-      tape:
-        "A sinistra corre un metro da sarto. Srotola i centimetri di ogni oggetto: la collezione ne misura 2028.",
+      terms:
+        "Spedizione inclusa: due giorni in Italia, cinque in Europa. Reso entro trenta giorni, o prova in showroom prima di ordinare.",
     },
     indexHeading: "Indice",
-    indexHint: "Otto oggetti in ordine di peso, dalla giacca al foulard.",
-    peakEyebrow: "Taglia unica",
-    peakLine: "Non c'è niente da misurare.",
-    peakSub: "Una sola linea, novanta centimetri per lato.",
+    indexHint: "Otto capi, prezzo e spedizione inclusi. Variante e taglia si scelgono nella scheda del capo.",
     inquiryHeading: "Su appuntamento",
     inquiryLines: [
       { key: "Luogo", value: "Via Solferino 18, Milano" },
@@ -227,8 +196,6 @@ const it: CasaBramantiCopy = {
     added: "Aggiunto",
     save: "Salvalo su Slabbby",
     saved: "Salvato su Slabbby",
-    saveHint: "Slabbby conserva l'oggetto nella tua lista fra i negozi.",
-    measuresOn: "Misure dichiarate su",
     nextObject: "Oggetto seguente",
     prevObject: "Oggetto precedente",
     shipping: "Spedizione",
@@ -240,13 +207,12 @@ const it: CasaBramantiCopy = {
   cart: {
     title: "Borsa",
     empty: "La borsa è vuota.",
-    emptyHint: "Gli oggetti scelti restano qui finché non chiudi il browser.",
+    emptyHint: "Scegli un capo dalla collezione: variante e taglia si indicano nella sua scheda.",
     subtotal: "Totale",
     shippingFree: "Spedizione inclusa",
     checkout: "Vai all'ordine",
     remove: "Togli",
     quantity: "Quantità",
-    continue: "Continua a guardare",
     itemsOne: "oggetto",
     itemsMany: "oggetti",
   },
@@ -256,7 +222,6 @@ const it: CasaBramantiCopy = {
     intro: "Compila i campi, l'ordine viene confermato dallo showroom entro il giorno lavorativo seguente.",
     contact: "Contatto",
     delivery: "Consegna",
-    payment: "Pagamento",
     name: "Nome e cognome",
     email: "Email",
     phone: "Telefono",
@@ -270,17 +235,14 @@ const it: CasaBramantiCopy = {
     place: "Invia l'ordine",
     demoNotice: "Questo è un negozio dimostrativo. Nessun pagamento viene incassato e nessun capo viene spedito.",
     doneTitle: "Ordine registrato",
-    doneBody: "Nella demo l'ordine si ferma qui. In produzione partirebbe la conferma via email e la riga nel pannello di gestione.",
+    doneBody: "Lo showroom conferma l'ordine entro il giorno lavorativo seguente e scrive all'indirizzo lasciato qui sopra. In questo negozio dimostrativo non parte nessuna spedizione.",
     backHome: "Torna alla collezione",
     required: "Campo obbligatorio",
   },
 
   footer: {
     house: "Casa Bramanti, Milano",
-    address: "Via Solferino 18, 20121 Milano",
-    rights: "Tutti i diritti riservati",
     demoNote: "Sito dimostrativo su piattaforma Bizery",
-    links: { maison: "La casa", care: "Cura dei capi", shipping: "Spedizioni", contact: "Contatti" },
   },
 };
 
@@ -294,8 +256,6 @@ const en: CasaBramantiCopy = {
     indexAria: "Index of the objects in the collection",
     indexOpen: "Open the index of the collection",
     indexClose: "Close the index",
-    collection: "Collection",
-    maison: "The house",
     cart: "Bag",
     cartAria: "Open the bag",
     skipToCollection: "Skip to the collection",
@@ -313,39 +273,29 @@ const en: CasaBramantiCopy = {
     measures: "Garment measurements",
     variants: "Variants",
     sizes: "Sizes",
-    price: "Price",
-    inventory: "Inventory",
   },
 
   metro: {
     title: "Tailor's tape",
     unit: "cm",
     oneSize: "One size",
-    reducedNote: "Measurements of the object on screen",
-    ariaLabel: "Tailor's tape: measurements of the object in view",
-    total: "Collection",
+    reducedNote: "Garment measurements",
+    ariaLabel: "Garment measurements in centimetres",
   },
 
   home: {
     plate: {
-      house: "Casa Bramanti",
       city: "Milan",
-      collection: "Collection",
-      pieces: "objects",
-      variantsWord: "variants",
       opening: "Showroom by appointment, via Solferino 18",
     },
     opening: {
       /* No "Milanese": Milan is already set in the line above the wordmark. */
       house: "Maison founded by Elia Bramanti",
-      tape:
-        "A tailor's tape runs down the left. It unrolls the centimetres of each object: the collection measures 2028 of them.",
+      terms:
+        "Shipping included: two days in Italy, five across Europe. Thirty days to return, or try the piece on in the showroom before ordering.",
     },
     indexHeading: "Index",
-    indexHint: "Eight objects in order of weight, from the jacket to the scarf.",
-    peakEyebrow: "One size",
-    peakLine: "There is nothing to measure.",
-    peakSub: "A single line, ninety centimetres each side.",
+    indexHint: "Eight pieces, price and shipping included. Variant and size are chosen on the object page.",
     inquiryHeading: "By appointment",
     inquiryLines: [
       { key: "Place", value: "Via Solferino 18, Milan" },
@@ -365,8 +315,6 @@ const en: CasaBramantiCopy = {
     added: "Added",
     save: "Save it on Slabbby",
     saved: "Saved on Slabbby",
-    saveHint: "Slabbby keeps the object in your list across shops.",
-    measuresOn: "Measurements taken on",
     nextObject: "Next object",
     prevObject: "Previous object",
     shipping: "Shipping",
@@ -378,13 +326,12 @@ const en: CasaBramantiCopy = {
   cart: {
     title: "Bag",
     empty: "The bag is empty.",
-    emptyHint: "Chosen objects stay here until you close the browser.",
+    emptyHint: "Choose a piece from the collection: variant and size are picked on its own page.",
     subtotal: "Total",
     shippingFree: "Shipping included",
     checkout: "Go to the order",
     remove: "Remove",
     quantity: "Quantity",
-    continue: "Keep looking",
     itemsOne: "object",
     itemsMany: "objects",
   },
@@ -394,7 +341,6 @@ const en: CasaBramantiCopy = {
     intro: "Fill in the fields. The showroom confirms the order within the next working day.",
     contact: "Contact",
     delivery: "Delivery",
-    payment: "Payment",
     name: "Full name",
     email: "Email",
     phone: "Phone",
@@ -408,17 +354,14 @@ const en: CasaBramantiCopy = {
     place: "Send the order",
     demoNotice: "This is a demonstration shop. No payment is taken and nothing is shipped.",
     doneTitle: "Order recorded",
-    doneBody: "In the demo the order stops here. In production it would trigger the email confirmation and the row in the management panel.",
+    doneBody: "The showroom confirms the order within the next working day and writes to the address left above. Nothing ships from this demonstration shop.",
     backHome: "Back to the collection",
     required: "Required field",
   },
 
   footer: {
     house: "Casa Bramanti, Milan",
-    address: "Via Solferino 18, 20121 Milan",
-    rights: "All rights reserved",
     demoNote: "Demonstration site on the Bizery platform",
-    links: { maison: "The house", care: "Garment care", shipping: "Shipping", contact: "Contact" },
   },
 };
 

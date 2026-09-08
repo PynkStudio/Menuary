@@ -2384,9 +2384,14 @@
     /* Durante la cerimonia la rotella è consumata da JS: qui si impedisce solo
        che il gesto rimbalzi sul documento. */
     overscroll-behavior: contain;
-  }
-
-  .vo-book-viewport[data-ceremony] {
+    /* Il libro non passa mai la mano al pan nativo del browser: da chiuso la
+       rotella/il tocco sono la cerimonia, da aperto sono lo sfogliare. In
+       nessuno dei due casi c'è un vero scorrimento del documento sotto — se
+       lo si lascia decidere al browser, su un telefono un tocco verticale
+       finiva per trascinare l'intera pagina invece di restare fermo. Il
+       foglio che *deve* scorrere (`.vo-page-body`) dichiara il proprio
+       `pan-y` più sotto, ed essendo lui stesso il contenitore che scorre
+       la sua regola vince a prescindere da questa. */
     touch-action: none;
   }
 
@@ -2456,6 +2461,76 @@
     border-color: var(--vo-gold);
   }
 
+  /* ── Suggerimento "sfoglia di lato" (schermo stretto) ─────────────────────── */
+  .vo-swipe-hint {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 55;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 1.15rem;
+    border: 1px solid var(--vo-line);
+    border-radius: 999px;
+    background: rgba(8, 7, 6, 0.93);
+    box-shadow: 0 0.6rem 1.6rem rgba(0, 0, 0, 0.4);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(242, 216, 148, 0.92);
+    white-space: nowrap;
+    /* Un suggerimento, non un bersaglio: se intercettasse il tocco romperebbe
+       proprio il gesto che sta spiegando. */
+    pointer-events: none;
+    animation: vo-swipe-hint-life 3.2s ease both;
+  }
+
+  .vo-swipe-hint-chevron {
+    font-size: 1rem;
+    color: var(--vo-gold);
+    animation: vo-swipe-hint-nudge 1.6s ease-in-out infinite;
+  }
+
+  .vo-swipe-hint-chevron[data-dir="prev"] {
+    animation-direction: reverse;
+  }
+
+  @keyframes vo-swipe-hint-life {
+    0% {
+      opacity: 0;
+    }
+    10%,
+    82% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes vo-swipe-hint-nudge {
+    0%,
+    100% {
+      transform: translateX(0);
+      opacity: 0.55;
+    }
+    50% {
+      transform: translateX(4px);
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vo-swipe-hint,
+    .vo-swipe-hint-chevron {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
   /* ── Scena 3D ─────────────────────────────────────────────────────────────── */
   .vo-volume {
     display: grid;
@@ -2486,11 +2561,14 @@
     height: var(--vo-page-h);
     perspective: 2800px;
     perspective-origin: 50% 46%;
-    /* Il dito sfoglia di traverso, la carta scorre per il lungo: si dichiara al
-       browser quale dei due è suo, così lo scorrimento verticale resta immediato
-       e non passa da JavaScript. Quando decide di scorrere ci manda un
-       `pointercancel` e il gesto orizzontale si annulla da sé. */
-    touch-action: pan-y;
+    /* Sfogliare è un gesto orizzontale, deciso a mano da JavaScript: al
+       browser non si concede alcun pan nativo qui, altrimenti un tocco un
+       po' verticale — il modo più naturale di provare a girare pagina col
+       pollice — veniva letto come scorrimento e trascinava l'intera pagina
+       invece di restare fermo. La carta che deve davvero scorrere
+       (`.vo-page-body`) dichiara il proprio `pan-y`: essendo lei stessa il
+       riquadro che scorre, la sua regola vale a prescindere da questa. */
+    touch-action: none;
   }
 
   .vo-book-ambient {

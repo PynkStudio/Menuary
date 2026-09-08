@@ -40,6 +40,13 @@ export const voBookMemory = {
    * un gesto e diventa un effetto.
    */
   dedicationWritten: false,
+  /**
+   * Il suggerimento "sfoglia di lato" si mostra una volta sola per scheda, la
+   * prima volta che il libro si apre su schermo stretto. Senza questo flag
+   * ricomparirebbe a ogni sezione visitata — smettendo di essere un
+   * insegnamento e diventando un intralcio.
+   */
+  swipeHintSeen: false,
 };
 
 /**

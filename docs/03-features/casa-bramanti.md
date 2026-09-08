@@ -69,7 +69,9 @@ L'impianto attuale, nell'ordine in cui si legge:
 2. **Frontespizio** (`CbFrontispiece`): una schermata tipografica, senza foto e
    senza claim. Il marchio è l'`h1` della collezione e ha una pagina tutta sua —
    è il modo di dargli aria senza gonfiarlo in testata. In fondo, i dati della
-   casa e **la riga che dichiara che cos'è il nastro sul bordo sinistro**.
+   casa e **la riga delle condizioni d'acquisto**: spedizione, reso, prova in
+   showroom. Fino al 2026-09-08 lì stava la nota che spiegava il nastro sul bordo
+   sinistro: è stata tolta perché spiegava l'interfaccia, non la merce.
 3. **Otto piani**, uno per oggetto, ciascuno alto una schermata (`CbPlate`).
 4. **Indice stampato** (`cb-contents`): numero, nome, prezzo. Solo quello: il
    tipo dell'oggetto è già scritto sul suo piano e nel foglio indice.
@@ -104,22 +106,48 @@ persuade. Alla passata di pulizia del 2026-08-28 si aggiunge una regola operativ
 > **Ogni fatto compare una volta sola.** Se una riga ripete qualcosa che il
 > lettore ha già letto in quella schermata, si toglie: non si riformula.
 
+Alla passata del 2026-09-08 se ne aggiunge una seconda:
+
+> **Nessuna riga spiega l'interfaccia.** Il posto di una frase di copy è occupato
+> da ciò che serve a decidere l'acquisto — misura, tessuto, prezzo, spedizione,
+> reso, prova — non da come funziona il nastro, la borsa o il bottone Slabbby.
+> Un elemento che ha bisogno di una didascalia per essere capito è un problema di
+> disegno, non di testo.
+
 Dove vive ciascun fatto, in modo che non ricompaia altrove:
 
 | Fatto | Sta qui | Non deve stare |
 |---|---|---|
 | Milano | riga sopra il marchio, nel frontespizio | nella riga della casa ("Maison fondata da Elia Bramanti", non "milanese") |
 | Indirizzo | riga `Showroom su appuntamento` del frontespizio, riga `Luogo` della chiusura | nel foglio indice, nel colophon |
-| Metratura della collezione (2028 cm) | nota del nastro nel frontespizio, piede del metro | nella tabella dell'appuntamento, nel colophon |
+| Metratura della collezione (2028 cm) | piede del metro | nel frontespizio, nella tabella dell'appuntamento, nel colophon |
+| Spedizione e reso | riga delle condizioni nel frontespizio, tabella della scheda oggetto | nella didascalia dei piani |
 | Email dello showroom | il rimando `Scrivi allo showroom` | come riga `Contatto` accanto |
 | Tipo dell'oggetto | didascalia del piano, foglio indice | indice stampato |
 | Nome della variante scelta | etichetta sotto il campione colore | come riga `Variante` nella colonna a fianco |
 | "Le misure sono del capo, non del corpo" | la chiave stessa: `Misure del capo` | come riga di nota sotto le taglie |
 
-Tolti nello stesso passaggio, perché non dicevano nulla al lettore: il conteggio
-di magazzino sul frontespizio ("8 oggetti, 22 varianti"), la parola "Scorri"
-(resta il filetto animato) e la riga "Metro da sarto — 2028 cm" in mezzo a luogo,
-orari e prova.
+Tolti nel passaggio del 2026-08-28, perché non dicevano nulla al lettore: il
+conteggio di magazzino sul frontespizio ("8 oggetti, 22 varianti"), la parola
+"Scorri" (resta il filetto animato) e la riga "Metro da sarto — 2028 cm" in mezzo
+a luogo, orari e prova.
+
+Tolti il 2026-09-08, perché spiegavano l'interfaccia invece della merce: la nota
+del nastro nel frontespizio, la riga sotto il bottone Slabbby ("Slabbby conserva
+l'oggetto nella tua lista fra i negozi") e la nota della borsa vuota sul
+localStorage ("restano qui finché non chiudi il browser", ora indica come si
+sceglie variante e taglia). Riscritti nello stesso passaggio: la nota dell'indice
+stampato (era l'ordine di lettura, ora prezzo, spedizione e dove si scelgono
+variante e taglia), la lettura del metro a movimento ridotto e il suo
+`aria-label` (dicevano "oggetto a schermo", ora "misure del capo"), e la schermata
+di ordine registrato (spiegava che cosa farebbe la piattaforma in produzione, ora
+dice al cliente quando lo showroom risponde).
+
+Eliminate insieme a loro le chiavi di copy che nessun componente leggeva più:
+`metro.total`, `label.object/inventory/price`, `nav.collection/maison`,
+`home.plate.house/collection/pieces/variantsWord`, `home.peak*`,
+`piece.measuresOn`, `cart.continue`, `checkout.payment`,
+`footer.address/rights/links`.
 
 Due soli meccanismi di runtime, tenuti separati perché hanno bisogni diversi:
 
