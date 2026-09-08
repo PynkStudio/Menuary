@@ -3682,30 +3682,61 @@
 
   /* ── Fuoco sinistra/destra sotto i 900px ──────────────────────────────────── */
   /* Modo compatto: lo decide il componente, non il CSS.
-     La scatola contiene le due facciate vere, alla stessa proporzione del
-     libro da tavolo — solo più piccola, perché qui deve starci per intero.
-     A libro chiuso e durante l'apertura resta così, centrata come su schermo
-     largo (`blockShift` in `book-shell.tsx` fa lo stesso -25%→0% del
-     desktop). Aperta, la telecamera zooma sull'una o sull'altra facciata: è
-     `book-shell.tsx` a spostare il fuoco, qui si traduce quel numero
-     (`--vo-compact-focus-t`, 0 = sinistra, 1 = destra) in scala e
-     spostamento, e lo introduce gradualmente (`--vo-compact-zoom-t`) così lo
-     zoom si accende insieme all'ultimo tratto dell'apertura invece di
-     scattare di colpo. */
+     La pagina resta alla sua dimensione vera — la stessa proporzione e la
+     stessa altezza reale del libro da tavolo, mai rimpicciolita — perché è
+     lì che il testo è stato composto per starci senza scorrere. Zoomare *quel*
+     riquadro con un `scale()` non gli avrebbe dato più spazio: un testo che
+     eccede un riquadro piccolo eccede allo stesso modo un riquadro piccolo
+     ingrandito, l'overflow si limita a vedersi più grosso. La telecamera
+     quindi non rimpicciola mai la pagina fuoco (`scale` resta 1 lì); è la
+     visuale "tutta la doppia pagina" — durante il giro, quando il foglio è
+     di taglio — a dover rimpicciolire *lei*, perché una doppia pagina vera è
+     più larga dello schermo.
+     A libro chiuso resta centrata come su schermo largo (`blockShift` in
+     `book-shell.tsx` fa lo stesso -25%→0% del desktop). Aperta,
+     `book-shell.tsx` scrive due numeri, entrambi continui: `--vo-compact-focus-t`
+     (0 = a fuoco sulla sinistra, 1 = sulla destra) e `--vo-compact-zoom-t`
+     (0 = doppia pagina intera e rimpicciolita, 1 = una facciata a piena
+     grandezza) — qui si traducono in scala e spostamento. */
     .vo-book-site[data-compact] .vo-book-stage {
-      --vo-page-h: min(calc(100dvh - 10.5rem), 66vw);
+      --vo-page-h: min(calc(100dvh - 10.5rem), 130vw);
       --vo-page-w: calc(var(--vo-page-h) / 1.5);
     }
 
     .vo-book-site[data-compact] .vo-book-stage[data-open] {
-      /* La facciata a fuoco, ingrandita fino a occupare quasi la larghezza
-         che occupava l'intera doppia pagina: leggibile senza scomparire
-         nell'angolo. */
-      --vo-compact-focus-scale: 1.92;
-      transform: scale(calc(1 + (var(--vo-compact-focus-scale) - 1) * var(--vo-compact-zoom-t, 1)))
-        translateX(calc(
-          var(--vo-page-w) * 0.5 * (1 - 2 * var(--vo-compact-focus-t, 0)) * var(--vo-compact-zoom-t, 1)
-        ));
+      /* Le due mete della telecamera, ciascuna raggiunta scalando 1 (mai più
+         piccola della pagina vera) e spostando quel poco che serve a portare
+         il bordo esterno della facciata a fuoco vicino al bordo schermo,
+         lasciando filtrare solo l'unghia della piega dall'altra parte —
+         `--vo-compact-peek` — e un margine di rispetto dalla parte opposta —
+         `--vo-compact-margin`, come il bordo di una scrivania intorno al
+         libro. */
+      --vo-compact-peek: 1rem;
+      --vo-compact-margin: 1.85rem;
+      --vo-compact-tx-left: var(--vo-compact-margin);
+      --vo-compact-tx-right: calc(100vw - var(--vo-compact-margin) - var(--vo-page-w) * 2);
+      /* La meta "doppia pagina intera": scala quanto serve perché le due
+         facciate insieme entrino nello schermo, spostata perché lo spacco —
+         il foglio di taglio — cada al centro invece che dov'è appoggiata la
+         scatola. */
+      --vo-compact-pullback-scale: min(1, calc(92vw / (var(--vo-page-w) * 2)));
+      --vo-compact-tx-pullback: calc(
+        50vw - var(--vo-compact-pullback-scale) * var(--vo-page-w)
+      );
+      --vo-compact-scale: calc(
+        var(--vo-compact-pullback-scale) +
+          (1 - var(--vo-compact-pullback-scale)) * var(--vo-compact-zoom-t, 1)
+      );
+      --vo-compact-tx-focus: calc(
+        var(--vo-compact-tx-left) +
+          (var(--vo-compact-tx-right) - var(--vo-compact-tx-left)) * var(--vo-compact-focus-t, 0)
+      );
+      --vo-compact-tx: calc(
+        var(--vo-compact-tx-pullback) * (1 - var(--vo-compact-zoom-t, 1)) +
+          var(--vo-compact-tx-focus) * var(--vo-compact-zoom-t, 1)
+      );
+      transform-origin: 0 50%;
+      transform: translateX(var(--vo-compact-tx)) scale(var(--vo-compact-scale));
     }
 
     .vo-book-site[data-compact] .vo-page-sheet[data-side="right"] {
