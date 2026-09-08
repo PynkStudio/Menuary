@@ -469,8 +469,8 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* La nota che rende leggibile il metro: filetto d'accento, come il nastro */
-  .cb-open-tape {
+  /* Spedizione, reso e prova: filetto d'accento, come il nastro */
+  .cb-open-terms {
     max-width: 48ch;
     padding-left: var(--cb-4);
     border-left: 1px solid var(--cb-accent);
@@ -1662,7 +1662,7 @@
     }
 
     /* E con lui la riga che lo dichiara: senza nastro descriverebbe il nulla. */
-    .cb-open-tape {
+    .cb-open-terms {
       display: none;
     }
 
@@ -1690,7 +1690,7 @@
       letter-spacing: 0.14em;
     }
 
-    /* Senza la nota del nastro il piede è una riga sola: il filetto
+    /* Senza la riga delle condizioni il piede è una riga sola: il filetto
        tornerebbe a destra da solo, spaesato. Si mette sotto, allineato. */
     .cb-open-scroll {
       justify-self: start;

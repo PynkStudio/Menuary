@@ -11,10 +11,6 @@
  *
  * Sull'oggetto 08 non c'è niente da misurare: il nastro si spegne e la
  * lettura diventa "taglia unica".
- *
- * Il nastro non si spiega da solo a chi non sa cos'è: il frontespizio lo
- * dichiara a parole (copy.home.opening.tape) e qui sotto resta il nome per
- * esteso. Senza quelle due righe è un righello e basta.
  */
 
 import {

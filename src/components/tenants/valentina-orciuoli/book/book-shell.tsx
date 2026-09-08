@@ -1191,6 +1191,40 @@ export function VoBookShell({
   }, [beginDrag, endWheel, open, reducedMotion, step, updateDrag]);
 
   /**
+   * Rete di sicurezza sotto `touch-action`: quel CSS basta da solo nei browser
+   * che rispettano la specifica, ma qui si preferisce non fidarsi ciecamente —
+   * senza questo, su un telefono un tocco un po' verticale poteva ancora
+   * trascinare l'intera pagina invece di restare fermo, ed è esattamente il
+   * difetto che `touch-action: none` sullo stage dovrebbe già escludere.
+   *
+   * Si registra sul foglio da cui parte il tocco, non sull'esito del gesto: un
+   * dito posato su un foglio che scorre resta suo per tutta la durata, anche
+   * se in quell'istante non c'è ancora corsa da fare in quella direzione — al
+   * contrario si spezzerebbe lo scorrimento appena il testo arriva a un capo.
+   */
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || !open || reducedMotion) return;
+
+    let blocking = false;
+    const onTouchStart = (event: TouchEvent) => {
+      const target = event.touches[0]?.target as HTMLElement | null;
+      const scroller = target?.closest?.("[data-vo-scroll]");
+      blocking = !(scroller instanceof HTMLElement && scroller.scrollHeight > scroller.clientHeight);
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      if (blocking) event.preventDefault();
+    };
+
+    stage.addEventListener("touchstart", onTouchStart, { passive: true });
+    stage.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => {
+      stage.removeEventListener("touchstart", onTouchStart);
+      stage.removeEventListener("touchmove", onTouchMove);
+    };
+  }, [open, reducedMotion]);
+
+  /**
    * La sfogliata a dito, su tutta la pagina. Prima l'unica presa era la striscia
    * sul taglio: su un telefono è una mira che nessuno ha voglia di prendere, e il
    * gesto che tutti provano — trascinare la pagina di lato — non faceva nulla.

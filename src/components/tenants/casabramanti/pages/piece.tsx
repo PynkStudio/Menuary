@@ -160,7 +160,6 @@ export function CasaBramantiPiecePage({ pieceId }: { pieceId: string }) {
               data-slabbby-block
               key={`${piece.id}-${variant.id}`}
             />
-            <p className="cb-slabbby-hint">{copy.piece.saveHint}</p>
 
             <dl className="cb-label cb-label--tight" style={{ marginTop: "2rem" }}>
               <div style={{ display: "contents" }}>
