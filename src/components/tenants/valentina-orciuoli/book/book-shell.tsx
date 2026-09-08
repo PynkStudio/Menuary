@@ -492,6 +492,13 @@ export function VoBookShell({
   // Da chiuso il volume mostra solo la copertina, quindi va centrato sulla metà
   // destra; si riallinea al centro reale mentre il cartoncino si apre. La pagina
   // sinistra compare solo quando la copertina ha passato la verticale.
+  //
+  // Su schermo stretto `.vo-book-viewport` allinea l'intera scatola a destra
+  // (vedi CSS), non al centro: la copertina, che vive già sulla metà destra
+  // della scatola, si trova così a coincidere da sola con la destra dello
+  // schermo. Ricentrarla con lo stesso -25% del desktop la spingerebbe verso
+  // la metà della scatola — che qui è molto più larga dello schermo — e la
+  // farebbe sparire fuori campo insieme alla sinistra.
   const blockShift = useTransform(coverProgress, [0, 0.55], [compact ? "0%" : "-25%", "0%"]);
   const volumeTurn = useTransform(turn, [0, 1], [0, 180]);
   /**
@@ -1429,7 +1436,10 @@ export function VoBookShell({
         {/* Due pixel davanti al risguardo: complanari si contenderebbero il
             posto, e il piatto è comunque molto più spesso di così. */}
         <motion.div className="vo-page vo-page-left" style={{ rotateY: leftPageTurn, z: 2 }}>
-          {pageSheet(staticLeft, "left")}
+          {/* Su schermo stretto la sinistra è di scena ma non di contenuto:
+              resta sempre il foglio bianco, e tutto il testo vive a destra —
+              è quello che fa sembrare un libro anche a una pagina alla volta. */}
+          {compact ? fillerSheet : pageSheet(staticLeft, "left")}
         </motion.div>
         <div className="vo-page vo-page-right">{pageSheet(staticRight, "right")}</div>
 

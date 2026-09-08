@@ -3680,49 +3680,34 @@
     color: var(--vo-gold-soft);
   }
 
-  /* ── Pagina singola sotto i 900px ─────────────────────────────────────────── */
-  /* Modo compatto: lo decide il componente, non il CSS. */
+  /* ── Sinistra in fuori campo sotto i 900px ────────────────────────────────── */
+  /* Modo compatto: lo decide il componente, non il CSS.
+     La destra torna alle dimensioni di prima — leggibile, quasi quanto lo
+     schermo — e non è più sola in scena: la scatola contiene ancora *due*
+     facciate, ma qui la sinistra sporge apposta fuori dal bordo. Se ne vede
+     solo un'unghia, quanto basta per leggere "libro aperto" senza rimpicciolire
+     tutto per farcelo stare. `.vo-book-viewport` allinea la scatola a destra
+     invece che al centro (sotto), così l'eccedenza cade fuori a sinistra — dove
+     il taglio di `.vo-book-site { overflow: hidden }` la fa sparire da sé. */
     .vo-book-site[data-compact] .vo-book-stage {
       --vo-page-h: min(calc(100dvh - 10.5rem), 130vw);
       --vo-page-w: calc(var(--vo-page-h) / 1.5);
-      --vo-cover-w: calc(var(--vo-page-w) * 1.03);
-      width: var(--vo-page-w);
-      /* La fuga va tenuta in proporzione alla scatola, non in valore assoluto:
-         2800px su una facciata sola sono quasi una proiezione ortogonale, e il
-         foglio girava piatto come una carta da gioco vista di fronte. */
-      perspective: 1500px;
-      perspective-origin: 50% 48%;
-    }
-
-    /* Su una facciata sola il perno del volume è il suo centro: quello a 75% è la
-       posizione del libro chiuso *dentro* la doppia pagina, che qui non esiste. */
-    .vo-book-site[data-compact] .vo-book {
-      transform-origin: 50% 50%;
-    }
-
-    .vo-book-site[data-compact] .vo-page-left,
-    .vo-book-site[data-compact] .vo-book-gutter {
-      display: none;
-    }
-
-    .vo-book-site[data-compact] .vo-page-right {
-      left: 0;
-      width: 100%;
-    }
-
-    .vo-book-site[data-compact] .vo-leaf,
-    .vo-book-site[data-compact] .vo-leaf-cast,
-    .vo-book-site[data-compact] .vo-cover {
-      left: 0;
-      width: 100%;
+      /* La scatola (due facciate) è più larga dello schermo di proposito.
+         `.vo-book-viewport` la centra come sempre — un `justify-items: end`
+         qui sembrava la scelta ovvia, ma per una scatola più larga del suo
+         spazio il browser tratta "end" come pericoloso e degrada da sé a
+         "start": è la stessa scatola di prima, semplicemente incollata al
+         bordo sinistro invece che a quello destro. Un `translateX` non ha
+         quella cautela: sposta la scatola già centrata verso sinistra di
+         *tutta* l'eccedenza che sporgerebbe a destra, così è sempre la
+         destra — quella con il testo — a restare intera in vista, e la
+         sinistra a sporgere fuori dal bordo anziché sparire equamente sui
+         due lati. */
+      transform: translateX(calc(100vw - 1rem - var(--vo-page-w) * 2));
     }
 
     .vo-book-site[data-compact] .vo-page-sheet[data-side="right"] {
       box-shadow: inset 14px 0 26px -20px rgba(42, 33, 25, 0.8);
-    }
-
-    .vo-book-site[data-compact] .vo-leaf-hotspot {
-      width: 20%;
     }
 
     .vo-book-site[data-compact] .vo-face-glyph-watermark {
@@ -4014,16 +3999,6 @@
     opacity: 0.72;
   }
 
-  /* Modo compatto: lo decide il componente, non il CSS. */
-    .vo-book-site[data-compact] .vo-back-board {
-      left: 0;
-      width: 100%;
-    }
-
-    .vo-book-site[data-compact] .vo-book {
-      transform-origin: 50% 50%;
-    }
-
   @media (prefers-reduced-motion: reduce) {
     .vo-back-board {
       transform: none;
@@ -4071,13 +4046,6 @@
   a.vo-bookmark:focus-visible {
     filter: brightness(1.22);
   }
-
-  /* Modo compatto: lo decide il componente, non il CSS. */
-    .vo-book-site[data-compact] .vo-bookmark {
-      left: auto;
-      right: 1.4rem;
-    }
-
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -4181,6 +4149,21 @@
 
   .vo-face-index a:hover .vo-index-title {
     color: var(--vo-book-accent);
+  }
+
+  /* Modo compatto: lo decide il componente, non il CSS.
+     Il titolo era `flex:none` — larghezza intrinseca, mai stretta — perché la
+     facciata singola di prima era larga quanto la doppia pagina di oggi. Ora
+     che la facciata è la metà di quella doppia, "The Emotion Dragons Trilogy"
+     non ci sta su una riga e sporgeva oltre il taglio. Qui si lascia che vada
+     a capo, coi puntini e il folio che restano ancorati alla prima riga. */
+  .vo-book-site[data-compact] .vo-index-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .vo-book-site[data-compact] .vo-face-index a {
+    align-items: baseline;
   }
 
   /* ── I volumi della trilogia, tutti sulla stessa facciata ─────────────────── */
