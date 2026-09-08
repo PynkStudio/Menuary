@@ -1,6 +1,13 @@
 "use client";
 
-import { animate, motion, useMotionValue, useTransform, type MotionValue } from "framer-motion";
+import {
+  animate,
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 import { usePathname } from "next/navigation";
 import {
   useCallback,
@@ -186,6 +193,15 @@ const wheelFollow = {
   mass: 0.7,
   restDelta: 0.0005,
 } as const;
+/** La testa che gira da una facciata all'altra a riposo: un moto solo, non un trascinamento. */
+const cameraFocusSpring = { type: "spring", stiffness: 190, damping: 26, mass: 0.9 } as const;
+/**
+ * L'occhio che segue il foglio mentre gira. Smorzamento vicino al critico,
+ * come `flipSpring` per la carta: la telecamera non deve rimbalzare, solo
+ * arrivare morbida — un rimbalzo su una ripresa si nota molto più che su un
+ * foglio, perché è tutta l'inquadratura a muoversi, non un dettaglio in essa.
+ */
+const cameraTrackSpring = { type: "spring", stiffness: 210, damping: 32, mass: 1 } as const;
 
 /**
  * Quali fogli animare per andare da `from` a `to`. Oltre tre fogli l'occhio non
@@ -372,17 +388,11 @@ export function VoBookShell({
   }, [spread]);
 
   /**
-   * Su schermo stretto la doppia pagina non esiste: si mostra una facciata alla
-   * volta, e girare la pagina avanza di *mezzo* spread. `half` dice quale delle
-   * due facciate è in vista; su schermo largo non ha significato e viene ignorato.
-   *
-   * Lo stato resta in unità di spread — è quello che l'URL, la memoria e i
-   * numeri di pagina conoscono — e la posizione si deriva dal modo corrente, così
-   * un cambio di larghezza non corrompe nulla.
-   *
-   * Come lo spread, la facciata sopravvive a un rimontaggio: cambiare sezione
-   * rimonta il componente, e ripartire da zero riportava indietro di una pagina
-   * chi aveva appena girato sulla facciata destra.
+   * `half` è rimasto nello stato solo per compatibilità con la memoria
+   * salvata da versioni precedenti: la posizione non lo usa più, un giro
+   * pagina vale sempre uno *spread* intero, largo o stretto che sia lo
+   * schermo. Su schermo stretto è `focus`, qui sotto, a portare lo sguardo
+   * da una facciata all'altra senza muovere la pagina.
    */
   const [half, setHalf] = useState(() =>
     voBookMemoryAvailable && voBookMemory.opened ? voBookMemory.half : 0,
@@ -391,19 +401,9 @@ export function VoBookShell({
   useEffect(() => {
     voBookMemory.half = half;
   }, [half]);
-  const positionCount = compact ? voSpreadCount * 2 : voSpreadCount;
-  const toPos = useCallback(
-    (targetSpread: number, targetHalf: number) =>
-      compact ? targetSpread * 2 + targetHalf : targetSpread,
-    [compact],
-  );
-  const fromPos = useCallback(
-    (position: number) =>
-      compact
-        ? { spread: Math.floor(position / 2), half: position % 2 }
-        : { spread: position, half: 0 },
-    [compact],
-  );
+  const positionCount = voSpreadCount;
+  const toPos = useCallback((targetSpread: number) => targetSpread, []);
+  const fromPos = useCallback((position: number) => ({ spread: position, half: 0 }), []);
   /**
    * L'appendice occupa una posizione *virtuale* subito oltre l'ultima pagina. Sta
    * fuori dai limiti usati dalla navigazione manuale, quindi sfogliando non ci si
@@ -423,7 +423,7 @@ export function VoBookShell({
       Boolean(appendix) &&
       (entryAppendix || !(voBookMemoryAvailable && voBookMemory.opened)),
   );
-  const pos = atAppendix ? appendixPos : toPos(spread, half);
+  const pos = atAppendix ? appendixPos : toPos(spread);
   /** Come `gestureRef`: la posizione che vale per un input arrivato prima del render. */
   const posRef = useRef(pos);
   posRef.current = pos;
@@ -489,17 +489,108 @@ export function VoBookShell({
 
   const busy = gesture?.mode === "run";
 
+  /**
+   * Su schermo stretto le due facciate esistono entrambe ma non ci stanno a
+   * fuoco insieme: la telecamera guarda una alla volta, come una testa che si
+   * gira. `tryShiftFocus`, più sotto, decide se un passo sposta lo sguardo o
+   * gira davvero pagina. Su schermo largo resta scritto ma senza effetto
+   * visivo — il CSS che lo legge è tutto sotto `[data-compact]`.
+   */
+  const [focus, setFocus] = useState<VoFaceSide>("left");
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+  /**
+   * Il fuoco a riposo — dove la telecamera torna quando non c'è un foglio in
+   * mano o in volo. Durante un giro vero non è lui a guidare: la telecamera
+   * segue invece il foglio stesso, vedi `focusDuringFlip` qui sotto.
+   */
+  const restingFocusT = useMotionValue(focus === "left" ? 0 : 1);
+  useEffect(() => {
+    const controls = animate(restingFocusT, focus === "left" ? 0 : 1, cameraFocusSpring);
+    return () => controls.stop();
+  }, [restingFocusT, focus]);
+  /**
+   * Mentre un foglio è preso o in volo, la telecamera non salta da un fuoco
+   * all'altro: insegue il foglio stesso, come un occhio che segue la pagina
+   * che si gira. `p0` è la sua posizione — 0→1 andando avanti, 1→0 tornando
+   * indietro, ma sempre "a metà corsa" quando vale 0.5, qualunque sia il
+   * verso, per come è costruita più sotto l'animazione del volo. Vicino a 0 o
+   * a 1 il foglio è quasi piatto e la facciata si legge a fuoco come da
+   * fermi; verso 0.5 è di taglio — si vede di profilo, `|` — ed è lì che
+   * `zoomDuringFlip` allarga per tenere centrato lo spacco invece che una
+   * facciata sola, e `focusDuringFlip` scambia il lato di destinazione:
+   * prima di metà corsa si guarda ancora la facciata di partenza, dopo si
+   * guarda già quella d'arrivo.
+   *
+   * Entrambi leggono `gestureRef` invece dello stato React: durante un
+   * trascinamento `p0` si muove a ogni pixel, ed è quel movimento — non un
+   * ri-render — a dover guidare la telecamera in tempo reale.
+   */
+  const focusDuringFlip = useTransform([p0, restingFocusT], ([progress, resting]) => {
+    const mode = gestureRef.current?.mode;
+    if (mode !== "run" && mode !== "drag") return resting as number;
+    return (progress as number) < 0.5 ? 1 : 0;
+  });
+  const zoomDuringFlip = useTransform(p0, (progress) => {
+    const mode = gestureRef.current?.mode;
+    if (mode !== "run" && mode !== "drag") return 1;
+    return Math.abs(2 * progress - 1);
+  });
+  /**
+   * Le stesse due misure, ma smussate. Senza questo la telecamera scatterebbe
+   * esattamente al variare di `p0` — durante un trascinamento è la posizione
+   * grezza del dito, un moto a scatti, non lo sguardo morbido di una testa
+   * che segue. La molla insegue con un piccolo ritardo elastico: è l'"ease"
+   * che serve sia quando il foglio si posa da solo, sia quando è la mano a
+   * fargli fare avanti e indietro.
+   */
+  const cameraFocusT = useSpring(focusDuringFlip, cameraTrackSpring);
+  const cameraZoomFlipT = useSpring(zoomDuringFlip, cameraTrackSpring);
+  /**
+   * In doppia pagina compressa in una facciata sola, un passo prima sposta lo
+   * sguardo — sinistra↔destra — e solo quando è già sul bordo giusto gira
+   * davvero pagina: è la stessa testa che si gira, non ancora la mano che
+   * afferra il foglio. Torna `true` se il passo è stato speso così — chi
+   * chiama non deve più fare nient'altro — `false` se deve proseguire verso
+   * un giro vero.
+   */
+  const tryShiftFocus = useCallback(
+    (dir: 1 | -1) => {
+      if (!compact) return false;
+      if (dir === 1 && focusRef.current === "left") {
+        setFocus("right");
+        return true;
+      }
+      if (dir === -1 && focusRef.current === "right") {
+        setFocus("left");
+        return true;
+      }
+      return false;
+    },
+    [compact],
+  );
+
   // Da chiuso il volume mostra solo la copertina, quindi va centrato sulla metà
   // destra; si riallinea al centro reale mentre il cartoncino si apre. La pagina
-  // sinistra compare solo quando la copertina ha passato la verticale.
-  //
-  // Su schermo stretto `.vo-book-viewport` allinea l'intera scatola a destra
-  // (vedi CSS), non al centro: la copertina, che vive già sulla metà destra
-  // della scatola, si trova così a coincidere da sola con la destra dello
-  // schermo. Ricentrarla con lo stesso -25% del desktop la spingerebbe verso
-  // la metà della scatola — che qui è molto più larga dello schermo — e la
-  // farebbe sparire fuori campo insieme alla sinistra.
-  const blockShift = useTransform(coverProgress, [0, 0.55], [compact ? "0%" : "-25%", "0%"]);
+  // sinistra compare solo quando la copertina ha passato la verticale. Vale
+  // anche su schermo stretto: la scatola contiene comunque le due facciate
+  // vere, solo più piccole — non una sola — quindi lo stesso -25% la centra
+  // allo stesso modo.
+  const blockShift = useTransform(coverProgress, [0, 0.55], ["-25%", "0%"]);
+  /**
+   * Quanto della zoomata sul fuoco (sotto) è già "acceso": 0 appena la
+   * copertina comincia a girare, 1 quando le pagine sono ormai scoperte. Solo
+   * su schermo stretto — `.vo-book-stage` lo legge come `--vo-compact-zoom-t`
+   * e lo ignora del tutto su schermo largo. Senza questa rampa lo zoom
+   * scattava di colpo nell'istante in cui il volume risultava "aperto",
+   * mentre la copertina stava ancora finendo di ribaltarsi.
+   */
+  const compactZoomActivation = useTransform(coverProgress, [0.3, 0.75], [0, 1]);
+  /** Le due rampe insieme: acceso solo a copertina ormai aperta, e per il resto guidato dal volo. */
+  const compactZoomT = useTransform(
+    [compactZoomActivation, cameraZoomFlipT],
+    ([activation, flip]) => (activation as number) * (flip as number),
+  );
   const volumeTurn = useTransform(turn, [0, 1], [0, 180]);
   /**
    * La prima pagina **è il dietro della copertina**: non compare, scende con lei.
@@ -534,7 +625,7 @@ export function VoBookShell({
    */
   const sheetCache = useMemo(
     () => new Map<string, ReactNode>(),
-    [appendix, compact, positionCount, renderAppendix, renderFace],
+    [appendix, positionCount, renderAppendix, renderFace],
   );
 
   /**
@@ -555,7 +646,7 @@ export function VoBookShell({
     (position: number, side: VoFaceSide) => {
       if (position === appendixPos) {
         if (!appendix) return <div className="vo-page-sheet vo-page-sheet-blank" />;
-        const face: VoFaceSide = compact ? "right" : side;
+        const face: VoFaceSide = side;
         return (
           <div className="vo-page-sheet" data-side={face} data-spread="appendice">
             <div className="vo-page-grain" aria-hidden="true" />
@@ -571,10 +662,8 @@ export function VoBookShell({
       if (position < 0 || position >= positionCount) {
         return <div className="vo-page-sheet vo-page-sheet-blank" />;
       }
-      const { spread: targetSpread, half: targetHalf } = fromPos(position);
-      // In compatto la posizione *è* la facciata: il lato richiesto dal chiamante
-      // vale solo quando le due pagine convivono.
-      const face: VoFaceSide = compact ? (targetHalf === 0 ? "left" : "right") : side;
+      const { spread: targetSpread } = fromPos(position);
+      const face: VoFaceSide = side;
       const meta = voSpreads[targetSpread];
       const folio = targetSpread * 2 + (face === "right" ? 1 : 0);
       return (
@@ -594,21 +683,19 @@ export function VoBookShell({
         </div>
       );
     },
-    [appendix, appendixPos, compact, fromPos, positionCount, renderAppendix, renderFace],
+    [appendix, appendixPos, fromPos, positionCount, renderAppendix, renderFace],
   );
 
   const pageSheet = useCallback(
     (position: number, side: VoFaceSide) => {
-      // In compatto la facciata la detta la posizione, non il lato richiesto: due
-      // chiavi diverse per lo stesso foglio sprecherebbero la cache.
-      const key = compact ? `${position}` : `${position}:${side}`;
+      const key = `${position}:${side}`;
       const cached = sheetCache.get(key);
       if (cached !== undefined) return cached;
       const node = buildSheet(position, side);
       sheetCache.set(key, node);
       return node;
     },
-    [buildSheet, compact, sheetCache],
+    [buildSheet, sheetCache],
   );
 
   /**
@@ -668,9 +755,14 @@ export function VoBookShell({
       // scriverla in `spread` la farebbe rientrare nella sequenza sfogliabile.
       if (target === appendixPos) {
         setAtAppendix(true);
+        setFocus("left");
         clearGesture();
         return;
       }
+      // Arrivando avanti si ricomincia a guardare da sinistra, arrivando
+      // indietro da destra: è la stessa testa che continua a girare nella
+      // direzione da cui veniva, non che scatta sempre al solito lato.
+      setFocus(gestureRef.current?.dir === -1 ? "right" : "left");
       const { spread: nextSpread, half: nextHalf } = fromPos(target);
       // Si scrive qui, non nell'effetto: il foglio è atterrato *adesso*. La
       // navigazione che parte due righe sotto rimonta il componente, e l'effetto
@@ -707,15 +799,14 @@ export function VoBookShell({
     (dir: 1 | -1) => {
       const stage = stageRef.current;
       if (!stage) return undefined;
-      // Andando avanti si stacca la facciata destra, tornando indietro la
-      // sinistra. In compatto la sinistra non è in vista: c'è una facciata sola.
-      const side = dir === 1 || compact ? "right" : "left";
+      // Andando avanti si stacca la facciata destra, tornando indietro la sinistra.
+      const side = dir === 1 ? "right" : "left";
       const body = stage.querySelector<HTMLElement>(`.vo-page-${side} [data-vo-scroll]`);
       const top = body?.scrollTop ?? 0;
       if (!top) return undefined;
       return dir === 1 ? { front: top, back: 0 } : { front: 0, back: top };
     },
-    [compact],
+    [],
   );
 
   const goTo = useCallback(
@@ -815,7 +906,7 @@ export function VoBookShell({
     if (isBackCoverPathname(pathname)) return;
     // Una sezione si apre sempre dalla sua prima facciata; l'appendice ha la sua
     // posizione virtuale in fondo, così raggiungerla è comunque uno sfogliare.
-    const fromUrl = appendix ? appendixPos : toPos(spreadIndexByPathname(pathname), 0);
+    const fromUrl = appendix ? appendixPos : toPos(spreadIndexByPathname(pathname));
     if (fromUrl === pos) return;
     // Un foglio è già in volo: la richiesta non si butta, si onora appena si posa.
     if (gesture) {
@@ -881,6 +972,10 @@ export function VoBookShell({
         if (direction === -1) onLeaveAppendix?.();
         return;
       }
+      // Prima si gira la testa, poi la pagina: finché lo sguardo non è già
+      // sul bordo giusto, un passo sposta il fuoco e non deve nemmeno sapere
+      // se quello è l'ultimo o il primo spread — vedi `tryShiftFocus`.
+      if (tryShiftFocus(direction)) return;
       // Ai due capi del volume non ci sono pagine: ci sono i piatti.
       if (direction === -1 && from === 0) {
         onBeforeFirstPage?.();
@@ -896,7 +991,7 @@ export function VoBookShell({
       }
       goTo(from + direction);
     },
-    [appendixPos, goTo, onBeforeFirstPage, onLeaveAppendix, onPastLastPage, positionCount],
+    [appendixPos, goTo, onBeforeFirstPage, onLeaveAppendix, onPastLastPage, positionCount, tryShiftFocus],
   );
 
   // ── Input: tastiera ────────────────────────────────────────────────────────
@@ -1022,10 +1117,10 @@ export function VoBookShell({
       const rect = stage.getBoundingClientRect();
       dragRef.current = {
         startX,
-        // Su schermo largo la scatola contiene due facciate, su schermo stretto
-        // una: la corsa utile è sempre *una* facciata, non metà scatola. La
-        // rotella porta la sua, perché non ha una pagina sotto da misurare.
-        span: Math.max(travelSpan ?? (compact ? rect.width : rect.width * 0.5) ?? 1, 1),
+        // La scatola contiene sempre due facciate, larga o stretta che sia:
+        // la corsa utile è una facciata, non la scatola intera. La rotella
+        // porta la sua, perché non ha una pagina sotto da misurare.
+        span: Math.max(travelSpan ?? rect.width * 0.5 ?? 1, 1),
         base: p0.get(),
         target: p0.get(),
         moved: false,
@@ -1035,7 +1130,7 @@ export function VoBookShell({
       if (!resuming) playPageSound();
       return true;
     },
-    [armGesture, compact, open, p0, playPageSound, pos, reducedMotion, stopHintAnim],
+    [armGesture, open, p0, playPageSound, pos, reducedMotion, stopHintAnim],
   );
 
   /**
@@ -1162,6 +1257,12 @@ export function VoBookShell({
           step(direction);
           return;
         }
+        // Prima si gira la testa, poi la pagina: qui la rotella non prende in
+        // mano nessun foglio, sposta solo lo sguardo.
+        if (tryShiftFocus(direction)) {
+          wheelLockRef.current = now + WHEEL_QUIET_MS;
+          return;
+        }
         // Qui invece un foglio da prendere non c'è proprio: siamo a un capo del
         // volume, e `step` sa chiudere il libro o girarlo sulla quarta.
         if (!beginDrag(direction, 0, WHEEL_POINTER_ID, WHEEL_SPAN)) {
@@ -1195,7 +1296,7 @@ export function VoBookShell({
       // il libro sembrava bloccato su quella sezione.
       if (wheelRef.current) endWheel();
     };
-  }, [beginDrag, endWheel, open, reducedMotion, step, updateDrag]);
+  }, [beginDrag, endWheel, open, reducedMotion, step, tryShiftFocus, updateDrag]);
 
   /**
    * Rete di sicurezza sotto `touch-action`: quel CSS basta da solo nei browser
@@ -1291,9 +1392,18 @@ export function VoBookShell({
         // Un foglio è ancora in volo: questo dito non può prenderlo, ma la sua
         // intenzione non va persa — vale il prossimo giro, come per rotella e
         // frecce. Senza, sfogliare a raffica col pollice mangiava un gesto su due.
+        // Il fuoco si legge solo qui *sotto*, a rincorsa ferma: durante il
+        // volo non è ancora quello vero, perché lo scrive `commit` all'atterraggio.
         if (gestureRef.current?.mode === "run") {
           swipeRef.current = null;
           queuedRef.current = dir;
+          return;
+        }
+        // Prima si gira la testa, poi la pagina: una sfogliata che arriva
+        // mentre lo sguardo non è ancora sul bordo giusto sposta il fuoco e
+        // finisce lì, non prende in mano nessun foglio.
+        if (tryShiftFocus(dir)) {
+          swipeRef.current = null;
           return;
         }
         // Il gesto comincia dove la soglia è stata superata, non dove il dito si è
@@ -1326,7 +1436,7 @@ export function VoBookShell({
       }
       hintAt(dir, 1 - near / HINT_PROXIMITY);
     },
-    [beginDrag, dropHint, hintAt, open, reducedMotion, updateDrag],
+    [beginDrag, dropHint, hintAt, open, reducedMotion, tryShiftFocus, updateDrag],
   );
 
   const onStagePointerUp = useCallback(
@@ -1357,10 +1467,11 @@ export function VoBookShell({
       // guardia valga per il gesto in corso e non ne avveleni uno successivo.
       swallowClickRef.current = false;
       if (event.pointerType === "touch") return;
+      if (tryShiftFocus(dir)) return;
       if (!beginDrag(dir, event.clientX, event.pointerId)) return;
       capture(event.currentTarget, event.pointerId);
     },
-    [beginDrag],
+    [beginDrag, tryShiftFocus],
   );
 
   const onHotspotPointerMove = useCallback(
@@ -1405,12 +1516,22 @@ export function VoBookShell({
   const canGoForward = pos === appendixPos ? false : pos < positionCount - 1;
 
   return (
-    <div
+    <motion.div
       className="vo-book-stage"
       ref={stageRef}
       data-open={open || undefined}
       data-busy={busy || undefined}
       data-compact={compact || undefined}
+      // Solo su schermo stretto: dicono a `.vo-book-stage`, in CSS, su quale
+      // facciata zoomare (`--vo-compact-focus-t`) e quanto di quello zoom è
+      // acceso in questo istante (`--vo-compact-zoom-t`). Innocui su schermo
+      // largo, dove il CSS non li legge.
+      style={{
+        ...({
+          "--vo-compact-focus-t": cameraFocusT,
+          "--vo-compact-zoom-t": compactZoomT,
+        } as CSSProperties),
+      }}
       onPointerDown={onStagePointerDown}
       onPointerMove={onStagePointerMove}
       onPointerUp={onStagePointerUp}
@@ -1436,10 +1557,7 @@ export function VoBookShell({
         {/* Due pixel davanti al risguardo: complanari si contenderebbero il
             posto, e il piatto è comunque molto più spesso di così. */}
         <motion.div className="vo-page vo-page-left" style={{ rotateY: leftPageTurn, z: 2 }}>
-          {/* Su schermo stretto la sinistra è di scena ma non di contenuto:
-              resta sempre il foglio bianco, e tutto il testo vive a destra —
-              è quello che fa sembrare un libro anche a una pagina alla volta. */}
-          {compact ? fillerSheet : pageSheet(staticLeft, "left")}
+          {pageSheet(staticLeft, "left")}
         </motion.div>
         <div className="vo-page vo-page-right">{pageSheet(staticRight, "right")}</div>
 
@@ -1486,11 +1604,7 @@ export function VoBookShell({
               // sotto di lui c'è già la pagina precedente, e deve restarle davanti.
               lifted={gesture?.dir === -1}
               front={frontReal ? pageSheet(faces.front.spread, faces.front.side) : fillerSheet}
-              back={
-                backReal
-                  ? pageSheet(faces.back.spread, compact ? "right" : faces.back.side)
-                  : fillerSheet
-              }
+              back={backReal ? pageSheet(faces.back.spread, faces.back.side) : fillerSheet}
               // Solo il primo foglio copre una pagina che si stava leggendo: gli
               // altri di un salto lungo arrivano da parti del volume mai aperte.
               carryKey={gesture?.token ?? 0}
@@ -1536,6 +1650,6 @@ export function VoBookShell({
       <p className="vo-book-live" aria-live="polite">
         {voSpreads[spread].runningHead}
       </p>
-    </div>
+    </motion.div>
   );
 }

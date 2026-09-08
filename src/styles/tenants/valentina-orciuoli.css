@@ -3680,34 +3680,40 @@
     color: var(--vo-gold-soft);
   }
 
-  /* ── Sinistra in fuori campo sotto i 900px ────────────────────────────────── */
+  /* ── Fuoco sinistra/destra sotto i 900px ──────────────────────────────────── */
   /* Modo compatto: lo decide il componente, non il CSS.
-     La destra torna alle dimensioni di prima — leggibile, quasi quanto lo
-     schermo — e non è più sola in scena: la scatola contiene ancora *due*
-     facciate, ma qui la sinistra sporge apposta fuori dal bordo. Se ne vede
-     solo un'unghia, quanto basta per leggere "libro aperto" senza rimpicciolire
-     tutto per farcelo stare. `.vo-book-viewport` allinea la scatola a destra
-     invece che al centro (sotto), così l'eccedenza cade fuori a sinistra — dove
-     il taglio di `.vo-book-site { overflow: hidden }` la fa sparire da sé. */
+     La scatola contiene le due facciate vere, alla stessa proporzione del
+     libro da tavolo — solo più piccola, perché qui deve starci per intero.
+     A libro chiuso e durante l'apertura resta così, centrata come su schermo
+     largo (`blockShift` in `book-shell.tsx` fa lo stesso -25%→0% del
+     desktop). Aperta, la telecamera zooma sull'una o sull'altra facciata: è
+     `book-shell.tsx` a spostare il fuoco, qui si traduce quel numero
+     (`--vo-compact-focus-t`, 0 = sinistra, 1 = destra) in scala e
+     spostamento, e lo introduce gradualmente (`--vo-compact-zoom-t`) così lo
+     zoom si accende insieme all'ultimo tratto dell'apertura invece di
+     scattare di colpo. */
     .vo-book-site[data-compact] .vo-book-stage {
-      --vo-page-h: min(calc(100dvh - 10.5rem), 130vw);
+      --vo-page-h: min(calc(100dvh - 10.5rem), 66vw);
       --vo-page-w: calc(var(--vo-page-h) / 1.5);
-      /* La scatola (due facciate) è più larga dello schermo di proposito.
-         `.vo-book-viewport` la centra come sempre — un `justify-items: end`
-         qui sembrava la scelta ovvia, ma per una scatola più larga del suo
-         spazio il browser tratta "end" come pericoloso e degrada da sé a
-         "start": è la stessa scatola di prima, semplicemente incollata al
-         bordo sinistro invece che a quello destro. Un `translateX` non ha
-         quella cautela: sposta la scatola già centrata verso sinistra di
-         *tutta* l'eccedenza che sporgerebbe a destra, così è sempre la
-         destra — quella con il testo — a restare intera in vista, e la
-         sinistra a sporgere fuori dal bordo anziché sparire equamente sui
-         due lati. */
-      transform: translateX(calc(100vw - 1rem - var(--vo-page-w) * 2));
+    }
+
+    .vo-book-site[data-compact] .vo-book-stage[data-open] {
+      /* La facciata a fuoco, ingrandita fino a occupare quasi la larghezza
+         che occupava l'intera doppia pagina: leggibile senza scomparire
+         nell'angolo. */
+      --vo-compact-focus-scale: 1.92;
+      transform: scale(calc(1 + (var(--vo-compact-focus-scale) - 1) * var(--vo-compact-zoom-t, 1)))
+        translateX(calc(
+          var(--vo-page-w) * 0.5 * (1 - 2 * var(--vo-compact-focus-t, 0)) * var(--vo-compact-zoom-t, 1)
+        ));
     }
 
     .vo-book-site[data-compact] .vo-page-sheet[data-side="right"] {
       box-shadow: inset 14px 0 26px -20px rgba(42, 33, 25, 0.8);
+    }
+
+    .vo-book-site[data-compact] .vo-page-sheet[data-side="left"] {
+      box-shadow: inset -14px 0 26px -20px rgba(42, 33, 25, 0.8);
     }
 
     .vo-book-site[data-compact] .vo-face-glyph-watermark {
