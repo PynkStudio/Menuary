@@ -203,6 +203,10 @@ const cameraFocusSpring = { type: "spring", stiffness: 190, damping: 26, mass: 0
  */
 const cameraTrackSpring = { type: "spring", stiffness: 210, damping: 32, mass: 1 } as const;
 
+function clamp(value: number, min: number, max: number) {
+  return value < min ? min : value > max ? max : value;
+}
+
 /**
  * Quali fogli animare per andare da `from` a `to`. Oltre tre fogli l'occhio non
  * distingue più i singoli passaggi, quindi si tengono il primo, uno di mezzo e
@@ -429,6 +433,16 @@ export function VoBookShell({
   posRef.current = pos;
 
   const [gesture, setGestureState] = useState<Gesture | null>(null);
+  /**
+   * 1 mentre un foglio è in mano o in volo, 0 a riposo.
+   *
+   * Esiste come *motion value* e non solo come `gestureRef` perché la
+   * telecamera compatta è costruita su `useTransform`: una trasformazione
+   * ricalcola solo quando cambia uno dei suoi ingressi dichiarati, e leggendo
+   * il ref la fine di un gesto le restava invisibile — l'inquadratura si
+   * piantava a metà giro finché qualcos'altro non muoveva `p0`.
+   */
+  const flipping = useMotionValue(0);
 
   /**
    * Il gesto in corso, leggibile *subito*.
@@ -444,9 +458,10 @@ export function VoBookShell({
     (next: Gesture | null | ((current: Gesture | null) => Gesture | null)) => {
       const value = typeof next === "function" ? next(gestureRef.current) : next;
       gestureRef.current = value;
+      flipping.set(value?.mode === "run" || value?.mode === "drag" ? 1 : 0);
       setGestureState(value);
     },
-    [],
+    [flipping],
   );
 
   const tokenRef = useRef(0);
@@ -497,8 +512,20 @@ export function VoBookShell({
    * visivo — il CSS che lo legge è tutto sotto `[data-compact]`.
    */
   const [focus, setFocus] = useState<VoFaceSide>("left");
+  /**
+   * Il fuoco leggibile *subito*.
+   *
+   * Prima si scriveva in fase di render, quindi valeva solo dal render
+   * successivo: due sfogliate nello stesso fotogramma — o una che arriva fra
+   * l'atterraggio del foglio e il ridisegno — leggevano entrambe il lato
+   * vecchio e venivano spese tutte e due per girare la testa. Da fuori è il
+   * libro che smette di andare avanti.
+   */
   const focusRef = useRef(focus);
-  focusRef.current = focus;
+  const lookAt = useCallback((side: VoFaceSide) => {
+    focusRef.current = side;
+    setFocus(side);
+  }, []);
   /**
    * Il fuoco a riposo — dove la telecamera torna quando non c'è un foglio in
    * mano o in volo. Durante un giro vero non è lui a guidare: la telecamera
@@ -526,16 +553,14 @@ export function VoBookShell({
    * trascinamento `p0` si muove a ogni pixel, ed è quel movimento — non un
    * ri-render — a dover guidare la telecamera in tempo reale.
    */
-  const focusDuringFlip = useTransform([p0, restingFocusT], ([progress, resting]) => {
-    const mode = gestureRef.current?.mode;
-    if (mode !== "run" && mode !== "drag") return resting as number;
-    return (progress as number) < 0.5 ? 1 : 0;
-  });
-  const zoomDuringFlip = useTransform(p0, (progress) => {
-    const mode = gestureRef.current?.mode;
-    if (mode !== "run" && mode !== "drag") return 1;
-    return Math.abs(2 * progress - 1);
-  });
+  const focusDuringFlip = useTransform(
+    [p0, restingFocusT, flipping],
+    ([progress, resting, active]: number[]) =>
+      active ? (progress < 0.5 ? 1 : 0) : resting,
+  );
+  const zoomDuringFlip = useTransform([p0, flipping], ([progress, active]: number[]) =>
+    active ? clamp(Math.abs(2 * progress - 1), 0, 1) : 1,
+  );
   /**
    * Le stesse due misure, ma smussate. Senza questo la telecamera scatterebbe
    * esattamente al variare di `p0` — durante un trascinamento è la posizione
@@ -544,8 +569,20 @@ export function VoBookShell({
    * che serve sia quando il foglio si posa da solo, sia quando è la mano a
    * fargli fare avanti e indietro.
    */
-  const cameraFocusT = useSpring(focusDuringFlip, cameraTrackSpring);
-  const cameraZoomFlipT = useSpring(zoomDuringFlip, cameraTrackSpring);
+  /**
+   * Le molle inseguono un bersaglio che *salta*: a metà giro il lato di
+   * destinazione si scambia di colpo, e il fondo della V dello zoom è un
+   * angolo, non una curva. Una molla presa a calci così accumula velocità, e
+   * con due sfogliate ravvicinate divergeva — misurato: zoom a 11 e scala a
+   * 5.8×, il libro fuori scala su tutto lo schermo. Il morso finale tiene
+   * l'inquadratura dentro i suoi due estremi qualunque cosa faccia la molla.
+   */
+  const cameraFocusT = useTransform(useSpring(focusDuringFlip, cameraTrackSpring), (value) =>
+    clamp(value, 0, 1),
+  );
+  const cameraZoomFlipT = useTransform(useSpring(zoomDuringFlip, cameraTrackSpring), (value) =>
+    clamp(value, 0, 1),
+  );
   /**
    * In doppia pagina compressa in una facciata sola, un passo prima sposta lo
    * sguardo — sinistra↔destra — e solo quando è già sul bordo giusto gira
@@ -557,17 +594,12 @@ export function VoBookShell({
   const tryShiftFocus = useCallback(
     (dir: 1 | -1) => {
       if (!compact) return false;
-      if (dir === 1 && focusRef.current === "left") {
-        setFocus("right");
-        return true;
-      }
-      if (dir === -1 && focusRef.current === "right") {
-        setFocus("left");
-        return true;
-      }
-      return false;
+      const wanted: VoFaceSide = dir === 1 ? "right" : "left";
+      if (focusRef.current === wanted) return false;
+      lookAt(wanted);
+      return true;
     },
-    [compact],
+    [compact, lookAt],
   );
 
   // Da chiuso il volume mostra solo la copertina, quindi va centrato sulla metà
@@ -720,7 +752,7 @@ export function VoBookShell({
    * chi sfogliava svelto vedeva il libro ignorare un gesto su due. Uno solo si
    * mette in coda — due sarebbero l'inerzia del trackpad, non una volontà.
    */
-  const queuedRef = useRef(0);
+  const queuedRef = useRef<0 | 1 | -1>(0);
   /**
    * La sezione chiesta dall'URL mentre un foglio era ancora in volo.
    *
@@ -755,14 +787,14 @@ export function VoBookShell({
       // scriverla in `spread` la farebbe rientrare nella sequenza sfogliabile.
       if (target === appendixPos) {
         setAtAppendix(true);
-        setFocus("left");
+        lookAt("left");
         clearGesture();
         return;
       }
       // Arrivando avanti si ricomincia a guardare da sinistra, arrivando
       // indietro da destra: è la stessa testa che continua a girare nella
       // direzione da cui veniva, non che scatta sempre al solito lato.
-      setFocus(gestureRef.current?.dir === -1 ? "right" : "left");
+      lookAt(gestureRef.current?.dir === -1 ? "right" : "left");
       const { spread: nextSpread, half: nextHalf } = fromPos(target);
       // Si scrive qui, non nell'effetto: il foglio è atterrato *adesso*. La
       // navigazione che parte due righe sotto rimonta il componente, e l'effetto
@@ -783,7 +815,7 @@ export function VoBookShell({
       if (queuedRef.current !== 0) return;
       publish(nextSpread);
     },
-    [appendixPos, clearGesture, fromPos, playPageSound, publish],
+    [appendixPos, clearGesture, fromPos, lookAt, playPageSound, publish],
   );
 
   /**
@@ -938,31 +970,6 @@ export function VoBookShell({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appendix, pathname]);
 
-  useEffect(() => {
-    if (gesture) return;
-    // Prima l'URL: se nel frattempo è cambiato, è quello che l'utente ha chiesto.
-    const pending = pendingUrlRef.current;
-    if (pending !== null) {
-      pendingUrlRef.current = null;
-      queuedRef.current = 0;
-      if (pending !== pos) {
-        goTo(pending);
-        return;
-      }
-    }
-    if (queuedRef.current === 0) return;
-    const queued = queuedRef.current;
-    queuedRef.current = 0;
-    const target = pos + queued;
-    if (target < 0 || target >= positionCount || atAppendix) {
-      // La rincorsa è finita contro un capo del volume. Il commit precedente
-      // aveva ceduto la navigazione al passo che non c'è più: la si onora qui,
-      // altrimenti l'URL resterebbe indietro di una sezione.
-      publish(fromPos(pos).spread);
-      return;
-    }
-    goTo(target);
-  }, [atAppendix, fromPos, gesture, goTo, pos, positionCount, publish]);
 
   /** Un passo avanti o indietro da qualunque input, code e capi del volume inclusi. */
   const step = useCallback(
@@ -993,6 +1000,38 @@ export function VoBookShell({
     },
     [appendixPos, goTo, onBeforeFirstPage, onLeaveAppendix, onPastLastPage, positionCount, tryShiftFocus],
   );
+
+  useEffect(() => {
+    if (gesture) return;
+    // Prima l'URL: se nel frattempo è cambiato, è quello che l'utente ha chiesto.
+    const pending = pendingUrlRef.current;
+    if (pending !== null) {
+      pendingUrlRef.current = null;
+      queuedRef.current = 0;
+      if (pending !== pos) {
+        goTo(pending);
+        return;
+      }
+    }
+    if (queuedRef.current === 0) return;
+    const queued = queuedRef.current;
+    queuedRef.current = 0;
+    /**
+     * Il passo in coda si spende con `step`, non con `goTo`.
+     *
+     * `goTo` salta la pagina e basta: saltava anche il giro di testa su schermo
+     * stretto (`tryShiftFocus`) e i due capi del volume. Il risultato era che
+     * una sfogliata arrivata mentre un foglio era ancora in volo valeva *una
+     * pagina intera* invece del mezzo passo che l'utente aveva chiesto — due
+     * dita svelte e il libro ne girava tre.
+     *
+     * L'URL si allinea comunque prima: il commit precedente aveva ceduto la
+     * navigazione al passo in coda, e se quel passo ora si spende girando la
+     * testa (o contro un piatto) nessuno la scriverebbe più.
+     */
+    publish(fromPos(pos).spread);
+    step(queued);
+  }, [fromPos, gesture, goTo, pos, publish, step]);
 
   // ── Input: tastiera ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1117,10 +1156,23 @@ export function VoBookShell({
       const rect = stage.getBoundingClientRect();
       dragRef.current = {
         startX,
-        // La scatola contiene sempre due facciate, larga o stretta che sia:
-        // la corsa utile è una facciata, non la scatola intera. La rotella
-        // porta la sua, perché non ha una pagina sotto da misurare.
-        span: Math.max(travelSpan ?? rect.width * 0.5 ?? 1, 1),
+        /*
+         * La corsa che vale un giro intero.
+         *
+         * È una facciata — non la scatola intera — ma su schermo stretto una
+         * facciata è più larga dello schermo: la scatola misura quasi il doppio
+         * del viewport, quindi metà scatola sono trecento e passa pixel e il
+         * pollice non ce li ha. Chiedere quella corsa voleva dire trascinare
+         * mezzo schermo per girare una pagina, e sotto soglia il foglio
+         * ricadeva indietro: da fuori, un libro che non vuole saperne di
+         * andare avanti. Qui la corsa si tiene dentro quello che il dito può
+         * davvero percorrere. La rotella porta la sua, perché non ha una
+         * pagina sotto da misurare.
+         */
+        span: Math.max(
+          travelSpan ?? Math.min(rect.width * 0.5, window.innerWidth * 0.5),
+          1,
+        ),
         base: p0.get(),
         target: p0.get(),
         moved: false,
@@ -1411,6 +1463,14 @@ export function VoBookShell({
         const originX = swipe.startX + (dir === 1 ? -SWIPE_SLOP : SWIPE_SLOP);
         if (!beginDrag(dir, originX, event.pointerId)) {
           swipeRef.current = null;
+          // Ai due capi del volume un foglio da prendere non c'è: lì `step` sa
+          // chiudere il libro o girarlo sulla quarta. Senza, sul telefono la
+          // sfogliata sull'ultima pagina non faceva proprio nulla — mentre con
+          // la rotella, che questo ripiego ce l'ha da sempre, funzionava.
+          const from = posRef.current;
+          if ((dir === 1 && from === positionCount - 1) || (dir === -1 && from === 0)) {
+            step(dir);
+          }
           return;
         }
         capture(event.currentTarget, event.pointerId);
@@ -1436,7 +1496,7 @@ export function VoBookShell({
       }
       hintAt(dir, 1 - near / HINT_PROXIMITY);
     },
-    [beginDrag, dropHint, hintAt, open, reducedMotion, tryShiftFocus, updateDrag],
+    [beginDrag, dropHint, hintAt, open, positionCount, reducedMotion, step, tryShiftFocus, updateDrag],
   );
 
   const onStagePointerUp = useCallback(

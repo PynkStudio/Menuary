@@ -3703,7 +3703,16 @@
       --vo-page-w: calc(var(--vo-page-h) / 1.5);
     }
 
-    .vo-book-site[data-compact] .vo-book-stage[data-open] {
+    /* La telecamera vale anche a volume chiuso.
+       Era legata a `[data-open]`, e il piatto chiuso restava quindi senza
+       inquadratura: la scatola è larga quasi il doppio dello schermo e il
+       piatto vive sulla sua metà destra, così del libro si vedeva la metà
+       sinistra e il nome dell'autrice finiva tagliato fuori. Non serve una
+       regola a parte: `--vo-compact-zoom-t` vale 0 finché la copertina non
+       comincia ad aprirsi, e a zoom 0 l'inquadratura è già quella giusta —
+       la doppia pagina intera, rimpicciolita e centrata, che a libro chiuso
+       vuol dire il piatto intero al centro dello schermo. */
+    .vo-book-site[data-compact] .vo-book-stage {
       /* Le due mete della telecamera, ciascuna raggiunta scalando 1 (mai più
          piccola della pagina vera) e spostando quel poco che serve a portare
          il bordo esterno della facciata a fuoco vicino al bordo schermo,
@@ -3723,9 +3732,19 @@
       --vo-compact-tx-pullback: calc(
         50vw - var(--vo-compact-pullback-scale) * var(--vo-page-w)
       );
-      --vo-compact-scale: calc(
-        var(--vo-compact-pullback-scale) +
-          (1 - var(--vo-compact-pullback-scale)) * var(--vo-compact-zoom-t, 1)
+      /* Il morso sulla scala non è ridondante rispetto a quello in JS: è
+         l'ultima difesa. Se per qualunque ragione `--vo-compact-zoom-t`
+         arrivasse fuori dai suoi due estremi — è già successo, con le molle
+         della telecamera prese a calci da due sfogliate ravvicinate — qui il
+         libro può al massimo tornare alla vista d'insieme o alla facciata a
+         grandezza vera, mai finire a cinque volte lo schermo. */
+      --vo-compact-scale: clamp(
+        var(--vo-compact-pullback-scale),
+        calc(
+          var(--vo-compact-pullback-scale) +
+            (1 - var(--vo-compact-pullback-scale)) * var(--vo-compact-zoom-t, 1)
+        ),
+        1
       );
       --vo-compact-tx-focus: calc(
         var(--vo-compact-tx-left) +
