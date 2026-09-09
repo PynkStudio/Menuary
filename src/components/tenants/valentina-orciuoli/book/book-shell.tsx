@@ -618,11 +618,19 @@ export function VoBookShell({
    * mentre la copertina stava ancora finendo di ribaltarsi.
    */
   const compactZoomActivation = useTransform(coverProgress, [0.3, 0.75], [0, 1]);
-  /** Le due rampe insieme: acceso solo a copertina ormai aperta, e per il resto guidato dal volo. */
-  const compactZoomT = useTransform(
-    [compactZoomActivation, cameraZoomFlipT],
-    ([activation, flip]) => (activation as number) * (flip as number),
-  );
+  /**
+   * Le due rampe restano **separate**.
+   *
+   * Moltiplicarle voleva dire che a volume chiuso lo zoom valeva zero, cioè la
+   * vista d'insieme: il libro chiuso si vedeva rimpicciolito, e aprendolo
+   * cresceva. Ma la panoramica serve al *giro pagina*, quando il foglio è di
+   * taglio e va inquadrata la doppia pagina intera; il volume chiuso non ha
+   * niente da rimpicciolire — è un libro sul tavolo, grande quanto le sue
+   * pagine. Ora `--vo-compact-zoom-t` è solo il volo, e `--vo-compact-open-t`
+   * dice al CSS quanto siamo passati dall'inquadratura del piatto chiuso a
+   * quella della facciata a fuoco: una carrellata a scala costante, non uno zoom.
+   */
+  const compactZoomT = cameraZoomFlipT;
   const volumeTurn = useTransform(turn, [0, 1], [0, 180]);
   /**
    * La prima pagina **è il dietro della copertina**: non compare, scende con lei.
@@ -971,18 +979,25 @@ export function VoBookShell({
   }, [appendix, pathname]);
 
 
-  /** Un passo avanti o indietro da qualunque input, code e capi del volume inclusi. */
+  /**
+   * Un passo avanti o indietro da qualunque input, code e capi del volume
+   * inclusi.
+   *
+   * `shiftFocus` distingue le due nature di un passo. Una sfogliata a mano
+   * libera è un'intenzione vaga — "avanti" — e su schermo stretto la si spende
+   * prima girando la testa. Un comando *esplicito* no: chi tocca il taglio
+   * della pagina, o chi ha già chiesto un altro giro mentre il foglio era in
+   * volo, ha chiesto una pagina, non un'inquadratura. Spenderla a girare la
+   * testa era quel "sfoglia e poi va anche a destra invece di fermarsi".
+   */
   const step = useCallback(
-    (direction: 1 | -1) => {
+    (direction: 1 | -1, shiftFocus = true) => {
       const from = posRef.current;
       if (from === appendixPos) {
         if (direction === -1) onLeaveAppendix?.();
         return;
       }
-      // Prima si gira la testa, poi la pagina: finché lo sguardo non è già
-      // sul bordo giusto, un passo sposta il fuoco e non deve nemmeno sapere
-      // se quello è l'ultimo o il primo spread — vedi `tryShiftFocus`.
-      if (tryShiftFocus(direction)) return;
+      if (shiftFocus && tryShiftFocus(direction)) return;
       // Ai due capi del volume non ci sono pagine: ci sono i piatti.
       if (direction === -1 && from === 0) {
         onBeforeFirstPage?.();
@@ -1030,7 +1045,7 @@ export function VoBookShell({
      * testa (o contro un piatto) nessuno la scriverebbe più.
      */
     publish(fromPos(pos).spread);
-    step(queued);
+    step(queued, false);
   }, [fromPos, gesture, goTo, pos, publish, step]);
 
   // ── Input: tastiera ────────────────────────────────────────────────────────
@@ -1435,7 +1450,15 @@ export function VoBookShell({
       if (swipe && swipe.pointerId === event.pointerId) {
         const dx = event.clientX - swipe.startX;
         const dy = event.clientY - swipe.startY;
-        if (Math.abs(dx) < SWIPE_SLOP) return;
+        if (Math.abs(dx) < SWIPE_SLOP) {
+          // Non ancora deciso. Si aspetta ancora un po', a meno che il dito non
+          // sia chiaramente sceso o salito: quello è scorrimento della carta.
+          // Prima bastava un pixel di verticale in più per buttare via il gesto
+          // *per sempre* — e un pollice non parte mai perfettamente orizzontale,
+          // quindi una sfogliata su due non partiva.
+          if (Math.abs(dy) > SWIPE_SLOP * 1.5) swipeRef.current = null;
+          return;
+        }
         if (Math.abs(dx) <= Math.abs(dy)) {
           swipeRef.current = null;
           return;
@@ -1527,11 +1550,10 @@ export function VoBookShell({
       // guardia valga per il gesto in corso e non ne avveleni uno successivo.
       swallowClickRef.current = false;
       if (event.pointerType === "touch") return;
-      if (tryShiftFocus(dir)) return;
       if (!beginDrag(dir, event.clientX, event.pointerId)) return;
       capture(event.currentTarget, event.pointerId);
     },
-    [beginDrag, tryShiftFocus],
+    [beginDrag],
   );
 
   const onHotspotPointerMove = useCallback(
@@ -1562,7 +1584,8 @@ export function VoBookShell({
         swallowClickRef.current = false;
         return;
       }
-      step(dir);
+      // Il taglio è un comando, non un'esitazione: gira la pagina e basta.
+      step(dir, false);
     },
     [step],
   );
@@ -1590,6 +1613,7 @@ export function VoBookShell({
         ...({
           "--vo-compact-focus-t": cameraFocusT,
           "--vo-compact-zoom-t": compactZoomT,
+          "--vo-compact-open-t": compactZoomActivation,
         } as CSSProperties),
       }}
       onPointerDown={onStagePointerDown}

@@ -3750,12 +3750,36 @@
         var(--vo-compact-tx-left) +
           (var(--vo-compact-tx-right) - var(--vo-compact-tx-left)) * var(--vo-compact-focus-t, 0)
       );
+      /* Il volume chiuso: il piatto vive sulla metà destra della scatola e va
+         portato al centro dello schermo. Alla **stessa scala** delle facciate —
+         un libro chiuso sul tavolo è grande quanto le sue pagine, e aprirlo non
+         lo fa crescere: cambia l'inquadratura, non la distanza. */
+      --vo-compact-tx-closed: calc(50vw - var(--vo-page-w) * 1.01);
+      /* Da chiuso a fuoco: una carrellata laterale, `--vo-compact-open-t` la
+         accompagna mentre il cartoncino si ribalta. */
+      --vo-compact-tx-open: calc(
+        var(--vo-compact-tx-closed) * (1 - var(--vo-compact-open-t, 1)) +
+          var(--vo-compact-tx-focus) * var(--vo-compact-open-t, 1)
+      );
       --vo-compact-tx: calc(
         var(--vo-compact-tx-pullback) * (1 - var(--vo-compact-zoom-t, 1)) +
-          var(--vo-compact-tx-focus) * var(--vo-compact-zoom-t, 1)
+          var(--vo-compact-tx-open) * var(--vo-compact-zoom-t, 1)
       );
       transform-origin: 0 50%;
       transform: translateX(var(--vo-compact-tx)) scale(var(--vo-compact-scale));
+    }
+
+    /* Le prese sul taglio stanno ai bordi della *scatola*, e la scatola è larga
+       il doppio dello schermo: ne restava raggiungibile una sola alla volta —
+       quella dalla parte sbagliata era sempre fuori campo. Qui seguono la
+       facciata a fuoco, così i due margini del foglio che si sta leggendo si
+       possono toccare entrambi, avanti e indietro. */
+    .vo-book-site[data-compact] .vo-leaf-hotspot-prev {
+      left: calc(var(--vo-page-w) * var(--vo-compact-focus-t, 0));
+    }
+
+    .vo-book-site[data-compact] .vo-leaf-hotspot-next {
+      right: calc(var(--vo-page-w) * (1 - var(--vo-compact-focus-t, 0)));
     }
 
     .vo-book-site[data-compact] .vo-page-sheet[data-side="right"] {
