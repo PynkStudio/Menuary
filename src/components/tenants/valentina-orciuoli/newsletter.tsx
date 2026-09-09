@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { voHref, voRoute } from "@/components/tenants/valentina-orciuoli/routes";
 
 export function useValentinaNewsletter() {
   const [newsletterSent, setNewsletterSent] = useState(false);
@@ -61,6 +63,18 @@ export function ValentinaNewsletterForm({
   error: string | null;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+  /**
+   * L'informativa cui questo consenso si riferisce deve essere **quella del
+   * tenant**, e va raggiunta dall'indirizzo da cui si sta leggendo.
+   *
+   * Qui c'era un `/privacy` nudo: sul dominio custom cadeva per caso sulla
+   * pagina giusta, in preview finiva sull'informativa della piattaforma. È il
+   * link peggiore da sbagliare — sta accanto alla casella con cui si presta il
+   * consenso — e per questo prende il prefisso di host e lingua come ogni
+   * altro link del volume.
+   */
+  const privacyHref = voHref("/privacy", voRoute(usePathname() ?? ""));
+
   return (
     <form className="vo-newsletter-form" onSubmit={onSubmit}>
       <label className="sr-only" htmlFor={compact ? "vo-popup-email" : "vo-newsletter-email"}>
@@ -76,7 +90,7 @@ export function ValentinaNewsletterForm({
       <button type="submit" disabled={pending}>{pending ? "Iscrizione..." : "Iscriviti"}</button>
       <label className="vo-newsletter-consent">
         <input name="consent" type="checkbox" required />
-        <span>Accetto la <Link href="/privacy">privacy policy</Link> e l&apos;invio della newsletter.</span>
+        <span>Accetto la <Link href={privacyHref}>privacy policy</Link> e l&apos;invio della newsletter.</span>
       </label>
       {sent ? <small>Controlla la tua casella email: ti abbiamo mandato un link per confermare l&apos;iscrizione.</small> : null}
       {error ? <small role="alert">{error}</small> : null}

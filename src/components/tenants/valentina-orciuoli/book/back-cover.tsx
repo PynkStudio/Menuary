@@ -7,7 +7,17 @@
  * quando il libro si chiude e si rigira, ed è il posto che nell'editoria vera
  * ospita ritratto e biografia dell'autrice.
  */
-export function VoBackCover({ hidden }: { hidden: boolean }) {
+export function VoBackCover({
+  hidden,
+  privacyHref,
+  cookieHref,
+  gestioneHref,
+}: {
+  hidden: boolean;
+  privacyHref: string;
+  cookieHref: string;
+  gestioneHref: string;
+}) {
   return (
     <div className="vo-back-board" aria-hidden={hidden || undefined} inert={hidden || undefined}>
       <div className="vo-back-face">
@@ -29,6 +39,35 @@ export function VoBackCover({ hidden }: { hidden: boolean }) {
             società e dell&apos;intricato universo delle emozioni umane. Scrivo per
             trasformare ciò che non riusciamo a spiegare a voce in viaggi indimenticabili.
           </p>
+        </div>
+
+        {/* Il colophon: dove su un libro vero stanno editore, stampatore e
+            l'anno. Qui ci stanno le note legali e chi ha fatto il sito —
+            informazioni di servizio, che in un volume si mettono in fondo e non
+            in mezzo alla lettura. */}
+        <div className="vo-back-colophon">
+          <span className="vo-back-imprint">
+            <a href={privacyHref}>Privacy Policy</a>
+            <span aria-hidden="true">·</span>
+            <a href={cookieHref}>Cookie Policy</a>
+          </span>
+          <span className="vo-back-imprint">
+            © {new Date().getFullYear()} Valentina Orciuoli
+            <span aria-hidden="true">·</span>
+            <a href={gestioneHref} target="_blank" rel="noopener noreferrer">
+              Gestione
+            </a>
+          </span>
+          <span className="vo-back-imprint">
+            Realizzato da{" "}
+            <a href="https://pynkstudio.eu" target="_blank" rel="noopener noreferrer">
+              PynkStudio
+            </a>
+            <span aria-hidden="true">·</span>
+            <a href="https://weuseorpheo.com" target="_blank" rel="noopener noreferrer">
+              Powered by Orpheo
+            </a>
+          </span>
         </div>
 
         <div className="vo-back-foot">

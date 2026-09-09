@@ -2596,7 +2596,7 @@
        risolta su assi diversi (altezza del genitore per l'altezza, larghezza
        dell'elemento per il background) mandando in pezzi la geometria.
        Le 12rem sottratte sono testatina, comandi e piede. */
-    --vo-page-h: min(calc(100dvh - 11rem), 62vw);
+    --vo-page-h: min(calc(100dvh - 9.5rem), 64vw);
     /* Spessore del volume, ripartito fra il piatto anteriore (davanti al blocco
        pagine) e quello posteriore (dietro). Il dorso copre l'intera distanza fra
        i due: se questi tre valori non tornano, il libro girandosi si apre. */
@@ -3645,35 +3645,27 @@
   }
 
   /* ── Piede ────────────────────────────────────────────────────────────────── */
+  /* Una riga, non una barra: i due richiami legali stanno sul bordo del tavolo
+     e non chiedono attenzione. Tutto il resto è passato al colophon sulla
+     quarta di copertina. */
   .vo-book-footer {
     position: relative;
     z-index: 20;
     flex: none;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.8rem 1.6rem;
-    padding: 1.1rem clamp(1rem, 4vw, 2.75rem) 1.4rem;
+    justify-content: center;
+    padding: 0.7rem clamp(1rem, 4vw, 2.75rem) 0.9rem;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
-    color: rgba(242, 216, 148, 0.42);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    color: rgba(242, 216, 148, 0.3);
   }
 
   .vo-book-footer-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem 1.2rem;
-  }
-
-  .vo-book-footer-signature {
-    margin-left: auto;
-    color: rgba(242, 216, 148, 0.32);
-  }
-
-  .vo-book-footer-signature a {
-    color: rgba(242, 216, 148, 0.52);
+    justify-content: center;
+    gap: 0.4rem 1.4rem;
   }
 
   .vo-book-footer a:hover {
@@ -3699,7 +3691,7 @@
      (0 = doppia pagina intera e rimpicciolita, 1 = una facciata a piena
      grandezza) — qui si traducono in scala e spostamento. */
     .vo-book-site[data-compact] .vo-book-stage {
-      --vo-page-h: min(calc(100dvh - 10.5rem), 130vw);
+      --vo-page-h: min(calc(100dvh - 9rem), 130vw);
       --vo-page-w: calc(var(--vo-page-h) / 1.5);
     }
 
@@ -4048,6 +4040,40 @@
     font-style: italic;
     font-size: clamp(0.86rem, 1.15vw, 1.02rem) !important;
     color: rgba(242, 216, 148, 0.92) !important;
+  }
+
+  /* Il colophon: corpo minuscolo, spaziato, come le righe di servizio in fondo
+     a un frontespizio. Deve leggersi, non farsi notare. */
+  .vo-back-colophon {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(242, 216, 148, 0.14);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: rgba(242, 216, 148, 0.4);
+  }
+
+  .vo-back-imprint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .vo-back-colophon a {
+    color: rgba(242, 216, 148, 0.68);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(242, 216, 148, 0.22);
+  }
+
+  .vo-back-colophon a:hover,
+  .vo-back-colophon a:focus-visible {
+    color: var(--vo-gold-soft);
+    border-bottom-color: var(--vo-gold);
   }
 
   .vo-back-foot {

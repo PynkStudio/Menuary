@@ -667,7 +667,14 @@ export function ValentinaOrciuoliBookSite({
               cover={<VoCover progress={coverProgress} />}
               coverProgress={coverProgress}
               turn={turn}
-              backCover={<VoBackCover hidden={!showsBackCover} />}
+              backCover={
+                <VoBackCover
+                  hidden={!showsBackCover}
+                  privacyHref={appendixHref(voAppendix[0], route)}
+                  cookieHref={appendixHref(voAppendix[1], route)}
+                  gestioneHref={gestioneHref}
+                />
+              }
               soundEnabled
               onCompactChange={setCompact}
               appendix={appendix}
@@ -755,11 +762,16 @@ export function ValentinaOrciuoliBookSite({
       ) : null}
       </div>
 
-      {/* Il piede segue la struttura standard della piattaforma: chi possiede il
-          sito, le note legali, l'area riservata e le due firme — lo studio che
-          l'ha fatto e il prodotto su cui gira. */}
+      {/*
+       * Non più una barra di piede: due richiami e basta.
+       *
+       * Proprietà, firme e area riservata sono passate al colophon sulla quarta
+       * di copertina, dov'è il loro posto in un volume. Privacy e cookie no:
+       * un'informativa deve restare raggiungibile da *ogni* pagina senza
+       * cercarla, e due clic dietro un libro che si gira non sono la stessa
+       * cosa. Questa riga è il minimo che lo garantisce senza rifare un piede.
+       */}
       <footer className="vo-book-footer">
-        <span>© {new Date().getFullYear()} Valentina Orciuoli</span>
         <span className="vo-book-footer-links">
           {voAppendix.map((entry) => (
             <VoBookLink
@@ -770,19 +782,6 @@ export function ValentinaOrciuoliBookSite({
               {entry.navLabel}
             </VoBookLink>
           ))}
-          <a href={gestioneHref} target="_blank" rel="noopener noreferrer">
-            Gestione
-          </a>
-        </span>
-        <span className="vo-book-footer-signature">
-          Realizzato da{" "}
-          <a href="https://pynkstudio.eu" target="_blank" rel="noopener noreferrer">
-            PynkStudio
-          </a>
-          {" · "}
-          <a href="https://weuseorpheo.com" target="_blank" rel="noopener noreferrer">
-            Powered by Orpheo
-          </a>
         </span>
       </footer>
 
