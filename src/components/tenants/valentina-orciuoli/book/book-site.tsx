@@ -668,12 +668,7 @@ export function ValentinaOrciuoliBookSite({
               coverProgress={coverProgress}
               turn={turn}
               backCover={
-                <VoBackCover
-                  hidden={!showsBackCover}
-                  privacyHref={appendixHref(voAppendix[0], route)}
-                  cookieHref={appendixHref(voAppendix[1], route)}
-                  gestioneHref={gestioneHref}
-                />
+                <VoBackCover hidden={!showsBackCover} />
               }
               soundEnabled
               onCompactChange={setCompact}
@@ -782,6 +777,9 @@ export function ValentinaOrciuoliBookSite({
               {entry.navLabel}
             </VoBookLink>
           ))}
+          <a href={gestioneHref} target="_blank" rel="noopener noreferrer">
+            Gestione
+          </a>
         </span>
       </footer>
 

@@ -1229,8 +1229,19 @@ export function VoBookShell({
       // eventi, cioè prima che React abbia ridisegnato, e lo stato direbbe ancora
       // che non c'è nessun gesto — il foglio resterebbe a mezz'aria.
       const held = gestureRef.current;
-      if (!drag || !held) return;
+      if (!drag) return;
+      /*
+       * La presa si libera **prima** di ogni altra considerazione.
+       *
+       * Stava sotto il controllo sul gesto, e se il gesto era già stato
+       * archiviato da qualcun altro — una navigazione arrivata a metà
+       * trascinamento, un giro concluso dalla rete di sicurezza — si usciva di
+       * qui lasciando `dragRef` pieno per sempre. Da quel momento
+       * `onStagePointerDown` scartava ogni tocco successivo: il libro non
+       * rispondeva più a niente, ed è il modo più silenzioso che ha di morire.
+       */
       dragRef.current = null;
+      if (!held) return;
       // La rotella non fa scoccare clic: solo un puntatore vero può lasciarne
       // uno in canna dopo aver girato la sua pagina.
       if (drag.moved && drag.pointerId !== WHEEL_POINTER_ID) swallowClickRef.current = true;
@@ -1486,14 +1497,19 @@ export function VoBookShell({
         const originX = swipe.startX + (dir === 1 ? -SWIPE_SLOP : SWIPE_SLOP);
         if (!beginDrag(dir, originX, event.pointerId)) {
           swipeRef.current = null;
-          // Ai due capi del volume un foglio da prendere non c'è: lì `step` sa
-          // chiudere il libro o girarlo sulla quarta. Senza, sul telefono la
-          // sfogliata sull'ultima pagina non faceva proprio nulla — mentre con
-          // la rotella, che questo ripiego ce l'ha da sempre, funzionava.
-          const from = posRef.current;
-          if ((dir === 1 && from === positionCount - 1) || (dir === -1 && from === 0)) {
-            step(dir);
-          }
+          /*
+           * Oltre l'ultima pagina c'è la quarta di copertina, e lì la sfogliata
+           * ci porta: senza questo ripiego, sul telefono il gesto sull'ultima
+           * pagina non faceva proprio nulla.
+           *
+           * **Indietro dalla prima pagina no.** Lì `step` chiuderebbe il libro,
+           * e a volume chiuso il dito non ha più niente da sfogliare: la
+           * cerimonia di riapertura ascolta il gesto *verticale*, quindi chi
+           * continuava a sfogliare di lato trovava un libro morto. Chiudere il
+           * volume resta una cosa che si fa apposta, non per aver girato una
+           * pagina di troppo all'indietro.
+           */
+          if (dir === 1 && posRef.current === positionCount - 1) step(dir);
           return;
         }
         capture(event.currentTarget, event.pointerId);

@@ -7,17 +7,7 @@
  * quando il libro si chiude e si rigira, ed è il posto che nell'editoria vera
  * ospita ritratto e biografia dell'autrice.
  */
-export function VoBackCover({
-  hidden,
-  privacyHref,
-  cookieHref,
-  gestioneHref,
-}: {
-  hidden: boolean;
-  privacyHref: string;
-  cookieHref: string;
-  gestioneHref: string;
-}) {
+export function VoBackCover({ hidden }: { hidden: boolean }) {
   return (
     <div className="vo-back-board" aria-hidden={hidden || undefined} inert={hidden || undefined}>
       <div className="vo-back-face">
@@ -41,23 +31,11 @@ export function VoBackCover({
           </p>
         </div>
 
-        {/* Il colophon: dove su un libro vero stanno editore, stampatore e
-            l'anno. Qui ci stanno le note legali e chi ha fatto il sito —
-            informazioni di servizio, che in un volume si mettono in fondo e non
-            in mezzo alla lettura. */}
+        {/* La firma dell'edizione: chi ha fatto il sito e su cosa gira, come lo
+            stampatore in fondo a un volume. Le note legali stanno nel piede, che
+            è in ogni pagina: qui sarebbero raggiungibili solo rigirando il
+            libro. */}
         <div className="vo-back-colophon">
-          <span className="vo-back-imprint">
-            <a href={privacyHref}>Privacy Policy</a>
-            <span aria-hidden="true">·</span>
-            <a href={cookieHref}>Cookie Policy</a>
-          </span>
-          <span className="vo-back-imprint">
-            © {new Date().getFullYear()} Valentina Orciuoli
-            <span aria-hidden="true">·</span>
-            <a href={gestioneHref} target="_blank" rel="noopener noreferrer">
-              Gestione
-            </a>
-          </span>
           <span className="vo-back-imprint">
             Realizzato da{" "}
             <a href="https://pynkstudio.eu" target="_blank" rel="noopener noreferrer">
