@@ -1742,7 +1742,15 @@ export function VoBookShell({
           onPointerUp={onHotspotPointerUp}
           onPointerCancel={onHotspotPointerUp}
           onClick={(event) => onHotspotClick(event, -1)}
-          disabled={!open || (!canGoBack && !onBeforeFirstPage)}
+          /*
+           * Sul taglio sinistro della prima pagina, su schermo largo, il clic
+           * chiude il volume: lì la rotella lo riapre e il gesto ha senso. A
+           * dito no — la cerimonia di riapertura ascolta il gesto verticale,
+           * quindi chi tocca il margine e continua a toccarlo trova un libro
+           * che non risponde più. Prima della prima pagina, in compatto, il
+           * taglio semplicemente non è un bersaglio.
+           */
+          disabled={!open || (!canGoBack && (compact || !onBeforeFirstPage))}
           aria-label="Pagina precedente"
         />
       </motion.div>
