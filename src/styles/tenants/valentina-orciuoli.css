@@ -3052,6 +3052,23 @@
     position: absolute;
     top: 6%;
     z-index: 60;
+    /* **Lo `z-index` qui sopra non ordina niente.**
+
+       Le prese vivono dentro `.vo-book`, che è `preserve-3d`: fra fratelli in
+       una scena 3D l'ordine di disegno lo decide la *profondità*, non lo
+       `z-index`. E `.vo-page-left` sta due pixel più avanti (glieli dà
+       `book-shell`, per non risultare complanare al risguardo). Risultato: la
+       presa di destra funzionava — la pagina destra è a zero e lì lo `z-index`
+       decide davvero — e quella di sinistra era **sepolta sotto la pagina**.
+       Verificato con `elementFromPoint`: al centro del taglio sinistro
+       rispondeva `.vo-page-body`, mai il pulsante. Da fuori: "il libro va solo
+       in avanti", perché accenno, presa e clic all'indietro non arrivavano
+       nemmeno a partire.
+
+       Tre pixel bastano a stare davanti alla pagina e restano molto dietro al
+       piatto (`--vo-cover-depth`, 16px), che deve continuare a prendersi i
+       propri clic a volume chiuso. */
+    transform: translateZ(3px);
     width: clamp(30px, 7%, 72px);
     height: 88%;
     padding: 0;

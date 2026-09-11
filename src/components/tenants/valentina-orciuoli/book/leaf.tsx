@@ -243,20 +243,27 @@ export function VoLeaf({
   /**
    * La profondità del foglio rispetto al blocco pagine.
    *
-   * Andando **avanti** parte davanti alla pila di destra e finisce dietro a
-   * quella di sinistra: è la strada che fa la carta vera, ed è ciò che fa sparire
-   * il foglio nel momento esatto in cui la pagina sotto prende il suo posto —
-   * lecito, perché le due portano lo stesso contenuto.
+   * **Un foglio in mano sta sopra le due pile, sempre.** Da qualunque parte
+   * arrivi e comunque vada.
    *
-   * Tornando **indietro** no. Lì il foglio non si posa a sinistra: viene
-   * sollevato da lì, e sotto di lui c'è già la pagina precedente, che è un'altra
-   * pagina. Con la stessa rampa il foglio partiva *dietro* al blocco e la pagina
-   * di sotto lo ritagliava per metà — il difetto che si vedeva avvicinando il
-   * puntatore al taglio sinistro. Un foglio in mano sta sopra la pila per tutto
-   * il gesto, e la sua z non cambia.
+   * Andando avanti la rampa scendeva a `-depth`, cioè il foglio finiva *dietro*
+   * la pila di sinistra. La giustificazione era che a quel punto le due portano
+   * lo stesso contenuto, e quindi lo scambio non si vede. Non è vero: la pagina
+   * sinistra ferma porta ancora la sezione di **partenza** — il contenuto
+   * d'arrivo sta sul retro del foglio, ed è proprio quello che spariva dietro.
+   * Misurato a fine corsa: foglio a z −2.26, pagina sinistra a +2, la pagina
+   * mostra `libri` mentre il retro del foglio mostra `trilogia`. Da lì il lampo
+   * della pagina precedente per tutta la coda della molla, prima che l'atterraggio
+   * scrivesse la sezione nuova.
+   *
+   * Ora la rampa sale: si parte davanti alla pila di destra (a 0) e si arriva
+   * davanti a quella di sinistra (a `LEFT_PAGE_DEPTH`). Lo scambio col blocco
+   * pagine avviene quando il foglio si smonta, e lì il contenuto è davvero lo
+   * stesso. `lifted` — il foglio sollevato dalla pila di sinistra, che torna
+   * indietro — sta in cima da subito e la sua z non cambia.
    */
-  const backZ = depth + LEFT_PAGE_DEPTH;
-  const z = useTransform(progress, [0, 1], lifted ? [backZ, backZ] : [depth, -depth]);
+  const restZ = depth + LEFT_PAGE_DEPTH;
+  const z = useTransform(progress, [0, 1], lifted ? [restZ, restZ] : [depth, restZ]);
 
   /** L'angolo libero anticipa il resto del taglio; in coda lo rincorre. */
   const shear = useTransform(

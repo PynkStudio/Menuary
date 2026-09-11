@@ -64,6 +64,31 @@
 > più fluido e invece *saltava la facciata destra*, cioè metà del libro. Il tocco
 > sul margine resta l'eccezione — è un comando esplicito e gira la pagina subito.
 >
+> **Due difetti di profondità, non di logica** (stesso giorno). In una scena
+> `preserve-3d` l'ordine di disegno fra fratelli lo decide la **profondità**, non
+> lo `z-index` — e su questo il libro sbagliava due volte:
+>
+> - `.vo-page-left` sta a `translateZ(2px)` e le prese sul taglio stavano a zero,
+>   con un inutile `z-index: 60`. La presa di **destra** funzionava (la pagina
+>   destra è a zero, lì lo `z-index` decide davvero) e quella di **sinistra** era
+>   sepolta sotto la pagina: `elementFromPoint` al centro del taglio sinistro
+>   rispondeva `.vo-page-body`, mai il pulsante. Da fuori, "il libro va solo in
+>   avanti" — accenno, presa e clic all'indietro non arrivavano nemmeno a partire,
+>   su desktop come su telefono. Le prese ora stanno a `translateZ(3px)`: davanti
+>   alla pagina, molto dietro al piatto.
+> - Il foglio in volo, andando avanti, scendeva fino a `-depth`, cioè finiva
+>   **dietro** la pila di sinistra. La giustificazione in commento era che a quel
+>   punto le due portano lo stesso contenuto; non è vero — la pagina sinistra
+>   ferma porta ancora la sezione di *partenza*, quella d'arrivo sta sul retro del
+>   foglio. Misurato a fine corsa: foglio a z −2.26 contro pagina a +2, pagina che
+>   mostra `libri` e retro del foglio che mostra `trilogia`. Da lì il lampo della
+>   pagina precedente per tutta la coda della molla. Ora la rampa **sale**: si
+>   parte davanti alla pila di destra e si arriva davanti a quella di sinistra.
+>
+> Lezione di metodo: i test usavano `el.click()`, che **salta il hit-test** e
+> quindi non vede mai un elemento coperto. Da qui in avanti si tocca chi risponde
+> a `elementFromPoint` su quel punto, non l'elemento per selettore.
+>
 > Verifica: 880 gesti casuali su mobile e 110 su desktop (sfogliate, colpetti,
 > gesti annullati a metà, secondo dito, diagonali, inversioni a metà corsa, rotella
 > orizzontale, clic in nav), più 12 raffiche di sfogliate appaiate per il caso "la
