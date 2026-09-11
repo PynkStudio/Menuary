@@ -108,6 +108,13 @@ const CEREMONY_TRAVEL = 700;
  * e il gesto finiva prima del libro.
  */
 const TOUCH_CEREMONY_GAIN = 3.1;
+/**
+ * Pixel di dito, in un tocco solo, oltre i quali la scorsa vale "apri il libro"
+ * invece di "sbircia sotto la copertina". Quarantaquattro sono meno di un
+ * pollice svogliato e più di un tremolio: sopra questa soglia il volume si apre
+ * fino in fondo da sé.
+ */
+const TOUCH_OPEN_TRAVEL = 44;
 /** La copertina insegue il bersaglio con una molla, non salta di scatto in scatto. */
 const CEREMONY_FOLLOW = { type: "spring", stiffness: 210, damping: 30, mass: 0.7 } as const;
 const CEREMONY_OPEN_TRANSITION = { duration: 0.85, ease: [0.42, 0.02, 0.18, 1] } as const;
@@ -351,23 +358,56 @@ export function ValentinaOrciuoliBookSite({
       advance(Math.max(-WHEEL_MAX_STEP, Math.min(WHEEL_MAX_STEP, step)), false);
     };
 
-    let lastTouch: number | null = null;
+    let lastY: number | null = null;
+    let lastX = 0;
+    /** Quanto il dito ha tirato nel verso che apre, in *questo* tocco. */
+    let pulled = 0;
     const onTouchStart = (event: TouchEvent) => {
-      lastTouch = event.touches[0]?.clientY ?? null;
+      const touch = event.touches[0];
+      lastY = touch?.clientY ?? null;
+      lastX = touch?.clientX ?? 0;
+      pulled = 0;
     };
     const onTouchMove = (event: TouchEvent) => {
-      if (openedRef.current || lastTouch === null) return;
-      const y = event.touches[0]?.clientY ?? lastTouch;
+      if (openedRef.current || lastY === null) return;
+      const touch = event.touches[0];
+      const y = touch?.clientY ?? lastY;
+      const x = touch?.clientX ?? lastX;
       event.preventDefault();
-      advance((lastTouch - y) * TOUCH_CEREMONY_GAIN, true);
-      lastTouch = y;
+      /*
+       * Aprire un libro è tirare la copertina, e la si tira **in su o di lato**:
+       * chiedere solo il verticale lasciava senza risposta metà dei gesti che uno
+       * prova davanti a una copertina chiusa — in particolare quello di sfogliare,
+       * che è poi il gesto che il libro insegna in ogni altra sua pagina.
+       */
+      const pull = lastY - y + (lastX - x);
+      pulled += pull;
+      advance(pull * TOUCH_CEREMONY_GAIN, true);
+      lastY = y;
+      lastX = x;
     };
-    // Il dito che si stacca a metà: la copertina non resta socchiusa a caso, si
-    // posa dove il gesto l'ha lasciata con una molla sua.
     const onTouchEnd = () => {
-      lastTouch = null;
+      const travelled = pulled;
+      lastY = null;
+      pulled = 0;
       if (openedRef.current) return;
       follow?.stop();
+      /*
+       * Una scorsa decisa **apre**, non lascia il volume socchiuso.
+       *
+       * Prima la copertina si posava dove il gesto l'aveva lasciata, e per aprire
+       * davvero servivano duecento e passa pixel di dito in un tocco solo: un
+       * pollice normale ne fa un centinaio, vedeva il cartoncino muoversi di
+       * mezzo e concludeva che scorrere non funziona. Il piede promette "scorri
+       * o tocca per aprire il libro": devono essere vere tutte e due.
+       *
+       * Il trascinamento lento per sbirciare resta — è il *dito che si ferma* a
+       * dirlo, non la distanza.
+       */
+      if (travelled >= TOUCH_OPEN_TRAVEL) {
+        completeOpening();
+        return;
+      }
       follow = animate(coverProgress, ceremonyAccRef.current / CEREMONY_TRAVEL, CEREMONY_FOLLOW);
     };
 

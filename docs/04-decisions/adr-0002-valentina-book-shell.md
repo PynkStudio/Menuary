@@ -89,6 +89,31 @@
 > quindi non vede mai un elemento coperto. Da qui in avanti si tocca chi risponde
 > a `elementFromPoint` su quel punto, non l'elemento per selettore.
 >
+> **La coda ricorda la natura del passo** (stesso giorno). Un passo accodato
+> mentre un foglio è in volo veniva speso *sempre* come comando esplicito, cioè
+> come una pagina intera. Ma su schermo stretto una sfogliata vale mezzo passo —
+> prima si gira la testa, poi la pagina — e chi sfogliava più in fretta di quanto
+> duri un giro si vedeva saltare la facciata destra a ogni gesto accodato: è così
+> che il telefono "avanzava di più pagine insieme", con la stessa faccia del
+> vecchio difetto da trackpad ma un'altra causa. `queuedShiftRef` distingue le due
+> nature. Misurato: tre sfogliate a raffica, la terza dentro il volo della
+> seconda, danno tre mezzi passi.
+>
+> **La cerimonia diventa generosa, e chiudere torna un gesto.** Aprire chiedeva
+> oltre duecento pixel di dito *in un tocco solo*: un pollice normale ne fa un
+> centinaio, vedeva il cartoncino muoversi di mezzo e concludeva che scorrere non
+> funzionasse — mentre il piede prometteva "scorri o tocca per aprire il libro".
+> Ora una scorsa decisa (`TOUCH_OPEN_TRAVEL`, 44px) apre fino in fondo, e il
+> gesto vale **in su o di lato**: aprire un libro è tirare la copertina, e la si
+> tira in tutte e due le direzioni. Il trascinamento lento per sbirciare resta —
+> a dirlo è il dito che si ferma, non la distanza.
+>
+> Di conseguenza **sfogliare indietro dalla prima pagina richiude il volume**, su
+> telefono come su desktop, e il taglio sinistro della prima pagina torna un
+> bersaglio anche in compatto. Erano stati tolti perché a libro chiuso il dito non
+> aveva più niente da sfogliare: quel vicolo cieco non esiste più, visto che da
+> chiuso si rientra con lo stesso gesto con cui si è usciti.
+>
 > Verifica: 880 gesti casuali su mobile e 110 su desktop (sfogliate, colpetti,
 > gesti annullati a metà, secondo dito, diagonali, inversioni a metà corsa, rotella
 > orizzontale, clic in nav), più 12 raffiche di sfogliate appaiate per il caso "la

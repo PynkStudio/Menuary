@@ -818,6 +818,17 @@ export function VoBookShell({
    */
   const queuedRef = useRef<0 | 1 | -1>(0);
   /**
+   * Se il passo in coda era un'intenzione *vaga* — una sfogliata — o un comando
+   * esplicito, come il tocco sul margine o una freccia.
+   *
+   * Senza questa distinzione la coda spendeva **tutto** come comando esplicito,
+   * cioè come una pagina intera. Su schermo stretto una sfogliata vale mezzo
+   * passo (prima si gira la testa, poi la pagina): chi sfogliava più in fretta di
+   * quanto duri un giro si vedeva saltare la facciata destra a ogni gesto
+   * accodato, ed è così che il telefono "avanzava di più pagine insieme".
+   */
+  const queuedShiftRef = useRef(true);
+  /**
    * La sezione chiesta dall'URL mentre un foglio era ancora in volo.
    *
    * Prima veniva scartata: due clic ravvicinati in nav — o un clic durante un
@@ -1093,6 +1104,7 @@ export function VoBookShell({
       }
       if (gestureRef.current?.mode === "run") {
         queuedRef.current = direction;
+        queuedShiftRef.current = shiftFocus;
         return;
       }
       goTo(from + direction);
@@ -1124,12 +1136,16 @@ export function VoBookShell({
      * pagina intera* invece del mezzo passo che l'utente aveva chiesto — due
      * dita svelte e il libro ne girava tre.
      *
+     * E si spende con la *natura* che aveva: `queuedShiftRef`. Spenderla sempre
+     * come comando esplicito riportava esattamente lo stesso difetto per un'altra
+     * strada, perché anche una sfogliata finiva per valere una pagina intera.
+     *
      * L'URL si allinea comunque prima: il commit precedente aveva ceduto la
      * navigazione al passo in coda, e se quel passo ora si spende girando la
      * testa (o contro un piatto) nessuno la scriverebbe più.
      */
     publish(fromPos(pos).spread);
-    step(queued, false);
+    step(queued, queuedShiftRef.current);
   }, [fromPos, gesture, goTo, pos, publish, step]);
 
   /**
@@ -1679,6 +1695,9 @@ export function VoBookShell({
         if (gestureRef.current?.mode === "run") {
           swipeRef.current = null;
           queuedRef.current = dir;
+          // Una sfogliata resta una sfogliata anche se arriva in coda: su schermo
+          // stretto vale mezzo passo, non una pagina intera.
+          queuedShiftRef.current = true;
           return;
         }
         // Prima si gira la testa, poi la pagina: una sfogliata che arriva
@@ -1713,14 +1732,15 @@ export function VoBookShell({
            * ci porta: senza questo ripiego, sul telefono il gesto sull'ultima
            * pagina non faceva proprio nulla.
            *
-           * **Indietro dalla prima pagina no.** Lì `step` chiuderebbe il libro,
-           * e a volume chiuso il dito non ha più niente da sfogliare: la
-           * cerimonia di riapertura ascolta il gesto *verticale*, quindi chi
-           * continuava a sfogliare di lato trovava un libro morto. Chiudere il
-           * volume resta una cosa che si fa apposta, non per aver girato una
-           * pagina di troppo all'indietro.
+           * **E indietro dalla prima pagina chiude il volume**, di nuovo.
+           * Era stato tolto perché a libro chiuso il dito non aveva più niente
+           * da sfogliare — la cerimonia di riapertura ascoltava il solo gesto
+           * verticale — e chi continuava a sfogliare di lato trovava un libro
+           * morto. Adesso la cerimonia accetta anche il gesto orizzontale, e
+           * quel vicolo cieco non c'è più: chiudere il libro sfogliando indietro
+           * dalla prima pagina torna a essere quello che ci si aspetta.
            */
-          if (dir === 1 && posRef.current === positionCount - 1) step(dir);
+          step(dir);
           return;
         }
         capture(event.currentTarget, event.pointerId);
@@ -1746,7 +1766,7 @@ export function VoBookShell({
       }
       hintAt(dir, 1 - near / HINT_PROXIMITY);
     },
-    [beginDrag, dropHint, hintAt, open, positionCount, reducedMotion, step, tryShiftFocus, updateDrag],
+    [beginDrag, dropHint, hintAt, open, reducedMotion, step, tryShiftFocus, updateDrag],
   );
 
   const onStagePointerUp = useCallback(
@@ -1968,14 +1988,13 @@ export function VoBookShell({
           onPointerCancel={onHotspotPointerUp}
           onClick={(event) => onHotspotClick(event, -1)}
           /*
-           * Sul taglio sinistro della prima pagina, su schermo largo, il clic
-           * chiude il volume: lì la rotella lo riapre e il gesto ha senso. A
-           * dito no — la cerimonia di riapertura ascolta il gesto verticale,
-           * quindi chi tocca il margine e continua a toccarlo trova un libro
-           * che non risponde più. Prima della prima pagina, in compatto, il
-           * taglio semplicemente non è un bersaglio.
+           * Sul taglio sinistro della prima pagina il tocco chiude il volume, su
+           * schermo largo come su stretto. Era disabilitato in compatto finché la
+           * cerimonia di riapertura ascoltava il solo gesto verticale: adesso
+           * accetta anche quello orizzontale, quindi da chiuso si torna dentro con
+           * lo stesso gesto con cui si è usciti.
            */
-          disabled={!open || (!canGoBack && (compact || !onBeforeFirstPage))}
+          disabled={!open || (!canGoBack && !onBeforeFirstPage)}
           aria-label="Pagina precedente"
         />
       </motion.div>
