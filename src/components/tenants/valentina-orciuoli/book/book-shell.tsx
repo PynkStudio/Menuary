@@ -1682,21 +1682,25 @@ export function VoBookShell({
           return;
         }
         // Prima si gira la testa, poi la pagina: una sfogliata che arriva
-        // mentre lo sguardo non è ancora sul bordo giusto sposta il fuoco.
+        // mentre lo sguardo non è ancora sul bordo giusto sposta il fuoco e
+        // **finisce lì**.
         if (tryShiftFocus(dir)) {
           /*
-           * Il dito però **non** si stacca qui.
+           * Una sfogliata vale un passo solo.
            *
-           * Prima il gesto finiva con la testa girata, e per girare davvero la
-           * pagina bisognava alzare il pollice e ricominciare da capo: era quel
-           * "funziona solo lo swipe del fuoco, ma se si fa il secondo per
-           * avanzare si blocca". Rimettere l'origine sotto il dito fa della
-           * carrellata e del giro pagina un movimento unico — si continua a
-           * spingere nella stessa direzione e la carta segue, che è come si
-           * sfoglia un libro vero: non si molla la pagina a metà strada.
+           * Su schermo stretto la lettura procede sinistra → destra → pagina
+           * nuova → sinistra: sono quattro momenti, e ognuno è un gesto. Per un
+           * momento questo gesto si era rimesso l'origine sotto il dito, così da
+           * incatenare la carrellata al giro pagina in un movimento unico: ma
+           * quel movimento unico *salta la facciata destra*, cioè metà del
+           * libro. Chi spinge il pollice per andare dalla sinistra alla destra
+           * si ritrovava direttamente sulla sinistra successiva.
+           *
+           * Il dito resta giù ma il gesto è speso: per il passo dopo si
+           * ricomincia, ed è giusto così — è quello che distingue lo sfogliare
+           * dal trascinare.
            */
-          swipe.startX = event.clientX;
-          swipe.startY = event.clientY;
+          swipeRef.current = null;
           return;
         }
         // Il gesto comincia dove la soglia è stata superata, non dove il dito si è

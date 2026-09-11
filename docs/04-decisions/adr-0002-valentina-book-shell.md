@@ -57,11 +57,18 @@
 > telecamera** (`--vo-flip-t`): tre centesimi di scala mentre il foglio è in piedi,
 > prima il giro pagina era una ripresa fissa.
 >
-> Sul telefono, infine, la carrellata sul fuoco e il giro pagina sono diventati
-> **un gesto solo**: il dito non si stacca più a metà strada. Verifica: 560 gesti
-> casuali su mobile e 110 su desktop (sfogliate, colpetti, gesti annullati a metà,
-> secondo dito, diagonali, rotella orizzontale, clic in nav) — zero blocchi, zero
-> giri doppi, zero disallineamenti fra pagina e indirizzo.
+> Sul telefono resta fermo il patto: **una sfogliata vale un passo solo**. La
+> lettura procede sinistra → destra → pagina nuova → sinistra, e ognuno di quei
+> momenti è un gesto a sé. Per un attimo il gesto si era rimesso l'origine sotto
+> il dito, per incatenare carrellata e giro pagina in un movimento unico: sembrava
+> più fluido e invece *saltava la facciata destra*, cioè metà del libro. Il tocco
+> sul margine resta l'eccezione — è un comando esplicito e gira la pagina subito.
+>
+> Verifica: 880 gesti casuali su mobile e 110 su desktop (sfogliate, colpetti,
+> gesti annullati a metà, secondo dito, diagonali, inversioni a metà corsa, rotella
+> orizzontale, clic in nav), più 12 raffiche di sfogliate appaiate per il caso "la
+> seconda si blocca" — zero blocchi, zero giri doppi, zero disallineamenti fra
+> pagina e indirizzo, telecamera sempre dentro i suoi estremi.
 
 ## Contesto
 
