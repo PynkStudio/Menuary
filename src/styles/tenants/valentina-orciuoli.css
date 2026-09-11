@@ -2714,6 +2714,18 @@
     backface-visibility: hidden;
   }
 
+  /* A volume chiuso o rigirato le pagine non sono un bersaglio.
+
+     `backface-visibility: hidden` sulla pagina non basta: `.vo-page-body` è un
+     riquadro che scorre, il browser lo promuove a un livello suo e lo tiene
+     cliccabile anche quando la pagina che lo contiene dà le spalle allo
+     schermo. Con il volume girato sulla quarta, `elementFromPoint` sopra i
+     crediti rispondeva un paragrafo di una facciata: si vedeva la quarta e si
+     toccava la pagina dietro. */
+  .vo-book-stage:not([data-open]) .vo-page {
+    pointer-events: none;
+  }
+
   .vo-page-left {
     left: 0;
     /* Il cardine è il dorso, cioè il bordo *destro* di questa pagina: è lo stesso
@@ -3695,7 +3707,10 @@
     z-index: 20;
     flex: none;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    column-gap: 2.4rem;
+    row-gap: 0.45rem;
     padding: 0.7rem clamp(1rem, 4vw, 2.75rem) 0.9rem;
     font-family: Georgia, "Times New Roman", serif;
     font-size: 0.62rem;
@@ -3703,11 +3718,23 @@
     color: rgba(242, 216, 148, 0.3);
   }
 
-  .vo-book-footer-links {
+  .vo-book-footer-links,
+  .vo-book-footer-credits {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
     gap: 0.4rem 1.4rem;
+  }
+
+  .vo-book-footer-credits {
+    gap: 0.4rem 0.55rem;
+  }
+
+  /* I crediti stanno nel piede su schermo largo e sulla quarta di copertina su
+     schermo stretto: mai in tutti e due i posti. */
+  .vo-book-site[data-compact] .vo-book-footer-credits {
+    display: none;
   }
 
   .vo-book-footer a:hover {
@@ -4107,9 +4134,19 @@
   }
 
   .vo-back-colophon a {
+    /* Il piatto è `pointer-events: none` per intero, così da non intercettare
+       nulla quando sta dietro al blocco pagine: qui sopra i link riprendono la
+       mano. A quarta nascosta il piatto è `inert`, quindi non c'è fuga. */
+    pointer-events: auto;
     color: rgba(242, 216, 148, 0.68);
     text-decoration: none;
     border-bottom: 1px solid rgba(242, 216, 148, 0.22);
+  }
+
+  /* Su schermo largo i crediti stanno nel piede: il colophon della quarta
+     resterebbe un doppione. */
+  .vo-book-site:not([data-compact]) .vo-back-colophon {
+    display: none;
   }
 
   .vo-back-colophon a:hover,

@@ -140,6 +140,18 @@
 > momenti, e il giro atterrava sul fondo scuro di `.vo-photo-print`. Ora la cache
 > si riempie al montaggio del sito e l'immagine è `complete` in entrambi i punti.
 >
+> **I crediti stanno in un posto solo per modo** (stesso giorno): nel piede su
+> schermo largo, sulla quarta di copertina su schermo stretto — è il CSS a
+> scegliere su `data-compact`, il markup li porta in entrambi i posti. E sulla
+> quarta non si premevano, per due ragioni sovrapposte: il piatto intero è
+> `pointer-events: none` (per non intercettare nulla quando sta dietro al blocco
+> pagine) e i link non lo riprendevano; e sopra di loro rispondeva una *facciata
+> del libro* — `backface-visibility: hidden` sulla pagina non basta, perché
+> `.vo-page-body` è un riquadro che scorre, il browser lo promuove a un livello
+> suo e lo tiene cliccabile anche quando la pagina dà le spalle allo schermo.
+> Ora i link riprendono la mano, e a volume chiuso o rigirato le pagine sono
+> `pointer-events: none`: si tocca quello che si vede.
+>
 > Verifica: 880 gesti casuali su mobile e 110 su desktop (sfogliate, colpetti,
 > gesti annullati a metà, secondo dito, diagonali, inversioni a metà corsa, rotella
 > orizzontale, clic in nav), più 12 raffiche di sfogliate appaiate per il caso "la

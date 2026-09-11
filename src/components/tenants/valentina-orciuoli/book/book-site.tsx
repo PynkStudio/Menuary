@@ -842,6 +842,20 @@ export function ValentinaOrciuoliBookSite({
             Gestione
           </a>
         </span>
+        {/* I crediti stanno qui su schermo largo e sulla quarta di copertina su
+            schermo stretto: è il CSS a scegliere, in base a `data-compact`. Un
+            piede su un telefono è già stretto per i soli richiami legali, e la
+            quarta è il posto dove un libro vero nomina lo stampatore. */}
+        <span className="vo-book-footer-credits">
+          Realizzato da{" "}
+          <a href="https://pynkstudio.eu" target="_blank" rel="noopener noreferrer">
+            PynkStudio
+          </a>
+          <span aria-hidden="true">·</span>
+          <a href="https://weuseorpheo.com" target="_blank" rel="noopener noreferrer">
+            Powered by Orpheo
+          </a>
+        </span>
       </footer>
 
       <VoNewsletterInsert

@@ -32,9 +32,10 @@ export function VoBackCover({ hidden }: { hidden: boolean }) {
         </div>
 
         {/* La firma dell'edizione: chi ha fatto il sito e su cosa gira, come lo
-            stampatore in fondo a un volume. Le note legali stanno nel piede, che
-            è in ogni pagina: qui sarebbero raggiungibili solo rigirando il
-            libro. */}
+            stampatore in fondo a un volume. Si vede solo su schermo stretto —
+            su schermo largo gli stessi crediti stanno nel piede, e il CSS
+            nasconde questo blocco. Le note legali stanno nel piede sempre: qui
+            sarebbero raggiungibili solo rigirando il libro. */}
         <div className="vo-back-colophon">
           <span className="vo-back-imprint">
             Realizzato da{" "}
