@@ -152,6 +152,25 @@
 > Ora i link riprendono la mano, e a volume chiuso o rigirato le pagine sono
 > `pointer-events: none`: si tocca quello che si vede.
 >
+> **Un gesto, un passo — e il ripensamento** (stesso giorno). Una sfogliata
+> molto ampia col pollice girava la pagina *e poi* spostava anche il fuoco sulla
+> facciata successiva. Due cose insieme: `pointerleave` chiudeva la presa quando
+> il dito usciva dalla scatola del libro — un giro deciso da un bordo invisibile,
+> a dito ancora giù — e l'origine della sfogliata non veniva mai consumata, così
+> lo stesso dito, continuando, veniva letto come una sfogliata nuova. Ora
+> l'origine si consuma appena la presa comincia (per il passo dopo serve un dito
+> nuovo), la presa la chiude solo il rilascio, e un colpo deciso all'indietro
+> **riavvolge** il foglio anche oltre metà corsa: il verso dell'ultimo movimento
+> conta quanto il punto in cui il foglio è arrivato.
+>
+> **La rotella è una spinta, non una presa.** Superata la soglia il giro si
+> compie da sé, senza aspettare che la mano si fermi. Prima si aspettava il
+> silenzio, e su un trackpad il silenzio può non arrivare: le dita ferme sul pad
+> mandano un rivolo di delta da un pixel che rinnova la guardia all'infinito, e
+> il foglio restava a mezz'aria. Sotto soglia, scorrere indietro riporta il
+> foglio al dorso e il silenzio lo lascia cadere. Misurato: 90 azioni di rotella
+> fra colpetti, scorse lente, rivoli, parziali e inversioni — zero fogli sospesi.
+>
 > Verifica: 880 gesti casuali su mobile e 110 su desktop (sfogliate, colpetti,
 > gesti annullati a metà, secondo dito, diagonali, inversioni a metà corsa, rotella
 > orizzontale, clic in nav), più 12 raffiche di sfogliate appaiate per il caso "la

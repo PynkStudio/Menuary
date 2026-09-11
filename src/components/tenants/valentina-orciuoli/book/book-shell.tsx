@@ -471,7 +471,7 @@ export function VoBookShell({
    * e si limita a rimandare avanti la propria guardia: una sessione di rotella
    * vale esattamente un giro, e per farne un altro la mano deve fermarsi.
    */
-  const wheelRef = useRef<{ travel: number; idle: number; spent: boolean } | null>(null);
+  const wheelRef = useRef<{ travel: number; idle: number; spent: boolean; dir: 1 | -1 } | null>(null);
   /**
    * Fino a quando ignorare un gesto *nuovo*. Serve solo all'apertura: la coda
    * del gesto che ha spalancato la copertina non deve valere anche come
@@ -1424,7 +1424,15 @@ export function VoBookShell({
       const travelled = held.dir === 1 ? reached : 1 - reached;
       // La velocità del pollice conta quanto la distanza percorsa.
       const flick = p0.getVelocity() * held.dir;
-      if (travelled >= DRAG_COMMIT_THRESHOLD || flick >= FLICK_VELOCITY) {
+      /*
+       * Il ripensamento: chi ha portato il foglio oltre metà e poi lo rimanda
+       * indietro con decisione vuole *riavvolgere*, non compiere il giro. Senza
+       * questo il verso dell'ultimo movimento non contava: contava solo dove
+       * il foglio era arrivato, e un'inversione decisa finiva comunque nella
+       * pagina dopo.
+       */
+      const recoiling = flick <= -FLICK_VELOCITY;
+      if (!recoiling && (travelled >= DRAG_COMMIT_THRESHOLD || flick >= FLICK_VELOCITY)) {
         tokenRef.current += 1;
         setGesture({ ...held, token: tokenRef.current, mode: "run", resumed: true });
         return;
@@ -1522,7 +1530,7 @@ export function VoBookShell({
       } else {
         if (performance.now() < inputLockRef.current) return;
         const direction: 1 | -1 = push > 0 ? 1 : -1;
-        wheel = { travel: 0, idle: 0, spent: false };
+        wheel = { travel: 0, idle: 0, spent: false, dir: direction };
         wheelRef.current = wheel;
         watch(wheel);
 
@@ -1551,10 +1559,20 @@ export function VoBookShell({
 
       wheel.travel += push;
       const reached = api.updateDrag(-wheel.travel, true);
-      // A un capo della corsa la decisione è presa: aspettare il silenzio
-      // terrebbe il foglio incollato al bordo per un decimo di secondo. La
-      // sessione però resta aperta — è lei che assorbe il resto dell'inerzia.
-      if (reached <= 0 || reached >= 1) {
+      const travelled = wheel.dir === 1 ? reached : 1 - reached;
+      /*
+       * La rotella è una *spinta*, non una presa: superata la soglia il giro si
+       * compie da sé, senza aspettare che la mano si fermi.
+       *
+       * Prima si aspettava il silenzio, e su un trackpad il silenzio può non
+       * arrivare: le dita ferme sul pad mandano un rivolo di delta da un pixel
+       * che rinnova la guardia all'infinito, e il foglio restava a mezz'aria —
+       * "se smetto di scorrere a metà, l'animazione si ferma". Decidere alla
+       * soglia toglie di mezzo il caso: da lì in poi la pagina va, e la sessione
+       * resta aperta solo per assorbire la coda. Sotto soglia, tornare indietro
+       * riporta il foglio al dorso, e il silenzio lo lascia cadere.
+       */
+      if (travelled >= DRAG_COMMIT_THRESHOLD || reached <= 0 || reached >= 1) {
         wheel.spent = true;
         api.endDrag(false);
       }
@@ -1778,6 +1796,17 @@ export function VoBookShell({
           return;
         }
         capture(event.currentTarget, event.pointerId);
+        /*
+         * L'origine della sfogliata si consuma **qui**, appena la presa comincia.
+         *
+         * Restava armata per tutta la durata del dito, e se la presa finiva
+         * prima che il dito si alzasse — il puntatore che esce dalla scatola,
+         * una cattura persa — lo stesso dito, continuando a muoversi, veniva
+         * letto come una sfogliata *nuova*: girava la pagina e poi spostava
+         * anche il fuoco sulla facciata successiva. Un gesto vale un passo, e
+         * per il passo dopo serve un dito nuovo.
+         */
+        swipeRef.current = null;
         updateDrag(event.clientX);
         return;
       }
@@ -1816,13 +1845,19 @@ export function VoBookShell({
   const onStagePointerLeave = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
       stageRectRef.current = null;
-      if (dragRef.current?.pointerId === event.pointerId) {
-        endDrag(false);
-        return;
-      }
+      /*
+       * Una presa **non** finisce perché il puntatore è uscito dalla scatola.
+       *
+       * Prima sì, ed era un giro pagina deciso a metà corsa da un bordo
+       * invisibile: un pollice largo che scendeva sotto il libro vedeva la
+       * pagina compiersi da sola, col dito ancora giù. La presa la chiude solo
+       * il rilascio, che la rete sulla finestra vede ovunque avvenga. Qui resta
+       * l'accenno del mouse, che invece è legato alla vicinanza al taglio.
+       */
+      if (dragRef.current?.pointerId === event.pointerId) return;
       dropHint();
     },
-    [dropHint, endDrag],
+    [dropHint],
   );
 
   const onHotspotPointerDown = useCallback(
