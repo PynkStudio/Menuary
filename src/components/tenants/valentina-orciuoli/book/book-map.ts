@@ -150,6 +150,24 @@ export const voErrata: VoAppendix = {
   runningHead: "Errata corrige",
 };
 
+/**
+ * Le appendici nell'ordine in cui occupano le posizioni virtuali oltre l'ultima
+ * pagina — l'errata in coda, che non ha richiami ma una posizione sì.
+ *
+ * Ognuna ha la **propria** posizione. Prima ne condividevano una sola, e passare
+ * dall'informativa privacy a quella sui cookie non era quindi uno spostamento:
+ * il libro restava fermo e si limitava a cambiare il contenuto sotto gli occhi,
+ * senza sfogliare. Due pagine diverse sono due posti diversi, anche quando stanno
+ * in fondo al volume.
+ */
+export const voAppendixOrder: readonly VoAppendix[] = [...voAppendix, voErrata];
+
+/** Quanto lontano sta questa appendice dalla prima. */
+export function appendixOrdinal(entry: VoAppendix) {
+  const index = voAppendixOrder.findIndex((item) => item.id === entry.id);
+  return index < 0 ? 0 : index;
+}
+
 export function appendixByPathname(pathname: string | null | undefined) {
   if (!pathname) return null;
   const { path } = voRoute(pathname);

@@ -357,7 +357,24 @@ function VoWorkPhoto({
       <span className="vo-photo-tape vo-photo-tape-a" aria-hidden="true" />
       <span className="vo-photo-tape vo-photo-tape-b" aria-hidden="true" />
       <span className="vo-photo-print">
-        <img src={work.coverImageUrl} alt={`Copertina di ${work.title}`} />
+        {/*
+          `eager` e `sync` insieme, e non è ridondanza.
+
+          La facciata sinistra di una pagina raggiunta sfogliando in avanti si
+          monta **due volte**: prima sul foglio in volo, poi sul blocco pagine
+          quando il foglio si smonta. Con il differimento pigro il browser
+          scopriva l'immagine solo alla prima di quelle due — cioè a giro già
+          cominciato — e la seconda buttava via quella richiesta ricominciandola
+          da capo: il giro finiva su un rettangolo scuro e la copertina
+          ricompariva un secondo dopo. `sync` toglie il fotogramma di scarto
+          sulla seconda comparsa, che a quel punto ha la cache già calda.
+        */}
+        <img
+          src={work.coverImageUrl}
+          alt={`Copertina di ${work.title}`}
+          loading="eager"
+          decoding="sync"
+        />
         <span className="vo-photo-gloss" aria-hidden="true" />
       </span>
       <figcaption>{caption}</figcaption>

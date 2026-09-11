@@ -114,6 +114,32 @@
 > aveva più niente da sfogliare: quel vicolo cieco non esiste più, visto che da
 > chiuso si rientra con lo stesso gesto con cui si è usciti.
 >
+> **Ogni appendice ha la sua posizione** (stesso giorno). Privacy, cookie ed
+> errata ne condividevano **una sola**, subito oltre l'ultima pagina. Passare
+> dall'una all'altra non era quindi uno spostamento: il libro restava fermo e si
+> limitava a cambiare il contenuto sotto gli occhi, senza sfogliare. Ora
+> `voAppendixOrder` dà a ciascuna la propria posizione virtuale, e la facciata si
+> sceglie dalla *posizione* e non dalla prop — durante il giro fra due informative
+> le due facciate in scena sono due appendici diverse, e leggerle dalla prop ne
+> avrebbe mostrata una sola. Misurato: da una sezione all'appendice volano tre
+> fogli, fra un'informativa e l'altra uno.
+>
+> Nello stesso punto: **non si sfoglia a volume chiuso**. Dalla quarta di
+> copertina un richiamo alle informative cambia l'indirizzo mentre il volume è
+> ancora girato e chiuso, e il libro partiva col suo riffle in quello stato, sotto
+> la copertina — il "si comporta strano". La richiesta si mette in attesa e si
+> onora quando il volume è di nuovo aperto; la coda, a sua volta, non consuma più
+> una richiesta che non potrebbe soddisfare.
+>
+> **Le copertine delle opere si scaldano all'ingresso.** La facciata sinistra di
+> una pagina raggiunta sfogliando in avanti si monta due volte — prima sul foglio
+> in volo, poi sul blocco pagine — e con il differimento pigro il browser scopriva
+> l'immagine solo alla prima, cioè a giro già cominciato; la seconda buttava via
+> quella richiesta e ricominciava da capo. Misurato sul giro verso il thriller:
+> l'immagine risultava `complete: false` e `naturalWidth: 0` in tutti e tre i
+> momenti, e il giro atterrava sul fondo scuro di `.vo-photo-print`. Ora la cache
+> si riempie al montaggio del sito e l'immagine è `complete` in entrambi i punti.
+>
 > Verifica: 880 gesti casuali su mobile e 110 su desktop (sfogliate, colpetti,
 > gesti annullati a metà, secondo dito, diagonali, inversioni a metà corsa, rotella
 > orizzontale, clic in nav), più 12 raffiche di sfogliate appaiate per il caso "la

@@ -257,6 +257,27 @@ export function ValentinaOrciuoliBookSite({
     return () => controls.stop();
   }, [onDesk, pan]);
 
+  /**
+   * Le copertine delle opere si scaldano appena il libro entra in scena.
+   *
+   * Sono l'unica immagine pesante del volume e vivono su facciate che, sfogliando
+   * in avanti, si montano solo a giro già cominciato: senza questo il browser le
+   * scopriva mentre il foglio era in volo, e la pagina atterrava su un rettangolo
+   * scuro. Qui non si costruisce nulla nel DOM — si riempie solo la cache, così
+   * quando la facciata arriva l'immagine c'è già.
+   */
+  useEffect(() => {
+    const warmed = new Set<string>();
+    for (const work of works) {
+      const url = work.coverImageUrl;
+      if (!url || warmed.has(url)) continue;
+      warmed.add(url);
+      const warm = new Image();
+      warm.decoding = "async";
+      warm.src = url;
+    }
+  }, [works]);
+
   const [insertOpen, setInsertOpen] = useState(false);
   /**
    * Una volta infilata, la cedola resta. Prima spariva appena il volume si
