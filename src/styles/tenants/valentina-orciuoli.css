@@ -2621,6 +2621,31 @@
     touch-action: none;
   }
 
+  /* La telecamera su schermo largo.
+
+     `--vo-flip-t` lo scrive `book-shell.tsx`: vale 0 con la carta posata a un
+     capo o all'altro e 1 col foglio in piedi a metà giro. L'inquadratura fa
+     allora un passo indietro mentre la pagina si alza e torna quando si posa.
+
+     Prima da desktop il giro pagina era una ripresa fissa: l'occhio restava
+     inchiodato mentre la carta girava. È poco — tre centesimi di scala e mezzo
+     punto di salita — ed è voluto: una panoramica vistosa a ogni pagina stanca
+     alla terza, mentre questa si sente e non si nota.
+
+     Su schermo stretto non vale: lì la telecamera è un'altra e molto più ampia,
+     e le due si sommerebbero sullo stesso `transform`. */
+  .vo-book-site:not([data-compact]) .vo-book-stage {
+    transform: translateY(calc(var(--vo-flip-t, 0) * -0.5%))
+      scale(calc(1 - 0.032 * var(--vo-flip-t, 0)));
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vo-book-site:not([data-compact]) .vo-book-stage {
+      transform: none;
+    }
+  }
+
   /* L'ombra di contatto. Non è centrata: la luce arriva da sinistra, quindi
      l'ombra scivola a destra — e con il tavolo sotto è la cosa che dice quanto
      il volume è spesso. */

@@ -23,6 +23,46 @@
 > compenetrazione fra pagine che questo ADR lasciava "da verificare sul campo" sono stati
 > misurati e risolti lì.
 
+> **Nota (2026-09-11) — lo sfogliare diventa a prova di gesto.** Il motore dei gesti
+> perdeva colpi e ogni tanto si piantava del tutto. Le cause erano quattro, tutte
+> strutturali e non di regolazione, e sono state tolte alla radice:
+>
+> 1. **Ascoltatori nativi stabili.** `wheel` e `touch` vivevano in effetti che
+>    dipendevano dalle funzioni chiamate; una di quelle cambiava identità a *ogni
+>    render*, perché in fondo alla catena c'è una prop scritta come arrow inline.
+>    L'ascoltatore veniva smontato e rimontato in continuazione e la sua pulizia
+>    chiude la scorsa in corso: bastava un ridisegno col trackpad in movimento per
+>    uccidere il gesto. Ora si registrano una volta sola e leggono le funzioni di
+>    adesso da uno sportello (`latestRef`).
+> 2. **Nessuna presa può sopravvivere al dito.** Il rilascio si ascolta sulla
+>    *finestra*, non sull'elemento catturato, più una resa alla `visibilitychange`.
+>    Se la cattura si perde — il browser decide di scorrere lui, un ridisegno
+>    sostituisce l'elemento — il trascinamento si chiude comunque. Era questo il
+>    "si blocca e non fa più scorrere da nessuna parte".
+> 3. **Una scorsa di rotella vale un giro.** La sessione resta aperta finché gli
+>    eventi arrivano e assorbe la coda d'inerzia del trackpad, invece di lasciarle
+>    aprire giri nuovi. Un flick = una pagina, misurato.
+> 4. **Libro e URL sono un invariante, non un evento.** Un cambio d'indirizzo che
+>    arrivava mentre un foglio era in volo — o che veniva consumato a libro chiuso —
+>    era perso per sempre, e da lì URL e pagina restavano in disaccordo. Ora a
+>    volume fermo e aperto la coerenza viene ripristinata sfogliando fin lì.
+>
+> Nello stesso intervento la telecamera è diventata continua. Il fuoco durante un
+> giro era un **gradino** (`p < 0.5 ? 1 : 0`) che prendeva a calci la molla che lo
+> insegue: da lì lo scatto d'inquadratura in fondo a ogni giro e le scale fuori
+> misura con due sfogliate ravvicinate. Adesso è una carrellata (`1 - p0`), valida
+> in tutti e due i versi, con il passaggio di consegne fatto a mano in `commit`. La
+> conca dello zoom è un seno e non più una V, perché una molla non scende in uno
+> spigolo: misurata, si fermava a metà strada. **Su schermo largo esiste ora una
+> telecamera** (`--vo-flip-t`): tre centesimi di scala mentre il foglio è in piedi,
+> prima il giro pagina era una ripresa fissa.
+>
+> Sul telefono, infine, la carrellata sul fuoco e il giro pagina sono diventati
+> **un gesto solo**: il dito non si stacca più a metà strada. Verifica: 560 gesti
+> casuali su mobile e 110 su desktop (sfogliate, colpetti, gesti annullati a metà,
+> secondo dito, diagonali, rotella orizzontale, clic in nav) — zero blocchi, zero
+> giri doppi, zero disallineamenti fra pagina e indirizzo.
+
 ## Contesto
 
 `valentina-orciuoli` è un tenant del verticale `creative`: l'attività è la scrittura.
