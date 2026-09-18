@@ -5,7 +5,7 @@ import { TenantProvider } from "@/components/core/tenant-provider";
 import { LibritechBookDetailPage } from "@/components/tenants/libritech/pages/book-detail";
 import { ValentinaOrciuoliStaticPage } from "@/components/tenants/valentina-orciuoli/pages/static-page";
 import { ValentinaOrciuoliBookSite } from "@/components/tenants/valentina-orciuoli/book/book-site";
-import { voAppendix, voSpreads } from "@/components/tenants/valentina-orciuoli/book/book-map";
+import { hasSpread, voAppendix, voSpreads } from "@/components/tenants/valentina-orciuoli/book/book-map";
 import {
   valentinaCreativeWorks,
   valentinaOwnedSegments,
@@ -25,11 +25,15 @@ import { findCasabramantiPiece } from "@/lib/casabramanti-catalog";
 const valentinaPages = new Set<string>(valentinaOwnedSegments);
 
 /**
- * Le opere avevano una pagina a testa; ora il volume le raccoglie per collana.
- * I vecchi indirizzi restano validi e portano alla sezione giusta, perché sono
- * già stati condivisi — e un link a un libro non deve finire su un 404.
+ * Le opere non pubblicate non hanno una pagina a testa: finché non ce l'hanno,
+ * il loro indirizzo porta alla sezione giusta invece che a un 404 — è così che
+ * "Tra fumo e ombre" resta raggiungibile oggi. Un'opera con `hasSpread(slug)`
+ * vero, come Anxiety e Fury, esce da questo insieme ed entra nel libro come
+ * pagina propria: il redirect non le riguarda più.
  */
-const valentinaWorkPaths = new Set(valentinaCreativeWorks.map((work) => work.slug));
+const valentinaWorkPaths = new Set(
+  valentinaCreativeWorks.map((work) => work.slug).filter((slug) => !hasSpread(slug)),
+);
 
 /**
  * Le pagine del libro sono route pubbliche vere sul dominio del tenant: ognuna

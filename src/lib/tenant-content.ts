@@ -508,8 +508,8 @@ const libritechContent: TenantContent = {
 const valentinaOrciuoliContent: TenantContent = {
   logoSrc: "/favicon.svg",
   logoAlt: "Valentina Orciuoli",
-  showcaseLogoSrc: "/valentina-orciuoli/anxiety-mockup-standup.png",
-  showcaseLogoAlt: "Anxiety di Valentina Orciuoli",
+  showcaseLogoSrc: "/valentina-orciuoli/valentina-appoggiata-no-books.png",
+  showcaseLogoAlt: "Valentina Orciuoli",
   description:
     "Valentina Orciuoli crede che le storie non servano solo a fuggire dalla realta, ma a capirla davvero. Nei suoi libri ogni simbolo e una metafora della societa e delle emozioni umane.",
   url: "https://demo.weuseorpheo.com/valentina-orciuoli/link",
@@ -521,7 +521,7 @@ const valentinaOrciuoliContent: TenantContent = {
   },
   contact: {
     phone: "",
-    email: "valentina.orciuoli@weuseorpheo.com",
+    email: "valentina.orciuoli@gmail.com",
     whatsappDigits: "",
     whatsappMessage: "Ciao Valentina! Vorrei informazioni sui tuoi libri.",
   },

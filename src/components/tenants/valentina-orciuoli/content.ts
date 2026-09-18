@@ -12,7 +12,7 @@ export const externalLinktreeHref = "https://linktr.ee/valentina.orciuoli";
 export const linktreeHref = "/link";
 export const instagramHref = "https://www.instagram.com/di.vale_in.peggio/";
 export const tiktokHref = "https://www.tiktok.com/@valentina.orciuoli";
-export const valentinaEmail = "valentina.orciuoli@weuseorpheo.com";
+export const valentinaEmail = "valentina.orciuoli@gmail.com";
 export const anxietyCoverSrc = "/valentina-orciuoli/anxiety-mockup-standup.png";
 export const furyCoverSrc = "https://m.media-amazon.com/images/I/71z2LZ6a8XL.jpg";
 export const darkNoirCoverSrc = "/valentina-orciuoli/tra-fumo-e-ombre.webp";
@@ -69,15 +69,15 @@ export const valentinaCreativeWorks: ValentinaCreativeWork[] = [
   {
     id: "44acaaba-1814-46ef-923d-a4f50aa11903",
     slug: "tra-fumo-e-ombre",
-    title: "Tra fumo e ombre",
+    title: "In arrivo",
     description:
       "Il racconto cambia passo, abbandona i cieli del fantasy e scende nelle crepe più intime della realtà contemporanea.",
     secondaryText:
       "Un thriller psicologico fitto di simboli, indizi sottili e ombre quotidiane. Un'indagine in cui ogni dettaglio è lo specchio della società e ogni pagina mette alla prova le tue certezze.",
-    coverImageUrl: darkNoirCoverSrc,
-    backgroundMediaUrl: "/valentina-orciuoli/sfondo-dark.webp",
-    ctaLabel: "Preordina qui",
-    ctaHref: linktreeHref,
+    coverImageUrl: "",
+    backgroundMediaUrl: "",
+    ctaLabel: "",
+    ctaHref: "",
     enabled: true,
   },
 ];

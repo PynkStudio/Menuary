@@ -385,33 +385,81 @@ function VoWorkPhoto({
 /**
  * I due pulsanti di un volume pubblicato.
  *
- * L'indirizzo lo decide la gestione — è l'unico dato che cambia quando cambia il
- * negozio — mentre le due etichette sono quelle approvate con l'autrice: leggere
- * la trama e comprare il libro sono due intenzioni diverse, anche quando portano
- * alla stessa scheda.
+ * Leggere la trama e comprare il libro sono due intenzioni diverse, e portano a
+ * due indirizzi diversi: la trama resta dentro il sito, sulla scheda propria del
+ * libro (`hasSpread(work.slug)`, vera solo per le opere pubblicate); comprare
+ * esce verso il negozio che decide la gestione — è l'unico indirizzo che cambia
+ * quando cambia lo store, quindi resta l'unico salvato lì.
  */
 function VoWorkCtas({ work, ctx }: { work: ValentinaCreativeWork; ctx: VoBookContext }) {
   if (!work.ctaHref) return null;
-  const buy = work.secondaryCtaHref ?? work.ctaHref;
+  const tramaHref = `/${work.slug}`;
   const external = (href: string) => href.startsWith("http");
   return (
     <div className="vo-face-ctas">
-      <a
-        className="vo-face-cta"
-        href={ctx.internalHref(work.ctaHref)}
-        target={external(work.ctaHref) ? "_blank" : undefined}
-        rel={external(work.ctaHref) ? "noopener noreferrer" : undefined}
-      >
+      <a className="vo-face-cta" href={ctx.internalHref(tramaHref)}>
         {work.ctaLabel || "Leggi la trama"} <ArrowRight size={15} />
       </a>
       <a
         className="vo-face-cta vo-face-cta-secondary"
-        href={ctx.internalHref(buy)}
-        target={external(buy) ? "_blank" : undefined}
-        rel={external(buy) ? "noopener noreferrer" : undefined}
+        href={ctx.internalHref(work.ctaHref)}
+        target={external(work.ctaHref) ? "_blank" : undefined}
+        rel={external(work.ctaHref) ? "noopener noreferrer" : undefined}
       >
         {work.secondaryCtaLabel ?? "Porta a casa il libro"} <ArrowRight size={15} />
       </a>
+    </div>
+  );
+}
+
+/**
+ * La scheda di un singolo volume pubblicato: la copertina a sinistra come una
+ * foto incollata, trama e acquisto a destra. È dove "Leggi la trama" porta il
+ * lettore — qui, e solo qui, la trama intera (sinossi più citazione) sta scritta
+ * per esteso.
+ */
+function VoWorkDetailFace({
+  ctx,
+  slug,
+  kicker,
+  side,
+}: {
+  ctx: VoBookContext;
+  slug: string;
+  kicker: string;
+  side: VoFaceSide;
+}) {
+  const work = ctx.works.find((entry) => entry.enabled && entry.slug === slug);
+  if (!work) return null;
+
+  if (side === "left") {
+    return (
+      <div className="vo-face vo-face-work-cover">
+        <VoWorkPhoto work={work} ordinal={slug === "fury" ? 1 : 0} caption={work.title} />
+      </div>
+    );
+  }
+
+  const external = work.ctaHref.startsWith("http");
+  return (
+    <div className="vo-face vo-face-work">
+      <span className="vo-face-kicker">{kicker}</span>
+      <h2>{work.title}</h2>
+      <span className="vo-face-rule" aria-hidden="true" />
+      {work.description ? <p className="vo-face-lead">{work.description}</p> : null}
+      {work.secondaryText ? <p>{work.secondaryText}</p> : null}
+      {work.ctaHref ? (
+        <div className="vo-face-ctas">
+          <a
+            className="vo-face-cta"
+            href={ctx.internalHref(work.ctaHref)}
+            target={external ? "_blank" : undefined}
+            rel={external ? "noopener noreferrer" : undefined}
+          >
+            {work.secondaryCtaLabel ?? "Porta a casa il libro"} <ArrowRight size={15} />
+          </a>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -619,6 +667,16 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
         </div>
       );
 
+    // ── Le schede dei volumi ─────────────────────────────────────────────────
+    case "anxiety-left":
+      return <VoWorkDetailFace ctx={ctx} slug="anxiety" kicker="Vol. I · The Emotion Dragons Trilogy" side="left" />;
+    case "anxiety-right":
+      return <VoWorkDetailFace ctx={ctx} slug="anxiety" kicker="Vol. I · The Emotion Dragons Trilogy" side="right" />;
+    case "fury-left":
+      return <VoWorkDetailFace ctx={ctx} slug="fury" kicker="Vol. II · The Emotion Dragons Trilogy" side="left" />;
+    case "fury-right":
+      return <VoWorkDetailFace ctx={ctx} slug="fury" kicker="Vol. II · The Emotion Dragons Trilogy" side="right" />;
+
     // ── La trilogia ──────────────────────────────────────────────────────────
     case "trilogia-left":
       return (
@@ -695,6 +753,21 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
     case "eventi-right":
       return (
         <div className="vo-face vo-face-events">
+          <article>
+            <span>2026 · Torino</span>
+            <h3>Salone Internazionale del Libro di Torino</h3>
+            <p>Sold out nell&apos;area self.</p>
+          </article>
+          <article>
+            <span>2026 · Milano</span>
+            <h3>FRI — Festival del Romance Italiano</h3>
+            <p>Seconda partecipazione come autrice.</p>
+          </article>
+          <article>
+            <span>2025 · Milano</span>
+            <h3>FRI — Festival del Romance Italiano</h3>
+            <p>Esordio con Anxiety.</p>
+          </article>
           <article>
             <span>In aggiornamento</span>
             <h3>Nuove date in arrivo</h3>

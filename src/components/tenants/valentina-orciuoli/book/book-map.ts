@@ -30,6 +30,8 @@ export type VoSpread = {
 export type VoStaticSpreadId =
   | "home"
   | "libri"
+  | "anxiety"
+  | "fury"
   | "trilogia"
   | "thriller"
   | "eventi"
@@ -56,6 +58,10 @@ const blogSpread: VoSpread = {
 export const voSpreads: readonly VoSpread[] = [
   { id: "home", kind: "static", path: "", navLabel: "Home", runningHead: "Frontespizio", inNav: true },
   { id: "libri", kind: "static", path: "/libri", navLabel: "Libri", runningHead: "Le opere", inNav: true },
+  // Le schede dei singoli volumi pubblicati: subito dopo l'indice, prima della
+  // collana a cui appartengono — è lì che "Leggi la trama" porta il lettore.
+  { id: "anxiety", kind: "static", path: "/anxiety", navLabel: "Anxiety", runningHead: "Anxiety", inNav: false },
+  { id: "fury", kind: "static", path: "/fury", navLabel: "Fury", runningHead: "Fury", inNav: false },
   {
     id: "trilogia",
     kind: "static",

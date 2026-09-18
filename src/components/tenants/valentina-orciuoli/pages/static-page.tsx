@@ -126,6 +126,8 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
                     <h2>{work.title}</h2>
                     {work.description && <p>{work.description}</p>}
                     {work.secondaryText && <p>{work.secondaryText}</p>}
+                    {/* La trama è già qui sopra: il pulsante di questa scheda porta a
+                        comprare, non a "leggerla" una seconda volta. */}
                     {work.ctaHref && (
                       <a
                         className="vo-book-feature-cta"
@@ -133,7 +135,7 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
                         target={work.ctaHref.startsWith("http") ? "_blank" : undefined}
                         rel={work.ctaHref.startsWith("http") ? "noopener noreferrer" : undefined}
                       >
-                        {work.ctaLabel} <ArrowRight size={15} />
+                        {work.secondaryCtaLabel ?? "Porta a casa il libro"} <ArrowRight size={15} />
                       </a>
                     )}
                   </div>
@@ -186,7 +188,22 @@ export function ValentinaOrciuoliStaticPage({ page }: { page: ValentinaPageKind 
 
       {page === "eventi" && (
         <section className="vo-section vo-events-section vo-subpage-section">
-          <div className="vo-event-list" aria-label="Eventi in programma">
+          <div className="vo-event-list" aria-label="Eventi passati">
+            <article>
+              <span>2026 · Torino</span>
+              <h3>Salone Internazionale del Libro di Torino</h3>
+              <p>Sold out nell&apos;area self.</p>
+            </article>
+            <article>
+              <span>2026 · Milano</span>
+              <h3>FRI — Festival del Romance Italiano</h3>
+              <p>Seconda partecipazione come autrice.</p>
+            </article>
+            <article>
+              <span>2025 · Milano</span>
+              <h3>FRI — Festival del Romance Italiano</h3>
+              <p>Esordio con Anxiety.</p>
+            </article>
             <article>
               <span>In aggiornamento</span>
               <h3>Nuove date in arrivo</h3>
