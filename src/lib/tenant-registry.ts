@@ -730,7 +730,7 @@ export const TENANTS: TenantProfile[] = [
       pink: "#E94B97",
     },
     features: PYNKSTUDIO_MODULE_FLAGS,
-    tracking: { ga4Id: "G-3RNKC5BYHH" },
+    tracking: { ga4Id: "G-3RNKC5BYHH", openaiPixelId: "Dpo6pBfCtk341q9oudSdDv" },
   },
 
   {

@@ -101,7 +101,7 @@ Infrastruttura unica per tutte le notifiche push del portale (tenant e admin pia
 ## Tracciamento campagne e attribuzione lead
 
 - Nessuno script di terze parti parte senza consenso: il banner compare solo sui siti con almeno un ID configurato.
-- Stato env al 2026-09-30: **da valorizzare su Vercel** per `MENUARY`. Le campagne attive sono su **OpenAI Ads** (annunci in ChatGPT): serve `TRACKING_MENUARY_OPENAI_PIXEL_ID`, creato in Ads Manager › Conversions. PynkStudio ha GA4 `tracking.ga4Id` nel profilo tenant.
+- Stato env al 2026-09-30: **da valorizzare su Vercel** per `MENUARY`. Le campagne attive sono su **OpenAI Ads** (annunci in ChatGPT): serve `TRACKING_MENUARY_OPENAI_PIXEL_ID`, creato in Ads Manager › Conversions. PynkStudio ha GA4 `tracking.ga4Id` e il pixel OpenAI Ads `tracking.openaiPixelId` nel profilo tenant (nessuna env).
 - OpenAI Ads: conversioni mappate sugli eventi standard `lead_created` (lead), `appointment_scheduled` (booking), `order_created` (order, importo in centesimi), evento custom `contact`. Il click ID `oppref` viene salvato in `platform_leads.attribution`. La Conversions API server-side (`https://bzr.openai.com/v1/events`) **non è ancora integrata**.
 - I lead dei siti marketing salvano la fonte in `platform_leads.attribution` (jsonb: `utm_*`, `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, `oppref`, `referrer`, `landing_path`, `captured_at`). Colonna creata in produzione il 2026-09-29 via MCP `apply_migration` e verificata.
 - `POST /api/marketing-leads` ha un limite per IP (per istanza) e per email (2 richieste in 15 minuti) e restituisce codici errore stabili (`missing_fields`, `invalid_email`, `rate_limited`, `server_error`) che i form traducono.
