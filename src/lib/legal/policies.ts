@@ -1,5 +1,5 @@
 import { siteConfig } from "@/lib/site-config";
-import type { TenantFeatureKey } from "@/lib/tenant";
+import type { TenantFeatureKey, TenantProfile } from "@/lib/tenant";
 import type { SiteSettingsState } from "@/store/settings-store";
 
 export type PolicyModuleFlags = Pick<
@@ -25,7 +25,18 @@ export type PolicyModuleFlags = Pick<
   modules?: Partial<Record<TenantFeatureKey, boolean>>;
   /** Il sito pubblica più lingue e ricorda quella scelta sul dispositivo. */
   localeCookie?: boolean;
+  /** ID di tracciamento del sito (modulo tracking): attivi solo con consenso. */
+  tracking?: TenantProfile["tracking"];
 };
+
+/** Servizi di misurazione/pubblicità di terze parti configurati per il sito. */
+function trackingServiceNames(f: PolicyModuleFlags): string[] {
+  const names: string[] = [];
+  if (f.tracking?.ga4Id) names.push("Google Analytics 4");
+  if (f.tracking?.googleAdsId) names.push("Google Ads");
+  if (f.tracking?.metaPixelId) names.push("Meta Pixel");
+  return names;
+}
 
 /**
  * Un modulo è attivo se la mappa lo dice. Senza mappa vale il comportamento
@@ -171,6 +182,11 @@ export function buildPrivacySections(
           ? ["la lingua scelta per il sito, ricordata sul dispositivo per le visite successive;"]
           : []),
         "dati che ci invii spontaneamente tramite il modulo di contatto o gli indirizzi pubblicati: nome, recapito e contenuto del messaggio, trattati per rispondere alla tua richiesta;",
+        ...(trackingServiceNames(f).length
+          ? [
+              `solo con il tuo consenso, espresso tramite il banner e revocabile in ogni momento: dati di navigazione raccolti con cookie di misurazione e pubblicità di terze parti (${inline(trackingServiceNames(f))}) per misurare le visite e l’efficacia delle campagne;`,
+            ]
+          : []),
         ...(hasFavorites(f)
           ? [
               hasMenu(f)
@@ -359,9 +375,11 @@ export function buildCookieSections(f: PolicyModuleFlags): PolicySection[] {
               }, la conversazione è gestita tramite servizi di terzi (telefonia, messaggistica WhatsApp/Meta e fornitori di intelligenza artificiale) secondo le rispettive policy; il dettaglio del trattamento è descritto nell’informativa privacy.`,
             ]
           : []),
-        hasAnalytics(f)
-          ? "Le statistiche di visita sono raccolte in forma aggregata e senza cookie di profilazione. Non utilizziamo pixel di remarketing."
-          : "Non utilizziamo pixel di remarketing né strumenti di analytics di terze parti.",
+        trackingServiceNames(f).length
+          ? `Solo con il tuo consenso, espresso tramite il banner, il sito attiva ${inline(trackingServiceNames(f))}, che installano cookie propri per misurare le visite e l’efficacia delle campagne. Senza consenso questi servizi non vengono caricati; puoi cambiare scelta in ogni momento dal link «Preferenze cookie».`
+          : hasAnalytics(f)
+            ? "Le statistiche di visita sono raccolte in forma aggregata e senza cookie di profilazione. Non utilizziamo pixel di remarketing."
+            : "Non utilizziamo pixel di remarketing né strumenti di analytics di terze parti.",
       ],
     },
     {

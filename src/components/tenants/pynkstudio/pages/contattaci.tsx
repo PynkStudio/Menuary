@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Check, Copy, Mail, MessageCircle, Phone, Send } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
+import { trackConversion } from "@/lib/tracking/client";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
@@ -62,9 +63,13 @@ function ContattaciInner() {
           email: formData.email,
           subject: "Nuovo messaggio dal sito",
           message: details ? `${details}\n\n${formData.message}` : formData.message,
+          phone: formData.phone,
+          company: formData.company,
+          source: "contact-form",
         }),
       });
       if (!res.ok) throw new Error("send_failed");
+      trackConversion("lead", { label: "contact-form" });
 
       setFeedback({ kind: "success", text: c.form.success });
       setFormData({ name: "", company: "", people: "", sector: "", message: "", email: "", phone: "" });

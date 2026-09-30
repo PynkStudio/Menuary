@@ -4,7 +4,7 @@ import { mergeMessages } from "./_merge";
 export const messages = mergeMessages(en, {
   marketing: {
     shell: {
-      nav: { offer: "Aanbod", about: "Studio", myAccount: "Mijn account", signIn: "Inloggen", contact: "Neem contact op" },
+      nav: { offer: "Prijzen", about: "Over ons", myAccount: "Mijn account", signIn: "Inloggen", contact: "Neem contact op" },
       footer: {
         desc: "Het operationele platform voor restaurants: website, compleet beheersysteem en AI-telefoonassistent. Op maat gemaakt, onderhouden in de tijd.",
         nav: "Navigatie",
@@ -16,6 +16,17 @@ export const messages = mergeMessages(en, {
         personalArea: "Persoonlijke klantomgeving",
         privacy: "Privacy",
         cookie: "Cookies",
+        home: "Home",
+        serviceBy: "Een dienst van",
+        location: "Milaan, Italië",
+      },
+      mobileBar: {
+        call: "Bellen",
+        whatsapp: "WhatsApp",
+        demo: "Demo aanvragen",
+        menu: "Menu",
+        close: "Menu sluiten",
+        waMessage: "Hallo Menuary, ik wil graag informatie voor mijn zaak.",
       },
     },
     home: {
@@ -28,6 +39,26 @@ export const messages = mergeMessages(en, {
       badgeFreeCall: "U betaalt alleen als het bevalt",
       badgeOnline: "Online in 7 dagen",
       badgeMultilang: "Meertalig · NL EN DE FR ES +",
+      inside: {
+        label: "Midden in de service",
+        h2: "Geen willekeurige mooie foto's: scènes die elke avond gebeuren.",
+        sub: "Menuary is gemaakt voor het dagelijkse werk van restaurants, bars en zaken: informatie bijwerken, gasten geruststellen, geen aanvraag missen en je reputatie beschermen.",
+        moments: [
+          { title: "Een menukaart die echt verandert", text: "Uitverkochte gerechten, allergenen, seizoenen en prijzen blijven niet vastzitten in een oude pdf: de online kaart wordt bijgewerkt vanuit het dashboard en blijft leesbaar op mobiel.", alt: "Restauranttafel met menukaart, telefoon en gedeelde gerechten" },
+          { title: "Reserveringen zonder chaos", text: "Aanvragen, bevestigingen, afwijkende tijden en diensten komen samen in één stroom, zodat zaal en management vóór de service hetzelfde overzicht hebben.", alt: "Gedekte eetzaal voor de avondservice" },
+          { title: "Google, reviews en vertrouwen", text: "Openingstijden, Google-profiel, reviews en openbare content blijven consistent: wie je zaak zoekt, vindt actuele informatie voordat hij belt of reserveert.", alt: "Personeel van een zaak aan de bar tijdens de voorbereiding" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Horeca",
+        h2: "Websites voor restaurants, pizzeria's, bars en zaken.",
+        sub: "Menuary dekt de belangrijkste zoekopdrachten om online gevonden te worden: restaurantwebsite, digitale menukaart, online reserveren, bestellingen en lokale zichtbaarheid op Google.",
+        items: [
+          { title: "Websites voor restaurants", body: "Digitale menukaart, tafelreserveringen, galerij, Google-reviews en content die je bijwerkt vanuit het dashboard." },
+          { title: "Websites voor pizzeria's en trattoria's", body: "Seizoenskaarten, dagschotels, online bestellingen, allergenen en informatie die altijd mobiel beschikbaar is." },
+          { title: "Websites voor bars, bistro's en zaken", body: "Openingstijden, evenementen, acties, Google Maps en meertalige pagina's voor buurtbewoners en toeristen." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Hoe lang duurt het om online te gaan?",
@@ -38,8 +69,8 @@ export const messages = mergeMessages(en, {
           a: "U werkt openingstijden, evenementen en beschrijvingen bij vanuit het Menuary-dashboard. Wijzigingen worden gepubliceerd op uw Google-vermelding en doorgevoerd op de website. Google-reviews worden op de site getoond met automatische periodieke updates.",
         },
         {
-          q: "Kan ik opzeggen wanneer ik wil?",
-          a: "Ja. Het abonnement is maandelijks, zonder opzegkosten. De initiële setupkosten worden eenmalig in rekening gebracht.",
+          q: "Wat voor contract is het? Kan ik opzeggen?",
+          a: "Het contract loopt een jaar, vooruitbetaald of per maand. Je kunt de verlenging opzeggen met 30 dagen opzegtermijn. De eenmalige opstartkosten betaal je alleen als de demo van je website je overtuigt.",
         },
         {
           q: "Wat is inbegrepen in het abonnement?",
@@ -93,6 +124,8 @@ export const messages = mergeMessages(en, {
         googleOpen: "Uw vermelding · Open",
         googleUpdated: "· vandaag bijgewerkt",
         taExcellence: "Excellentie · 2026",
+        exampleLabel: "Voorbeeld",
+        yelpReviews: "128 reviews · 4,3",
       },
       benefits: {
         label: "Wat zit erin",
@@ -116,7 +149,7 @@ export const messages = mergeMessages(en, {
         savingsLabel: "bespaar €{amount}/jaar",
         monthlyLabel: "Maandelijks: €{price}/maand · Setup {setup}",
         vatNote: "Excl. btw · Jaarcontract · Activering binnen 7 dagen",
-        aiEyebrow: "Add-on beschikbaar voor iedereen",
+        aiEyebrow: "Add-on · pakketten Reserveringen en Operaties",
         aiTitle: "AI-telefoonassistent · €0,30 per oproep + 3% bestellingen",
         aiDesc:
           "24/7 spraakassistent die antwoordt in de stem van uw zaak, reserveringen aanneemt en bestellingen beheert. Beschikbaar vanaf de plannen Reserveringen en Operaties. Geen vast tarief: €0,30 per oproep plus 3% over de via oproepen ontvangen bestellingen.",
@@ -193,6 +226,7 @@ export const messages = mergeMessages(en, {
       },
       faq: {
         kicker: "Veelgestelde vragen",
+        title: "Antwoorden op de vragen die we het vaakst krijgen.",
         notFound: "Niet gevonden wat u zocht?",
         ctaLink: "Schrijf ons",
       },
@@ -212,8 +246,8 @@ export const messages = mergeMessages(en, {
       waOpen: "Open WhatsApp-chat",
       bullets: [
         "Een website op maat van het karakter van het restaurant",
-        "Compleet beheersysteem: bestellingen, voorraad, foodcost, CRM",
-        "AI-telefoonassistent · komt in 2026",
+        "Volledig beheer: reserveringen, bestellingen, bezorging, CRM",
+        "AI-telefoonassistent, 24/7 actief",
       ] as string[],
     },
     leadForm: {
@@ -237,6 +271,11 @@ export const messages = mergeMessages(en, {
       successMsg: "Aanvraag ontvangen. We komen bij u terug met een voorstel op maat van uw zaak.",
       errorConnection: "Verbinding niet beschikbaar.",
       errorDefault: "Verzenden mislukt.",
+      errorMissing: "Vul naam, zaak en e-mail in.",
+      errorInvalidEmail: "Controleer je e-mailadres.",
+      errorRateLimited: "Je hebt al een aanvraag verstuurd: we nemen snel contact op.",
+      privacyNotice: "We gebruiken deze gegevens alleen om je te antwoorden.",
+      privacyLink: "Privacyverklaring",
     },
     about: {
       hero: {
@@ -323,7 +362,7 @@ export const messages = mergeMessages(en, {
           { q: "Wat is het verschil tussen jullie website en een WordPress-template?", a: "Een template is een confectiepak van de plank: je kunt de kleuren veranderen, maar de structuur is die van duizenden andere websites. Onze websites ontstaan uit een design system dat is opgebouwd rond de identiteit van jouw zaak — lettertype, palet, visuele hiërarchie, tone of voice, micro-animaties. Wanneer je naar de website kijkt, moet je denken «dit lijkt op ons», niet «deze structuur heb ik ergens al gezien»." },
           { q: "Wat betekent «identiteitsbepalend design system»?", a: "Vóór de website definiëren we de visuele regels van de zaak: het lettertypepaar (het lettertype voor de titel en dat voor de tekst), de kleurschaal (primair, secundair, accenten), de verhoudingen van de witruimte, de manier waarop de elementen het scherm binnenkomen. Die regels gelden daarna voor elke pagina, elke kaart, elke knop — en creëren een samenhangende, herkenbare, professionele ervaring." },
           { q: "Wanneer verdient een website zichzelf terug?", a: "Eerder dan je denkt. TheFork en de platforms houden tot 10-15 % per reservering in. Als jouw website ook maar één directe reservering per dag oplevert — in plaats van via een platform te lopen — overtreft de jaarlijkse besparing ruimschoots de kosten van het abonnement. En dat zonder de waarde van de Google-aanwezigheid, de geïntegreerde reviews en de digitale reputatie mee te tellen." },
-          { q: "Hoe lang duurt het om online te gaan?", a: "Binnen 7 dagen na ondertekening van het contract. De initiële configuratie (onboarding, design, ontwikkeling) wordt eerder afgerond — gemiddeld 2-4 weken — en daarna gebeurt de livegang op één dag." },
+          { q: "Hoe lang duurt het om online te gaan?", a: "Website en diensten staan binnen 7 dagen na ondertekening van het contract online. Vóór ondertekening laten we je een demo van je website op maat zien, zodat je precies weet waarvoor je kiest." },
           { q: "Hoe ontstaat het design van mijn website?", a: "Het begint met een gesprek (of een bezoek als de zaak in de buurt is). We kijken naar de eetzaal, het menu, de foto's, de tone of voice die je op social media gebruikt. Daarna bouwen we een samenhangend visueel systeem — we kiezen lettertypes en kleuren niet willekeurig, we leiden ze af uit wat de zaak al is. Pas dan beginnen we code te schrijven." },
           { q: "Kan ik de website zelf bijwerken?", a: "Ja. Menu, openingstijden, foto's, evenementen, prijzen: alles wordt bijgewerkt vanuit het Menuary-dashboard zonder de code aan te raken, zonder iemand een e-mail te sturen. De wijzigingen staan binnen enkele seconden online, ook vanaf de kassa tussen twee shifts door." },
           { q: "Werken jullie alleen in Milaan?", a: "Nee. De studio is in Milaan, maar we begeleiden zaken in heel Italië. Het grootste deel van het werk gebeurt op afstand. Wanneer het zinvol is — voor een fotoshoot of een complexe onboarding — komen we naar je toe." },
@@ -336,7 +375,7 @@ export const messages = mergeMessages(en, {
         label: "Aanbod",
         h1a: "Drie pakketten.",
         h1b: "Geen verrassingen.",
-        sub: "Duidelijke prijzen, geen commissie op bestellingen en reserveringen. Begin waar je wilt, voeg alleen toe wat je nodig hebt.",
+        sub: "Duidelijke prijzen, geen commissie op reserveringen en bestellingen via je website. Begin waar je wilt en voeg alleen toe wat je nodig hebt.",
       },
       billing: {
         annual: "Jaarlijks vooraf",
@@ -353,6 +392,7 @@ export const messages = mergeMessages(en, {
         monthlyWithAnnual: "Bij jaarlijkse betaling:",
         monthlyWithAnnualSaving: "{price}/maand · bespaar {amount}/jaar",
         ctaDefault: "Voorstel aanvragen",
+        setup: "Eenmalige activatie {setup}",
       },
       ai: {
         label: "Vanaf het pakket {plan}",
@@ -395,7 +435,7 @@ export const messages = mergeMessages(en, {
           { label: "Klanten-CRM & analytics", presence: "false", booking: "false", ops: "true" },
           { label: "Operationeel dashboard", presence: "false", booking: "false", ops: "true" },
           { label: "Personeels- en keukenbeheer", presence: "false", booking: "false", ops: "true" },
-          { label: "AI-integratie (add-on)", presence: "false", booking: "+60 €/maand", ops: "+60 €/maand" },
+          { label: "AI-integratie (add-on)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Ondersteuning", presence: "Standaard", booking: "Prioritair", ops: "Toegewijd" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -408,9 +448,9 @@ export const messages = mergeMessages(en, {
           { q: "Wat is het verschil tussen jaarlijkse en maandelijkse facturatie?", a: "Met jaarlijkse vooruitbetaling profiteer je van een verlaagd equivalent maandbedrag. Bij maandelijkse facturatie wordt de uitgave maand per maand gespreid, maar het bedrag is hoger. In beide gevallen is het contract jaarlijks." },
           { q: "Wat zijn de activeringskosten?", a: "Het is een eenmalig tarief voor de initiële configuratie: technische setup, onboarding en personalisatie van de website. Het is niet inbegrepen in het maandbedrag. De vermelde prijzen zijn indicatief; de exacte offerte hangt af van de complexiteit van de zaak." },
           { q: "Wat is inbegrepen in het maandbedrag?", a: "Hosting, domein, SSL-certificaten, back-ups, technische updates, beveiliging en alle nieuwe productfuncties. Plus de ondersteuning van ons team." },
-          { q: "Hoe werkt de AI-integratie?", a: "De AI-assistent beantwoordt de telefoon 24/7 met de stem en toon van de zaak: neemt reserveringen aan en schrijft ze rechtstreeks in de agenda, accepteert afhaalbestellingen, suggereert de dagschotels en behandelt aanvragen buiten openingstijden. Ondersteunt optionele stemklonering en spreekt moedertaalniveau Italiaans, Engels, Frans, Spaans en Duits. Beschikbaar vanaf de pakketten Reserveringen en Operatie tegen een meerprijs van 60 €/maand." },
-          { q: "Hoe werkt het minutentegoed van de AI-integratie?", a: "Elk AI-pakket bevat een maandelijks tegoed aan gespreksminuten. Als je het overschrijdt, worden de extra kosten berekend tegen kostprijs — zonder enige opslag van onze kant. Het detail van het tegoed vind je in het contract." },
-          { q: "Zijn er commissies op reserveringen, bestellingen of bezorgingen?", a: "Nul. Menuary houdt niets in op je bestellingen, reserveringen of bezorgingen. Wat je ontvangt is volledig van jou." },
+          { q: "Hoe werkt de AI-integratie?", a: "De AI-assistent beantwoordt de telefoon 24/7 met de stem en toon van de zaak: neemt reserveringen aan en schrijft ze rechtstreeks in de agenda, accepteert afhaalbestellingen, suggereert de dagschotels en behandelt aanvragen buiten openingstijden. Ondersteunt optionele stemklonering en spreekt moedertaalniveau Italiaans, Engels, Frans, Spaans en Duits. Beschikbaar vanaf de pakketten Reserveringen en Operaties." },
+          { q: "Wat kost de AI-assistent?", a: "Geen vast bedrag: € 0,30 per gesprek dat de AI afhandelt plus 3% op bestellingen die via de gesprekken binnenkomen. Gebruik je hem niet, dan betaal je niets." },
+          { q: "Zijn er commissies op reserveringen, bestellingen of bezorgingen?", a: "Geen op reserveringen, bestellingen en bezorgingen via je website: wat je verdient is van jou. De enige commissie is de 3% van de AI-add-on, alleen op bestellingen die de assistent telefonisch aanneemt." },
           { q: "Kan ik mijn huidige domein gebruiken?", a: "Ja. We kunnen je bestaande domein configureren of een nieuw domein registreren. In beide gevallen zonder extra kosten." },
           { q: "Is de website in meerdere talen beschikbaar?", a: "Ja. Elke website wordt standaard meertalig gemaakt en dekt de belangrijkste Europese talen: Italiaans, Engels, Frans, Duits en Spaans. Op verzoek kunnen andere talen worden toegevoegd op basis van de typische klantenkring van de zaak — bijvoorbeeld Russisch, Arabisch, Chinees of Japans. De kosten voor extra talen worden in de offertefase afgesproken." },
         ] as { q: string; a: string }[],

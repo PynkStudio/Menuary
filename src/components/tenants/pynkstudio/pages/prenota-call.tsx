@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CalendarDays, Clock, Send } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
+import { trackConversion } from "@/lib/tracking/client";
 
 type Slot = { time: string; startUtc: string; available: boolean };
 type Feedback = { kind: "error"; text: string } | null;
@@ -98,6 +99,7 @@ function PrenotaCallInner() {
         return;
       }
       if (!res.ok) throw new Error("failed");
+      trackConversion("booking", { label: "call-20min" });
       const slotLabel = selectedSlotLabel;
       router.push(`/prenota-call/grazie?slot=${encodeURIComponent(slotLabel)}`);
     } catch {

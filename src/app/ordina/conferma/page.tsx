@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Clock, Package } from "lucide-react";
 import { useMenuStore, selectItemById } from "@/store/menu-store";
@@ -10,6 +10,22 @@ import { formatEuro } from "@/lib/price-utils";
 import { useHydrated } from "@/components/core/providers";
 import { LineMods } from "@/components/modules/shop/line-mods";
 import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
+import { trackConversion } from "@/lib/tracking/client";
+
+// La pagina si può ricaricare o riaprire: la conversione parte una volta sola per ordine.
+function OrderConversion({ id, total }: { id: string; total: number }) {
+  useEffect(() => {
+    const key = `mn_conv_order:${id}`;
+    try {
+      if (window.sessionStorage.getItem(key)) return;
+      window.sessionStorage.setItem(key, "1");
+    } catch {
+      // Senza storage accettiamo il rischio di un doppio conteggio.
+    }
+    trackConversion("order", { value: total, currency: "EUR", transactionId: id });
+  }, [id, total]);
+  return null;
+}
 
 function ConfermaContent() {
   const hydrated = useHydrated();
@@ -38,6 +54,7 @@ function ConfermaContent() {
   return (
     <>
       <MenuaryAuthHintGate />
+      <OrderConversion id={order.id} total={order.total} />
       <section className="relative bg-pork-ink pt-32 pb-12 text-pork-cream md:pt-40 md:pb-16">
         <div className="container-wide text-center">
           <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-pork-mustard text-pork-ink">

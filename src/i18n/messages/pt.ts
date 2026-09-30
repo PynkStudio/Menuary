@@ -2,8 +2,8 @@ export const messages = {
   marketing: {
     shell: {
       nav: {
-        offer: "Oferta",
-        about: "Estúdio",
+        offer: "Preços",
+        about: "Sobre nós",
         myAccount: "A minha conta",
         signIn: "Entrar",
         contact: "Fale connosco",
@@ -19,6 +19,17 @@ export const messages = {
         personalArea: "Área pessoal de clientes",
         privacy: "Privacidade",
         cookie: "Cookies",
+        home: "Início",
+        serviceBy: "Um serviço de",
+        location: "Milão, Itália",
+      },
+      mobileBar: {
+        call: "Ligar",
+        whatsapp: "WhatsApp",
+        demo: "Pedir demo",
+        menu: "Menu",
+        close: "Fechar menu",
+        waMessage: "Olá Menuary, gostaria de informações para o meu espaço.",
       },
     },
     home: {
@@ -32,6 +43,26 @@ export const messages = {
       badgeFreeCall: "Paga só se gostar",
       badgeOnline: "Online em 7 dias",
       badgeMultilang: "Multilingue · IT EN FR DE ES +",
+      inside: {
+        label: "Dentro do serviço",
+        h2: "Nada de fotos bonitas ao acaso: cenas que acontecem todas as noites.",
+        sub: "O Menuary nasce para o trabalho diário de restaurantes, bares e espaços: informações para atualizar, clientes para tranquilizar, pedidos para não perder e uma reputação para proteger.",
+        moments: [
+          { title: "Um menu que muda mesmo", text: "Pratos esgotados, alergénios, sazonalidade e preços não ficam presos num PDF antigo: o menu online atualiza-se a partir do painel e continua legível no telemóvel.", alt: "Mesa de restaurante com menu, telemóvel e pratos para partilhar" },
+          { title: "Reservas sem caos", text: "Pedidos, confirmações, horários especiais e turnos ficam num único fluxo, para que sala e gestão vejam a mesma situação antes do serviço.", alt: "Sala de restaurante posta antes do serviço do jantar" },
+          { title: "Google, avaliações e confiança", text: "Horários, perfil do Google, avaliações e conteúdos públicos mantêm-se coerentes: quem procura o seu espaço encontra informação atual antes de ligar ou reservar.", alt: "Equipa de um espaço ao balcão a preparar o serviço" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Mercados food",
+        h2: "Sites para restaurantes, pizzarias, bares e espaços.",
+        sub: "O Menuary cobre as pesquisas mais importantes para ser encontrado online: site de restaurante, menu digital, reservas online, encomendas e presença local no Google.",
+        items: [
+          { title: "Sites para restaurantes", body: "Menu digital, reservas de mesa, galeria, avaliações do Google e conteúdos atualizáveis no painel." },
+          { title: "Sites para pizzarias e trattorias", body: "Menus sazonais, pratos do dia, encomendas online, alergénios e informação sempre disponível no telemóvel." },
+          { title: "Sites para bares, bistrôs e espaços", body: "Horários, eventos, promoções, Google Maps e páginas multilingues para clientes locais e turistas." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Quanto tempo demora a ficar online?",
@@ -42,8 +73,8 @@ export const messages = {
           a: "Atualiza horários, eventos e descrição a partir do painel Menuary. As alterações são publicadas na sua ficha Google e propagadas no site. As avaliações do Google são mostradas no site com atualização automática periódica.",
         },
         {
-          q: "Posso cancelar quando quiser?",
-          a: "Sim. A subscrição é mensal, sem penalizações por cancelamento. A configuração inicial é um pagamento único.",
+          q: "Que tipo de contrato é? Posso cancelar?",
+          a: "O contrato é anual, pago antecipadamente ou mês a mês. Pode cancelar a renovação com 30 dias de aviso prévio. A configuração inicial é paga uma única vez e só a paga se a demo do seu site o convencer.",
         },
         {
           q: "O que está incluído na subscrição?",
@@ -97,6 +128,8 @@ export const messages = {
         googleOpen: "A sua ficha · Aberto",
         googleUpdated: "· atualizado hoje",
         taExcellence: "Excelência · 2026",
+        exampleLabel: "Exemplo",
+        yelpReviews: "128 avaliações · 4,3",
       },
       benefits: {
         label: "O que encontra",
@@ -120,7 +153,7 @@ export const messages = {
         savingsLabel: "poupa {amount} €/ano",
         monthlyLabel: "Mensal: {price} €/mês · Setup {setup}",
         vatNote: "IVA excluído · Contrato anual · Ativação em 7 dias",
-        aiEyebrow: "Add-on disponível para todos",
+        aiEyebrow: "Extra · planos Reservas e Operacional",
         aiTitle: "IA por telefone · 0,30 € por chamada + 3% pedidos",
         aiDesc:
           "Assistente de voz 24/7 que responde com a voz do estabelecimento, aceita reservas e gere pedidos. Disponível a partir dos planos Reservas e Operacional. Sem mensalidade fixa: 0,30 € por chamada mais 3% sobre os pedidos recebidos por chamada.",
@@ -197,6 +230,7 @@ export const messages = {
       },
       faq: {
         kicker: "Perguntas frequentes",
+        title: "As respostas ao que nos perguntam sempre.",
         notFound: "Não encontrou o que procurava?",
         ctaLink: "Escreva-nos",
       },
@@ -216,8 +250,8 @@ export const messages = {
       waOpen: "Abrir conversa no WhatsApp",
       bullets: [
         "Um site personalizado segundo o carácter do restaurante",
-        "Gestão completa: pedidos, stock, food cost, CRM",
-        "Assistente IA por telefone · disponível em 2026",
+        "Gestão completa: reservas, encomendas, entregas, CRM",
+        "Assistente de IA ao telefone, ativo 24/7",
       ] as string[],
     },
     leadForm: {
@@ -242,6 +276,11 @@ export const messages = {
         "Pedido recebido. Entraremos em contacto com uma proposta pensada para o seu estabelecimento.",
       errorConnection: "Ligação indisponível.",
       errorDefault: "Falha no envio.",
+      errorMissing: "Preencha nome, espaço e email.",
+      errorInvalidEmail: "Verifique o endereço de email.",
+      errorRateLimited: "Já enviou um pedido: entraremos em contacto em breve.",
+      privacyNotice: "Usamos estes dados apenas para lhe responder.",
+      privacyLink: "Política de privacidade",
     },
     about: {
       hero: {
@@ -328,7 +367,7 @@ export const messages = {
           { q: "Qual é a diferença entre o vosso site e um template WordPress?", a: "Um template é um fato confecionado em série: pode mudar as cores, mas a estrutura é a de milhares de sites. Os nossos sites nascem de um design system construído sobre a identidade do seu estabelecimento — tipografia, paleta, hierarquia visual, tom de voz, microanimações. Quando olha para o site deve pensar «isto parece-se connosco», não «já vi esta estrutura algures»." },
           { q: "O que significa «design system identitário»?", a: "Antes do site definimos as regras visuais do estabelecimento: o par tipográfico (a fonte do título e a do texto), a escala de cores (primária, secundária, acentos), as proporções dos espaços, a forma como os elementos entram no ecrã. Essas regras aplicam-se depois a cada página, cada cartão, cada botão — criando uma experiência coerente, reconhecível, profissional." },
           { q: "Quando é que um site se paga?", a: "Mais cedo do que pensa. A TheFork e as plataformas retêm até 10-15 % por reserva. Se o seu site trouxer apenas uma reserva direta por dia — em vez de passar por uma plataforma — a poupança anual supera amplamente o custo da mensalidade. E isto sem contar o valor da presença no Google, das avaliações integradas e da reputação digital." },
-          { q: "Quanto tempo demora a ficar online?", a: "Em 7 dias após a assinatura do contrato. A configuração inicial (onboarding, design, desenvolvimento) é concluída antes — em média 2-4 semanas — e depois o lançamento acontece num dia." },
+          { q: "Quanto tempo demora a ficar online?", a: "O site e os serviços ficam online no prazo de 7 dias após a assinatura do contrato. Antes de assinar, mostramos-lhe uma demo do seu site à medida, para saber exatamente o que está a escolher." },
           { q: "Como nasce o design do meu site?", a: "Começa com uma chamada (ou uma visita se o estabelecimento estiver perto). Olhamos para a sala, o menu, as fotos, o tom de voz que usa nas redes. Depois construímos um sistema visual coerente — não escolhemos fontes e cores ao acaso, extraímo-las do que o estabelecimento já é. Só então começamos a escrever código." },
           { q: "Posso atualizar o site sozinho?", a: "Sim. Menu, horários, fotos, eventos, preços: tudo se atualiza a partir do painel Menuary sem tocar no código, sem enviar e-mails a ninguém. As alterações ficam online em poucos segundos, mesmo a partir da caixa entre turnos." },
           { q: "Trabalham apenas em Milão?", a: "Não. O estúdio é em Milão, mas acompanhamos estabelecimentos em toda a Itália. A maior parte do trabalho é feita à distância. Quando faz sentido — para uma sessão fotográfica ou um onboarding complexo — vamos ter consigo." },
@@ -341,7 +380,7 @@ export const messages = {
         label: "Oferta",
         h1a: "Três planos.",
         h1b: "Nenhuma surpresa.",
-        sub: "Preços claros, zero comissões em pedidos e reservas. Comece onde quiser, adicione só o que precisa.",
+        sub: "Preços claros, sem comissões em reservas e encomendas feitas no seu site. Comece por onde quiser e acrescente só o que precisa.",
       },
       billing: {
         annual: "Anual antecipado",
@@ -358,6 +397,7 @@ export const messages = {
         monthlyWithAnnual: "Com pagamento anual:",
         monthlyWithAnnualSaving: "{price}/mês · poupa {amount}/ano",
         ctaDefault: "Pedir proposta",
+        setup: "Ativação única {setup}",
       },
       ai: {
         label: "A partir do plano {plan}",
@@ -400,7 +440,7 @@ export const messages = {
           { label: "CRM de clientes e analytics", presence: "false", booking: "false", ops: "true" },
           { label: "Painel operacional", presence: "false", booking: "false", ops: "true" },
           { label: "Gestão de pessoal e cozinha", presence: "false", booking: "false", ops: "true" },
-          { label: "Integração IA (add-on)", presence: "false", booking: "+60 €/mês", ops: "+60 €/mês" },
+          { label: "Integração IA (add-on)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Suporte", presence: "Padrão", booking: "Prioritário", ops: "Dedicado" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -413,9 +453,9 @@ export const messages = {
           { q: "Qual a diferença entre faturação anual e mensal?", a: "Com o pagamento anual antecipado beneficia de uma mensalidade equivalente reduzida. Com a faturação mensal a despesa é repartida mês a mês, mas a mensalidade é mais alta. Em ambos os casos o contrato é anual." },
           { q: "O que é o custo de ativação?", a: "É uma taxa única para a configuração inicial: setup técnico, onboarding e personalização do site. Não está incluído na mensalidade. Os preços indicados são indicativos; o orçamento exato depende da complexidade do estabelecimento." },
           { q: "O que está incluído na mensalidade?", a: "Alojamento, domínio, certificados SSL, backups, atualizações técnicas, segurança e todas as novas funções do produto. Mais o suporte da nossa equipa." },
-          { q: "Como funciona a integração IA?", a: "O assistente IA atende o telefone 24/7 com a voz e o tom do estabelecimento: aceita reservas e escreve-as diretamente na agenda, aceita pedidos de take-away, sugere os pratos do dia e gere pedidos fora de horário. Suporta clonagem de voz opcional e fala nativamente italiano, inglês, francês, espanhol e alemão. Está disponível a partir dos planos Reservas e Operação ao custo adicional de 60 €/mês." },
-          { q: "Como funciona a quota de minutos da integração IA?", a: "Cada plano IA inclui uma quota mensal de minutos de conversa. Se a ultrapassar, as cobranças adicionais são calculadas a preço de custo — sem qualquer margem da nossa parte. Encontra o detalhe da quota no contrato." },
-          { q: "Há comissões em reservas, pedidos ou entregas?", a: "Zero. A Menuary não retém nada dos seus pedidos, reservas ou entregas. O que recebe é seu, integralmente." },
+          { q: "Como funciona a integração IA?", a: "O assistente IA atende o telefone 24/7 com a voz e o tom do estabelecimento: aceita reservas e escreve-as diretamente na agenda, aceita pedidos de take-away, sugere os pratos do dia e gere pedidos fora de horário. Suporta clonagem de voz opcional e fala nativamente italiano, inglês, francês, espanhol e alemão. Está disponível a partir dos planos Reservas e Operacional." },
+          { q: "Quanto custa o assistente de IA?", a: "Sem mensalidade fixa: 0,30 € por cada chamada atendida pela IA mais 3% das encomendas recebidas através das chamadas. Se não o usar, não paga nada." },
+          { q: "Há comissões em reservas, pedidos ou entregas?", a: "Nenhuma em reservas, encomendas e entregas que chegam pelo seu site: o que fatura é seu. A única comissão é a de 3% do extra de IA, apenas nas encomendas feitas por telefone ao assistente." },
           { q: "Posso usar o meu domínio atual?", a: "Sim. Podemos configurar o seu domínio existente ou registar um novo. Em ambos os casos sem custo adicional." },
           { q: "O site está disponível em vários idiomas?", a: "Sim. Cada site é realizado em versão multilíngue por defeito, cobrindo os principais idiomas europeus: italiano, inglês, francês, alemão e espanhol. Mediante pedido é possível adicionar outros idiomas conforme a clientela típica do estabelecimento — por exemplo russo, árabe, chinês ou japonês. O custo dos idiomas adicionais é acordado na fase de orçamento." },
         ] as { q: string; a: string }[],

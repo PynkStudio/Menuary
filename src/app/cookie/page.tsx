@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       title: "Cookie policy",
       description:
-        "Quali cookie usa il sito menuary.it, a cosa servono e come gestirli: solo cookie tecnici di lingua e mercato, statistiche senza cookie.",
+        "Quali cookie usa il sito menuary.it, a cosa servono e come gestire il consenso.",
       alternates: { canonical: `${MENUARY_ORIGIN}/cookie` },
     };
   }

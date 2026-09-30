@@ -2,8 +2,8 @@ export const messages = {
   marketing: {
     shell: {
       nav: {
-        offer: "Offre",
-        about: "Studio",
+        offer: "Tarifs",
+        about: "À propos",
         myAccount: "Mon espace",
         signIn: "Connexion",
         contact: "Nous contacter",
@@ -19,6 +19,17 @@ export const messages = {
         personalArea: "Espace personnel clients",
         privacy: "Confidentialité",
         cookie: "Cookies",
+        home: "Accueil",
+        serviceBy: "Un service de",
+        location: "Milan, Italie",
+      },
+      mobileBar: {
+        call: "Appeler",
+        whatsapp: "WhatsApp",
+        demo: "Demander une démo",
+        menu: "Menu",
+        close: "Fermer le menu",
+        waMessage: "Bonjour Menuary, je souhaite des informations pour mon établissement.",
       },
     },
     home: {
@@ -32,6 +43,26 @@ export const messages = {
       badgeFreeCall: "Payez seulement si ça vous plaît",
       badgeOnline: "En ligne en 7 jours",
       badgeMultilang: "Multilingue · IT EN FR DE ES +",
+      inside: {
+        label: "Au cœur du service",
+        h2: "Pas de jolies photos au hasard : des scènes qui se jouent chaque soir.",
+        sub: "Menuary est conçu pour le travail quotidien des restaurants, bars et établissements : des informations à mettre à jour, des clients à rassurer, des demandes à ne pas perdre et une réputation à protéger.",
+        moments: [
+          { title: "Un menu qui change vraiment", text: "Plats épuisés, allergènes, saisonnalité et prix ne restent pas enfermés dans un vieux PDF : le menu en ligne se met à jour depuis le tableau de bord et reste lisible sur mobile.", alt: "Table de restaurant avec menu, téléphone et plats à partager" },
+          { title: "Des réservations sans chaos", text: "Demandes, confirmations, horaires spéciaux et services sont réunis dans un seul flux : la salle et la direction voient la même situation avant le service.", alt: "Salle de restaurant dressée avant le service du soir" },
+          { title: "Google, avis et confiance", text: "Horaires, fiche Google, avis et contenus publics restent cohérents : qui cherche votre établissement trouve des informations à jour avant d'appeler ou de réserver.", alt: "Équipe d'un établissement au comptoir pendant la préparation du service" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Marchés food",
+        h2: "Sites web pour restaurants, pizzerias, bars et établissements.",
+        sub: "Menuary couvre les recherches essentielles pour être trouvé en ligne : site de restaurant, menu digital, réservations en ligne, commandes et présence locale sur Google.",
+        items: [
+          { title: "Sites web pour restaurants", body: "Menu digital, réservation de tables, galerie, avis Google et contenus modifiables depuis le tableau de bord." },
+          { title: "Sites pour pizzerias et trattorias", body: "Menus de saison, plats du jour, commandes en ligne, allergènes et informations toujours disponibles sur mobile." },
+          { title: "Sites pour bars, bistrots et établissements", body: "Horaires, événements, promotions, Google Maps et pages multilingues pour la clientèle locale et les touristes." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Combien de temps faut-il pour aller en ligne ?",
@@ -42,8 +73,8 @@ export const messages = {
           a: "Vous mettez à jour les horaires, les événements et la description depuis le tableau de bord Menuary. Les modifications sont publiées sur votre fiche Google et propagées sur le site. Les avis Google sont affichés sur le site avec une mise à jour automatique périodique.",
         },
         {
-          q: "Puis-je résilier quand je le souhaite ?",
-          a: "Oui. L'abonnement est mensuel, sans pénalités de résiliation. Les frais de configuration initiaux sont uniques.",
+          q: "Quel type de contrat ? Puis-je résilier ?",
+          a: "Le contrat est annuel, payé d'avance ou mois par mois. Vous pouvez résilier le renouvellement avec un préavis de 30 jours. La mise en place initiale est ponctuelle et vous ne la payez que si la démo de votre site vous convainc.",
         },
         {
           q: "Qu'est-ce qui est inclus dans l'abonnement ?",
@@ -97,6 +128,8 @@ export const messages = {
         googleOpen: "Votre fiche · Ouvert",
         googleUpdated: "· mis à jour aujourd'hui",
         taExcellence: "Excellence · 2026",
+        exampleLabel: "Exemple",
+        yelpReviews: "128 avis · 4,3",
       },
       benefits: {
         label: "Ce que vous trouvez",
@@ -120,7 +153,7 @@ export const messages = {
         savingsLabel: "économisez {amount} €/an",
         monthlyLabel: "Mensuel : {price} €/mois · Setup {setup}",
         vatNote: "TVA exclue · Contrat annuel · Activation sous 7 jours",
-        aiEyebrow: "Add-on disponible pour tous",
+        aiEyebrow: "Option · plans Réservations et Opérationnel",
         aiTitle: "IA téléphonique · 0,30 € par appel + 3% commandes",
         aiDesc:
           "Assistant vocal 24/7 qui répond avec la voix de votre établissement, prend des réservations et gère les commandes. Disponible à partir des plans Réservations et Opérationnel. Aucun forfait fixe : 0,30 € par appel plus 3% sur les commandes reçues par appel.",
@@ -197,6 +230,7 @@ export const messages = {
       },
       faq: {
         kicker: "Questions fréquentes",
+        title: "Les réponses aux questions qu'on nous pose toujours.",
         notFound: "Vous n'avez pas trouvé ce que vous cherchiez ?",
         ctaLink: "Écrivez-nous",
       },
@@ -216,8 +250,8 @@ export const messages = {
       waOpen: "Ouvrir la discussion WhatsApp",
       bullets: [
         "Un site personnalisé selon l'identité du restaurant",
-        "Gestion complète : commandes, stock, food cost, CRM",
-        "Assistant IA par téléphone · disponible en 2026",
+        "Gestion complète : réservations, commandes, livraison, CRM",
+        "Assistant IA au téléphone, actif 24h/24 et 7j/7",
       ] as string[],
     },
     leadForm: {
@@ -242,6 +276,11 @@ export const messages = {
         "Demande reçue. Nous vous recontacterons avec une proposition pensée pour votre établissement.",
       errorConnection: "Connexion indisponible.",
       errorDefault: "Échec de l'envoi.",
+      errorMissing: "Indiquez votre nom, votre établissement et votre e-mail.",
+      errorInvalidEmail: "Vérifiez votre adresse e-mail.",
+      errorRateLimited: "Vous avez déjà envoyé une demande : nous vous recontactons très vite.",
+      privacyNotice: "Nous utilisons ces données uniquement pour vous répondre.",
+      privacyLink: "Politique de confidentialité",
     },
     about: {
       hero: {
@@ -328,7 +367,7 @@ export const messages = {
           { q: "Quelle est la différence entre votre site et un template WordPress ?", a: "Un template est un vêtement confectionné en série : vous pouvez changer les couleurs, mais la structure est celle de milliers d'autres sites. Nos sites naissent d'un design system construit sur l'identité de votre établissement — police, palette, hiérarchie visuelle, ton de voix, micro-animations. Quand vous regardez le site, vous devez penser « ça nous ressemble », pas « j'ai déjà vu cette structure quelque part »." },
           { q: "Que signifie « design system identitaire » ?", a: "Avant le site, nous définissons les règles visuelles de l'établissement : le couple typographique (la police du titre et celle du texte), l'échelle de couleurs (primaire, secondaire, accents), les proportions des espaces, la façon dont les éléments entrent dans l'écran. Ces règles s'appliquent ensuite à chaque page, chaque carte, chaque bouton — créant une expérience cohérente, reconnaissable, professionnelle." },
           { q: "Quand un site est-il rentabilisé ?", a: "Plus tôt que vous ne le pensez. TheFork et les plateformes retiennent jusqu'à 10-15 % par réservation. Si votre site apporte ne serait-ce qu'une réservation directe par jour — au lieu de passer par une plateforme — l'économie annuelle dépasse largement le coût de l'abonnement. Et cela sans compter la valeur de la présence Google, des avis intégrés et de la réputation numérique." },
-          { q: "Combien de temps faut-il pour aller en ligne ?", a: "Sous 7 jours après la signature du contrat. La configuration initiale (onboarding, design, développement) est complétée avant — en moyenne 2 à 4 semaines — puis la mise en ligne se fait en un jour." },
+          { q: "Combien de temps faut-il pour aller en ligne ?", a: "Votre site et vos services sont en ligne sous 7 jours après la signature du contrat. Avant la signature, nous vous montrons une démo de votre site sur mesure : vous savez exactement ce que vous choisissez." },
           { q: "Comment naît le design de mon site ?", a: "Il commence par un appel (ou une visite si l'établissement est proche). Nous regardons la salle, le menu, les photos, le ton de voix que vous utilisez sur les réseaux. Puis nous construisons un système visuel cohérent — nous ne choisissons pas les polices et couleurs au hasard, nous les tirons de ce que l'établissement est déjà. Ce n'est qu'alors que nous commençons à écrire du code." },
           { q: "Puis-je mettre à jour le site moi-même ?", a: "Oui. Menu, horaires, photos, événements, prix : tout se met à jour depuis le panneau Menuary sans toucher au code, sans envoyer d'e-mail à personne. Les modifications sont en ligne en quelques secondes, même depuis la caisse entre deux services." },
           { q: "Travaillez-vous seulement à Milan ?", a: "Non. Le studio est à Milan, mais nous suivons des établissements dans toute l'Italie. La plupart du travail se fait à distance. Quand cela a du sens — pour un repérage photo ou un onboarding complexe — nous venons chez vous." },
@@ -341,7 +380,7 @@ export const messages = {
         label: "Offre",
         h1a: "Trois plans.",
         h1b: "Aucune surprise.",
-        sub: "Des prix clairs, zéro commission sur les commandes et réservations. Commencez où vous voulez, ajoutez seulement ce qu'il vous faut.",
+        sub: "Des prix clairs, aucune commission sur les réservations et commandes passées sur votre site. Commencez où vous voulez, ajoutez seulement ce dont vous avez besoin.",
       },
       billing: {
         annual: "Annuel anticipé",
@@ -358,6 +397,7 @@ export const messages = {
         monthlyWithAnnual: "Avec paiement annuel :",
         monthlyWithAnnualSaving: "{price}/mois · économisez {amount}/an",
         ctaDefault: "Demander une proposition",
+        setup: "Mise en service unique {setup}",
       },
       ai: {
         label: "À partir du plan {plan}",
@@ -400,7 +440,7 @@ export const messages = {
           { label: "CRM clients & analytics", presence: "false", booking: "false", ops: "true" },
           { label: "Tableau de bord opérationnel", presence: "false", booking: "false", ops: "true" },
           { label: "Gestion du personnel et de la cuisine", presence: "false", booking: "false", ops: "true" },
-          { label: "Intégration IA (add-on)", presence: "false", booking: "+60 €/mois", ops: "+60 €/mois" },
+          { label: "Intégration IA (add-on)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Support", presence: "Standard", booking: "Prioritaire", ops: "Dédié" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -413,9 +453,9 @@ export const messages = {
           { q: "Quelle différence entre facturation annuelle et mensuelle ?", a: "Avec le paiement annuel anticipé, vous bénéficiez d'un abonnement mensuel équivalent réduit. Avec la facturation mensuelle, la dépense est répartie mois par mois, mais l'abonnement est plus élevé. Dans les deux cas, le contrat est annuel." },
           { q: "Qu'est-ce que les frais d'activation ?", a: "C'est un tarif unique pour la configuration initiale : setup technique, onboarding et personnalisation du site. Il n'est pas inclus dans l'abonnement mensuel. Les prix indiqués sont indicatifs ; le devis exact dépend de la complexité de l'établissement." },
           { q: "Qu'est-ce qui est inclus dans l'abonnement mensuel ?", a: "Hébergement, domaine, certificats SSL, sauvegardes, mises à jour techniques, sécurité et toutes les nouvelles fonctions du produit. Plus le support de notre équipe." },
-          { q: "Comment fonctionne l'intégration IA ?", a: "L'assistant IA répond au téléphone 24/7 avec la voix et le ton de l'établissement : il prend des réservations et les inscrit directement dans l'agenda, accepte les commandes à emporter, suggère les plats du jour et gère les demandes hors horaires. Il prend en charge le clonage vocal en option et parle nativement italien, anglais, français, espagnol et allemand. Disponible à partir des plans Réservations et Opérationnel pour un coût supplémentaire de 60 €/mois." },
-          { q: "Comment fonctionne le quota de minutes de l'intégration IA ?", a: "Chaque plan IA inclut un quota mensuel de minutes de conversation. Si vous le dépassez, les frais supplémentaires sont calculés au prix coûtant — sans aucune majoration de notre part. Vous trouvez le détail du quota dans le contrat." },
-          { q: "Y a-t-il des commissions sur les réservations, commandes ou livraisons ?", a: "Zéro. Menuary ne retient rien sur vos commandes, réservations ou livraisons. Ce que vous encaissez est à vous, intégralement." },
+          { q: "Comment fonctionne l'intégration IA ?", a: "L'assistant IA répond au téléphone 24/7 avec la voix et le ton de l'établissement : il prend des réservations et les inscrit directement dans l'agenda, accepte les commandes à emporter, suggère les plats du jour et gère les demandes hors horaires. Il prend en charge le clonage vocal en option et parle nativement italien, anglais, français, espagnol et allemand. Disponible à partir des plans Réservations et Opérationnel." },
+          { q: "Combien coûte l'assistant IA ?", a: "Aucun abonnement fixe : 0,30 € par appel géré par l'IA plus 3 % sur les commandes reçues via les appels. Si vous ne l'utilisez pas, vous ne payez rien." },
+          { q: "Y a-t-il des commissions sur les réservations, commandes ou livraisons ?", a: "Aucune sur les réservations, commandes et livraisons qui arrivent par votre site : ce que vous encaissez vous appartient. La seule commission est celle de 3 % de l'option IA, uniquement sur les commandes prises au téléphone par l'assistant." },
           { q: "Puis-je utiliser mon domaine actuel ?", a: "Oui. Nous pouvons configurer votre domaine existant ou en enregistrer un nouveau. Dans les deux cas sans coût supplémentaire." },
           { q: "Le site est-il disponible en plusieurs langues ?", a: "Oui. Chaque site est réalisé en version multilingue par défaut, couvrant les principales langues européennes : italien, anglais, français, allemand et espagnol. Sur demande, il est possible d'ajouter d'autres langues selon la clientèle typique de l'établissement — par exemple russe, arabe, chinois ou japonais pour les zones à forte fréquentation touristique internationale. Le coût des langues supplémentaires est convenu lors du devis." },
         ] as { q: string; a: string }[],

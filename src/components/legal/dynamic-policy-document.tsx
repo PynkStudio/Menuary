@@ -56,6 +56,7 @@ export function DynamicPolicyDocument({
       upsellingEnabled,
       modules,
       localeCookie,
+      tracking: tenant?.tracking,
     }),
     [
       allowTakeaway,
@@ -67,6 +68,7 @@ export function DynamicPolicyDocument({
       upsellingEnabled,
       localeCookie,
       modules,
+      tenant?.tracking,
     ],
   );
 

@@ -8,6 +8,7 @@ import { useRestaurantServicesStore } from "@/store/restaurant-services-store";
 import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
 import { useSettingsStore } from "@/store/settings-store";
 import { scheduleDayForDate, generateTimeSlots, parseSlotBounds } from "@/lib/venue-hours";
+import { trackConversion } from "@/lib/tracking/client";
 
 function computeReservationSlots(
   hoursWeek: ReturnType<typeof import("@/lib/venue-hours").defaultHoursWeek>,
@@ -98,6 +99,10 @@ export function ReservationRequestForm() {
         });
         setSent(true);
         setDraft({ customer: "", phone: "", covers: 2, date: "", time: "", notes: "" });
+        trackConversion("booking", {
+          transactionId: j.id,
+          label: `covers:${Math.max(1, Number(draft.covers) || 1)}`,
+        });
         return;
       }
       if (res.status === 503) {

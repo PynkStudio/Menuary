@@ -4,7 +4,7 @@ import { mergeMessages } from "./_merge";
 export const messages = mergeMessages(en, {
   marketing: {
     shell: {
-      nav: { offer: "Oferta", about: "Studio", myAccount: "Moje konto", signIn: "Zaloguj się", contact: "Porozmawiajmy" },
+      nav: { offer: "Cennik", about: "O nas", myAccount: "Moje konto", signIn: "Zaloguj się", contact: "Porozmawiajmy" },
       footer: {
         desc: "Operacyjna platforma dla restauracji: strona internetowa, kompletny system zarządzania i telefoniczny asystent AI. Tworzona na miarę, utrzymywana w czasie.",
         nav: "Nawigacja",
@@ -16,6 +16,17 @@ export const messages = mergeMessages(en, {
         personalArea: "Strefa klienta",
         privacy: "Prywatność",
         cookie: "Cookies",
+        home: "Strona główna",
+        serviceBy: "Usługa firmy",
+        location: "Mediolan, Włochy",
+      },
+      mobileBar: {
+        call: "Zadzwoń",
+        whatsapp: "WhatsApp",
+        demo: "Poproś o demo",
+        menu: "Menu",
+        close: "Zamknij menu",
+        waMessage: "Dzień dobry Menuary, chciałbym uzyskać informacje dla mojego lokalu.",
       },
     },
     home: {
@@ -28,6 +39,26 @@ export const messages = mergeMessages(en, {
       badgeFreeCall: "Płacisz tylko jeśli Ci się spodoba",
       badgeOnline: "Online w 7 dni",
       badgeMultilang: "Wielojęzyczne · PL EN DE FR UA +",
+      inside: {
+        label: "W trakcie serwisu",
+        h2: "Żadnych przypadkowych ładnych zdjęć: sceny, które dzieją się każdego wieczoru.",
+        sub: "Menuary powstało z myślą o codziennej pracy restauracji, barów i lokali: informacje do aktualizacji, goście do uspokojenia, zapytania, których nie wolno zgubić, i reputacja do ochrony.",
+        moments: [
+          { title: "Menu, które naprawdę się zmienia", text: "Wyprzedane dania, alergeny, sezonowość i ceny nie utkną w starym PDF-ie: menu online aktualizujesz z panelu i jest czytelne na telefonie.", alt: "Stolik w restauracji z menu, telefonem i daniami do dzielenia" },
+          { title: "Rezerwacje bez chaosu", text: "Zapytania, potwierdzenia, godziny specjalne i zmiany trafiają do jednego przepływu, więc sala i zarząd widzą tę samą sytuację przed serwisem.", alt: "Nakryta sala restauracji przed wieczornym serwisem" },
+          { title: "Google, opinie i zaufanie", text: "Godziny otwarcia, profil Google, opinie i treści publiczne pozostają spójne: kto szuka lokalu, znajduje aktualne informacje, zanim zadzwoni lub zarezerwuje.", alt: "Obsługa lokalu przy barze podczas przygotowań do serwisu" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Gastronomia",
+        h2: "Strony internetowe dla restauracji, pizzerii, barów i lokali.",
+        sub: "Menuary obejmuje najważniejsze wyszukiwania, dzięki którym goście znajdą Cię w sieci: strona restauracji, menu cyfrowe, rezerwacje online, zamówienia i lokalna obecność w Google.",
+        items: [
+          { title: "Strony dla restauracji", body: "Menu cyfrowe, rezerwacje stolików, galeria, opinie Google i treści aktualizowane z panelu." },
+          { title: "Strony dla pizzerii i trattorii", body: "Menu sezonowe, dania dnia, zamówienia online, alergeny i informacje zawsze dostępne na telefonie." },
+          { title: "Strony dla barów, bistr i lokali", body: "Godziny otwarcia, wydarzenia, promocje, Google Maps i wielojęzyczne strony dla stałych gości i turystów." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Ile czasu zajmuje uruchomienie strony?",
@@ -38,8 +69,8 @@ export const messages = mergeMessages(en, {
           a: "Godziny otwarcia, wydarzenia i opisy aktualizujesz z panelu Menuary. Zmiany są publikowane w Twojej wizytówce Google i przenoszone na stronę. Opinie Google są wyświetlane na stronie z automatycznymi okresowymi aktualizacjami.",
         },
         {
-          q: "Czy mogę zrezygnować, kiedy chcę?",
-          a: "Tak. Subskrypcja jest miesięczna, bez kar za rezygnację. Początkowa opłata konfiguracyjna jest pobierana jednorazowo.",
+          q: "Jaka to umowa? Czy mogę zrezygnować?",
+          a: "Umowa jest roczna, płatna z góry lub co miesiąc. Możesz wypowiedzieć przedłużenie z 30-dniowym wyprzedzeniem. Konfiguracja jest opłatą jednorazową i płacisz ją tylko wtedy, gdy demo Twojej strony Cię przekona.",
         },
         {
           q: "Co obejmuje subskrypcja?",
@@ -93,6 +124,8 @@ export const messages = mergeMessages(en, {
         googleOpen: "Twoja wizytówka · Otwarte",
         googleUpdated: "· zaktualizowano dziś",
         taExcellence: "Doskonałość · 2026",
+        exampleLabel: "Przykład",
+        yelpReviews: "128 opinii · 4,3",
       },
       benefits: {
         label: "Co w środku",
@@ -116,7 +149,7 @@ export const messages = mergeMessages(en, {
         savingsLabel: "oszczędzasz €{amount}/rok",
         monthlyLabel: "Miesięcznie: €{price}/mies. · Setup {setup}",
         vatNote: "Ceny netto · Umowa roczna · Aktywacja w 7 dni",
-        aiEyebrow: "Dodatek dostępny dla wszystkich",
+        aiEyebrow: "Dodatek · plany Rezerwacje i Operacje",
         aiTitle: "Telefoniczny asystent AI · €0,30 za połączenie + 3% zamówień",
         aiDesc:
           "Asystent głosowy 24/7, który odpowiada głosem Twojego lokalu, przyjmuje rezerwacje i obsługuje zamówienia. Dostępny od planów Rezerwacje i Operacje. Bez stałej opłaty: €0,30 za połączenie plus 3% od zamówień otrzymanych przez połączenia.",
@@ -193,6 +226,7 @@ export const messages = mergeMessages(en, {
       },
       faq: {
         kicker: "Często zadawane pytania",
+        title: "Odpowiedzi na pytania, które słyszymy najczęściej.",
         notFound: "Nie znalazłeś tego, czego szukasz?",
         ctaLink: "Napisz do nas",
       },
@@ -212,8 +246,8 @@ export const messages = mergeMessages(en, {
       waOpen: "Otwórz czat WhatsApp",
       bullets: [
         "Strona dopasowana do charakteru restauracji",
-        "Kompletny system zarządzania: zamówienia, magazyn, food cost, CRM",
-        "Telefoniczny asystent AI · już w 2026",
+        "Pełne zarządzanie: rezerwacje, zamówienia, dostawy, CRM",
+        "Asystent AI przy telefonie, aktywny 24/7",
       ] as string[],
     },
     leadForm: {
@@ -237,6 +271,11 @@ export const messages = mergeMessages(en, {
       successMsg: "Zapytanie otrzymane. Odezwiemy się z propozycją dopasowaną do Twojego lokalu.",
       errorConnection: "Połączenie niedostępne.",
       errorDefault: "Wysyłka nie powiodła się.",
+      errorMissing: "Podaj imię, nazwę lokalu i e-mail.",
+      errorInvalidEmail: "Sprawdź adres e-mail.",
+      errorRateLimited: "Zapytanie zostało już wysłane: wkrótce się odezwiemy.",
+      privacyNotice: "Używamy tych danych wyłącznie, aby Ci odpowiedzieć.",
+      privacyLink: "Polityka prywatności",
     },
     about: {
       hero: {
@@ -323,7 +362,7 @@ export const messages = mergeMessages(en, {
           { q: "Jaka jest różnica między waszą stroną a szablonem WordPress?", a: "Szablon to garnitur konfekcyjny z półki: możesz zmienić kolory, ale struktura jest taka sama jak tysięcy innych stron. Nasze strony powstają z design systemu zbudowanego wokół tożsamości twojego lokalu — font, paleta, hierarchia wizualna, ton głosu, mikroanimacje. Kiedy patrzysz na stronę, masz pomyśleć «to wygląda jak my», a nie «już gdzieś widziałem tę strukturę»." },
           { q: "Co oznacza «tożsamościowy design system»?", a: "Przed stroną definiujemy zasady wizualne lokalu: parę typograficzną (font tytułu i font tekstu), skalę kolorów (podstawowy, drugorzędny, akcenty), proporcje przestrzeni, sposób, w jaki elementy wchodzą na ekran. Te zasady stosują się następnie do każdej strony, każdej karty, każdego przycisku — tworząc spójne, rozpoznawalne, profesjonalne doświadczenie." },
           { q: "Kiedy strona się zwraca?", a: "Wcześniej, niż myślisz. TheFork i platformy zatrzymują do 10-15 % od rezerwacji. Jeśli twoja strona przyniesie choćby jedną bezpośrednią rezerwację dziennie — zamiast przechodzić przez platformę — roczna oszczędność znacznie przewyższa koszt abonamentu. A to bez liczenia wartości obecności w Google, zintegrowanych opinii i reputacji cyfrowej." },
-          { q: "Ile czasu zajmuje wejście online?", a: "W ciągu 7 dni od podpisania umowy. Wstępna konfiguracja (onboarding, projekt, rozwój) jest kończona wcześniej — średnio 2-4 tygodnie — a potem uruchomienie następuje w jeden dzień." },
+          { q: "Ile czasu zajmuje wejście online?", a: "Strona i usługi działają w ciągu 7 dni od podpisania umowy. Przed podpisaniem pokazujemy Ci demo Twojej strony szytej na miarę, więc wiesz dokładnie, co wybierasz." },
           { q: "Jak powstaje projekt mojej strony?", a: "Zaczyna się od rozmowy (lub wizyty, jeśli lokal jest blisko). Patrzymy na salę, menu, zdjęcia, ton głosu, którego używasz w mediach społecznościowych. Potem budujemy spójny system wizualny — nie wybieramy fontów i kolorów przypadkowo, wyprowadzamy je z tego, czym lokal już jest. Dopiero wtedy zaczynamy pisać kod." },
           { q: "Czy mogę sam aktualizować stronę?", a: "Tak. Menu, godziny, zdjęcia, wydarzenia, ceny: wszystko aktualizuje się z panelu Menuary bez dotykania kodu, bez wysyłania maili do nikogo. Zmiany są online w kilka sekund, również z kasy między zmianami." },
           { q: "Pracujecie tylko w Mediolanie?", a: "Nie. Studio jest w Mediolanie, ale obsługujemy lokale w całych Włoszech. Większość pracy odbywa się zdalnie. Gdy ma to sens — przy sesji zdjęciowej lub złożonym onboardingu — przyjeżdżamy do was." },
@@ -336,7 +375,7 @@ export const messages = mergeMessages(en, {
         label: "Oferta",
         h1a: "Trzy plany.",
         h1b: "Żadnych niespodzianek.",
-        sub: "Jasne ceny, zero prowizji od zamówień i rezerwacji. Zacznij gdzie chcesz, dodaj tylko to, czego potrzebujesz.",
+        sub: "Jasne ceny, zero prowizji od rezerwacji i zamówień z Twojej strony. Zacznij od czego chcesz i dodaj tylko to, czego potrzebujesz.",
       },
       billing: {
         annual: "Roczny z góry",
@@ -353,6 +392,7 @@ export const messages = mergeMessages(en, {
         monthlyWithAnnual: "Przy płatności rocznej:",
         monthlyWithAnnualSaving: "{price}/mies. · oszczędzasz {amount}/rok",
         ctaDefault: "Poproś o ofertę",
+        setup: "Jednorazowe uruchomienie {setup}",
       },
       ai: {
         label: "Od planu {plan} wzwyż",
@@ -395,7 +435,7 @@ export const messages = mergeMessages(en, {
           { label: "CRM klientów i analityka", presence: "false", booking: "false", ops: "true" },
           { label: "Panel operacyjny", presence: "false", booking: "false", ops: "true" },
           { label: "Zarządzanie personelem i kuchnią", presence: "false", booking: "false", ops: "true" },
-          { label: "Integracja AI (dodatek)", presence: "false", booking: "+60 €/mies.", ops: "+60 €/mies." },
+          { label: "Integracja AI (dodatek)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Wsparcie", presence: "Standardowe", booking: "Priorytetowe", ops: "Dedykowane" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -408,9 +448,9 @@ export const messages = mergeMessages(en, {
           { q: "Jaka jest różnica między rozliczeniem rocznym a miesięcznym?", a: "Przy płatności rocznej z góry korzystasz z obniżonej równoważnej ceny miesięcznej. Przy rozliczeniu miesięcznym wydatek rozkłada się na miesiące, ale opłata jest wyższa. W obu przypadkach umowa jest roczna." },
           { q: "Czym jest koszt aktywacji?", a: "To jednorazowa opłata za wstępną konfigurację: wdrożenie techniczne, onboarding i personalizacja strony. Nie jest wliczona w opłatę miesięczną. Podane ceny są orientacyjne; dokładna wycena zależy od złożoności lokalu." },
           { q: "Co jest wliczone w opłatę miesięczną?", a: "Hosting, domena, certyfikaty SSL, kopie zapasowe, aktualizacje techniczne, bezpieczeństwo i wszystkie nowe funkcje produktu. Plus wsparcie naszego zespołu." },
-          { q: "Jak działa integracja AI?", a: "Asystent AI odbiera telefon 24/7 głosem i tonem lokalu: przyjmuje rezerwacje i wpisuje je bezpośrednio do kalendarza, przyjmuje zamówienia na wynos, sugeruje dania dnia i obsługuje zapytania poza godzinami. Obsługuje opcjonalne klonowanie głosu i mówi natywnie po włosku, angielsku, francusku, hiszpańsku i niemiecku. Dostępny od planów Rezerwacje i Operacje za dopłatą 60 €/mies." },
-          { q: "Jak działa limit minut integracji AI?", a: "Każdy plan AI zawiera miesięczny limit minut rozmowy. Jeśli go przekroczysz, dodatkowe opłaty są naliczane po kosztach — bez żadnej marży z naszej strony. Szczegóły limitu znajdziesz w umowie." },
-          { q: "Czy są prowizje od rezerwacji, zamówień lub dostaw?", a: "Zero. Menuary nie pobiera nic z twoich zamówień, rezerwacji ani dostaw. To, co zarabiasz, jest w całości twoje." },
+          { q: "Jak działa integracja AI?", a: "Asystent AI odbiera telefon 24/7 głosem i tonem lokalu: przyjmuje rezerwacje i wpisuje je bezpośrednio do kalendarza, przyjmuje zamówienia na wynos, sugeruje dania dnia i obsługuje zapytania poza godzinami. Obsługuje opcjonalne klonowanie głosu i mówi natywnie po włosku, angielsku, francusku, hiszpańsku i niemiecku. Dostępny od planów Rezerwacje i Operacje." },
+          { q: "Ile kosztuje asystent AI?", a: "Bez stałej opłaty: 0,30 € za każde połączenie obsłużone przez AI plus 3% od zamówień przyjętych przez telefon. Jeśli z niego nie korzystasz, nic nie płacisz." },
+          { q: "Czy są prowizje od rezerwacji, zamówień lub dostaw?", a: "Żadnych od rezerwacji, zamówień i dostaw przychodzących z Twojej strony: to, co zarabiasz, jest Twoje. Jedyną prowizją jest 3% dodatku AI, tylko od zamówień przyjętych telefonicznie przez asystenta." },
           { q: "Czy mogę użyć mojej obecnej domeny?", a: "Tak. Możemy skonfigurować twoją istniejącą domenę lub zarejestrować nową. W obu przypadkach bez dodatkowych kosztów." },
           { q: "Czy strona jest dostępna w wielu językach?", a: "Tak. Każda strona jest tworzona domyślnie w wersji wielojęzycznej, obejmując główne języki europejskie: włoski, angielski, francuski, niemiecki i hiszpański. Na życzenie można dodać inne języki w zależności od typowej klienteli lokalu — na przykład rosyjski, arabski, chiński lub japoński. Koszt dodatkowych języków jest ustalany na etapie wyceny." },
         ] as { q: string; a: string }[],

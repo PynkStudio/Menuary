@@ -2,8 +2,8 @@ export const messages = {
   marketing: {
     shell: {
       nav: {
-        offer: "Angebot",
-        about: "Studio",
+        offer: "Preise",
+        about: "Über uns",
         myAccount: "Mein Konto",
         signIn: "Anmelden",
         contact: "Kontakt",
@@ -19,6 +19,17 @@ export const messages = {
         personalArea: "Persönlicher Kundenbereich",
         privacy: "Datenschutz",
         cookie: "Cookies",
+        home: "Start",
+        serviceBy: "Ein Service von",
+        location: "Mailand, Italien",
+      },
+      mobileBar: {
+        call: "Anrufen",
+        whatsapp: "WhatsApp",
+        demo: "Demo anfragen",
+        menu: "Menü",
+        close: "Menü schließen",
+        waMessage: "Hallo Menuary, ich hätte gern Informationen für mein Lokal.",
       },
     },
     home: {
@@ -32,6 +43,26 @@ export const messages = {
       badgeFreeCall: "Zahlen nur, wenn es gefällt",
       badgeOnline: "Online in 7 Tagen",
       badgeMultilang: "Mehrsprachig · IT EN FR DE ES +",
+      inside: {
+        label: "Mitten im Service",
+        h2: "Keine hübschen Zufallsfotos: Szenen, die jeden Abend passieren.",
+        sub: "Menuary ist für die tägliche Arbeit von Restaurants, Bars und Lokalen gemacht: Informationen aktualisieren, Gäste beruhigen, keine Anfrage verlieren und den Ruf schützen.",
+        moments: [
+          { title: "Eine Karte, die sich wirklich ändert", text: "Ausverkaufte Gerichte, Allergene, Saison und Preise bleiben nicht in einem alten PDF stecken: Die Online-Karte wird im Dashboard aktualisiert und bleibt auf dem Handy gut lesbar.", alt: "Restauranttisch mit Speisekarte, Handy und geteilten Gerichten" },
+          { title: "Reservierungen ohne Chaos", text: "Anfragen, Bestätigungen, Sonderzeiten und Schichten laufen in einem Ablauf zusammen – so sehen Service und Leitung vor dem Service dasselbe Bild.", alt: "Gedeckter Gastraum vor dem Abendservice" },
+          { title: "Google, Bewertungen und Vertrauen", text: "Öffnungszeiten, Google-Profil, Bewertungen und öffentliche Inhalte bleiben stimmig: Wer Ihr Lokal sucht, findet aktuelle Informationen, bevor er anruft oder reserviert.", alt: "Team eines Lokals an der Theke bei der Vorbereitung des Service" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Gastronomie",
+        h2: "Websites für Restaurants, Pizzerien, Bars und Lokale.",
+        sub: "Menuary deckt die wichtigsten Suchen ab, über die Gäste Sie online finden: Restaurant-Website, digitale Speisekarte, Online-Reservierungen, Bestellungen und lokale Präsenz bei Google.",
+        items: [
+          { title: "Websites für Restaurants", body: "Digitale Speisekarte, Tischreservierungen, Galerie, Google-Bewertungen und Inhalte, die Sie im Dashboard pflegen." },
+          { title: "Websites für Pizzerien und Trattorien", body: "Saisonkarten, Tagesgerichte, Online-Bestellungen, Allergene und Informationen, die mobil immer abrufbar sind." },
+          { title: "Websites für Bars, Bistros und Lokale", body: "Öffnungszeiten, Events, Aktionen, Google Maps und mehrsprachige Seiten für Stammgäste und Touristen." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Wie lange dauert es, bis das Lokal online ist?",
@@ -42,8 +73,8 @@ export const messages = {
           a: "Sie aktualisieren Öffnungszeiten, Veranstaltungen und Beschreibung über das Menuary-Dashboard. Die Änderungen werden auf Ihrem Google-Eintrag veröffentlicht und auf der Website propagiert. Google-Bewertungen werden mit automatischen regelmäßigen Updates auf der Website angezeigt.",
         },
         {
-          q: "Kann ich jederzeit kündigen?",
-          a: "Ja. Das Abonnement ist monatlich, ohne Kündigungsgebühren. Die initiale Einrichtung ist eine einmalige Zahlung.",
+          q: "Welcher Vertrag ist es? Kann ich kündigen?",
+          a: "Der Vertrag läuft ein Jahr, bezahlt im Voraus oder monatlich. Sie können die Verlängerung mit 30 Tagen Frist kündigen. Die Einrichtung ist einmalig, und Sie zahlen sie nur, wenn Sie die Demo Ihrer Website überzeugt.",
         },
         {
           q: "Was ist im Abonnement enthalten?",
@@ -97,6 +128,8 @@ export const messages = {
         googleOpen: "Ihr Eintrag · Geöffnet",
         googleUpdated: "· heute aktualisiert",
         taExcellence: "Exzellenz · 2026",
+        exampleLabel: "Beispiel",
+        yelpReviews: "128 Bewertungen · 4,3",
       },
       benefits: {
         label: "Was Sie erhalten",
@@ -120,7 +153,7 @@ export const messages = {
         savingsLabel: "Sie sparen {amount} €/Jahr",
         monthlyLabel: "Monatlich: {price} €/Monat · Setup {setup}",
         vatNote: "Zzgl. MwSt. · Jahresvertrag · Aktivierung innerhalb von 7 Tagen",
-        aiEyebrow: "Add-on für alle verfügbar",
+        aiEyebrow: "Add-on · Pläne Reservierungen und Betrieb",
         aiTitle: "KI-Telefonassistent · 0,30 €/Anruf + 3% Bestellungen",
         aiDesc:
           "24/7-Sprachassistent, der mit der Stimme des Lokals antwortet, Reservierungen annimmt und Bestellungen verwaltet. Verfügbar ab den Plänen Reservierungen und Betrieb. Keine Grundgebühr: 0,30 € pro Anruf plus 3% auf die per Anruf erhaltenen Bestellungen.",
@@ -197,6 +230,7 @@ export const messages = {
       },
       faq: {
         kicker: "Häufig gestellte Fragen",
+        title: "Antworten auf die Fragen, die wir am häufigsten hören.",
         notFound: "Haben Sie nicht gefunden, was Sie suchen?",
         ctaLink: "Schreiben Sie uns",
       },
@@ -216,8 +250,8 @@ export const messages = {
       waOpen: "WhatsApp-Chat öffnen",
       bullets: [
         "Eine Website, die den Charakter des Restaurants widerspiegelt",
-        "Vollständiges Managementsystem: Bestellungen, Lager, Food Cost, CRM",
-        "KI-Telefonassistent · verfügbar ab 2026",
+        "Komplettes Management: Reservierungen, Bestellungen, Lieferung, CRM",
+        "KI-Telefonassistent, rund um die Uhr aktiv",
       ] as string[],
     },
     leadForm: {
@@ -242,6 +276,11 @@ export const messages = {
         "Anfrage erhalten. Wir werden uns mit einem auf Ihr Lokal zugeschnittenen Vorschlag bei Ihnen melden.",
       errorConnection: "Verbindung nicht verfügbar.",
       errorDefault: "Senden fehlgeschlagen.",
+      errorMissing: "Bitte Name, Lokal und E-Mail angeben.",
+      errorInvalidEmail: "Bitte prüfen Sie Ihre E-Mail-Adresse.",
+      errorRateLimited: "Sie haben bereits eine Anfrage gesendet: Wir melden uns in Kürze.",
+      privacyNotice: "Wir verwenden diese Daten nur, um Ihnen zu antworten.",
+      privacyLink: "Datenschutzerklärung",
     },
     about: {
       hero: {
@@ -328,7 +367,7 @@ export const messages = {
           { q: "Was ist der Unterschied zwischen Ihrer Website und einem WordPress-Template?", a: "Ein Template ist ein Konfektionsanzug von der Stange: Sie können die Farben ändern, aber die Struktur ist die von Tausenden anderer Websites. Unsere Websites entstehen aus einem Design-System, das auf der Identität Ihres Lokals aufbaut — Schrift, Palette, visuelle Hierarchie, Tonfall, Mikroanimationen. Wenn Sie die Website ansehen, sollen Sie denken „das sieht aus wie wir“, nicht „diese Struktur habe ich schon irgendwo gesehen“." },
           { q: "Was bedeutet „identitätsstiftendes Design-System“?", a: "Vor der Website definieren wir die visuellen Regeln des Lokals: das Schriftpaar (die Schrift für den Titel und die für den Text), die Farbskala (primär, sekundär, Akzente), die Proportionen der Abstände, die Art, wie die Elemente in den Bildschirm eintreten. Diese Regeln gelten dann für jede Seite, jede Karte, jeden Button — und schaffen ein kohärentes, wiedererkennbares, professionelles Erlebnis." },
           { q: "Wann rechnet sich eine Website?", a: "Früher, als Sie denken. TheFork und die Plattformen behalten bis zu 10-15 % pro Reservierung ein. Wenn Ihre Website auch nur eine Direktreservierung pro Tag bringt — statt über eine Plattform zu laufen — übersteigt die jährliche Ersparnis die Abokosten bei Weitem. Und das ohne den Wert der Google-Präsenz, der integrierten Bewertungen und der digitalen Reputation." },
-          { q: "Wie lange dauert es bis online?", a: "Innerhalb von 7 Tagen nach Vertragsunterschrift. Die Ersteinrichtung (Onboarding, Design, Entwicklung) wird vorher abgeschlossen — im Schnitt 2-4 Wochen — dann erfolgt der Go-live an einem Tag." },
+          { q: "Wie lange dauert es bis online?", a: "Website und Services sind innerhalb von 7 Tagen nach Vertragsunterzeichnung online. Vor der Unterschrift zeigen wir Ihnen eine Demo Ihrer maßgeschneiderten Website – Sie wissen also genau, wofür Sie sich entscheiden." },
           { q: "Wie entsteht das Design meiner Website?", a: "Es beginnt mit einem Anruf (oder einem Besuch, wenn das Lokal in der Nähe ist). Wir betrachten den Gastraum, die Speisekarte, die Fotos, den Tonfall, den Sie in den sozialen Medien verwenden. Dann bauen wir ein kohärentes visuelles System — wir wählen Schriften und Farben nicht zufällig, wir leiten sie aus dem ab, was das Lokal bereits ist. Erst dann schreiben wir Code." },
           { q: "Kann ich die Website selbst aktualisieren?", a: "Ja. Speisekarte, Öffnungszeiten, Fotos, Events, Preise: alles wird über das Menuary-Dashboard aktualisiert, ohne den Code anzufassen, ohne jemandem eine E-Mail zu senden. Die Änderungen sind in wenigen Sekunden online, auch von der Kasse zwischen zwei Schichten." },
           { q: "Arbeiten Sie nur in Mailand?", a: "Nein. Das Studio ist in Mailand, aber wir betreuen Lokale in ganz Italien. Der Großteil der Arbeit erfolgt remote. Wenn es sinnvoll ist — für ein Foto-Shooting oder ein komplexes Onboarding — kommen wir zu Ihnen." },
@@ -341,7 +380,7 @@ export const messages = {
         label: "Angebot",
         h1a: "Drei Pläne.",
         h1b: "Keine Überraschungen.",
-        sub: "Klare Preise, null Provision auf Bestellungen und Reservierungen. Beginnen Sie, wo Sie wollen, fügen Sie nur hinzu, was Sie brauchen.",
+        sub: "Klare Preise, keine Provision auf Reservierungen und Bestellungen über Ihre Website. Starten Sie, wo Sie möchten, und ergänzen Sie nur, was Sie brauchen.",
       },
       billing: {
         annual: "Jährlich im Voraus",
@@ -358,6 +397,7 @@ export const messages = {
         monthlyWithAnnual: "Bei jährlicher Zahlung:",
         monthlyWithAnnualSaving: "{price}/Monat · sparen Sie {amount}/Jahr",
         ctaDefault: "Angebot anfragen",
+        setup: "Einmalige Einrichtung {setup}",
       },
       ai: {
         label: "Ab dem Plan {plan}",
@@ -400,7 +440,7 @@ export const messages = {
           { label: "Kunden-CRM & Analytics", presence: "false", booking: "false", ops: "true" },
           { label: "Operatives Dashboard", presence: "false", booking: "false", ops: "true" },
           { label: "Personal- und Küchenverwaltung", presence: "false", booking: "false", ops: "true" },
-          { label: "KI-Integration (Add-on)", presence: "false", booking: "+60 €/Monat", ops: "+60 €/Monat" },
+          { label: "KI-Integration (Add-on)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Support", presence: "Standard", booking: "Priorität", ops: "Dediziert" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -413,9 +453,9 @@ export const messages = {
           { q: "Was ist der Unterschied zwischen jährlicher und monatlicher Abrechnung?", a: "Bei jährlicher Vorauszahlung profitieren Sie von einem reduzierten äquivalenten Monatsbeitrag. Bei monatlicher Abrechnung verteilt sich die Ausgabe Monat für Monat, der Beitrag ist jedoch höher. In beiden Fällen ist der Vertrag jährlich." },
           { q: "Was sind die Aktivierungskosten?", a: "Es ist eine einmalige Gebühr für die Ersteinrichtung: technisches Setup, Onboarding und Anpassung der Website. Sie ist nicht im Monatsbeitrag enthalten. Die angegebenen Preise sind Richtwerte; das genaue Angebot hängt von der Komplexität des Lokals ab." },
           { q: "Was ist im Monatsbeitrag enthalten?", a: "Hosting, Domain, SSL-Zertifikate, Backups, technische Updates, Sicherheit und alle neuen Produktfunktionen. Plus der Support unseres Teams." },
-          { q: "Wie funktioniert die KI-Integration?", a: "Der KI-Assistent beantwortet das Telefon 24/7 mit Stimme und Ton des Lokals: Er nimmt Reservierungen entgegen und trägt sie direkt in den Kalender ein, nimmt Abholbestellungen an, schlägt die Tagesgerichte vor und bearbeitet Anfragen außerhalb der Öffnungszeiten. Er unterstützt optionales Voice-Cloning und spricht muttersprachlich Italienisch, Englisch, Französisch, Spanisch und Deutsch. Verfügbar ab den Plänen Reservierungen und Betrieb zum Aufpreis von 60 €/Monat." },
-          { q: "Wie funktioniert das Minutenkontingent der KI-Integration?", a: "Jeder KI-Plan enthält ein monatliches Kontingent an Gesprächsminuten. Wenn Sie es überschreiten, werden die zusätzlichen Kosten zum Selbstkostenpreis berechnet — ohne jeglichen Aufschlag unsererseits. Das Detail des Kontingents finden Sie im Vertrag." },
-          { q: "Gibt es Provisionen auf Reservierungen, Bestellungen oder Lieferungen?", a: "Null. Menuary behält nichts von Ihren Bestellungen, Reservierungen oder Lieferungen ein. Was Sie einnehmen, gehört vollständig Ihnen." },
+          { q: "Wie funktioniert die KI-Integration?", a: "Der KI-Assistent beantwortet das Telefon 24/7 mit Stimme und Ton des Lokals: Er nimmt Reservierungen entgegen und trägt sie direkt in den Kalender ein, nimmt Abholbestellungen an, schlägt die Tagesgerichte vor und bearbeitet Anfragen außerhalb der Öffnungszeiten. Er unterstützt optionales Voice-Cloning und spricht muttersprachlich Italienisch, Englisch, Französisch, Spanisch und Deutsch. Verfügbar ab den Plänen Reservierungen und Betrieb." },
+          { q: "Was kostet der KI-Assistent?", a: "Keine feste Gebühr: 0,30 € pro von der KI bearbeitetem Anruf plus 3 % auf Bestellungen, die über die Anrufe eingehen. Wenn Sie ihn nicht nutzen, zahlen Sie nichts." },
+          { q: "Gibt es Provisionen auf Reservierungen, Bestellungen oder Lieferungen?", a: "Keine auf Reservierungen, Bestellungen und Lieferungen über Ihre Website: Was Sie einnehmen, gehört Ihnen. Die einzige Provision sind die 3 % des KI-Add-ons, nur auf Bestellungen, die der Assistent am Telefon annimmt." },
           { q: "Kann ich meine aktuelle Domain verwenden?", a: "Ja. Wir können Ihre bestehende Domain konfigurieren oder eine neue registrieren. In beiden Fällen ohne Zusatzkosten." },
           { q: "Ist die Website in mehreren Sprachen verfügbar?", a: "Ja. Jede Website wird standardmäßig mehrsprachig erstellt und deckt die wichtigsten europäischen Sprachen ab: Italienisch, Englisch, Französisch, Deutsch und Spanisch. Auf Anfrage können weitere Sprachen je nach typischer Gästestruktur des Lokals hinzugefügt werden — zum Beispiel Russisch, Arabisch, Chinesisch oder Japanisch. Die Kosten für zusätzliche Sprachen werden in der Angebotsphase vereinbart." },
         ] as { q: string; a: string }[],

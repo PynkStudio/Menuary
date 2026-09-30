@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { requirePynkstudioTenant } from "@/components/tenants/pynkstudio/resolve-tenant";
 import { PynkStudioPrenotaCallPage } from "@/components/tenants/pynkstudio/pages/prenota-call";
-import { PynkGAScript } from "@/components/tenants/pynkstudio/pynk-ga";
 
 export const metadata: Metadata = {
   title: { absolute: "Prenota una call di 20 minuti — PYNK STUDIO" },
@@ -11,10 +10,5 @@ export const metadata: Metadata = {
 
 export default async function PrenotaCallRoute() {
   await requirePynkstudioTenant();
-  return (
-    <>
-      <PynkGAScript />
-      <PynkStudioPrenotaCallPage />
-    </>
-  );
+  return <PynkStudioPrenotaCallPage />;
 }

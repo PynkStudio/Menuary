@@ -20,6 +20,7 @@
 @import "../styles/marketing.css";
 @import "../styles/admin.css";
 @import "../styles/kiosk.css";
+@import "../styles/modules/consent.css";
 
 @tailwind base;
 @tailwind components;

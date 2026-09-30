@@ -10,12 +10,23 @@ import {
   normalizeMarketCode,
   type MarketCode,
 } from "@/lib/markets";
-import { LOCALE_COOKIE } from "@/i18n/locales";
+import { LOCALE_COOKIE, isAppLocale, DEFAULT_LOCALE } from "@/i18n/locales";
+import { localizedPath } from "@/lib/marketing-seo";
+import { resolveLocalizedSegment } from "@/lib/marketing-slugs";
 
-function currentLocalePath(pathname: string): { locale: string | null; rest: string } {
+/**
+ * Riporta il path pubblico corrente alla route interna italiana: da
+ * `/de/ueber-uns` a `/chi-siamo`. Senza questo passaggio cambiare lingua da una
+ * pagina con slug tradotto porta a un URL inesistente (es. `/fr/ueber-uns`).
+ */
+function internalPath(pathname: string): string {
   const match = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
-  if (!match) return { locale: null, rest: pathname || "/" };
-  return { locale: match[1], rest: match[2] ?? "/" };
+  const locale = match && isAppLocale(match[1]) ? match[1] : DEFAULT_LOCALE;
+  const rest = match && isAppLocale(match[1]) ? match[2] ?? "/" : pathname || "/";
+  const [first = "", ...tail] = rest.replace(/^\//, "").split("/");
+  if (!first) return "";
+  const key = resolveLocalizedSegment(locale, first);
+  return `/${[key ?? first, ...tail].join("/")}`;
 }
 
 export function MarketSelector({ currentMarket }: { currentMarket: MarketCode }) {
@@ -33,13 +44,12 @@ export function MarketSelector({ currentMarket }: { currentMarket: MarketCode })
     const maxAge = 60 * 60 * 24 * 365;
     document.cookie = `${MARKET_COOKIE}=${next}; path=/; max-age=${maxAge}; samesite=lax`;
 
-    const { rest } = currentLocalePath(pathname);
     const locale = localeForMarket(next);
     document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=${maxAge}; samesite=lax`;
     const params = new URLSearchParams(searchParams.toString());
     params.set("market", next);
 
-    const target = `/${locale}${rest === "/" ? "" : rest}?${params.toString()}`;
+    const target = `${localizedPath(internalPath(pathname), locale)}?${params.toString()}`;
     router.push(target);
     router.refresh();
   }

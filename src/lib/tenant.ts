@@ -1,3 +1,5 @@
+import type { TrackingConfig } from "./tracking/types";
+
 // ─── Vertical ────────────────────────────────────────────────────────────────
 // Ogni tenant appartiene a un "ramo verticale" della piattaforma.
 // Il ramo determina il sito marketing di riferimento, il copy dei moduli
@@ -127,6 +129,11 @@ export type TenantProfile = {
   features: TenantFeatureFlags;
   /** Preferred routing form for multi-location tenants. Defaults to "both". */
   locationRouting?: LocationRoutingMode;
+  /**
+   * ID di tracciamento del sito pubblico del tenant (GA4, Google Ads, Meta).
+   * Attivi solo sul dominio custom e solo dopo il consenso del visitatore.
+   */
+  tracking?: Omit<TrackingConfig, "siteKey">;
 };
 
 export type TenantFeatureKey = keyof TenantFeatureFlags;

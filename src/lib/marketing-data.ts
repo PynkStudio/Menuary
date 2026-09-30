@@ -22,19 +22,8 @@ export type MarketingTenant = {
   image: string;
 };
 
-export type MarketingReview = {
-  id: string;
-  author: string;
-  rating: number;
-  text: string;
-  dateLabel: string | null;
-  tenantName: string;
-  tenantCity: string;
-};
-
 export type MarketingHomeData = {
   activeTenants: MarketingTenant[];
-  testimonials: MarketingReview[];
   activeCount: number;
 };
 
@@ -47,6 +36,12 @@ const MARKETING_EXCLUDE_IDS: Record<Vertical, Set<string>> = {
   services: new Set(),
   creative: new Set(["orpheo-demo"]),
 };
+
+// I profili demo si riconoscono dall'etichetta ("Demo · …"): nessuna demo
+// deve comparire come cliente reale, anche quando viene aggiunta in futuro.
+function isDemoTenant(profile: TenantProfile): boolean {
+  return /^demo\b/i.test(profile.label);
+}
 
 const PREVIEW_HOST: Record<Vertical, string> = {
   food: "https://demo.menuary.it",
@@ -77,56 +72,22 @@ function getActiveTenantProfiles(vertical: Vertical): TenantProfile[] {
       t.vertical === vertical &&
       t.enabled &&
       t.status === "active" &&
-      !excluded.has(t.id),
+      !excluded.has(t.id) &&
+      !isDemoTenant(t),
   );
 }
 
+/**
+ * Clienti reali da mostrare come prova sociale. Le recensioni Google dei
+ * tenant non vengono più esposte qui: sono giudizi dei loro clienti sul
+ * locale, non su Menuary/Bizery, e presentarle come testimonianze sarebbe
+ * ingannevole.
+ */
 export async function getMarketingHomeData(
   vertical: Vertical = "food",
 ): Promise<MarketingHomeData> {
-  const profiles = getActiveTenantProfiles(vertical);
-  const activeTenants = profiles.map(toMarketingTenant);
-
-  if (profiles.length === 0) {
-    return { activeTenants: [], testimonials: [], activeCount: 0 };
-  }
-
-  const tenantIds = profiles.map((p) => p.id);
-  const nameById = new Map(profiles.map((p) => [p.id, p.name] as const));
-  const cityById = new Map(
-    profiles.map((p) => [p.id, getTenantContent(p.id).address.city] as const),
-  );
-
-  const supabase = createSupabaseServiceClient();
-  if (!supabase) {
-    return { activeTenants, testimonials: [], activeCount: profiles.length };
-  }
-
-  const { data } = await supabase
-    .from("reviews")
-    .select("id, author, rating, text, date_label, tenant_id")
-    .in("tenant_id", tenantIds)
-    .eq("published", true)
-    .eq("source", "google_places")
-    .gte("rating", 5)
-    .order("position", { ascending: true })
-    .limit(6);
-
-  const testimonials: MarketingReview[] = (data ?? []).map((r) => ({
-    id: r.id,
-    author: r.author,
-    rating: r.rating,
-    text: r.text,
-    dateLabel: r.date_label,
-    tenantName: nameById.get(r.tenant_id) ?? r.tenant_id,
-    tenantCity: cityById.get(r.tenant_id) ?? "",
-  }));
-
-  return {
-    activeTenants,
-    testimonials,
-    activeCount: profiles.length,
-  };
+  const activeTenants = getActiveTenantProfiles(vertical).map(toMarketingTenant);
+  return { activeTenants, activeCount: activeTenants.length };
 }
 
 /**
@@ -196,8 +157,8 @@ export async function fetchPricingAddons(marketCode: MarketCode = DEFAULT_MARKET
       tagline: String(row.tagline ?? ""),
       description: String(row.marketing_description ?? ""),
       monthly: Number(market?.price_monthly ?? row.price_monthly ?? 0),
-      per_call: AI_ADDON.per_call,
-      commission_pct: AI_ADDON.commission_pct,
+      per_call: typeof settings.perCallPrice === "number" ? settings.perCallPrice : AI_ADDON.per_call,
+      commission_pct: typeof settings.commissionPct === "number" ? settings.commissionPct : AI_ADDON.commission_pct,
       currency: String(market?.currency ?? fallbackMarket.currency),
       minPlan: String(row.min_package_slug ?? "prenotazioni"),
       setup_from: market?.setup_from != null ? String(market.setup_from) : (row.setup_from ? String(row.setup_from) : undefined),

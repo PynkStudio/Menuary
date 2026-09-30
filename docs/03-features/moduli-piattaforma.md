@@ -120,6 +120,23 @@ Stato: **nessun tenant ha `features.rider` attivo** in produzione. Il modulo è 
 
 Separata e indipendente dal modulo rider è la **presenza operativa**: la tabella `operational_portal_presence` alimentata da `POST /api/operational/presence`, che i portali `/operativo/[tenantSlug]/ordini` e `/cucina` chiamano ogni 10 secondi tramite `OperationalAlertsClient`. Anche questa tabella è stata creata in produzione il 2026-08-17 (prima l'endpoint rispondeva 500 a ogni ping).
 
+## Modulo tracking (conversioni e consenso)
+
+Non è un feature flag di `tenant-modules.ts`: è sempre montato nel root layout per i siti
+pubblici (marketing e tenant su dominio custom) e si attiva quando il sito ha ID configurati.
+
+- Configurazione: env `TRACKING_<BRAND>_*` per Menuary/Bizery/Orpheo, campo `tracking` in
+  `TenantProfile` per i tenant ([[integrazioni-attive]]).
+- API per gli altri moduli: `trackConversion(name, params)` da `@/lib/tracking/client`, con
+  `name` tra `lead`, `booking`, `order`, `contact`. Chiamarla è sempre sicuro, anche senza
+  config.
+- Già collegata a: form lead Menuary e Bizery, link di contatto della vetrina Menuary,
+  `reservations` (richiesta inviata), `/ordina/conferma` (ordine), form PynkStudio.
+- Stile del banner: token `--consent-*` nel CSS del brand/tenant (vedi `marketing.css`,
+  `pynkstudio.css`), fallback sui colori tema del tenant.
+
+Decisione e alternative in [[adr-0011-tracciamento-condiviso-con-consenso]].
+
 ## Dipendenze tra moduli
 
 Da `ARCHITECTURE.md`: i moduli dichiarano dipendenze (`requires`, `requiresAny`); un modulo è effettivo solo se anche le sue dipendenze sono abilitate. Le combinazioni esatte sono **da leggere** in `tenant-modules.ts`.
@@ -139,6 +156,7 @@ senza toccare il codice.
 | `fanbaseCommunity` / `crm` | sezione «Newsletter»: consenso, doppio opt-in, revoca |
 | `blog` | sezione «Commenti agli articoli» e moderazione |
 | `analytics` | sezione «Statistiche di visita», aggregate e senza cookie |
+| `tracking` nel profilo tenant (non è un feature flag) | servizi di terze parti (GA4, Google Ads, Meta Pixel) attivati solo con consenso |
 | `kitchenDisplay` | monitor di cucina |
 | `aiPhone` / `aiWhatsapp` | assistente conversazionale |
 | `upselling` | suggerimenti automatici |

@@ -5,6 +5,9 @@ import {
   buildMarketingPrivacySections,
   type MarketingBrandLegalInfo,
 } from "@/lib/legal/marketing-legal-content";
+import { resolveTrackingConfig } from "@/lib/tracking/config";
+
+const SITE_TRACKING = resolveTrackingConfig("marketing", undefined);
 
 const MENUARY_BRAND: MarketingBrandLegalInfo = {
   brandName: "Menuary",
@@ -19,7 +22,7 @@ export function MenuaryPrivacyPage() {
       label="Privacy"
       title="Informativa sulla privacy"
       intro="Come trattiamo i dati personali raccolti attraverso il sito menuary.it: quali dati, per quali finalità, per quanto tempo e quali sono i tuoi diritti."
-      sections={buildMarketingPrivacySections(MENUARY_BRAND)}
+      sections={buildMarketingPrivacySections(MENUARY_BRAND, SITE_TRACKING)}
     />
   );
 }
@@ -31,7 +34,7 @@ export function MenuaryCookiePage() {
       label="Cookie"
       title="Cookie policy"
       intro="Quali cookie usa il sito menuary.it, a cosa servono e come puoi gestirli dal tuo browser."
-      sections={buildMarketingCookieSections(MENUARY_BRAND)}
+      sections={buildMarketingCookieSections(MENUARY_BRAND, SITE_TRACKING)}
     />
   );
 }

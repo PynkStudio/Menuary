@@ -38,7 +38,7 @@ Documenti già popolati a partire dai file della repo:
 
 Non compilate perché **non deducibili con certezza** dalla repo (nessun contenuto inventato):
 
-- `04-decisions/` — [[adr-0001-route-module-gating]] (redirect alla home per route di modulo non attivo), [[adr-0002-valentina-book-shell]] (il sito `valentina-orciuoli` reso come libro sfogliabile, parzialmente sostituita da 0005), [[adr-0003-blog-contenuto-tiptap-multilingua]] e [[adr-0004-mcp-tenant-blog]] (in stato *proposta*), [[adr-0005-valentina-blog-fuori-dal-libro]] (il blog vive fuori dal libro, sullo stesso dominio), [[adr-0008-ownership-proprieta-seo-ads]] (in stato *proposta*: ownership PynkStudio/cliente per SEO e Ads, multi-piattaforma). Usa [[adr-template]] per i futuri.
+- `04-decisions/` — [[adr-0001-route-module-gating]] (redirect alla home per route di modulo non attivo), [[adr-0002-valentina-book-shell]] (il sito `valentina-orciuoli` reso come libro sfogliabile, parzialmente sostituita da 0005), [[adr-0003-blog-contenuto-tiptap-multilingua]] e [[adr-0004-mcp-tenant-blog]] (in stato *proposta*), [[adr-0005-valentina-blog-fuori-dal-libro]] (il blog vive fuori dal libro, sullo stesso dominio), [[adr-0008-ownership-proprieta-seo-ads]] (in stato *proposta*: ownership PynkStudio/cliente per SEO e Ads, multi-piattaforma). [[adr-0011-tracciamento-condiviso-con-consenso]] (tracciamento conversioni condiviso tra tutti i siti, solo con consenso). Usa [[adr-template]] per i futuri.
 - `05-roadmap/` — nessuna roadmap certa nel codice (non inventata). L'unico piano a fasi scritto è quello di [[blog-editoriale]].
 - `09-meetings/` — nessun verbale presente. Usa [[meeting-template]].
 

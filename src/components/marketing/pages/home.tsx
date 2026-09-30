@@ -21,72 +21,37 @@ import {
   HomePricingSection,
   LocalPresenceSection,
   LogosStripSection,
-  TestimonialsSection,
 } from "@/components/marketing/marketing-sections";
 import { getMarketingHomeData } from "@/lib/marketing-data";
 import { DEFAULT_MARKET, MARKET_HEADER, formatMarketLanguageBadge, normalizeMarketCode } from "@/lib/markets";
 import { getMockupCopy } from "@/lib/localized-commercial-copy";
 import { getLocale, getTranslations } from "@/i18n";
 import { localizedPath } from "@/lib/marketing-seo";
+import { findTenantById } from "@/lib/tenant-registry";
 import { headers } from "next/headers";
 
-const MENUARY_SEO_VERTICALS = {
-  it: [
-    {
-      title: "Siti web per ristoranti",
-      body: "Menu digitale, prenotazioni tavoli, galleria, recensioni Google e contenuti aggiornabili dal pannello.",
-    },
-    {
-      title: "Siti per pizzerie e trattorie",
-      body: "Menu stagionali, piatti del giorno, ordini online, allergeni e informazioni sempre disponibili da mobile.",
-    },
-    {
-      title: "Siti per bar, bistrot e locali",
-      body: "Orari, eventi, promozioni, Google Maps e pagine multilingua per clienti locali e turisti.",
-    },
-  ],
-  en: [
-    {
-      title: "Websites for restaurants",
-      body: "Digital menu, table bookings, gallery, Google reviews and content updates from one dashboard.",
-    },
-    {
-      title: "Websites for pizzerias and trattorias",
-      body: "Seasonal menus, daily specials, online orders, allergens and mobile-first information.",
-    },
-    {
-      title: "Websites for bars, bistros and venues",
-      body: "Opening hours, events, promotions, Google Maps and multilingual pages for locals and tourists.",
-    },
-  ],
-};
-
+// Testi in i18n (home.inside.moments), stesso ordine.
 const MENUARY_OPERATING_MOMENTS = [
   {
     icon: QrCode,
-    title: "Menu che cambia davvero",
-    text: "Piatti esauriti, allergeni, stagionalita e prezzi non restano chiusi in un PDF vecchio: il menu online si aggiorna dal pannello e resta leggibile da mobile.",
     image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1100&q=86",
-    alt: "Tavolo di ristorante con menu, telefono e piatti condivisi",
   },
   {
     icon: CalendarCheck,
-    title: "Prenotazioni senza caos",
-    text: "Richieste, conferme, orari speciali e turni vengono raccolti in un flusso unico, cosi sala e gestione vedono la stessa situazione prima del servizio.",
     image: "https://images.unsplash.com/photo-1559329007-40df8a9345d8?auto=format&fit=crop&w=1100&q=86",
-    alt: "Sala ristorante apparecchiata prima del servizio serale",
   },
   {
     icon: MessageSquareText,
-    title: "Google, recensioni e fiducia",
-    text: "Orari, scheda Google, recensioni e contenuti pubblici restano coerenti: chi cerca il locale trova informazioni fresche prima di chiamare o prenotare.",
     image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1100&q=86",
-    alt: "Staff di un locale al banco durante la preparazione del servizio",
   },
 ];
 
+// Il sito dimostrativo ufficiale del verticale food: è un esempio dichiarato,
+// non un cliente, e si apre in una nuova scheda.
+const EXAMPLE_TENANT_ID = "cascina-errante";
+
 export async function MarketingHomePage() {
-  const { activeTenants, testimonials } = await getMarketingHomeData("food");
+  const { activeTenants } = await getMarketingHomeData("food");
   const locale = await getLocale();
   const t = await getTranslations("marketing");
   const h = t.home;
@@ -95,7 +60,8 @@ export async function MarketingHomePage() {
   const multilangPrefix = h.badgeMultilang.split("·")[0]?.trim() || h.badgeMultilang;
   const multilangBadge = formatMarketLanguageBadge(multilangPrefix, market);
   const mockup = getMockupCopy(locale, market, "food");
-  const seoVerticals = locale === "it" ? MENUARY_SEO_VERTICALS.it : MENUARY_SEO_VERTICALS.en;
+  const exampleSlug = findTenantById(EXAMPLE_TENANT_ID)?.previewSlug;
+  const exampleUrl = exampleSlug ? `https://demo.menuary.it/${exampleSlug}` : null;
 
   return (
     <MarketingShell>
@@ -108,7 +74,7 @@ export async function MarketingHomePage() {
               <p className="menuary-opener menuary-fade-up">
                 {h.heroLabel}
               </p>
-              <h1 className="menuary-statement menuary-fade-up menuary-fade-up-d1 mt-7 text-[clamp(2.05rem,6.6vw,5.8rem)]">
+              <h1 className="menuary-statement mt-7 text-[clamp(2.05rem,6.6vw,5.8rem)]">
                 {h.heroH1a}
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
@@ -125,20 +91,18 @@ export async function MarketingHomePage() {
                 >
                   {h.ctaDemo}
                 </Link>
-                <Link href="#esempio" className="menuary-link">
-                  {h.ctaExample}
-                  <ArrowUpRight size={16} strokeWidth={1.6} />
-                </Link>
+                {exampleUrl ? (
+                  <a href={exampleUrl} target="_blank" rel="noopener" className="menuary-link">
+                    {h.ctaExample}
+                    <ArrowUpRight size={16} strokeWidth={1.6} />
+                  </a>
+                ) : null}
               </div>
-              <div className="menuary-fade-up menuary-fade-up-d3 mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-                <span className="inline-flex items-center gap-2">
-                  <ShieldCheck
-                    size={14}
-                    strokeWidth={1.7}
-                    className="text-[var(--menuary-sage)]"
-                  />
-                  {h.badgeFreeCall}
-                </span>
+              <p className="menuary-fade-up menuary-fade-up-d3 mt-5 inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--menuary-ink)]">
+                <ShieldCheck size={18} strokeWidth={1.8} className="text-[var(--menuary-sage)]" />
+                {h.badgeFreeCall}
+              </p>
+              <div className="menuary-fade-up menuary-fade-up-d3 mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
                 <span className="inline-flex items-center gap-2">
                   <Clock
                     size={14}
@@ -273,30 +237,28 @@ export async function MarketingHomePage() {
           <div className="menuary-reveal grid items-end gap-10 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
               <p className="menuary-opener" data-tone="light">
-                {locale === "it" ? "Dentro il servizio" : "Inside service"}
+                {h.inside.label}
               </p>
               <h2 className="menuary-statement mt-7 text-[clamp(2rem,5vw,4.4rem)]">
-                {locale === "it"
-                  ? "Non foto belle a caso: scene che succedono ogni sera."
-                  : "Not random pretty photos: scenes that happen every night."}
+                {h.inside.h2}
               </h2>
             </div>
             <p className="max-w-xl text-[16px] leading-[1.75] text-white/70 lg:justify-self-end">
-              {locale === "it"
-                ? "Menuary nasce per il lavoro quotidiano di ristoranti, bar e locali: informazioni da aggiornare, clienti da rassicurare, richieste da non perdere e reputazione da proteggere."
-                : "Menuary is built for the daily work of restaurants, bars and venues: information to update, guests to reassure, requests to capture and reputation to protect."}
+              {h.inside.sub}
             </p>
           </div>
 
           <div className="menuary-reveal-row mt-12 grid gap-5 lg:grid-cols-3">
-            {MENUARY_OPERATING_MOMENTS.map((moment) => {
+            {MENUARY_OPERATING_MOMENTS.map((moment, index) => {
               const Icon = moment.icon;
+              const copy = h.inside.moments[index];
+              if (!copy) return null;
               return (
-                <article key={moment.title} className="overflow-hidden border border-white/14 bg-white/[0.06]">
+                <article key={moment.image} className="overflow-hidden border border-white/14 bg-white/[0.06]">
                   <div className="relative min-h-72">
                     <Image
                       src={moment.image}
-                      alt={moment.alt}
+                      alt={copy.alt}
                       fill
                       sizes="(min-width: 1024px) 33vw, 100vw"
                       className="object-cover"
@@ -308,9 +270,9 @@ export async function MarketingHomePage() {
                   </div>
                   <div className="p-6">
                     <h3 className="menuary-display text-2xl leading-tight">
-                      {moment.title}
+                      {copy.title}
                     </h3>
-                    <p className="mt-4 text-sm leading-7 text-white/68">{moment.text}</p>
+                    <p className="mt-4 text-sm leading-7 text-white/68">{copy.text}</p>
                   </div>
                 </article>
               );
@@ -321,22 +283,16 @@ export async function MarketingHomePage() {
       <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
         <div className="menuary-container py-20 lg:py-24">
           <div className="menuary-reveal max-w-3xl">
-            <p className="menuary-opener">
-              {locale === "it" ? "Mercati food" : "Food markets"}
-            </p>
+            <p className="menuary-opener">{h.markets.label}</p>
             <h2 className="menuary-statement mt-7 text-[clamp(2rem,5vw,4.4rem)]">
-              {locale === "it"
-                ? "Siti web per ristoranti, pizzerie, bar e locali."
-                : "Websites for restaurants, pizzerias, bars and venues."}
+              {h.markets.h2}
             </h2>
             <p className="mt-7 max-w-2xl text-[16px] leading-[1.75] text-[var(--menuary-ink)]/75">
-              {locale === "it"
-                ? "Menuary copre le ricerche più importanti per chi vuole farsi trovare online: sito per ristorante, menu digitale, prenotazioni online, ordini e presenza locale su Google."
-                : "Menuary covers the main discovery paths for food businesses: restaurant website, digital menu, online bookings, ordering and local Google presence."}
+              {h.markets.sub}
             </p>
           </div>
           <div className="menuary-reveal-row mt-14 grid gap-px overflow-hidden rounded-2xl border border-[var(--menuary-line)] md:grid-cols-3">
-            {seoVerticals.map((item, i) => (
+            {h.markets.items.map((item, i) => (
               <article
                 key={item.title}
                 className="flex flex-col gap-4 bg-[var(--menuary-porcelain)] p-8 transition-colors duration-300 hover:bg-[#fffaf2]"
@@ -355,7 +311,6 @@ export async function MarketingHomePage() {
       </section>
       <LocalPresenceSection />
       <BenefitsEditorialSection />
-      <TestimonialsSection reviews={testimonials} />
       <HomePricingSection />
       <AIIntegrationsTeaserSection />
       <FAQSection items={[...h.faq]} />

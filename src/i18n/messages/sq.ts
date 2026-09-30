@@ -4,7 +4,7 @@ import { mergeMessages } from "./_merge";
 export const messages = mergeMessages(en, {
   marketing: {
     shell: {
-      nav: { offer: "Oferta", about: "Studio", myAccount: "Llogaria ime", signIn: "Hyr", contact: "Flasim" },
+      nav: { offer: "Çmimet", about: "Rreth nesh", myAccount: "Llogaria ime", signIn: "Hyr", contact: "Flasim" },
       footer: {
         desc: "Platforma operative për restorante: faqe interneti, sistem i plotë menaxhimi dhe asistent telefonik AI. E ndërtuar me porosi, e mirëmbajtur në kohë.",
         nav: "Navigimi",
@@ -16,6 +16,17 @@ export const messages = mergeMessages(en, {
         personalArea: "Zona personale e klientit",
         privacy: "Privatësia",
         cookie: "Cookies",
+        home: "Kreu",
+        serviceBy: "Një shërbim i",
+        location: "Milano, Itali",
+      },
+      mobileBar: {
+        call: "Telefono",
+        whatsapp: "WhatsApp",
+        demo: "Kërko demo",
+        menu: "Menyja",
+        close: "Mbyll menynë",
+        waMessage: "Përshëndetje Menuary, dëshiroj informacion për lokalin tim.",
       },
     },
     home: {
@@ -28,6 +39,26 @@ export const messages = mergeMessages(en, {
       badgeFreeCall: "Paguani vetëm nëse ju pëlqen",
       badgeOnline: "Online për 7 ditë",
       badgeMultilang: "Shumëgjuhëshe · SQ EN IT DE EL +",
+      inside: {
+        label: "Brenda shërbimit",
+        h2: "Jo foto të bukura të rastësishme: skena që ndodhin çdo mbrëmje.",
+        sub: "Menuary lind për punën e përditshme të restoranteve, bareve dhe lokaleve: informacione për t'u përditësuar, klientë për t'u qetësuar, kërkesa që nuk duhen humbur dhe një reputacion për t'u mbrojtur.",
+        moments: [
+          { title: "Një meny që ndryshon vërtet", text: "Pjatat e mbaruara, alergjenët, stina dhe çmimet nuk mbeten të mbyllura në një PDF të vjetër: menyja online përditësohet nga paneli dhe lexohet mirë në celular.", alt: "Tavolinë restoranti me meny, telefon dhe pjata për t'u ndarë" },
+          { title: "Rezervime pa kaos", text: "Kërkesat, konfirmimet, oraret e veçanta dhe turnet mblidhen në një rrjedhë të vetme, që salla dhe drejtimi të shohin të njëjtën situatë para shërbimit.", alt: "Salla e restorantit e shtruar para shërbimit të mbrëmjes" },
+          { title: "Google, vlerësime dhe besim", text: "Oraret, profili në Google, vlerësimet dhe përmbajtja publike mbeten të përputhura: kush kërkon lokalin tuaj gjen informacion të freskët para se të telefonojë ose rezervojë.", alt: "Stafi i një lokali në banak gjatë përgatitjes së shërbimit" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Sektori i ushqimit",
+        h2: "Faqe interneti për restorante, piceri, bare dhe lokale.",
+        sub: "Menuary mbulon kërkimet më të rëndësishme për t'u gjetur online: faqe restoranti, meny dixhitale, rezervime online, porosi dhe prani lokale në Google.",
+        items: [
+          { title: "Faqe për restorante", body: "Meny dixhitale, rezervime tavolinash, galeri, vlerësime Google dhe përmbajtje që përditësohet nga paneli." },
+          { title: "Faqe për piceri dhe trattoria", body: "Meny sezonale, pjata dite, porosi online, alergjenë dhe informacion gjithmonë i disponueshëm në celular." },
+          { title: "Faqe për bare, bistro dhe lokale", body: "Oraret, evente, promocione, Google Maps dhe faqe shumëgjuhëshe për klientë vendas dhe turistë." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Sa kohë duhet që faqja të jetë online?",
@@ -38,8 +69,8 @@ export const messages = mergeMessages(en, {
           a: "Oraret, eventet dhe përshkrimet i përditësoni nga paneli i Menuary. Ndryshimet publikohen në profilin tuaj në Google dhe kalojnë në faqen e internetit. Vlerësimet e Google shfaqen në faqe me përditësime automatike periodike.",
         },
         {
-          q: "A mund të anuloj kur të dua?",
-          a: "Po. Abonimi është mujor, pa penalitete anulimi. Tarifa fillestare e konfigurimit paguhet vetëm një herë.",
+          q: "Çfarë kontrate është? A mund ta anuloj?",
+          a: "Kontrata është vjetore, e paguar paraprakisht ose muaj pas muaji. Mund ta anuloni rinovimin me njoftim 30 ditë përpara. Konfigurimi fillestar paguhet një herë dhe e paguani vetëm nëse demo e faqes suaj ju bind.",
         },
         {
           q: "Çfarë përfshihet në abonim?",
@@ -93,6 +124,8 @@ export const messages = mergeMessages(en, {
         googleOpen: "Profili juaj · Hapur",
         googleUpdated: "· përditësuar sot",
         taExcellence: "Ekselencë · 2026",
+        exampleLabel: "Shembull",
+        yelpReviews: "128 vlerësime · 4,3",
       },
       benefits: {
         label: "Çfarë përfshihet",
@@ -116,7 +149,7 @@ export const messages = mergeMessages(en, {
         savingsLabel: "kurseni €{amount}/vit",
         monthlyLabel: "Mujore: €{price}/muaj · Setup {setup}",
         vatNote: "Pa TVSH · Kontratë vjetore · Aktivizim brenda 7 ditësh",
-        aiEyebrow: "Shtesë e disponueshme për të gjithë",
+        aiEyebrow: "Shtesë · planet Rezervime dhe Operacione",
         aiTitle: "Asistent telefonik AI · 0,30 € për telefonatë + 3% porosi",
         aiDesc:
           "Asistent zanor 24/7 që përgjigjet me zërin e lokalit tuaj, merr rezervime dhe menaxhon porositë. I disponueshëm nga planet Rezervime dhe Operacione. Pa tarifë fikse: 0,30 € për telefonatë plus 3% mbi porositë e marra nga telefonatat.",
@@ -193,6 +226,7 @@ export const messages = mergeMessages(en, {
       },
       faq: {
         kicker: "Pyetje të shpeshta",
+        title: "Përgjigjet e pyetjeve që na bëni më shpesh.",
         notFound: "Nuk gjetët atë që kërkonit?",
         ctaLink: "Na shkruani",
       },
@@ -212,8 +246,8 @@ export const messages = mergeMessages(en, {
       waOpen: "Hap bisedën në WhatsApp",
       bullets: [
         "Një faqe e përshtatur me karakterin e restorantit",
-        "Sistem i plotë menaxhimi: porosi, magazinë, food cost, CRM",
-        "Asistent telefonik AI · vjen më 2026",
+        "Menaxhim i plotë: rezervime, porosi, dërgesa, CRM",
+        "Asistent me IA në telefon, aktiv 24/7",
       ] as string[],
     },
     leadForm: {
@@ -237,6 +271,11 @@ export const messages = mergeMessages(en, {
       successMsg: "Kërkesa u mor. Do t'ju kthehemi me një propozim të përshtatur për lokalin tuaj.",
       errorConnection: "Lidhja nuk është e disponueshme.",
       errorDefault: "Dërgimi dështoi.",
+      errorMissing: "Plotësoni emrin, lokalin dhe email-in.",
+      errorInvalidEmail: "Kontrolloni adresën e email-it.",
+      errorRateLimited: "Keni dërguar tashmë një kërkesë: do t'ju kontaktojmë së shpejti.",
+      privacyNotice: "Këto të dhëna i përdorim vetëm për t'ju përgjigjur.",
+      privacyLink: "Politika e privatësisë",
     },
     about: {
       hero: {
@@ -323,7 +362,7 @@ export const messages = mergeMessages(en, {
           { q: "Cili është ndryshimi mes faqes suaj dhe një shablloni WordPress?", a: "Një shabllon është një kostum konfeksioni nga rafti: mund të ndryshosh ngjyrat, por struktura është e njëjtë me mijëra faqe të tjera. Faqet tona lindin nga një design system i ndërtuar mbi identitetin e lokalit tënd — font, paletë, hierarki vizuale, ton zëri, mikroanimacione. Kur shikon faqen, duhet të mendosh «kjo duket si ne», jo «këtë strukturë e kam parë diku më parë»." },
           { q: "Çfarë do të thotë «design system identitar»?", a: "Para faqes përcaktojmë rregullat vizuale të lokalit: çiftin tipografik (fonti i titullit dhe ai i tekstit), shkallën e ngjyrave (parësore, dytësore, theksime), përpjesëtimet e hapësirave, mënyrën se si elementet hyjnë në ekran. Këto rregulla zbatohen pastaj në çdo faqe, çdo kartë, çdo buton — duke krijuar një përvojë koherente, të dallueshme, profesionale." },
           { q: "Kur shlyhet një faqe?", a: "Më herët se sa mendon. TheFork dhe platformat mbajnë deri në 10-15 % për rezervim. Nëse faqja jote sjell qoftë edhe një rezervim të drejtpërdrejtë në ditë — në vend që të kalojë nëpër një platformë — kursimi vjetor tejkalon ndjeshëm koston e abonimit. Dhe kjo pa llogaritur vlerën e pranisë në Google, vlerësimeve të integruara dhe reputacionit dixhital." },
-          { q: "Sa kohë duhet për të dalë online?", a: "Brenda 7 ditësh nga firma e kontratës. Konfigurimi fillestar (onboarding, dizajni, zhvillimi) përfundon më parë — mesatarisht 2-4 javë — dhe pastaj nisja ndodh në një ditë." },
+          { q: "Sa kohë duhet për të dalë online?", a: "Faqja dhe shërbimet dalin online brenda 7 ditëve nga nënshkrimi i kontratës. Para nënshkrimit ju tregojmë një demo të faqes suaj të personalizuar, që ta dini saktësisht çfarë po zgjidhni." },
           { q: "Si lind dizajni i faqes sime?", a: "Fillon me një telefonatë (ose një vizitë nëse lokali është afër). Shohim sallën, menunë, fotot, tonin e zërit që përdor në rrjetet sociale. Pastaj ndërtojmë një sistem vizual koherent — nuk i zgjedhim fontet dhe ngjyrat rastësisht, i nxjerrim nga ajo që lokali tashmë është. Vetëm atëherë fillojmë të shkruajmë kod." },
           { q: "A mund ta përditësoj vetë faqen?", a: "Po. Menu, oraret, fotot, eventet, çmimet: gjithçka përditësohet nga paneli Menuary pa prekur kodin, pa dërguar email askujt. Ndryshimet janë online për pak sekonda, edhe nga arka mes dy turneve." },
           { q: "A punoni vetëm në Milano?", a: "Jo. Studio është në Milano, por kujdesemi për lokale në të gjithë Italinë. Pjesa më e madhe e punës bëhet në distancë. Kur ka kuptim — për një fotografim ose një onboarding kompleks — vijmë te ju." },
@@ -336,7 +375,7 @@ export const messages = mergeMessages(en, {
         label: "Ofertë",
         h1a: "Tre plane.",
         h1b: "Asnjë surprizë.",
-        sub: "Çmime të qarta, zero komision mbi porositë dhe rezervimet. Fillo nga ku të duash, shto vetëm atë që të nevojitet.",
+        sub: "Çmime të qarta, pa komisione për rezervimet dhe porositë nga faqja juaj. Filloni ku të doni dhe shtoni vetëm atë që ju nevojitet.",
       },
       billing: {
         annual: "Vjetor paraprakisht",
@@ -353,6 +392,7 @@ export const messages = mergeMessages(en, {
         monthlyWithAnnual: "Me pagesë vjetore:",
         monthlyWithAnnualSaving: "{price}/muaj · kurse {amount}/vit",
         ctaDefault: "Kërko një ofertë",
+        setup: "Aktivizim një herë {setup}",
       },
       ai: {
         label: "Nga plani {plan} e lart",
@@ -395,7 +435,7 @@ export const messages = mergeMessages(en, {
           { label: "CRM i klientëve & analitikë", presence: "false", booking: "false", ops: "true" },
           { label: "Panel operativ", presence: "false", booking: "false", ops: "true" },
           { label: "Menaxhimi i stafit dhe kuzhinës", presence: "false", booking: "false", ops: "true" },
-          { label: "Integrim AI (shtesë)", presence: "false", booking: "+60 €/muaj", ops: "+60 €/muaj" },
+          { label: "Integrim AI (shtesë)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Mbështetje", presence: "Standarde", booking: "Prioritare", ops: "E dedikuar" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -408,9 +448,9 @@ export const messages = mergeMessages(en, {
           { q: "Cili është ndryshimi mes faturimit vjetor dhe mujor?", a: "Me pagesë vjetore paraprake përfiton një çmim mujor ekuivalent të reduktuar. Me faturim mujor shpenzimi shpërndahet muaj pas muaji, por tarifa është më e lartë. Në të dyja rastet kontrata është vjetore." },
           { q: "Çfarë është kostoja e aktivizimit?", a: "Është një tarifë një herë për konfigurimin fillestar: konfigurimi teknik, onboarding dhe personalizimi i faqes. Nuk përfshihet në tarifën mujore. Çmimet e treguara janë orientuese; oferta e saktë varet nga kompleksiteti i lokalit." },
           { q: "Çfarë përfshihet në tarifën mujore?", a: "Hosting, domen, certifikata SSL, kopje rezervë, përditësime teknike, siguri dhe të gjitha funksionet e reja të produktit. Plus mbështetja e ekipit tonë." },
-          { q: "Si funksionon integrimi AI?", a: "Asistenti AI përgjigjet në telefon 24/7 me zërin dhe tonin e lokalit: pranon rezervime dhe i shkruan drejtpërdrejt në axhendë, pranon porosi me marrje, sugjeron gjellët e ditës dhe trajton kërkesat jashtë orarit. Mbështet klonim opsional të zërit dhe flet rrjedhshëm italisht, anglisht, frëngjisht, spanjisht dhe gjermanisht. I disponueshëm nga planet Rezervime dhe Operativë me një shtesë prej 60 €/muaj." },
-          { q: "Si funksionon kuota e minutave e integrimit AI?", a: "Çdo plan AI përfshin një kuotë mujore minutash bisede. Nëse e tejkalon, tarifat shtesë llogariten me çmim kosto — pa asnjë shtesë nga ana jonë. Detajet e kuotës i gjen në kontratë." },
-          { q: "A ka komisione mbi rezervimet, porositë ose dorëzimet?", a: "Zero. Menuary nuk mban asgjë nga porositë, rezervimet ose dorëzimet e tua. Ajo që fiton është krejtësisht e jotja." },
+          { q: "Si funksionon integrimi AI?", a: "Asistenti AI përgjigjet në telefon 24/7 me zërin dhe tonin e lokalit: pranon rezervime dhe i shkruan drejtpërdrejt në axhendë, pranon porosi me marrje, sugjeron gjellët e ditës dhe trajton kërkesat jashtë orarit. Mbështet klonim opsional të zërit dhe flet rrjedhshëm italisht, anglisht, frëngjisht, spanjisht dhe gjermanisht. I disponueshëm nga planet Rezervime dhe Operacione." },
+          { q: "Sa kushton asistenti me IA?", a: "Pa tarifë fikse: 0,30 € për çdo telefonatë që trajton IA plus 3% mbi porositë e marra përmes telefonatave. Nëse nuk e përdorni, nuk paguani asgjë." },
+          { q: "A ka komisione mbi rezervimet, porositë ose dorëzimet?", a: "Asnjë për rezervimet, porositë dhe dërgesat që vijnë nga faqja juaj: ajo që fitoni është e juaja. I vetmi komision është 3% i shtesës me IA, vetëm mbi porositë që asistenti merr në telefon." },
           { q: "A mund të përdor domenin tim aktual?", a: "Po. Mund të konfigurojmë domenin tënd ekzistues ose të regjistrojmë një të ri. Në të dyja rastet pa kosto shtesë." },
           { q: "A është faqja e disponueshme në disa gjuhë?", a: "Po. Çdo faqe realizohet si parazgjedhje në version shumëgjuhësh, duke mbuluar gjuhët kryesore evropiane: italisht, anglisht, frëngjisht, gjermanisht dhe spanjisht. Me kërkesë mund të shtohen gjuhë të tjera sipas klientelës tipike të lokalit — për shembull rusisht, arabisht, kinezisht ose japonisht. Kostoja e gjuhëve shtesë caktohet në fazën e ofertës." },
         ] as { q: string; a: string }[],

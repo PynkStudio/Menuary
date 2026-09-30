@@ -4,7 +4,7 @@ import { mergeMessages } from "./_merge";
 export const messages = mergeMessages(en, {
   marketing: {
     shell: {
-      nav: { offer: "Ponudba", about: "Studio", myAccount: "Moj račun", signIn: "Prijava", contact: "Pogovorimo se" },
+      nav: { offer: "Cenik", about: "O nas", myAccount: "Moj račun", signIn: "Prijava", contact: "Pogovorimo se" },
       footer: {
         desc: "Operativna platforma za restavracije: spletna stran, celovit sistem upravljanja in telefonski AI asistent. Izdelana po meri, vzdrževana skozi čas.",
         nav: "Navigacija",
@@ -16,6 +16,17 @@ export const messages = mergeMessages(en, {
         personalArea: "Osebno območje stranke",
         privacy: "Zasebnost",
         cookie: "Piškotki",
+        home: "Domov",
+        serviceBy: "Storitev podjetja",
+        location: "Milano, Italija",
+      },
+      mobileBar: {
+        call: "Pokliči",
+        whatsapp: "WhatsApp",
+        demo: "Zahtevaj predstavitev",
+        menu: "Meni",
+        close: "Zapri meni",
+        waMessage: "Pozdravljeni, Menuary, želim informacije za svoj lokal.",
       },
     },
     home: {
@@ -28,6 +39,26 @@ export const messages = mergeMessages(en, {
       badgeFreeCall: "Plačate le, če vam je všeč",
       badgeOnline: "Na spletu v 7 dneh",
       badgeMultilang: "Večjezično · SL EN IT DE HR +",
+      inside: {
+        label: "Sredi strežbe",
+        h2: "Ne naključne lepe fotografije: prizori, ki se zgodijo vsak večer.",
+        sub: "Menuary je nastal za vsakodnevno delo restavracij, barov in lokalov: podatki za posodabljanje, gostje, ki jih je treba pomiriti, povpraševanja, ki se ne smejo izgubiti, in ugled, ki ga je treba varovati.",
+        moments: [
+          { title: "Meni, ki se res spreminja", text: "Razprodane jedi, alergeni, sezona in cene ne ostanejo zaprti v starem PDF-ju: spletni meni se posodablja iz nadzorne plošče in je na telefonu dobro berljiv.", alt: "Restavracijska miza z menijem, telefonom in jedmi za deljenje" },
+          { title: "Rezervacije brez kaosa", text: "Povpraševanja, potrditve, posebni urniki in izmene se zberejo v enem toku, zato strežba in vodstvo pred strežbo vidita isto sliko.", alt: "Pogrnjena jedilnica pred večerno strežbo" },
+          { title: "Google, ocene in zaupanje", text: "Urnik, profil Google, ocene in javne vsebine ostajajo usklajeni: kdor išče vaš lokal, najde sveže podatke, preden pokliče ali rezervira.", alt: "Osebje lokala za pultom med pripravo na strežbo" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Gostinstvo",
+        h2: "Spletne strani za restavracije, picerije, bare in lokale.",
+        sub: "Menuary pokrije najpomembnejša iskanja, po katerih vas gostje najdejo na spletu: spletna stran restavracije, digitalni meni, spletne rezervacije, naročila in lokalna prisotnost na Googlu.",
+        items: [
+          { title: "Spletne strani za restavracije", body: "Digitalni meni, rezervacije miz, galerija, ocene Google in vsebine, ki jih urejate v nadzorni plošči." },
+          { title: "Spletne strani za picerije in trattorie", body: "Sezonski meniji, dnevne jedi, spletna naročila, alergeni in podatki, vedno dostopni na telefonu." },
+          { title: "Spletne strani za bare, bistroje in lokale", body: "Urnik, dogodki, akcije, Google Maps in večjezične strani za domače goste in turiste." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Koliko časa traja, da je stran na spletu?",
@@ -38,8 +69,8 @@ export const messages = mergeMessages(en, {
           a: "Delovni čas, dogodke in opise posodabljate iz nadzorne plošče Menuary. Spremembe se objavijo na vašem Google profilu in prenesejo na spletno stran. Google ocene so prikazane na strani s samodejnimi rednimi posodobitvami.",
         },
         {
-          q: "Lahko odpovem, kadar koli želim?",
-          a: "Da. Naročnina je mesečna, brez kazni za odpoved. Začetni strošek postavitve se zaračuna enkratno.",
+          q: "Kakšna je pogodba? Jo lahko odpovem?",
+          a: "Pogodba je letna, plačana vnaprej ali mesečno. Podaljšanje lahko odpoveste s 30-dnevnim odpovednim rokom. Začetna vzpostavitev je enkratni strošek in jo plačate le, če vas predstavitev vaše spletne strani prepriča.",
         },
         {
           q: "Kaj je vključeno v naročnino?",
@@ -93,6 +124,8 @@ export const messages = mergeMessages(en, {
         googleOpen: "Vaš profil · Odprto",
         googleUpdated: "· posodobljeno danes",
         taExcellence: "Odličnost · 2026",
+        exampleLabel: "Primer",
+        yelpReviews: "128 ocen · 4,3",
       },
       benefits: {
         label: "Kaj je vključeno",
@@ -116,7 +149,7 @@ export const messages = mergeMessages(en, {
         savingsLabel: "prihranite €{amount}/leto",
         monthlyLabel: "Mesečno: €{price}/mesec · Postavitev {setup}",
         vatNote: "Brez DDV · Letna pogodba · Aktivacija v 7 dneh",
-        aiEyebrow: "Dodatek na voljo vsem",
+        aiEyebrow: "Dodatek · paketa Rezervacije in Operativa",
         aiTitle: "Telefonski AI asistent · 0,30 €/klic + 3% naročil",
         aiDesc:
           "Glasovni asistent 24/7, ki odgovarja z glasom vašega lokala, sprejema rezervacije in upravlja naročila. Na voljo od paketov Rezervacije in Operativa. Brez fiksne naročnine: 0,30 € na klic ter 3% od naročil, prejetih prek klicev.",
@@ -193,6 +226,7 @@ export const messages = mergeMessages(en, {
       },
       faq: {
         kicker: "Pogosta vprašanja",
+        title: "Odgovori na vprašanja, ki jih slišimo najpogosteje.",
         notFound: "Niste našli, kar ste iskali?",
         ctaLink: "Pišite nam",
       },
@@ -212,8 +246,8 @@ export const messages = mergeMessages(en, {
       waOpen: "Odpri WhatsApp klepet",
       bullets: [
         "Spletna stran, prilagojena značaju restavracije",
-        "Celovit sistem upravljanja: naročila, zaloge, food cost, CRM",
-        "Telefonski AI asistent · prihaja 2026",
+        "Celovito upravljanje: rezervacije, naročila, dostava, CRM",
+        "Telefonski pomočnik z UI, aktiven 24/7",
       ] as string[],
     },
     leadForm: {
@@ -237,6 +271,11 @@ export const messages = mergeMessages(en, {
       successMsg: "Povpraševanje prejeto. Oglasili se vam bomo s predlogom, prilagojenim vašemu lokalu.",
       errorConnection: "Povezava ni na voljo.",
       errorDefault: "Pošiljanje ni uspelo.",
+      errorMissing: "Izpolnite ime, lokal in e-pošto.",
+      errorInvalidEmail: "Preverite e-poštni naslov.",
+      errorRateLimited: "Povpraševanje ste že poslali: kmalu se vam oglasimo.",
+      privacyNotice: "Te podatke uporabimo samo za odgovor vam.",
+      privacyLink: "Politika zasebnosti",
     },
     about: {
       hero: {
@@ -323,7 +362,7 @@ export const messages = mergeMessages(en, {
           { q: "Kakšna je razlika med vašo spletno stranjo in WordPress predlogo?", a: "Predloga je konfekcijska obleka s police: barve lahko spremenite, a struktura je enaka tisočim drugim spletnim stranem. Naše spletne strani nastanejo iz design systema, zgrajenega na identiteti vašega lokala — pisava, paleta, vizualna hierarhija, ton glasu, mikroanimacije. Ko gledate spletno stran, morate pomisliti «to izgleda kot mi», ne «to strukturo sem že nekje videl»." },
           { q: "Kaj pomeni «identitetni design system»?", a: "Pred spletno stranjo določimo vizualna pravila lokala: tipografski par (pisavo naslova in pisavo besedila), barvno lestvico (primarna, sekundarna, poudarki), razmerja prostorov, način, kako elementi vstopajo na zaslon. Ta pravila nato veljajo za vsako stran, vsako kartico, vsak gumb — ustvarjajo dosledno, prepoznavno, profesionalno izkušnjo." },
           { q: "Kdaj se spletna stran povrne?", a: "Prej, kot mislite. TheFork in platforme zadržijo do 10-15 % na rezervacijo. Če vaša spletna stran prinese le eno neposredno rezervacijo na dan — namesto da bi šla prek platforme — letni prihranek znatno presega strošek naročnine. In to brez upoštevanja vrednosti prisotnosti na Googlu, integriranih ocen in digitalnega ugleda." },
-          { q: "Koliko časa traja, da je spletna stran na spletu?", a: "V 7 dneh po podpisu pogodbe. Začetna konfiguracija (onboarding, oblikovanje, razvoj) je dokončana prej — povprečno 2-4 tedne — nato zagon poteka v enem dnevu." },
+          { q: "Koliko časa traja, da je spletna stran na spletu?", a: "Spletna stran in storitve so na spletu v 7 dneh od podpisa pogodbe. Pred podpisom vam pokažemo predstavitev vaše spletne strani po meri, zato natančno veste, kaj izbirate." },
           { q: "Kako nastane oblikovanje moje spletne strani?", a: "Začne se s klicem (ali obiskom, če je lokal blizu). Pogledamo dvorano, meni, fotografije, ton glasu, ki ga uporabljate na družbenih omrežjih. Nato zgradimo dosleden vizualni sistem — pisav in barv ne izbiramo naključno, izpeljemo jih iz tega, kar lokal že je. Šele nato začnemo pisati kodo." },
           { q: "Ali lahko spletno stran posodabljam sam?", a: "Da. Meni, delovni čas, fotografije, dogodki, cene: vse se posodablja iz plošče Menuary brez poseganja v kodo, brez pošiljanja e-pošte komurkoli. Spremembe so na spletu v nekaj sekundah, tudi z blagajne med dvema izmenama." },
           { q: "Ali delate samo v Milanu?", a: "Ne. Studio je v Milanu, a skrbimo za lokale po vsej Italiji. Večina dela poteka na daljavo. Ko je smiselno — za fotografiranje ali zapleten onboarding — pridemo k vam." },
@@ -336,7 +375,7 @@ export const messages = mergeMessages(en, {
         label: "Ponudba",
         h1a: "Trije paketi.",
         h1b: "Brez presenečenj.",
-        sub: "Jasne cene, nič provizije na naročila in rezervacije. Začnite, kjer želite, dodajte le tisto, kar potrebujete.",
+        sub: "Jasne cene, brez provizij za rezervacije in naročila s vaše spletne strani. Začnite, kjer želite, in dodajte le tisto, kar potrebujete.",
       },
       billing: {
         annual: "Letno vnaprej",
@@ -353,6 +392,7 @@ export const messages = mergeMessages(en, {
         monthlyWithAnnual: "Pri letnem plačilu:",
         monthlyWithAnnualSaving: "{price}/mesec · prihranite {amount}/leto",
         ctaDefault: "Zahtevaj ponudbo",
+        setup: "Enkratna aktivacija {setup}",
       },
       ai: {
         label: "Od paketa {plan} naprej",
@@ -395,7 +435,7 @@ export const messages = mergeMessages(en, {
           { label: "CRM strank & analitika", presence: "false", booking: "false", ops: "true" },
           { label: "Operativna plošča", presence: "false", booking: "false", ops: "true" },
           { label: "Upravljanje osebja in kuhinje", presence: "false", booking: "false", ops: "true" },
-          { label: "AI integracija (dodatek)", presence: "false", booking: "+60 €/mesec", ops: "+60 €/mesec" },
+          { label: "AI integracija (dodatek)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Podpora", presence: "Standardna", booking: "Prednostna", ops: "Namenska" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -408,9 +448,9 @@ export const messages = mergeMessages(en, {
           { q: "Kakšna je razlika med letnim in mesečnim zaračunavanjem?", a: "Z letnim plačilom vnaprej dobite znižano enakovredno mesečno ceno. Pri mesečnem zaračunavanju se strošek porazdeli mesec za mesecem, a cena je višja. V obeh primerih je pogodba letna." },
           { q: "Kaj je strošek aktivacije?", a: "To je enkratna pristojbina za začetno konfiguracijo: tehnična vzpostavitev, onboarding in prilagoditev spletne strani. Ni vključena v mesečno ceno. Navedene cene so okvirne; natančna ponudba je odvisna od zapletenosti lokala." },
           { q: "Kaj je vključeno v mesečno ceno?", a: "Gostovanje, domena, SSL potrdila, varnostne kopije, tehnične posodobitve, varnost in vse nove funkcije izdelka. Plus podpora naše ekipe." },
-          { q: "Kako deluje AI integracija?", a: "AI asistent se oglasi na telefon 24/7 z glasom in tonom lokala: sprejema rezervacije in jih zapiše neposredno v koledar, sprejema naročila za s seboj, predlaga dnevne jedi in obravnava povpraševanja izven delovnega časa. Podpira izbirno kloniranje glasu in govori naravno italijansko, angleško, francosko, špansko in nemško. Na voljo od paketov Rezervacije in Delovanje za doplačilo 60 €/mesec." },
-          { q: "Kako deluje kvota minut AI integracije?", a: "Vsak AI paket vključuje mesečno kvoto minut pogovora. Če jo presežete, se dodatni stroški obračunajo po lastni ceni — brez kakršnega koli pribitka z naše strani. Podrobnosti kvote najdete v pogodbi." },
-          { q: "Ali so provizije na rezervacije, naročila ali dostave?", a: "Nič. Menuary ne zadrži ničesar od vaših naročil, rezervacij ali dostav. To, kar zaslužite, je v celoti vaše." },
+          { q: "Kako deluje AI integracija?", a: "AI asistent se oglasi na telefon 24/7 z glasom in tonom lokala: sprejema rezervacije in jih zapiše neposredno v koledar, sprejema naročila za s seboj, predlaga dnevne jedi in obravnava povpraševanja izven delovnega časa. Podpira izbirno kloniranje glasu in govori naravno italijansko, angleško, francosko, špansko in nemško. Na voljo od paketov Rezervacije in Operativa." },
+          { q: "Koliko stane pomočnik z UI?", a: "Brez fiksne naročnine: 0,30 € za vsak klic, ki ga obdela UI, in 3 % od naročil, prejetih prek klicev. Če ga ne uporabljate, ne plačate ničesar." },
+          { q: "Ali so provizije na rezervacije, naročila ali dostave?", a: "Nobene za rezervacije, naročila in dostave, ki pridejo s vaše spletne strani: kar zaslužite, je vaše. Edina provizija so 3 % dodatka UI, le za naročila, ki jih pomočnik sprejme po telefonu." },
           { q: "Ali lahko uporabim svojo obstoječo domeno?", a: "Da. Lahko konfiguriramo vašo obstoječo domeno ali registriramo novo. V obeh primerih brez dodatnih stroškov." },
           { q: "Ali je spletna stran na voljo v več jezikih?", a: "Da. Vsaka spletna stran je privzeto izdelana v večjezični različici, ki pokriva glavne evropske jezike: italijanščino, angleščino, francoščino, nemščino in španščino. Na zahtevo je mogoče dodati druge jezike glede na tipično stranko lokala — na primer ruščino, arabščino, kitajščino ali japonščino. Strošek dodatnih jezikov se dogovori v fazi ponudbe." },
         ] as { q: string; a: string }[],

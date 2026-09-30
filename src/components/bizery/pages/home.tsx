@@ -67,7 +67,7 @@ const BIZERY_SEO_VERTICALS = {
 };
 
 export async function BizeryHomePage() {
-  const { testimonials, activeTenants, activeCount } = await getMarketingHomeData("services");
+  const { activeTenants, activeCount } = await getMarketingHomeData("services");
   const locale = await getLocale();
   const t = (await getTranslations("bizery")).home;
   const requestHeaders = await headers();
@@ -462,44 +462,6 @@ export async function BizeryHomePage() {
           </div>
         </div>
       </section>
-
-      {/* ── TESTIMONIALS ── */}
-      {testimonials.length > 0 && (
-        <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">
-          <div className="menuary-container py-24 lg:py-28">
-            <p className="menuary-section-label">{t.testimonialsLabel}</p>
-            <h2
-              className="mt-6 text-[clamp(2rem,4vw,3.4rem)] font-medium leading-[1.05] tracking-[-0.02em]"
-              style={{ fontFamily: "var(--font-menuary-display), Georgia, serif" }}
-            >
-              {t.testimonialsH2}
-            </h2>
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {testimonials.slice(0, 3).map((review) => (
-                <figure
-                  key={review.id}
-                  className="flex flex-col gap-5 border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-7 rounded-2xl"
-                >
-                  <div className="flex gap-0.5 text-[var(--menuary-copper)]">
-                    {Array.from({ length: review.rating }).map((_, i) => (
-                      <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
-                    ))}
-                  </div>
-                  <blockquote className="text-[15px] leading-7 text-[var(--menuary-ink)]/85">
-                    &laquo;{review.text}&raquo;
-                  </blockquote>
-                  <figcaption className="mt-auto border-t border-[var(--menuary-line)] pt-4">
-                    <p className="text-sm font-semibold">{review.author}</p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
-                      {review.tenantName}{review.tenantCity ? ` · ${review.tenantCity}` : ""}
-                    </p>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── PRICING ── */}
       <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-paper)]">

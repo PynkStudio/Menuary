@@ -1,0 +1,92 @@
+/* ============================================================
+   Modulo tracking — banner di consenso cookie.
+   Struttura neutra: l'identità arriva dai token --consent-* che ogni
+   brand/tenant ridefinisce nel proprio foglio di stile. Senza override il
+   banner usa i colori tema del tenant (--tenant-*).
+   ============================================================ */
+
+.mn-consent {
+  --consent-bg-resolved: var(--consent-bg, rgb(var(--tenant-cream, 255 255 255)));
+  --consent-fg-resolved: var(--consent-fg, rgb(var(--tenant-ink, 17 17 17)));
+  --consent-accent-resolved: var(--consent-accent, rgb(var(--tenant-ink, 17 17 17)));
+  --consent-accent-fg-resolved: var(--consent-accent-fg, rgb(var(--tenant-cream, 255 255 255)));
+
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 90;
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.mn-consent-card {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 34rem;
+  border: 1px solid var(--consent-border, color-mix(in srgb, var(--consent-fg-resolved) 14%, transparent));
+  border-radius: var(--consent-radius, 1rem);
+  background: var(--consent-bg-resolved);
+  color: var(--consent-fg-resolved);
+  font-family: var(--consent-font, inherit);
+  padding: 1.1rem 1.2rem;
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.35);
+}
+
+.mn-consent-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: var(--consent-title-font, inherit);
+}
+
+.mn-consent-body {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  opacity: 0.8;
+}
+
+.mn-consent-providers {
+  font-weight: 600;
+}
+
+.mn-consent-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.mn-consent-actions {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.mn-consent-button {
+  min-height: 2.75rem;
+  border-radius: var(--consent-button-radius, 999px);
+  border: 1px solid var(--consent-accent-resolved);
+  background: transparent;
+  color: var(--consent-fg-resolved);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mn-consent-button[data-primary] {
+  background: var(--consent-accent-resolved);
+  color: var(--consent-accent-fg-resolved);
+}
+
+.mn-consent-button:focus-visible,
+.mn-consent-link:focus-visible {
+  outline: 2px solid var(--consent-accent-resolved);
+  outline-offset: 2px;
+}
+
+/* Sopra la barra CTA mobile dei siti marketing. */
+html:has(.menuary-mobile-bar) .mn-consent {
+  bottom: 4.5rem;
+}

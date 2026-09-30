@@ -2,8 +2,8 @@ export const messages = {
   marketing: {
     shell: {
       nav: {
-        offer: "Offer",
-        about: "Studio",
+        offer: "Pricing",
+        about: "About",
         myAccount: "My account",
         signIn: "Sign in",
         contact: "Talk to us",
@@ -19,6 +19,17 @@ export const messages = {
         personalArea: "Client personal area",
         privacy: "Privacy",
         cookie: "Cookie",
+        home: "Home",
+        serviceBy: "A service by",
+        location: "Milan, Italy",
+      },
+      mobileBar: {
+        call: "Call",
+        whatsapp: "WhatsApp",
+        demo: "Request a demo",
+        menu: "Menu",
+        close: "Close menu",
+        waMessage: "Hi Menuary, I'd like some information for my venue.",
       },
     },
     home: {
@@ -32,6 +43,26 @@ export const messages = {
       badgeFreeCall: "Pay only if you like it",
       badgeOnline: "Online in 7 days",
       badgeMultilang: "Multilingual · IT EN FR DE ES +",
+      inside: {
+        label: "Inside service",
+        h2: "Not random pretty photos: scenes that happen every night.",
+        sub: "Menuary is built for the daily work of restaurants, bars and venues: information to update, guests to reassure, requests to capture and reputation to protect.",
+        moments: [
+          { title: "A menu that actually changes", text: "Sold-out dishes, allergens, seasonality and prices don't stay locked in an old PDF: the online menu updates from the dashboard and stays readable on mobile.", alt: "Restaurant table with menu, phone and shared dishes" },
+          { title: "Bookings without chaos", text: "Requests, confirmations, special hours and shifts come together in one flow, so floor and management see the same picture before service.", alt: "Restaurant dining room set before evening service" },
+          { title: "Google, reviews and trust", text: "Opening hours, Google profile, reviews and public content stay consistent: people looking for your venue find fresh information before calling or booking.", alt: "Venue staff at the counter preparing for service" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Food markets",
+        h2: "Websites for restaurants, pizzerias, bars and venues.",
+        sub: "Menuary covers the main discovery paths for food businesses: restaurant website, digital menu, online bookings, ordering and local Google presence.",
+        items: [
+          { title: "Websites for restaurants", body: "Digital menu, table bookings, gallery, Google reviews and content updates from one dashboard." },
+          { title: "Websites for pizzerias and trattorias", body: "Seasonal menus, daily specials, online orders, allergens and mobile-first information." },
+          { title: "Websites for bars, bistros and venues", body: "Opening hours, events, promotions, Google Maps and multilingual pages for locals and tourists." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "How long does it take to go online?",
@@ -42,8 +73,8 @@ export const messages = {
           a: "You update hours, events and descriptions from the Menuary dashboard. Changes are published to your Google listing and propagated to the website. Google reviews are shown on the site with automatic periodic updates.",
         },
         {
-          q: "Can I cancel whenever I like?",
-          a: "Yes. The subscription is monthly, with no cancellation penalties. The initial setup fee is a one-time charge.",
+          q: "What kind of contract is it? Can I cancel?",
+          a: "The contract is annual, paid upfront or month by month. You can cancel the renewal with 30 days' notice. The initial setup is a one-off fee, and you only pay it if the demo of your website convinces you.",
         },
         {
           q: "What is included in the subscription?",
@@ -97,6 +128,8 @@ export const messages = {
         googleOpen: "Your listing · Open",
         googleUpdated: "· updated today",
         taExcellence: "Excellence · 2026",
+        exampleLabel: "Example",
+        yelpReviews: "128 reviews · 4.3",
       },
       benefits: {
         label: "What's inside",
@@ -120,7 +153,7 @@ export const messages = {
         savingsLabel: "save €{amount}/year",
         monthlyLabel: "Monthly: €{price}/month · Setup {setup}",
         vatNote: "VAT excluded · Annual contract · Activation within 7 days",
-        aiEyebrow: "Add-on available for all",
+        aiEyebrow: "Add-on · Bookings and Operations plans",
         aiTitle: "AI phone assistant · €0.30 per call + 3% on orders",
         aiDesc:
           "24/7 voice assistant that answers in the venue's voice, takes bookings and manages orders. Available from the Bookings and Operations plans. No fixed fee: €0.30 per call plus 3% on orders received through the calls.",
@@ -197,6 +230,7 @@ export const messages = {
       },
       faq: {
         kicker: "Frequently asked questions",
+        title: "Answers to the questions we hear most.",
         notFound: "Didn't find what you were looking for?",
         ctaLink: "Write to us",
       },
@@ -216,8 +250,8 @@ export const messages = {
       waOpen: "Open WhatsApp chat",
       bullets: [
         "A website tailored to the character of the restaurant",
-        "Complete management system: orders, stock, food cost, CRM",
-        "AI phone assistant · coming 2026",
+        "Complete management: bookings, orders, delivery, CRM",
+        "AI phone assistant, available 24/7",
       ] as string[],
     },
     leadForm: {
@@ -242,6 +276,11 @@ export const messages = {
         "Request received. We'll get back to you with a proposal tailored to your venue.",
       errorConnection: "Connection unavailable.",
       errorDefault: "Sending failed.",
+      errorMissing: "Please fill in name, venue and email.",
+      errorInvalidEmail: "Please check your email address.",
+      errorRateLimited: "You've already sent a request: we'll get back to you shortly.",
+      privacyNotice: "We only use this data to get back to you.",
+      privacyLink: "Privacy policy",
     },
     about: {
       hero: {
@@ -328,7 +367,7 @@ export const messages = {
           { q: "What's the difference between your site and a WordPress template?", a: "A template is an off-the-shelf suit: you can change the colours, but the structure is the same as thousands of other sites. Our sites are built on a design system rooted in your venue's identity — font, palette, visual hierarchy, tone of voice, micro-animations. When you look at the site you should think 'this looks like us', not 'I've seen this structure somewhere before'." },
           { q: "What does 'identity-driven design system' mean?", a: "Before the site we define the venue's visual rules: the typographic pair (title font and body font), the colour scale (primary, secondary, accents), space proportions, the way elements enter the screen. These rules then apply to every page, card, button — creating a coherent, recognisable, professional experience." },
           { q: "When does a site pay for itself?", a: "Sooner than you think. TheFork and the OTAs take up to 10-15% per booking. If your site brings even just one direct booking a day — instead of going through a platform — the annual savings far exceed the cost of the subscription. And that's without counting the value of Google presence, integrated reviews and digital reputation." },
-          { q: "How long does it take to go online?", a: "Within 7 days of signing the contract. The initial configuration (onboarding, design, development) is completed before — on average 2-4 weeks — then the go-live takes a day." },
+          { q: "How long does it take to go online?", a: "Your website and services go live within 7 days of signing the contract. Before you sign, we show you a demo of your custom website, so you know exactly what you're choosing." },
           { q: "How is the design of my site created?", a: "It starts with a call (or a visit if the venue is close). We look at the dining room, the menu, the photos, the tone of voice you use on social. Then we build a coherent visual system — we don't pick fonts and colours at random, we derive them from what the venue already is. Only then do we start writing code." },
           { q: "Can I update the site myself?", a: "Yes. Menu, hours, photos, events, prices: everything is updated from the Menuary panel without touching code, without emailing anyone. Changes go online in seconds, even from the till between shifts." },
           { q: "Do you only work in Milan?", a: "No. The studio is in Milan, but we follow venues all over Italy and Europe. Most of the work happens remotely. When it makes sense — for a photo location visit or a complex onboarding — we come to you." },
@@ -341,7 +380,7 @@ export const messages = {
         label: "Offer",
         h1a: "Three plans.",
         h1b: "No surprises.",
-        sub: "Clear pricing, zero commission on orders and bookings. Start where you want, add only what you need.",
+        sub: "Clear prices, no commission on bookings and orders from your website. Start wherever you like and add only what you need.",
       },
       billing: {
         annual: "Annual upfront",
@@ -358,6 +397,7 @@ export const messages = {
         monthlyWithAnnual: "With annual payment:",
         monthlyWithAnnualSaving: "{price}/month · save {amount}/year",
         ctaDefault: "Request a proposal",
+        setup: "One-off activation {setup}",
       },
       ai: {
         label: "From the {plan} plan upwards",
@@ -400,7 +440,7 @@ export const messages = {
           { label: "Customer CRM & analytics", presence: "false", booking: "false", ops: "true" },
           { label: "Operational dashboard", presence: "false", booking: "false", ops: "true" },
           { label: "Staff and kitchen management", presence: "false", booking: "false", ops: "true" },
-          { label: "AI integration (add-on)", presence: "false", booking: "+€60/month", ops: "+€60/month" },
+          { label: "AI integration (add-on)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Support", presence: "Standard", booking: "Priority", ops: "Dedicated" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -413,9 +453,9 @@ export const messages = {
           { q: "What changes between annual and monthly billing?", a: "With annual upfront payment you benefit from a reduced equivalent monthly fee. With monthly billing the cost is spread month by month, but the fee is higher. In both cases the contract is annual." },
           { q: "What is the activation cost?", a: "It's a one-off fee for the initial configuration: technical setup, onboarding and site personalisation. It is not included in the monthly fee. The prices shown are indicative; the exact quote depends on the venue's complexity." },
           { q: "What is included in the monthly fee?", a: "Hosting, domain, SSL certificates, backups, technical updates, security and all new product features. Plus the support of our team." },
-          { q: "How does the AI integration work?", a: "The AI assistant answers the phone 24/7 with the voice and tone of the venue: it takes bookings and writes them directly into the diary, accepts takeaway orders, suggests daily specials and handles after-hours requests. It supports optional voice cloning and natively speaks Italian, English, French, Spanish and German. Available from the Bookings and Operations plans at an additional cost of €60/month." },
-          { q: "How does the AI integration minute quota work?", a: "Each AI plan includes a monthly conversation minute quota. If you exceed it, additional charges are calculated at cost price — with no markup from us. You'll find the quota details in the contract." },
-          { q: "Are there commissions on bookings, orders or delivery?", a: "Zero. Menuary takes nothing on your orders, bookings or deliveries. What you earn is yours, in full." },
+          { q: "How does the AI integration work?", a: "The AI assistant answers the phone 24/7 with the voice and tone of the venue: it takes bookings and writes them directly into the diary, accepts takeaway orders, suggests daily specials and handles after-hours requests. It supports optional voice cloning and natively speaks Italian, English, French, Spanish and German. Available from the Bookings and Operations plans." },
+          { q: "How much does the AI assistant cost?", a: "No fixed fee: €0.30 for each call handled by the AI plus 3% on orders received through the calls. If you don't use it, you pay nothing." },
+          { q: "Are there commissions on bookings, orders or delivery?", a: "None on bookings, orders and deliveries coming from your website: what you earn is yours. The only commission is the 3% of the AI add-on, and only on orders the assistant takes over the phone." },
           { q: "Can I use my current domain?", a: "Yes. We can configure your existing domain or register a new one. In both cases at no extra cost." },
           { q: "Is the website available in multiple languages?", a: "Yes. Every website is built multilingual by default, covering the main European languages: Italian, English, French, German and Spanish. Additional languages can be added on request based on the venue's typical clientele — for example Russian, Arabic, Chinese or Japanese for areas with high international tourism. The cost of additional languages is agreed at quote stage." },
         ] as { q: string; a: string }[],

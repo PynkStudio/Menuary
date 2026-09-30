@@ -4,7 +4,7 @@ import { mergeMessages } from "./_merge";
 export const messages = mergeMessages(en, {
   marketing: {
     shell: {
-      nav: { offer: "Tilbud", about: "Studio", myAccount: "Min konto", signIn: "Logg inn", contact: "Kontakt oss" },
+      nav: { offer: "Priser", about: "Om oss", myAccount: "Min konto", signIn: "Logg inn", contact: "Kontakt oss" },
       footer: {
         desc: "Den operative plattformen for restauranter: nettside, komplett styringssystem og AI-telefonassistent. Skreddersydd og vedlikeholdt over tid.",
         nav: "Navigasjon",
@@ -16,6 +16,17 @@ export const messages = mergeMessages(en, {
         personalArea: "Personlig kundeområde",
         privacy: "Personvern",
         cookie: "Informasjonskapsler",
+        home: "Hjem",
+        serviceBy: "En tjeneste fra",
+        location: "Milano, Italia",
+      },
+      mobileBar: {
+        call: "Ring",
+        whatsapp: "WhatsApp",
+        demo: "Be om demo",
+        menu: "Meny",
+        close: "Lukk meny",
+        waMessage: "Hei Menuary, jeg vil gjerne ha informasjon for stedet mitt.",
       },
     },
     home: {
@@ -28,6 +39,26 @@ export const messages = mergeMessages(en, {
       badgeFreeCall: "Betal kun hvis du liker det",
       badgeOnline: "Online på 7 dager",
       badgeMultilang: "Flerspråklig · NO EN DE SV DA +",
+      inside: {
+        label: "Midt i servicen",
+        h2: "Ikke tilfeldige pene bilder: scener som skjer hver kveld.",
+        sub: "Menuary er laget for det daglige arbeidet på restauranter, barer og serveringssteder: informasjon som må oppdateres, gjester som skal beroliges, forespørsler som ikke må gå tapt, og et omdømme som skal beskyttes.",
+        moments: [
+          { title: "En meny som faktisk endrer seg", text: "Utsolgte retter, allergener, sesong og priser blir ikke sittende fast i en gammel PDF: menyen på nett oppdateres fra panelet og er lett å lese på mobil.", alt: "Restaurantbord med meny, telefon og retter til deling" },
+          { title: "Bestillinger uten kaos", text: "Forespørsler, bekreftelser, spesielle åpningstider og skift samles i én flyt, slik at sal og ledelse ser det samme bildet før servicen.", alt: "Restaurantsal dekket før kveldsservicen" },
+          { title: "Google, anmeldelser og tillit", text: "Åpningstider, Google-profil, anmeldelser og offentlig innhold holdes samstemt: den som leter etter stedet ditt, finner oppdatert informasjon før de ringer eller bestiller.", alt: "Ansatte ved disken under forberedelsene til servicen" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Serveringsbransjen",
+        h2: "Nettsteder for restauranter, pizzeriaer, barer og serveringssteder.",
+        sub: "Menuary dekker de viktigste søkene for å bli funnet på nett: restaurantnettsted, digital meny, nettbestilling av bord, bestillinger og lokal synlighet på Google.",
+        items: [
+          { title: "Nettsteder for restauranter", body: "Digital meny, bordbestilling, galleri, Google-anmeldelser og innhold du oppdaterer fra panelet." },
+          { title: "Nettsteder for pizzeriaer og trattoriaer", body: "Sesongmenyer, dagens retter, nettbestillinger, allergener og informasjon som alltid er tilgjengelig på mobil." },
+          { title: "Nettsteder for barer, bistroer og serveringssteder", body: "Åpningstider, arrangementer, tilbud, Google Maps og flerspråklige sider for lokale gjester og turister." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Hvor lang tid tar det å komme på nett?",
@@ -38,8 +69,8 @@ export const messages = mergeMessages(en, {
           a: "Du oppdaterer åpningstider, arrangementer og beskrivelser fra Menuary-panelet. Endringer publiseres på Google-profilen din og overføres til nettsiden. Google-anmeldelser vises på siden med automatiske periodiske oppdateringer.",
         },
         {
-          q: "Kan jeg si opp når jeg vil?",
-          a: "Ja. Abonnementet er månedlig, uten oppsigelsesgebyrer. Det innledende oppsettsgebyret betales kun én gang.",
+          q: "Hva slags avtale er det? Kan jeg si opp?",
+          a: "Avtalen er årlig, betalt forskuddsvis eller månedlig. Du kan si opp fornyelsen med 30 dagers varsel. Oppstarten er en engangskostnad, og du betaler den bare hvis demoen av nettstedet ditt overbeviser deg.",
         },
         {
           q: "Hva er inkludert i abonnementet?",
@@ -93,6 +124,8 @@ export const messages = mergeMessages(en, {
         googleOpen: "Din profil · Åpen",
         googleUpdated: "· oppdatert i dag",
         taExcellence: "Excellence · 2026",
+        exampleLabel: "Eksempel",
+        yelpReviews: "128 anmeldelser · 4,3",
       },
       benefits: {
         label: "Hva er inkludert",
@@ -116,7 +149,7 @@ export const messages = mergeMessages(en, {
         savingsLabel: "spar €{amount}/år",
         monthlyLabel: "Månedlig: €{price}/måned · Setup {setup}",
         vatNote: "Ekskl. mva · Årlig kontrakt · Aktivering innen 7 dager",
-        aiEyebrow: "Tillegg tilgjengelig for alle",
+        aiEyebrow: "Tillegg · planene Bookinger og Drift",
         aiTitle: "AI-telefonassistent · €0,30 per anrop + 3% bestillinger",
         aiDesc:
           "Døgnåpen stemmeassistent som svarer med virksomhetens stemme, tar imot bookinger og håndterer bestillinger. Tilgjengelig fra planene Bookinger og Drift. Ingen fast avgift: €0,30 per anrop pluss 3% av bestillinger via anrop.",
@@ -193,6 +226,7 @@ export const messages = mergeMessages(en, {
       },
       faq: {
         kicker: "Ofte stilte spørsmål",
+        title: "Svar på det vi oftest blir spurt om.",
         notFound: "Fant du ikke det du lette etter?",
         ctaLink: "Skriv til oss",
       },
@@ -212,8 +246,8 @@ export const messages = mergeMessages(en, {
       waOpen: "Åpne WhatsApp-chat",
       bullets: [
         "En nettside skreddersydd til restaurantens karakter",
-        "Komplett styringssystem: bestillinger, lager, foodcost, CRM",
-        "AI-telefonassistent · kommer i 2026",
+        "Komplett styring: bestillinger, ordrer, levering, CRM",
+        "AI-telefonassistent, aktiv døgnet rundt",
       ] as string[],
     },
     leadForm: {
@@ -237,6 +271,11 @@ export const messages = mergeMessages(en, {
       successMsg: "Forespørsel mottatt. Vi kommer tilbake med et forslag skreddersydd til virksomheten din.",
       errorConnection: "Tilkobling ikke tilgjengelig.",
       errorDefault: "Sending mislyktes.",
+      errorMissing: "Fyll inn navn, sted og e-post.",
+      errorInvalidEmail: "Sjekk e-postadressen din.",
+      errorRateLimited: "Du har allerede sendt en forespørsel: vi tar kontakt snart.",
+      privacyNotice: "Vi bruker disse opplysningene bare til å svare deg.",
+      privacyLink: "Personvernerklæring",
     },
     about: {
       hero: {
@@ -323,7 +362,7 @@ export const messages = mergeMessages(en, {
           { q: "Hva er forskjellen mellom nettstedet deres og en WordPress-mal?", a: "En mal er en konfeksjonsdress fra hylla: du kan endre fargene, men strukturen er den samme som tusenvis av andre nettsteder. Nettstedene våre oppstår av et design system bygget på stedets identitet — skrifttype, palett, visuelt hierarki, tone, mikroanimasjoner. Når du ser på nettstedet, skal du tenke «dette ligner oss», ikke «den strukturen har jeg sett et eller annet sted før»." },
           { q: "Hva betyr «identitetsskapende design system»?", a: "Før nettstedet definerer vi stedets visuelle regler: skriftparet (skrifttypen til tittelen og den til teksten), fargeskalaen (primær, sekundær, aksenter), mellomrommenes proporsjoner, måten elementene kommer inn på skjermen. Disse reglene gjelder deretter for hver side, hvert kort, hver knapp — og skaper en sammenhengende, gjenkjennelig, profesjonell opplevelse." },
           { q: "Når lønner et nettsted seg?", a: "Tidligere enn du tror. TheFork og plattformene beholder opptil 10-15 % per reservasjon. Hvis nettstedet ditt gir bare én direkte reservasjon om dagen — i stedet for å gå gjennom en plattform — overstiger den årlige besparelsen langt abonnementets kostnad. Og det uten å regne med verdien av Google-tilstedeværelsen, de integrerte anmeldelsene og det digitale omdømmet." },
-          { q: "Hvor lang tid tar det å komme på nett?", a: "Innen 7 dager etter kontraktsignering. Den innledende konfigurasjonen (onboarding, design, utvikling) fullføres før — i gjennomsnitt 2-4 uker — og deretter skjer lanseringen på én dag." },
+          { q: "Hvor lang tid tar det å komme på nett?", a: "Nettsted og tjenester er på nett innen 7 dager etter at avtalen er signert. Før du signerer, viser vi deg en demo av det skreddersydde nettstedet ditt, slik at du vet nøyaktig hva du velger." },
           { q: "Hvordan oppstår designet av nettstedet mitt?", a: "Det begynner med en samtale (eller et besøk hvis stedet er i nærheten). Vi ser på spisesalen, menyen, bildene, tonen du bruker på sosiale medier. Deretter bygger vi et sammenhengende visuelt system — vi velger ikke skrifttyper og farger tilfeldig, vi utleder dem av det stedet allerede er. Først da begynner vi å skrive kode." },
           { q: "Kan jeg oppdatere nettstedet selv?", a: "Ja. Meny, åpningstider, bilder, arrangementer, priser: alt oppdateres fra Menuary-dashbordet uten å røre koden, uten å sende e-poster til noen. Endringene er på nett på få sekunder, også fra kassen mellom to vakter." },
           { q: "Jobber dere bare i Milano?", a: "Nei. Studioet er i Milano, men vi følger steder i hele Italia. Mesteparten av arbeidet skjer på avstand. Når det gir mening — for en fotografering eller en kompleks onboarding — kommer vi til dere." },
@@ -336,7 +375,7 @@ export const messages = mergeMessages(en, {
         label: "Tilbud",
         h1a: "Tre planer.",
         h1b: "Ingen overraskelser.",
-        sub: "Klare priser, null provisjon på bestillinger og reservasjoner. Begynn der du vil, legg bare til det du trenger.",
+        sub: "Tydelige priser, ingen provisjon på bordbestillinger og ordrer fra nettstedet ditt. Start der du vil, og legg bare til det du trenger.",
       },
       billing: {
         annual: "Årlig på forskudd",
@@ -353,6 +392,7 @@ export const messages = mergeMessages(en, {
         monthlyWithAnnual: "Ved årlig betaling:",
         monthlyWithAnnualSaving: "{price}/måned · spar {amount}/år",
         ctaDefault: "Be om tilbud",
+        setup: "Engangsaktivering {setup}",
       },
       ai: {
         label: "Fra planen {plan} og opp",
@@ -395,7 +435,7 @@ export const messages = mergeMessages(en, {
           { label: "Kunde-CRM & analyse", presence: "false", booking: "false", ops: "true" },
           { label: "Operativt dashbord", presence: "false", booking: "false", ops: "true" },
           { label: "Personal- og kjøkkenstyring", presence: "false", booking: "false", ops: "true" },
-          { label: "AI-integrasjon (tillegg)", presence: "false", booking: "+60 €/måned", ops: "+60 €/måned" },
+          { label: "AI-integrasjon (tillegg)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Støtte", presence: "Standard", booking: "Prioritert", ops: "Dedikert" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -408,9 +448,9 @@ export const messages = mergeMessages(en, {
           { q: "Hva er forskjellen mellom årlig og månedlig fakturering?", a: "Med årlig forskuddsbetaling får du en redusert tilsvarende månedspris. Med månedlig fakturering fordeles utgiften måned for måned, men prisen er høyere. I begge tilfeller er kontrakten årlig." },
           { q: "Hva er aktiveringskostnaden?", a: "Det er et engangsgebyr for den innledende konfigurasjonen: teknisk setup, onboarding og tilpasning av nettstedet. Den er ikke inkludert i månedsprisen. De oppgitte prisene er veiledende; det nøyaktige tilbudet avhenger av stedets kompleksitet." },
           { q: "Hva er inkludert i månedsprisen?", a: "Hosting, domene, SSL-sertifikater, sikkerhetskopier, tekniske oppdateringer, sikkerhet og alle nye produktfunksjoner. Pluss støtte fra teamet vårt." },
-          { q: "Hvordan fungerer AI-integrasjonen?", a: "AI-assistenten besvarer telefonen 24/7 med stedets stemme og tone: tar imot reservasjoner og skriver dem direkte i kalenderen, godtar take-away-bestillinger, foreslår dagens retter og håndterer forespørsler utenfor åpningstid. Støtter valgfri stemmekloning og snakker morsmål italiensk, engelsk, fransk, spansk og tysk. Tilgjengelig fra planene Reservasjoner og Drift mot et tillegg på 60 €/måned." },
-          { q: "Hvordan fungerer AI-integrasjonens minuttkvote?", a: "Hver AI-plan inkluderer en månedlig kvote samtaleminutter. Hvis du overskrider den, beregnes de ekstra kostnadene til kostpris — uten noe påslag fra vår side. Du finner detaljene om kvoten i kontrakten." },
-          { q: "Er det provisjon på reservasjoner, bestillinger eller leveringer?", a: "Null. Menuary beholder ingenting av bestillingene, reservasjonene eller leveringene dine. Det du tjener, er helt ditt." },
+          { q: "Hvordan fungerer AI-integrasjonen?", a: "AI-assistenten besvarer telefonen 24/7 med stedets stemme og tone: tar imot reservasjoner og skriver dem direkte i kalenderen, godtar take-away-bestillinger, foreslår dagens retter og håndterer forespørsler utenfor åpningstid. Støtter valgfri stemmekloning og snakker morsmål italiensk, engelsk, fransk, spansk og tysk. Tilgjengelig fra planene Bookinger og Drift." },
+          { q: "Hva koster AI-assistenten?", a: "Ingen fast avgift: 0,30 € per samtale AI-en håndterer, pluss 3 % av ordrene som kommer inn via samtalene. Bruker du den ikke, betaler du ingenting." },
+          { q: "Er det provisjon på reservasjoner, bestillinger eller leveringer?", a: "Ingen på bordbestillinger, ordrer og leveranser som kommer fra nettstedet ditt: det du tjener, er ditt. Den eneste provisjonen er 3 % for AI-tillegget, og bare på ordrer assistenten tar over telefon." },
           { q: "Kan jeg bruke mitt nåværende domene?", a: "Ja. Vi kan konfigurere ditt eksisterende domene eller registrere et nytt. I begge tilfeller uten ekstra kostnad." },
           { q: "Er nettstedet tilgjengelig på flere språk?", a: "Ja. Hvert nettsted lages flerspråklig som standard og dekker de viktigste europeiske språkene: italiensk, engelsk, fransk, tysk og spansk. På forespørsel kan andre språk legges til etter stedets typiske gjester — for eksempel russisk, arabisk, kinesisk eller japansk. Kostnaden for flere språk avtales i tilbudsfasen." },
         ] as { q: string; a: string }[],

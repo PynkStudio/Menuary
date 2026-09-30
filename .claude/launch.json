@@ -108,6 +108,23 @@
       ],
       "port": 3151,
       "url": "http://pynkstudio.localhost:3151"
+    },
+    {
+      "name": "menuary-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3161"
+      ],
+      "port": 3161,
+      "url": "http://menuary.localhost:3161",
+      "env": {
+        "TRACKING_MENUARY_GA4_ID": "G-TESTLOCAL00",
+        "TRACKING_MENUARY_META_PIXEL_ID": "000000000000000"
+      }
     }
   ]
 }

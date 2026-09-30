@@ -75,6 +75,31 @@ Estratti da `TENANTS[]` in `src/lib/tenant-registry.ts` (campi `id`, `name`, `ve
   perché le sue righe hanno variante e taglia, e per non condividere lo spazio di
   persistenza con gli altri tenant shop. Vedi [[casa-bramanti]].
 
+- **`pynkstudio`** — sito marketing multi-pagina con shell propria (`PynkShell`), route
+  globali dell'app dir gated da `requirePynkstudioTenant()`. **Landing per campagne a
+  pagamento** (chromeless, `noindex` per non competere in organico con `/consulenza`,
+  `/soluzioni` e `/ai-governance`):
+  - `/organizzazione-pmi` — check-up operativo per uffici e PMI, CTA verso `/prenota-call`.
+  - `/ia-in-azienda` — integrazione dell'IA in azienda. Form preventivo a 3 passi sopra la
+    piega (obiettivi → dimensione e tempistica → contatti) che invia a
+    `/api/tenant/[tenantId]/contact` allegando i parametri UTM/gclid catturati dal modulo
+    tracking. Dopo l'invio mostra nella stessa card la scelta di giorno e orario della call
+    (stesse API di `/prenota-call`): la call finisce in `consultation_bookings`, quindi in
+    admin → Agenda, con conferme email/WhatsApp e promemoria. Conversioni `lead` (invio),
+    `booking` (call fissata) e `contact` (telefono, WhatsApp) via `trackConversion()`. Copy
+    in `iaAziendaPage` di `src/lib/pynkstudio-i18n.ts`.
+  **Richieste nel CRM**: per il solo tenant `pynkstudio`, la route contatti condivisa
+  registra ogni richiesta in `pynkstudio_crm` (admin → CRM) oltre a mandare l'email a
+  `info@`, e invia una push all'admin. Contatto nuovo: `source` = `contact-form`
+  (`/contattaci`) o `landing-ia` (`/ia-in-azienda`); contatto già presente (stessa email,
+  confronto esatto come per le prenotazioni): aggiorna nome, telefono e azienda se forniti,
+  aggiunge la sorgente ai `tags` e antepone il messaggio datato alle `notes`. Se il CRM ha
+  salvato la richiesta, un errore dell'email non fa fallire l'invio. Per gli altri tenant la
+  route si comporta come prima.
+  Da ricordare negli URL delle campagne: aggiungere i parametri `utm_*`, altrimenti la
+  richiesta arriva senza fonte. Il segmento `ia-in-azienda` è anche in
+  `PREVIEW_GLOBAL_TENANT_ROUTES` del middleware, per provarla in preview.
+
 ## Stati tenant osservati
 
 Valori di `status` presenti nel registro: `active`, `trial`, `trattativa`. Il significato di business preciso di ciascuno è **da confermare** (vedi `20260518_tenant_vertical_status.sql`).

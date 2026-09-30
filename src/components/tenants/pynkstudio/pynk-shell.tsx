@@ -8,6 +8,7 @@ import { Code2, Instagram, Linkedin, Lock, Menu, Moon, Sun, X } from "lucide-rea
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { buildTenantManagementUrl } from "@/lib/login-url";
+import { ConsentPreferencesLink } from "@/components/modules/tracking/consent-preferences-link";
 
 // ─── Nerd mode ────────────────────────────────────────────────────────────────
 
@@ -224,6 +225,7 @@ function PynkFooter() {
               {copy.footer.staff}
             </a>
           )}
+          <ConsentPreferencesLink className="pynk-footer-link" />
         </div>
         <div className="pynk-footer-meta">
           <span>

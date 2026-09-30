@@ -2,10 +2,13 @@ import { Mail, Phone } from "lucide-react";
 import { MarketingShell } from "@/components/marketing/marketing-shell";
 import { MarketingLeadForm } from "@/components/marketing/lead-form";
 import { getTranslations } from "@/i18n";
-
-const PHONE_DISPLAY = "+39 351 3768607";
-const PHONE_E164 = "+393513768607";
-const WHATSAPP_NUMBER = "393513768607";
+import {
+  MENUARY_EMAIL,
+  MENUARY_PHONE_DISPLAY,
+  MENUARY_PHONE_E164,
+  menuaryWhatsAppUrl,
+} from "@/components/marketing/contact-info";
+import { TrackedContactLink } from "@/components/marketing/mobile-chrome";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -16,19 +19,19 @@ function WhatsAppIcon({ className }: { className?: string }) {
 }
 
 export async function MarketingContactsPage() {
-  const t = (await getTranslations("marketing")).contact;
-  const lt = (await getTranslations("marketing")).leadForm;
-  const waMessage = encodeURIComponent("[menuary] Ciao Menuary, vorrei avere informazioni per il mio locale.");
-  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMessage}`;
+  const messages = await getTranslations("marketing");
+  const t = messages.contact;
+  const lt = messages.leadForm;
+  const waUrl = menuaryWhatsAppUrl(messages.shell.mobileBar.waMessage);
 
   return (
     <MarketingShell>
       <section className="border-b border-[var(--menuary-line)]">
-        <div className="menuary-container pt-20 pb-16 lg:pt-28 lg:pb-20">
-          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+        <div className="menuary-container pt-10 pb-8 lg:pt-28 lg:pb-20">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-12">
             <div className="menuary-fade-up">
               <p className="menuary-section-label">{t.label}</p>
-              <h1 className="menuary-display mt-7 text-[clamp(2.8rem,6vw,5.6rem)]">
+              <h1 className="menuary-display mt-5 text-[clamp(2.1rem,6vw,5.6rem)] lg:mt-7">
                 {t.h1a}
                 <br />
                 <span className="italic text-[var(--menuary-copper)]">
@@ -44,20 +47,21 @@ export async function MarketingContactsPage() {
       </section>
 
       <section>
-        <div className="menuary-container py-20 lg:py-24">
+        <div className="menuary-container py-8 lg:py-24">
           <div className="grid gap-16 lg:grid-cols-[0.42fr_0.58fr] lg:gap-24">
-            <aside className="space-y-12">
+            <aside className="order-2 space-y-12 lg:order-1">
               <div>
                 <p className="text-xs uppercase tracking-[0.22em] text-[var(--menuary-muted)]">
                   {t.emailLabel}
                 </p>
-                <a
-                  href="mailto:hello@menuary.it"
-                  className="menuary-display mt-3 inline-flex items-center gap-3 text-3xl transition-colors hover:text-[var(--menuary-copper)]"
+                <TrackedContactLink
+                  channel="email"
+                  href={`mailto:${MENUARY_EMAIL}`}
+                  className="menuary-display mt-3 inline-flex items-center gap-3 text-[clamp(1.5rem,6vw,1.875rem)] transition-colors hover:text-[var(--menuary-copper)]"
                 >
                   <Mail size={22} strokeWidth={1.6} className="text-[var(--menuary-copper)]" />
-                  hello@menuary.it
-                </a>
+                  {MENUARY_EMAIL}
+                </TrackedContactLink>
               </div>
 
               <div>
@@ -65,15 +69,17 @@ export async function MarketingContactsPage() {
                   {t.phoneLabel}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-4">
-                  <a
-                    href={`tel:${PHONE_E164}`}
-                    aria-label={`${t.phoneLabel} ${PHONE_DISPLAY}`}
+                  <TrackedContactLink
+                    channel="phone"
+                    href={`tel:${MENUARY_PHONE_E164}`}
+                    aria-label={`${t.phoneLabel} ${MENUARY_PHONE_DISPLAY}`}
                     className="menuary-display inline-flex items-center gap-3 text-3xl transition-colors hover:text-[var(--menuary-copper)]"
                   >
                     <Phone size={22} strokeWidth={1.6} className="text-[var(--menuary-copper)]" />
-                    {PHONE_DISPLAY}
-                  </a>
-                  <a
+                    {MENUARY_PHONE_DISPLAY}
+                  </TrackedContactLink>
+                  <TrackedContactLink
+                    channel="whatsapp"
                     href={waUrl}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -82,7 +88,7 @@ export async function MarketingContactsPage() {
                   >
                     <WhatsAppIcon className="h-5 w-5" />
                     WhatsApp
-                  </a>
+                  </TrackedContactLink>
                 </div>
                 <p className="mt-3 text-xs text-[var(--menuary-muted)]">
                   {t.responseTime}
@@ -122,7 +128,9 @@ export async function MarketingContactsPage() {
               </div>
             </aside>
 
-            <MarketingLeadForm t={lt} />
+            <div className="order-1 lg:order-2">
+              <MarketingLeadForm t={lt} privacyHref="/privacy" />
+            </div>
           </div>
         </div>
       </section>

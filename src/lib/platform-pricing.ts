@@ -65,6 +65,8 @@ export type PricingAddon = {
   items: string[];
   minutesNote: string;
   settings: {
+    /** Prezzo per chiamata gestita dall'IA (valuta del mercato). */
+    perCallPrice?: number;
     includedMinutes?: number;
     overageMode?: "cost" | "fixed";
     commissionPct?: number;
@@ -98,6 +100,7 @@ export const AI_ADDON: PricingAddon = {
   minutesNote:
     "L'add-on non ha canone fisso mensile: € 0,30 per ogni chiamata gestita dall'IA, più una commissione del 3% sugli ordini ricevuti tramite le chiamate.",
   settings: {
+    perCallPrice: 0.3,
     includedMinutes: 120,
     overageMode: "cost",
     commissionPct: 3,

@@ -567,6 +567,7 @@ const PREVIEW_GLOBAL_TENANT_ROUTES = new Set([
   "soluzioni",
   "ai-act",
   "blog",
+  "ia-in-azienda",
 ]);
 
 function handlePreviewTenantLocale(

@@ -4,7 +4,7 @@ import { mergeMessages } from "./_merge";
 export const messages = mergeMessages(en, {
   marketing: {
     shell: {
-      nav: { offer: "Nabídka", about: "Studio", myAccount: "Můj účet", signIn: "Přihlášení", contact: "Kontaktujte nás" },
+      nav: { offer: "Ceník", about: "O nás", myAccount: "Můj účet", signIn: "Přihlášení", contact: "Kontaktujte nás" },
       footer: {
         desc: "Provozní platforma pro restaurace: web, kompletní systém řízení a telefonní AI asistent. Vytvořená na míru, udržovaná v čase.",
         nav: "Navigace",
@@ -16,6 +16,17 @@ export const messages = mergeMessages(en, {
         personalArea: "Klientská zóna",
         privacy: "Soukromí",
         cookie: "Cookies",
+        home: "Úvod",
+        serviceBy: "Služba společnosti",
+        location: "Milán, Itálie",
+      },
+      mobileBar: {
+        call: "Zavolat",
+        whatsapp: "WhatsApp",
+        demo: "Vyžádat demo",
+        menu: "Menu",
+        close: "Zavřít menu",
+        waMessage: "Dobrý den, Menuary, chtěl bych informace pro svůj podnik.",
       },
     },
     home: {
@@ -28,6 +39,26 @@ export const messages = mergeMessages(en, {
       badgeFreeCall: "Platíte jen když se vám líbí",
       badgeOnline: "Online za 7 dní",
       badgeMultilang: "Vícejazyčné · CS EN DE PL SK +",
+      inside: {
+        label: "Uprostřed provozu",
+        h2: "Žádné náhodné hezké fotky: situace, které se dějí každý večer.",
+        sub: "Menuary vzniklo pro každodenní práci restaurací, barů a podniků: informace k aktualizaci, hosté, které je třeba uklidnit, poptávky, které nesmí zapadnout, a pověst, kterou je třeba chránit.",
+        moments: [
+          { title: "Menu, které se opravdu mění", text: "Vyprodaná jídla, alergeny, sezóna a ceny nezůstanou zavřené ve starém PDF: online menu se aktualizuje z panelu a v mobilu je dobře čitelné.", alt: "Restaurační stůl s menu, telefonem a jídly ke sdílení" },
+          { title: "Rezervace bez chaosu", text: "Poptávky, potvrzení, zvláštní otevírací doba a směny se sbíhají do jednoho toku, takže obsluha i vedení vidí před provozem stejnou situaci.", alt: "Prostřená jídelna před večerním provozem" },
+          { title: "Google, recenze a důvěra", text: "Otevírací doba, profil na Googlu, recenze a veřejný obsah zůstávají v souladu: kdo váš podnik hledá, najde aktuální informace dřív, než zavolá nebo si zarezervuje.", alt: "Personál podniku u baru při přípravě na provoz" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Gastronomie",
+        h2: "Weby pro restaurace, pizzerie, bary a podniky.",
+        sub: "Menuary pokrývá nejdůležitější vyhledávání, díky kterým vás hosté najdou online: web restaurace, digitální menu, online rezervace, objednávky a místní přítomnost na Googlu.",
+        items: [
+          { title: "Weby pro restaurace", body: "Digitální menu, rezervace stolů, galerie, recenze Google a obsah upravovaný z panelu." },
+          { title: "Weby pro pizzerie a trattorie", body: "Sezónní menu, denní nabídka, online objednávky, alergeny a informace vždy dostupné v mobilu." },
+          { title: "Weby pro bary, bistra a podniky", body: "Otevírací doba, akce, nabídky, Google Maps a vícejazyčné stránky pro místní hosty i turisty." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Jak dlouho trvá spuštění webu?",
@@ -38,8 +69,8 @@ export const messages = mergeMessages(en, {
           a: "Otevírací dobu, akce a popisy aktualizujete z panelu Menuary. Změny se publikují na vaší vizitce Google a přenášejí se na web. Recenze Google se zobrazují na webu s automatickými pravidelnými aktualizacemi.",
         },
         {
-          q: "Mohu zrušit, kdykoli chci?",
-          a: "Ano. Předplatné je měsíční, bez sankcí za zrušení. Počáteční poplatek za zřízení se účtuje jednorázově.",
+          q: "Jaká je to smlouva? Mohu ji vypovědět?",
+          a: "Smlouva je roční, placená předem nebo měsíčně. Obnovení můžete vypovědět s 30denní výpovědní lhůtou. Úvodní nastavení je jednorázový poplatek a platíte ho jen tehdy, když vás demo vašeho webu přesvědčí.",
         },
         {
           q: "Co je zahrnuto v předplatném?",
@@ -93,6 +124,8 @@ export const messages = mergeMessages(en, {
         googleOpen: "Vaše vizitka · Otevřeno",
         googleUpdated: "· aktualizováno dnes",
         taExcellence: "Excelence · 2026",
+        exampleLabel: "Příklad",
+        yelpReviews: "128 recenzí · 4,3",
       },
       benefits: {
         label: "Co je uvnitř",
@@ -116,7 +149,7 @@ export const messages = mergeMessages(en, {
         savingsLabel: "ušetříte €{amount}/rok",
         monthlyLabel: "Měsíčně: €{price}/měsíc · Zřízení {setup}",
         vatNote: "Bez DPH · Roční smlouva · Aktivace do 7 dnů",
-        aiEyebrow: "Doplněk dostupný pro všechny",
+        aiEyebrow: "Doplněk · plány Rezervace a Provoz",
         aiTitle: "Telefonní AI asistent · €0,30 za hovor + 3% objednávek",
         aiDesc:
           "Hlasový asistent 24/7, který odpovídá hlasem vašeho podniku, přijímá rezervace a spravuje objednávky. Dostupný od plánů Rezervace a Provoz. Bez fixního poplatku: €0,30 za hovor plus 3% z objednávek přijatých přes hovory.",
@@ -193,6 +226,7 @@ export const messages = mergeMessages(en, {
       },
       faq: {
         kicker: "Často kladené otázky",
+        title: "Odpovědi na otázky, které slýcháme nejčastěji.",
         notFound: "Nenašli jste, co jste hledali?",
         ctaLink: "Napište nám",
       },
@@ -212,8 +246,8 @@ export const messages = mergeMessages(en, {
       waOpen: "Otevřít chat WhatsApp",
       bullets: [
         "Web na míru charakteru restaurace",
-        "Kompletní systém řízení: objednávky, sklad, food cost, CRM",
-        "Telefonní AI asistent · přichází 2026",
+        "Kompletní správa: rezervace, objednávky, rozvoz, CRM",
+        "AI asistent na telefonu, aktivní 24/7",
       ] as string[],
     },
     leadForm: {
@@ -237,6 +271,11 @@ export const messages = mergeMessages(en, {
       successMsg: "Poptávka přijata. Ozveme se s návrhem na míru vašemu podniku.",
       errorConnection: "Připojení není dostupné.",
       errorDefault: "Odeslání se nezdařilo.",
+      errorMissing: "Vyplňte jméno, podnik a e-mail.",
+      errorInvalidEmail: "Zkontrolujte e-mailovou adresu.",
+      errorRateLimited: "Poptávku jste už odeslali: brzy se vám ozveme.",
+      privacyNotice: "Tyto údaje použijeme jen k tomu, abychom vám odpověděli.",
+      privacyLink: "Zásady ochrany osobních údajů",
     },
     about: {
       hero: {
@@ -323,7 +362,7 @@ export const messages = mergeMessages(en, {
           { q: "Jaký je rozdíl mezi vaším webem a šablonou WordPress?", a: "Šablona je konfekční oblek z regálu: můžete změnit barvy, ale struktura je stejná jako u tisíců dalších webů. Naše weby vznikají z design systemu postaveného na identitě vašeho podniku — písmo, paleta, vizuální hierarchie, tón hlasu, mikroanimace. Když se na web díváte, máte si myslet «tohle vypadá jako my», ne «tuhle strukturu jsem už někde viděl»." },
           { q: "Co znamená «identitní design system»?", a: "Před webem definujeme vizuální pravidla podniku: typografickou dvojici (písmo nadpisu a písmo textu), barevnou škálu (primární, sekundární, akcenty), proporce prostorů, způsob, jakým prvky vstupují na obrazovku. Tato pravidla se pak uplatňují na každé stránce, každé kartě, každém tlačítku — vytvářejí soudržný, rozpoznatelný, profesionální zážitek." },
           { q: "Kdy se web zaplatí?", a: "Dřív, než si myslíte. TheFork a platformy si nechávají až 10-15 % z rezervace. Pokud váš web přinese byť jen jednu přímou rezervaci denně — místo aby procházela přes platformu — roční úspora výrazně převyšuje náklady na předplatné. A to bez započítání hodnoty přítomnosti na Googlu, integrovaných recenzí a digitální reputace." },
-          { q: "Jak dlouho trvá, než je web online?", a: "Do 7 dnů od podpisu smlouvy. Úvodní konfigurace (onboarding, design, vývoj) je dokončena předtím — v průměru 2-4 týdny — a pak spuštění proběhne za jeden den." },
+          { q: "Jak dlouho trvá, než je web online?", a: "Web a služby jsou online do 7 dnů od podpisu smlouvy. Před podpisem vám ukážeme demo vašeho webu na míru, takže přesně víte, co si vybíráte." },
           { q: "Jak vzniká design mého webu?", a: "Začíná hovorem (nebo návštěvou, pokud je podnik blízko). Podíváme se na sál, menu, fotky, tón hlasu, který používáte na sociálních sítích. Pak stavíme soudržný vizuální systém — nevybíráme písma a barvy náhodně, odvozujeme je z toho, čím podnik už je. Teprve pak začínáme psát kód." },
           { q: "Můžu web aktualizovat sám?", a: "Ano. Menu, otevírací doba, fotky, akce, ceny: vše se aktualizuje z panelu Menuary bez zásahu do kódu, bez posílání e-mailů komukoli. Změny jsou online během několika sekund, i z pokladny mezi dvěma směnami." },
           { q: "Pracujete jen v Miláně?", a: "Ne. Studio je v Miláně, ale staráme se o podniky po celé Itálii. Většina práce probíhá na dálku. Když to dává smysl — pro fotografování nebo složitý onboarding — přijedeme za vámi." },
@@ -336,7 +375,7 @@ export const messages = mergeMessages(en, {
         label: "Nabídka",
         h1a: "Tři plány.",
         h1b: "Žádná překvapení.",
-        sub: "Jasné ceny, nulová provize z objednávek a rezervací. Začněte, kde chcete, přidejte jen to, co potřebujete.",
+        sub: "Jasné ceny, žádné provize z rezervací a objednávek z vašeho webu. Začněte, kde chcete, a přidejte jen to, co potřebujete.",
       },
       billing: {
         annual: "Ročně předem",
@@ -353,6 +392,7 @@ export const messages = mergeMessages(en, {
         monthlyWithAnnual: "Při roční platbě:",
         monthlyWithAnnualSaving: "{price}/měsíc · ušetříte {amount}/rok",
         ctaDefault: "Vyžádat nabídku",
+        setup: "Jednorázová aktivace {setup}",
       },
       ai: {
         label: "Od plánu {plan} výše",
@@ -395,7 +435,7 @@ export const messages = mergeMessages(en, {
           { label: "CRM zákazníků & analytika", presence: "false", booking: "false", ops: "true" },
           { label: "Operativní panel", presence: "false", booking: "false", ops: "true" },
           { label: "Správa personálu a kuchyně", presence: "false", booking: "false", ops: "true" },
-          { label: "AI integrace (doplněk)", presence: "false", booking: "+60 €/měsíc", ops: "+60 €/měsíc" },
+          { label: "AI integrace (doplněk)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Podpora", presence: "Standardní", booking: "Prioritní", ops: "Dedikovaná" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -408,9 +448,9 @@ export const messages = mergeMessages(en, {
           { q: "Jaký je rozdíl mezi roční a měsíční fakturací?", a: "Při roční platbě předem získáte sníženou ekvivalentní měsíční cenu. Při měsíční fakturaci se výdaj rozloží měsíc po měsíci, ale cena je vyšší. V obou případech je smlouva roční." },
           { q: "Co je aktivační poplatek?", a: "Je to jednorázový poplatek za úvodní konfiguraci: technický setup, onboarding a přizpůsobení webu. Není zahrnut v měsíční ceně. Uvedené ceny jsou orientační; přesná nabídka závisí na složitosti podniku." },
           { q: "Co je zahrnuto v měsíční ceně?", a: "Hosting, doména, SSL certifikáty, zálohy, technické aktualizace, bezpečnost a všechny nové funkce produktu. Plus podpora našeho týmu." },
-          { q: "Jak funguje AI integrace?", a: "AI asistent zvedá telefon 24/7 hlasem a tónem podniku: přijímá rezervace a zapisuje je přímo do kalendáře, přijímá objednávky s sebou, navrhuje denní menu a řeší požadavky mimo otevírací dobu. Podporuje volitelné klonování hlasu a mluví nativně italsky, anglicky, francouzsky, španělsky a německy. Dostupné od plánů Rezervace a Provoz za příplatek 60 €/měsíc." },
-          { q: "Jak funguje kvóta minut AI integrace?", a: "Každý AI plán zahrnuje měsíční kvótu minut hovoru. Pokud ji překročíte, dodatečné poplatky se počítají v nákladové ceně — bez jakékoli marže z naší strany. Detail kvóty najdete ve smlouvě." },
-          { q: "Jsou provize z rezervací, objednávek nebo rozvozů?", a: "Nula. Menuary si nenechává nic z vašich objednávek, rezervací nebo rozvozů. To, co vyděláte, je celé vaše." },
+          { q: "Jak funguje AI integrace?", a: "AI asistent zvedá telefon 24/7 hlasem a tónem podniku: přijímá rezervace a zapisuje je přímo do kalendáře, přijímá objednávky s sebou, navrhuje denní menu a řeší požadavky mimo otevírací dobu. Podporuje volitelné klonování hlasu a mluví nativně italsky, anglicky, francouzsky, španělsky a německy. Dostupné od plánů Rezervace a Provoz." },
+          { q: "Kolik stojí AI asistent?", a: "Žádný pevný poplatek: 0,30 € za každý hovor vyřízený AI plus 3 % z objednávek přijatých prostřednictvím hovorů. Když ho nepoužíváte, neplatíte nic." },
+          { q: "Jsou provize z rezervací, objednávek nebo rozvozů?", a: "Žádné z rezervací, objednávek a rozvozu přicházejících z vašeho webu: co utržíte, je vaše. Jedinou provizí jsou 3 % za AI doplněk, a to jen z objednávek, které asistent přijme po telefonu." },
           { q: "Můžu použít svou stávající doménu?", a: "Ano. Můžeme nakonfigurovat vaši stávající doménu nebo zaregistrovat novou. V obou případech bez dodatečných nákladů." },
           { q: "Je web dostupný ve více jazycích?", a: "Ano. Každý web je standardně vytvořen ve vícejazyčné verzi, pokrývající hlavní evropské jazyky: italštinu, angličtinu, francouzštinu, němčinu a španělštinu. Na požádání lze přidat další jazyky podle typické klientely podniku — například ruštinu, arabštinu, čínštinu nebo japonštinu. Náklady na další jazyky se sjednávají ve fázi nabídky." },
         ] as { q: string; a: string }[],

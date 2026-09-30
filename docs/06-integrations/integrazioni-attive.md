@@ -28,7 +28,8 @@ Per documentare in dettaglio una singola integrazione usa [[integration-template
 | **QZ Tray** | Stampa comande USB (ponte locale) | dipendenza `qz-tray`, `src/lib/printing/`, `api/gestione/printers`, servizio locale sul PC cassa (`wss://localhost`) |
 | **SUNMI Cloud Printer** | Stampa comande cloud (server-side, API V2 push diretto) | `src/lib/printing/sunmi-cloud.ts`, `src/lib/printing/dispatch.ts`, `SUNMI_CLOUD_APP_ID`, `SUNMI_CLOUD_APP_KEY`, `SUNMI_CLOUD_API_BASE` |
 | **MapLibre** | Mappe | dipendenza `maplibre-gl`, `tenant/[tenantId]/map` |
-| **Vercel Analytics** | Analytics | dipendenza `@vercel/analytics` |
+| **Vercel Analytics** | Analytics senza cookie + eventi `conversion_*` | dipendenza `@vercel/analytics`; eventi inviati da `trackConversion()` in `src/lib/tracking/client.ts` |
+| **Google Analytics 4 / Google Ads / Meta Pixel** | Misurazione visite e conversioni delle campagne, **solo dopo consenso** | Modulo tracking (`src/lib/tracking/`, `src/components/modules/tracking/`). Siti marketing: env `TRACKING_<BRAND>_GA4_ID`, `TRACKING_<BRAND>_GOOGLE_ADS_ID`, `TRACKING_<BRAND>_GOOGLE_ADS_<CONVERSIONE>_LABEL` (conversione = `LEAD`, `BOOKING`, `ORDER`, `CONTACT`), `TRACKING_<BRAND>_META_PIXEL_ID` con `<BRAND>` = `MENUARY`, `BIZERY`, `ORPHEO`. Tenant: campo `tracking` in `tenant-registry.ts`. Dettagli in [[adr-0011-tracciamento-condiviso-con-consenso]] |
 | **Slabbby** | Wishlist cross-negozio (widget di terze parti) | `src/components/core/slabbby-script-gate.tsx`, `src/components/modules/shop/slabbby-wishlist-btn.tsx`, feature flag `slabbby`. Nessuna env: lo script è pubblico (`https://slabbby.com/widget.js`). Dettagli e limiti in [[moduli-piattaforma]] |
 | **PerX** (bridge platform-admin) | Portale `admin.pynkstudio.eu/perx` verso il backend FastAPI di PerX (repo separata) | `src/lib/perx/client.ts`, `admin-pynkstudio/perx/*`, `PERX_ADMIN_API_URL`, `PERX_ADMIN_API_KEY` (server-only, mai `NEXT_PUBLIC_`). Dettagli in `docs/perx-integration.md` |
 
@@ -96,6 +97,13 @@ Infrastruttura unica per tutte le notifiche push del portale (tenant e admin pia
 - **Per aggiungere una nuova notifica push admin**: nel punto server dove si verifica l'evento, chiamare `sendWebPushToSiteadmin(siteadminId, { title, body, url, tag })`. Esempio attivo: mail assegnata (webhook `webhooks/email/inbound` all'auto-assegnazione, `assignEmail` in `src/lib/email/inbound-queries.ts` all'assegnazione manuale) → notifica su `/admin/inbox`.
 - **Filtri mail per dispositivo lato tenant (senza account)**: tabella `tenant_mail_device_filters` (`tenant_id`, `device_id`, `label`, `local_parts[]`), CRUD in `src/lib/email/mail-device-filters.ts`. Di default ogni dispositivo del tenant riceve la push per **ogni** mail (broadcast su `tenant_id`, nessun filtro configurato). Da **Impostazioni → Questo dispositivo** nel modulo mail (`TenantMailDeviceSettings`) si può assegnare al dispositivo corrente una o più local-part (es. "fatturazione"): questo genera sia il filtro sulla vista **Le mie** sia il filtro sulla push (solo mail per quelle local-part). Risoluzione destinatari: `resolveTenantMailPushTargets(tenantId, toAddresses)` in `mail-device-filters.ts`, chiamata dal webhook inbound insieme a `sendWebPushToSubscriptions`. Nessun sistema di account/profili per il tenant: è un TODO futuro (stesso modello dell'admin piattaforma, con login e assegnazione persistente).
 - **Limite iOS**: su iPhone la web app deve essere aggiunta alla schermata Home (iOS 16.4+) e il permesso notifiche va concesso dall'interno della PWA; Safari "in tab" non riceve Web Push.
+
+## Tracciamento campagne e attribuzione lead
+
+- Nessuno script di terze parti parte senza consenso: il banner compare solo sui siti con almeno un ID configurato.
+- Stato env al 2026-09-29: **da valorizzare su Vercel** per `MENUARY` (nessun ID ancora configurato nel codice). PynkStudio ha GA4 `tracking.ga4Id` nel profilo tenant.
+- I lead dei siti marketing salvano la fonte in `platform_leads.attribution` (jsonb: `utm_*`, `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, `referrer`, `landing_path`, `captured_at`). Colonna creata in produzione il 2026-09-29 via MCP `apply_migration` e verificata.
+- `POST /api/marketing-leads` ha un limite per IP (per istanza) e per email (2 richieste in 15 minuti) e restituisce codici errore stabili (`missing_fields`, `invalid_email`, `rate_limited`, `server_error`) che i form traducono.
 
 ## Da confermare
 

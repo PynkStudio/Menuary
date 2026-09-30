@@ -5,6 +5,9 @@ import {
   buildMarketingPrivacySections,
   type MarketingBrandLegalInfo,
 } from "@/lib/legal/marketing-legal-content";
+import { resolveTrackingConfig } from "@/lib/tracking/config";
+
+const SITE_TRACKING = resolveTrackingConfig("marketing-orpheo", undefined);
 
 const ORPHEO_BRAND: MarketingBrandLegalInfo = {
   brandName: "Orpheo",
@@ -19,7 +22,7 @@ export function OrpheoPrivacyPage() {
       label="Privacy"
       title="Informativa sulla privacy"
       intro="Come trattiamo i dati personali raccolti attraverso il sito weuseorpheo.com: quali dati, per quali finalità, per quanto tempo e quali sono i tuoi diritti."
-      sections={buildMarketingPrivacySections(ORPHEO_BRAND)}
+      sections={buildMarketingPrivacySections(ORPHEO_BRAND, SITE_TRACKING)}
     />
   );
 }
@@ -31,7 +34,7 @@ export function OrpheoCookiePage() {
       label="Cookie"
       title="Cookie policy"
       intro="Quali cookie usa il sito weuseorpheo.com, a cosa servono e come puoi gestirli dal tuo browser."
-      sections={buildMarketingCookieSections(ORPHEO_BRAND)}
+      sections={buildMarketingCookieSections(ORPHEO_BRAND, SITE_TRACKING)}
     />
   );
 }

@@ -4,7 +4,7 @@ import { mergeMessages } from "./_merge";
 export const messages = mergeMessages(en, {
   marketing: {
     shell: {
-      nav: { offer: "Tarjous", about: "Studio", myAccount: "Oma tili", signIn: "Kirjaudu", contact: "Ota yhteyttä" },
+      nav: { offer: "Hinnat", about: "Tietoa meistä", myAccount: "Oma tili", signIn: "Kirjaudu", contact: "Ota yhteyttä" },
       footer: {
         desc: "Ravintoloiden operatiivinen alusta: verkkosivusto, kattava hallintajärjestelmä ja AI-puhelinassistentti. Räätälöity ja ylläpidetty ajan mittaan.",
         nav: "Navigointi",
@@ -16,6 +16,17 @@ export const messages = mergeMessages(en, {
         personalArea: "Asiakkaan oma alue",
         privacy: "Tietosuoja",
         cookie: "Evästeet",
+        home: "Etusivu",
+        serviceBy: "Palvelun tarjoaa",
+        location: "Milano, Italia",
+      },
+      mobileBar: {
+        call: "Soita",
+        whatsapp: "WhatsApp",
+        demo: "Pyydä demo",
+        menu: "Valikko",
+        close: "Sulje valikko",
+        waMessage: "Hei Menuary, haluaisin tietoa ravintolaani varten.",
       },
     },
     home: {
@@ -28,6 +39,26 @@ export const messages = mergeMessages(en, {
       badgeFreeCall: "Maksat vain jos pidät siitä",
       badgeOnline: "Verkossa 7 päivässä",
       badgeMultilang: "Monikielinen · FI EN SV DE RU +",
+      inside: {
+        label: "Keskellä palvelua",
+        h2: "Ei satunnaisia kauniita kuvia: tilanteita, jotka tapahtuvat joka ilta.",
+        sub: "Menuary on tehty ravintoloiden, baarien ja kahviloiden arkeen: päivitettäviä tietoja, rauhoiteltavia asiakkaita, pyyntöjä, joita ei saa hukata, ja maine, jota pitää suojella.",
+        moments: [
+          { title: "Ruokalista, joka oikeasti muuttuu", text: "Loppuunmyydyt annokset, allergeenit, sesongit ja hinnat eivät jää vanhaan PDF:ään: verkon ruokalista päivittyy hallintapaneelista ja on helppo lukea puhelimella.", alt: "Ravintolan pöytä, jolla ruokalista, puhelin ja jaettavia annoksia" },
+          { title: "Varaukset ilman kaaosta", text: "Pyynnöt, vahvistukset, poikkeavat aukioloajat ja vuorot kulkevat yhdessä virrassa, joten sali ja johto näkevät saman tilanteen ennen palvelua.", alt: "Katettu ravintolasali ennen iltapalvelua" },
+          { title: "Google, arvostelut ja luottamus", text: "Aukioloajat, Google-profiili, arvostelut ja julkinen sisältö pysyvät yhdenmukaisina: ravintolaasi etsivä löytää ajantasaiset tiedot ennen kuin soittaa tai varaa.", alt: "Henkilökunta tiskillä valmistautumassa palveluun" },
+        ] as { title: string; text: string; alt: string }[],
+      },
+      markets: {
+        label: "Ravintola-ala",
+        h2: "Verkkosivut ravintoloille, pizzerioille, baareille ja kahviloille.",
+        sub: "Menuary kattaa tärkeimmät haut, joilla asiakkaat löytävät sinut verkosta: ravintolan verkkosivut, digitaalinen ruokalista, verkkovaraukset, tilaukset ja paikallinen näkyvyys Googlessa.",
+        items: [
+          { title: "Verkkosivut ravintoloille", body: "Digitaalinen ruokalista, pöytävaraukset, galleria, Google-arvostelut ja hallintapaneelista päivitettävä sisältö." },
+          { title: "Verkkosivut pizzerioille ja trattorioille", body: "Sesonkilistat, päivän annokset, verkkotilaukset, allergeenit ja tiedot aina saatavilla puhelimella." },
+          { title: "Verkkosivut baareille, bistroille ja kahviloille", body: "Aukioloajat, tapahtumat, tarjoukset, Google Maps ja monikieliset sivut paikallisille ja matkailijoille." },
+        ] as { title: string; body: string }[],
+      },
       faq: [
         {
           q: "Kuinka kauan verkkoon pääsy kestää?",
@@ -38,8 +69,8 @@ export const messages = mergeMessages(en, {
           a: "Päivität aukioloajat, tapahtumat ja kuvaukset Menuary-hallintapaneelista. Muutokset julkaistaan Google-profiilissasi ja siirtyvät verkkosivustolle. Google-arvostelut näkyvät sivustolla automaattisilla säännöllisillä päivityksillä.",
         },
         {
-          q: "Voinko irtisanoa milloin haluan?",
-          a: "Kyllä. Tilaus on kuukausittainen, ilman irtisanomismaksuja. Alkuasennusmaksu veloitetaan vain kerran.",
+          q: "Millainen sopimus on? Voinko irtisanoa?",
+          a: "Sopimus on vuoden mittainen, maksetaan etukäteen tai kuukausittain. Voit irtisanoa jatkon 30 päivän irtisanomisajalla. Käyttöönotto on kertamaksu, ja maksat sen vain, jos sivustosi demo vakuuttaa sinut.",
         },
         {
           q: "Mitä tilaukseen sisältyy?",
@@ -93,6 +124,8 @@ export const messages = mergeMessages(en, {
         googleOpen: "Profiilisi · Avoinna",
         googleUpdated: "· päivitetty tänään",
         taExcellence: "Excellence · 2026",
+        exampleLabel: "Esimerkki",
+        yelpReviews: "128 arvostelua · 4,3",
       },
       benefits: {
         label: "Mitä sisältyy",
@@ -116,7 +149,7 @@ export const messages = mergeMessages(en, {
         savingsLabel: "säästä €{amount}/vuosi",
         monthlyLabel: "Kuukausittain: €{price}/kk · Asennus {setup}",
         vatNote: "ALV 0 % · Vuosisopimus · Aktivointi 7 päivässä",
-        aiEyebrow: "Lisäosa saatavilla kaikille",
+        aiEyebrow: "Lisäosa · paketit Varaukset ja Toiminta",
         aiTitle: "AI-puhelinassistentti · 0,30 €/puhelu + 3% tilaukset",
         aiDesc:
           "24/7-ääniassistentti, joka vastaa yrityksesi äänellä, ottaa vastaan varauksia ja hallitsee tilauksia. Saatavilla Varaukset- ja Toiminta-paketeista alkaen. Ei kiinteää maksua: 0,30 € per puhelu sekä 3% puheluiden kautta saaduista tilauksista.",
@@ -193,6 +226,7 @@ export const messages = mergeMessages(en, {
       },
       faq: {
         kicker: "Usein kysytyt kysymykset",
+        title: "Vastaukset kysymyksiin, joita kuulemme useimmin.",
         notFound: "Etkö löytänyt etsimääsi?",
         ctaLink: "Kirjoita meille",
       },
@@ -212,8 +246,8 @@ export const messages = mergeMessages(en, {
       waOpen: "Avaa WhatsApp-keskustelu",
       bullets: [
         "Ravintolan luonteeseen räätälöity verkkosivusto",
-        "Kattava hallintajärjestelmä: tilaukset, varasto, food cost, CRM",
-        "AI-puhelinassistentti · tulossa 2026",
+        "Täysi hallinta: varaukset, tilaukset, kotiinkuljetus, CRM",
+        "Tekoälypuhelinavustaja, käytössä 24/7",
       ] as string[],
     },
     leadForm: {
@@ -237,6 +271,11 @@ export const messages = mergeMessages(en, {
       successMsg: "Pyyntö vastaanotettu. Palaamme asiaan yrityksellesi räätälöidyllä ehdotuksella.",
       errorConnection: "Yhteys ei ole käytettävissä.",
       errorDefault: "Lähetys epäonnistui.",
+      errorMissing: "Täytä nimi, ravintola ja sähköposti.",
+      errorInvalidEmail: "Tarkista sähköpostiosoite.",
+      errorRateLimited: "Olet jo lähettänyt pyynnön: otamme pian yhteyttä.",
+      privacyNotice: "Käytämme tietoja vain vastataksemme sinulle.",
+      privacyLink: "Tietosuojaseloste",
     },
     about: {
       hero: {
@@ -323,7 +362,7 @@ export const messages = mergeMessages(en, {
           { q: "Mikä on ero teidän verkkosivunne ja WordPress-mallin välillä?", a: "Valmis malli on sarjatuotettu puku: voit vaihtaa värit, mutta rakenne on sama kuin tuhansilla muilla verkkosivuilla. Verkkosivumme syntyvät paikkasi identiteetille rakennetusta design systemistä — fontti, paletti, visuaalinen hierarkia, äänensävy, mikroanimaatiot. Kun katsot verkkosivua, sinun pitäisi ajatella «tämä näyttää meiltä», ei «olen nähnyt tämän rakenteen jossain aiemmin»." },
           { q: "Mitä «identiteettiä luova design system» tarkoittaa?", a: "Ennen verkkosivua määrittelemme paikan visuaaliset säännöt: fonttiparin (otsikon fontti ja tekstin fontti), väriskaalan (ensisijainen, toissijainen, korostukset), tilojen mittasuhteet, tavan, jolla elementit tulevat näytölle. Nämä säännöt pätevät sitten jokaisella sivulla, jokaisessa kortissa, jokaisessa painikkeessa — luoden johdonmukaisen, tunnistettavan, ammattimaisen kokemuksen." },
           { q: "Milloin verkkosivu maksaa itsensä takaisin?", a: "Aiemmin kuin luulet. TheFork ja alustat pidättävät jopa 10-15 % varaukselta. Jos verkkosivusi tuo edes yhden suoran varauksen päivässä — sen sijaan, että se kulkisi alustan kautta — vuotuinen säästö ylittää selvästi tilauksen kustannuksen. Ja tämä laskematta mukaan Google-näkyvyyden, integroitujen arvostelujen ja digitaalisen maineen arvoa." },
-          { q: "Kuinka kauan verkkoon pääsy kestää?", a: "7 päivän sisällä sopimuksen allekirjoittamisesta. Alkukonfigurointi (perehdytys, design, kehitys) valmistuu ennen sitä — keskimäärin 2-4 viikkoa — ja sitten julkaisu tapahtuu yhdessä päivässä." },
+          { q: "Kuinka kauan verkkoon pääsy kestää?", a: "Sivusto ja palvelut ovat verkossa 7 päivän kuluessa sopimuksen allekirjoittamisesta. Ennen allekirjoitusta näytämme sinulle demon räätälöidystä sivustostasi, joten tiedät tarkalleen, mitä valitset." },
           { q: "Miten verkkosivuni design syntyy?", a: "Se alkaa puhelulla (tai vierailulla, jos paikka on lähellä). Katsomme saliin, menuun, valokuviin, äänensävyyn, jota käytät sosiaalisessa mediassa. Sitten rakennamme johdonmukaisen visuaalisen järjestelmän — emme valitse fontteja ja värejä sattumanvaraisesti, johdamme ne siitä, mitä paikka jo on. Vasta sitten alamme kirjoittaa koodia." },
           { q: "Voinko päivittää verkkosivua itse?", a: "Kyllä. Menu, aukioloajat, valokuvat, tapahtumat, hinnat: kaikki päivitetään Menuary-paneelista koskematta koodiin, lähettämättä sähköpostia kenellekään. Muutokset ovat verkossa muutamassa sekunnissa, myös kassalta vuorojen välissä." },
           { q: "Työskentelettekö vain Milanossa?", a: "Emme. Studio on Milanossa, mutta seuraamme paikkoja koko Italiassa. Suurin osa työstä tehdään etänä. Kun se on järkevää — valokuvausta tai monimutkaista perehdytystä varten — tulemme luoksenne." },
@@ -336,7 +375,7 @@ export const messages = mergeMessages(en, {
         label: "Tarjous",
         h1a: "Kolme pakettia.",
         h1b: "Ei yllätyksiä.",
-        sub: "Selkeät hinnat, nolla komissiota tilauksista ja varauksista. Aloita mistä haluat, lisää vain se mitä tarvitset.",
+        sub: "Selkeät hinnat, ei provisiota sivustosi kautta tulevista varauksista ja tilauksista. Aloita mistä haluat ja lisää vain mitä tarvitset.",
       },
       billing: {
         annual: "Vuosittain etukäteen",
@@ -353,6 +392,7 @@ export const messages = mergeMessages(en, {
         monthlyWithAnnual: "Vuosimaksulla:",
         monthlyWithAnnualSaving: "{price}/kk · säästä {amount}/vuosi",
         ctaDefault: "Pyydä tarjous",
+        setup: "Kertaluonteinen käyttöönotto {setup}",
       },
       ai: {
         label: "Paketista {plan} ylöspäin",
@@ -395,7 +435,7 @@ export const messages = mergeMessages(en, {
           { label: "Asiakas-CRM & analytiikka", presence: "false", booking: "false", ops: "true" },
           { label: "Operatiivinen paneeli", presence: "false", booking: "false", ops: "true" },
           { label: "Henkilöstön ja keittiön hallinta", presence: "false", booking: "false", ops: "true" },
-          { label: "AI-integraatio (lisäosa)", presence: "false", booking: "+60 €/kk", ops: "+60 €/kk" },
+          { label: "AI-integraatio (lisäosa)", presence: "false", booking: "addon", ops: "addon" },
           { label: "Tuki", presence: "Vakio", booking: "Priorisoitu", ops: "Omistettu" },
         ] as { label: string; presence: string; booking: string; ops: string }[],
       },
@@ -408,9 +448,9 @@ export const messages = mergeMessages(en, {
           { q: "Mitä eroa on vuosi- ja kuukausilaskutuksella?", a: "Vuosittaisella ennakkomaksulla saat alennetun vastaavan kuukausihinnan. Kuukausilaskutuksessa kustannus jakautuu kuukausittain, mutta maksu on korkeampi. Molemmissa tapauksissa sopimus on vuosittainen." },
           { q: "Mikä on aktivointikustannus?", a: "Se on kertaluonteinen maksu alkukonfiguroinnista: tekninen käyttöönotto, perehdytys ja verkkosivun räätälöinti. Se ei sisälly kuukausimaksuun. Ilmoitetut hinnat ovat suuntaa-antavia; tarkka tarjous riippuu paikan monimutkaisuudesta." },
           { q: "Mitä kuukausimaksuun sisältyy?", a: "Hosting, verkkotunnus, SSL-sertifikaatit, varmuuskopiot, tekniset päivitykset, turvallisuus ja kaikki uudet tuoteominaisuudet. Lisäksi tiimimme tuki." },
-          { q: "Miten AI-integraatio toimii?", a: "AI-assistentti vastaa puhelimeen 24/7 paikan äänellä ja sävyllä: ottaa vastaan varauksia ja kirjoittaa ne suoraan kalenteriin, hyväksyy noutotilauksia, ehdottaa päivän annoksia ja hoitaa aukioloaikojen ulkopuoliset pyynnöt. Tukee valinnaista äänikloonausta ja puhuu äidinkielen tasolla italiaa, englantia, ranskaa, espanjaa ja saksaa. Saatavilla paketeista Varaukset ja Toiminta 60 €/kk lisämaksulla." },
-          { q: "Miten AI-integraation minuuttikiintiö toimii?", a: "Jokainen AI-paketti sisältää kuukausittaisen keskusteluminuuttien kiintiön. Jos ylität sen, lisäveloitukset lasketaan omakustannushintaan — ilman mitään katetta puoleltamme. Löydät kiintiön tiedot sopimuksesta." },
-          { q: "Onko varauksista, tilauksista tai toimituksista komissioita?", a: "Nolla. Menuary ei pidätä mitään tilauksistasi, varauksistasi tai toimituksistasi. Se mitä ansaitset on kokonaan sinun." },
+          { q: "Miten AI-integraatio toimii?", a: "AI-assistentti vastaa puhelimeen 24/7 paikan äänellä ja sävyllä: ottaa vastaan varauksia ja kirjoittaa ne suoraan kalenteriin, hyväksyy noutotilauksia, ehdottaa päivän annoksia ja hoitaa aukioloaikojen ulkopuoliset pyynnöt. Tukee valinnaista äänikloonausta ja puhuu äidinkielen tasolla italiaa, englantia, ranskaa, espanjaa ja saksaa. Saatavilla paketeista Varaukset ja Toiminta." },
+          { q: "Paljonko tekoälyavustaja maksaa?", a: "Ei kiinteää maksua: 0,30 € jokaisesta tekoälyn hoitamasta puhelusta sekä 3 % puheluiden kautta tulleista tilauksista. Jos et käytä sitä, et maksa mitään." },
+          { q: "Onko varauksista, tilauksista tai toimituksista komissioita?", a: "Ei lainkaan sivustosi kautta tulevista varauksista, tilauksista ja toimituksista: tulot ovat sinun. Ainoa provisio on tekoälylisäosan 3 %, vain avustajan puhelimessa ottamista tilauksista." },
           { q: "Voinko käyttää nykyistä verkkotunnustani?", a: "Kyllä. Voimme määrittää olemassa olevan verkkotunnuksesi tai rekisteröidä uuden. Molemmissa tapauksissa ilman lisäkustannuksia." },
           { q: "Onko verkkosivu saatavilla useilla kielillä?", a: "Kyllä. Jokainen verkkosivu tehdään oletuksena monikieliseksi, kattaen tärkeimmät eurooppalaiset kielet: italia, englanti, ranska, saksa ja espanja. Pyynnöstä voidaan lisätä muita kieliä paikan tyypillisen asiakaskunnan mukaan — esimerkiksi venäjä, arabia, kiina tai japani. Lisäkielien kustannus sovitaan tarjousvaiheessa." },
         ] as { q: string; a: string }[],

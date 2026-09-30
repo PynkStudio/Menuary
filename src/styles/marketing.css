@@ -705,3 +705,76 @@
     white-space: nowrap;
   }
 }
+
+/* Banner consenso (modulo tracking) — identità dei tre siti marketing. */
+html[data-platform="marketing"] {
+  --consent-bg: #fbf8f1;
+  --consent-fg: #18231f;
+  --consent-accent: #18231f;
+  --consent-accent-fg: #f3efe7;
+  --consent-radius: 1.25rem;
+  --consent-font: var(--font-menuary-body), system-ui, sans-serif;
+  --consent-title-font: var(--font-menuary-display), Georgia, serif;
+}
+
+html[data-platform="marketing-bizery"] {
+  --consent-bg: #ffffff;
+  --consent-fg: #0f172a;
+  --consent-accent: #2563eb;
+  --consent-accent-fg: #ffffff;
+  --consent-radius: 0.9rem;
+  --consent-button-radius: 0.75rem;
+  --consent-font: var(--font-menuary-body), system-ui, sans-serif;
+}
+
+html[data-platform="marketing-orpheo"] {
+  --consent-bg: #fbfaf7;
+  --consent-fg: #17111f;
+  --consent-accent: #7c3aed;
+  --consent-accent-fg: #ffffff;
+  --consent-radius: 1rem;
+  --consent-font: var(--font-menuary-body), system-ui, sans-serif;
+}
+
+/* Barra contatti fissa su mobile (menuary.it). */
+.menuary-mobile-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.35fr;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--menuary-paper) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--menuary-line);
+  font-family: var(--font-menuary-body), system-ui, sans-serif;
+}
+
+.menuary-mobile-bar-item {
+  display: inline-flex;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--menuary-line);
+  background: var(--menuary-porcelain);
+  color: var(--menuary-ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.menuary-mobile-bar-item[data-primary] {
+  border-color: var(--menuary-copper);
+  background: var(--menuary-copper);
+  color: #fff;
+}
+
+@media (min-width: 768px) {
+  .menuary-mobile-bar {
+    display: none;
+  }
+}

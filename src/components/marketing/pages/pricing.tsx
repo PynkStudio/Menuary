@@ -13,6 +13,7 @@ import {
 import type { AppLocale } from "@/i18n";
 import { localizedPath } from "@/lib/marketing-seo";
 import { getPlanLabels, localizePricingPlanName } from "@/lib/localized-commercial-copy";
+import { formatSetupFrom } from "@/lib/pricing-format";
 
 type CompareRow = { label: string; presence: string; booking: string; ops: string };
 type FaqItem = { q: string; a: string };
@@ -30,6 +31,7 @@ export type PricingCopy = {
   card: {
     mostChosen: string;
     perMonth: string;
+    setup: string;
     annualBilling: string;
     annualSaving: string;
     monthlyWithAnnual: string;
@@ -73,6 +75,10 @@ export function MarketingPricingPage({
   const maxSaving = Math.max(...plans.map(annualSaving));
   const displayCurrency = plans[0]?.currency ?? "EUR";
   const [, bookingName] = getPlanLabels(locale, "food");
+  const aiPerCall = aiAddon.per_call ?? AI_ADDON.per_call ?? 0;
+  const aiCommission = aiAddon.commission_pct ?? AI_ADDON.commission_pct ?? 3;
+  const aiCurrency = aiAddon.currency ?? displayCurrency;
+  const aiPriceShort = `${formatPlanPrice(aiPerCall, aiCurrency, priceLocale)} + ${aiCommission}%`;
 
   return (
     <>
@@ -104,6 +110,8 @@ export function MarketingPricingPage({
           <div className="mb-14 flex flex-wrap items-center justify-center gap-4">
             <div className="inline-flex items-center gap-1 rounded-full border border-[var(--menuary-line)] p-1">
               <button
+                type="button"
+                aria-pressed={billing === "annual"}
                 onClick={() => setBilling("annual")}
                 className={
                   "rounded-full px-5 py-2 text-sm font-semibold transition " +
@@ -115,6 +123,8 @@ export function MarketingPricingPage({
                 {copy.billing.annual}
               </button>
               <button
+                type="button"
+                aria-pressed={billing === "monthly"}
                 onClick={() => setBilling("monthly")}
                 className={
                   "rounded-full px-5 py-2 text-sm font-semibold transition " +
@@ -156,7 +166,7 @@ export function MarketingPricingPage({
       </section>
 
       {/* AI ADD-ON */}
-      <section className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
+      <section id="ai" className="scroll-mt-28 border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
         <div className="menuary-container py-20 lg:py-24">
           <div className="grid items-start gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
             <div>
@@ -171,14 +181,14 @@ export function MarketingPricingPage({
               </p>
               <div className="mt-8 inline-flex items-baseline gap-2">
                 <span className="menuary-display text-[3rem] leading-none">
-                  {formatPlanPrice(aiAddon.per_call ?? AI_ADDON.per_call ?? 0, aiAddon.currency ?? displayCurrency, priceLocale)}
+                  {formatPlanPrice(aiPerCall, aiCurrency, priceLocale)}
                 </span>
                 <span className="text-sm text-[var(--menuary-muted)]">{copy.ai.perMonth}</span>
               </div>
               <p className="mt-2 menuary-display text-lg text-[var(--menuary-ink)]">
                 {copy.ai.commission.replace(
                   "{pct}",
-                  String(aiAddon.commission_pct ?? AI_ADDON.commission_pct ?? 3),
+                  String(aiCommission),
                 )}
               </p>
               <p className="mt-3 max-w-sm text-sm leading-[1.65] text-[var(--menuary-muted)]">
@@ -278,9 +288,9 @@ export function MarketingPricingPage({
                   {copy.compare.rows.map((row) => (
                     <tr key={row.label} className="border-b border-[var(--menuary-line)]">
                       <td className="py-4 pr-4">{row.label}</td>
-                      <td className="py-4 px-4 text-center"><CellMark value={row.presence} /></td>
-                      <td className="py-4 px-4 text-center"><CellMark value={row.booking} /></td>
-                      <td className="py-4 pl-4 text-center"><CellMark value={row.ops} /></td>
+                      <td className="py-4 px-4 text-center"><CellMark value={row.presence} addon={aiPriceShort} /></td>
+                      <td className="py-4 px-4 text-center"><CellMark value={row.booking} addon={aiPriceShort} /></td>
+                      <td className="py-4 pl-4 text-center"><CellMark value={row.ops} addon={aiPriceShort} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -312,6 +322,7 @@ function PlanCard({
   const saving = annualSaving(plan);
   const currency = plan.currency ?? "EUR";
   const planName = localizePricingPlanName(plan, locale, "food");
+  const setup = plan.setup_from ? formatSetupFrom(plan.setup_from, currency, priceLocale) : "";
 
   return (
     <article
@@ -361,6 +372,11 @@ function PlanCard({
             </span>
           </p>
         )}
+        {setup ? (
+          <p className="mt-1 text-xs text-[var(--menuary-muted)]">
+            {copy.setup.replace("{setup}", setup)}
+          </p>
+        ) : null}
       </div>
 
       <p className="text-[15px] leading-7 text-[var(--menuary-muted)]">
@@ -396,17 +412,28 @@ function PlanCard({
   );
 }
 
+// Interi senza decimali (39 €), frazioni con i centesimi (0,30 €): arrotondare
+// un prezzo per chiamata a 0 € sarebbe un'informazione falsa.
 function formatPlanPrice(amount: number, currency = "EUR", locale = "it-IT"): string {
+  const whole = Number.isInteger(amount);
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: whole ? 0 : 2,
   }).format(amount);
 }
 
 // ─── CellMark ─────────────────────────────────────────────────────────────────
 
-function CellMark({ value }: { value: string }) {
+function CellMark({ value, addon }: { value: string; addon: string }) {
+  if (value === "addon") {
+    return (
+      <span className="text-[13px] font-semibold text-[var(--menuary-copper)]">
+        {addon}
+      </span>
+    );
+  }
   if (value === "true") {
     return (
       <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--menuary-sage)]/15 text-[var(--menuary-sage)]">

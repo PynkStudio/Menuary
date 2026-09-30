@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DEFAULT_MARKET, MARKETS, MARKET_COOKIE, normalizeMarketCode } from "@/lib/markets";
+import { getAttribution, trackConversion } from "@/lib/tracking/client";
 
 type FormStatus =
   | { type: "idle" }
@@ -33,6 +34,7 @@ export function BizeryContactForm() {
       message: raw.messaggio,
       website: raw.website,
       vertical: "services",
+      attribution: getAttribution(),
     };
 
     const response = await fetch("/api/marketing-leads", {
@@ -55,6 +57,7 @@ export function BizeryContactForm() {
       return;
     }
 
+    trackConversion("lead", { label: typeof raw.settore === "string" ? raw.settore : undefined });
     setStatus({ type: "success" });
   }
 

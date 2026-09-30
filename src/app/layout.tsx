@@ -57,6 +57,8 @@ import { TenantLanguageProvider } from "@/lib/tenant-i18n";
 import { PageTransitionShell } from "@/components/core/page-transition-shell";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
 import { tenantLanguageAlternates } from "@/lib/tenant-localized-path";
+import { resolveTrackingConfig } from "@/lib/tracking/config";
+import { TrackingProvider } from "@/components/modules/tracking/tracking-provider";
 
 const display = Bagel_Fat_One({
   subsets: ["latin"],
@@ -646,6 +648,26 @@ export default async function RootLayout({
   }
 
   const tenant = findTenantById(reqHeaders.get("x-preview-tenant-id") ?? "") ?? resolveTenantFromHost(host);
+  const marketingBrand =
+    mode === "marketing" ? "menuary" : mode === "marketing-bizery" ? "bizery" : mode === "marketing-orpheo" ? "orpheo" : null;
+  const marketingSchemas = marketingBrand
+    ? [
+        marketingOrganizationSchema(marketingBrand),
+        marketingWebsiteSchema(marketingBrand),
+        marketingServiceSchema(marketingBrand),
+        marketingFaqSchema(marketingBrand),
+      ]
+    : [];
+  // JSON-LD inline nell'HTML servito: i crawler non devono eseguire JS per leggerlo.
+  const marketingJsonLd = marketingSchemas.map((schema, index) => (
+    <script
+      key={`schema-marketing-${index}`}
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  ));
+  const trackingConfig = resolveTrackingConfig(mode, tenant);
+
   if (!tenant) {
     return (
       <html
@@ -654,10 +676,12 @@ export default async function RootLayout({
         data-platform={mode}
       >
         <body>
+          {marketingJsonLd}
           <Analytics />
           <PlatformModeProvider mode={mode}>
             <PageTransitionShell>{children}</PageTransitionShell>
           </PlatformModeProvider>
+          {trackingConfig ? <TrackingProvider config={trackingConfig} /> : null}
         </body>
       </html>
     );
@@ -692,16 +716,6 @@ export default async function RootLayout({
   const isOrpheoMode = mode === "marketing-orpheo" || mode === "preview-orpheo";
   const content = isBizeryMode || isOrpheoMode ? null : getTenantContent(tenant.id);
   const showRestaurantJsonLd = mode === "tenant" && tenant.id === "bepork" && content !== null;
-  const marketingBrand =
-    mode === "marketing" ? "menuary" : mode === "marketing-bizery" ? "bizery" : mode === "marketing-orpheo" ? "orpheo" : null;
-  const marketingSchemas = marketingBrand
-    ? [
-        marketingOrganizationSchema(marketingBrand),
-        marketingWebsiteSchema(marketingBrand),
-        marketingServiceSchema(marketingBrand),
-        marketingFaqSchema(marketingBrand),
-      ]
-    : [];
   const tenantRestaurantSchema = content ? {
     ...restaurantSchema,
     name: tenant.name,
@@ -735,15 +749,7 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: JSON.stringify(tenantRestaurantSchema) }}
           />
         ) : null}
-        {marketingSchemas.map((schema, index) => (
-          <Script
-            key={`schema-marketing-${index}`}
-            id={`schema-marketing-${index}`}
-            type="application/ld+json"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-          />
-        ))}
+        {marketingJsonLd}
         <Analytics />
         <PlatformModeProvider mode={mode}>
           <TenantLanguageProvider initialLanguage={localeHeader}>
@@ -775,6 +781,11 @@ export default async function RootLayout({
                 </Providers>
               </LocationProvider>
             </Suspense>
+            {trackingConfig && !tenantSiteDisabled ? (
+              <Suspense>
+                <TrackingProvider config={trackingConfig} />
+              </Suspense>
+            ) : null}
             </TenantProvider>
           </TenantLanguageProvider>
         </PlatformModeProvider>

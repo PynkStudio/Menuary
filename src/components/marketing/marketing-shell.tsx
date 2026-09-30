@@ -7,7 +7,16 @@ import { headers } from "next/headers";
 import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
 import { LOCALE_HEADER, DEFAULT_LOCALE, isAppLocale } from "@/i18n/locales";
 import { localizedPath } from "@/lib/marketing-seo";
+import { resolveTrackingConfig } from "@/lib/tracking/config";
+import { hasThirdPartyTracking } from "@/lib/tracking/types";
 import { MarketSelector } from "@/components/marketing/market-selector";
+import { MarketingMobileBar, MarketingMobileMenu } from "@/components/marketing/mobile-chrome";
+import { ConsentPreferencesLink } from "@/components/modules/tracking/consent-preferences-link";
+import {
+  MENUARY_EMAIL,
+  MENUARY_PHONE_DISPLAY,
+  MENUARY_PHONE_E164,
+} from "@/components/marketing/contact-info";
 
 const PRICING_PATH = "/pricing";
 
@@ -18,11 +27,22 @@ async function getLocaleHref(path: string): Promise<string> {
 }
 
 export async function MarketingShell({ children }: { children: ReactNode }) {
+  const t = (await getTranslations("marketing")).shell;
+  const contactHref = await getLocaleHref("/contatti");
   return (
-    <div className="menuary-shell min-h-screen bg-[var(--menuary-paper)] text-[var(--menuary-ink)]">
+    <div className="menuary-shell min-h-screen bg-[var(--menuary-paper)] pb-[calc(4.5rem+env(safe-area-inset-bottom))] text-[var(--menuary-ink)] md:pb-0">
       <MarketingHeader />
       <main>{children}</main>
       <MarketingFooter />
+      <MarketingMobileBar
+        demoHref={contactHref}
+        labels={{
+          call: t.mobileBar.call,
+          whatsapp: t.mobileBar.whatsapp,
+          demo: t.mobileBar.demo,
+          waMessage: t.mobileBar.waMessage,
+        }}
+      />
     </div>
   );
 }
@@ -35,8 +55,8 @@ async function MarketingHeader() {
   const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
   return (
-    <header className="border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70 sticky top-0 z-40">
-      <div className="menuary-container flex items-center justify-between py-5">
+    <header className="sticky top-0 z-40 border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70">
+      <div className="menuary-container relative flex items-center justify-between gap-3 py-4 md:py-5">
         <Link href={homeHref} className="menuary-wordmark" aria-label="Menuary home">
           menuary
           <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
@@ -49,22 +69,24 @@ async function MarketingHeader() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <div className="hidden sm:block">
+          <div className="hidden md:block">
             <MarketSelector currentMarket={currentMarket} />
           </div>
-          <a
-            href={`${CLIENTS_PUBLIC_ORIGIN}/login`}
-            className="menuary-button menuary-button-light text-sm md:hidden"
-          >
-            {t.nav.signIn}
-          </a>
           <Link href={contactHref} className="menuary-button menuary-button-dark">
             {t.nav.contact}
           </Link>
+          <MarketingMobileMenu
+            labels={{ open: t.mobileBar.menu, close: t.mobileBar.close }}
+            links={[
+              { href: pricingHref, label: t.nav.offer },
+              { href: aboutHref, label: t.nav.about },
+              { href: contactHref, label: t.footer.contacts },
+              { href: `${CLIENTS_PUBLIC_ORIGIN}/login`, label: t.nav.myAccount, external: true },
+            ]}
+          >
+            <MarketSelector currentMarket={currentMarket} />
+          </MarketingMobileMenu>
         </div>
-      </div>
-      <div className="menuary-container pb-4 sm:hidden">
-        <MarketSelector currentMarket={currentMarket} />
       </div>
     </header>
   );
@@ -77,6 +99,7 @@ async function MarketingFooter() {
   const aboutHref = await getLocaleHref("/chi-siamo");
   const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
+  const tracking = hasThirdPartyTracking(resolveTrackingConfig("marketing", undefined));
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-16">
@@ -90,7 +113,7 @@ async function MarketingFooter() {
               {t.footer.desc}
             </p>
             <p className="mt-6 text-[13px] leading-6 text-[var(--menuary-muted)]">
-              Un servizio di{" "}
+              {t.footer.serviceBy}{" "}
               <a
                 href="https://pynkstudio.eu"
                 target="_blank"
@@ -100,24 +123,24 @@ async function MarketingFooter() {
                 PynkStudio
               </a>
               <span aria-hidden> · </span>
-              <span>Milano, Italia</span>
+              <span>{t.footer.location}</span>
             </p>
           </div>
 
           <FooterColumn
             title={t.footer.nav}
             links={[
-              { href: homeHref, label: "Home" },
+              { href: homeHref, label: t.footer.home },
               { href: aboutHref, label: t.nav.about },
               { href: pricingHref, label: t.nav.offer },
-              { href: contactHref, label: "Contatti" },
+              { href: contactHref, label: t.footer.contacts },
             ]}
           />
           <FooterColumn
             title={t.footer.contacts}
             links={[
-              { href: "mailto:hello@menuary.it", label: "hello@menuary.it" },
-              { href: "tel:+393513768607", label: "+39 351 3768607" },
+              { href: `mailto:${MENUARY_EMAIL}`, label: MENUARY_EMAIL },
+              { href: `tel:${MENUARY_PHONE_E164}`, label: MENUARY_PHONE_DISPLAY },
               { href: contactHref, label: t.footer.requestProposal },
             ]}
           />
@@ -134,9 +157,12 @@ async function MarketingFooter() {
         <div className="menuary-rule mt-14" />
         <div className="mt-6 flex flex-col gap-3 text-xs uppercase tracking-[0.18em] text-[var(--menuary-muted)] sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} · Menuary · PynkStudio</p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap gap-6">
             <Link href="/privacy" className="hover:text-[var(--menuary-ink)]">{t.footer.privacy}</Link>
             <Link href="/cookie" className="hover:text-[var(--menuary-ink)]">{t.footer.cookie}</Link>
+            {tracking ? (
+              <ConsentPreferencesLink className="uppercase tracking-[0.18em] hover:text-[var(--menuary-ink)]" />
+            ) : null}
           </div>
         </div>
       </div>
