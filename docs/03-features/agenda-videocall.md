@@ -1,6 +1,6 @@
 # Feature: Agenda e videocall (`@pynkstudio/agendaapp`)
 
-- **Stato:** in produzione dal 2026-09-30 in modalità telefonica (migration applicata, segreto impostato, deploy fatto); videocall in attesa del server LiveKit (bacheca in § 7)
+- **Stato:** in produzione dal 2026-09-30 con videocall attiva (LiveKit configurato); manca il collaudo con una call vera e la correzione dell'URL del webhook (bacheca in § 7)
 - **Pacchetto:** repo pubblica [PynkStudio/pynkstudio-agendaapp](https://github.com/PynkStudio/pynkstudio-agendaapp) (locale: `../pynkstudio-agendaapp`), tag `v0.1.0`, installato come tarball del tag. Documentazione del pacchetto: vault Obsidian nella sua `docs/`
 - **Montaggio nel sito:** `src/lib/agenda-runtime.ts`
 - **Data:** 2026-09-30
@@ -144,7 +144,7 @@ Non bloccanti:
 | D1 | Migration `20261001_agendaapp_schema.sql` applicata | ✅ completata | 2026-09-30 via MCP `apply_migration` (nome `agendaapp_schema`). Verificato sul DB: 3 tabelle con RLS, `btree_gist`, vincolo `agenda_bookings_no_overlap`, 3 righe copiate da `consultation_bookings`, FK `pynkstudio_crm_last_booking_id_fkey` → `agenda_bookings` |
 | D2 | `AGENDA_SIGNING_SECRET` su Vercel | 🔵 in test | 2026-09-30: impostata su **Production** (sensitive, generata casuale, valore non salvato altrove). **Preview mancante**: la CLI non la accetta per tutti i branch in modo non interattivo; da aggiungere a mano (`vercel env add AGENDA_SIGNING_SECRET preview`). Senza, nelle preview prenotazione e videocall rispondono 500. Da confermare col deploy di produzione |
 | D3 | Rimuovere `src/lib/pynkstudio/booking.ts` e la tabella `consultation_bookings` | ⬜ da iniziare | Solo dopo D1 verificata in produzione |
-| V1 | Server LiveKit su VPS + DNS + env `LIVEKIT_*` | ⬜ da iniziare | Scelta dell'host e del dominio: utente |
+| V1 | Server LiveKit su VPS + DNS + env `LIVEKIT_*` | 🔵 in test | 2026-09-30: server creato dall'utente, `LIVEKIT_*` su Vercel (Production + Preview), ridistribuito: le nuove prenotazioni sono `video`, il webhook rifiuta richieste non firmate (401). **Webhook LiveKit configurato su `https://pynkstudio.eu/webhook`, indirizzo errato** (301 → `/it/webhook`, pagina inesistente): va impostato `https://pynkstudio.eu/api/agenda/livekit-webhook`. Raggiungibilità del server non ancora provata con una call vera |
 | V2 | Collaudo end-to-end: prenota → email → entra ospite + staff → webhook → «conclusa» | ⬜ da iniziare | Dopo V1 |
 | V3 | Template WhatsApp coerenti con la videocall | ⬜ da iniziare | Vedi § 6 |
 | F1 | Link «annulla» per l'ospite nella pagina videocall/email | ⬜ da iniziare | L'endpoint `.../bookings/cancel` esiste già |
