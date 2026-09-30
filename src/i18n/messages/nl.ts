@@ -35,7 +35,6 @@ export const messages = mergeMessages(en, {
       heroH1b: "zonder gedoe.",
       heroSub: "Professionele website, online reserveringen en eenvoudig beheer van Google Maps en uw digitale aanwezigheid.",
       ctaDemo: "Vraag een demo aan",
-      ctaExample: "Bekijk een voorbeeld",
       badgeFreeCall: "U betaalt alleen als het bevalt",
       badgeOnline: "Online in 7 dagen",
       badgeMultilang: "Meertalig · NL EN DE FR ES +",

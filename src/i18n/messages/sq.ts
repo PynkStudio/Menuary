@@ -35,7 +35,6 @@ export const messages = mergeMessages(en, {
       heroH1b: "pa komplikime.",
       heroSub: "Faqe profesionale, rezervime online dhe menaxhim i thjeshtë i pranisë suaj në Google Maps.",
       ctaDemo: "Kërko demo",
-      ctaExample: "Shiko një shembull",
       badgeFreeCall: "Paguani vetëm nëse ju pëlqen",
       badgeOnline: "Online për 7 ditë",
       badgeMultilang: "Shumëgjuhëshe · SQ EN IT DE EL +",

@@ -35,7 +35,6 @@ export const messages = mergeMessages(en, {
       heroH1b: "brez zapletov.",
       heroSub: "Profesionalna spletna stran, spletne rezervacije in enostavno upravljanje vaše prisotnosti na Google Maps.",
       ctaDemo: "Zahtevaj demo",
-      ctaExample: "Oglej si primer",
       badgeFreeCall: "Plačate le, če vam je všeč",
       badgeOnline: "Na spletu v 7 dneh",
       badgeMultilang: "Večjezično · SL EN IT DE HR +",

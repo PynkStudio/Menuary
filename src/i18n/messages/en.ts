@@ -39,7 +39,6 @@ export const messages = {
       heroSub:
         "Professional website, online bookings and simplified management of Google Maps and your digital presence.",
       ctaDemo: "Request a demo",
-      ctaExample: "See an example",
       badgeFreeCall: "Pay only if you like it",
       badgeOnline: "Online in 7 days",
       badgeMultilang: "Multilingual · IT EN FR DE ES +",

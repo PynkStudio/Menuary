@@ -35,7 +35,6 @@ export const messages = mergeMessages(en, {
       heroH1b: "χωρίς ταλαιπωρία.",
       heroSub: "Επαγγελματική ιστοσελίδα, online κρατήσεις και απλή διαχείριση της παρουσίας σας στο Google Maps.",
       ctaDemo: "Ζητήστε demo",
-      ctaExample: "Δείτε παράδειγμα",
       badgeFreeCall: "Πληρώνετε μόνο αν σας αρέσει",
       badgeOnline: "Online σε 7 ημέρες",
       badgeMultilang: "Πολύγλωσσο · EL EN IT DE FR +",

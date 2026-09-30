@@ -27,7 +27,6 @@ import { DEFAULT_MARKET, MARKET_HEADER, formatMarketLanguageBadge, normalizeMark
 import { getMockupCopy } from "@/lib/localized-commercial-copy";
 import { getLocale, getTranslations } from "@/i18n";
 import { localizedPath } from "@/lib/marketing-seo";
-import { findTenantById } from "@/lib/tenant-registry";
 import { headers } from "next/headers";
 
 // Testi in i18n (home.inside.moments), stesso ordine.
@@ -46,10 +45,6 @@ const MENUARY_OPERATING_MOMENTS = [
   },
 ];
 
-// Il sito dimostrativo ufficiale del verticale food: è un esempio dichiarato,
-// non un cliente, e si apre in una nuova scheda.
-const EXAMPLE_TENANT_ID = "cascina-errante";
-
 export async function MarketingHomePage() {
   const { activeTenants } = await getMarketingHomeData("food");
   const locale = await getLocale();
@@ -60,8 +55,6 @@ export async function MarketingHomePage() {
   const multilangPrefix = h.badgeMultilang.split("·")[0]?.trim() || h.badgeMultilang;
   const multilangBadge = formatMarketLanguageBadge(multilangPrefix, market);
   const mockup = getMockupCopy(locale, market, "food");
-  const exampleSlug = findTenantById(EXAMPLE_TENANT_ID)?.previewSlug;
-  const exampleUrl = exampleSlug ? `https://demo.menuary.it/${exampleSlug}` : null;
 
   return (
     <MarketingShell>
@@ -91,12 +84,10 @@ export async function MarketingHomePage() {
                 >
                   {h.ctaDemo}
                 </Link>
-                {exampleUrl ? (
-                  <a href={exampleUrl} target="_blank" rel="noopener" className="menuary-link">
-                    {h.ctaExample}
-                    <ArrowUpRight size={16} strokeWidth={1.6} />
-                  </a>
-                ) : null}
+                <Link href={localizedPath("/pricing", locale)} className="menuary-link">
+                  {t.shell.nav.offer}
+                  <ArrowUpRight size={16} strokeWidth={1.6} />
+                </Link>
               </div>
               <p className="menuary-fade-up menuary-fade-up-d3 mt-5 inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--menuary-ink)]">
                 <ShieldCheck size={18} strokeWidth={1.8} className="text-[var(--menuary-sage)]" />
