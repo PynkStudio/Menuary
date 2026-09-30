@@ -2372,6 +2372,91 @@
   }
   .pynk-crm-drawer-error { font-size: 13px; color: hsl(0 70% 45%); flex: 1; }
 
+  .pynk-crm-header {
+    display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px;
+  }
+  .pynk-crm-header-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pynk-crm-btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .pynk-crm-btn:disabled { opacity: 0.45; cursor: default; }
+  .pynk-crm-kpis { margin-bottom: 18px; }
+  .pynk-crm-kpi-btn { text-align: left; cursor: pointer; font: inherit; }
+  .pynk-crm-kpi-btn[data-alert="true"] { border-color: hsl(30 90% 55%); background: hsl(35 100% 97%); }
+  .pynk-crm-kpi-btn:hover { border-color: var(--pa-accent); }
+  .pynk-crm-select { width: auto; min-width: 150px; flex: 0 0 auto; }
+  .pynk-crm-status-count {
+    margin-left: 6px; padding: 1px 6px; border-radius: 999px; font-size: 11px;
+    background: hsl(220 12% 92%); color: var(--pa-muted);
+  }
+  .pynk-crm-status-tab[data-active="true"] .pynk-crm-status-count { background: rgba(255,255,255,0.25); color: #fff; }
+  .pynk-crm-table[data-loading="true"] { opacity: 0.55; transition: opacity 0.15s; }
+  .pynk-crm-row-sub { display: block; font-size: 12px; color: var(--pa-muted); font-weight: 400; margin-top: 1px; }
+  .pynk-crm-row td[data-overdue="true"] { color: hsl(25 90% 40%); font-weight: 600; }
+  .pynk-crm-temp {
+    display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+  }
+  .pynk-crm-temp[data-temp="hot"]  { background: hsl(12 90% 92%); color: hsl(12 75% 38%); }
+  .pynk-crm-temp[data-temp="warm"] { background: hsl(40 95% 88%); color: hsl(35 80% 30%); }
+  .pynk-crm-temp[data-temp="cold"] { background: hsl(210 25% 93%); color: hsl(210 20% 40%); }
+  .pynk-crm-flag {
+    display: inline-block; margin-top: 3px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    background: hsl(220 12% 92%); color: hsl(220 15% 35%);
+  }
+  .pynk-crm-flag[data-tone="warn"] { background: hsl(35 100% 90%); color: hsl(25 85% 33%); }
+  .pynk-crm-pager {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px;
+    font-size: 13px; color: var(--pa-muted);
+  }
+
+  .pynk-crm-drawer { width: min(560px, 100vw); }
+  .pynk-crm-drawer-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; align-items: center; }
+  .pynk-crm-tabs { display: flex; gap: 2px; padding: 0 20px; border-bottom: 1px solid var(--pa-line); }
+  .pynk-crm-tab {
+    padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--pa-muted);
+    background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px;
+  }
+  .pynk-crm-tab[data-active="true"] { color: var(--pa-accent); border-bottom-color: var(--pa-accent); }
+  .pynk-crm-followup-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .pynk-crm-followup-row .pynk-admin-input { width: auto; }
+  .pynk-crm-chip {
+    padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 500; cursor: pointer;
+    background: #fff; border: 1px solid var(--pa-line); color: var(--pa-ink); transition: all 0.15s;
+  }
+  .pynk-crm-chip:hover { border-color: var(--pa-accent); color: var(--pa-accent); }
+  .pynk-crm-chip[data-active="true"] { background: var(--pa-accent); border-color: var(--pa-accent); color: #fff; }
+  .pynk-crm-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--pa-ink); }
+  .pynk-crm-danger {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 12px;
+    border-top: 1px dashed var(--pa-line); font-size: 13px; color: var(--pa-muted);
+  }
+  .pynk-crm-danger-link {
+    display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer;
+    font-size: 13px; color: hsl(0 60% 45%);
+  }
+  .pynk-crm-danger-btn {
+    padding: 6px 12px; border-radius: 7px; border: none; cursor: pointer; font-size: 13px; font-weight: 600;
+    background: hsl(0 65% 48%); color: #fff;
+  }
+  .pynk-crm-composer { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .pynk-crm-composer .pynk-admin-textarea { min-height: 70px; }
+  .pynk-crm-composer-types { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pynk-crm-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+  .pynk-crm-timeline-item {
+    display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 12px 0;
+    border-bottom: 1px solid var(--pa-line);
+  }
+  .pynk-crm-timeline-icon {
+    width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    background: hsl(220 12% 94%); color: var(--pa-muted);
+  }
+  .pynk-crm-timeline-item[data-type="form"] .pynk-crm-timeline-icon,
+  .pynk-crm-timeline-item[data-type="booking"] .pynk-crm-timeline-icon { background: color-mix(in srgb, var(--pa-accent) 14%, transparent); color: var(--pa-accent); }
+  .pynk-crm-timeline-title { margin: 0; font-size: 13px; font-weight: 600; color: var(--pa-ink); }
+  .pynk-crm-timeline-body { margin: 3px 0 0; font-size: 13px; color: var(--pa-ink); white-space: pre-wrap; word-break: break-word; }
+  .pynk-crm-timeline-meta { margin: 3px 0 0; font-size: 12px; color: var(--pa-muted); }
+  .pynk-crm-meta-grid-sm { font-size: 12px; margin-top: 6px; }
+  .pynk-crm-break { word-break: break-all; font-weight: 500; }
+  .pynk-crm-modal { width: min(100%, 520px); }
+
   .pynk-agenda-grid {
     display: grid;
     grid-template-columns: 56px repeat(5, 1fr);
@@ -2918,9 +3003,12 @@
   .pynk-ia-points li { display: flex; align-items: flex-start; gap: 12px; font-weight: 300; line-height: 1.5; }
   .pynk-ia-points li svg { flex-shrink: 0; margin-top: 2px; }
   .pynk-ia-points-tight { margin-top: 22px; }
-  .pynk-ia-hero-mobile-cta { margin-top: 30px; width: 100%; }
-  .pynk-ia-hero-mobile-cta .pynk-btn { width: 100%; padding: 16px 22px; font-size: 16px; white-space: nowrap; }
-  @media (min-width: 1000px) { .pynk-ia-hero-mobile-cta { display: none; } }
+  .pynk-ia-hero-ctas { margin-top: 30px; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .pynk-ia-hero-ctas .pynk-btn { width: 100%; white-space: nowrap; }
+  @media (min-width: 560px) {
+    .pynk-ia-hero-ctas { flex-direction: row; flex-wrap: wrap; }
+    .pynk-ia-hero-ctas .pynk-btn { width: auto; }
+  }
   .pynk-ia-reassurance {
     display: inline-flex;
     align-items: center;
@@ -3372,6 +3460,112 @@
     color: color-mix(in srgb, var(--pynk-fg) 80%, transparent);
   }
   .pynk-ia-strip-item-strong { font-weight: 400; letter-spacing: 0.02em; border-color: color-mix(in srgb, var(--pynk-primary) 30%, transparent); }
+
+  /* Il percorso */
+  .pynk-ia-path { padding: 32px 28px; }
+  .pynk-ia-path:hover { transform: none; }
+  .pynk-ia-path-title { margin: 0 0 20px; font-size: 12px; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pynk-muted-fg); }
+  .pynk-ia-path-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .pynk-ia-path-list li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 40%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 14%, transparent);
+    font-weight: 300;
+    line-height: 1.4;
+  }
+  .pynk-ia-path-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--pynk-gradient);
+    color: var(--pynk-primary-fg);
+  }
+
+  /* Cosa ottieni */
+  .pynk-ia-gain { display: grid; gap: 16px; }
+  @media (min-width: 640px) { .pynk-ia-gain { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1000px) { .pynk-ia-gain { grid-template-columns: repeat(3, 1fr); } }
+
+  /* Percorsi e prezzi */
+  .pynk-ia-plans { display: grid; gap: 18px; align-items: stretch; }
+  @media (min-width: 900px) { .pynk-ia-plans { grid-template-columns: repeat(3, 1fr); gap: 22px; } }
+  .pynk-ia-plan {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 26px;
+    padding: 34px 28px 28px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 45%, transparent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--pynk-card) 18%, transparent), color-mix(in srgb, var(--pynk-card) 8%, transparent));
+    transition: border-color 0.4s, transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.5s;
+  }
+  .pynk-ia-plan:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--pynk-primary) 45%, transparent); }
+  .pynk-ia-plan.is-featured {
+    border-color: color-mix(in srgb, var(--pynk-primary) 70%, transparent);
+    box-shadow: 0 30px 80px -40px hsl(330 80% 50% / 0.55);
+    background:
+      radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--pynk-primary) 14%, transparent), transparent 70%),
+      linear-gradient(180deg, color-mix(in srgb, var(--pynk-card) 22%, transparent), color-mix(in srgb, var(--pynk-card) 10%, transparent));
+  }
+  @media (min-width: 900px) { .pynk-ia-plan.is-featured { transform: translateY(-10px); } .pynk-ia-plan.is-featured:hover { transform: translateY(-14px); } }
+  .pynk-ia-plan-badge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--pynk-gradient);
+    color: var(--pynk-primary-fg);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .pynk-ia-plan-name { margin: 0; font-size: 1.15rem; font-weight: 400; letter-spacing: -0.01em; }
+  .pynk-ia-plan-price { margin: 14px 0 0; display: flex; align-items: baseline; gap: 8px; }
+  .pynk-ia-plan-price span { font-size: clamp(2.2rem, 4vw, 2.9rem); font-weight: 200; letter-spacing: -0.04em; line-height: 1; }
+  .pynk-ia-plan-price small { font-size: 14px; font-weight: 300; color: var(--pynk-muted-fg); }
+  .pynk-ia-plan-features { list-style: none; margin: 26px 0 28px; padding: 0; display: grid; gap: 12px; flex: 1; }
+  .pynk-ia-plan-features li { display: flex; align-items: flex-start; gap: 10px; font-weight: 300; line-height: 1.45; }
+  .pynk-ia-plan-features li svg { flex-shrink: 0; margin-top: 3px; color: var(--pynk-primary); }
+  .pynk-ia-plan-cta { width: 100%; }
+  .pynk-ia-plans-note { margin: 30px 0 0; text-align: center; font-size: 14px; font-weight: 300; color: var(--pynk-muted-fg); }
+
+  /* Percorso scelto nel form */
+  .pynk-ia-plan-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 14px;
+    padding: 8px 8px 8px 14px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--pynk-primary) 40%, transparent);
+    background: color-mix(in srgb, var(--pynk-primary) 10%, transparent);
+    font-size: 13px;
+    font-weight: 300;
+  }
+  .pynk-ia-plan-chip strong { font-weight: 500; }
+  .pynk-ia-plan-chip button {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 0;
+    background: color-mix(in srgb, var(--pynk-fg) 10%, transparent);
+    color: inherit;
+    cursor: pointer;
+    line-height: 1;
+  }
 
   /* CTA finale */
   .pynk-ia-final {

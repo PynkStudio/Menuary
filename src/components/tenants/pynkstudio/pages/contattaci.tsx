@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Check, Copy, Mail, MessageCircle, Phone, Send } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
-import { trackConversion } from "@/lib/tracking/client";
+import { getAttribution, trackConversion } from "@/lib/tracking/client";
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
@@ -66,6 +66,9 @@ function ContattaciInner() {
           phone: formData.phone,
           company: formData.company,
           source: "contact-form",
+          employees: formData.people,
+          industry: formData.sector,
+          attribution: getAttribution(),
         }),
       });
       if (!res.ok) throw new Error("send_failed");

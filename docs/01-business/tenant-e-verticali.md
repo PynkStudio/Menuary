@@ -76,11 +76,15 @@ Estratti da `TENANTS[]` in `src/lib/tenant-registry.ts` (campi `id`, `name`, `ve
   persistenza con gli altri tenant shop. Vedi [[casa-bramanti]].
 
 - **`pynkstudio`** — sito marketing multi-pagina con shell propria (`PynkShell`), route
-  globali dell'app dir gated da `requirePynkstudioTenant()`. **Landing per campagne a
-  pagamento** (chromeless, `noindex` per non competere in organico con `/consulenza`,
-  `/soluzioni` e `/ai-governance`):
+  globali dell'app dir gated da `requirePynkstudioTenant()`. **Landing per campagne**
+  (chromeless; `/organizzazione-pmi` è `noindex`, `/ia-in-azienda` è indicizzata):
   - `/organizzazione-pmi` — check-up operativo per uffici e PMI, CTA verso `/prenota-call`.
-  - `/ia-in-azienda` — integrazione dell'IA in azienda. Form preventivo a 3 passi sopra la
+  - `/ia-in-azienda` — formazione e adozione dell'IA in azienda (AI Literacy, linee guida
+    interne, attestati): hero, sezione «percorso», sei benefit, tre percorsi a prezzo
+    (Base 790 €, Standard 1490 €, Premium 2490 €, IVA esclusa; la CTA di ogni card
+    preseleziona il percorso nel form e lo scrive nel messaggio), «perché PYNK STUDIO», FAQ.
+    Indicizzata, in sitemap, con canonical self-referencing e JSON-LD (Organization,
+    Service con OfferCatalog, BreadcrumbList, FAQPage). Form preventivo a 3 passi sopra la
     piega (obiettivi → dimensione e tempistica → contatti) che invia a
     `/api/tenant/[tenantId]/contact` allegando i parametri UTM/gclid catturati dal modulo
     tracking. Dopo l'invio mostra nella stessa card la scelta di giorno e orario della call
@@ -90,10 +94,20 @@ Estratti da `TENANTS[]` in `src/lib/tenant-registry.ts` (campi `id`, `name`, `ve
     in `iaAziendaPage` di `src/lib/pynkstudio-i18n.ts`.
   **Richieste nel CRM**: per il solo tenant `pynkstudio`, la route contatti condivisa
   registra ogni richiesta in `pynkstudio_crm` (admin → CRM) oltre a mandare l'email a
-  `info@`, e invia una push all'admin. Contatto nuovo: `source` = `contact-form`
-  (`/contattaci`) o `landing-ia` (`/ia-in-azienda`); contatto già presente (stessa email,
-  confronto esatto come per le prenotazioni): aggiorna nome, telefono e azienda se forniti,
-  aggiunge la sorgente ai `tags` e antepone il messaggio datato alle `notes`. Se il CRM ha
+  `info@`, e invia una push all'admin. Tutti gli ingressi passano da `recordCrmTouch()`
+  (`src/lib/pynkstudio/crm.ts`): form contatti, landing IA, prenotazione call e
+  disiscrizione (`source: "unsubscribe"` → solo flag `unsubscribed_at`, non un lead).
+  Il contatto si riconosce per email in minuscolo; nuovo → `source` = `contact-form`, `landing-ia`
+  o `booking`; già presente → i campi vuoti non cancellano mai i dati noti, i nuovi valori
+  (telefono, azienda, persone, tempistica, percorso) aggiornano la scheda, gli `interests` si
+  uniscono, la `source` iniziale resta. Una richiesta riapre un contatto `lost`; una call promuove
+  `lead` → `prospect`. I dati strutturati (`employees_range`/`employees_count`, `industry`,
+  `interests`, `timing`, `plan_interest`, attribuzione `first_attribution`/`last_attribution`)
+  arrivano dai form come campi dedicati, non solo nel testo del messaggio; dimensione e
+  tempistica della landing sono normalizzate per posizione sulle etichette italiane
+  (`CRM_SIZE_OPTIONS`/`CRM_TIMING_OPTIONS`). Ogni evento scrive una riga in
+  `pynkstudio_crm_activities` (timeline: richieste, call prenotate/annullate, cambi stato,
+  note manuali). Se il CRM ha
   salvato la richiesta, un errore dell'email non fa fallire l'invio. Per gli altri tenant la
   route si comporta come prima.
   Da ricordare negli URL delle campagne: aggiungere i parametri `utm_*`, altrimenti la

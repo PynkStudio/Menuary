@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CalendarDays, Clock, Send } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
-import { trackConversion } from "@/lib/tracking/client";
+import { getAttribution, trackConversion } from "@/lib/tracking/client";
 
 type Slot = { time: string; startUtc: string; available: boolean };
 type Feedback = { kind: "error"; text: string } | null;
@@ -85,7 +85,7 @@ function PrenotaCallInner() {
       const res = await fetch("/api/tenant/pynkstudio/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, startUtc: selectedSlot.startUtc }),
+        body: JSON.stringify({ ...form, startUtc: selectedSlot.startUtc, attribution: getAttribution() }),
       });
       if (res.status === 409) {
         setFeedback({ kind: "error", text: c.slotTaken });

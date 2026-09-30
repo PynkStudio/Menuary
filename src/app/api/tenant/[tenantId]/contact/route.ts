@@ -4,6 +4,8 @@ import { getTenantContent } from "@/lib/tenant-content";
 import { sendEmail } from "@/lib/email/sender";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sendWebPush } from "@/lib/push/send";
+import { cleanAttribution, cleanList, recordCrmTouch } from "@/lib/pynkstudio/crm";
+import { sourceLabel } from "@/lib/pynkstudio/crm-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +35,12 @@ export async function POST(
     phone?: string;
     company?: string;
     source?: string;
+    employees?: string;
+    industry?: string;
+    interests?: string[];
+    timing?: string;
+    plan?: string;
+    attribution?: unknown;
   };
   try {
     body = await request.json();
@@ -62,6 +70,12 @@ export async function POST(
           phone: (body.phone ?? "").trim().slice(0, 40),
           company: (body.company ?? "").trim().slice(0, 160),
           source: (body.source ?? "").trim().slice(0, 40) || "contact-form",
+          employees: (body.employees ?? "").toString().trim().slice(0, 40),
+          industry: (body.industry ?? "").trim().slice(0, 120),
+          interests: cleanList(body.interests),
+          timing: (body.timing ?? "").trim().slice(0, 60),
+          plan: (body.plan ?? "").trim().slice(0, 120),
+          attribution: cleanAttribution(body.attribution),
         })
       : false;
 
@@ -103,6 +117,12 @@ type PynkLead = {
   phone: string;
   company: string;
   source: string;
+  employees: string;
+  industry: string;
+  interests: string[];
+  timing: string;
+  plan: string;
+  attribution: ReturnType<typeof cleanAttribution>;
 };
 
 /**
@@ -113,43 +133,24 @@ async function savePynkstudioLead(lead: PynkLead): Promise<boolean> {
   const svc = createSupabaseServiceClient();
   if (!svc) return false;
 
-  const stamp = new Date().toLocaleString("it-IT", { timeZone: "Europe/Rome" });
-  const entry = `— ${stamp} · ${lead.source}${lead.subject ? ` · ${lead.subject}` : ""}\n${lead.message}`.slice(0, 4000);
-  const { email } = lead;
-
+  const unsubscribe = lead.source === "unsubscribe";
   try {
-    const { data: existing } = await svc
-      .from("pynkstudio_crm")
-      .select("id, phone, company, notes, tags")
-      .eq("email", email)
-      .maybeSingle();
-
-    if (existing) {
-      const tags = existing.tags.includes(lead.source) ? existing.tags : [...existing.tags, lead.source];
-      const { error } = await svc
-        .from("pynkstudio_crm")
-        .update({
-          name: lead.name,
-          phone: lead.phone || existing.phone,
-          company: lead.company || existing.company,
-          notes: existing.notes ? `${entry}\n\n${existing.notes}` : entry,
-          tags,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", existing.id);
-      if (error) throw error;
-    } else {
-      const { error } = await svc.from("pynkstudio_crm").insert({
-        name: lead.name,
-        email,
-        phone: lead.phone,
-        company: lead.company || null,
-        notes: entry,
-        source: lead.source,
-        tags: [lead.source],
-      });
-      if (error) throw error;
-    }
+    await recordCrmTouch(svc, {
+      kind: unsubscribe ? "unsubscribe" : "form",
+      source: lead.source,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone,
+      company: lead.company,
+      employees: lead.employees,
+      industry: lead.industry,
+      interests: lead.interests,
+      timing: lead.timing,
+      plan: lead.plan,
+      attribution: lead.attribution,
+      title: unsubscribe ? "Richiesta di disiscrizione" : `${sourceLabel(lead.source)}${lead.subject ? ` · ${lead.subject}` : ""}`,
+      body: lead.message.slice(0, 4000),
+    });
   } catch (e) {
     console.warn("[contact] crm pynkstudio fallito:", e);
     return false;
@@ -157,10 +158,10 @@ async function savePynkstudioLead(lead: PynkLead): Promise<boolean> {
 
   try {
     await sendWebPush("pynkstudio", {
-      title: "Nuova richiesta dal sito",
+      title: unsubscribe ? "Richiesta di disiscrizione" : "Nuova richiesta dal sito",
       body: `${lead.name}${lead.company ? ` (${lead.company})` : ""} — ${lead.subject || lead.source}`,
       url: "/admin-pynkstudio/crm",
-      tag: `lead-${email}`,
+      tag: `lead-${lead.email.toLowerCase()}`,
     });
   } catch (e) {
     console.warn("[contact] push admin fallita:", e);

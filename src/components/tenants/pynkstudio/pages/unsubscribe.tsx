@@ -29,6 +29,7 @@ function UnsubscribeInner() {
           email,
           subject: "Richiesta disiscrizione email",
           message: `Richiesta di disiscrizione dalle comunicazioni email per l'indirizzo: ${email}`,
+          source: "unsubscribe",
         }),
       });
       if (!res.ok) throw new Error("send_failed");

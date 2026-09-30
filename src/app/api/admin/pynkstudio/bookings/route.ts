@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { addCrmActivity } from "@/lib/pynkstudio/crm";
 
 export const dynamic = "force-dynamic";
 
@@ -63,12 +64,38 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
 
-  const { error } = await svc
+  const { data: cancelled, error } = await svc
     .from("consultation_bookings")
     .update({ status: "cancelled" })
     .eq("id", body.id)
-    .eq("tenant_id", TENANT_ID);
+    .eq("tenant_id", TENANT_ID)
+    .eq("status", "confirmed")
+    .select("email, topic, starts_at")
+    .maybeSingle();
 
   if (error) return NextResponse.json({ error: "db_error" }, { status: 500 });
+
+  // Tiene allineato il CRM: conteggio call e timeline (best-effort).
+  if (cancelled) {
+    try {
+      const { data: contact } = await svc
+        .from("pynkstudio_crm")
+        .select("id, bookings_count")
+        .eq("email", cancelled.email.trim().toLowerCase())
+        .maybeSingle();
+      if (contact) {
+        await svc
+          .from("pynkstudio_crm")
+          .update({ bookings_count: Math.max(0, contact.bookings_count - 1), last_activity_at: new Date().toISOString() })
+          .eq("id", contact.id);
+        await addCrmActivity(svc, contact.id, "booking", "Call annullata", cancelled.topic, "admin", {
+          booking_id: body.id,
+          starts_at: cancelled.starts_at,
+        });
+      }
+    } catch (e) {
+      console.warn("[bookings] crm annullamento fallito:", e);
+    }
+  }
   return NextResponse.json({ ok: true });
 }

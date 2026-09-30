@@ -3520,6 +3520,47 @@ export type Database = {
           },
         ]
       }
+      pynkstudio_crm_activities: {
+        Row: {
+          body: string | null
+          contact_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          meta: Json | null
+          title: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          contact_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          meta?: Json | null
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string | null
+          contact_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          meta?: Json | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pynkstudio_crm_activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "pynkstudio_crm"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pynkstudio_crm: {
         Row: {
           address: string | null
@@ -3540,6 +3581,17 @@ export type Database = {
           tags: string[]
           updated_at: string
           work_hours: string | null
+          employees_range: string | null
+          interests: string[]
+          timing: string | null
+          plan_interest: string | null
+          first_attribution: Json | null
+          last_attribution: Json | null
+          submissions_count: number
+          last_activity_at: string
+          next_follow_up_at: string | null
+          estimated_value: number | null
+          unsubscribed_at: string | null
         }
         Insert: {
           address?: string | null
@@ -3560,6 +3612,17 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           work_hours?: string | null
+          employees_range?: string | null
+          interests?: string[]
+          timing?: string | null
+          plan_interest?: string | null
+          first_attribution?: Json | null
+          last_attribution?: Json | null
+          submissions_count?: number
+          last_activity_at?: string
+          next_follow_up_at?: string | null
+          estimated_value?: number | null
+          unsubscribed_at?: string | null
         }
         Update: {
           address?: string | null
@@ -3580,6 +3643,17 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           work_hours?: string | null
+          employees_range?: string | null
+          interests?: string[]
+          timing?: string | null
+          plan_interest?: string | null
+          first_attribution?: Json | null
+          last_attribution?: Json | null
+          submissions_count?: number
+          last_activity_at?: string
+          next_follow_up_at?: string | null
+          estimated_value?: number | null
+          unsubscribed_at?: string | null
         }
         Relationships: [
           {

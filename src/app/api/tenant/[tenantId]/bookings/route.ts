@@ -6,6 +6,7 @@ import { sendWebPush } from "@/lib/push/send";
 import { sendWhatsApp } from "@/lib/whatsapp/send";
 import { isValidSlot, slotEnd, formatSlotLabel } from "@/lib/pynkstudio/booking";
 import { bookingConfirmHtml } from "@/lib/pynkstudio/email-templates";
+import { cleanAttribution, cleanList, recordCrmTouch } from "@/lib/pynkstudio/crm";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,15 @@ type Body = {
   phone?: string;
   topic?: string;
   startUtc?: string;
+  // Facoltativi: arricchiscono la scheda CRM (la landing IA li ha già raccolti nel passo precedente).
+  source?: string;
+  company?: string;
+  employees?: string;
+  industry?: string;
+  interests?: string[];
+  timing?: string;
+  plan?: string;
+  attribution?: unknown;
 };
 
 export async function POST(
@@ -79,38 +89,26 @@ export async function POST(
 
   const slotLabel = formatSlotLabel(startUtc);
 
-  // Upsert CRM: crea il contatto se nuovo, aggiorna l'ultima call se già presente (best-effort).
+  // Upsert CRM: crea il contatto se nuovo, altrimenti ne aggiorna dati e storico call (best-effort).
   if (tenantId === "pynkstudio") {
     try {
-      const { data: existing } = await svc
-        .from("pynkstudio_crm")
-        .select("id, bookings_count")
-        .eq("email", email)
-        .maybeSingle();
-
-      if (existing) {
-        await svc
-          .from("pynkstudio_crm")
-          .update({
-            name,
-            phone,
-            last_booking_id: inserted.id,
-            last_booking_at: startUtc.toISOString(),
-            bookings_count: existing.bookings_count + 1,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing.id);
-      } else {
-        await svc.from("pynkstudio_crm").insert({
-          name,
-          email,
-          phone,
-          source: "booking",
-          last_booking_id: inserted.id,
-          last_booking_at: startUtc.toISOString(),
-          bookings_count: 1,
-        });
-      }
+      await recordCrmTouch(svc, {
+        kind: "booking",
+        source: (body.source ?? "").trim().slice(0, 40) || "booking",
+        name,
+        email,
+        phone,
+        company: (body.company ?? "").trim().slice(0, 160),
+        employees: (body.employees ?? "").toString().trim().slice(0, 40),
+        industry: (body.industry ?? "").trim().slice(0, 120),
+        interests: cleanList(body.interests),
+        timing: (body.timing ?? "").trim().slice(0, 60),
+        plan: (body.plan ?? "").trim().slice(0, 120),
+        attribution: cleanAttribution(body.attribution),
+        title: `Call prenotata · ${slotLabel}`,
+        body: topic,
+        booking: { id: inserted.id, startsAt: startUtc.toISOString() },
+      });
     } catch (e) {
       console.warn("[bookings] crm upsert fallito:", e);
     }

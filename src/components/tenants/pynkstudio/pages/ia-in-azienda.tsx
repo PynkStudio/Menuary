@@ -3,33 +3,43 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
-  Bot,
+  Award,
+  BookOpen,
   CalendarCheck,
   CalendarDays,
   Check,
   CheckCircle2,
   Clock,
   Code2,
+  Cog,
+  FileText,
   GraduationCap,
+  Handshake,
+  Lightbulb,
   Loader2,
   Lock,
   MessageCircle,
   Phone,
-  Scale,
   ShieldCheck,
   Sparkles,
+  Terminal,
 } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import { getAttribution, trackConversion } from "@/lib/tracking/client";
+import { CRM_SIZE_OPTIONS, CRM_TIMING_OPTIONS } from "@/lib/pynkstudio/crm-shared";
+import { PynkJsonLd } from "../pynk-json-ld";
+import { PYNK_ORIGIN } from "../ai-governance-data";
+import { breadcrumbSchema, faqSchema, organizationSchema } from "../pynk-seo";
 
 const FORM_ID = "preventivo";
-const whyIcons = [Code2, Lock, Scale, GraduationCap] as const;
+const whyIcons = [Code2, Terminal, Lightbulb, GraduationCap] as const;
+const gainIcons = [BookOpen, ShieldCheck, FileText, Award, Cog, Handshake] as const;
 
 type Copy = ReturnType<typeof usePynkCopy>["iaAziendaPage"];
 
@@ -103,7 +113,23 @@ const EMPTY_FORM: FormState = {
   notes: "",
 };
 
-function IaQuoteForm({ c, formRef }: { c: Copy; formRef: React.RefObject<HTMLDivElement | null> }) {
+// Il CRM riceve l'etichetta italiana canonica (per posizione), non il testo tradotto nella lingua del visitatore.
+function crmOption(canonical: readonly string[], localized: readonly string[], value: string): string {
+  const i = localized.indexOf(value);
+  return i >= 0 ? (canonical[i] ?? value) : value;
+}
+
+function IaQuoteForm({
+  c,
+  formRef,
+  plan,
+  onClearPlan,
+}: {
+  c: Copy;
+  formRef: React.RefObject<HTMLDivElement | null>;
+  plan: string | null;
+  onClearPlan: () => void;
+}) {
   const f = c.form;
   const href = useTenantLocalizedHref();
   const [step, setStep] = useState(0);
@@ -169,6 +195,7 @@ function IaQuoteForm({ c, formRef }: { c: Copy; formRef: React.RefObject<HTMLDiv
       "Richiesta dalla landing IA in azienda",
       "",
       `Obiettivi: ${data.goals.join(" · ")}`,
+      plan ? `Percorso di interesse: ${plan}` : null,
       data.size ? `Dimensione: ${data.size} persone` : null,
       data.timing ? `Tempistica: ${data.timing}` : null,
       data.company.trim() ? `Azienda: ${data.company.trim()}` : null,
@@ -191,6 +218,11 @@ function IaQuoteForm({ c, formRef }: { c: Copy; formRef: React.RefObject<HTMLDiv
           phone: data.phone.trim(),
           company: data.company.trim(),
           source: "landing-ia",
+          employees: crmOption(CRM_SIZE_OPTIONS, f.sizes, data.size),
+          timing: crmOption(CRM_TIMING_OPTIONS, f.timings, data.timing),
+          interests: data.goals,
+          plan: plan ?? "",
+          attribution,
         }),
       });
       if (!res.ok) throw new Error("send_failed");
@@ -240,6 +272,16 @@ function IaQuoteForm({ c, formRef }: { c: Copy; formRef: React.RefObject<HTMLDiv
                   {f.stepLabel} {step + 1} {f.of} {totalSteps}
                 </span>
               </div>
+              {plan && (
+                <p className="pynk-ia-plan-chip">
+                  <span>
+                    {f.planLabel}: <strong>{plan}</strong>
+                  </span>
+                  <button type="button" onClick={onClearPlan} aria-label={f.planRemove}>
+                    ×
+                  </button>
+                </p>
+              )}
               <div
                 className="pynk-ia-progress"
                 role="progressbar"
@@ -526,6 +568,12 @@ function IaCallPicker({ c, lead }: { c: Copy; lead: FormState }) {
           phone: phone.trim(),
           topic,
           startUtc: slot.startUtc,
+          source: "landing-ia",
+          company: lead.company.trim(),
+          employees: crmOption(CRM_SIZE_OPTIONS, f.sizes, lead.size),
+          timing: crmOption(CRM_TIMING_OPTIONS, f.timings, lead.timing),
+          interests: lead.goals,
+          attribution: getAttribution(),
         }),
       });
       if (res.status === 409) {
@@ -668,162 +716,6 @@ function IaCallPicker({ c, lead }: { c: Copy; lead: FormState }) {
   );
 }
 
-// ─── Console agente animata ──────────────────────────────────────────────────
-
-function AgentConsole({ c }: { c: Copy }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { amount: 0.4 });
-  const reduceMotion = useReducedMotion();
-  const total = c.demoSteps.length;
-  const [active, setActive] = useState(0);
-  const [approved, setApproved] = useState(false);
-
-  useEffect(() => {
-    if (reduceMotion || !inView) return;
-    // Ultimo passo: pausa lunga con "approvato", poi il ciclo riparte.
-    const atEnd = active >= total - 1;
-    const timer = window.setTimeout(
-      () => {
-        if (!atEnd) {
-          setActive((a) => a + 1);
-          return;
-        }
-        if (!approved) {
-          setApproved(true);
-          return;
-        }
-        setApproved(false);
-        setActive(0);
-      },
-      atEnd ? (approved ? 2600 : 1500) : 1500,
-    );
-    return () => window.clearTimeout(timer);
-  }, [active, approved, inView, reduceMotion, total]);
-
-  const shown = reduceMotion ? total - 1 : active;
-
-  return (
-    <div ref={ref} className="pynk-ia-console" aria-hidden>
-      <div className="pynk-ia-console-bar">
-        <span className="pynk-ia-dot" />
-        <span className="pynk-ia-dot" />
-        <span className="pynk-ia-dot" />
-        <span className="pynk-ia-console-title">
-          <Bot className="pynk-icon-xs" />
-          {c.demoConsoleTitle}
-        </span>
-      </div>
-      <ol className="pynk-ia-console-steps">
-        {c.demoSteps.map((s, i) => {
-          const state = i < shown || (i === shown && (approved || reduceMotion)) ? "done" : i === shown ? "run" : "wait";
-          return (
-            <li key={s.label} className={`pynk-ia-console-step is-${state}`}>
-              <span className="pynk-ia-console-icon">
-                {state === "done" ? (
-                  <Check className="pynk-icon-xs" />
-                ) : state === "run" ? (
-                  <Loader2 className="pynk-icon-xs pynk-spin" />
-                ) : (
-                  <span className="pynk-ia-console-pip" />
-                )}
-              </span>
-              <div className="pynk-ia-console-text">
-                <strong>{s.label}</strong>
-                <AnimatePresence initial={false}>
-                  {state !== "wait" && (
-                    <motion.span
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.35 }}
-                      className="pynk-ia-console-detail"
-                    >
-                      {s.detail}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-              {i === total - 1 && state !== "wait" && (
-                <span className={`pynk-ia-approve${approved || reduceMotion ? " is-approved" : ""}`}>
-                  {approved || reduceMotion ? <Check className="pynk-icon-xs" /> : null}
-                  {c.demoApprove}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </div>
-  );
-}
-
-// ─── Casi d'uso per reparto ──────────────────────────────────────────────────
-
-function UseCaseTabs({ c }: { c: Copy }) {
-  const [activeId, setActiveId] = useState<string>(c.useCases[0]?.id ?? "");
-  const current = c.useCases.find((u) => u.id === activeId) ?? c.useCases[0];
-
-  return (
-    <div className="pynk-ia-usecases">
-      <div className="pynk-ia-tabs" role="tablist">
-        {c.useCases.map((u) => (
-          <button
-            key={u.id}
-            type="button"
-            role="tab"
-            id={`ia-tab-${u.id}`}
-            aria-selected={u.id === activeId}
-            aria-controls="ia-usecase-panel"
-            onClick={() => setActiveId(u.id)}
-            className={`pynk-ia-tab${u.id === activeId ? " is-active" : ""}`}
-          >
-            {u.id === activeId && (
-              <motion.span layoutId="pynk-ia-tab-pill" className="pynk-ia-tab-pill" transition={{ type: "spring", bounce: 0.18, duration: 0.5 }} />
-            )}
-            <span className="pynk-ia-tab-label">{u.tab}</span>
-          </button>
-        ))}
-      </div>
-
-      <div id="ia-usecase-panel" role="tabpanel" aria-labelledby={`ia-tab-${current.id}`} className="pynk-ia-usecase-panel">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={current.id}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-            className="pynk-ia-compare"
-          >
-            <div className="pynk-ia-compare-card is-before">
-              <span className="pynk-ia-compare-label">{c.useCaseBefore}</span>
-              <p>{current.before}</p>
-            </div>
-            <div className="pynk-ia-compare-arrow" aria-hidden>
-              <ArrowRight className="pynk-icon" />
-            </div>
-            <div className="pynk-ia-compare-card is-after">
-              <span className="pynk-ia-compare-label">
-                <Sparkles className="pynk-icon-xs" />
-                {c.useCaseAfter}
-              </span>
-              <p>{current.after}</p>
-              <ul className="pynk-ia-tasks">
-                {current.tasks.map((t) => (
-                  <li key={t}>
-                    <Check className="pynk-icon-xs" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
 // ─── Pagina ──────────────────────────────────────────────────────────────────
 
 const reveal = {
@@ -841,6 +733,7 @@ function IaInAziendaInner() {
   const formRef = useRef<HTMLDivElement>(null);
   const formInView = useInView(formRef, { amount: 0.2 });
   const [pastHero, setPastHero] = useState(false);
+  const [plan, setPlan] = useState<string | null>(null);
 
   useEffect(() => {
     const onScroll = () => setPastHero(window.scrollY > window.innerHeight * 0.6);
@@ -849,292 +742,377 @@ function IaInAziendaInner() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const choosePlan = (name: string) => {
+    setPlan(name);
+    scrollToForm();
+  };
+
   const marquee = [...c.marquee, ...c.marquee];
+
+  const jsonLd = [
+    organizationSchema(),
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: "Formazione sull'Intelligenza Artificiale per aziende",
+      description:
+        "Percorso di adozione dell'IA in azienda: analisi dell'utilizzo attuale, linee guida interne, formazione del personale, documentazione, attestati e supporto successivo.",
+      url: `${PYNK_ORIGIN}/it/ia-in-azienda`,
+      provider: { "@type": "Organization", name: "PYNK STUDIO", url: PYNK_ORIGIN },
+      areaServed: "Italia",
+      serviceType: ["Formazione AI Literacy", "Consulenza adozione IA", "AI governance"],
+      audience: { "@type": "BusinessAudience", audienceType: "Aziende e team che usano strumenti di IA generativa" },
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "Percorsi di formazione IA in azienda",
+        itemListElement: c.plans.map((p) => ({
+          "@type": "Offer",
+          name: `Percorso ${p.name}`,
+          description: p.features.join(", "),
+          priceCurrency: "EUR",
+          priceSpecification: {
+            "@type": "PriceSpecification",
+            price: p.price.replace(/[^\d]/g, ""),
+            priceCurrency: "EUR",
+            valueAddedTaxIncluded: false,
+          },
+        })),
+      },
+    },
+    breadcrumbSchema([
+      { name: "Home", path: "/" },
+      { name: "IA in azienda", path: "/ia-in-azienda" },
+    ]),
+    faqSchema([...c.faq]),
+  ];
 
   return (
     <div className="pynk-page pynk-ia">
+      <PynkJsonLd data={jsonLd} />
       <IaHeader c={c} phoneHref={phoneHref} phoneLabel={phoneLabel} />
 
-      {/* ── Hero + form ─────────────────────────────────────── */}
-      <section className="pynk-ia-hero">
-        <div className="pynk-ia-hero-bg" aria-hidden>
-          <span className="pynk-blob pynk-blob-a" />
-          <span className="pynk-blob pynk-blob-b" />
-          <span className="pynk-blob pynk-blob-c" />
-          <span className="pynk-ia-grid" />
-        </div>
-        <div className="pynk-container pynk-ia-hero-inner">
-          <div className="pynk-ia-hero-copy">
-            <motion.span
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="pynk-pill pynk-lp-badge pynk-ia-badge"
-            >
-              <span className="pynk-ia-live" aria-hidden />
-              {c.badge}
-            </motion.span>
-            <motion.h1
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1, ease: [0.32, 0.72, 0, 1] }}
-              className="pynk-ia-title"
-            >
-              {c.heroTitleLead} <span className="pynk-ia-gradient-text">{c.heroTitleAccent}</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.25 }}
-              className="pynk-ia-lead"
-            >
-              {c.heroSubtitle}
-            </motion.p>
-            <ul className="pynk-ia-points">
-              {c.heroPoints.map((point, i) => (
-                <motion.li
-                  key={point}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 + i * 0.08 }}
-                >
-                  <CheckCircle2 className="pynk-icon-sm pynk-accent" />
-                  <span>{point}</span>
-                </motion.li>
-              ))}
-            </ul>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              className="pynk-ia-hero-mobile-cta"
-            >
-              <button type="button" onClick={scrollToForm} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
-                {c.heroCtaMobile}
-                <ArrowRight className="pynk-icon-sm pynk-arrow" />
-              </button>
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.75 }}
-              className="pynk-ia-reassurance"
-            >
-              <ShieldCheck className="pynk-icon-xs pynk-accent" />
-              {c.reassurance}
-            </motion.p>
+      <main>
+        {/* ── Hero + form ─────────────────────────────────────── */}
+        <section className="pynk-ia-hero">
+          <div className="pynk-ia-hero-bg" aria-hidden>
+            <span className="pynk-blob pynk-blob-a" />
+            <span className="pynk-blob pynk-blob-b" />
+            <span className="pynk-blob pynk-blob-c" />
+            <span className="pynk-ia-grid" />
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 32, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.3, ease: [0.32, 0.72, 0, 1] }}
-            className="pynk-ia-hero-form"
-          >
-            <IaQuoteForm c={c} formRef={formRef} />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Marquee capacità ───────────────────────────────── */}
-      <div className="pynk-ia-marquee" aria-label={c.marquee.join(", ")}>
-        <div className="pynk-ia-marquee-track" aria-hidden>
-          {marquee.map((item, i) => (
-            <span key={`${item}-${i}`} className="pynk-ia-marquee-item">
-              <Sparkles className="pynk-icon-xs" />
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Demo agente ────────────────────────────────────── */}
-      <section className="pynk-section">
-        <div className="pynk-container pynk-ia-demo">
-          <motion.div {...reveal} className="pynk-ia-demo-copy">
-            <span className="pynk-eyebrow-chip">{c.demoEyebrow}</span>
-            <h2 className="pynk-ia-h2">
-              {c.demoTitleLead} <span className="pynk-accent">{c.demoTitleAccent}</span>
-            </h2>
-            <p className="pynk-ia-body">{c.demoText}</p>
-            <ul className="pynk-ia-points pynk-ia-points-tight">
-              {c.demoPoints.map((point) => (
-                <li key={point}>
-                  <CheckCircle2 className="pynk-icon-sm pynk-accent" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-          <motion.div {...reveal} transition={{ ...reveal.transition, delay: 0.1 }}>
-            <AgentConsole c={c} />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Casi d'uso ─────────────────────────────────────── */}
-      <section className="pynk-section pynk-section-alt">
-        <div className="pynk-container">
-          <motion.div {...reveal} className="pynk-ia-section-head">
-            <span className="pynk-eyebrow-chip">{c.useCasesEyebrow}</span>
-            <h2 className="pynk-ia-h2 pynk-center">
-              {c.useCasesTitleLead} <span className="pynk-accent">{c.useCasesTitleAccent}</span>
-            </h2>
-          </motion.div>
-          <motion.div {...reveal}>
-            <UseCaseTabs c={c} />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Percorso ───────────────────────────────────────── */}
-      <section className="pynk-section">
-        <div className="pynk-container">
-          <motion.div {...reveal} className="pynk-ia-section-head">
-            <span className="pynk-eyebrow-chip">{c.processEyebrow}</span>
-            <h2 className="pynk-ia-h2 pynk-center">
-              {c.processTitleLead} <span className="pynk-accent">{c.processTitleAccent}</span>
-            </h2>
-          </motion.div>
-          <ol className="pynk-ia-process">
-            {c.process.map((step, i) => (
-              <motion.li
-                key={step.number}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, delay: i * 0.1, ease: [0.32, 0.72, 0, 1] }}
-                className="pynk-ia-process-step"
+          <div className="pynk-container pynk-ia-hero-inner">
+            <div className="pynk-ia-hero-copy">
+              <motion.span
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="pynk-pill pynk-lp-badge pynk-ia-badge"
               >
-                <span className="pynk-ia-process-num">{step.number}</span>
-                <h3 className="pynk-ia-h3">{step.title}</h3>
-                <p className="pynk-ia-body-sm">{step.desc}</p>
-              </motion.li>
-            ))}
-          </ol>
-          <motion.div {...reveal} className="pynk-center pynk-ia-inline-cta">
-            <button type="button" onClick={scrollToForm} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
-              {c.finalCta}
-              <ArrowRight className="pynk-icon-sm pynk-arrow" />
-            </button>
-          </motion.div>
-        </div>
-      </section>
+                <span className="pynk-ia-live" aria-hidden />
+                {c.badge}
+              </motion.span>
+              <motion.h1
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.32, 0.72, 0, 1] }}
+                className="pynk-ia-title"
+              >
+                {c.heroTitleLead} <span className="pynk-ia-gradient-text">{c.heroTitleAccent}</span>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.25 }}
+                className="pynk-ia-lead"
+              >
+                {c.heroSubtitle}
+              </motion.p>
+              <ul className="pynk-ia-points">
+                {c.heroPoints.map((point, i) => (
+                  <motion.li
+                    key={point}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 + i * 0.08 }}
+                  >
+                    <CheckCircle2 className="pynk-icon-sm pynk-accent" />
+                    <span>{point}</span>
+                  </motion.li>
+                ))}
+              </ul>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+                className="pynk-ia-hero-ctas"
+              >
+                <button type="button" onClick={scrollToForm} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
+                  {c.heroCtaPrimary}
+                  <ArrowRight className="pynk-icon-sm pynk-arrow" />
+                </button>
+                <Link
+                  href={href("/prenota-call")}
+                  onClick={() => trackContact("call")}
+                  className="pynk-btn pynk-btn-outline pynk-btn-lg"
+                >
+                  <CalendarDays className="pynk-icon-sm" />
+                  {c.heroCtaSecondary}
+                </Link>
+              </motion.div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.75 }}
+                className="pynk-ia-reassurance"
+              >
+                <ShieldCheck className="pynk-icon-xs pynk-accent" />
+                {c.reassurance}
+              </motion.p>
+            </div>
 
-      {/* ── Perché noi ─────────────────────────────────────── */}
-      <section className="pynk-section pynk-section-alt">
-        <div className="pynk-container">
-          <motion.div {...reveal} className="pynk-ia-section-head">
-            <span className="pynk-eyebrow-chip">{c.whyEyebrow}</span>
-            <h2 className="pynk-ia-h2 pynk-center">
-              {c.whyTitleLead} <span className="pynk-accent">{c.whyTitleAccent}</span>
-            </h2>
-          </motion.div>
-          <div className="pynk-ia-why">
-            {c.why.map((item, i) => {
-              const Icon = whyIcons[i] ?? Code2;
-              return (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 24 }}
+            <motion.div
+              initial={{ opacity: 0, y: 32, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.9, delay: 0.3, ease: [0.32, 0.72, 0, 1] }}
+              className="pynk-ia-hero-form"
+            >
+              <IaQuoteForm c={c} formRef={formRef} plan={plan} onClearPlan={() => setPlan(null)} />
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── Marquee strumenti ──────────────────────────────── */}
+        <div className="pynk-ia-marquee" aria-label={c.marquee.join(", ")}>
+          <div className="pynk-ia-marquee-track" aria-hidden>
+            {marquee.map((item, i) => (
+              <span key={`${item}-${i}`} className="pynk-ia-marquee-item">
+                <Sparkles className="pynk-icon-xs" />
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Non vendiamo un corso ──────────────────────────── */}
+        <section className="pynk-section" aria-labelledby="ia-path-title">
+          <div className="pynk-container pynk-ia-demo">
+            <motion.div {...reveal} className="pynk-ia-demo-copy">
+              <span className="pynk-eyebrow-chip">{c.pathEyebrow}</span>
+              <h2 id="ia-path-title" className="pynk-ia-h2">
+                {c.pathTitleLead} <span className="pynk-accent">{c.pathTitleAccent}</span>
+              </h2>
+              <p className="pynk-ia-body">{c.pathText}</p>
+            </motion.div>
+            <motion.div {...reveal} transition={{ ...reveal.transition, delay: 0.1 }} className="pynk-panel pynk-ia-path">
+              <h3 className="pynk-ia-path-title">{c.pathListTitle}</h3>
+              <ul className="pynk-ia-path-list">
+                {c.pathItems.map((item, i) => (
+                  <motion.li
+                    key={item}
+                    initial={{ opacity: 0, x: 14 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.45, delay: 0.15 + i * 0.07, ease: [0.32, 0.72, 0, 1] }}
+                  >
+                    <span className="pynk-ia-path-check">
+                      <Check className="pynk-icon-xs" />
+                    </span>
+                    {item}
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── Cosa ottieni ───────────────────────────────────── */}
+        <section className="pynk-section pynk-section-alt" aria-labelledby="ia-gain-title">
+          <div className="pynk-container">
+            <motion.div {...reveal} className="pynk-ia-section-head">
+              <span className="pynk-eyebrow-chip">{c.gainEyebrow}</span>
+              <h2 id="ia-gain-title" className="pynk-ia-h2 pynk-center">
+                {c.gainTitleLead} <span className="pynk-accent">{c.gainTitleAccent}</span>
+              </h2>
+            </motion.div>
+            <div className="pynk-ia-gain">
+              {c.gain.map((item, i) => {
+                const Icon = gainIcons[i] ?? BookOpen;
+                return (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{ duration: 0.55, delay: (i % 3) * 0.08, ease: [0.32, 0.72, 0, 1] }}
+                    className="pynk-panel pynk-ia-why-card"
+                  >
+                    <span className="pynk-panel-icon">
+                      <Icon className="pynk-icon" />
+                    </span>
+                    <h3 className="pynk-ia-h3">{item.title}</h3>
+                    <p className="pynk-ia-body-sm">{item.desc}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Percorsi e prezzi ──────────────────────────────── */}
+        <section className="pynk-section" aria-labelledby="ia-plans-title">
+          <div className="pynk-container">
+            <motion.div {...reveal} className="pynk-ia-section-head">
+              <span className="pynk-eyebrow-chip">{c.plansEyebrow}</span>
+              <h2 id="ia-plans-title" className="pynk-ia-h2 pynk-center">
+                {c.plansTitleLead} <span className="pynk-accent">{c.plansTitleAccent}</span>
+              </h2>
+            </motion.div>
+            <div className="pynk-ia-plans">
+              {c.plans.map((p, i) => (
+                <motion.article
+                  key={p.id}
+                  initial={{ opacity: 0, y: 28 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
-                  transition={{ duration: 0.55, delay: i * 0.08, ease: [0.32, 0.72, 0, 1] }}
-                  className="pynk-panel pynk-ia-why-card"
+                  transition={{ duration: 0.6, delay: i * 0.1, ease: [0.32, 0.72, 0, 1] }}
+                  className={`pynk-ia-plan${p.badge ? " is-featured" : ""}`}
                 >
-                  <span className="pynk-panel-icon">
-                    <Icon className="pynk-icon" />
+                  {p.badge && <span className="pynk-ia-plan-badge">{p.badge}</span>}
+                  <h3 className="pynk-ia-plan-name">{p.name}</h3>
+                  <p className="pynk-ia-plan-price">
+                    <span>{p.price}</span>
+                    <small>{p.vat}</small>
+                  </p>
+                  <ul className="pynk-ia-plan-features">
+                    {p.features.map((feature) => (
+                      <li key={feature}>
+                        <Check className="pynk-icon-xs" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => choosePlan(p.name)}
+                    className={`pynk-btn pynk-group pynk-ia-plan-cta ${p.badge ? "pynk-btn-primary" : "pynk-btn-outline"}`}
+                  >
+                    {c.plansCta}
+                    <ArrowRight className="pynk-icon-sm pynk-arrow" />
+                  </button>
+                </motion.article>
+              ))}
+            </div>
+            <motion.p {...reveal} className="pynk-ia-plans-note">
+              {c.plansNote}
+            </motion.p>
+          </div>
+        </section>
+
+        {/* ── Perché noi ─────────────────────────────────────── */}
+        <section className="pynk-section pynk-section-alt" aria-labelledby="ia-why-title">
+          <div className="pynk-container">
+            <motion.div {...reveal} className="pynk-ia-section-head">
+              <span className="pynk-eyebrow-chip">{c.whyEyebrow}</span>
+              <h2 id="ia-why-title" className="pynk-ia-h2 pynk-center">
+                {c.whyTitleLead} <span className="pynk-accent">{c.whyTitleAccent}</span>
+              </h2>
+            </motion.div>
+            <div className="pynk-ia-why">
+              {c.why.map((item, i) => {
+                const Icon = whyIcons[i] ?? Code2;
+                return (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{ duration: 0.55, delay: i * 0.08, ease: [0.32, 0.72, 0, 1] }}
+                    className="pynk-panel pynk-ia-why-card"
+                  >
+                    <span className="pynk-panel-icon">
+                      <Icon className="pynk-icon" />
+                    </span>
+                    <h3 className="pynk-ia-h3">{item.title}</h3>
+                    <p className="pynk-ia-body-sm">{item.desc}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            <motion.div {...reveal} className="pynk-ia-strip">
+              <p className="pynk-ia-strip-label">{c.modelsLabel}</p>
+              <div className="pynk-ia-strip-items">
+                {c.models.map((m) => (
+                  <span key={m} className="pynk-ia-strip-item">
+                    {m}
                   </span>
-                  <h3 className="pynk-ia-h3">{item.title}</h3>
-                  <p className="pynk-ia-body-sm">{item.desc}</p>
-                </motion.div>
-              );
-            })}
+                ))}
+              </div>
+            </motion.div>
           </div>
+        </section>
 
-          <motion.div {...reveal} className="pynk-ia-strip">
-            <p className="pynk-ia-strip-label">{c.modelsLabel}</p>
-            <div className="pynk-ia-strip-items">
-              {c.models.map((m) => (
-                <span key={m} className="pynk-ia-strip-item">
-                  {m}
-                </span>
+        {/* ── FAQ ────────────────────────────────────────────── */}
+        <section className="pynk-section" aria-labelledby="ia-faq-title">
+          <div className="pynk-container pynk-narrow">
+            <motion.h2 {...reveal} id="ia-faq-title" className="pynk-ia-h2 pynk-center">
+              {c.faqTitleLead} <span className="pynk-accent">{c.faqTitleAccent}</span>
+            </motion.h2>
+            <div className="pynk-lp-faq pynk-mt-24">
+              {c.faq.map((item, i) => (
+                <motion.details
+                  key={item.q}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: i * 0.05 }}
+                  className="pynk-panel pynk-lp-faq-item"
+                >
+                  <summary className="pynk-lp-faq-q">{item.q}</summary>
+                  <p className="pynk-lp-faq-a">{item.a}</p>
+                </motion.details>
               ))}
             </div>
-          </motion.div>
-          <motion.div {...reveal} className="pynk-ia-strip">
-            <p className="pynk-ia-strip-label">{c.proofLabel}</p>
-            <div className="pynk-ia-strip-items">
-              {c.proof.map((p) => (
-                <span key={p} className="pynk-ia-strip-item pynk-ia-strip-item-strong">
-                  {p}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── FAQ ────────────────────────────────────────────── */}
-      <section className="pynk-section">
-        <div className="pynk-container pynk-narrow">
-          <motion.h2 {...reveal} className="pynk-ia-h2 pynk-center">
-            {c.faqTitleLead} <span className="pynk-accent">{c.faqTitleAccent}</span>
-          </motion.h2>
-          <div className="pynk-lp-faq pynk-mt-24">
-            {c.faq.map((item, i) => (
-              <motion.details
-                key={item.q}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: i * 0.05 }}
-                className="pynk-panel pynk-lp-faq-item"
-              >
-                <summary className="pynk-lp-faq-q">{item.q}</summary>
-                <p className="pynk-lp-faq-a">{item.a}</p>
-              </motion.details>
-            ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── CTA finale ─────────────────────────────────────── */}
-      <section className="pynk-section pynk-ia-final-wrap">
-        <div className="pynk-container">
-          <motion.div {...reveal} className="pynk-ia-final">
-            <span className="pynk-ia-final-glow" aria-hidden />
-            <h2 className="pynk-ia-h2 pynk-center">
-              {c.finalTitleLead} <span className="pynk-ia-gradient-text">{c.finalTitleAccent}</span>
-            </h2>
-            <p className="pynk-ia-body pynk-center pynk-ia-final-sub">{c.finalSubtitle}</p>
-            <div className="pynk-ia-final-ctas">
-              <button type="button" onClick={scrollToForm} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
-                {c.finalCta}
-                <ArrowRight className="pynk-icon-sm pynk-arrow" />
-              </button>
-              <a href={phoneHref} onClick={() => trackContact("phone")} className="pynk-btn pynk-btn-outline pynk-btn-lg">
-                <Phone className="pynk-icon-sm" />
-                {c.finalCall}
-              </a>
-              <a
-                href={c.whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackContact("whatsapp")}
-                className="pynk-btn pynk-btn-outline pynk-btn-lg"
-              >
-                <MessageCircle className="pynk-icon-sm" />
-                {c.finalWhatsapp}
-              </a>
-            </div>
-            <p className="pynk-ia-reassurance pynk-ia-reassurance-center">
-              <ShieldCheck className="pynk-icon-xs pynk-accent" />
-              {c.reassurance}
-            </p>
-          </motion.div>
-        </div>
-      </section>
+        {/* ── CTA finale ─────────────────────────────────────── */}
+        <section className="pynk-section pynk-ia-final-wrap">
+          <div className="pynk-container">
+            <motion.div {...reveal} className="pynk-ia-final">
+              <span className="pynk-ia-final-glow" aria-hidden />
+              <h2 className="pynk-ia-h2 pynk-center">
+                {c.finalTitleLead} <span className="pynk-ia-gradient-text">{c.finalTitleAccent}</span>
+              </h2>
+              <p className="pynk-ia-body pynk-center pynk-ia-final-sub">{c.finalSubtitle}</p>
+              <div className="pynk-ia-final-ctas">
+                <button type="button" onClick={scrollToForm} className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-group">
+                  {c.finalCta}
+                  <ArrowRight className="pynk-icon-sm pynk-arrow" />
+                </button>
+                <a href={phoneHref} onClick={() => trackContact("phone")} className="pynk-btn pynk-btn-outline pynk-btn-lg">
+                  <Phone className="pynk-icon-sm" />
+                  {c.finalCall}
+                </a>
+                <a
+                  href={c.whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackContact("whatsapp")}
+                  className="pynk-btn pynk-btn-outline pynk-btn-lg"
+                >
+                  <MessageCircle className="pynk-icon-sm" />
+                  {c.finalWhatsapp}
+                </a>
+              </div>
+              <p className="pynk-ia-reassurance pynk-ia-reassurance-center">
+                <ShieldCheck className="pynk-icon-xs pynk-accent" />
+                {c.reassurance}
+              </p>
+            </motion.div>
+          </div>
+        </section>
+      </main>
 
       <footer className="pynk-ia-footer">
         <div className="pynk-container pynk-ia-footer-inner">
