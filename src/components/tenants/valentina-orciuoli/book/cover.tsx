@@ -29,6 +29,7 @@ function BentCover({ bend }: { bend: MotionValue<number> }) {
           rotateY: bend,
           width: `calc(var(--vo-cover-w) / ${STAVES})`,
           left: index === 0 ? 0 : "100%",
+          ["--vo-stave" as string]: index,
         }}
         data-stave={index}
       >
