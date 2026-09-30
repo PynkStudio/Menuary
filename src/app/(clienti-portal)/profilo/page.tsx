@@ -1,12 +1,45 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { ClientsProfileForm } from "@/components/clients/clients-profile-form";
-import { MOCK_CLIENT_PROFILE } from "@/lib/clients-mock-data";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { ClientProfile } from "@/lib/clients-types";
 
 export const metadata: Metadata = {
   title: "Profilo",
 };
 
-export default function ClientiProfiloPage() {
+function parseDietNotes(value: string | null) {
+  const allergiesNote = value?.match(/(?:^|\n)Allergie\/intolleranze:\s*(.*)/i)?.[1]?.trim() ?? value ?? "";
+  const preferences = value?.match(/(?:^|\n)Preferenze:\s*(.*)/i)?.[1]
+    ?.split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean) ?? [];
+  return { allergiesNote, preferences };
+}
+
+export default async function ClientiProfiloPage() {
+  const supabase = await createSupabaseServerClient(".menuary.it");
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/profilo");
+  const { data: stored } = await supabase
+    .from("user_profiles")
+    .select("birth_date,diet_notes,is_vegetarian")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const parsed = parseDietNotes(stored?.diet_notes ?? null);
+  const metadata = user.user_metadata as Record<string, unknown>;
+  const profile: ClientProfile = {
+    id: user.id,
+    firstName: typeof metadata.first_name === "string" ? metadata.first_name : "",
+    lastName: typeof metadata.last_name === "string" ? metadata.last_name : "",
+    email: user.email ?? "",
+    phone: user.phone ?? "",
+    birthDate: stored?.birth_date ?? "",
+    allergiesNote: parsed.allergiesNote,
+    dietaryPreferences: parsed.preferences.length
+      ? parsed.preferences
+      : stored?.is_vegetarian ? ["vegetariano"] : [],
+  };
   return (
     <div>
       <p className="menuary-section-label">Dati personali</p>
@@ -16,7 +49,7 @@ export default function ClientiProfiloPage() {
         sono condivise con i locali solo in base ai consensi e alle interazioni che scegli.
       </p>
       <div className="mt-10">
-        <ClientsProfileForm initial={MOCK_CLIENT_PROFILE} />
+        <ClientsProfileForm initial={profile} />
       </div>
     </div>
   );

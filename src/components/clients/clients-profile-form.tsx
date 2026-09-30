@@ -13,14 +13,27 @@ const DIETARY = [
 ] as const;
 
 export function ClientsProfileForm({ initial }: { initial: ClientProfile }) {
-  const [savedHint, setSavedHint] = useState(false);
+  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   return (
     <form
       className="mx-auto max-w-2xl space-y-6"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        setSavedHint(true);
+        setStatus("saving");
+        const data = new FormData(e.currentTarget);
+        const response = await fetch("/api/client/profile", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            firstName: data.get("firstName"),
+            lastName: data.get("lastName"),
+            birthDate: data.get("birthDate"),
+            allergiesNote: data.get("allergiesNote"),
+            dietaryPreferences: data.getAll("diet"),
+          }),
+        });
+        setStatus(response.ok ? "saved" : "error");
       }}
     >
       <div className="grid gap-5 sm:grid-cols-2">
@@ -47,6 +60,7 @@ export function ClientsProfileForm({ initial }: { initial: ClientProfile }) {
           type="email"
           name="email"
           defaultValue={initial.email}
+          readOnly
           className="mt-2 w-full rounded-xl border border-[var(--menuary-line)] bg-white px-4 py-3"
         />
       </label>
@@ -56,6 +70,7 @@ export function ClientsProfileForm({ initial }: { initial: ClientProfile }) {
           type="tel"
           name="phone"
           defaultValue={initial.phone}
+          readOnly
           className="mt-2 w-full rounded-xl border border-[var(--menuary-line)] bg-white px-4 py-3"
         />
       </label>
@@ -93,14 +108,15 @@ export function ClientsProfileForm({ initial }: { initial: ClientProfile }) {
           ))}
         </div>
       </fieldset>
-      <button type="submit" className="menuary-button menuary-button-accent">
-        Salva profilo
+      <button type="submit" disabled={status === "saving"} className="menuary-button menuary-button-accent disabled:opacity-60">
+        {status === "saving" ? "Salvataggio…" : "Salva profilo"}
       </button>
-      {savedHint && (
+      {status === "saved" && (
         <p className="text-sm text-[var(--menuary-sage)]" role="status">
-          (Demo) Salvataggio collegato a Supabase in seguito.
+          Profilo aggiornato. I prossimi suggerimenti terranno conto delle tue preferenze.
         </p>
       )}
+      {status === "error" && <p className="text-sm text-red-700" role="alert">Non è stato possibile salvare il profilo. Riprova.</p>}
     </form>
   );
 }

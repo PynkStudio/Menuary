@@ -106,6 +106,8 @@ Infrastruttura unica per tutte le notifiche push del portale (tenant e admin pia
 - I lead dei siti marketing salvano la fonte in `platform_leads.attribution` (jsonb: `utm_*`, `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, `oppref`, `referrer`, `landing_path`, `captured_at`). Colonna creata in produzione il 2026-09-29 via MCP `apply_migration` e verificata.
 - `POST /api/marketing-leads` ha un limite per IP (per istanza) e per email (2 richieste in 15 minuti) e restituisce codici errore stabili (`missing_fields`, `invalid_email`, `rate_limited`, `server_error`) che i form traducono.
 
+- Le landing `/ristoranti/*` aggiungono gli eventi `landing_view`, `landing_cta_click`, `demo_form_open`, `demo_request_sent` e salvano `source = menuary-landing:<slug>` sul lead: vedi [[landing-verticali-ristoranti]] § 4.
+
 ## Da confermare
 
 - Quali integrazioni sono effettivamente in produzione vs in setup/sandbox.

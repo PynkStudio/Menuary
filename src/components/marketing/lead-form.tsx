@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { messages as itMessages } from "@/i18n/messages/it";
 import { DEFAULT_MARKET, MARKET_COOKIE, normalizeMarketCode } from "@/lib/markets";
 import { getAttribution, trackConversion } from "@/lib/tracking/client";
+import { trackLandingEvent } from "@/components/marketing/landings/landing-tracker";
 
 type LeadFormT = typeof itMessages["marketing"]["leadForm"];
 
@@ -22,16 +23,30 @@ function currentMarket() {
   return normalizeMarketCode(cookieMarket) ?? DEFAULT_MARKET;
 }
 
+/** Slug della landing verticale da cui arriva il visitatore (`/contatti?landing=…`). */
+function sourceLanding(): string | null {
+  if (typeof window === "undefined") return null;
+  const value = new URLSearchParams(window.location.search).get("landing")?.trim();
+  return value && /^[a-z0-9-]{1,48}$/.test(value) ? value : null;
+}
+
 export function MarketingLeadForm({ t, privacyHref }: { t: LeadFormT; privacyHref: string }) {
   const [status, setStatus] = useState<FormStatus>({ type: "idle" });
 
+  useEffect(() => {
+    const landing = sourceLanding();
+    if (landing) trackLandingEvent("demo_form_open", { landing });
+  }, []);
+
   async function submit(formData: FormData) {
     setStatus({ type: "sending" });
+    const landing = sourceLanding();
     const payload = {
       ...Object.fromEntries(formData.entries()),
       vertical: "food",
       country: currentMarket(),
       attribution: getAttribution(),
+      ...(landing ? { source: `menuary-landing:${landing}` } : {}),
     };
     const response = await fetch("/api/marketing-leads", {
       method: "POST",
@@ -62,7 +77,10 @@ export function MarketingLeadForm({ t, privacyHref }: { t: LeadFormT; privacyHre
     }
 
     const interest = formData.get("interest");
-    trackConversion("lead", { label: typeof interest === "string" ? interest : undefined });
+    trackConversion("lead", {
+      label: landing ? `landing:${landing}` : typeof interest === "string" ? interest : undefined,
+    });
+    if (landing) trackLandingEvent("demo_request_sent", { landing });
     setStatus({ type: "success" });
   }
 

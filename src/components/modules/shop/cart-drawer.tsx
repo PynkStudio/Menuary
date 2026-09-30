@@ -24,6 +24,7 @@ import { hasMenuBundle } from "@/lib/menu-bundle";
 import type { AdminMenuItem, CartLine } from "@/lib/types";
 import { useEffectiveFeatures } from "@/lib/use-effective-features";
 import { CartAiUpsell } from "@/components/modules/shop/cart-ai-upsell";
+import { ConversationalMenuAssistant } from "@/components/modules/shop/conversational-menu-assistant";
 import { CartMenuConversion } from "@/components/modules/shop/cart-menu-conversion";
 import { canAddToCart } from "@/lib/ordering-rules";
 import { bodyScrollLock, bodyScrollUnlock } from "@/lib/body-scroll-lock";
@@ -72,6 +73,34 @@ export function CartDrawer() {
   }, [favIds, items]);
 
   const total = cartTotal(lines);
+
+  function addAssistantItem(itemId: string) {
+    const item = items.find((candidate) => candidate.id === itemId);
+    if (!item || !item.available) return;
+    if (hasMenuBundle(item)) {
+      setBundleItem(item);
+      return;
+    }
+    if (hasOnlyPriceVariants(item, extraLists)) {
+      setFormatoFavItem(item);
+      return;
+    }
+    if (needsCustomization(item, extraLists)) {
+      setCustomizeItem(item);
+      return;
+    }
+    const variant = priceVariants(item.price)[0];
+    addLine({
+      itemId: item.id,
+      categoryId: item.categoryId,
+      name: item.name,
+      qty: 1,
+      variantKey: variant.key === "default" ? undefined : variant.key,
+      variantLabel: variant.label,
+      basePrice: variant.price,
+      unitPrice: variant.price,
+    });
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -429,6 +458,17 @@ export function CartDrawer() {
             tableId={context.type === "tavolo" ? context.tableId ?? null : null}
           />
         )}
+
+        <ConversationalMenuAssistant
+          tenantId={tenant.id}
+          channel={context.type === "tavolo" ? "table" : "site"}
+          tableId={context.type === "tavolo" ? context.tableId ?? null : null}
+          locale={typeof document === "undefined" ? "it" : document.documentElement.lang || "it"}
+          cartItemIds={lines.map((line) => line.itemId)}
+          favoriteItemIds={favIds}
+          itemNames={Object.fromEntries(items.map((item) => [item.id, item.name]))}
+          onAdd={addAssistantItem}
+        />
 
         {lines.length > 0 && (
           <footer className="shrink-0 border-t border-pork-ink/10 bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">

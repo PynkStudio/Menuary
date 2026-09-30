@@ -14,6 +14,7 @@ export const MENU_ORDER_CHANNELS: MenuOrderChannelDefinition[] = [
   { value: "whatsapp", label: "Ordini WhatsApp", requiredModules: ["aiWhatsapp"] },
   { value: "online", label: "Ordini online", requiredModules: ["takeaway"] },
   { value: "table", label: "Ordini al tavolo", requiredModules: ["tableOrders"] },
+  { value: "kiosk", label: "Kiosk", requiredModules: ["tableOrders"] },
   {
     value: "product_reservation",
     label: "Prenotazioni prodotti",

@@ -5,6 +5,7 @@ import {
   Plus, Minus, ShoppingBag, X, ArrowRight, ArrowLeft,
   UtensilsCrossed, ShoppingCart, Banknote, QrCode, CreditCard, Smartphone, Check,
 } from "lucide-react";
+import { ConversationalMenuAssistant } from "@/components/modules/shop/conversational-menu-assistant";
 
 type Category = {
   id: string;
@@ -46,7 +47,7 @@ type KioskConfig = {
 };
 
 type MenuPayload = {
-  device: { id: string; name: string; config: KioskConfig };
+  device: { id: string; name: string; tenantId: string; config: KioskConfig };
   categories: Category[];
   items: Item[];
 };
@@ -592,6 +593,19 @@ export function KioskApp({ pairingCode }: { pairingCode: string }) {
           </button>
         </header>
         <div className="kiosk-cart-lines">
+          {data && (
+            <ConversationalMenuAssistant
+              tenantId={data.device.tenantId}
+              channel="kiosk"
+              locale={typeof document === "undefined" ? "it" : document.documentElement.lang || "it"}
+              cartItemIds={cart.map((line) => line.itemId)}
+              itemNames={Object.fromEntries(data.items.map((item) => [item.id, item.name]))}
+              onAdd={(itemId) => {
+                const item = data.items.find((candidate) => candidate.id === itemId);
+                if (item) addToCart(item);
+              }}
+            />
+          )}
           {cart.length === 0 ? (
             <p className="kiosk-cart-empty">Il carrello è vuoto. Tocca un prodotto per aggiungerlo.</p>
           ) : (

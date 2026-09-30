@@ -124,6 +124,19 @@
       "env": {
         "TRACKING_MENUARY_OPENAI_PIXEL_ID": "test-openai-pixel"
       }
+    },
+    {
+      "name": "menuary-landings",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3171"
+      ],
+      "port": 3171,
+      "url": "http://menuary.localhost:3171"
     }
   ]
 }

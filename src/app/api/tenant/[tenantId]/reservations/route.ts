@@ -9,6 +9,7 @@ import {
   type TableForPlanner,
 } from "@/lib/reservations/engine";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
+import { getReservationBlock } from "@/lib/reservations/blocks";
 
 type CreateBody = {
   customerName: string;
@@ -77,6 +78,14 @@ export async function POST(
         : "web";
   const notes = body.notes?.trim() ?? "";
   const manual = reservationNeedsManualApproval(notes, tags);
+  const reservationBlock = await getReservationBlock(svc, {
+    tenantId,
+    date: reservationDate,
+    time: body.reservationTime.trim(),
+  });
+  if (reservationBlock) {
+    return NextResponse.json({ error: "reservation_slot_closed" }, { status: 409 });
+  }
 
   // Servizio prenotato (services vertical): valida il servizio appartenga al
   // tenant ed eredita la durata se non fornita esplicitamente.

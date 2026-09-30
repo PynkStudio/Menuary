@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   const [{ data: cats }, { data: items }] = await Promise.all([catsQ, itemsQ]);
 
   return NextResponse.json({
-    device: { id: device.id, name: device.name, config: device.config },
+    device: { id: device.id, name: device.name, tenantId, config: device.config },
     categories: cats ?? [],
     items: items ?? [],
   });

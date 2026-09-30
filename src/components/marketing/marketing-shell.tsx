@@ -7,6 +7,11 @@ import { headers } from "next/headers";
 import { DEFAULT_MARKET, MARKET_HEADER, normalizeMarketCode } from "@/lib/markets";
 import { LOCALE_HEADER, DEFAULT_LOCALE, isAppLocale } from "@/i18n/locales";
 import { localizedPath } from "@/lib/marketing-seo";
+import {
+  MENUARY_LANDING_BASE,
+  menuaryLandingPath,
+  publishedMenuaryLandings,
+} from "@/lib/menuary-landings";
 import { resolveTrackingConfig } from "@/lib/tracking/config";
 import { hasThirdPartyTracking } from "@/lib/tracking/types";
 import { MarketSelector } from "@/components/marketing/market-selector";
@@ -19,6 +24,12 @@ import {
 } from "@/components/marketing/contact-info";
 
 const PRICING_PATH = "/pricing";
+
+// Le landing /ristoranti/* esistono solo in italiano: i link compaiono solo lì.
+async function isItalianMarketing(): Promise<boolean> {
+  const value = (await headers()).get(LOCALE_HEADER);
+  return (isAppLocale(value) ? value : DEFAULT_LOCALE) === DEFAULT_LOCALE;
+}
 
 async function getLocaleHref(path: string): Promise<string> {
   const value = (await headers()).get(LOCALE_HEADER);
@@ -54,6 +65,7 @@ async function MarketingHeader() {
   const aboutHref = await getLocaleHref("/chi-siamo");
   const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
+  const showSolutions = await isItalianMarketing();
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--menuary-line)] bg-[var(--menuary-paper)]/85 backdrop-blur supports-[backdrop-filter]:bg-[var(--menuary-paper)]/70">
       <div className="menuary-container relative flex items-center justify-between gap-3 py-4 md:py-5">
@@ -62,6 +74,9 @@ async function MarketingHeader() {
           <span aria-hidden className="ml-[0.15em] text-[var(--menuary-copper)]">.</span>
         </Link>
         <nav className="hidden items-center gap-9 md:flex">
+          {showSolutions ? (
+            <Link href={MENUARY_LANDING_BASE} className="menuary-nav-link">Soluzioni</Link>
+          ) : null}
           <Link href={pricingHref} className="menuary-nav-link">{t.nav.offer}</Link>
           <Link href={aboutHref} className="menuary-nav-link">{t.nav.about}</Link>
           <a href={`${CLIENTS_PUBLIC_ORIGIN}/login`} className="menuary-nav-link">
@@ -78,6 +93,7 @@ async function MarketingHeader() {
           <MarketingMobileMenu
             labels={{ open: t.mobileBar.menu, close: t.mobileBar.close }}
             links={[
+              ...(showSolutions ? [{ href: MENUARY_LANDING_BASE, label: "Soluzioni" }] : []),
               { href: pricingHref, label: t.nav.offer },
               { href: aboutHref, label: t.nav.about },
               { href: contactHref, label: t.footer.contacts },
@@ -100,10 +116,16 @@ async function MarketingFooter() {
   const contactHref = await getLocaleHref("/contatti");
   const pricingHref = await getLocaleHref(PRICING_PATH);
   const tracking = hasThirdPartyTracking(resolveTrackingConfig("marketing", undefined));
+  const solutions = (await isItalianMarketing()) ? publishedMenuaryLandings() : [];
   return (
     <footer className="border-t border-[var(--menuary-line)] bg-[var(--menuary-porcelain)]">
       <div className="menuary-container py-16">
-        <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+        <div
+          className={
+            "grid gap-12 " +
+            (solutions.length ? "sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]" : "lg:grid-cols-[1.6fr_1fr_1fr_1fr]")
+          }
+        >
           <div>
             <p className="menuary-wordmark text-2xl">
               menuary
@@ -127,6 +149,12 @@ async function MarketingFooter() {
             </p>
           </div>
 
+          {solutions.length ? (
+            <FooterColumn
+              title="Soluzioni"
+              links={solutions.map((landing) => ({ href: menuaryLandingPath(landing.slug), label: landing.label }))}
+            />
+          ) : null}
           <FooterColumn
             title={t.footer.nav}
             links={[

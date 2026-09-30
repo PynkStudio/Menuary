@@ -46,7 +46,10 @@ const BRANDS: Record<string, OgBrand> = {
 };
 
 export async function GET(request: NextRequest) {
-  const brand = BRANDS[request.nextUrl.searchParams.get("brand") ?? ""] ?? BRANDS.menuary;
+  const base = BRANDS[request.nextUrl.searchParams.get("brand") ?? ""] ?? BRANDS.menuary;
+  // Titolo per pagina (landing verticali): sostituisce il payoff del brand.
+  const title = request.nextUrl.searchParams.get("title")?.trim().slice(0, 110);
+  const brand = title ? { ...base, payoff: title } : base;
 
   return new ImageResponse(
     (

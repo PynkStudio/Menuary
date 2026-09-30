@@ -28,6 +28,7 @@ Documenti già popolati a partire dai file della repo:
 - [[blog-editoriale]] — `docs/03-features/` (progetto a fasi: blog multilingua, rich text, MCP per tenant). Contiene la **bacheca di avanzamento** con lo stato di ogni lavoro: consultala e aggiornala a ogni intervento sul modulo blog.
 - [[pannello-pynkstudio]] — `docs/03-features/` (progetto a fasi: pannello admin.pynkstudio.eu, hub aziendale + portali prodotto). Contiene la **bacheca di avanzamento**: consultala e aggiornala a ogni intervento su `src/app/admin-pynkstudio/` o `src/components/admin/platform/`.
 - [[openseo-search-console]] — `docs/03-features/` (progetto a fasi: verifica dominio su Google Search Console dal check "Attiva SEO" nel contratto, fondamenta per il collegamento a OpenSEO self-hosted, e pianificazione Google Ads/altri provider Ads con ownership PynkStudio/cliente — vedi [[adr-0008-ownership-proprieta-seo-ads]]). Contiene la **bacheca di avanzamento**: consultala e aggiornala a ogni intervento su `src/lib/google/`, `src/lib/platform/domain-verification-service.ts` o `admin-pynkstudio/impostazioni`.
+- [[landing-verticali-ristoranti]] — `docs/03-features/` (progetto a fasi: 6 landing `menuary.it/ristoranti/*` per campagne, funzioni da costruire e interruttori dei claim — vedi [[adr-0012-claim-landing-legati-a-funzioni-pronte]]). Contiene la **bacheca di avanzamento**.
 - [[integrazioni-attive]] — `docs/06-integrations/`
 - [[endpoint-ia]] — `docs/07-prompts/`
 - [[cron-e-processi]] — `docs/08-processes/`

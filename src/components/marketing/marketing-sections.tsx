@@ -6,6 +6,7 @@ import { formatPricingAmount, formatSetupFrom, replacePriceToken } from "@/lib/p
 import { headers } from "next/headers";
 import { getLocale } from "@/i18n";
 import { localizedPath } from "@/lib/marketing-seo";
+import { AICallSimulation, type AICallStep } from "./ai-call-simulation";
 
 /* ============================================================
    LOGOS MARQUEE
@@ -548,30 +549,6 @@ export async function HomePricingSection() {
         <p className="mt-8 text-xs uppercase tracking-[0.16em] text-[var(--menuary-muted)]">
           {t.vatNote}
         </p>
-
-        {/* AI add-on callout */}
-        <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-porcelain)] p-6 sm:flex-row sm:items-center sm:gap-8">
-          <div className="flex items-center gap-4 shrink-0">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--menuary-ink)] text-[var(--menuary-paper)]">
-              <Phone size={18} strokeWidth={1.7} />
-            </span>
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                {t.aiEyebrow}
-              </p>
-              <p className="menuary-display text-lg">{t.aiTitle}</p>
-            </div>
-          </div>
-          <p className="flex-1 text-[14px] leading-[1.65] text-[var(--menuary-muted)]">
-            {t.aiDesc}
-          </p>
-          <Link
-            href={`${localizedPath("/pricing", locale)}#ai`}
-            className="menuary-button menuary-button-light shrink-0 text-sm"
-          >
-            {t.aiCta}
-          </Link>
-        </div>
       </div>
     </section>
   );
@@ -582,7 +559,8 @@ export async function HomePricingSection() {
    ============================================================ */
 
 export async function AIIntegrationsTeaserSection() {
-  const t = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections.aiTeaser;
+  const sections = (await import("@/i18n").then((m) => m.getTranslations("marketing"))).sections;
+  const t = sections.aiTeaser;
   const locale = await getLocale();
   return (
     <section className="menuary-beat-copper border-t border-[var(--menuary-line)]">
@@ -596,39 +574,21 @@ export async function AIIntegrationsTeaserSection() {
             <p className="mt-6 max-w-lg text-[16px] leading-[1.7] text-[#fff7ef]/85">
               {t.sub}
             </p>
+            <p className="mt-5 flex w-fit items-center gap-2 rounded-full border border-[#fff7ef]/30 px-3.5 py-1.5 text-[13px] text-[#fff7ef]">
+              <Phone size={13} strokeWidth={1.8} />
+              {sections.homePricing.aiTitle}
+            </p>
             <Link href={localizedPath("/contatti", locale)} className="menuary-link menuary-link-light mt-8 inline-flex">
               {t.cta}
               <ArrowUpRight size={14} strokeWidth={1.6} />
             </Link>
           </div>
 
-          <aside
-            aria-hidden
-            className="menuary-reveal menuary-fade-up-d2 rounded-2xl border border-[var(--menuary-line)] bg-[var(--menuary-paper)] p-5 shadow-[0_30px_70px_-30px_rgba(24,35,31,0.5)]"
-          >
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[var(--menuary-muted)] font-bold">
-                <Phone size={12} strokeWidth={2} />
-                {t.mockupCallHandled}
-              </span>
-              <span className="text-[11px] text-[var(--menuary-muted)]">
-                14:32 · 2 min
-              </span>
-            </div>
-            <div className="mt-4 space-y-3 text-sm">
-              <p className="rounded-xl bg-[var(--menuary-ink)]/5 px-3 py-2 text-[var(--menuary-ink)]">
-                {t.mockupMessage}
-              </p>
-              <p className="flex items-start gap-2 text-[var(--menuary-muted)]">
-                <Check
-                  size={14}
-                  strokeWidth={2.2}
-                  className="mt-1 shrink-0 text-[var(--menuary-sage)]"
-                />
-                {t.mockupBooked}
-              </p>
-            </div>
-          </aside>
+          <AICallSimulation
+            liveLabel={t.mockupLive}
+            handledLabel={t.mockupCallHandled}
+            script={t.mockupScript as readonly AICallStep[]}
+          />
         </div>
       </div>
     </section>

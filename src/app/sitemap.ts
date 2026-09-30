@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 import { PLATFORM_MODE_HEADER, getPlatformModeFromHeaderValue } from "@/lib/platform";
-import { BIZERY_ORIGIN, MENUARY_ORIGIN, ORPHEO_ORIGIN, marketingSitemap } from "@/lib/marketing-seo";
+import { BIZERY_ORIGIN, MENUARY_ORIGIN, ORPHEO_ORIGIN, marketingSitemap, menuaryLandingSitemap } from "@/lib/marketing-seo";
 import { siteConfig } from "@/lib/site-config";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
 import { getTenantLocaleConfig } from "@/lib/tenant-locales";
@@ -14,7 +14,7 @@ import { blogPostPath } from "@/lib/blog/slug";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const h = await headers();
   const mode = getPlatformModeFromHeaderValue(h.get(PLATFORM_MODE_HEADER), h.get("host"));
-  if (mode === "marketing") return marketingSitemap(MENUARY_ORIGIN);
+  if (mode === "marketing") return [...marketingSitemap(MENUARY_ORIGIN), ...menuaryLandingSitemap()];
   if (mode === "marketing-bizery") return marketingSitemap(BIZERY_ORIGIN);
   if (mode === "marketing-orpheo") return marketingSitemap(ORPHEO_ORIGIN);
   if (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") return [];

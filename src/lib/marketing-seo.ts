@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE, type AppLocale } from "@/i18n/locales";
 import { localizedSegmentForPath } from "@/lib/marketing-slugs";
+import { MENUARY_LANDING_BASE, menuaryLandingPath, publishedMenuaryLandings } from "@/lib/menuary-landings";
 
 export const MENUARY_ORIGIN = "https://menuary.it";
 export const BIZERY_ORIGIN = "https://bizery.it";
@@ -145,6 +146,16 @@ export function marketingSitemap(origin: string): MetadataRoute.Sitemap {
       } satisfies MetadataRoute.Sitemap[number];
     }),
   );
+}
+
+/** Landing verticali Menuary: solo italiano, quindi niente varianti di lingua. */
+export function menuaryLandingSitemap(): MetadataRoute.Sitemap {
+  const paths = [MENUARY_LANDING_BASE, ...publishedMenuaryLandings().map((l) => menuaryLandingPath(l.slug))];
+  return paths.map((path) => ({
+    url: `${MENUARY_ORIGIN}${path}`,
+    changeFrequency: "monthly",
+    priority: path === MENUARY_LANDING_BASE ? 0.8 : 0.9,
+  }));
 }
 
 export function marketingOrganizationSchema(brand: Brand) {

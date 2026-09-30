@@ -54,6 +54,12 @@ import {
   type MarketingRouteKey,
 } from "@/lib/marketing-slugs";
 import { isRouteModuleAllowed } from "@/lib/tenant-route-modules";
+import {
+  MENUARY_LANDING_BASE,
+  MENUARY_LANDING_INTERNAL_BASE,
+  canPreviewUnpublishedLandings,
+  isMenuaryLandingPublished,
+} from "@/lib/menuary-landings";
 import { valentinaOwnedSegments } from "@/components/tenants/valentina-orciuoli/content";
 import { valentinaPreviewBasePath } from "@/components/tenants/valentina-orciuoli/routes";
 
@@ -253,6 +259,43 @@ function handleMarketingLocale(
     return rewriteWithLocale(request, mapPath(pathname), DEFAULT_LOCALE, mode);
   }
   return localeRedirect(request, detected, pathname);
+}
+
+/**
+ * Landing verticali `/ristoranti/*`: esistono solo in italiano, quindi niente
+ * redirect di lingua (un visitatore estero da una campagna deve vedere la
+ * pagina dell'annuncio) e le varianti `/<lingua>/ristoranti/*` tornano al path
+ * nudo. Una landing non ancora pubblicabile risponde 404 reale in produzione.
+ */
+function handleMenuaryLanding(request: NextRequest, mode: PlatformMode): NextResponse | null {
+  const { pathname } = request.nextUrl;
+  // Il form aperto da una landing resta nella lingua della landing: un
+  // visitatore con mercato estero non deve passare da una pagina italiana a un form francese.
+  if (pathname === "/contatti" && request.nextUrl.searchParams.has("landing")) {
+    return rewriteWithLocale(request, pathname, DEFAULT_LOCALE, mode);
+  }
+  const { locale, rest } = extractLocaleFromPath(pathname);
+  const path = locale ? rest : pathname;
+  if (path !== MENUARY_LANDING_BASE && !path.startsWith(`${MENUARY_LANDING_BASE}/`)) return null;
+
+  if (locale) {
+    const url = request.nextUrl.clone();
+    url.pathname = path;
+    return NextResponse.redirect(url, locale === DEFAULT_LOCALE ? 301 : 302);
+  }
+
+  const slug = path.slice(MENUARY_LANDING_BASE.length + 1).replace(/\/$/, "");
+  if (slug && (slug.includes("/") || (!isMenuaryLandingPublished(slug) && !canPreviewUnpublishedLandings()))) {
+    return marketingNotFoundResponse(mode);
+  }
+  // `/ristoranti` è già la route del portale clienti: le landing vivono su un
+  // path interno e restano pubbliche solo sotto l'URL `/ristoranti/*`.
+  return rewriteWithLocale(
+    request,
+    `${MENUARY_LANDING_INTERNAL_BASE}${path.slice(MENUARY_LANDING_BASE.length)}`,
+    DEFAULT_LOCALE,
+    mode,
+  );
 }
 
 /** Portale clienti B2C — path pubblici */
@@ -1152,6 +1195,8 @@ export async function middleware(request: NextRequest) {
     // Short-link di piattaforma: non soggetto a locale redirect.
     // Senza questo bypass i browser non-italiani verrebbero rediretti su /en/c/<token> → 404.
     if (pathname.startsWith("/c/")) return NextResponse.next();
+    const landingResponse = handleMenuaryLanding(request, mode);
+    if (landingResponse) return landingResponse;
     return handleMarketingLocale(request, mode, (p) => p, MENUARY_MARKETING_PASSTHROUGH);
   }
 

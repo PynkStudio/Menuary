@@ -26,3 +26,5 @@ Usa il template [[adr-template]] per ogni nuova decisione. Numera i file progres
 | 0008 | [[adr-0008-ownership-proprieta-seo-ads]] — ownership PynkStudio/cliente per SEO e Ads, multi-piattaforma *(proposta, elenco tenant e forma del registro da confermare)* |
 | 0009 | [[adr-0009-valentina-opere-per-collana]] — il volume raccoglie le opere per collana; il taccuino segue il flag del modulo *(rivede l'impaginazione delle opere della 0002)* |
 | 0010 | [[adr-0010-informativa-per-moduli-attivi]] — privacy e cookie policy si compongono sui moduli accesi del tenant |
+| 0011 | [[adr-0011-tracciamento-condiviso-con-consenso]] — tracciamento conversioni condiviso, solo con consenso |
+| 0012 | [[adr-0012-claim-landing-legati-a-funzioni-pronte]] — i claim delle landing si accendono solo con la funzione pronta |

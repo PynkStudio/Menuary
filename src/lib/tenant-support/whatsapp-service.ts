@@ -11,6 +11,7 @@ import {
   slugifyMenuCode,
   type ExtractedMenuPhotoResult,
 } from "@/lib/menu-photo-import";
+import { createReservationBlock } from "@/lib/reservations/blocks";
 
 type Db = SupabaseClient<Database>;
 
@@ -42,6 +43,13 @@ type AiWhatsappIntent =
   | "resume_new_orders"
   | "open_support_ticket"
   | "import_menu_photo"
+  | "reservation_summary"
+  | "open_orders"
+  | "sales_summary"
+  | "top_selling_items"
+  | "set_item_availability"
+  | "set_item_price"
+  | "close_reservation_window"
   | "answer"
   | "unsupported";
 
@@ -52,6 +60,12 @@ type AiWhatsappAnalysis = {
   ticketSubject: string;
   ticketBody: string;
   reason: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  itemName: string;
+  available: boolean;
+  price: number;
 };
 
 export type TenantSupportWhatsappInput = {
@@ -90,7 +104,10 @@ const AI_INTENT_CONFIDENCE_THRESHOLD = 0.72;
 const AI_WHATSAPP_ANALYSIS_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["intent", "confidence", "reply", "ticketSubject", "ticketBody", "reason"],
+  required: [
+    "intent", "confidence", "reply", "ticketSubject", "ticketBody", "reason",
+    "date", "startTime", "endTime", "itemName", "available", "price",
+  ],
   properties: {
     intent: {
       type: "string",
@@ -99,6 +116,13 @@ const AI_WHATSAPP_ANALYSIS_SCHEMA = {
         "resume_new_orders",
         "open_support_ticket",
         "import_menu_photo",
+        "reservation_summary",
+        "open_orders",
+        "sales_summary",
+        "top_selling_items",
+        "set_item_availability",
+        "set_item_price",
+        "close_reservation_window",
         "answer",
         "unsupported",
       ],
@@ -112,6 +136,12 @@ const AI_WHATSAPP_ANALYSIS_SCHEMA = {
     ticketSubject: { type: "string" },
     ticketBody: { type: "string" },
     reason: { type: "string" },
+    date: { type: "string" },
+    startTime: { type: "string" },
+    endTime: { type: "string" },
+    itemName: { type: "string" },
+    available: { type: "boolean" },
+    price: { type: "number" },
   },
 };
 
@@ -314,6 +344,13 @@ function normalizeAiWhatsappAnalysis(value: unknown): AiWhatsappAnalysis | null 
     "resume_new_orders",
     "open_support_ticket",
     "import_menu_photo",
+    "reservation_summary",
+    "open_orders",
+    "sales_summary",
+    "top_selling_items",
+    "set_item_availability",
+    "set_item_price",
+    "close_reservation_window",
     "answer",
     "unsupported",
   ];
@@ -328,7 +365,65 @@ function normalizeAiWhatsappAnalysis(value: unknown): AiWhatsappAnalysis | null 
     ticketSubject: typeof parsed.ticketSubject === "string" ? parsed.ticketSubject.trim().slice(0, 90) : "",
     ticketBody: typeof parsed.ticketBody === "string" ? parsed.ticketBody.trim().slice(0, 3000) : "",
     reason: typeof parsed.reason === "string" ? parsed.reason.trim().slice(0, 600) : "",
+    date: typeof parsed.date === "string" ? parsed.date.trim().slice(0, 10) : "",
+    startTime: typeof parsed.startTime === "string" ? parsed.startTime.trim().slice(0, 5) : "",
+    endTime: typeof parsed.endTime === "string" ? parsed.endTime.trim().slice(0, 5) : "",
+    itemName: typeof parsed.itemName === "string" ? parsed.itemName.trim().slice(0, 120) : "",
+    available: parsed.available === true,
+    price: typeof parsed.price === "number" && Number.isFinite(parsed.price) ? parsed.price : 0,
   };
+}
+
+function analyzeWhatsappIntentLocally(text: string): AiWhatsappAnalysis | null {
+  const normalized = text.trim();
+  const lower = normalized.toLowerCase();
+  const times = [...lower.matchAll(/\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/g)]
+    .map((match) => `${match[1].padStart(2, "0")}:${match[2]}`);
+  const explicitDate = lower.match(/\b(20\d{2}-\d{2}-\d{2})\b/)?.[1] ?? "";
+  const date = explicitDate || (lower.includes("domani") ? italianDate(1) : italianDate());
+  const base = {
+    confidence: 0.92,
+    reply: "",
+    ticketSubject: "",
+    ticketBody: "",
+    reason: "deterministic_match",
+    date,
+    startTime: times[0] ?? "",
+    endTime: times[1] ?? "",
+    itemName: "",
+    available: false,
+    price: 0,
+  };
+  if (/\b(quant[ei]|elenca|mostra|vedi|riepilog).*(coperti|prenotazion)/i.test(normalized)) {
+    return { ...base, intent: "reservation_summary" };
+  }
+  if (/\b(ordini?)\b.*\b(aperti|attivi|in corso|da preparare)\b|\b(quali|quanti).+ordini\b/i.test(normalized)) {
+    return { ...base, intent: "open_orders" };
+  }
+  if (/\b(incass|vendite|fatturato)\b/i.test(normalized)) {
+    return { ...base, intent: "sales_summary" };
+  }
+  if (/\b(piatt|prodott).+\b(pi[uù] vendut|vendut[oi] di pi[uù]|classifica)\b/i.test(normalized)) {
+    return { ...base, intent: "top_selling_items" };
+  }
+  const availability = normalized.match(/(?:metti|segna|rendi)\s+(.+?)\s+(non disponibile|esaurit[oa]|disponibile)\b/i);
+  if (availability) {
+    const available = availability[2].toLowerCase() === "disponibile";
+    return { ...base, intent: "set_item_availability", itemName: availability[1].trim(), available };
+  }
+  const price = normalized.match(/(?:prezzo (?:di|del(?:la)?)|imposta|metti)\s+(.+?)\s+(?:a|ad)\s*(?:€|euro)?\s*(\d+(?:[.,]\d{1,2})?)/i);
+  if (price) {
+    return {
+      ...base,
+      intent: "set_item_price",
+      itemName: price[1].trim(),
+      price: Number(price[2].replace(",", ".")),
+    };
+  }
+  if (/\b(chiudi|blocca|sospendi)\b.*\b(prenotazion\w*|fascia)\b/i.test(normalized) && times.length >= 2) {
+    return { ...base, intent: "close_reservation_window" };
+  }
+  return null;
 }
 
 async function analyzeWhatsappIntentWithAi(params: {
@@ -357,6 +452,8 @@ async function analyzeWhatsappIntentWithAi(params: {
               "Usa answer solo per chiarimenti semplici sul funzionamento del canale WhatsApp o per chiedere una precisazione.",
               "Usa import_menu_photo solo se l'utente vuole caricare/importare/aggiornare voci menu da una foto o appunti allegati.",
               "Le azioni disponibili sono: sospendere nuovi ordini fino a fine giornata, riattivare nuovi ordini, aprire ticket supporto, importare menu da foto, rispondere/chiedere chiarimenti.",
+              "Puoi anche: riepilogare prenotazioni e coperti per una data/fascia; elencare ordini aperti; riepilogare vendite e piatti più venduti; cambiare disponibilità di un piatto; proporre un cambio prezzo; proporre la chiusura di una fascia prenotazioni.",
+              "Per date relative usa la data corrente italiana fornita nel payload. Per gli intent non pertinenti lascia date/orari/itemName vuoti, available false e price 0.",
             ].join("\n"),
           },
         ],
@@ -371,6 +468,7 @@ async function analyzeWhatsappIntentWithAi(params: {
               contactKind: params.contactKind,
               permissions: params.permissions,
               hasImage: params.hasImage,
+              currentDateTime: new Date().toLocaleString("sv-SE", { timeZone: "Europe/Rome" }),
               message: params.text,
             }),
           },
@@ -490,6 +588,101 @@ async function markActionApplied(svc: Db, actionId: string) {
     .from("tenant_customer_service_actions")
     .update({ status: "applied", applied_at: new Date().toISOString() })
     .eq("id", actionId);
+}
+
+async function getLatestProposedSensitiveAction(
+  svc: Db,
+  conversationId: string,
+): Promise<{ id: string; action_type: string; parameters: Json } | null> {
+  const { data } = await (svc as unknown as {
+    from: (table: "tenant_customer_service_actions") => {
+      select: (columns: string) => {
+        eq: (column: string, value: string) => {
+          eq: (column: string, value: string) => {
+            in: (column: string, values: string[]) => {
+              order: (column: string, opts: { ascending: boolean }) => {
+                limit: (count: number) => {
+                  maybeSingle: () => Promise<{ data: { id: string; action_type: string; parameters: Json } | null }>;
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+  }).from("tenant_customer_service_actions")
+    .select("id,action_type,parameters")
+    .eq("conversation_id", conversationId)
+    .eq("status", "proposed")
+    .in("action_type", ["set_item_price", "close_reservation_window"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data;
+}
+
+function jsonObject(value: Json): Record<string, Json | undefined> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, Json | undefined>
+    : {};
+}
+
+function italianDate(offsetDays = 0): string {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Rome",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const now = new Date();
+  now.setUTCDate(now.getUTCDate() + offsetDays);
+  return formatter.format(now);
+}
+
+async function applySensitiveAction(
+  svc: Db,
+  action: { id: string; action_type: string; parameters: Json },
+  tenantId: string,
+  phone: string,
+) {
+  const params = jsonObject(action.parameters);
+  if (action.action_type === "set_item_price") {
+    const itemId = typeof params.itemId === "string" ? params.itemId : "";
+    const price = typeof params.price === "number" ? params.price : 0;
+    if (!itemId || price <= 0) throw new Error("invalid_price_change");
+    const { data: item } = await svc
+      .from("menu_items")
+      .select("id,name,price_kind")
+      .eq("id", itemId)
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+    if (!item || item.price_kind !== "single") throw new Error("price_change_requires_panel");
+    const { error } = await svc
+      .from("menu_items")
+      .update({ price: { kind: "single", value: price }, updated_at: new Date().toISOString() })
+      .eq("id", itemId)
+      .eq("tenant_id", tenantId);
+    if (error) throw new Error(error.message);
+    await markActionApplied(svc, action.id);
+    return `Fatto: il prezzo di ${item.name} è ora €${price.toFixed(2).replace(".", ",")}.`;
+  }
+  if (action.action_type === "close_reservation_window") {
+    const date = typeof params.date === "string" ? params.date : "";
+    const startTime = typeof params.startTime === "string" ? params.startTime : "";
+    const endTime = typeof params.endTime === "string" ? params.endTime : "";
+    await createReservationBlock(svc, {
+      tenantId,
+      date,
+      startTime,
+      endTime,
+      source: "owner_whatsapp",
+      phone,
+      reason: "Fascia chiusa dal titolare via WhatsApp",
+    });
+    await markActionApplied(svc, action.id);
+    return `Fatto: nuove prenotazioni chiuse il ${date} dalle ${startTime} alle ${endTime}.`;
+  }
+  throw new Error("unsupported_sensitive_action");
 }
 
 async function remoteImageToDataUrl(url: string): Promise<string> {
@@ -717,7 +910,7 @@ async function handleAiRoutedIntent(
     permissions: contact.permissions,
     text,
     hasImage: Boolean(imageUrl),
-  });
+  }) ?? analyzeWhatsappIntentLocally(text);
   if (!analysis || analysis.confidence < AI_INTENT_CONFIDENCE_THRESHOLD) return null;
 
   await insertAction(svc, {
@@ -729,6 +922,143 @@ async function handleAiRoutedIntent(
     status: "proposed",
     parameters: analysis,
   });
+
+  if (analysis.intent === "reservation_summary") {
+    if (!hasPermission(contact, "manageSettings")) {
+      return { replies: ["Questo numero non può leggere le prenotazioni del locale."], action: { type: analysis.intent, status: "rejected" } };
+    }
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(analysis.date) ? analysis.date : italianDate();
+    let query = svc
+      .from("reservation_requests")
+      .select("customer_name,covers,reservation_time,status")
+      .eq("tenant_id", tenantId)
+      .eq("reservation_date", date)
+      .not("status", "in", "(rejected,cancelled)")
+      .order("reservation_time", { ascending: true });
+    if (analysis.startTime) query = query.gte("reservation_time", analysis.startTime);
+    if (analysis.endTime) query = query.lt("reservation_time", analysis.endTime);
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    const covers = (data ?? []).reduce((sum, row) => sum + row.covers, 0);
+    const details = (data ?? []).slice(0, 12).map((row) => `${row.reservation_time.slice(0, 5)} · ${row.customer_name} · ${row.covers}`).join("\n");
+    return {
+      replies: [data?.length ? `Il ${date} risultano ${data.length} prenotazioni, ${covers} coperti.\n\n${details}` : `Il ${date} non risultano prenotazioni nella fascia richiesta.`],
+      action: { type: analysis.intent, status: "applied" },
+    };
+  }
+
+  if (analysis.intent === "open_orders") {
+    if (!hasPermission(contact, "manageSettings")) {
+      return { replies: ["Questo numero non può leggere gli ordini del locale."], action: { type: analysis.intent, status: "rejected" } };
+    }
+    const { data, error } = await svc
+      .from("orders")
+      .select("code,total,status,source,created_at")
+      .eq("tenant_id", tenantId)
+      .not("status", "in", "(consegnato,annullato,expired)")
+      .order("created_at", { ascending: true })
+      .limit(20);
+    if (error) throw new Error(error.message);
+    const details = (data ?? []).map((order) => `${order.code} · ${order.status} · €${Number(order.total).toFixed(2).replace(".", ",")}`).join("\n");
+    return {
+      replies: [data?.length ? `Ci sono ${data.length} ordini aperti.\n\n${details}` : "Non risultano ordini aperti."],
+      action: { type: analysis.intent, status: "applied" },
+    };
+  }
+
+  if (analysis.intent === "sales_summary" || analysis.intent === "top_selling_items") {
+    if (!hasPermission(contact, "manageSettings")) {
+      return { replies: ["Questo numero non può leggere vendite e incassi."], action: { type: analysis.intent, status: "rejected" } };
+    }
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(analysis.date) ? analysis.date : italianDate();
+    const { data: orders, error } = await svc
+      .from("orders")
+      .select("id,total,status")
+      .eq("tenant_id", tenantId)
+      .gte("created_at", `${date}T00:00:00`)
+      .lt("created_at", `${date}T23:59:59.999`)
+      .not("status", "in", "(annullato,expired)");
+    if (error) throw new Error(error.message);
+    if (analysis.intent === "sales_summary") {
+      const total = (orders ?? []).reduce((sum, order) => sum + Number(order.total || 0), 0);
+      return {
+        replies: [`Il ${date} risultano ${orders?.length ?? 0} ordini per €${total.toFixed(2).replace(".", ",")} di vendite registrate.`],
+        action: { type: analysis.intent, status: "applied" },
+      };
+    }
+    const orderIds = (orders ?? []).map((order) => order.id);
+    const { data: lines } = orderIds.length
+      ? await svc.from("order_lines").select("name,qty").in("order_id", orderIds)
+      : { data: [] as Array<{ name: string; qty: number }> };
+    const totals = new Map<string, number>();
+    for (const line of lines ?? []) totals.set(line.name, (totals.get(line.name) ?? 0) + line.qty);
+    const top = [...totals].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return {
+      replies: [top.length ? `Piatti più venduti il ${date}:\n${top.map(([name, qty], index) => `${index + 1}. ${name} · ${qty}`).join("\n")}` : `Non ci sono vendite prodotto registrate il ${date}.`],
+      action: { type: analysis.intent, status: "applied" },
+    };
+  }
+
+  if (analysis.intent === "set_item_availability") {
+    if (!hasPermission(contact, "manageMenu")) {
+      return { replies: ["Questo numero non può modificare il menu."], action: { type: analysis.intent, status: "rejected" } };
+    }
+    const { data: items } = await svc
+      .from("menu_items")
+      .select("id,name")
+      .eq("tenant_id", tenantId)
+      .ilike("name", `%${analysis.itemName}%`)
+      .limit(2);
+    if (!items?.length) return { replies: [`Non trovo “${analysis.itemName}” nel menu.`], action: { type: analysis.intent, status: "rejected" } };
+    if (items.length > 1) return { replies: [`Ho trovato più piatti simili: ${items.map((item) => item.name).join(", ")}. Scrivi il nome completo.`], action: { type: analysis.intent, status: "proposed" } };
+    const { error } = await svc.from("menu_items")
+      .update({ available: analysis.available, updated_at: new Date().toISOString() })
+      .eq("id", items[0].id)
+      .eq("tenant_id", tenantId);
+    if (error) throw new Error(error.message);
+    return {
+      replies: [`Fatto: ${items[0].name} è ${analysis.available ? "di nuovo disponibile" : "non disponibile"} su tutti i canali collegati.`],
+      action: { type: analysis.intent, status: "applied" },
+    };
+  }
+
+  if (analysis.intent === "set_item_price" || analysis.intent === "close_reservation_window") {
+    const permission = analysis.intent === "set_item_price" ? "manageMenu" : "manageHours";
+    if (!hasPermission(contact, permission)) {
+      return { replies: ["Questo numero non ha il permesso necessario per proporre la modifica."], action: { type: analysis.intent, status: "rejected" } };
+    }
+    let parameters: Record<string, unknown>;
+    let summary: string;
+    if (analysis.intent === "set_item_price") {
+      const { data: items } = await svc.from("menu_items")
+        .select("id,name,price_kind")
+        .eq("tenant_id", tenantId)
+        .ilike("name", `%${analysis.itemName}%`)
+        .limit(2);
+      if (items?.length !== 1 || items[0].price_kind !== "single" || analysis.price <= 0) {
+        return { replies: ["Non posso preparare il cambio prezzo: indica il nome esatto di un piatto a prezzo singolo e il nuovo importo."], action: { type: analysis.intent, status: "rejected" } };
+      }
+      parameters = { itemId: items[0].id, itemName: items[0].name, price: analysis.price };
+      summary = `Vuoi impostare ${items[0].name} a €${analysis.price.toFixed(2).replace(".", ",")}? Rispondi “confermo” per applicare.`;
+    } else {
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(analysis.date) ? analysis.date : italianDate();
+      if (!/^\d{2}:\d{2}$/.test(analysis.startTime) || !/^\d{2}:\d{2}$/.test(analysis.endTime) || analysis.startTime >= analysis.endTime) {
+        return { replies: ["Indica data, ora di inizio e ora di fine della fascia da chiudere."], action: { type: analysis.intent, status: "rejected" } };
+      }
+      parameters = { date, startTime: analysis.startTime, endTime: analysis.endTime };
+      summary = `Vuoi chiudere le nuove prenotazioni il ${date} dalle ${analysis.startTime} alle ${analysis.endTime}? Rispondi “confermo” per applicare.`;
+    }
+    await insertAction(svc, {
+      conversationId: conversation.id,
+      tenantId,
+      phone,
+      inputText: text,
+      actionType: analysis.intent,
+      status: "proposed",
+      parameters,
+    });
+    return { replies: [summary], action: { type: analysis.intent, status: "proposed" } };
+  }
 
   if (analysis.intent === "pause_new_orders_today") {
     if (!hasPermission(contact, "manageSettings")) {
@@ -856,6 +1186,41 @@ async function handleIntent(
   const tenantId = conversation.tenant_id;
   if (!tenantId) {
     return { replies: ["Prima devo sapere per quale locale vuoi parlare."] };
+  }
+
+  const pendingSensitive = await getLatestProposedSensitiveAction(svc, conversation.id);
+  if (pendingSensitive && YES_RE.test(text.trim())) {
+    const permission = pendingSensitive.action_type === "set_item_price" ? "manageMenu" : "manageHours";
+    if (!hasPermission(contact, permission)) {
+      await insertAction(svc, {
+        conversationId: conversation.id,
+        tenantId,
+        phone,
+        inputText: text,
+        actionType: pendingSensitive.action_type,
+        status: "rejected",
+        parameters: { proposedActionId: pendingSensitive.id },
+        error: `missing_permission:${permission}`,
+      });
+      return {
+        replies: ["Il permesso per applicare questa modifica non è più disponibile."],
+        action: { type: pendingSensitive.action_type, status: "rejected" },
+      };
+    }
+    const reply = await applySensitiveAction(svc, pendingSensitive, tenantId, phone);
+    await insertAction(svc, {
+      conversationId: conversation.id,
+      tenantId,
+      phone,
+      inputText: text,
+      actionType: pendingSensitive.action_type,
+      status: "applied",
+      parameters: { proposedActionId: pendingSensitive.id },
+    });
+    return {
+      replies: [reply],
+      action: { type: pendingSensitive.action_type, status: "applied" },
+    };
   }
 
   const pendingImport = await getLatestProposedMenuImport(svc, conversation.id);

@@ -7,6 +7,7 @@ import { defaultHoursWeekForTenant, type DaySchedule } from "@/lib/venue-hours";
 import { formatEuro } from "@/lib/price-utils";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database, Json } from "@/lib/database.types";
+import { getReservationBlock } from "@/lib/reservations/blocks";
 import { getAiPhoneSettings, isAiPhoneControlAccepting, type AiPhoneSettings } from "@/lib/retell/settings";
 import { createChannelPaymentRequest, type ChannelPaymentRequest, type PaymentLinkChannel } from "@/lib/payments/channel-payment-links";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
@@ -1162,16 +1163,22 @@ export async function getRetellAvailability(input: RetellAvailabilityInput) {
     date: input.date,
     locationId: location?.id ?? null,
     durationMinutes: service.data?.duration_minutes ?? null,
-    slots: slots.map((time) => {
+    slots: await Promise.all(slots.map(async (time) => {
+      const block = await getReservationBlock(db, {
+        tenantId: input.tenantId,
+        date: input.date,
+        time,
+        locationId: location?.id ?? null,
+      });
       const occupiedAtTime = existing.filter((row) => row.reservationTime === time);
       const { tableId, assignedArea } = suggestTableForReservation(tables, occupiedAtTime, covers);
       return {
         time,
-        available: tables.length === 0 ? true : Boolean(tableId),
+        available: !block && (tables.length === 0 ? true : Boolean(tableId)),
         tableId,
         assignedArea,
       };
-    }),
+    })),
   };
 }
 
@@ -1182,6 +1189,14 @@ export async function createRetellReservation(input: CreateRetellReservationInpu
   const settings = await getAiPhoneSettings(input.tenantId);
   if (!settings.enabled || !isAiPhoneControlAccepting(settings.quickSettings.acceptReservations)) {
     throw new Error("reservations_not_accepting");
+  }
+  if (await getReservationBlock(db, {
+    tenantId: input.tenantId,
+    date: input.date,
+    time: input.time,
+    locationId,
+  })) {
+    throw new Error("reservation_slot_closed");
   }
   const service = input.serviceCode
     ? await db

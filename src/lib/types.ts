@@ -73,6 +73,7 @@ export type MenuOrderChannel =
   | "whatsapp"
   | "online"
   | "table"
+  | "kiosk"
   | "product_reservation";
 
 export type AdminMenuListVisibility = {
