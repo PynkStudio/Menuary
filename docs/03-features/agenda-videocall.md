@@ -1,6 +1,6 @@
 # Feature: Agenda e videocall (`@pynkstudio/agendaapp`)
 
-- **Stato:** in test — pacchetto e integrazione PynkStudio scritti; server LiveKit, env e migration da fare (bacheca in § 7)
+- **Stato:** in produzione dal 2026-09-30 in modalità telefonica (migration applicata, segreto impostato, deploy fatto); videocall in attesa del server LiveKit (bacheca in § 7)
 - **Pacchetto:** repo pubblica [PynkStudio/pynkstudio-agendaapp](https://github.com/PynkStudio/pynkstudio-agendaapp) (locale: `../pynkstudio-agendaapp`), tag `v0.1.0`, installato come tarball del tag. Documentazione del pacchetto: vault Obsidian nella sua `docs/`
 - **Montaggio nel sito:** `src/lib/agenda-runtime.ts`
 - **Data:** 2026-09-30
@@ -136,7 +136,8 @@ Non bloccanti:
 | P3 | Pacchetto: `AgendaVideoCall`, `useAgendaBooking`, widget neutro | 🔵 in test | Typecheck ok; mai renderizzati in browser |
 | P4 | Pubblicare repo GitHub `PynkStudio/pynkstudio-agendaapp`, tag `v0.1.0` | ✅ completata | 2026-09-30: repo pubblica creata, tag `v0.1.0`, tarball scaricabile; `package.json` punta al tarball e `tsc` del sito passa con il pacchetto installato da GitHub |
 | P5 | Documentazione Obsidian del pacchetto, README, nessun riferimento a progetti | ✅ completata | `docs/` del pacchetto (START-HERE, architettura, modello dati, feature, 4 ADR, integrazioni, processi, backlog), `AGENTS.md`, `CHANGELOG.md`; scansione testo senza riferimenti a PynkStudio/Menuary oltre al nome del pacchetto |
-| S1 | Runtime e rotte nel sito | 🔵 in test | `tsc` e lint puliti; non provate dal browser (tabelle non ancora sul DB) |
+| S1 | Runtime e rotte nel sito | 🔵 in test | 2026-09-30, in produzione: giorni e slot reali da `/api/tenant/pynkstudio/bookings/availability`, agenda admin 401 senza sessione, `/accedi` → 303 all'URL pulito, webhook 503 (LiveKit spento). Manca una prenotazione vera end-to-end |
+| S6 | Cron promemoria raggiungibile | ✅ completata | Bug preesistente: pg_cron chiama in POST, la route esponeva solo GET → 405 a ogni giro, promemoria mai inviati. Aggiunto `POST`; dal 2026-09-30 15:44 UTC risponde 200 `{"ok":true,"reminded":0}` (verificato in `net._http_response`) |
 | S2 | Pagine videocall ospite e staff, stili | 🔵 in test | Da aprire in browser con LiveKit attivo |
 | S3 | `prenota-call` e landing IA sul nuovo hook | 🔵 in test | Da provare una prenotazione reale |
 | S4 | Email con link videocall, pagina grazie | 🔵 in test | 2026-09-30: verificato generando l'HTML dal flusso reale (createBooking → hook → `bookingConfirmHtml`): bottone e link presenti, stesso link nel promemoria, token valido. Manca un'email vera ricevuta (serve LiveKit attivo: senza env la call è telefonica e il link non viene messo) |
