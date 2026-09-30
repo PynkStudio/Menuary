@@ -70,3 +70,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json({ ok: true, reminded: due.length });
 }
+
+// pg_cron (20260627_pynkstudio_call_bookings.sql) chiama con net.http_post:
+// senza POST ogni giro rispondeva 405 e nessun promemoria partiva.
+export const POST = GET;
