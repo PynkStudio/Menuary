@@ -88,8 +88,8 @@ Estratti da `TENANTS[]` in `src/lib/tenant-registry.ts` (campi `id`, `name`, `ve
     piega (obiettivi → dimensione e tempistica → contatti) che invia a
     `/api/tenant/[tenantId]/contact` allegando i parametri UTM/gclid catturati dal modulo
     tracking. Dopo l'invio mostra nella stessa card la scelta di giorno e orario della call
-    (stesse API di `/prenota-call`): la call finisce in `consultation_bookings`, quindi in
-    admin → Agenda, con conferme email/WhatsApp e promemoria. Conversioni `lead` (invio),
+    (stesse API di `/prenota-call`, via `@pynkstudio/agendaapp`): la call finisce in
+    `agenda_bookings`, quindi in admin → Agenda (videocall quando LiveKit è attivo, vedi [[agenda-videocall]]), con conferme email/WhatsApp e promemoria. Conversioni `lead` (invio),
     `booking` (call fissata) e `contact` (telefono, WhatsApp) via `trackConversion()`. Copy
     in `iaAziendaPage` di `src/lib/pynkstudio-i18n.ts`.
   **Richieste nel CRM**: per il solo tenant `pynkstudio`, la route contatti condivisa

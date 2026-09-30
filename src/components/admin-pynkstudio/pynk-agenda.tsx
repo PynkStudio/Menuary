@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Mail, Phone, X } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, Mail, Phone, Video, X } from "lucide-react";
 import { PushEnableToggle } from "./push-enable-toggle";
 
 const TIMEZONE = "Europe/Rome";
@@ -10,16 +11,19 @@ const CLOSE_HOUR = 18;
 const SLOT_MIN = 20;
 const WEEKDAY_LABELS = ["Lun", "Mar", "Mer", "Gio", "Ven"];
 
+// Forma restituita da `serializeBooking` di @pynkstudio/agendaapp.
 type Booking = {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  topic: string;
-  starts_at: string;
-  ends_at: string;
-  status: "confirmed" | "cancelled";
-  created_at: string;
+  phone: string | null;
+  topic: string | null;
+  startsAt: string;
+  endsAt: string;
+  location: "video" | "phone" | "in_person";
+  status: "confirmed" | "cancelled" | "completed" | "no_show";
+  videoStartedAt: string | null;
+  createdAt: string;
 };
 
 // Parti (dateISO + HH:MM) di un istante in orario Roma, per indicizzare le celle.
@@ -104,18 +108,18 @@ export function PynkAgenda() {
   const byCell = useMemo(() => {
     const map = new Map<string, Booking>();
     for (const b of bookings) {
-      if (b.status !== "confirmed") continue;
-      const { date, time } = romeParts(b.starts_at);
+      if (b.status === "cancelled") continue;
+      const { date, time } = romeParts(b.startsAt);
       map.set(`${date} ${time}`, b);
     }
     return map;
   }, [bookings]);
 
-  const cancel = async (id: string) => {
+  const updateBooking = async (id: string, action: "cancel" | "complete" | "no_show") => {
     await fetch("/api/admin/pynkstudio/bookings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status: "cancelled" }),
+      body: JSON.stringify({ id, action }),
     });
     setSelected(null);
     void load();
@@ -128,7 +132,7 @@ export function PynkAgenda() {
   };
 
   const monthLabel = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric" }).format(weekStart);
-  const confirmedCount = bookings.filter((b) => b.status === "confirmed").length;
+  const confirmedCount = bookings.filter((b) => b.status !== "cancelled").length;
 
   return (
     <div>
@@ -171,8 +175,14 @@ export function PynkAgenda() {
                 return (
                   <div key={i} className="pynk-agenda-cell">
                     {b && (
-                      <button type="button" className="pynk-agenda-event" onClick={() => setSelected(b)}>
-                        <span className="pynk-agenda-event-name">{b.name}</span>
+                      <button
+                        type="button"
+                        className={`pynk-agenda-event${b.status !== "confirmed" ? " is-done" : ""}`}
+                        onClick={() => setSelected(b)}
+                      >
+                        <span className="pynk-agenda-event-name">
+                          {b.location === "video" && <Video size={12} aria-label="Videocall" />} {b.name}
+                        </span>
                         <span className="pynk-agenda-event-topic">{b.topic}</span>
                       </button>
                     )}
@@ -199,17 +209,35 @@ export function PynkAgenda() {
                 month: "long",
                 hour: "2-digit",
                 minute: "2-digit",
-              }).format(new Date(selected.starts_at))}
+              }).format(new Date(selected.startsAt))}
             </p>
             <h3 className="pynk-agenda-modal-name">{selected.name}</h3>
             <p className="pynk-agenda-modal-topic">{selected.topic}</p>
             <div className="pynk-agenda-modal-contacts">
-              <a href={`tel:${selected.phone}`}><Phone size={14} /> {selected.phone}</a>
+              {selected.phone && <a href={`tel:${selected.phone}`}><Phone size={14} /> {selected.phone}</a>}
               <a href={`mailto:${selected.email}`}><Mail size={14} /> {selected.email}</a>
             </div>
-            <button type="button" className="pynk-agenda-modal-cancel" onClick={() => cancel(selected.id)}>
-              Annulla prenotazione
-            </button>
+            {selected.status !== "confirmed" && (
+              <p className="pynk-agenda-modal-status">
+                {selected.status === "completed" ? "Call conclusa" : "Cliente non presentato"}
+              </p>
+            )}
+            {selected.location === "video" && selected.status === "confirmed" && (
+              <Link href={`/admin-pynkstudio/agenda/call/${selected.id}`} className="pynk-agenda-modal-join">
+                <Video size={16} /> Entra in videocall
+              </Link>
+            )}
+            {selected.status === "confirmed" && (
+              <div className="pynk-agenda-modal-actions">
+                <button type="button" onClick={() => updateBooking(selected.id, "complete")}>Segna conclusa</button>
+                <button type="button" onClick={() => updateBooking(selected.id, "no_show")}>Non presentato</button>
+              </div>
+            )}
+            {selected.status === "confirmed" && (
+              <button type="button" className="pynk-agenda-modal-cancel" onClick={() => updateBooking(selected.id, "cancel")}>
+                Annulla prenotazione
+              </button>
+            )}
           </div>
         </div>
       )}

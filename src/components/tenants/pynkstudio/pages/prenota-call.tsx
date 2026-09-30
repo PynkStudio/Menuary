@@ -1,72 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CalendarDays, Clock, Send } from "lucide-react";
+import { dateParts } from "@pynkstudio/agendaapp/core";
+import { useAgendaBooking } from "@pynkstudio/agendaapp/react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { getAttribution, trackConversion } from "@/lib/tracking/client";
 
-type Slot = { time: string; startUtc: string; available: boolean };
 type Feedback = { kind: "error"; text: string } | null;
 
-const WORKING_DAYS_AHEAD = 14;
-
-// Prossimi giorni lavorativi (lun-ven) calcolati lato client in orario locale.
-function upcomingWorkingDays(count: number): Date[] {
-  const out: Date[] = [];
-  const cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
-  for (let i = 0; out.length < count && i < count * 3; i++) {
-    const wd = cursor.getDay();
-    if (wd >= 1 && wd <= 5) out.push(new Date(cursor));
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return out;
-}
-
-function toISODate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
+// Giorni e orari vengono dal server (fuso Europe/Rome dell'agenda), non dall'orologio del visitatore.
 function PrenotaCallInner() {
   const copy = usePynkCopy();
   const c = copy.prenotaCallPage;
   const router = useRouter();
 
-  const [days] = useState<Date[]>(() => upcomingWorkingDays(WORKING_DAYS_AHEAD));
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [slots, setSlots] = useState<Slot[] | null>(null);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const booking = useAgendaBooking({
+    availabilityUrl: "/api/tenant/pynkstudio/bookings/availability",
+    bookingUrl: "/api/tenant/pynkstudio/bookings",
+  });
+  const { days, selectedDate, slots, loadingSlots, selectedSlot } = booking;
+  const sending = booking.submitting;
 
   const [form, setForm] = useState({ name: "", email: "", phone: "", topic: "" });
-  const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
 
-  useEffect(() => {
-    if (!selectedDate) return;
-    let cancelled = false;
-    setLoadingSlots(true);
-    setSlots(null);
-    fetch(`/api/tenant/pynkstudio/bookings/availability?date=${selectedDate}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled) setSlots(data.slots ?? []);
-      })
-      .catch(() => {
-        if (!cancelled) setSlots([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingSlots(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedDate]);
-
-  const dayLabel = (d: Date) => `${c.weekdays[d.getDay()]} ${d.getDate()} ${c.months[d.getMonth()]}`;
+  const dayLabel = (iso: string) => {
+    const p = dateParts(iso);
+    return `${c.weekdays[p.weekday]} ${p.day} ${c.months[p.month]}`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,40 +45,16 @@ function PrenotaCallInner() {
       setFeedback({ kind: "error", text: c.form.errorEmail });
       return;
     }
-    setSending(true);
-    try {
-      const res = await fetch("/api/tenant/pynkstudio/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, startUtc: selectedSlot.startUtc, attribution: getAttribution() }),
-      });
-      if (res.status === 409) {
-        setFeedback({ kind: "error", text: c.slotTaken });
-        setSelectedSlot(null);
-        // Ricarica gli slot del giorno per riflettere l'occupazione.
-        if (selectedDate) {
-          const d = selectedDate;
-          setSelectedDate(null);
-          setTimeout(() => setSelectedDate(d), 0);
-        }
-        return;
-      }
-      if (!res.ok) throw new Error("failed");
-      trackConversion("booking", { label: "call-20min" });
-      const slotLabel = selectedSlotLabel;
-      router.push(`/prenota-call/grazie?slot=${encodeURIComponent(slotLabel)}`);
-    } catch {
-      setFeedback({ kind: "error", text: c.form.errorGeneric });
-    } finally {
-      setSending(false);
+    const result = await booking.submit({ ...form, attribution: getAttribution() });
+    if (!result.ok) {
+      setFeedback({ kind: "error", text: result.error === "slot_taken" ? c.slotTaken : c.form.errorGeneric });
+      return;
     }
+    trackConversion("booking", { label: "call-20min" });
+    router.push(`/prenota-call/grazie?slot=${encodeURIComponent(selectedSlotLabel)}&mode=${result.location}`);
   };
 
-  const selectedSlotLabel = (() => {
-    if (!selectedSlot || !selectedDate) return "";
-    const d = days.find((x) => toISODate(x) === selectedDate);
-    return d ? `${dayLabel(d)}, ${selectedSlot.time}` : selectedSlot.time;
-  })();
+  const selectedSlotLabel = selectedSlot && selectedDate ? `${dayLabel(selectedDate)}, ${selectedSlot.time}` : "";
 
   return (
     <div className="pynk-page">
@@ -141,22 +82,20 @@ function PrenotaCallInner() {
                   <CalendarDays className="pynk-icon-sm pynk-accent" /> {c.stepDate}
                 </h2>
                 <div className="pynk-cal-days">
-                  {days.map((d) => {
-                    const iso = toISODate(d);
+                  {booking.status === "loading" && <p className="pynk-note">{c.loadingSlots}</p>}
+                  {days.map((iso) => {
+                    const d = dateParts(iso);
                     const active = selectedDate === iso;
                     return (
                       <button
                         key={iso}
                         type="button"
-                        onClick={() => {
-                          setSelectedDate(iso);
-                          setSelectedSlot(null);
-                        }}
+                        onClick={() => booking.selectDate(iso)}
                         className={`pynk-cal-day${active ? " is-active" : ""}`}
                       >
-                        <span className="pynk-cal-day-wd">{c.weekdays[d.getDay()]}</span>
-                        <span className="pynk-cal-day-num">{d.getDate()}</span>
-                        <span className="pynk-cal-day-mo">{c.months[d.getMonth()].slice(0, 3)}</span>
+                        <span className="pynk-cal-day-wd">{c.weekdays[d.weekday]}</span>
+                        <span className="pynk-cal-day-num">{d.day}</span>
+                        <span className="pynk-cal-day-mo">{c.months[d.month].slice(0, 3)}</span>
                       </button>
                     );
                   })}
@@ -170,14 +109,14 @@ function PrenotaCallInner() {
                     </h2>
                     {loadingSlots ? (
                       <p className="pynk-note">{c.loadingSlots}</p>
-                    ) : slots && slots.length > 0 ? (
+                    ) : slots && slots.some((s) => s.available) ? (
                       <div className="pynk-cal-slots">
                         {slots.map((s) => (
                           <button
                             key={s.startUtc}
                             type="button"
                             disabled={!s.available}
-                            onClick={() => setSelectedSlot(s)}
+                            onClick={() => booking.selectSlot(s)}
                             className={`pynk-cal-slot${selectedSlot?.startUtc === s.startUtc ? " is-active" : ""}`}
                           >
                             {s.time}

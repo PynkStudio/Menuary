@@ -79,7 +79,7 @@ Filtri applicati per sezione:
 |---|---|---|
 | Dashboard | `/` | KPI aggregati + card prodotto con lead totali/attivi per verticale |
 | Posta | `/mailapp` | `@pynkstudio/mailapp` — **aggregata**, con filtro brand nella sidebar del pacchetto |
-| Agenda | `/agenda` | |
+| Agenda | `/agenda` | `@pynkstudio/agendaapp` — call prenotate, stanza videocall in `/agenda/call/[id]`. Vedi [[agenda-videocall]] |
 | CRM PynkStudio | `/crm` | tabelle `pynkstudio_crm` + `pynkstudio_crm_activities` — clienti dell'agenzia, **non** i lead di piattaforma. Si alimenta da form contatti, landing IA, prenotazioni e disiscrizioni (dimensione azienda, settore, tempistica, interessi e attribuzione campagna come campi strutturati). KPI, filtri per stato/sorgente/vista, priorità caldo/tiepido/freddo, follow-up con scadenza, valore stimato, timeline attività, export CSV, inserimento manuale. Logica in `src/lib/pynkstudio/crm*.ts`, API `/api/admin/pynkstudio/crm*` |
 | Patrimoniale | `/patrimoniale` | |
 | Utenti interni | `/utenti` | `siteadmin` — dato aziendale, spostato qui dal portale Menuary |

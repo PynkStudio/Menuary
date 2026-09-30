@@ -15,7 +15,7 @@ Da `vercel.json`:
 Route sotto `src/app/api/cron/` non (tutte) elencate in `vercel.json`:
 
 - `cron/expire-pending-orders`
-- `cron/pynkstudio-call-reminders`
+- `cron/pynkstudio-call-reminders` — pg_cron ogni minuto (`20260627_pynkstudio_call_bookings.sql`). Dal 2026-09-30 legge `agenda_bookings` tramite `claimDueReminders` di `@pynkstudio/agendaapp` (marca e restituisce nella stessa UPDATE) e, per le videocall, rimanda il link personale. Vedi [[agenda-videocall]]
 - `cron/subscription-renewals`
 - `cron/sync-reviews`
 - `cron/whatsapp-session-health`

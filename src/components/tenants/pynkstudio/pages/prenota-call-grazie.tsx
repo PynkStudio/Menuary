@@ -7,7 +7,7 @@ import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
-export function PynkStudioGraziePage({ slot }: { slot?: string }) {
+export function PynkStudioGraziePage({ slot, isVideo = false }: { slot?: string; isVideo?: boolean }) {
   const copy = usePynkCopy();
   const href = useTenantLocalizedHref();
   const phoneHref = copy.contattiPage.phoneHref;
@@ -55,7 +55,9 @@ export function PynkStudioGraziePage({ slot }: { slot?: string }) {
               className="pynk-hero-subtitle"
             >
               Abbiamo registrato la tua prenotazione e ti abbiamo inviato una conferma via email.
-              Ti chiameremo noi all&apos;orario indicato.
+              {isVideo
+                ? " Nell'email trovi il link personale della videocall: si attiva 10 minuti prima dell'inizio."
+                : " Ti chiameremo noi all'orario indicato."}
             </motion.p>
 
             <motion.div

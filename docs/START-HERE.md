@@ -28,6 +28,7 @@ Documenti già popolati a partire dai file della repo:
 - [[blog-editoriale]] — `docs/03-features/` (progetto a fasi: blog multilingua, rich text, MCP per tenant). Contiene la **bacheca di avanzamento** con lo stato di ogni lavoro: consultala e aggiornala a ogni intervento sul modulo blog.
 - [[pannello-pynkstudio]] — `docs/03-features/` (progetto a fasi: pannello admin.pynkstudio.eu, hub aziendale + portali prodotto). Contiene la **bacheca di avanzamento**: consultala e aggiornala a ogni intervento su `src/app/admin-pynkstudio/` o `src/components/admin/platform/`.
 - [[openseo-search-console]] — `docs/03-features/` (progetto a fasi: verifica dominio su Google Search Console dal check "Attiva SEO" nel contratto, fondamenta per il collegamento a OpenSEO self-hosted, e pianificazione Google Ads/altri provider Ads con ownership PynkStudio/cliente — vedi [[adr-0008-ownership-proprieta-seo-ads]]). Contiene la **bacheca di avanzamento**: consultala e aggiornala a ogni intervento su `src/lib/google/`, `src/lib/platform/domain-verification-service.ts` o `admin-pynkstudio/impostazioni`.
+- [[agenda-videocall]] — `docs/03-features/` (progetto a fasi: pacchetto esterno `@pynkstudio/agendaapp`, prenotazione call e videocall LiveKit per PynkStudio). Contiene la **bacheca di avanzamento**: consultala prima di toccare `src/lib/agenda-runtime.ts`, le rotte `bookings` o la repo `../pynkstudio-agendaapp`.
 - [[landing-verticali-ristoranti]] — `docs/03-features/` (progetto a fasi: 6 landing `menuary.it/ristoranti/*` per campagne, funzioni da costruire e interruttori dei claim — vedi [[adr-0012-claim-landing-legati-a-funzioni-pronte]]). Contiene la **bacheca di avanzamento**.
 - [[integrazioni-attive]] — `docs/06-integrations/`
 - [[endpoint-ia]] — `docs/07-prompts/`
@@ -66,6 +67,7 @@ Non compilate perché **non deducibili con certezza** dalla repo (nessun contenu
   e i limiti verificati del widget Slabbby.
 - [[blog-editoriale]] — progetto blog multilingua (bacheca di avanzamento).
 - [[pannello-pynkstudio]] — hub aziendale e portali prodotto (bacheca di avanzamento).
+- [[agenda-videocall]] — agenda e videocall come pacchetto esterno (bacheca di avanzamento).
 - [[openseo-search-console]] — verifica dominio Google Search Console + fondamenta OpenSEO (bacheca di avanzamento).
 
 ## Knowledge Base per l'assistente AI

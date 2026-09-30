@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sendEmail } from "@/lib/email/sender";
 import { sendWebPush } from "@/lib/push/send";
 import { sendWhatsApp } from "@/lib/whatsapp/send";
-import { formatSlotLabel } from "@/lib/pynkstudio/booking";
 import { bookingReminderHtml } from "@/lib/pynkstudio/email-templates";
+import { getAgenda, PYNK_AGENDA_SCOPE, pynkSlotLabel } from "@/lib/agenda-runtime";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
-const TENANT_ID = "pynkstudio";
 const REMINDER_LEAD_MINUTES = 20;
 const PYNK_FROM = "PYNK STUDIO <amministrazione@pynkstudio.eu>";
 
@@ -20,57 +18,39 @@ function isAuthorized(req: Request): boolean {
   return req.headers.get("authorization") === `Bearer ${secret}`;
 }
 
-// Promemoria ~20 min prima della call: push all'admin + email al cliente.
-// Idempotente: marca reminder_sent_at così non reinvia ai giri successivi.
+// Promemoria ~20 min prima della call: push all'admin + email/WhatsApp al cliente.
+// claimDueReminders marca e restituisce le call nella stessa UPDATE: i giri
+// sovrapposti del cron non inviano due volte.
 export async function GET(req: Request) {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const svc = createSupabaseServiceClient();
-  if (!svc) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
-
-  const now = Date.now();
-  const windowEnd = new Date(now + REMINDER_LEAD_MINUTES * 60000).toISOString();
-  const nowISO = new Date(now).toISOString();
-
-  const { data: due, error } = await svc
-    .from("consultation_bookings")
-    .select("id, name, email, phone, topic, starts_at")
-    .eq("tenant_id", TENANT_ID)
-    .eq("status", "confirmed")
-    .is("reminder_sent_at", null)
-    .gt("starts_at", nowISO)
-    .lte("starts_at", windowEnd);
-
-  if (error) return NextResponse.json({ error: "db_error" }, { status: 500 });
-  if (!due?.length) return NextResponse.json({ ok: true, reminded: 0 });
-
-  let reminded = 0;
+  const agenda = getAgenda();
+  const due = await agenda.claimDueReminders({ leadMinutes: REMINDER_LEAD_MINUTES, scope: PYNK_AGENDA_SCOPE });
 
   for (const b of due) {
-    const startUtc = new Date(b.starts_at);
-    const slotLabel = formatSlotLabel(startUtc);
+    const slotLabel = pynkSlotLabel(b);
+    const topic = b.topic ?? "";
+    const joinUrl = b.location === "video" ? agenda.guestUrlFor(b) : null;
 
     try {
-      await sendWebPush(TENANT_ID, {
-        title: "Call tra ~20 minuti",
-        body: `${b.name} — ${b.topic} · ${slotLabel}`,
-        url: "/admin-pynkstudio/agenda",
+      await sendWebPush(PYNK_AGENDA_SCOPE, {
+        title: joinUrl ? "Videocall tra ~20 minuti" : "Call tra ~20 minuti",
+        body: `${b.name} — ${topic} · ${slotLabel}`,
+        url: joinUrl ? `/admin-pynkstudio/agenda/call/${b.id}` : "/admin-pynkstudio/agenda",
         tag: `reminder-${b.id}`,
       });
     } catch (e) {
       console.warn("[call-reminders] push fallita:", e);
     }
 
-    try {
-      await sendWhatsApp(b.phone, "call_reminder", {
-        "1": b.name,
-        "2": slotLabel,
-        "3": b.topic,
-      });
-    } catch (e) {
-      console.warn("[call-reminders] whatsapp fallita:", e);
+    if (b.phone) {
+      try {
+        await sendWhatsApp(b.phone, "call_reminder", { "1": b.name, "2": slotLabel, "3": topic });
+      } catch (e) {
+        console.warn("[call-reminders] whatsapp fallita:", e);
+      }
     }
 
     try {
@@ -78,19 +58,15 @@ export async function GET(req: Request) {
         to: b.email,
         fromOverride: PYNK_FROM,
         replyTo: "amministrazione@pynkstudio.eu",
-        subject: "La tua call con PYNK STUDIO inizia tra ~20 minuti",
-        html: bookingReminderHtml({ name: b.name, slotLabel, topic: b.topic, phone: b.phone }),
+        subject: joinUrl
+          ? "La tua videocall con PYNK STUDIO inizia tra ~20 minuti"
+          : "La tua call con PYNK STUDIO inizia tra ~20 minuti",
+        html: bookingReminderHtml({ name: b.name, slotLabel, topic, phone: b.phone ?? "", joinUrl }),
       });
     } catch (e) {
       console.warn("[call-reminders] email fallita:", e);
     }
-
-    await svc
-      .from("consultation_bookings")
-      .update({ reminder_sent_at: new Date().toISOString() })
-      .eq("id", b.id);
-    reminded++;
   }
 
-  return NextResponse.json({ ok: true, reminded });
+  return NextResponse.json({ ok: true, reminded: due.length });
 }

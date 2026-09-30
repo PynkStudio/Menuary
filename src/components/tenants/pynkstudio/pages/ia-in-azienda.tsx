@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { dateParts } from "@pynkstudio/agendaapp/core";
+import { useAgendaBooking } from "@pynkstudio/agendaapp/react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import {
   ArrowLeft,
@@ -485,63 +487,33 @@ function IaQuoteForm({
 }
 
 // ─── Scelta della call dopo l'invio ──────────────────────────────────────────
-// Stesse API di /prenota-call: la call finisce in consultation_bookings, quindi in
+// Stesso flusso di /prenota-call via @pynkstudio/agendaapp: la call finisce in
 // admin → Agenda e nel CRM, con conferme email/WhatsApp e promemoria.
 
-type Slot = { time: string; startUtc: string; available: boolean };
-
 const CALL_DAYS = 10;
-
-function upcomingWorkingDays(count: number): Date[] {
-  const out: Date[] = [];
-  const cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
-  for (let i = 0; out.length < count && i < count * 3; i++) {
-    const wd = cursor.getDay();
-    if (wd >= 1 && wd <= 5) out.push(new Date(cursor));
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return out;
-}
-
-function toISODate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function IaCallPicker({ c, lead }: { c: Copy; lead: FormState }) {
   const f = c.form;
   const cal = usePynkCopy().prenotaCallPage;
-  const [days] = useState(() => upcomingWorkingDays(CALL_DAYS));
-  const [date, setDate] = useState<string | null>(null);
-  const [slots, setSlots] = useState<Slot[] | null>(null);
-  const [slot, setSlot] = useState<Slot | null>(null);
+  const booking = useAgendaBooking({
+    availabilityUrl: "/api/tenant/pynkstudio/bookings/availability",
+    bookingUrl: "/api/tenant/pynkstudio/bookings",
+  });
+  const days = booking.days.slice(0, CALL_DAYS);
+  const date = booking.selectedDate;
+  const slots = booking.loadingSlots ? null : booking.slots;
+  const slot = booking.selectedSlot;
+  const sending = booking.submitting;
   const [phone, setPhone] = useState(lead.phone.trim());
-  const [reloadKey, setReloadKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
   const [bookedLabel, setBookedLabel] = useState<string | null>(null);
   const [skipped, setSkipped] = useState(false);
 
-  useEffect(() => {
-    if (!date) return;
-    let cancelled = false;
-    setSlots(null);
-    fetch(`/api/tenant/pynkstudio/bookings/availability?date=${date}`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (!cancelled) setSlots(json.slots ?? []);
-      })
-      .catch(() => {
-        if (!cancelled) setSlots([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [date, reloadKey]);
-
-  const dayLabel = (d: Date) => `${cal.weekdays[d.getDay()]} ${d.getDate()} ${cal.months[d.getMonth()]}`;
-  const selectedDay = days.find((d) => toISODate(d) === date);
-  const slotLabel = slot && selectedDay ? `${dayLabel(selectedDay)}, ${slot.time}` : "";
+  const dayLabel = (iso: string) => {
+    const d = dateParts(iso);
+    return `${cal.weekdays[d.weekday]} ${d.day} ${cal.months[d.month]}`;
+  };
+  const slotLabel = slot && date ? `${dayLabel(date)}, ${slot.time}` : "";
 
   const confirm = async () => {
     if (!slot) return;
@@ -550,46 +522,31 @@ function IaCallPicker({ c, lead }: { c: Copy; lead: FormState }) {
       return;
     }
     setError(null);
-    setSending(true);
-    try {
-      const topic = [
-        `${f.callTopicLead}: ${lead.goals.join(" · ")}`,
-        lead.company.trim() && `Azienda: ${lead.company.trim()}`,
-        lead.size && `Persone: ${lead.size}`,
-      ]
-        .filter(Boolean)
-        .join(" — ");
-      const res = await fetch("/api/tenant/pynkstudio/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: lead.name.trim(),
-          email: lead.email.trim(),
-          phone: phone.trim(),
-          topic,
-          startUtc: slot.startUtc,
-          source: "landing-ia",
-          company: lead.company.trim(),
-          employees: crmOption(CRM_SIZE_OPTIONS, f.sizes, lead.size),
-          timing: crmOption(CRM_TIMING_OPTIONS, f.timings, lead.timing),
-          interests: lead.goals,
-          attribution: getAttribution(),
-        }),
-      });
-      if (res.status === 409) {
-        setError(cal.slotTaken);
-        setSlot(null);
-        setReloadKey((k) => k + 1);
-        return;
-      }
-      if (!res.ok) throw new Error("booking_failed");
-      trackConversion("booking", { label: "ia-in-azienda" });
-      setBookedLabel(slotLabel);
-    } catch {
-      setError(f.errorCall);
-    } finally {
-      setSending(false);
+    const topic = [
+      `${f.callTopicLead}: ${lead.goals.join(" · ")}`,
+      lead.company.trim() && `Azienda: ${lead.company.trim()}`,
+      lead.size && `Persone: ${lead.size}`,
+    ]
+      .filter(Boolean)
+      .join(" — ");
+    const result = await booking.submit({
+      name: lead.name.trim(),
+      email: lead.email.trim(),
+      phone: phone.trim(),
+      topic,
+      source: "landing-ia",
+      company: lead.company.trim(),
+      employees: crmOption(CRM_SIZE_OPTIONS, f.sizes, lead.size),
+      timing: crmOption(CRM_TIMING_OPTIONS, f.timings, lead.timing),
+      interests: lead.goals,
+      attribution: getAttribution(),
+    });
+    if (!result.ok) {
+      setError(result.error === "slot_taken" ? cal.slotTaken : f.errorCall);
+      return;
     }
+    trackConversion("booking", { label: "ia-in-azienda" });
+    setBookedLabel(slotLabel);
   };
 
   if (bookedLabel) {
@@ -617,23 +574,22 @@ function IaCallPicker({ c, lead }: { c: Copy; lead: FormState }) {
         {f.pickDay}
       </p>
       <div className="pynk-ia-call-days">
-        {days.map((d) => {
-          const iso = toISODate(d);
+        {days.map((iso) => {
+          const d = dateParts(iso);
           return (
             <button
               key={iso}
               type="button"
               aria-pressed={date === iso}
               onClick={() => {
-                setDate(iso);
-                setSlot(null);
+                booking.selectDate(iso);
                 setError(null);
               }}
               className={`pynk-cal-day${date === iso ? " is-active" : ""}`}
             >
-              <span className="pynk-cal-day-wd">{cal.weekdays[d.getDay()]}</span>
-              <span className="pynk-cal-day-num">{d.getDate()}</span>
-              <span className="pynk-cal-day-mo">{cal.months[d.getMonth()].slice(0, 3)}</span>
+              <span className="pynk-cal-day-wd">{cal.weekdays[d.weekday]}</span>
+              <span className="pynk-cal-day-num">{d.day}</span>
+              <span className="pynk-cal-day-mo">{cal.months[d.month].slice(0, 3)}</span>
             </button>
           );
         })}
@@ -656,7 +612,7 @@ function IaCallPicker({ c, lead }: { c: Copy; lead: FormState }) {
                   disabled={!s.available}
                   aria-pressed={slot?.startUtc === s.startUtc}
                   onClick={() => {
-                    setSlot(s);
+                    booking.selectSlot(s);
                     setError(null);
                   }}
                   className={`pynk-cal-slot${slot?.startUtc === s.startUtc ? " is-active" : ""}`}

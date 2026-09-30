@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 export default async function GrazieRoute({
   searchParams,
 }: {
-  searchParams: Promise<{ slot?: string }>;
+  searchParams: Promise<{ slot?: string; mode?: string }>;
 }) {
   await requirePynkstudioTenant();
-  const { slot } = await searchParams;
-  return <PynkStudioGraziePage slot={slot} />;
+  const { slot, mode } = await searchParams;
+  return <PynkStudioGraziePage slot={slot} isVideo={mode === "video"} />;
 }

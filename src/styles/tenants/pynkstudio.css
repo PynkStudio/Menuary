@@ -1903,6 +1903,46 @@
     margin: 0;
   }
 
+  /* ─── Videocall ospite (/videocall/[id]) ──────────────────── */
+  .pynk-videocall-stage {
+    min-height: 560px;
+    height: min(78vh, 820px);
+    border-radius: var(--pynk-radius);
+    overflow: hidden;
+    border: 1px solid var(--pynk-border);
+    background: hsl(240 8% 6%);
+    box-shadow: var(--pynk-shadow-card);
+    --lk-bg: hsl(240 8% 6%);
+    --lk-bg2: hsl(330 28% 13%);
+    --lk-accent-bg: var(--pynk-primary);
+    --lk-accent-fg: var(--pynk-primary-fg);
+    --lk-border-radius: 12px;
+    --lk-font-family: var(--pynk-font);
+  }
+  .pynk-videocall-stage .ag-video { height: 100%; }
+  .pynk-videocall-stage .lk-prejoin { margin-inline: auto; padding-top: 32px; }
+  .pynk-videocall-stage .ag-video-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    height: 100%;
+    padding: 24px;
+    text-align: center;
+  }
+  .pynk-videocall-stage .ag-note { color: hsl(0 0% 92%); }
+  .pynk-videocall-stage .ag-submit {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 999px;
+    background: var(--pynk-gradient);
+    color: var(--pynk-primary-fg);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .pynk-videocall-meta { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 20px; }
+
   /* ─── Unsubscribe ───────────────────────────────────────── */
   .pynk-unsubscribe { display: flex; flex-direction: column; align-items: center; gap: 18px; max-width: 480px; text-align: center; }
   .pynk-unsubscribe-form { display: grid; gap: 12px; width: 100%; margin-top: 8px; }
@@ -2554,6 +2594,53 @@
     cursor: pointer;
   }
   .pynk-agenda-modal-cancel:hover { background: hsl(0 80% 94%); }
+  .pynk-agenda-event.is-done { background: var(--pa-muted); }
+  .pynk-agenda-event-name svg { display: inline; vertical-align: -1px; }
+  .pynk-agenda-modal-status { margin: 0 0 14px; font-size: 13px; font-weight: 600; color: var(--pa-muted); }
+  .pynk-agenda-modal-join {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 11px;
+    border-radius: 10px;
+    background: var(--pa-accent);
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .pynk-agenda-modal-join:hover { background: var(--pa-accent-dark); }
+  .pynk-agenda-modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .pynk-agenda-modal-actions button {
+    padding: 9px;
+    border-radius: 10px;
+    border: 1px solid var(--pa-line);
+    background: var(--pa-surface);
+    color: var(--pa-ink);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .pynk-agenda-modal-actions button:hover { border-color: var(--pa-accent); }
+
+  /* Stanza videocall lato staff (/admin-pynkstudio/agenda/call/[id]) */
+  .pynk-admin-call-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .pynk-admin-call-stage {
+    height: min(72vh, 760px);
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--pa-line);
+    background: hsl(240 8% 8%);
+    --lk-accent-bg: var(--pa-accent);
+    --lk-accent-fg: #ffffff;
+    --lk-border-radius: 10px;
+  }
+  .pynk-admin-call-stage .ag-video { height: 100%; }
+  .pynk-admin-call-stage .ag-video-status,
+  .pynk-admin-call-stage .ag-note { color: var(--pa-sidebar-fg); text-align: center; padding: 24px; }
+  .pynk-admin-call-stage .lk-prejoin { margin-inline: auto; padding-top: 24px; }
 
   .pynk-admin-kpi-grid {
     display: grid;

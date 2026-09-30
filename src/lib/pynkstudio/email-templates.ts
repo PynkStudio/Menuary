@@ -74,7 +74,17 @@ export type BookingEmailData = {
   slotLabel: string;
   topic: string;
   phone: string;
+  /** Link personale alla videocall; assente = call telefonica. */
+  joinUrl?: string | null;
 };
+
+function joinButton(url: string, label: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td style="background:${PYNK};border-radius:8px;">
+        <a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:${WHITE};text-decoration:none;">${label}</a>
+      </td></tr>
+    </table>`;
+}
 
 export function bookingConfirmHtml(d: BookingEmailData): string {
   const n = escapeHtml(d.name);
@@ -86,7 +96,9 @@ export function bookingConfirmHtml(d: BookingEmailData): string {
     <p style="margin:0 0 4px;font-size:26px;font-weight:700;color:${TEXT};line-height:1.2;">La tua call è confermata ✅</p>
     <p style="margin:12px 0 28px;font-size:15px;color:${MUTED};line-height:1.6;">
       Ciao <strong style="color:${TEXT};">${n}</strong>, abbiamo registrato la tua prenotazione.
-      Ti chiamiamo noi all'orario indicato qui sotto.
+      ${d.joinUrl
+        ? "Ci vediamo in videocall all'orario indicato qui sotto: basta il browser, non serve installare nulla."
+        : "Ti chiamiamo noi all'orario indicato qui sotto."}
     </p>
 
     <!-- Detail card -->
@@ -97,10 +109,13 @@ export function bookingConfirmHtml(d: BookingEmailData): string {
           ${detailRow("📅 Quando", `${slot} <span style="color:${MUTED};font-weight:400;font-size:12px;">(ora italiana)</span>`)}
           ${detailRow("⏱ Durata", "20 minuti")}
           ${detailRow("📌 Argomento", topic)}
-          ${detailRow("📞 Telefono", phone)}
+          ${d.joinUrl ? detailRow("🎥 Dove", "Videocall PYNK STUDIO") : detailRow("📞 Telefono", phone)}
         </table>
       </td></tr>
     </table>
+
+    ${d.joinUrl ? joinButton(d.joinUrl, "Entra nella videocall") : ""}
+    ${d.joinUrl ? `<p style="margin:0 0 20px;font-size:13px;color:${MUTED};line-height:1.6;">Il link è personale e si attiva 10 minuti prima dell'inizio. Tienilo: te lo rimandiamo anche nel promemoria.</p>` : ""}
 
     <p style="margin:0;font-size:14px;color:${MUTED};line-height:1.7;">
       Se hai bisogno di spostare o annullare l'appuntamento, rispondi a questa email
@@ -133,13 +148,16 @@ export function bookingReminderHtml(d: BookingEmailData): string {
         <table role="presentation" cellpadding="0" cellspacing="0">
           ${detailRow("📅 Orario", `${slot} <span style="color:${MUTED};font-weight:400;font-size:12px;">(ora italiana)</span>`)}
           ${detailRow("📌 Argomento", topic)}
-          ${detailRow("📞 Telefono", phone)}
+          ${d.joinUrl ? detailRow("🎥 Dove", "Videocall PYNK STUDIO") : detailRow("📞 Telefono", phone)}
         </table>
       </td></tr>
     </table>
 
+    ${d.joinUrl ? joinButton(d.joinUrl, "Entra nella videocall") : ""}
     <p style="margin:0;font-size:14px;color:${MUTED};line-height:1.7;">
-      Tieniti pronto — siamo noi a chiamarti al numero indicato.
+      ${d.joinUrl
+        ? "Apri il link da computer o telefono e consenti l'accesso a microfono e videocamera."
+        : "Tieniti pronto — siamo noi a chiamarti al numero indicato."}
     </p>
     <p style="margin:24px 0 0;font-size:15px;color:${TEXT};">
       A tra poco! 📞<br/>

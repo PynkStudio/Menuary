@@ -28,3 +28,4 @@ Usa il template [[adr-template]] per ogni nuova decisione. Numera i file progres
 | 0010 | [[adr-0010-informativa-per-moduli-attivi]] — privacy e cookie policy si compongono sui moduli accesi del tenant |
 | 0011 | [[adr-0011-tracciamento-condiviso-con-consenso]] — tracciamento conversioni condiviso, solo con consenso |
 | 0012 | [[adr-0012-claim-landing-legati-a-funzioni-pronte]] — i claim delle landing si accendono solo con la funzione pronta |
+| 0013 | [[adr-0013-agenda-videocall-pacchetto-livekit]] — agenda e videocall in un pacchetto esterno, video su LiveKit self-hosted |

@@ -4,9 +4,9 @@ import { findTenantById } from "@/lib/tenant-registry";
 
 export const dynamic = "force-dynamic";
 
-// Giorni prenotabili (senza `date`) o slot di un giorno. Nessun dato personale.
-export async function GET(request: Request, { params }: { params: Promise<{ tenantId: string }> }) {
+// Token LiveKit: l'ospite si autentica col token del suo link, lo staff con la sessione siteadmin.
+export async function POST(request: Request, { params }: { params: Promise<{ tenantId: string }> }) {
   const { tenantId } = await params;
   if (!findTenantById(tenantId)) return NextResponse.json({ error: "tenant_not_found" }, { status: 404 });
-  return agendaHttp.availability(request, { scope: tenantId });
+  return agendaHttp.videoToken(request, { scope: tenantId });
 }
