@@ -18,6 +18,8 @@ export type TrackingConfig = {
   googleAdsLabels?: Partial<Record<ConversionName, string>>;
   /** Meta (Facebook/Instagram) pixel ID */
   metaPixelId?: string;
+  /** OpenAI Ads (annunci in ChatGPT) Measurement Pixel ID */
+  openaiPixelId?: string;
   /** Path dell'informativa cookie, linkata dal banner. */
   cookiePolicyHref?: string;
 };
@@ -52,6 +54,8 @@ export type Attribution = {
   wbraid?: string;
   fbclid?: string;
   msclkid?: string;
+  /** Click ID degli annunci ChatGPT (OpenAI Ads). */
+  oppref?: string;
   referrer?: string;
   landing_path?: string;
   captured_at?: string;
@@ -68,8 +72,11 @@ export const ATTRIBUTION_KEYS = [
   "wbraid",
   "fbclid",
   "msclkid",
+  "oppref",
 ] as const;
 
 export function hasThirdPartyTracking(config: TrackingConfig | null | undefined): boolean {
-  return Boolean(config && (config.ga4Id || config.googleAdsId || config.metaPixelId));
+  return Boolean(
+    config && (config.ga4Id || config.googleAdsId || config.metaPixelId || config.openaiPixelId),
+  );
 }

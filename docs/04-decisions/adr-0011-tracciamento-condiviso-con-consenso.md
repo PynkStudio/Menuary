@@ -12,6 +12,8 @@ L'utente ha chiesto che la soluzione valga per tutti i siti: i tre siti marketin
 
 ## Decisione
 
+Canali supportati: GA4, Google Ads, Meta Pixel e **OpenAI Ads** (Measurement Pixel `oaiq`, annunci in ChatGPT), quest'ultimo aggiunto il 2026-09-30 perché è il canale su cui partono le prime campagne Menuary.
+
 Un unico **modulo tracking** montato nel root layout (`src/app/layout.tsx`) per ogni sito pubblico:
 
 - `src/lib/tracking/types.ts` — tipi (`TrackingConfig`, conversioni standard `lead` / `booking` / `order` / `contact`, chiavi di attribuzione).
@@ -22,7 +24,7 @@ Un unico **modulo tracking** montato nel root layout (`src/app/layout.tsx`) per 
 Regole:
 
 1. **Nessuno script di terze parti prima del consenso.** GA4, Google Ads e Meta Pixel vengono caricati solo dopo "Accetta". Se il sito non ha ID configurati il banner non compare.
-2. **Attribuzione sempre raccolta, ma solo di prima parte.** UTM, `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, referrer e pagina di atterraggio restano in sessionStorage e vengono inviati solo con una richiesta che il visitatore sceglie di mandare. Il lead li salva in `platform_leads.attribution` (jsonb).
+2. **Attribuzione sempre raccolta, ma solo di prima parte.** UTM, `oppref` (ChatGPT), `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, referrer e pagina di atterraggio restano in sessionStorage e vengono inviati solo con una richiesta che il visitatore sceglie di mandare. Il lead li salva in `platform_leads.attribution` (jsonb).
 3. **Nomi di conversione uguali ovunque**, così i report sono confrontabili tra siti. `trackConversion()` si chiama senza condizioni: senza config o senza consenso invia solo l'evento anonimo di Vercel Analytics.
 4. **Identità visiva isolata.** Il banner ha struttura neutra; i colori vengono dai token `--consent-*` definiti nel CSS di ogni brand/tenant, con fallback sui token tema `--tenant-*`.
 5. **Informative coerenti con la configurazione.** `marketing-legal-content.ts` e `policies.ts` descrivono i servizi di terze parti solo se configurati per quel sito.
@@ -38,6 +40,7 @@ Regole:
 
 ## Conseguenze
 
+- Il pixel OpenAI riceve `oaiq("consent", true)` solo dopo "Accetta"; con la revoca riceve `oaiq("consent", false)`, che cancella i suoi cookie `__oppref` e `__obref`. Le navigazioni client-side inviano `page_viewed` a mano.
 - Per attivare il tracciamento di un sito marketing basta valorizzare le env su Vercel (vedi [[integrazioni-attive]]). Per un tenant si aggiunge `tracking: { ga4Id, googleAdsId, googleAdsLabels, metaPixelId }` al suo profilo.
 - I moduli che producono conversioni chiamano `trackConversion()`: form lead Menuary e Bizery (`lead`), link telefono/WhatsApp/email della vetrina (`contact`), `reservation-request-form` (`booking`), `/ordina/conferma` (`order`, una volta per ordine), form contatti e prenota-call di PynkStudio.
 - `pynk-ga.tsx` è stato rimosso: GA4 di PynkStudio ora passa dal modulo, quindi **solo con consenso**. I dati GA4 di PynkStudio calano rispetto a prima (prima erano raccolti anche senza consenso, in modo non conforme).

@@ -30,6 +30,7 @@ function trackingServices(tracking: TrackingConfig | null | undefined): string[]
   if (tracking.ga4Id) services.push("Google Analytics 4 (Google Ireland Ltd.) — statistiche di visita e misurazione delle conversioni.");
   if (tracking.googleAdsId) services.push("Google Ads (Google Ireland Ltd.) — misurazione dell'efficacia delle campagne pubblicitarie.");
   if (tracking.metaPixelId) services.push("Meta Pixel (Meta Platforms Ireland Ltd.) — misurazione delle campagne su Facebook e Instagram.");
+  if (tracking.openaiPixelId) services.push("OpenAI Measurement Pixel (OpenAI) — misurazione delle campagne pubblicitarie in ChatGPT.");
   return services;
 }
 

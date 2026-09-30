@@ -122,8 +122,7 @@
       "port": 3161,
       "url": "http://menuary.localhost:3161",
       "env": {
-        "TRACKING_MENUARY_GA4_ID": "G-TESTLOCAL00",
-        "TRACKING_MENUARY_META_PIXEL_ID": "000000000000000"
+        "TRACKING_MENUARY_OPENAI_PIXEL_ID": "test-openai-pixel"
       }
     }
   ]

@@ -9,7 +9,7 @@ owner: "PynkStudio"
 
 # Descrizione
 
-Permette di misurare quante richieste, prenotazioni e ordini arrivano dalle campagne pubblicitarie (Google Ads, Meta) e da Google Analytics. Funziona allo stesso modo su tutti i siti della piattaforma. Nessun servizio di misurazione si attiva finché il visitatore non accetta i cookie nel banner.
+Permette di misurare quante richieste, prenotazioni e ordini arrivano dalle campagne pubblicitarie (annunci in ChatGPT con OpenAI Ads, Google Ads, Meta) e da Google Analytics. Funziona allo stesso modo su tutti i siti della piattaforma. Nessun servizio di misurazione si attiva finché il visitatore non accetta i cookie nel banner.
 
 # Funzionalità
 
@@ -26,13 +26,13 @@ Permette di misurare quante richieste, prenotazioni e ordini arrivano dalle camp
 
 # Flussi operativi
 
-1. Il cliente comunica al supporto gli ID dei suoi account (es. `G-…` per GA4, `AW-…` e le etichette di conversione per Google Ads, l'ID del pixel Meta).
+1. Il cliente comunica al supporto gli ID dei suoi account (es. `G-…` per GA4, `AW-…` e le etichette di conversione per Google Ads, l'ID del pixel Meta, il Pixel ID di OpenAI Ads da Ads Manager › Conversions).
 2. Il team li aggiunge al profilo del sito e pubblica.
 3. Dal primo visitatore che accetta i cookie, le conversioni compaiono negli account del cliente.
 
 # Limitazioni
 
-- Chi rifiuta i cookie non viene misurato su Google e Meta: i numeri nei loro pannelli saranno più bassi delle richieste reali. Il conteggio completo resta nel pannello Menuary/Bizery.
+- Chi rifiuta i cookie non viene misurato su OpenAI, Google e Meta: i numeri nei loro pannelli saranno più bassi delle richieste reali. Il conteggio completo resta nel pannello Menuary/Bizery.
 - Le anteprime `demo.*` non tracciano mai nulla.
 - Il cliente non può ancora inserire gli ID da solo nel pannello di gestione: serve una richiesta al supporto (vedi [[escalation-policy]]).
 

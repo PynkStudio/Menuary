@@ -29,6 +29,7 @@ export function ConsentBanner({ config, hasChoice }: { config: TrackingConfig; h
     config.ga4Id ? "Google Analytics" : null,
     config.googleAdsId ? "Google Ads" : null,
     config.metaPixelId ? "Meta Pixel" : null,
+    config.openaiPixelId ? "OpenAI Ads" : null,
   ].filter(Boolean);
 
   function choose(granted: boolean) {

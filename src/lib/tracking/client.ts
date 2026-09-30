@@ -107,11 +107,13 @@ export function getAttribution(): Attribution | null {
 
 type Gtag = (...args: unknown[]) => void;
 type Fbq = (...args: unknown[]) => void;
+type Oaiq = (...args: unknown[]) => void;
 
 declare global {
   interface Window {
     gtag?: Gtag;
     fbq?: Fbq;
+    oaiq?: Oaiq;
     __mnTracking?: { config: TrackingConfig; consent: ConsentState | null };
   }
 }
@@ -121,6 +123,15 @@ const META_EVENT: Record<ConversionName, string> = {
   booking: "Schedule",
   order: "Purchase",
   contact: "Contact",
+};
+
+// Eventi standard OpenAI Ads con la forma dati richiesta. "contact" non ha un
+// equivalente standard: va come evento custom.
+const OPENAI_EVENT: Record<ConversionName, { name: string; type: string }> = {
+  lead: { name: "lead_created", type: "customer_action" },
+  booking: { name: "appointment_scheduled", type: "customer_action" },
+  order: { name: "order_created", type: "contents" },
+  contact: { name: "custom", type: "custom" },
 };
 
 const GA4_EVENT: Record<ConversionName, string> = {
@@ -142,7 +153,9 @@ export function trackConversion(name: ConversionName, params: ConversionParams =
   try {
     vercelTrack(`conversion_${name}`, {
       label: params.label ?? null,
-      source: attribution?.utm_source ?? (attribution?.gclid ? "google" : attribution?.fbclid ? "meta" : null),
+      source:
+        attribution?.utm_source ??
+        (attribution?.gclid ? "google" : attribution?.fbclid ? "meta" : attribution?.oppref ? "openai" : null),
       campaign: attribution?.utm_campaign ?? null,
     });
   } catch {
@@ -171,6 +184,20 @@ export function trackConversion(name: ConversionName, params: ConversionParams =
       currency: params.currency,
       transaction_id: params.transactionId,
     });
+  }
+
+  if (consent?.ads && config.openaiPixelId && window.oaiq) {
+    const event = OPENAI_EVENT[name];
+    const data: Record<string, unknown> = { type: event.type };
+    // OpenAI vuole importi interi nell'unità minima della valuta (2599 = 25,99).
+    if (params.value != null && params.currency) {
+      data.amount = Math.round(params.value * 100);
+      data.currency = params.currency;
+    }
+    const options: Record<string, unknown> = {};
+    if (params.transactionId) options.event_id = `${name}:${params.transactionId}`;
+    if (event.name === "custom") options.custom_event_name = name;
+    window.oaiq("measure", event.name, data, options);
   }
 
   if (consent?.ads && config.metaPixelId && window.fbq) {

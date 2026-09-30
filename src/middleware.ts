@@ -833,7 +833,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (pathPreviewTenant) {
+  // Sugli host del pannello il primo segmento è lo slug del tenant gestito
+  // (`/pynkstudio/agenda`), non una preview del sito pubblico: senza l'esclusione
+  // finisce con il prefisso lingua e serve il sito vetrina al posto del pannello.
+  const isManagementHost =
+    mode === "admin-pynkstudio" || mode === "gestione-bizery" || mode === "gestione-custom";
+  if (pathPreviewTenant && !isManagementHost) {
     const localeConfig = getTenantLocaleConfig(pathPreviewTenant.id);
     if (
       (mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") &&

@@ -35,6 +35,7 @@ function trackingServiceNames(f: PolicyModuleFlags): string[] {
   if (f.tracking?.ga4Id) names.push("Google Analytics 4");
   if (f.tracking?.googleAdsId) names.push("Google Ads");
   if (f.tracking?.metaPixelId) names.push("Meta Pixel");
+  if (f.tracking?.openaiPixelId) names.push("OpenAI Measurement Pixel");
   return names;
 }
 

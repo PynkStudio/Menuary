@@ -51,7 +51,23 @@ export function TrackingProvider({ config }: { config: TrackingConfig }) {
       });
     }
     if (window.fbq) window.fbq("consent", consent.ads ? "grant" : "revoke");
+    // Con false il pixel OpenAI cancella anche i suoi cookie (__oppref, __obref).
+    if (window.oaiq) window.oaiq("consent", consent.ads);
   }, [consent]);
+
+  // Il pixel OpenAI non misura la navigazione client-side: page_viewed va
+  // inviato a ogni cambio di pagina (il primo lo invia lo snippet di init).
+  const lastOpenaiPath = useRef<string | null>(null);
+  useEffect(() => {
+    if (!consent?.ads || !config.openaiPixelId || !window.oaiq) return;
+    if (lastOpenaiPath.current === null) {
+      lastOpenaiPath.current = pathname;
+      return;
+    }
+    if (lastOpenaiPath.current === pathname) return;
+    lastOpenaiPath.current = pathname;
+    window.oaiq("measure", "page_viewed", { type: "contents" });
+  }, [pathname, consent?.ads, config.openaiPixelId]);
 
   // Il pixel Meta non segue la navigazione client-side da solo; GA4 sì
   // (enhanced measurement sugli eventi di history).
@@ -73,6 +89,7 @@ export function TrackingProvider({ config }: { config: TrackingConfig }) {
     (consent?.analytics && config.ga4Id) || (consent?.ads && config.googleAdsId),
   );
   const loadMeta = Boolean(consent?.ads && config.metaPixelId);
+  const loadOpenai = Boolean(consent?.ads && config.openaiPixelId);
 
   return (
     <>
@@ -101,6 +118,26 @@ export function TrackingProvider({ config }: { config: TrackingConfig }) {
             `}
           </Script>
         </>
+      ) : null}
+      {loadOpenai ? (
+        <Script id="mn-openai-pixel" strategy="afterInteractive">
+          {`
+            (function (w, d, s, u) {
+              if (w.oaiq) return;
+              var q = function () { q.q.push(arguments); };
+              q.q = [];
+              w.oaiq = q;
+              var js = d.createElement(s);
+              js.async = true;
+              js.src = u;
+              var f = d.getElementsByTagName(s)[0];
+              f.parentNode.insertBefore(js, f);
+            })(window, document, "script", "https://bzrcdn.openai.com/sdk/oaiq.min.js");
+            oaiq("consent", true);
+            oaiq("init", { pixelId: ${JSON.stringify(config.openaiPixelId)} });
+            oaiq("measure", "page_viewed", { type: "contents" });
+          `}
+        </Script>
       ) : null}
       {loadMeta ? (
         <Script id="mn-meta-pixel" strategy="afterInteractive">
