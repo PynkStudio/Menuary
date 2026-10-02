@@ -21,6 +21,26 @@ import { sendWhatsApp } from "@/lib/whatsapp/send";
 export const PYNK_AGENDA_SCOPE = "pynkstudio";
 export const PYNK_CALL_EVENT = "call-20";
 const PYNK_SITE = "https://pynkstudio.eu";
+// Il ritorno OAuth deve atterrare sul pannello admin, dove vive la pagina impostazioni.
+const PYNK_ADMIN = "https://admin.pynkstudio.eu";
+export const PYNK_AGENDA_SETTINGS_PATH = "/admin-pynkstudio/agenda/impostazioni";
+
+function oauthClient(id: string | undefined, secret: string | undefined) {
+  return id && secret ? { clientId: id, clientSecret: secret } : null;
+}
+
+// Senza AGENDA_CREDENTIALS_KEY i calendari esterni restano spenti: si usano
+// solo posti e orari manuali.
+function calendarsConfig() {
+  const credentialsKey = process.env.AGENDA_CREDENTIALS_KEY;
+  if (!credentialsKey) return null;
+  return {
+    credentialsKey,
+    redirectUri: (provider: "google" | "microsoft") => `${PYNK_ADMIN}/api/agenda/calendar/callback/${provider}`,
+    google: oauthClient(process.env.AGENDA_GOOGLE_CLIENT_ID, process.env.AGENDA_GOOGLE_CLIENT_SECRET),
+    microsoft: oauthClient(process.env.AGENDA_MICROSOFT_CLIENT_ID, process.env.AGENDA_MICROSOFT_CLIENT_SECRET),
+  };
+}
 const PYNK_FROM = "PYNK STUDIO <amministrazione@pynkstudio.eu>";
 const PYNK_REPLY_TO = "amministrazione@pynkstudio.eu";
 
@@ -42,6 +62,8 @@ function pynkEventTypes(): AgendaEventType[] {
       timezone: "Europe/Rome",
       weekly: ([1, 2, 3, 4, 5] as const).map((day) => ({ day, start: "10:00", end: "18:00" })),
       lookaheadDays: 14,
+      // Valori iniziali: si cambiano da admin → Agenda → Impostazioni.
+      holidays: ["IT"],
       location: livekitConfig() ? "video" : "phone",
     },
   ];
@@ -168,6 +190,7 @@ export function getAgenda(): AgendaServer {
     eventTypes: (scope) => (scope === PYNK_AGENDA_SCOPE ? pynkEventTypes() : []),
     signingSecret,
     video: livekitConfig(),
+    calendars: calendarsConfig(),
     guestUrl: (booking, token) => pynkVideoCallUrl(booking.id, token),
     // In call il cliente compare con i dati del modulo: nome e cognome, più
     // l'azienda quando il modulo la chiede (landing IA).
@@ -206,6 +229,19 @@ export async function getPynkStaffIdentity(): Promise<{ identity: string; name: 
   return { identity: admin.id, name: fullName || admin.display_name?.trim() || admin.email };
 }
 
+/** Siteadmin abilitati: sono le persone che possono ricevere le call. */
+async function listPynkStaff(scope: string) {
+  if (scope !== PYNK_AGENDA_SCOPE) return [];
+  const svc = createSupabaseServiceClient();
+  if (!svc) return [];
+  const { data } = await svc.from("siteadmin").select("id, first_name, last_name, display_name, email").eq("enabled", true);
+  return (data ?? []).map((a) => ({
+    externalId: a.id,
+    name: [a.first_name, a.last_name].map((x) => x?.trim()).filter(Boolean).join(" ") || a.display_name?.trim() || a.email,
+    email: a.email,
+  }));
+}
+
 /** Staff PynkStudio: siteadmin abilitati. Solo lo scope pynkstudio ha un'agenda. */
 async function authorizeSiteadmin(_request: Request, scope: string) {
   return scope === PYNK_AGENDA_SCOPE ? getPynkStaffIdentity() : null;
@@ -215,4 +251,5 @@ export const agendaHttp = createAgendaHandlers({
   agenda: getAgenda,
   requiredFields: ["phone", "topic"],
   authorizeHost: authorizeSiteadmin,
+  listStaff: listPynkStaff,
 });
