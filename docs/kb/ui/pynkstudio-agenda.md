@@ -5,7 +5,7 @@ roles: ["siteadmin"]
 tags: ["ui", "admin-pynkstudio", "agenda", "videocall"]
 route: "/admin-pynkstudio/agenda"
 source: "src/components/admin-pynkstudio/pynk-agenda.tsx, src/components/admin-pynkstudio/pynk-agenda-call.tsx, src/lib/agenda-runtime.ts"
-last_updated: "2026-09-30"
+last_updated: "2026-10-02"
 owner: ""
 ---
 
@@ -27,13 +27,20 @@ L'**Agenda** mostra, settimana per settimana, le call prenotate dai siti PynkStu
 
 # Pulsanti e azioni
 
-- **«Entra in videocall»** (solo videocall confermate): apre la stanza. Premi **«Apri la stanza»**, consenti microfono e videocamera. Puoi entrare quando vuoi, anche prima del cliente; la stanza si chiude 30 minuti dopo la fine prevista.
+- **«Entra in videocall»** (solo videocall confermate): apre la schermata **«Pronto a partecipare?»** con l'anteprima della videocamera, i pulsanti microfono/videocamera e la scelta di microfono, altoparlante e videocamera. Entri con **nome e cognome della tua utenza** (non modificabile). Premi **«Partecipa»**: la call si apre a schermo intero. Puoi entrare quando vuoi, anche prima del cliente; la stanza si chiude 30 minuti dopo la fine prevista.
+
+# Dentro la call
+
+- In due: il cliente a tutto schermo, tu nel riquadro in basso a destra. Con più persone: griglia. Se qualcuno presenta lo schermo, la presentazione va in grande.
+- Barra in basso, da sinistra: ora e titolo; **microfono** e **videocamera** (la freccia accanto apre la scelta del dispositivo); **«Presenta lo schermo»**; **«Abbandona la chiamata»** (rosso); a destra **«Persone»** e **«Chat»** (con il numero di messaggi non letti).
+- Scorciatoie: Ctrl/⌘+D microfono, Ctrl/⌘+E videocamera.
+- Il cliente compare con nome e cognome del modulo e, se l'ha indicata (landing «IA in azienda»), l'azienda: «Mario Rossi · Rossi Srl».
 - **«Segna conclusa»** / **«Non presentato»**: registrano l'esito. Una videocall a cui il cliente è entrato viene segnata «conclusa» da sola quando la stanza si chiude.
 - **«Annulla prenotazione»**: libera l'orario e aggiorna il CRM. Il cliente **non** riceve un avviso automatico: avvisalo tu.
 
 # Cosa vede il cliente
 
-Nell'email di conferma e nel promemoria c'è il bottone **«Entra nella videocall»**: il link è personale e si attiva 10 minuti prima dell'inizio. Funziona dal browser, senza installare nulla.
+Nell'email di conferma e nel promemoria c'è il bottone **«Entra nella videocall»**: il link è personale e si attiva 10 minuti prima dell'inizio. Funziona dal browser, senza installare nulla. Il cliente vede la stessa schermata «Pronto a partecipare?» (con il proprio nome già impostato) e la stessa call.
 
 # Note
 
@@ -44,5 +51,6 @@ Nell'email di conferma e nel promemoria c'è il bottone **«Entra nella videocal
 
 - Schermata agenda ed etichette: `src/components/admin-pynkstudio/pynk-agenda.tsx`
 - Stanza videocall staff: `src/app/admin-pynkstudio/agenda/call/[bookingId]/page.tsx`, `src/components/admin-pynkstudio/pynk-agenda-call.tsx`
-- Pagina videocall cliente e copy: `src/components/tenants/pynkstudio/pages/videocall.tsx`, `videocallPage` in `src/lib/pynkstudio-i18n.ts`
+- Pagina videocall cliente e copy: `src/components/tenants/pynkstudio/pages/videocall.tsx`, `videocallPage` in `src/lib/pynkstudio-i18n.ts` (etichette della call in `videocallPage.labels`, adattate da `src/lib/pynkstudio/video-labels.ts`)
+- Interfaccia della call: pacchetto `@pynkstudio/agendaapp/video/react` (v0.2.0); colori in `.agv.pynk-agv` in fondo a `src/styles/tenants/pynkstudio.css`
 - Regole orari e hook: `src/lib/agenda-runtime.ts` — progetto e stato in [[agenda-videocall]]

@@ -1,20 +1,30 @@
 "use client";
 
-import "@livekit/components-styles";
+import "@pynkstudio/agendaapp/video/styles.css";
 
 import Link from "next/link";
 import { ChevronLeft, Mail, Phone } from "lucide-react";
 import { AgendaVideoCall } from "@pynkstudio/agendaapp/video/react";
+import { pynkDefaultCopy } from "@/lib/pynkstudio-i18n";
+import { pynkVideoLabels } from "@/lib/pynkstudio/video-labels";
 
 type Props = {
   bookingId: string;
   guestName: string;
+  staffName: string;
   topic: string | null;
   slotLabel: string;
   email: string;
   phone: string | null;
   isVideo: boolean;
   status: string;
+};
+
+const labels = {
+  ...pynkVideoLabels(pynkDefaultCopy.videocallPage.labels),
+  ended: "La stanza è chiusa: la call è terminata da oltre 30 minuti.",
+  forbidden: "Non sei autorizzato a entrare in questa stanza.",
+  generic: "Collegamento non riuscito. Verifica la configurazione LiveKit.",
 };
 
 export function PynkAgendaCall(props: Props) {
@@ -42,22 +52,12 @@ export function PynkAgendaCall(props: Props) {
           {props.status === "cancelled" ? "Questa prenotazione è stata annullata." : "Questa è una call telefonica, non una videocall."}
         </p>
       ) : (
-        <div className="pynk-admin-call-stage">
+        <div className="pynk-admin-call-lobby">
           <AgendaVideoCall
-            displayName="PYNK STUDIO"
-            labels={{
-              join: "Apri la stanza",
-              mic: "Microfono",
-              camera: "Videocamera",
-              name: "Nome",
-              connecting: "Mi collego…",
-              left: "Sei uscito dalla stanza.",
-              rejoin: "Rientra",
-              ended: "La stanza è chiusa: la call è terminata da oltre 30 minuti.",
-              cancelled: "Prenotazione annullata.",
-              forbidden: "Non sei autorizzato a entrare in questa stanza.",
-              generic: "Collegamento non riuscito. Verifica la configurazione LiveKit.",
-            }}
+            displayName={props.staffName}
+            title={`Call con ${props.guestName}`}
+            labels={labels}
+            className="pynk-agv"
             getAccess={async () => {
               const res = await fetch("/api/tenant/pynkstudio/bookings/video-token", {
                 method: "POST",

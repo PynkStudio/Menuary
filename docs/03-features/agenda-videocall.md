@@ -1,7 +1,7 @@
 # Feature: Agenda e videocall (`@pynkstudio/agendaapp`)
 
 - **Stato:** in produzione dal 2026-09-30 con videocall attiva (LiveKit configurato); manca il collaudo con una call vera e la correzione dell'URL del webhook (bacheca in § 7)
-- **Pacchetto:** repo pubblica [PynkStudio/pynkstudio-agendaapp](https://github.com/PynkStudio/pynkstudio-agendaapp) (locale: `../pynkstudio-agendaapp`), tag `v0.1.0`, installato come tarball del tag. Documentazione del pacchetto: vault Obsidian nella sua `docs/`
+- **Pacchetto:** repo pubblica [PynkStudio/pynkstudio-agendaapp](https://github.com/PynkStudio/pynkstudio-agendaapp) (locale: `../pynkstudio-agendaapp`), tag `v0.2.0` (interfaccia call stile Meet), installato come tarball del tag. Documentazione del pacchetto: vault Obsidian nella sua `docs/`
 - **Montaggio nel sito:** `src/lib/agenda-runtime.ts`
 - **Data:** 2026-09-30
 - **Decisione:** [[adr-0013-agenda-videocall-pacchetto-livekit]]
@@ -139,6 +139,8 @@ Non bloccanti:
 | S1 | Runtime e rotte nel sito | 🔵 in test | 2026-09-30, in produzione: giorni e slot reali da `/api/tenant/pynkstudio/bookings/availability`, agenda admin 401 senza sessione, `/accedi` → 303 all'URL pulito, webhook 503 (LiveKit spento). Manca una prenotazione vera end-to-end |
 | S6 | Cron promemoria raggiungibile | ✅ completata | Bug preesistente: pg_cron chiama in POST, la route esponeva solo GET → 405 a ogni giro, promemoria mai inviati. Aggiunto `POST`; dal 2026-09-30 15:44 UTC risponde 200 `{"ok":true,"reminded":0}` (verificato in `net._http_response`) |
 | S2 | Pagine videocall ospite e staff, stili | 🔵 in test | Da aprire in browser con LiveKit attivo |
+| S7 | Call stile Meet (pacchetto v0.2.0): lobby con nome fisso, layout solo/1:1/griglia/presentazione, microfono/videocamera con scelta dispositivi, schermo condiviso, chat, persone | 🔵 in test | 2026-10-02: provata nel playground del pacchetto con LiveKit locale e 2-3 partecipanti (layout, chat, persone, menu dispositivi, avvisi, uscita). Il browser di prova non ha videocamera: video reale e condivisione schermo da provare con LiveKit Cloud |
+| S8 | Nomi in call: staff = nome e cognome dell'utenza siteadmin; cliente = nome del modulo + azienda se indicata | 🔵 in test | `getPynkStaffIdentity` e `guestDisplayName` in `src/lib/agenda-runtime.ts`; l'azienda viene salvata in `answers.company` solo dalla landing IA (il modulo `/prenota-call` non la chiede) |
 | S3 | `prenota-call` e landing IA sul nuovo hook | 🔵 in test | Da provare una prenotazione reale |
 | S4 | Email con link videocall, pagina grazie | 🔵 in test | 2026-09-30: verificato generando l'HTML dal flusso reale (createBooking → hook → `bookingConfirmHtml`): bottone e link presenti, stesso link nel promemoria, token valido. Manca un'email vera ricevuta (serve LiveKit attivo: senza env la call è telefonica e il link non viene messo) |
 | D1 | Migration `20261001_agendaapp_schema.sql` applicata | ✅ completata | 2026-09-30 via MCP `apply_migration` (nome `agendaapp_schema`). Verificato sul DB: 3 tabelle con RLS, `btree_gist`, vincolo `agenda_bookings_no_overlap`, 3 righe copiate da `consultation_bookings`, FK `pynkstudio_crm_last_booking_id_fkey` → `agenda_bookings` |

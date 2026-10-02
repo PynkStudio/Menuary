@@ -357,13 +357,38 @@ const it = {
     notVideoBody: "Questa call è telefonica: ti chiamiamo noi al numero che hai indicato.",
     cancelledBody: "Questa call è stata annullata. Se vuoi, puoi prenotarne un'altra.",
     bookAgain: "Prenota una call",
+    callTitle: "Call con PYNK STUDIO · 20 min",
     labels: {
-      join: "Entra nella videocall",
-      mic: "Microfono",
+      readyTitle: "Pronto a partecipare?",
+      joiningAs: "Parteciperai come",
+      join: "Partecipa",
+      microphone: "Microfono",
       camera: "Videocamera",
-      name: "Il tuo nome",
+      speaker: "Altoparlante",
+      defaultDevice: "Predefinito",
+      cameraOffPreview: "La videocamera è spenta",
+      deviceError: "Videocamera o microfono non disponibili. Controlla i permessi del browser.",
+      micOn: "Disattiva microfono",
+      micOff: "Attiva microfono",
+      cameraOn: "Disattiva videocamera",
+      cameraOff: "Attiva videocamera",
+      shareScreen: "Presenta lo schermo",
+      stopSharing: "Interrompi la presentazione",
+      presentingSuffix: "sta presentando",
+      deviceSettings: "Impostazioni dispositivi",
+      noDevices: "Nessun dispositivo trovato. Controlla i permessi del browser.",
+      leave: "Abbandona la chiamata",
+      people: "Persone",
+      chat: "Chat",
+      you: "tu",
+      waitingAlone: "In attesa che gli altri partecipino…",
+      chatPlaceholder: "Scrivi un messaggio",
+      send: "Invia",
+      noMessages: "I messaggi sono visibili solo a chi è in chiamata e vengono eliminati alla fine.",
+      reconnecting: "Connessione persa. Mi ricollego…",
+      enableAudio: "Clicca per attivare l'audio",
       connecting: "Mi collego…",
-      left: "Sei uscito dalla videocall.",
+      left: "Hai abbandonato la chiamata.",
       rejoin: "Rientra",
       tooEarlyLead: "La stanza si apre alle",
       tooEarlyTail: ". Riprova tra poco.",
@@ -799,6 +824,9 @@ export const pynkstudioI18n = createTenantI18n({
   defaultLanguage: "it",
   translations,
 });
+
+/** Copy della lingua predefinita, per le superfici fuori dal sito (pannello admin). */
+export const pynkDefaultCopy: PynkCopy = translations.it;
 
 export const setPynkLanguage = pynkstudioI18n.setLanguage;
 export const usePynkCopy = pynkstudioI18n.useCopy;

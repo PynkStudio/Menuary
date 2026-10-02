@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PynkAgendaCall } from "@/components/admin-pynkstudio/pynk-agenda-call";
-import { getAgenda, PYNK_AGENDA_SCOPE, pynkSlotLabel } from "@/lib/agenda-runtime";
+import { getAgenda, getPynkStaffIdentity, PYNK_AGENDA_SCOPE, pynkSlotLabel } from "@/lib/agenda-runtime";
 
 export const metadata: Metadata = {
   title: "Videocall · PynkStudio Admin",
@@ -13,12 +13,14 @@ export const dynamic = "force-dynamic";
 // comunque solo a un siteadmin abilitato (authorizeHost in agenda-runtime).
 export default async function PynkAdminAgendaCallPage({ params }: { params: Promise<{ bookingId: string }> }) {
   const { bookingId } = await params;
-  const booking = await getAgenda().getBooking(bookingId);
-  if (!booking || booking.scope !== PYNK_AGENDA_SCOPE) notFound();
+  const agenda = getAgenda();
+  const [booking, staff] = await Promise.all([agenda.getBooking(bookingId), getPynkStaffIdentity()]);
+  if (!booking || booking.scope !== PYNK_AGENDA_SCOPE || !staff) notFound();
   return (
     <PynkAgendaCall
       bookingId={booking.id}
-      guestName={booking.name}
+      guestName={agenda.guestDisplayName(booking)}
+      staffName={staff.name}
       topic={booking.topic}
       slotLabel={pynkSlotLabel(booking)}
       email={booking.email}

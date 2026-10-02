@@ -169,6 +169,12 @@ export function getAgenda(): AgendaServer {
     signingSecret,
     video: livekitConfig(),
     guestUrl: (booking, token) => pynkVideoCallUrl(booking.id, token),
+    // In call il cliente compare con i dati del modulo: nome e cognome, più
+    // l'azienda quando il modulo la chiede (landing IA).
+    guestDisplayName: (booking) => {
+      const company = typeof booking.answers.company === "string" ? booking.answers.company.trim() : "";
+      return company ? `${booking.name} · ${company}` : booking.name;
+    },
     hooks: {
       onBookingCreated: ({ booking, guestUrl, extra }) =>
         booking.scope === PYNK_AGENDA_SCOPE ? onPynkBookingCreated(booking, guestUrl, extra) : undefined,
@@ -179,9 +185,11 @@ export function getAgenda(): AgendaServer {
   return server;
 }
 
-/** Staff PynkStudio: siteadmin abilitati. Solo lo scope pynkstudio ha un'agenda. */
-async function authorizeSiteadmin(_request: Request, scope: string) {
-  if (scope !== PYNK_AGENDA_SCOPE) return null;
+/**
+ * Siteadmin abilitato della sessione corrente, con il nome con cui entra in
+ * call: nome e cognome dell'utenza, poi il nome visualizzato, poi l'email.
+ */
+export async function getPynkStaffIdentity(): Promise<{ identity: string; name: string } | null> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -194,8 +202,13 @@ async function authorizeSiteadmin(_request: Request, scope: string) {
     .eq("enabled", true)
     .maybeSingle();
   if (!admin?.id) return null;
-  const fullName = [admin.first_name, admin.last_name].filter(Boolean).join(" ");
-  return { identity: admin.id, name: admin.display_name || fullName || "PYNK STUDIO" };
+  const fullName = [admin.first_name, admin.last_name].map((x) => x?.trim()).filter(Boolean).join(" ");
+  return { identity: admin.id, name: fullName || admin.display_name?.trim() || admin.email };
+}
+
+/** Staff PynkStudio: siteadmin abilitati. Solo lo scope pynkstudio ha un'agenda. */
+async function authorizeSiteadmin(_request: Request, scope: string) {
+  return scope === PYNK_AGENDA_SCOPE ? getPynkStaffIdentity() : null;
 }
 
 export const agendaHttp = createAgendaHandlers({

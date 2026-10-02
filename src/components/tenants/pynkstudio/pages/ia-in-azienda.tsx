@@ -536,6 +536,8 @@ function IaCallPicker({ c, lead }: { c: Copy; lead: FormState }) {
       topic,
       source: "landing-ia",
       company: lead.company.trim(),
+      // Salvata sulla prenotazione: in videocall il cliente compare come "Nome · Azienda".
+      answers: lead.company.trim() ? { company: lead.company.trim() } : undefined,
       employees: crmOption(CRM_SIZE_OPTIONS, f.sizes, lead.size),
       timing: crmOption(CRM_TIMING_OPTIONS, f.timings, lead.timing),
       interests: lead.goals,

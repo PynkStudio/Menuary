@@ -1,13 +1,14 @@
 "use client";
 
-import "@livekit/components-styles";
+import "@pynkstudio/agendaapp/video/styles.css";
 
 import Link from "next/link";
 import { CalendarDays, MessageSquare } from "lucide-react";
-import { AgendaVideoCall, type AgendaVideoCallLabels } from "@pynkstudio/agendaapp/video/react";
+import { AgendaVideoCall } from "@pynkstudio/agendaapp/video/react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
+import { pynkVideoLabels } from "@/lib/pynkstudio/video-labels";
 
 export type PynkVideocallState =
   | { kind: "ready"; bookingId: string; token: string; name: string; slotLabel: string; topic: string | null }
@@ -17,11 +18,7 @@ function VideocallInner({ state }: { state: PynkVideocallState }) {
   const c = usePynkCopy().videocallPage;
   const href = useTenantLocalizedHref();
 
-  const labels: Partial<AgendaVideoCallLabels> = {
-    ...c.labels,
-    tooEarly: (opensAt) =>
-      `${c.labels.tooEarlyLead} ${new Intl.DateTimeFormat("it-IT", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit" }).format(opensAt)}${c.labels.tooEarlyTail}`,
-  };
+  const labels = pynkVideoLabels(c.labels);
 
   return (
     <div className="pynk-page">
@@ -63,10 +60,12 @@ function VideocallInner({ state }: { state: PynkVideocallState }) {
                 </span>
               )}
             </div>
-            <div className="pynk-videocall-stage">
+            <div className="pynk-videocall-lobby">
               <AgendaVideoCall
                 displayName={state.name}
+                title={c.callTitle}
                 labels={labels}
+                className="pynk-agv"
                 getAccess={async () => {
                   const res = await fetch("/api/tenant/pynkstudio/bookings/video-token", {
                     method: "POST",

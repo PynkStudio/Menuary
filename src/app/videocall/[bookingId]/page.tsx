@@ -39,7 +39,7 @@ export default async function VideocallRoute({
           kind: "ready",
           bookingId,
           token: t,
-          name: booking.name,
+          name: agenda.guestDisplayName(booking),
           slotLabel: pynkSlotLabel(booking),
           topic: booking.topic,
         };
