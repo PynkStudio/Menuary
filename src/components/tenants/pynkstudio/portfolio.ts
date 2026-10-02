@@ -134,10 +134,10 @@ export const pynkPortfolioItems: PynkPortfolioItem[] = [
     title: "Are You Stupid?",
     kind: "mobile",
     descriptionPlain:
-      "Hyper-casual per iOS e Android: un'istruzione stupidamente semplice ogni round, e la sfida è non fallirla per un dettaglio stupido. Offline, a una mano, per un run in ascensore.",
+      "Party game da 2 a 8 giocatori: la stessa istruzione stupidissima per tutti nello stesso istante, sulla TV chi sbaglia, il telefono come controller. Apple TV, Mac, iPhone e Android, e in singolo anche offline.",
     descriptionNerd:
-      "Flutter, core motore e generatore di sfide in puro Dart, 39 template, difficoltà adattiva, monetizzazione AdMob dietro un'astrazione AdProvider, persistenza locale via shared_preferences: zero backend, zero account.",
-    stack: ["Flutter", "Dart", "iOS", "Android"],
+      "Flutter per i telefoni, host SwiftUI per tvOS e macOS, protocollo LAN versionato con scoperta Bonjour e join via QR, generatore di sfide deterministico in puro Dart (39 template), sfide generate on-device con Apple Foundation Models dietro un validatore. AdMob con consenso UMP: zero backend, zero account.",
+    stack: ["Flutter", "Dart", "SwiftUI", "tvOS", "macOS", "Android", "Apple Intelligence"],
     href: "/lavori/are-you-stupid",
   },
 ];

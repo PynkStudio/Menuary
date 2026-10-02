@@ -12,24 +12,45 @@ import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 const TESTFLIGHT_URL = "https://testflight.apple.com/join/G8kQkCdt";
 
 const pillars = [
-  { title: "Sotto le 8 parole", body: "Ogni istruzione sta in una riga, in maiuscolo. Se serve rileggerla, il gioco ha già sbagliato." },
-  { title: "Zero tempi morti", body: "Flash verde 240 ms se hai fatto bene, rosso 850 ms se hai sbagliato. Nessun caricamento, nessun cambio schermata." },
-  { title: "Offline al 100%", body: "Nessun account, nessun backend, nessuna connessione richiesta per giocare. Funziona anche in modalità aereo." },
-  { title: "Una mano, un pollice", body: "Solo tap e hold. Niente swipe, niente multi-touch, niente precisione chirurgica." },
+  { title: "Tutti insieme, nello stesso istante", body: "Da 2 a 8 giocatori ricevono la stessa istruzione nello stesso momento. Sulla TV si vede chi ha sbagliato. Subito." },
+  { title: "Sotto le 8 parole", body: "Ogni istruzione sta in una riga, in maiuscolo. Facilissima. Ed è proprio per questo che qualcuno la sbaglierà." },
+  { title: "Il telefono è il controller", body: "Niente gamepad, niente app da configurare: inquadri il QR sulla TV e sei dentro. iPhone e Android nella stessa partita." },
+  { title: "Zero tempi morti", body: "Un round dura pochi secondi, lo sfottò per chi sbaglia arriva in diretta e si riparte. Nessun caricamento, nessuna attesa." },
+  { title: "L'AI inventa le sfide", body: "Con un iPhone compatibile con Apple Intelligence nella stanza, il gioco crea sfide nuove al volo. Tutto sul dispositivo, niente cloud." },
+  { title: "E quando sei da solo", body: "La modalità singolo è sempre lì: offline, a una mano, livello dopo livello finché non sbagli. Funziona anche in modalità aereo." },
+];
+
+const steps = [
+  { title: "Accendi la TV", body: "Apri Are You Stupid? su Apple TV, oppure sul Mac e mandalo sulla TV con AirPlay. Sullo schermo compare la stanza con il suo QR." },
+  { title: "Entrate dal telefono", body: "Ognuno inquadra il QR (o digita il codice della stanza), sceglie un nome e un'emoji. Basta essere sulla stessa rete Wi-Fi." },
+  { title: "Scegliete la modalità", body: "Last Stupid Standing: chi sbaglia è fuori, vince l'ultimo rimasto. Stupid Battle: tutti giocano fino alla fine, vince chi fa più punti." },
+  { title: "Non sbagliate", body: "Un'istruzione stupidissima, uguale per tutti, pochi secondi per eseguirla. Sulla TV, davanti a tutti, la classifica di chi non ce l'ha fatta." },
 ];
 
 const faq = [
   {
+    q: "Cosa serve per giocare in gruppo?",
+    a: "Un'Apple TV, oppure un Mac collegato alla TV con AirPlay, che fa da tabellone. Poi un telefono a testa, iPhone o Android, tutti sulla stessa rete Wi-Fi. Da 2 a 8 giocatori.",
+  },
+  {
     q: "Posso già provarlo?",
-    a: "Sì, è in beta pubblica su TestFlight per iOS. Il lancio su App Store e Google Play arriva più avanti.",
+    a: "Sì, è in beta pubblica su TestFlight per iOS. Il lancio su App Store (iPhone, iPad, Apple TV e Mac) e Google Play arriva a breve.",
+  },
+  {
+    q: "Si può giocare anche da soli?",
+    a: "Sì. La modalità singolo è completamente offline: livelli sempre più veloci, finché non sbagli per un dettaglio stupido.",
+  },
+  {
+    q: "Serve una connessione a internet?",
+    a: "No. Il gioco in singolo funziona anche in modalità aereo, e il party mode passa solo sulla rete Wi-Fi di casa. Solo gli annunci pubblicitari facoltativi richiedono internet.",
+  },
+  {
+    q: "Cos'è la modalità AI?",
+    a: "Sugli iPhone e iPad compatibili con Apple Intelligence, il gioco usa il modello di Apple direttamente sul dispositivo per inventare sfide nuove. Niente viene inviato a server esterni, e si può spegnere dalle impostazioni. In una partita di gruppo basta un iPhone compatibile: anche chi gioca da Android riceve le sfide AI.",
   },
   {
     q: "Are You Stupid? raccoglie dati personali?",
-    a: "No. Il gioco non ha account, non ha backend e non usa strumenti di analisi. L'unico trattamento dati è quello del nostro partner pubblicitario, Google AdMob, descritto per intero nella privacy policy.",
-  },
-  {
-    q: "Serve una connessione a internet per giocare?",
-    a: "No. Il ciclo di gioco (istruzioni, punteggio, impostazioni) è completamente offline. Solo gli annunci pubblicitari facoltativi richiedono una connessione, e non sono mai obbligatori per continuare a giocare.",
+    a: "Non abbiamo account, backend o strumenti di analisi. L'unico trattamento dati è quello del nostro partner pubblicitario, Google AdMob, e solo dopo il consenso dove la legge lo richiede. Tutti i dettagli nella privacy policy.",
   },
   {
     q: "È adatto ai bambini?",
@@ -51,9 +72,10 @@ function AreYouStupidInner() {
       "@type": "MobileApplication",
       name: "Are You Stupid?",
       applicationCategory: "GameApplication",
-      operatingSystem: "iOS, Android",
+      applicationSubCategory: "Party game",
+      operatingSystem: "iOS, iPadOS, tvOS, macOS, Android",
       description:
-        "Hyper-casual a una mano: un'istruzione stupidamente semplice ogni round, e la sfida è non fallirla per un dettaglio stupido. Offline, senza account.",
+        "Il party game da 2 a 8 giocatori: un'istruzione stupidamente semplice, uguale per tutti nello stesso istante, sulla TV la classifica di chi sbaglia. Il telefono è il controller. Anche in singolo, offline.",
       author: { "@type": "Organization", name: "PYNK STUDIO" },
       publisher: { "@type": "Organization", name: "PYNK STUDIO" },
       offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
@@ -73,7 +95,7 @@ function AreYouStupidInner() {
       <section className="pynk-hero pynk-hero-sub">
         <div className="pynk-glow pynk-glow-tr" aria-hidden />
         <div className="pynk-container pynk-hero-content">
-          <p className="pynk-eyebrow pynk-eyebrow-chip">Mobile game · iOS &amp; Android · In beta su TestFlight</p>
+          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iPhone &amp; Android · In beta su TestFlight</p>
           <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="pynk-hero-title">
             ARE YOU <span className="pynk-accent">STUPID?</span>
           </motion.h1>
@@ -83,14 +105,14 @@ function AreYouStupidInner() {
             transition={{ delay: 0.12 }}
             className="pynk-hero-subtitle"
           >
-            Un hyper-casual a una mano: ogni round è un&apos;istruzione stupidamente semplice, sotto le 8 parole. Perdi per un dettaglio
-            stupido — ed è proprio lì la battuta.
+            Il party game dove tutti ricevono la stessa istruzione stupidissima nello stesso istante, e la TV mostra a tutti chi
+            l&apos;ha sbagliata. Il telefono è il controller, da 2 a 8 giocatori. Sembra facile. Non lo è.
           </motion.p>
           <p className="pynk-note pynk-mt-24">
             Dal gioco: <em>&laquo;One job. Don&apos;t fuck it up.&raquo;</em> — linguaggio scorretto usato di proposito, vedi{" "}
             <a href="#contenuto-eta">Contenuto ed età</a> qui sotto.
           </p>
-          <p className="pynk-note pynk-mt-12">In beta pubblica su TestFlight (iOS) — App Store e Google Play in arrivo.</p>
+          <p className="pynk-note pynk-mt-12">In beta pubblica su TestFlight (iOS) — App Store (iPhone, iPad, Apple TV, Mac) e Google Play in arrivo.</p>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="pynk-hero-ctas pynk-mt-24">
             <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-btn-lg">
               Prova su TestFlight
@@ -114,8 +136,8 @@ function AreYouStupidInner() {
               Il gioco in breve
             </h2>
             <p className="pynk-section-lead">
-              Il giocatore riceve un&apos;istruzione stupidamente semplice e fallisce su qualcosa di stupido. La reazione che cerchiamo
-              non è &laquo;questo gioco fa schifo&raquo;, è &laquo;so cosa ho sbagliato, riprovo&raquo;.
+              Un&apos;istruzione stupidamente semplice, e qualcuno fallisce su qualcosa di stupido. Davanti a tutti. La reazione che
+              cerchiamo non è &laquo;questo gioco fa schifo&raquo;, è la stanza che urla &laquo;ma come hai fatto?&raquo;.
             </p>
           </div>
           <div className="pynk-grid-2">
@@ -129,7 +151,29 @@ function AreYouStupidInner() {
         </div>
       </section>
 
-      <section className="pynk-section pynk-section-alt" aria-labelledby="anteprima">
+      <section className="pynk-section pynk-section-alt" aria-labelledby="come-si-gioca">
+        <div className="pynk-container">
+          <div className="pynk-section-head">
+            <h2 id="come-si-gioca" className="pynk-section-title">
+              Come si gioca in compagnia
+            </h2>
+            <p className="pynk-section-lead">Un minuto dal divano alla prima eliminazione.</p>
+          </div>
+          <div className="pynk-steps">
+            {steps.map((step, index) => (
+              <article key={step.title} className="pynk-step">
+                <span className="pynk-step-number">{index + 1}</span>
+                <div>
+                  <h3 className="pynk-step-title pynk-step-title-lg">{step.title}</h3>
+                  <p className="pynk-step-desc">{step.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="pynk-section" aria-labelledby="anteprima">
         <div className="pynk-container pynk-center-col">
           <h2 id="anteprima" className="pynk-section-title">
             Anteprima
@@ -137,14 +181,14 @@ function AreYouStupidInner() {
           <div className="pynk-panel">
             <Sparkles className="pynk-icon-sm" />
             <p className="pynk-panel-desc">
-              Icona, screenshot e video di gameplay arrivano non appena sono pronte le grafiche finali. Questa scheda intanto ospita
+              Screenshot e video di una partita vera, con la TV e i telefoni, arrivano insieme all&apos;uscita sugli store. Questa scheda intanto ospita
               già tutto il necessario per il controllo di pubblicazione: descrizione, privacy policy e contatti di supporto.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="pynk-section" id="contenuto-eta" aria-labelledby="contenuto-eta-title">
+      <section className="pynk-section pynk-section-alt" id="contenuto-eta" aria-labelledby="contenuto-eta-title">
         <div className="pynk-container pynk-ai-split">
           <div>
             <p className="pynk-eyebrow">Trasparenza</p>
@@ -170,11 +214,18 @@ function AreYouStupidInner() {
               </li>
               <li>
                 <Check className="pynk-icon-sm pynk-check" />
-                <span>Punteggio e impostazioni restano sul dispositivo.</span>
+                <span>Il party mode passa solo sulla tua rete Wi-Fi: niente esce di casa.</span>
               </li>
               <li>
                 <Check className="pynk-icon-sm pynk-check" />
-                <span>Gli unici dati che escono dal telefono sono quelli del nostro partner pubblicitario, Google AdMob.</span>
+                <span>L&apos;AI gira sul dispositivo, senza cloud.</span>
+              </li>
+              <li>
+                <Check className="pynk-icon-sm pynk-check" />
+                <span>
+                  Gli unici dati che escono dal telefono sono quelli del nostro partner pubblicitario, Google AdMob, con il tuo consenso
+                  dove la legge lo richiede.
+                </span>
               </li>
             </ul>
             <Link href={href("/lavori/are-you-stupid/privacy")} className="pynk-btn pynk-btn-outline pynk-mt-24">
@@ -185,7 +236,7 @@ function AreYouStupidInner() {
         </div>
       </section>
 
-      <section className="pynk-section pynk-section-alt" aria-labelledby="supporto">
+      <section className="pynk-section" aria-labelledby="supporto">
         <div className="pynk-container pynk-center-col">
           <h2 id="supporto" className="pynk-section-title">
             Supporto
@@ -205,7 +256,7 @@ function AreYouStupidInner() {
         </div>
       </section>
 
-      <section className="pynk-section" aria-labelledby="faq-are-you-stupid">
+      <section className="pynk-section pynk-section-alt" aria-labelledby="faq-are-you-stupid">
         <div className="pynk-container">
           <h2 id="faq-are-you-stupid" className="pynk-section-title">
             Domande frequenti
@@ -221,7 +272,7 @@ function AreYouStupidInner() {
         </div>
       </section>
 
-      <section className="pynk-section pynk-section-alt">
+      <section className="pynk-section">
         <div className="pynk-container pynk-center-col">
           <h2 className="pynk-section-title">Altri lavori</h2>
           <p className="pynk-section-lead">Dal gestionale al sito vetrina, dal coordinamento sul territorio al gioco per telefono.</p>

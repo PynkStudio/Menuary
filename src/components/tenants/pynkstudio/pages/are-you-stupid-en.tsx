@@ -12,24 +12,45 @@ import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 const TESTFLIGHT_URL = "https://testflight.apple.com/join/G8kQkCdt";
 
 const pillars = [
-  { title: "Under 8 words", body: "Every instruction fits on one line, in caps. If you need to reread it, the game already lost." },
-  { title: "Zero downtime", body: "Green flash 240 ms if you got it right, red flash 850 ms if you didn't. No loading, no screen change." },
-  { title: "100% offline", body: "No account, no backend, no connection required to play. Works in airplane mode too." },
-  { title: "One hand, one thumb", body: "Just tap and hold. No swipes, no multi-touch, no surgical precision." },
+  { title: "Everyone, at the same instant", body: "2 to 8 players get the same instruction at the same moment. The TV shows who blew it. Immediately." },
+  { title: "Under 8 words", body: "Every instruction fits on one line, in caps. Dead easy. Which is exactly why somebody will get it wrong." },
+  { title: "Your phone is the controller", body: "No gamepads, nothing to set up: scan the QR on the TV and you're in. iPhone and Android in the same game." },
+  { title: "Zero downtime", body: "A round lasts a few seconds, the roast for whoever failed lands live, and off you go again. No loading, no waiting." },
+  { title: "The AI invents the challenges", body: "With an Apple Intelligence iPhone in the room, the game creates fresh challenges on the fly. All on-device, no cloud." },
+  { title: "And when you're alone", body: "Single-player is always there: offline, one-handed, level after level until you slip. Works in airplane mode too." },
+];
+
+const steps = [
+  { title: "Turn on the TV", body: "Open Are You Stupid? on Apple TV, or on a Mac and send it to the TV with AirPlay. The room and its QR code appear on screen." },
+  { title: "Join from your phone", body: "Everyone scans the QR (or types the room code), picks a name and an emoji. Just be on the same Wi-Fi network." },
+  { title: "Pick a mode", body: "Last Stupid Standing: fail and you're out, last one left wins. Stupid Battle: everyone plays to the end, most points wins." },
+  { title: "Don't screw it up", body: "One ridiculously simple instruction, the same for everyone, a few seconds to do it. On the TV, in front of everyone: who didn't make it." },
 ];
 
 const faq = [
   {
+    q: "What do I need to play as a group?",
+    a: "An Apple TV, or a Mac mirrored to the TV with AirPlay, as the game board. Then one phone each, iPhone or Android, all on the same Wi-Fi network. 2 to 8 players.",
+  },
+  {
     q: "Can I try it already?",
-    a: "Yes, it's in public beta on TestFlight for iOS. The App Store and Google Play launch comes later.",
+    a: "Yes, it's in public beta on TestFlight for iOS. The App Store (iPhone, iPad, Apple TV and Mac) and Google Play launch is coming soon.",
+  },
+  {
+    q: "Can I play alone?",
+    a: "Yes. Single-player is fully offline: faster and faster levels, until you fail over something stupid.",
+  },
+  {
+    q: "Do I need an internet connection?",
+    a: "No. Single-player works in airplane mode, and party mode only uses your home Wi-Fi. Only the optional ads need the internet.",
+  },
+  {
+    q: "What is AI mode?",
+    a: "On iPhones and iPads that support Apple Intelligence, the game uses Apple's model right on the device to invent new challenges. Nothing is sent to outside servers, and you can switch it off in Settings. In a group game one compatible iPhone is enough: Android players get the AI challenges too.",
   },
   {
     q: "Does Are You Stupid? collect personal data?",
-    a: "No. The game has no account, no backend, and no analytics tools. The only data processing is done by our advertising partner, Google AdMob, described in full in the privacy policy.",
-  },
-  {
-    q: "Do I need an internet connection to play?",
-    a: "No. The core game loop (instructions, score, settings) is fully offline. Only the optional ads need a connection, and they're never required to keep playing.",
+    a: "We have no account, no backend and no analytics tools. The only data processing is done by our advertising partner, Google AdMob, and only after consent where the law requires it. Full details in the privacy policy.",
   },
   {
     q: "Is it suitable for kids?",
@@ -51,9 +72,10 @@ function AreYouStupidEnInner() {
       "@type": "MobileApplication",
       name: "Are You Stupid?",
       applicationCategory: "GameApplication",
-      operatingSystem: "iOS, Android",
+      applicationSubCategory: "Party game",
+      operatingSystem: "iOS, iPadOS, tvOS, macOS, Android",
       description:
-        "A one-handed hyper-casual game: every round is a stupidly simple instruction, and the challenge is not failing it over something dumb. Offline, no account.",
+        "The 2-to-8-player party game: one stupidly simple instruction, the same for everyone at the same instant, and the TV shows who failed. Your phone is the controller. Single-player too, offline.",
       author: { "@type": "Organization", name: "PYNK STUDIO" },
       publisher: { "@type": "Organization", name: "PYNK STUDIO" },
       offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
@@ -74,7 +96,7 @@ function AreYouStupidEnInner() {
       <section className="pynk-hero pynk-hero-sub">
         <div className="pynk-glow pynk-glow-tr" aria-hidden />
         <div className="pynk-container pynk-hero-content">
-          <p className="pynk-eyebrow pynk-eyebrow-chip">Mobile game · iOS &amp; Android · Public beta on TestFlight</p>
+          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iPhone &amp; Android · Public beta on TestFlight</p>
           <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="pynk-hero-title">
             ARE YOU <span className="pynk-accent">STUPID?</span>
           </motion.h1>
@@ -84,14 +106,14 @@ function AreYouStupidEnInner() {
             transition={{ delay: 0.12 }}
             className="pynk-hero-subtitle"
           >
-            A one-handed hyper-casual game: every round is a stupidly simple instruction, under 8 words. You lose over something
-            dumb — and that&apos;s exactly the joke.
+            The party game where everyone gets the same stupidly simple instruction at the same instant — and the TV shows the
+            whole room who got it wrong. Your phone is the controller, 2 to 8 players. Looks easy. It isn&apos;t.
           </motion.p>
           <p className="pynk-note pynk-mt-24">
             In-game: <em>&laquo;One job. Don&apos;t fuck it up.&raquo;</em> — crude language used on purpose, see{" "}
             <a href="#content-age">Content &amp; age</a> below.
           </p>
-          <p className="pynk-note pynk-mt-12">Public beta on TestFlight (iOS) — App Store and Google Play coming soon.</p>
+          <p className="pynk-note pynk-mt-12">Public beta on TestFlight (iOS) — App Store (iPhone, iPad, Apple TV, Mac) and Google Play coming soon.</p>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="pynk-hero-ctas pynk-mt-24">
             <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-btn-lg">
               Try it on TestFlight
@@ -115,8 +137,8 @@ function AreYouStupidEnInner() {
               The game in short
             </h2>
             <p className="pynk-section-lead">
-              The player gets a stupidly simple instruction and fails at something stupid. The reaction we&apos;re after isn&apos;t
-              &laquo;this game sucks&raquo;, it&apos;s &laquo;I know what I did wrong, let me try again&raquo;.
+              A stupidly simple instruction, and somebody fails at something stupid. In front of everyone. The reaction we&apos;re
+              after isn&apos;t &laquo;this game sucks&raquo;, it&apos;s the whole room yelling &laquo;how did you even do that?&raquo;.
             </p>
           </div>
           <div className="pynk-grid-2">
@@ -130,7 +152,29 @@ function AreYouStupidEnInner() {
         </div>
       </section>
 
-      <section className="pynk-section pynk-section-alt" aria-labelledby="preview">
+      <section className="pynk-section pynk-section-alt" aria-labelledby="how-to-play">
+        <div className="pynk-container">
+          <div className="pynk-section-head">
+            <h2 id="how-to-play" className="pynk-section-title">
+              How a party game works
+            </h2>
+            <p className="pynk-section-lead">One minute from the couch to the first elimination.</p>
+          </div>
+          <div className="pynk-steps">
+            {steps.map((step, index) => (
+              <article key={step.title} className="pynk-step">
+                <span className="pynk-step-number">{index + 1}</span>
+                <div>
+                  <h3 className="pynk-step-title pynk-step-title-lg">{step.title}</h3>
+                  <p className="pynk-step-desc">{step.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="pynk-section" aria-labelledby="preview">
         <div className="pynk-container pynk-center-col">
           <h2 id="preview" className="pynk-section-title">
             Preview
@@ -138,14 +182,14 @@ function AreYouStupidEnInner() {
           <div className="pynk-panel">
             <Sparkles className="pynk-icon-sm" />
             <p className="pynk-panel-desc">
-              Icon, screenshots and gameplay video are coming as soon as the final artwork is ready. In the meantime, this page
-              already has everything needed for store review: description, privacy policy and support contact.
+              Screenshots and video of a real game night, TV and phones included, arrive together with the store launch. In the
+              meantime, this page already has everything needed for store review: description, privacy policy and support contact.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="pynk-section" id="content-age" aria-labelledby="content-age-title">
+      <section className="pynk-section pynk-section-alt" id="content-age" aria-labelledby="content-age-title">
         <div className="pynk-container pynk-ai-split">
           <div>
             <p className="pynk-eyebrow">Transparency</p>
@@ -171,11 +215,18 @@ function AreYouStupidEnInner() {
               </li>
               <li>
                 <Check className="pynk-icon-sm pynk-check" />
-                <span>Your score and settings stay on your device.</span>
+                <span>Party mode only travels over your own Wi-Fi: nothing leaves the house.</span>
               </li>
               <li>
                 <Check className="pynk-icon-sm pynk-check" />
-                <span>The only data that leaves your phone is what our advertising partner, Google AdMob, collects.</span>
+                <span>The AI runs on your device, no cloud.</span>
+              </li>
+              <li>
+                <Check className="pynk-icon-sm pynk-check" />
+                <span>
+                  The only data that leaves your phone is what our advertising partner, Google AdMob, collects — with your consent
+                  where the law requires it.
+                </span>
               </li>
             </ul>
             <Link href={href("/lavori/are-you-stupid/privacy")} className="pynk-btn pynk-btn-outline pynk-mt-24">
@@ -186,7 +237,7 @@ function AreYouStupidEnInner() {
         </div>
       </section>
 
-      <section className="pynk-section pynk-section-alt" aria-labelledby="support">
+      <section className="pynk-section" aria-labelledby="support">
         <div className="pynk-container pynk-center-col">
           <h2 id="support" className="pynk-section-title">
             Support
@@ -206,7 +257,7 @@ function AreYouStupidEnInner() {
         </div>
       </section>
 
-      <section className="pynk-section" aria-labelledby="faq-are-you-stupid-en">
+      <section className="pynk-section pynk-section-alt" aria-labelledby="faq-are-you-stupid-en">
         <div className="pynk-container">
           <h2 id="faq-are-you-stupid-en" className="pynk-section-title">
             Frequently asked questions
@@ -222,7 +273,7 @@ function AreYouStupidEnInner() {
         </div>
       </section>
 
-      <section className="pynk-section pynk-section-alt">
+      <section className="pynk-section">
         <div className="pynk-container pynk-center-col">
           <h2 className="pynk-section-title">More by PYNK STUDIO</h2>
           <p className="pynk-section-lead">
