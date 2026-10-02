@@ -3,9 +3,9 @@ import { requirePynkstudioTenant } from "@/components/tenants/pynkstudio/resolve
 import { PynkStudioConsulenzaPage } from "@/components/tenants/pynkstudio/pages/consulenza";
 
 export const metadata: Metadata = {
-  title: { absolute: "Partner IT per aziende: software, sistemi e automazioni — PYNK STUDIO" },
+  title: { absolute: "Consulenza operativa PMI — PYNK STUDIO" },
   description:
-    "Progettiamo e realizziamo software, integrazioni, automazioni e infrastrutture per aziende. Un partner tecnico dalla prima analisi alla messa in produzione.",
+    "Check-up in 7 giorni, metodo a 5 fasi, piano 30/60/90. Complementare allo sviluppo: prima ordine nei processi, poi il software.",
 };
 
 export default async function ConsulenzaRoute() {
