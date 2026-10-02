@@ -1,7 +1,7 @@
 # Feature: Agenda e videocall (`@pynkstudio/agendaapp`)
 
 - **Stato:** in produzione dal 2026-09-30 con videocall attiva (LiveKit configurato); manca il collaudo con una call vera e la correzione dell'URL del webhook (bacheca in § 7)
-- **Pacchetto:** repo pubblica [PynkStudio/pynkstudio-agendaapp](https://github.com/PynkStudio/pynkstudio-agendaapp) (locale: `../pynkstudio-agendaapp`), tag `v0.3.0` (call stile Meet, capienza, staff, calendari collegati, impostazioni), installato come tarball del tag. Documentazione del pacchetto: vault Obsidian nella sua `docs/`
+- **Pacchetto:** repo pubblica [PynkStudio/pynkstudio-agendaapp](https://github.com/PynkStudio/pynkstudio-agendaapp) (locale: `../pynkstudio-agendaapp`), tag `v0.4.0` (call stile Meet, capienza, staff, calendari collegati e di destinazione, impostazioni, «Salva sul calendario»), installato come tarball del tag. Documentazione del pacchetto: vault Obsidian nella sua `docs/`
 - **Montaggio nel sito:** `src/lib/agenda-runtime.ts`
 - **Data:** 2026-09-30
 - **Decisione:** [[adr-0013-agenda-videocall-pacchetto-livekit]]
@@ -85,6 +85,8 @@ Dedotto dal codice:
 - **Calendari**: Google e Outlook (OAuth, servono le app e le env `AGENDA_GOOGLE_*` / `AGENDA_MICROSOFT_*`), Apple iCloud (password specifica per app), link ICS. Solo lettura.
 - **Festività italiane** escluse di default (`holidays: ["IT"]` nel default del codice), modificabile dalle impostazioni.
 - L'agenda admin costruisce la griglia dagli orari configurati, mostra più prenotazioni nella stessa cella e a chi sono assegnate.
+- **Calendario di destinazione** (pacchetto 0.4.0): ogni persona sceglie in impostazioni «Inserisci le call nel calendario» (Google, Outlook o iCloud); le call assegnate a lei vengono aggiunte lì e tolte se annullate. Titolo «Call PYNK STUDIO — cliente», descrizione con argomento, email, telefono e link alla stanza staff (`hostCalendarEvent` in `agenda-runtime.ts`).
+- **«Salva sul calendario» per il cliente**: nella conferma e nel promemoria tre link (Google Calendar, Outlook, «Apple / altro calendario» → `/api/tenant/pynkstudio/bookings/ics`, autenticato dal token del link personale); nella conferma anche il file `call-pynkstudio.ics` allegato. Testi in `guestCalendarEvent` (`agenda-runtime.ts`), blocco HTML in `email-templates.ts`.
 - Le impostazioni salvate vivono in `agenda_event_types` e **sovrascrivono** il default di `pynkEventTypes()`: cambiare il codice non basta se in impostazioni è stato salvato qualcosa.
 
 ## 4. Variabili d'ambiente (solo nomi)
@@ -96,8 +98,8 @@ Dedotto dal codice:
 | `LIVEKIT_API_KEY` | per la videocall | generata da `deploy/livekit/bootstrap.sh` |
 | `LIVEKIT_API_SECRET` | per la videocall | idem |
 | `AGENDA_CREDENTIALS_KEY` | per i calendari collegati | cifra token e password dei calendari. Impostata su Production e Preview il 2026-10-02. Non cambiarla: i calendari andrebbero ricollegati |
-| `AGENDA_GOOGLE_CLIENT_ID`, `AGENDA_GOOGLE_CLIENT_SECRET` | per «Google Calendar» | app OAuth Google, redirect `https://admin.pynkstudio.eu/api/agenda/calendar/callback/google`, scope `calendar.freebusy` (sensibile: verifica Google per utenti esterni). **Non impostate** |
-| `AGENDA_MICROSOFT_CLIENT_ID`, `AGENDA_MICROSOFT_CLIENT_SECRET` | per «Outlook / Microsoft 365» | app Entra ID multi-tenant, redirect `…/callback/microsoft`, permessi `Calendars.Read`, `User.Read`, `offline_access`. **Non impostate** |
+| `AGENDA_GOOGLE_CLIENT_ID`, `AGENDA_GOOGLE_CLIENT_SECRET` | per «Google Calendar» | app OAuth Google, redirect `https://admin.pynkstudio.eu/api/agenda/calendar/callback/google`, scope `calendar.freebusy`, `calendar.calendarlist.readonly`, `calendar.events` (sensibili: verifica Google per utenti esterni). **Non impostate** |
+| `AGENDA_MICROSOFT_CLIENT_ID`, `AGENDA_MICROSOFT_CLIENT_SECRET` | per «Outlook / Microsoft 365» | app Entra ID multi-tenant, redirect `…/callback/microsoft`, permessi `Calendars.ReadWrite`, `User.Read`, `offline_access`. **Non impostate** |
 
 ---
 
@@ -171,6 +173,7 @@ Non bloccanti:
 | C2 | Staff con orari personali e assegnazione alla persona meno occupata | 🔵 in test | Test di pacchetto con 2 persone e calendario ICS; da provare in produzione con due siteadmin |
 | C3 | Calendari: link ICS e Apple iCloud (CalDAV) | 🔵 in test | `AGENDA_CREDENTIALS_KEY` impostata; testati con server simulati; da collegare un calendario reale |
 | C4 | Calendari: Google e Outlook (OAuth) | ⬜ da iniziare | Codice pronto e testato con risposte simulate; servono le app OAuth e le env `AGENDA_GOOGLE_*` / `AGENDA_MICROSOFT_*` (utente). Google richiede la verifica dell'app per lo scope `calendar.freebusy` |
-| C5 | Scrivere la call nel calendario della persona assegnata | ⬜ da iniziare | Backlog del pacchetto (servono scope di scrittura) |
+| C5 | Scrivere la call nel calendario della persona assegnata | 🔵 in test | Pacchetto 0.4.0 (41 test: scrittura CalDAV alla prenotazione, eliminazione all'annullamento, Google/Microsoft con risposte simulate); scelta della destinazione provata nel playground con un account CalDAV simulato. Migration `20261003_agendaapp_host_calendar_destination.sql` **applicata** il 2026-10-02 e verificata. Da provare con un calendario reale |
+| C7 | «Salva sul calendario» nelle email al cliente | 🔵 in test | Link Google / Outlook / .ics e allegato .ics; HTML e .ics generati e controllati il 2026-10-02. Da ricevere un'email vera e aprire il .ics su iPhone / Outlook |
 | C6 | Testi della pagina `/prenota-call` («lun-ven, 10:00-18:00») allineati alle impostazioni | ⬜ da iniziare | Oggi sono fissi nel copy: se gli orari cambiano dalle impostazioni, il testo resta vecchio |
 | S5 | Token ospite fuori dall'URL tracciato (`/accedi` + cookie) | 🔵 in test | Provato su build di produzione locale; da riprovare in produzione con un link vero |

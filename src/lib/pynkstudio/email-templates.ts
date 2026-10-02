@@ -76,7 +76,16 @@ export type BookingEmailData = {
   phone: string;
   /** Link personale alla videocall; assente = call telefonica. */
   joinUrl?: string | null;
+  /** Link «Salva sul calendario»: Google, Outlook e .ics (Apple e altri). */
+  calendar?: { google: string; outlook: string; ics: string } | null;
 };
+
+function calendarLinks(c: NonNullable<BookingEmailData["calendar"]>): string {
+  const link = (href: string, label: string) =>
+    `<a href="${escapeHtml(href)}" style="display:inline-block;margin:0 8px 8px 0;padding:8px 14px;border:1px solid ${BORDER};border-radius:999px;font-size:13px;font-weight:600;color:${TEXT};text-decoration:none;">${label}</a>`;
+  return `<p style="margin:0 0 8px;font-size:13px;font-weight:700;color:${TEXT};">📆 Salva sul calendario</p>
+    <p style="margin:0 0 24px;">${link(c.google, "Google Calendar")}${link(c.outlook, "Outlook")}${link(c.ics, "Apple / altro calendario")}</p>`;
+}
 
 function joinButton(url: string, label: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
@@ -116,6 +125,7 @@ export function bookingConfirmHtml(d: BookingEmailData): string {
 
     ${d.joinUrl ? joinButton(d.joinUrl, "Entra nella videocall") : ""}
     ${d.joinUrl ? `<p style="margin:0 0 20px;font-size:13px;color:${MUTED};line-height:1.6;">Il link è personale e si attiva 10 minuti prima dell'inizio. Tienilo: te lo rimandiamo anche nel promemoria.</p>` : ""}
+    ${d.calendar ? calendarLinks(d.calendar) : ""}
 
     <p style="margin:0;font-size:14px;color:${MUTED};line-height:1.7;">
       Se hai bisogno di spostare o annullare l'appuntamento, rispondi a questa email
@@ -154,6 +164,7 @@ export function bookingReminderHtml(d: BookingEmailData): string {
     </table>
 
     ${d.joinUrl ? joinButton(d.joinUrl, "Entra nella videocall") : ""}
+    ${d.calendar ? calendarLinks(d.calendar) : ""}
     <p style="margin:0;font-size:14px;color:${MUTED};line-height:1.7;">
       ${d.joinUrl
         ? "Apri il link da computer o telefono e consenti l'accesso a microfono e videocamera."

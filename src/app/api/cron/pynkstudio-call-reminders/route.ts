@@ -3,7 +3,7 @@ import { sendEmail } from "@/lib/email/sender";
 import { sendWebPush } from "@/lib/push/send";
 import { sendWhatsApp } from "@/lib/whatsapp/send";
 import { bookingReminderHtml } from "@/lib/pynkstudio/email-templates";
-import { getAgenda, PYNK_AGENDA_SCOPE, pynkSlotLabel } from "@/lib/agenda-runtime";
+import { getAgenda, PYNK_AGENDA_SCOPE, pynkCalendarLinks, pynkSlotLabel } from "@/lib/agenda-runtime";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -61,7 +61,14 @@ export async function GET(req: Request) {
         subject: joinUrl
           ? "La tua videocall con PYNK STUDIO inizia tra ~20 minuti"
           : "La tua call con PYNK STUDIO inizia tra ~20 minuti",
-        html: bookingReminderHtml({ name: b.name, slotLabel, topic, phone: b.phone ?? "", joinUrl }),
+        html: bookingReminderHtml({
+          name: b.name,
+          slotLabel,
+          topic,
+          phone: b.phone ?? "",
+          joinUrl,
+          calendar: pynkCalendarLinks(b, await agenda.guestCalendarEvent(b), agenda.manageTokenFor(b.id)),
+        }),
       });
     } catch (e) {
       console.warn("[call-reminders] email fallita:", e);

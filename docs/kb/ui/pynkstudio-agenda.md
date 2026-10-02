@@ -55,12 +55,13 @@ Percorso: **Agenda → «Impostazioni»** (`/admin-pynkstudio/agenda/impostazion
   - **«Riceve prenotazioni»** acceso/spento;
   - **«Calendari collegati»** con stato (**Attivo** / **Errore di lettura**) e **«Scollega»**;
   - pulsanti **«Google Calendar»**, **«Outlook / Microsoft 365»** (disattivati finché non sono configurati sul server), **«Apple iCloud»** (ID Apple + **password specifica per app**, da creare su account.apple.com), **«Link ICS»** (indirizzo del calendario in formato iCal);
+  - **«Inserisci le call nel calendario»**: scegli uno dei tuoi calendari collegati (Google, Outlook o iCloud; i link ICS sono solo in lettura) e il calendario dentro l'account, poi **«Salva destinazione»**. Le call assegnate a te compaiono lì con nome del cliente, argomento, contatti e link alla videocall, e spariscono se annullate. «Non inserire» per smettere.
   - **«Orari personali»**: «Come l'appuntamento» oppure «Orari miei» + **«Salva orari»**.
 - Gli orari in cui una persona è occupata nei calendari collegati non vengono proposti ai clienti. Se un calendario va in errore viene ignorato (la persona risulta libera) finché non torna leggibile: controlla lo stato.
 
 # Cosa vede il cliente
 
-Nell'email di conferma e nel promemoria c'è il bottone **«Entra nella videocall»**: il link è personale e si attiva 10 minuti prima dell'inizio. Funziona dal browser, senza installare nulla. Il cliente vede la stessa schermata «Pronto a partecipare?» (con il proprio nome già impostato) e la stessa call.
+Nell'email di conferma e nel promemoria c'è **«Salva sul calendario»** con tre pulsanti: **Google Calendar**, **Outlook**, **Apple / altro calendario** (scarica il file .ics); la conferma ha anche il file .ics allegato. C'è poi il bottone **«Entra nella videocall»**: il link è personale e si attiva 10 minuti prima dell'inizio. Funziona dal browser, senza installare nulla. Il cliente vede la stessa schermata «Pronto a partecipare?» (con il proprio nome già impostato) e la stessa call.
 
 # Note
 

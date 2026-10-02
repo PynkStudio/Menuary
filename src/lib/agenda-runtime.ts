@@ -1,6 +1,14 @@
 import "server-only";
 
-import { formatSlotLabel, type AgendaBooking, type AgendaEventType } from "@pynkstudio/agendaapp/core";
+import {
+  eventIcs,
+  formatSlotLabel,
+  googleCalendarLink,
+  outlookCalendarLink,
+  type AgendaBooking,
+  type AgendaEventType,
+  type CalendarEventInput,
+} from "@pynkstudio/agendaapp/core";
 import { createAgendaHandlers } from "@pynkstudio/agendaapp/http";
 import { createAgendaServer, type AgendaServer } from "@pynkstudio/agendaapp/server";
 
@@ -79,6 +87,15 @@ export function pynkGuestCookieName(bookingId: string): string {
   return `agenda_guest_${bookingId.replace(/[^a-zA-Z0-9-]/g, "")}`;
 }
 
+/** Link «Salva sul calendario» per le email: Google, Outlook e il .ics servito dal sito. */
+export function pynkCalendarLinks(booking: AgendaBooking, event: CalendarEventInput, manageToken: string) {
+  return {
+    google: googleCalendarLink(event),
+    outlook: outlookCalendarLink(event, "personal"),
+    ics: `${PYNK_SITE}/api/tenant/pynkstudio/bookings/ics?${new URLSearchParams({ bookingId: booking.id, token: manageToken })}`,
+  };
+}
+
 export function pynkSlotLabel(booking: Pick<AgendaBooking, "startsAt">): string {
   return formatSlotLabel(booking.startsAt, { timezone: "Europe/Rome", locale: "it-IT" });
 }
@@ -87,13 +104,14 @@ function str(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : typeof value === "number" ? String(value) : "";
 }
 
-async function onPynkBookingCreated(booking: AgendaBooking, guestUrl: string | null, extra: Record<string, unknown>) {
+async function onPynkBookingCreated(booking: AgendaBooking, guestUrl: string | null, manageToken: string, extra: Record<string, unknown>) {
   const svc = createSupabaseServiceClient();
   const slotLabel = pynkSlotLabel(booking);
   const topic = booking.topic ?? "";
   const phone = booking.phone ?? "";
   // Il link è l'unico accesso dell'ospite alla stanza: deve stare nella conferma.
   const joinUrl = booking.location === "video" ? guestUrl : null;
+  const calendarEvent = await getAgenda().guestCalendarEvent(booking);
 
   if (svc) {
     try {
@@ -125,7 +143,11 @@ async function onPynkBookingCreated(booking: AgendaBooking, guestUrl: string | n
       fromOverride: PYNK_FROM,
       replyTo: PYNK_REPLY_TO,
       subject: `Call confermata — ${slotLabel}`,
-      html: bookingConfirmHtml({ name: booking.name, slotLabel, topic, phone, joinUrl }),
+      html: bookingConfirmHtml({ name: booking.name, slotLabel, topic, phone, joinUrl, calendar: pynkCalendarLinks(booking, calendarEvent, manageToken) }),
+      // Molti client di posta mostrano l'allegato come «Aggiungi al calendario».
+      attachments: [
+        { filename: "call-pynkstudio.ics", content: Buffer.from(eventIcs(calendarEvent)).toString("base64"), contentType: "text/calendar" },
+      ],
     });
   } catch (e) {
     console.warn("[agenda] email conferma fallita:", e);
@@ -194,13 +216,42 @@ export function getAgenda(): AgendaServer {
     guestUrl: (booking, token) => pynkVideoCallUrl(booking.id, token),
     // In call il cliente compare con i dati del modulo: nome e cognome, più
     // l'azienda quando il modulo la chiede (landing IA).
+    // Evento nel calendario di chi riceve la call: dati del cliente e link alla stanza staff.
+    hostCalendarEvent: (booking) => {
+      const room = `${PYNK_ADMIN}/admin-pynkstudio/agenda/call/${booking.id}`;
+      return {
+        title: `Call PYNK STUDIO — ${getAgenda().guestDisplayName(booking)}`,
+        description: [
+          booking.topic && `Argomento: ${booking.topic}`,
+          `Email: ${booking.email}`,
+          booking.phone && `Telefono: ${booking.phone}`,
+          booking.location === "video" ? `Entra in videocall: ${room}` : "Call telefonica: chiama tu il cliente.",
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        location: booking.location === "video" ? room : (booking.phone ?? undefined),
+      };
+    },
+    // Evento che il cliente salva nel proprio calendario.
+    guestCalendarEvent: (booking) => ({
+      title: "Call con PYNK STUDIO",
+      description: [
+        booking.topic && `Argomento: ${booking.topic}`,
+        booking.location === "video"
+          ? "Entra dal link personale qui sotto: si attiva 10 minuti prima dell'inizio."
+          : "Ti chiamiamo noi al numero indicato nella prenotazione.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+      organizer: { name: "PYNK STUDIO", email: PYNK_REPLY_TO },
+    }),
     guestDisplayName: (booking) => {
       const company = typeof booking.answers.company === "string" ? booking.answers.company.trim() : "";
       return company ? `${booking.name} · ${company}` : booking.name;
     },
     hooks: {
-      onBookingCreated: ({ booking, guestUrl, extra }) =>
-        booking.scope === PYNK_AGENDA_SCOPE ? onPynkBookingCreated(booking, guestUrl, extra) : undefined,
+      onBookingCreated: ({ booking, guestUrl, manageToken, extra }) =>
+        booking.scope === PYNK_AGENDA_SCOPE ? onPynkBookingCreated(booking, guestUrl, manageToken, extra) : undefined,
       onBookingCancelled: ({ booking, by }) =>
         booking.scope === PYNK_AGENDA_SCOPE ? onPynkBookingCancelled(booking, by) : undefined,
     },
