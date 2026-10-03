@@ -9,7 +9,7 @@ import {
 } from "@/lib/api/orders";
 import { recordCustomerEvent, resolveCustomerIdentity } from "@/lib/crm/customer-identity";
 import { loadOrderSettings } from "@/lib/orders/order-settings";
-import { dispatchComandaForOrder } from "@/lib/printing/dispatch";
+import { dispatchComandaForOrder, isComandaPrintBlockedForHost } from "@/lib/printing/dispatch";
 import { notifyCustomerOrderStatus } from "@/lib/orders/order-notifications";
 import { checkOrderingWindow, type OrderChannel } from "@/lib/orders/ordering-window";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
@@ -192,6 +192,8 @@ export async function POST(req: NextRequest) {
   const confirmationExpiresAt = null;
   const confirmedAt = new Date().toISOString();
 
+  const printBlocked = await isComandaPrintBlockedForHost(req.headers.get("host"), tenantId);
+
   // Inserisci ordine
   const { data: order, error: orderErr } = await supabase
     .from("orders")
@@ -225,6 +227,7 @@ export async function POST(req: NextRequest) {
       confirmation_expires_at: confirmationExpiresAt,
       confirmed_at: confirmedAt,
       auto_accepted: autoAccepted,
+      comanda_printed_at: printBlocked ? confirmedAt : null,
     } as never)
     .select("id, code, public_token, customer_phone")
     .single();
@@ -287,7 +290,7 @@ export async function POST(req: NextRequest) {
 
   // Stampa comanda server-side (es. stampante cloud SUNMI) per ordini accettati.
   // QZ è gestito lato client; dispatch è no-op se non configurato. Mai bloccante.
-  if (autoAccepted) {
+  if (autoAccepted && !printBlocked) {
     void dispatchComandaForOrder(supabase, tenantId, order.id, locationId ?? null).catch((error) => {
       void logOrderApiError(req, error, {
         tenantId,

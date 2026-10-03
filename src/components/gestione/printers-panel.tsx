@@ -180,6 +180,46 @@ export function PrintersPanel() {
     }
   }
 
+  const isDirty = JSON.stringify(savedRef.current) !== JSON.stringify(form);
+
+  async function testCloudPrint() {
+    setTesting(true);
+    setQzError(null);
+    setMsg(null);
+    try {
+      const params = new URLSearchParams({ tenantId: tenant.id });
+      const res = await fetch(`/api/gestione/printers/sunmi-test?${params.toString()}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId: tenant.id }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        demo?: boolean;
+        error?: string;
+        online?: boolean | null;
+        push?: { code: number | null; msg: string | null };
+      };
+      // In demo con backend spento l'interceptor client risponde finto-ok.
+      if (data.demo || data.error === "demo_backend_off") {
+        setQzError("Demo con backend spento: attiva «Backend live» per stampare davvero.");
+      } else if (res.ok && data.ok) {
+        setMsg("Stampante collegata: biglietto di prova inviato.");
+      } else if (data.error) {
+        setQzError(`Collegamento non riuscito (${data.error}).`);
+      } else {
+        const offline = data.online === false ? " La stampante risulta offline." : "";
+        setQzError(
+          `SUNMI ha rifiutato la stampa (${data.push?.code ?? "?"} ${data.push?.msg ?? ""}).${offline}`,
+        );
+      }
+    } catch {
+      setQzError("Collegamento non riuscito.");
+    } finally {
+      setTesting(false);
+    }
+  }
+
   if (!loaded) return <p className="text-sm text-zinc-500">Carico…</p>;
 
   return (
@@ -405,11 +445,32 @@ export function PrintersPanel() {
             </button>
           </div>
         ) : form.connection === "sunmi_cloud" ? (
-          <p className="mt-5 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-500">
-            La stampante cloud SUNMI stampa lato server appena un ordine viene
-            accettato: collega il device dal portale SUNMI e inserisci qui il suo SN.
-            La stampa di prova dal browser non è disponibile per le cloud.
-          </p>
+          <div className="mt-5 space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={testCloudPrint}
+                disabled={testing || !form.deviceSn || isDirty}
+                className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-medium text-zinc-800 disabled:opacity-50"
+              >
+                <TestTube2 size={16} /> {testing ? "Collego…" : "Collega e stampa prova"}
+              </button>
+              {isDirty && form.deviceSn && (
+                <span className="text-xs text-zinc-500">Salva prima la stampante.</span>
+              )}
+            </div>
+            {qzError && (
+              <p className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-xs text-red-700">
+                <AlertTriangle size={14} className="mt-0.5 shrink-0" /> {qzError}
+              </p>
+            )}
+            <p className="rounded-xl bg-zinc-50 p-3 text-xs text-zinc-500">
+              La stampante cloud SUNMI stampa lato server appena un ordine viene
+              accettato. Inserisci l&apos;SN dell&apos;etichetta, salva e premi
+              &laquo;Collega e stampa prova&raquo;: la stampante viene associata a
+              Menuary e stampa un biglietto di test.
+            </p>
+          </div>
         ) : (
           <p className="mt-5 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-500">
             Il POS SUNMI locale stampa tramite l&apos;app Android Menuary Print Agent.

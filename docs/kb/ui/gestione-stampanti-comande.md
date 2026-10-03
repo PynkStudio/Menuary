@@ -11,7 +11,7 @@ owner: ""
 
 # A cosa serve la schermata
 
-Collegare e configurare la stampante delle comande del locale tramite QZ Tray, e fare una stampa di prova.
+Collegare e configurare la stampante delle comande del locale tramite QZ Tray o stampante cloud SUNMI, e fare una stampa di prova.
 
 # Come arrivarci
 
@@ -34,6 +34,7 @@ Collegare e configurare la stampante delle comande del locale tramite QZ Tray, e
 | «Riconnetti» | Riapre la connessione se già connesso | Sezione *Ponte di stampa* |
 | «Scaricalo qui» | Link al download di QZ Tray | Sotto il pulsante di connessione |
 | «Stampa di prova» | Invia una comanda di test alla stampante selezionata | Sezione *Stampante del locale* |
+| «Collega e stampa prova» | Solo per «Stampante cloud SUNMI»: associa l'SN salvato a Menuary e stampa un biglietto di test. Disattivo finché ci sono modifiche non salvate («Salva prima la stampante.») | Sezione *Stampante del locale* |
 | «Salva stampante» | Salva la configurazione | In fondo alla pagina |
 
 # Campi e filtri

@@ -1,9 +1,11 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isDemoHost } from "@/lib/platform";
+import { getTenantDemoControl } from "@/lib/demo-controls";
 import { loadDefaultPrinter } from "./config";
 import { buildComandaEscPos } from "./comanda";
-import { isSunmiConfigured, pushPrintContent } from "./sunmi-cloud";
+import { bindPrinterToShop, isSunmiConfigured, pushPrintContent } from "./sunmi-cloud";
 import { dbLinesToOrderLines, dbRowToOrder, type DbOrder, type DbOrderLine } from "@/lib/api/orders";
 
 // Dispatch server-side della stampa comanda per un ordine appena accettato.
@@ -26,6 +28,22 @@ const ORDER_COLUMNS =
 // trattini sono 32 hex esatti, univoci → chiave dedup/idempotenza per SUNMI.
 function tradeNoFor(orderId: string): string {
   return orderId.replace(/-/g, "");
+}
+
+/**
+ * Gate demo: su host demo le comande escono dalla stampante (reale) solo se il
+ * tenant ha "Backend live" attivo in tenant_demo_controls. Host non demo → sempre.
+ * Va valutato dove c'è la request: cron e webhook Stripe non hanno l'host, per
+ * questo chi crea l'ordine da demo spento lo nasce con `comanda_printed_at`
+ * valorizzato (comanda "gestita") e nessun canale di stampa lo riprende.
+ */
+export async function isComandaPrintBlockedForHost(
+  host: string | null | undefined,
+  tenantId: string,
+): Promise<boolean> {
+  if (!isDemoHost(host)) return false;
+  const control = await getTenantDemoControl(tenantId).catch(() => null);
+  return !control?.backendLive;
 }
 
 export type DispatchResult =
@@ -95,12 +113,18 @@ export async function dispatchComandaForOrder(
       );
       const escpos = buildComandaEscPos(order, printer);
 
-      const res = await pushPrintContent({
+      const pushInput = {
         sn: printer.deviceSn,
         tradeNo: tradeNoFor(orderId),
         escpos,
         copies: printer.copies,
-      });
+      };
+      let res = await pushPrintContent(pushInput);
+      // 10071704 = SN non associato al nostro channel: bind e un solo nuovo tentativo.
+      if (!res.ok && res.code === 10071704) {
+        const bind = await bindPrinterToShop(printer.deviceSn);
+        if (bind.ok) res = await pushPrintContent(pushInput);
+      }
       if (!res.ok) {
         // Rollback del claim: riproveremo (es. al prossimo evento/cron).
         await rollbackClaim();

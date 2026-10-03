@@ -34,7 +34,7 @@ Il modulo **Stampanti e reparti** stampa le comande degli ordini su una stampant
 # Flussi operativi
 
 1. **Configurazione (USB/QZ)** — dal PC cassa, Gestione → **Cassa** → *Stampanti comande*, scegli «USB sul PC cassa (QZ Tray)», **«Connetti QZ Tray»**, seleziona il dispositivo, larghezza/copie, **«Stampa di prova»**, **«Salva stampante»**. Uso quotidiano: tieni aperta la pagina **Operativo → Ordini** (barra **«Stampa comande · Attiva»**).
-2. **Configurazione (SUNMI cloud)** — Gestione → **Cassa** → *Stampanti comande*, scegli «Stampante cloud SUNMI», inserisci il **SN** del device (collegato dal portale SUNMI), **«Salva stampante»**. Uso quotidiano: nessuna azione — le comande degli ordini accettati si stampano da sole, anche senza PC acceso.
+2. **Configurazione (SUNMI cloud)** — Gestione → **Cassa** → *Stampanti comande*, scegli «Stampante cloud SUNMI», inserisci il **SN** del device (etichetta sotto la stampante, es. `N4…`), **«Salva stampante»**, poi **«Collega e stampa prova»**: associa la stampante a Menuary (bind SUNMI) e stampa un biglietto di test. Uso quotidiano: nessuna azione — le comande degli ordini accettati si stampano da sole, anche senza PC acceso.
 
 # Limitazioni
 
@@ -50,3 +50,7 @@ Il modulo **Stampanti e reparti** stampa le comande degli ordini su una stampant
 # Schermate UI correlate
 
 - [[gestione-stampanti-comande]] — dove trovare il modulo e quali pulsanti usare
+
+## Demo
+
+Sulla demo (es. `demo.menuary.it`) le comande vengono stampate **solo se per il tenant è attivo «Backend live»** (pannello piattaforma → tenant). Con «Backend demo» gli ordini di prova non escono mai dalla stampante e «Collega e stampa prova» avvisa di attivare il backend live.
