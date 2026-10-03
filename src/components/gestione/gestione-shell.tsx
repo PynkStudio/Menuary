@@ -134,7 +134,7 @@ function GestioneShellInner({
     { label: menuNavLabel, href: sectionHref("listino"), visible: (c) => access.canManageMenu && c.can_edit_menu },
     { label: getModuleLabel("tablePlanner", tenant.vertical), href: sectionHref("tavoli"), visible: (c) => access.canManageTables && c.can_manage_reservations },
     { label: bookingNavLabel, href: sectionHref("prenotazioni"), visible: (c) => access.canManageReservations && c.can_manage_reservations, arrivalKind: "reservations" },
-    { label: t.nav.checkout, href: sectionHref("cassa"), visible: (c) => access.canManageCheckout && c.can_cassa },
+    { label: t.nav.checkout, href: sectionHref("cassa"), visible: (c) => (access.canManageCheckout || access.canManagePrintStations) && c.can_cassa },
     { label: t.nav.shifts, href: sectionHref("turni"), visible: () => tenant.vertical !== "creative" && access.canManageShifts },
     { label: t.nav.staff, href: sectionHref("staff"), visible: (c) => access.canManageStaff && c.can_manage_staff },
     { label: t.nav.mail, href: sectionHref("mail"), visible: () => isAdmin && access.canManageMail },
