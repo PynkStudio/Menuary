@@ -70,6 +70,30 @@ export type Database = {
           },
         ]
       }
+      ays_presenter_cache_entries: {
+        Row: {
+          cache_key: string
+          created_at: string
+          hit_count: number
+          last_accessed_at: string
+          object_path: string
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          hit_count?: number
+          last_accessed_at?: string
+          object_path: string
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          hit_count?: number
+          last_accessed_at?: string
+          object_path?: string
+        }
+        Relationships: []
+      }
       bunq_api_contexts: {
         Row: {
           created_at: string
@@ -5445,6 +5469,7 @@ export type Database = {
       tenant_demo_controls: {
         Row: {
           backend_live: boolean
+          backend_live_until: string | null
           created_at: string
           disabled_at: string | null
           enabled: boolean
@@ -5455,6 +5480,7 @@ export type Database = {
         }
         Insert: {
           backend_live?: boolean
+          backend_live_until?: string | null
           created_at?: string
           disabled_at?: string | null
           enabled?: boolean
@@ -5465,6 +5491,7 @@ export type Database = {
         }
         Update: {
           backend_live?: boolean
+          backend_live_until?: string | null
           created_at?: string
           disabled_at?: string | null
           enabled?: boolean
@@ -7396,6 +7423,10 @@ export type Database = {
       tenant_newsletter_register_open: {
         Args: { p_delivery_id: string; p_token: string }
         Returns: boolean
+      }
+      touch_ays_presenter_cache: {
+        Args: { p_cache_key: string }
+        Returns: undefined
       }
     }
     Enums: {
