@@ -141,7 +141,8 @@ export async function loadOrderSettings(
     .rpc("resolve_order_settings", { p_tenant_id: tenantId, p_location_id: locationId })
     .maybeSingle();
 
-  const base: TenantOrderSettings = (error || !data)
+  // Senza righe la RPC (tipo composito) torna una riga di soli null: va trattata come assente.
+  const base: TenantOrderSettings = (error || !data || !(data as DbOrderSettings).id)
     ? { id: "", tenantId, locationId, ...DEFAULT_ORDER_SETTINGS }
     : dbRowToSettings(data as DbOrderSettings);
 
@@ -166,7 +167,7 @@ export async function loadOrderHandling(
     .rpc("resolve_order_settings", { p_tenant_id: tenantId, p_location_id: locationId })
     .maybeSingle();
 
-  const defaultMinutes = (error || !data)
+  const defaultMinutes = (error || !data || !(data as DbOrderSettings).id)
     ? DEFAULT_AVG_HANDLING_MINUTES
     : resolveDefaultAvgHandlingMinutes((data as DbOrderSettings).avg_handling_minutes);
   const overrideMinutes = await resolveDailyAvgHandlingOverride(supabase, tenantId, locationId);
