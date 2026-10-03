@@ -1,59 +1,31 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { TENANTS } from "@/lib/tenant-registry";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { GestioneTabs } from "@/components/gestione/gestione-tabs";
+import { REWARD_KIND_LABELS, RewardKindFields } from "@/components/gestione/fidelity-fields";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { listRewards } from "@/lib/fidelity/queries";
-import type { FidelityReward, FidelityRewardKind } from "@/lib/fidelity/types";
+import type { FidelityReward } from "@/lib/fidelity/types";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { removeReward, saveReward } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-const KIND_LABELS: Record<FidelityRewardKind, string> = {
-  order_discount_amount: "Sconto su totale ordine (€)",
-  free_product: "Prodotto gratis",
-  external_coupon_code: "Codice coupon esterno",
-  category_percent_discount: "Sconto % su categoria",
-};
+const FIDELITY_TABS = [
+  { path: "fidelity", label: "Programma" },
+  { path: "fidelity/regole", label: "Regole punti" },
+  { path: "fidelity/premi", label: "Premi" },
+  { path: "fidelity/iscritti", label: "Iscritti" },
+];
 
-function PayloadFields({ reward }: { reward?: FidelityReward }) {
-  const kind = reward?.kind ?? "order_discount_amount";
-  const p = (reward?.payload ?? {}) as Record<string, unknown>;
-  switch (kind) {
-    case "order_discount_amount":
-      return (
-        <label>Importo sconto (€)
-          <input type="number" name="amount_eur" min={0.01} step="0.01" defaultValue={(p.amount_eur as number) ?? 5} style={{ display: "block", padding: ".4rem" }} />
-        </label>
-      );
-    case "free_product":
-      return (
-        <label>ID prodotto menu
-          <input name="menu_item_id" defaultValue={(p.menu_item_id as string) ?? ""} placeholder="uuid prodotto" style={{ display: "block", width: "100%", padding: ".4rem" }} />
-        </label>
-      );
-    case "external_coupon_code":
-      return (
-        <>
-          <label>Prefisso codice
-            <input name="code_prefix" defaultValue={(p.code_prefix as string) ?? "FID"} style={{ display: "block", padding: ".4rem" }} />
-          </label>
-          <label>Lunghezza
-            <input type="number" name="code_length" min={4} max={16} defaultValue={(p.code_length as number) ?? 8} style={{ display: "block", padding: ".4rem", width: 100 }} />
-          </label>
-        </>
-      );
-    case "category_percent_discount":
-      return (
-        <>
-          <label>ID categoria
-            <input name="category_id" defaultValue={(p.category_id as string) ?? ""} style={{ display: "block", width: "100%", padding: ".4rem" }} />
-          </label>
-          <label>Percentuale
-            <input type="number" name="percent" min={1} max={100} defaultValue={(p.percent as number) ?? 20} style={{ display: "block", padding: ".4rem", width: 100 }} />
-          </label>
-        </>
-      );
-  }
+async function loadMenuOptions(tenantSlug: string) {
+  const db = createSupabaseServiceClient();
+  if (!db) return { products: [], categories: [] };
+  const [{ data: items }, { data: categories }] = await Promise.all([
+    db.from("menu_items").select("id,name").eq("tenant_id", tenantSlug).order("name"),
+    db.from("menu_categories").select("id,title").eq("tenant_id", tenantSlug).order("position"),
+  ]);
+  return {
+    products: (items ?? []).map((item) => ({ id: item.id, label: item.name })),
+    categories: (categories ?? []).map((category) => ({ id: category.id, label: category.title })),
+  };
 }
 
 export default async function FidelityRewardsPage({
@@ -62,105 +34,119 @@ export default async function FidelityRewardsPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) notFound();
-  const access = getGestioneModuleAccess(tenant.features);
-  if (!access.canManageFidelity) notFound();
+  const { auth } = await requireGestioneSection(tenantSlug, "loyalty");
 
   let rewards: FidelityReward[] = [];
   try {
     rewards = await listRewards(tenantSlug);
   } catch {}
+  const { products, categories } = auth.isDemo ? { products: [], categories: [] } : await loadMenuOptions(tenantSlug);
 
   return (
-    <div style={{ padding: "1.5rem", maxWidth: 900 }}>
-      <nav style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", fontSize: 14 }}>
-        <Link href={`/gestione/${tenantSlug}/fidelity`}>Programma</Link>
-        <Link href={`/gestione/${tenantSlug}/fidelity/regole`}>Regole punti</Link>
-        <Link href={`/gestione/${tenantSlug}/fidelity/premi`}><b>Premi</b></Link>
-        <Link href={`/gestione/${tenantSlug}/fidelity/iscritti`}>Iscritti</Link>
-      </nav>
+    <div className="ga-dashboard">
+      <header>
+        <span className="ga-eyebrow">Fedeltà</span>
+        <h1 className="ga-heading">Premi</h1>
+        <p className="ga-lead">I premi che gli iscritti possono richiedere spendendo i propri punti.</p>
+      </header>
+      <GestioneTabs items={FIDELITY_TABS} label="Sezioni fedeltà" />
 
-      <h1>Premi</h1>
-      <p style={{ color: "#666" }}>I premi che gli iscritti possono richiedere spendendo i propri punti.</p>
+      <section className="ga-section">
+        <h2 className="ga-section-title">Aggiungi premio</h2>
+        <form action={saveReward} className="ga-card ga-form-grid">
+          <input type="hidden" name="tenantSlug" value={tenantSlug} />
+          <label className="ga-field">
+            <span className="ga-label-text">Nome</span>
+            <input name="name" className="ga-input" required />
+          </label>
+          <label className="ga-field">
+            <span className="ga-label-text">Descrizione</span>
+            <input name="description" className="ga-input" />
+          </label>
+          <RewardKindFields products={products} categories={categories} />
+          <label className="ga-field">
+            <span className="ga-label-text">Punti richiesti</span>
+            <input type="number" name="points_cost" min={1} defaultValue={100} className="ga-input" required />
+          </label>
+          <label className="ga-field">
+            <span className="ga-label-text">Disponibilità (vuoto = illimitata)</span>
+            <input type="number" name="stock" min={0} className="ga-input" />
+          </label>
+          <label className="ga-field">
+            <span className="ga-label-text">Valido dal</span>
+            <input type="date" name="valid_from" className="ga-input" />
+          </label>
+          <label className="ga-field">
+            <span className="ga-label-text">Valido fino al</span>
+            <input type="date" name="valid_to" className="ga-input" />
+          </label>
+          <label className="ga-field">
+            <span className="ga-label-text">Ordine di visualizzazione</span>
+            <input type="number" name="sort_order" defaultValue={100} className="ga-input" />
+          </label>
+          <label className="ga-inline-check">
+            <input type="checkbox" name="is_active" className="ga-checkbox" defaultChecked />
+            <span>Attivo</span>
+          </label>
+          <div className="ga-form-actions ga-field-wide">
+            <button type="submit" className="ga-btn ga-btn-primary">Aggiungi premio</button>
+          </div>
+        </form>
+      </section>
 
-      <h2 style={{ marginTop: "2rem" }}>Aggiungi premio</h2>
-      <form action={saveReward} style={{ display: "grid", gap: ".75rem", padding: "1rem", border: "1px solid #ddd", borderRadius: 6 }}>
-        <input type="hidden" name="tenantSlug" value={tenantSlug} />
-        <label>Nome
-          <input name="name" required style={{ display: "block", width: "100%", padding: ".4rem" }} />
-        </label>
-        <label>Descrizione
-          <input name="description" style={{ display: "block", width: "100%", padding: ".4rem" }} />
-        </label>
-        <label>Tipo
-          <select name="kind" defaultValue="order_discount_amount" style={{ display: "block", padding: ".4rem" }}>
-            {Object.entries(KIND_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-          </select>
-        </label>
-        <PayloadFields />
-        <label>Punti richiesti
-          <input type="number" name="points_cost" min={1} defaultValue={100} required style={{ display: "block", padding: ".4rem", width: 120 }} />
-        </label>
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <label>Stock (vuoto = illimitato)
-            <input type="number" name="stock" min={0} placeholder="" style={{ display: "block", padding: ".4rem", width: 120 }} />
-          </label>
-          <label>Valido dal
-            <input type="date" name="valid_from" style={{ display: "block", padding: ".4rem" }} />
-          </label>
-          <label>Valido al
-            <input type="date" name="valid_to" style={{ display: "block", padding: ".4rem" }} />
-          </label>
-        </div>
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <label>Ordinamento
-            <input type="number" name="sort_order" defaultValue={100} style={{ display: "block", padding: ".4rem", width: 100 }} />
-          </label>
-          <label style={{ alignSelf: "end" }}><input type="checkbox" name="is_active" defaultChecked /> Attivo</label>
-        </div>
-        <button type="submit" style={{ padding: ".5rem 1rem", background: "#111", color: "#fff", border: 0, borderRadius: 6, justifySelf: "start" }}>
-          Aggiungi
-        </button>
-      </form>
-
-      <h2 style={{ marginTop: "2rem" }}>Premi esistenti</h2>
-      {rewards.length === 0 && <p style={{ color: "#999" }}>Nessun premio configurato.</p>}
-      {rewards.map((r) => (
-        <details key={r.id} style={{ padding: ".75rem", border: "1px solid #eee", borderRadius: 6, marginBottom: ".5rem" }}>
-          <summary>
-            <b>{r.name}</b> · {r.points_cost} punti · {KIND_LABELS[r.kind]} {!r.is_active && <em style={{ color: "#999" }}>(disattivato)</em>}
-          </summary>
-          <form action={saveReward} style={{ display: "grid", gap: ".5rem", marginTop: ".75rem" }}>
-            <input type="hidden" name="tenantSlug" value={tenantSlug} />
-            <input type="hidden" name="id" value={r.id} />
-            <input type="hidden" name="kind" value={r.kind} />
-            <label>Nome
-              <input name="name" defaultValue={r.name} style={{ display: "block", width: "100%", padding: ".4rem" }} />
-            </label>
-            <label>Descrizione
-              <input name="description" defaultValue={r.description ?? ""} style={{ display: "block", width: "100%", padding: ".4rem" }} />
-            </label>
-            <PayloadFields reward={r} />
-            <label>Punti
-              <input type="number" name="points_cost" min={1} defaultValue={r.points_cost} style={{ display: "block", padding: ".4rem", width: 120 }} />
-            </label>
-            <label>Stock
-              <input type="number" name="stock" defaultValue={r.stock ?? ""} style={{ display: "block", padding: ".4rem", width: 120 }} />
-            </label>
-            <label>Ordinamento
-              <input type="number" name="sort_order" defaultValue={r.sort_order} style={{ display: "block", padding: ".4rem", width: 100 }} />
-            </label>
-            <label><input type="checkbox" name="is_active" defaultChecked={r.is_active} /> Attivo</label>
-            <button type="submit" style={{ padding: ".4rem .8rem", justifySelf: "start" }}>Salva</button>
-          </form>
-          <form action={removeReward} style={{ marginTop: ".5rem" }}>
-            <input type="hidden" name="tenantSlug" value={tenantSlug} />
-            <input type="hidden" name="id" value={r.id} />
-            <button type="submit" style={{ padding: ".4rem .8rem", color: "#a00" }}>Elimina</button>
-          </form>
-        </details>
-      ))}
+      <section className="ga-section">
+        <h2 className="ga-section-title">Premi esistenti</h2>
+        {rewards.length === 0 && <div className="ga-empty">Nessun premio configurato.</div>}
+        {rewards.map((r) => (
+          <details key={r.id} className="ga-card ga-disclosure">
+            <summary>
+              <strong>{r.name}</strong>
+              <span className="ga-section-hint">
+                {r.points_cost} punti · {REWARD_KIND_LABELS[r.kind]}
+                {!r.is_active && " · disattivato"}
+              </span>
+            </summary>
+            <form action={saveReward} className="ga-form-grid">
+              <input type="hidden" name="tenantSlug" value={tenantSlug} />
+              <input type="hidden" name="id" value={r.id} />
+              <label className="ga-field">
+                <span className="ga-label-text">Nome</span>
+                <input name="name" defaultValue={r.name} className="ga-input" />
+              </label>
+              <label className="ga-field">
+                <span className="ga-label-text">Descrizione</span>
+                <input name="description" defaultValue={r.description ?? ""} className="ga-input" />
+              </label>
+              <RewardKindFields
+                lockedKind={r.kind}
+                payload={(r.payload ?? {}) as Record<string, unknown>}
+                products={products}
+                categories={categories}
+              />
+              <label className="ga-field">
+                <span className="ga-label-text">Punti richiesti</span>
+                <input type="number" name="points_cost" min={1} defaultValue={r.points_cost} className="ga-input" />
+              </label>
+              <label className="ga-field">
+                <span className="ga-label-text">Disponibilità</span>
+                <input type="number" name="stock" defaultValue={r.stock ?? ""} className="ga-input" />
+              </label>
+              <label className="ga-field">
+                <span className="ga-label-text">Ordine di visualizzazione</span>
+                <input type="number" name="sort_order" defaultValue={r.sort_order} className="ga-input" />
+              </label>
+              <label className="ga-inline-check">
+                <input type="checkbox" name="is_active" className="ga-checkbox" defaultChecked={r.is_active} />
+                <span>Attivo</span>
+              </label>
+              <div className="ga-form-actions ga-field-wide">
+                <button type="submit" className="ga-btn ga-btn-primary">Salva</button>
+                <button type="submit" formAction={removeReward} className="ga-btn ga-btn-danger">Elimina</button>
+              </div>
+            </form>
+          </details>
+        ))}
+      </section>
     </div>
   );
 }

@@ -1,16 +1,17 @@
 import { notFound } from "next/navigation";
-import { getTenantById } from "@/lib/data/tenant";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { getPrimaryLocation } from "@/lib/data/google-sync";
 import { getSpecialHours } from "@/lib/data/special-hours";
+import { GoogleSyncButton } from "@/components/gestione/google/google-sync-button";
 import { HoursSyncPanel } from "@/components/gestione/google/hours-sync-panel";
 import { SpecialHoursEditor } from "@/components/gestione/google/special-hours-editor";
 import Link from "next/link";
-import { ChevronLeft, RefreshCw } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { DaySchedule } from "@/lib/venue-hours";
 import { defaultHoursWeekForTenant } from "@/lib/venue-hours";
 import { headers } from "next/headers";
-import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { getGestioneBaseHref } from "@/lib/gestione-routing";
 import { getActiveGestioneLocation } from "@/lib/gestione-location";
 
 interface Props {
@@ -28,8 +29,7 @@ type LocationRow = {
 export default async function OrariPage({ params }: Props) {
   const { tenantSlug } = await params;
 
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant || !getGestioneModuleAccess(tenant.features).canManageReservations) notFound();
+  const { tenant } = await requireGestioneSection(tenantSlug, "google");
 
   const db = createSupabaseServiceClient();
   if (!db) notFound();
@@ -75,49 +75,33 @@ export default async function OrariPage({ params }: Props) {
   const isMulti = locations.length > 1;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-3">
-        <Link
-          href={googleHref}
-          className="rounded-full p-1.5 text-pork-ink/40 hover:text-pork-ink"
-        >
-          <ChevronLeft size={20} />
+    <div className="ga-dashboard">
+      <header>
+        <Link href={googleHref} className="ga-back-link">
+          <ChevronLeft size={14} aria-hidden="true" /> Google Business
         </Link>
-        <div>
-          <p className="impact-title text-xs text-pork-red">Google Business</p>
-          <h1 className="headline text-2xl">Orari</h1>
-        </div>
-      </div>
+        <h1 className="ga-heading">Orari</h1>
+        <p className="ga-lead">
+          {isMulti
+            ? "Ogni sede ha i propri orari: cambia sede dal menu a sinistra per modificarne un'altra."
+            : googleConnected
+              ? "Gli orari vengono pubblicati sulla scheda Google dopo la sincronizzazione."
+              : "Collega Google Business per pubblicare questi orari anche sulla scheda Maps."}
+        </p>
+      </header>
 
       {googleConnected && (
-        <div className="flex items-center justify-end">
-          <form action="/api/gestione/google/sync-hours" method="POST">
-            <input type="hidden" name="tenantId" value={tenantSlug} />
-            <input type="hidden" name="mode" value="all" />
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 rounded-full bg-pork-red px-5 py-2 text-sm font-bold text-white hover:opacity-90"
-            >
-              <RefreshCw size={14} />
-              Sincronizza tutto su Google
-            </button>
-          </form>
+        <div>
+          <GoogleSyncButton tenantId={tenantSlug} mode="all" label="Sincronizza tutto su Google" />
         </div>
       )}
 
-      {/* Orari settimanali */}
-      <section className="rounded-2xl border-2 border-pork-ink/10 bg-white p-6 space-y-4">
+      <section className="ga-card ga-section">
         <div>
-          <p className="impact-title text-xs text-pork-red">Orario tipo</p>
-          <h2 className="headline text-xl">
+          <h2 className="ga-section-title">
             Settimana standard{activeLocation && isMulti ? ` · ${activeLocation.name}` : ""}
           </h2>
-          <p className="text-sm text-pork-ink/50 mt-1">
-            {isMulti
-              ? "Ogni sede ha i propri orari. Cambia sede in alto per modificare un'altra."
-              : "Questi orari compaiono sulla tua scheda Google Maps ogni settimana."}
-            {googleConnected && " Dopo la modifica, usa il pulsante Sync per aggiornarli su Google."}
-          </p>
+          <p className="ga-card-hint">Gli orari di ogni settimana, mostrati sul sito e ai clienti.</p>
         </div>
         <HoursSyncPanel
           tenantId={tenantSlug}
@@ -127,40 +111,20 @@ export default async function OrariPage({ params }: Props) {
         />
       </section>
 
-      {/* Orari straordinari */}
-      <section className="rounded-2xl border-2 border-pork-ink/10 bg-white p-6 space-y-4">
+      <section className="ga-card ga-section">
         <div>
-          <p className="impact-title text-xs text-pork-red">Eccezioni</p>
-          <h2 className="headline text-xl">Orari straordinari</h2>
-          <p className="text-sm text-pork-ink/50 mt-1">
-            Date specifiche con orario diverso dal solito — aperture/chiusure straordinarie,
-            festività, eventi. Vengono pubblicati su Google Maps come «orario speciale».
+          <h2 className="ga-section-title">Orari straordinari</h2>
+          <p className="ga-card-hint">
+            Date con orario diverso dal solito: aperture o chiusure straordinarie, festività, eventi.
+            {googleConnected && " Su Google compaiono come orario speciale."}
           </p>
         </div>
-        <SpecialHoursEditor
-          tenantId={tenantSlug}
-          initialData={specialHours}
-          locationId={activeLocation?.id}
-        />
+        <SpecialHoursEditor tenantId={tenantSlug} initialData={specialHours} locationId={activeLocation?.id} />
 
         {googleConnected && specialHours.some((s) => !s.synced_to_google) && (
-          <div className="flex items-center justify-between rounded-xl bg-orange-50 px-4 py-3">
-            <p className="text-sm font-semibold text-orange-700">
-              Hai orari straordinari non ancora sincronizzati su Google.
-            </p>
-            <button
-              type="button"
-              onClick={async () => {
-                await fetch("/api/gestione/google/sync-hours", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ tenantId: tenantSlug, mode: "special" }),
-                });
-              }}
-              className="rounded-full bg-orange-600 px-4 py-1.5 text-xs font-bold text-white hover:opacity-90"
-            >
-              Sync ora
-            </button>
+          <div className="ga-notice" data-tone="warning">
+            <span>Alcuni orari straordinari non sono ancora su Google.</span>
+            <GoogleSyncButton tenantId={tenantSlug} mode="special" label="Sincronizza ora" variant="ghost" />
           </div>
         )}
       </section>

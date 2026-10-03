@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import {
   adjustMemberPoints,
   deleteEarnRule,
@@ -19,7 +19,7 @@ import type {
 const REV = (s: string) => revalidatePath(`/gestione/${s}/fidelity`, "layout");
 
 async function guard(tenantSlug: string) {
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "admin");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return { isDemo: true as const };
   return { isDemo: false as const };

@@ -82,12 +82,35 @@ const FULL_ACCESS: StoreCapabilities = {
   can_view_financials: true,
 };
 
+const NO_ACCESS: StoreCapabilities = {
+  can_cassa: false,
+  can_edit_menu: false,
+  can_manage_reservations: false,
+  can_view_analytics: false,
+  can_manage_shifts: false,
+  can_manage_staff: false,
+  can_view_financials: false,
+};
+
+export function isDeviceRole(role: string | null | undefined): boolean {
+  return DEVICE_ROLES.includes(role as (typeof DEVICE_ROLES)[number]);
+}
+
+/**
+ * `null` = admin del tenant o siteadmin: accesso pieno.
+ * Ruoli dispositivo e ruoli sconosciuti non ricevono capability: un account
+ * kiosk o display cucina non deve poter aprire la gestione.
+ */
 export function getEffectiveCapabilities(
   role: EmployeeRole | null,
   permissionsOverride: Record<string, boolean> = {},
 ): StoreCapabilities {
-  if (!role || !EMPLOYEE_ROLES.includes(role as never)) return FULL_ACCESS;
-  return { ...ROLE_DEFAULTS[role as (typeof EMPLOYEE_ROLES)[number]], ...permissionsOverride };
+  if (role === null) return FULL_ACCESS;
+  if (!EMPLOYEE_ROLES.includes(role as never)) return NO_ACCESS;
+  const overrides = Object.fromEntries(
+    Object.entries(permissionsOverride).filter(([key]) => key in NO_ACCESS),
+  ) as Partial<StoreCapabilities>;
+  return { ...ROLE_DEFAULTS[role as (typeof EMPLOYEE_ROLES)[number]], ...overrides };
 }
 
 export const ROLE_LABELS: Record<SiteadminRole | EmployeeRole, string> = {

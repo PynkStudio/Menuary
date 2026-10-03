@@ -873,3 +873,29 @@
     }
   }
 }
+
+/* Tema del pannello gestione (prima stava in admin.css). */
+@layer components {
+  .gestione-admin[data-gestione-tenant="kimos"] {
+    --ga-bg:          var(--km-paper);
+    --ga-surface:     var(--km-card);
+    --ga-surface-2:   color-mix(in srgb, var(--km-paper) 46%, white);
+    --ga-surface-3:   color-mix(in srgb, var(--km-warm) 24%, white);
+    --ga-border:      var(--km-line);
+    --ga-border-soft: rgba(23, 21, 18, 0.08);
+    --ga-ink:         var(--km-ink);
+    --ga-ink-muted:   rgba(23, 21, 18, 0.66);
+    --ga-ink-faint:   rgba(23, 21, 18, 0.45);
+    --ga-ink-dim:     rgba(23, 21, 18, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: "Arial Black", Impact, Haettenschweiler, sans-serif;
+    --ga-font-body:    "Manrope", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .gestione-admin[data-gestione-tenant="kimos"] .ga-header {
+    background:
+      linear-gradient(90deg, rgba(23, 21, 18, 0.035) 1px, transparent 1px),
+      color-mix(in srgb, var(--km-paper) 88%, transparent);
+    background-size: 2rem 2rem, auto;
+  }
+}

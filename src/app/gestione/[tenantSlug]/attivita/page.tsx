@@ -1,7 +1,5 @@
-import { notFound } from "next/navigation";
 import { ActivitySettingsPanel } from "@/components/gestione/activity-settings-panel";
-import { TENANTS } from "@/lib/tenant-registry";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { requireGestioneSection } from "@/lib/gestione-page";
 
 export default async function GestioneActivityPage({
   params,
@@ -9,11 +7,6 @@ export default async function GestioneActivityPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) notFound();
-
-  const access = getGestioneModuleAccess(tenant.features);
-  if (!access.canManageActivity) notFound();
-
+  await requireGestioneSection(tenantSlug, "activity");
   return <ActivitySettingsPanel />;
 }

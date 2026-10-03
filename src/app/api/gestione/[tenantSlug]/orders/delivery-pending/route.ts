@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 
 type Params = { params: Promise<{ tenantSlug: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
   const { tenantSlug } = await params;
-  const auth = await authorizeGestione(tenantSlug);
-  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  const auth = await requireGestione(tenantSlug, "staff");
+  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ orders: [] });
 
   const svc = createSupabaseServiceClient();
   if (!svc) return NextResponse.json({ error: "Servizio non disponibile" }, { status: 503 });

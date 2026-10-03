@@ -168,6 +168,7 @@ Progetti attivi:
 | Pannello di controllo PynkStudio (hub aziendale + portali prodotto separati) | `docs/03-features/pannello-pynkstudio.md` |
 | Landing verticali Menuary `/ristoranti/*` e funzioni che promettono | `docs/03-features/landing-verticali-ristoranti.md` |
 | Agenda e videocall (`@pynkstudio/agendaapp`, LiveKit) | `docs/03-features/agenda-videocall.md` |
+| Audit e rifacimento pannello `gestione` (sicurezza, dati, UX, UI) | `docs/03-features/audit-gestione.md` |
 
 Regole valide per ogni progetto con bacheca:
 

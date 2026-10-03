@@ -1,13 +1,8 @@
-import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { ActivitySettingsPanel } from "@/components/gestione/activity-settings-panel";
 import { GestioneSettingsPanel } from "@/components/gestione/gestione-settings-panel";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getTenantDemoControl } from "@/lib/demo-controls";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
-import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
-import { getPlatformModeFromHost, isDemoHost } from "@/lib/platform";
-import { TENANTS } from "@/lib/tenant-registry";
+import { getPlatformModeFromHost } from "@/lib/platform";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import type { LoginFrom } from "@/lib/login-url";
 import { getVerticalMeta } from "@/lib/vertical";
 
@@ -59,7 +54,7 @@ function normalizeSubscription(row: PlatformSubscriptionRow | null): Subscriptio
 }
 
 async function loadSubscription(
-  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  supabase: NonNullable<ReturnType<typeof createSupabaseServiceClient>>,
   tenantSlug: string,
 ): Promise<SubscriptionSummary | null> {
   const { data: lead } = await supabase
@@ -94,36 +89,19 @@ export default async function GestioneSettingsPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((item) => item.id === tenantSlug);
-  if (!tenant) notFound();
+  const { tenant, auth } = await requireGestioneSection(tenantSlug, "settings");
 
   const host = (await headers()).get("host") ?? "";
-  const isDemoHostname = isDemoHost(host);
-  const demoControl = isDemoHostname ? await getTenantDemoControl(tenantSlug).catch(() => null) : null;
-  const isDemo = isDemoHostname && !demoControl?.backendLive;
   const loginFrom = resolveLoginFrom(host, tenantSlug);
-  const access = getGestioneModuleAccess(tenant.features);
   const vertical = getVerticalMeta(tenant.vertical);
 
-  let subscription: SubscriptionSummary | null = null;
-
-  if (!isDemoHostname || demoControl?.backendLive) {
-    const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) redirect(`https://login.menuary.it?from=${encodeURIComponent(loginFrom)}`);
-
-    const [{ data: siteadmin }, { data: tenantadmin }, { data: employee }, { data: adminUser }] = await Promise.all([
-      supabase.from("siteadmin").select("id").eq("user_id", user.id).eq("enabled", true).maybeSingle(),
-      supabase.from("tenantadmin").select("id").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
-      supabase.from("employee").select("id").eq("user_id", user.id).eq("tenant_id", tenantSlug).eq("enabled", true).maybeSingle(),
-      supabase.from("admin_users").select("id").eq("auth_user_id", user.id).eq("tenant_id", tenantSlug).maybeSingle(),
-    ]);
-
-    if (!siteadmin && !tenantadmin && !employee && !adminUser) notFound();
-    subscription = await loadSubscription(supabase, tenantSlug);
-  }
+  // platform_leads e platform_subscriptions non hanno policy RLS: con la sessione
+  // dell'utente la lettura tornava sempre vuota. Si legge col service role, ma
+  // solo per chi può vedere i dati economici e mai sulla demo backend live.
+  const canSeeSubscription =
+    !auth.isDemo && auth.userId !== "demo" && auth.capabilities.can_view_financials;
+  const service = canSeeSubscription ? createSupabaseServiceClient() : null;
+  const subscription = service ? await loadSubscription(service, tenantSlug) : null;
 
   return (
     <div className="ga-dashboard">
@@ -133,7 +111,7 @@ export default async function GestioneSettingsPage({
         <p className="ga-lead">
           {tenant.vertical === "creative"
             ? "Account, abbonamento, valuta e lingue del sito autore."
-            : "Account, abbonamento, valuta, lingue e dati pubblici dell'attività."}
+            : "Account, abbonamento, valuta e lingue."}
         </p>
       </header>
 
@@ -144,14 +122,8 @@ export default async function GestioneSettingsPage({
         isCreative={tenant.vertical === "creative"}
         subscription={subscription}
         loginFrom={loginFrom}
-        isDemo={isDemo}
+        isDemo={auth.isDemo}
       />
-
-      {access.canManageActivity && tenant.vertical !== "creative" && (
-        <div id="dati-attivita">
-          <ActivitySettingsPanel />
-        </div>
-      )}
     </div>
   );
 }

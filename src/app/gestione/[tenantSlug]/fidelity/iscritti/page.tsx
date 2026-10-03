@@ -1,12 +1,37 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { TENANTS } from "@/lib/tenant-registry";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
+import { GestioneTabs } from "@/components/gestione/gestione-tabs";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { listMembers } from "@/lib/fidelity/queries";
 import type { FidelityMember } from "@/lib/fidelity/types";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { adjustPoints } from "../actions";
 
 export const dynamic = "force-dynamic";
+
+const FIDELITY_TABS = [
+  { path: "fidelity", label: "Programma" },
+  { path: "fidelity/regole", label: "Regole punti" },
+  { path: "fidelity/premi", label: "Premi" },
+  { path: "fidelity/iscritti", label: "Iscritti" },
+];
+
+type CustomerIdentity = { name: string | null; contact: string | null };
+
+/** Nome e contatto dalla scheda cliente del tenant: l'id utente da solo non dice nulla al gestore. */
+async function loadIdentities(tenantSlug: string, userIds: string[]): Promise<Map<string, CustomerIdentity>> {
+  const db = createSupabaseServiceClient();
+  const out = new Map<string, CustomerIdentity>();
+  if (!db || userIds.length === 0) return out;
+  const { data } = await db
+    .from("customers")
+    .select("menuary_user_id, display_name, email, phone")
+    .eq("tenant_id", tenantSlug)
+    .in("menuary_user_id", userIds);
+  for (const row of data ?? []) {
+    if (!row.menuary_user_id) continue;
+    out.set(row.menuary_user_id, { name: row.display_name, contact: row.email ?? row.phone });
+  }
+  return out;
+}
 
 export default async function FidelityMembersPage({
   params,
@@ -14,65 +39,74 @@ export default async function FidelityMembersPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) notFound();
-  const access = getGestioneModuleAccess(tenant.features);
-  if (!access.canManageFidelity) notFound();
+  const { auth } = await requireGestioneSection(tenantSlug, "loyalty");
 
+  // Gli iscritti sono dati personali: la demo pubblica non li mostra.
   let members: FidelityMember[] = [];
-  try {
-    members = await listMembers(tenantSlug);
-  } catch {}
+  if (!auth.isDemo) {
+    try {
+      members = await listMembers(tenantSlug);
+    } catch {}
+  }
+  const identities = await loadIdentities(tenantSlug, members.map((member) => member.user_id));
 
   return (
-    <div style={{ padding: "1.5rem", maxWidth: 1100 }}>
-      <nav style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", fontSize: 14 }}>
-        <Link href={`/gestione/${tenantSlug}/fidelity`}>Programma</Link>
-        <Link href={`/gestione/${tenantSlug}/fidelity/regole`}>Regole punti</Link>
-        <Link href={`/gestione/${tenantSlug}/fidelity/premi`}>Premi</Link>
-        <Link href={`/gestione/${tenantSlug}/fidelity/iscritti`}><b>Iscritti</b></Link>
-      </nav>
+    <div className="ga-dashboard">
+      <header>
+        <span className="ga-eyebrow">Fedeltà</span>
+        <h1 className="ga-heading">Iscritti al programma</h1>
+        <p className="ga-lead">
+          {members.length} {members.length === 1 ? "iscritto" : "iscritti"}. Puoi correggere il saldo indicando sempre il motivo.
+        </p>
+      </header>
+      <GestioneTabs items={FIDELITY_TABS} label="Sezioni fedeltà" />
 
-      <h1>Iscritti al programma</h1>
-      <p style={{ color: "#666" }}>{members.length} {members.length === 1 ? "iscritto" : "iscritti"}.</p>
-
-      <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ borderBottom: "1px solid #ddd", textAlign: "left" }}>
-            <th style={{ padding: ".5rem" }}>User ID</th>
-            <th style={{ padding: ".5rem" }}>Iscritto il</th>
-            <th style={{ padding: ".5rem", textAlign: "right" }}>Saldo</th>
-            <th style={{ padding: ".5rem", textAlign: "right" }}>Accumulati</th>
-            <th style={{ padding: ".5rem", textAlign: "right" }}>Spesi</th>
-            <th style={{ padding: ".5rem" }}>Aggiusta</th>
-          </tr>
-        </thead>
-        <tbody>
-          {members.map((m) => (
-            <tr key={m.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-              <td style={{ padding: ".5rem", fontFamily: "monospace", fontSize: 12 }}>{m.user_id.slice(0, 8)}…</td>
-              <td style={{ padding: ".5rem", fontSize: 12 }}>{new Date(m.enrolled_at).toLocaleDateString("it")}</td>
-              <td style={{ padding: ".5rem", textAlign: "right" }}><b>{m.points_balance}</b></td>
-              <td style={{ padding: ".5rem", textAlign: "right", color: "#666" }}>{m.lifetime_earned}</td>
-              <td style={{ padding: ".5rem", textAlign: "right", color: "#666" }}>{m.lifetime_spent}</td>
-              <td style={{ padding: ".5rem" }}>
-                <form action={adjustPoints} style={{ display: "flex", gap: ".25rem" }}>
-                  <input type="hidden" name="tenantSlug" value={tenantSlug} />
-                  <input type="hidden" name="memberId" value={m.id} />
-                  <input type="number" name="points" placeholder="±punti" style={{ width: 80, padding: ".25rem" }} required />
-                  <input type="text" name="note" placeholder="motivo" style={{ width: 160, padding: ".25rem" }} />
-                  <button type="submit" style={{ padding: ".25rem .5rem" }}>OK</button>
-                </form>
-              </td>
-            </tr>
-          ))}
-          {members.length === 0 && (
-            <tr><td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
-              Nessun iscritto. I clienti potranno iscriversi dal checkout una volta attivato il programma.
-            </td></tr>
-          )}
-        </tbody>
-      </table>
+      {members.length === 0 ? (
+        <div className="ga-empty">
+          Nessun iscritto. I clienti si iscrivono dal checkout quando il programma è attivo.
+        </div>
+      ) : (
+        <div className="ga-card ga-table-scroll">
+          <table className="ga-data-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Iscritto il</th>
+                <th className="ga-num">Saldo</th>
+                <th className="ga-num">Accumulati</th>
+                <th className="ga-num">Spesi</th>
+                <th>Correggi saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((m) => {
+                const identity = identities.get(m.user_id);
+                return (
+                  <tr key={m.id}>
+                    <td>
+                      <strong>{identity?.name ?? "Cliente senza nome"}</strong>
+                      <span className="ga-cell-hint">{identity?.contact ?? `ID ${m.user_id.slice(0, 8)}`}</span>
+                    </td>
+                    <td>{new Date(m.enrolled_at).toLocaleDateString("it-IT")}</td>
+                    <td className="ga-num"><strong>{m.points_balance}</strong></td>
+                    <td className="ga-num">{m.lifetime_earned}</td>
+                    <td className="ga-num">{m.lifetime_spent}</td>
+                    <td>
+                      <form action={adjustPoints} className="ga-inline-form">
+                        <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                        <input type="hidden" name="memberId" value={m.id} />
+                        <input type="number" name="points" placeholder="± punti" className="ga-input" aria-label="Punti da aggiungere o togliere" required />
+                        <input type="text" name="note" placeholder="Motivo" className="ga-input" aria-label="Motivo della correzione" required />
+                        <button type="submit" className="ga-btn ga-btn-ghost">Applica</button>
+                      </form>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

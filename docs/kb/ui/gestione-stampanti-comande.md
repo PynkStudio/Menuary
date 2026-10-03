@@ -16,10 +16,10 @@ Collegare e configurare la stampante delle comande del locale tramite QZ Tray o 
 # Come arrivarci
 
 1. **Dal computer collegato alla stampante** (PC cassa), apri il pannello **Gestione** (`gestione.<dominio-tenant>` o, in demo, `demo.<verticale>/<slug>/gestione`).
-2. Nel menu premi **«Cassa»**.
+2. Nel menu, gruppo **Impostazioni**, premi **«Cassa e stampanti»** (o **«Stampanti»** se il modulo cassa non è attivo).
 3. Scorri fino alla sezione **«Stampanti comande»** (visibile solo con il modulo `printStations` attivo).
 
-> La voce **«Cassa»** compare nel menu con il modulo cassa **o** con il modulo stampanti (es. Kimos ha solo le stampanti). La sezione stampanti compare solo se `printStations` è attivo. Indirizzo diretto: `…/gestione/cassa`.
+> La voce compare con il modulo cassa **o** con il modulo stampanti (es. Kimos ha solo le stampanti e vede **«Stampanti»**). La configurazione delle stampanti è riservata al titolare. Indirizzo diretto: `…/gestione/cassa`.
 
 # Elementi della schermata
 

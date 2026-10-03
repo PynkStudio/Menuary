@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_TOKEN_HEADER, getAdminPassword } from "@/lib/admin-auth";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { extractMenuItemsFromImage } from "@/lib/menu-photo-import";
 
 export const runtime = "nodejs";
@@ -21,7 +21,11 @@ async function isAuthorized(request: NextRequest, tenantId: string | null): Prom
   const adminToken = request.headers.get(ADMIN_TOKEN_HEADER);
   if (adminToken !== null && adminToken === getAdminPassword()) return true;
 
-  if (tenantId && (await authorizeGestione(tenantId)).ok) return true;
+  if (tenantId) {
+    // Le chiamate AI hanno un costo: la demo pubblica senza login non le usa.
+    const auth = await requireGestione(tenantId, "can_edit_menu");
+    if (auth.ok && !auth.isDemo) return true;
+  }
 
   const supportSecret = process.env.TENANT_SUPPORT_WHATSAPP_SECRET || process.env.WHATSAPP_WEB_BRIDGE_SECRET;
   if (!supportSecret) return false;

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getTenantById } from "@/lib/data/tenant";
 import { valentinaCreativeWorks, type ValentinaCreativeWork } from "@/components/tenants/valentina-orciuoli/content";
@@ -56,8 +56,8 @@ function sanitizeWorks(raw: unknown): ValentinaCreativeWork[] {
 }
 
 async function context(tenantId: string) {
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok || (!auth.isDemo && !auth.isAdmin)) {
+  const auth = await requireGestione(tenantId, "can_edit_menu");
+  if (!auth.ok) {
     return { error: NextResponse.json({ error: "Non autorizzato." }, { status: 403 }) };
   }
   const tenant = await getTenantById(tenantId);

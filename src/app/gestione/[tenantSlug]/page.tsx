@@ -1,173 +1,170 @@
 import { headers } from "next/headers";
-import { getTenantById } from "@/lib/data/tenant";
-import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
 import { getGestioneBaseHref, getGestioneModuleAccess } from "@/lib/gestione-routing";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isDemoHost } from "@/lib/platform";
-import { getTenantDemoControl } from "@/lib/demo-controls";
-import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
-import { getTenantModuleGroups } from "@/lib/tenant-modules";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { DashboardQuickActions } from "@/components/gestione/dashboard-quick-actions";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
 import { getActiveGestioneLocation } from "@/lib/gestione-location";
+import { requireGestioneSection } from "@/lib/gestione-page";
+import {
+  GESTIONE_SECTIONS,
+  getGestioneSectionLabel,
+  isGestioneSectionAvailable,
+  viewerMeets,
+  type GestioneViewer,
+} from "@/lib/gestione-sections";
+import { getEffectiveCapabilities } from "@/lib/store-roles";
+import type { TenantVertical } from "@/lib/tenant";
 
 type Kpi = {
   label: string;
-  value: string | null;
+  value: string;
   hint?: string;
 };
 
-async function loadKpis(tenantSlug: string, locationId: string | null, isDemo: boolean, features: ReturnType<typeof getGestioneModuleAccess>, vertical: "food" | "services" | "creative", t: GestioneMessages["dashboard"]): Promise<Kpi[]> {
+const BUSINESS_TIMEZONE = "Europe/Rome";
+
+/** Inizio e fine del giorno corrente nel fuso del locale, come istanti UTC. */
+function businessDayRange(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: BUSINESS_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now);
+  const map: Record<string, number> = {};
+  for (const part of parts) if (part.type !== "literal") map[part.type] = Number(part.value);
+  const offsetMs =
+    Date.UTC(map.year, map.month - 1, map.day, map.hour, map.minute, map.second) -
+    Math.floor(now.getTime() / 1000) * 1000;
+  const start = new Date(Date.UTC(map.year, map.month - 1, map.day) - offsetMs);
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  const isoDate = `${map.year}-${String(map.month).padStart(2, "0")}-${String(map.day).padStart(2, "0")}`;
+  return { start, end, isoDate };
+}
+
+type Access = ReturnType<typeof getGestioneModuleAccess>;
+
+async function loadKpis(
+  tenantSlug: string,
+  locationId: string | null,
+  isDemo: boolean,
+  access: Access,
+  viewer: GestioneViewer,
+  vertical: TenantVertical,
+  t: GestioneMessages["dashboard"],
+): Promise<Kpi[]> {
+  const showOrders = access.hasOrders;
+  const showRevenue = showOrders && viewerMeets(viewer, "can_view_financials");
+  const showReservations = access.canManageReservations && viewerMeets(viewer, "can_manage_reservations");
+  const showMenu = access.canManageMenu && viewerMeets(viewer, "can_edit_menu");
+  const showReviews = access.hasGoogleBusiness && viewerMeets(viewer, "admin");
+  const reservationsLabel =
+    vertical === "services" ? t.kpi.appointmentsToday : vertical === "creative" ? "Richieste booking oggi" : t.kpi.reservationsToday;
+  const menuLabel =
+    vertical === "services" ? "Servizi non disponibili" : vertical === "creative" ? "Opere pubblicate" : "Piatti non disponibili";
+
   if (isDemo) {
     const demo: Kpi[] = [];
-    if (features.hasOrders) {
+    if (showRevenue) demo.push({ label: "Valore ordini oggi", value: "642 €", hint: "18 ordini validi" });
+    if (showOrders) demo.push({ label: "Ordini da gestire", value: "6", hint: "2 in attesa di conferma" });
+    if (showReservations) {
       demo.push(
-        { label: "Valore ordini oggi", value: "642 €", hint: "18 ordini validi" },
-        { label: "Ordini da gestire", value: "6", hint: "2 in attesa di conferma" },
-      );
-    }
-    if (features.canManageReservations) {
-      demo.push(
-        {
-          label: vertical === "services" ? t.kpi.appointmentsToday : vertical === "creative" ? "Richieste booking oggi" : t.kpi.reservationsToday,
-          value: vertical === "services" ? "9" : "14",
-          hint: vertical === "food" ? "38 coperti previsti" : undefined,
-        },
+        { label: reservationsLabel, value: vertical === "services" ? "9" : "14", hint: vertical === "food" ? "38 coperti previsti" : undefined },
         { label: "Richieste da confermare", value: "3" },
       );
     }
-    if (features.canManageMenu) {
-      demo.push({
-        label: vertical === "services" ? "Servizi non disponibili" : vertical === "creative" ? "Opere pubblicate" : "Piatti non disponibili",
-        value: vertical === "creative" ? "12" : "2",
-        hint: vertical === "creative" ? "Catalogo pubblico" : "Aggiorna prima del servizio",
-      });
-    }
-    if (features.hasGoogleBusiness) {
-      demo.push({ label: t.kpi.reviews7d, value: "4", hint: t.kpi.reviewsAvg });
-    }
-    return demo.slice(0, 4);
+    if (showMenu) demo.push({ label: menuLabel, value: vertical === "creative" ? "12" : "2" });
+    if (showReviews) demo.push({ label: t.kpi.reviews7d, value: "4" });
+    return demo;
   }
 
-  const supabase = await createSupabaseServerClient(resolveSessionCookieDomain((await headers()).get("host") ?? ""));
-  const now = new Date();
-  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const dayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const today = [
-    dayStart.getFullYear(),
-    String(dayStart.getMonth() + 1).padStart(2, "0"),
-    String(dayStart.getDate()).padStart(2, "0"),
-  ].join("-");
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const db = createSupabaseServiceClient();
+  if (!db) return [];
+  const { start, end, isoDate } = businessDayRange();
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const scope = locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug };
 
   const [orders, reservations, menuItems, reviews] = await Promise.all([
-    features.hasOrders
-      ? supabase
-          .from("orders")
-          .select("total,status")
-          .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
-          .gte("created_at", dayStart.toISOString())
-          .lt("created_at", dayEnd.toISOString())
+    showOrders
+      ? db.from("orders").select("total,status").match(scope).gte("created_at", start.toISOString()).lt("created_at", end.toISOString())
       : Promise.resolve({ data: [] }),
-    features.canManageReservations
-      ? supabase
-          .from("reservation_requests")
-          .select("status,covers")
-          .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
-          .eq("reservation_date", today)
+    showReservations
+      ? db.from("reservation_requests").select("status,covers").match(scope).eq("reservation_date", isoDate)
       : Promise.resolve({ data: [] }),
-    // Un tenant creative non ha un menu: le sue "voci" sono le opere, e stanno
-    // in un'altra tabella. Contando `menu_items` il pannello annunciava opere
-    // pubblicate che non esistono — righe rimaste da un altro modulo.
-    features.canManageMenu
+    // Un tenant creative non ha un menu: le sue voci sono le opere.
+    showMenu
       ? vertical === "creative"
-        ? supabase
-            .from("tenant_creative_works")
-            .select("enabled")
-            .eq("tenant_id", tenantSlug)
-        : supabase
-            .from("menu_items")
-            .select("available")
-            .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
+        ? db.from("tenant_creative_works").select("enabled").eq("tenant_id", tenantSlug)
+        : db.from("menu_items").select("available").match(scope)
       : Promise.resolve({ data: [] }),
-    features.hasGoogleBusiness
-      ? supabase
-          .from("reviews")
-          .select("id", { count: "exact", head: true })
-          .match(locationId ? { tenant_id: tenantSlug, location_id: locationId } : { tenant_id: tenantSlug })
-          .gte("created_at", weekAgo)
+    showReviews
+      ? db.from("reviews").select("id", { count: "exact", head: true }).match(scope).gte("created_at", weekAgo)
       : Promise.resolve({ count: null } as { count: number | null }),
   ]);
 
-  const orderRows = orders.data ?? [];
-  const reservationRows = reservations.data ?? [];
-  const menuRows = menuItems.data ?? [];
   const out: Kpi[] = [];
+  const orderRows = (orders.data ?? []) as Array<{ total: number | null; status: string }>;
+  const validOrders = orderRows.filter((order) => !["annullato", "expired"].includes(order.status));
 
-  if (features.hasOrders) {
-    const validOrders = orderRows.filter((order) => !["annullato", "expired"].includes(order.status));
+  if (showRevenue) {
     const revenue = validOrders.reduce((sum, order) => sum + Number(order.total ?? 0), 0);
+    out.push({
+      label: "Valore ordini oggi",
+      value: new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(revenue),
+      hint: `${validOrders.length} ordini validi`,
+    });
+  }
+  if (showOrders) {
     const open = validOrders.filter((order) =>
       ["pending_confirmation", "nuovo", "in_preparazione", "pronto"].includes(order.status),
     );
     const pending = open.filter((order) => order.status === "pending_confirmation").length;
-    out.push(
-      {
-        label: "Valore ordini oggi",
-        value: new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(revenue),
-        hint: `${validOrders.length} ordini validi`,
-      },
-      {
-        label: "Ordini da gestire",
-        value: String(open.length),
-        hint: pending > 0 ? `${pending} in attesa di conferma` : "Nessuno in attesa di conferma",
-      },
-    );
+    out.push({
+      label: "Ordini da gestire",
+      value: String(open.length),
+      hint: pending > 0 ? `${pending} in attesa di conferma` : "Nessuno in attesa di conferma",
+    });
   }
-
-  if (features.canManageReservations) {
-    const pending = reservationRows.filter((reservation) =>
-      ["pending_manual", "auto_proposed"].includes(reservation.status),
-    ).length;
-    const covers = reservationRows.reduce((sum, reservation) => sum + Number(reservation.covers ?? 0), 0);
+  if (showReservations) {
+    const rows = (reservations.data ?? []) as Array<{ status: string; covers: number | null }>;
+    const pending = rows.filter((row) => ["pending_manual", "auto_proposed"].includes(row.status)).length;
+    const covers = rows.reduce((sum, row) => sum + Number(row.covers ?? 0), 0);
     out.push(
-      {
-        label: vertical === "services" ? t.kpi.appointmentsToday : vertical === "creative" ? "Richieste booking oggi" : t.kpi.reservationsToday,
-        value: String(reservationRows.length),
-        hint: vertical === "food" ? `${covers} coperti previsti` : undefined,
-      },
+      { label: reservationsLabel, value: String(rows.length), hint: vertical === "food" ? `${covers} coperti previsti` : undefined },
       { label: "Richieste da confermare", value: String(pending) },
     );
   }
-
-  if (features.canManageMenu) {
+  if (showMenu) {
     if (vertical === "creative") {
-      const works = menuRows as unknown as Array<{ enabled?: boolean | null }>;
+      const works = (menuItems.data ?? []) as Array<{ enabled?: boolean | null }>;
       const published = works.filter((work) => work.enabled !== false).length;
       out.push({
-        label: "Opere pubblicate",
+        label: menuLabel,
         value: String(published),
-        hint:
-          works.length === published
-            ? "Tutto il catalogo è online"
-            : `${works.length - published} non pubblicate`,
+        hint: works.length === published ? "Tutto il catalogo è online" : `${works.length - published} non pubblicate`,
       });
     } else {
-      const items = menuRows as unknown as Array<{ available?: boolean | null }>;
+      const items = (menuItems.data ?? []) as Array<{ available?: boolean | null }>;
       const unavailable = items.filter((item) => !item.available).length;
       out.push({
-        label: vertical === "services" ? "Servizi non disponibili" : "Piatti non disponibili",
+        label: menuLabel,
         value: String(unavailable),
         hint: unavailable > 0 ? "Richiedono un controllo" : "Tutta l'offerta è disponibile",
       });
     }
   }
-
-  if (features.hasGoogleBusiness) {
-    out.push({ label: t.kpi.reviews7d, value: String(reviews.count ?? 0) });
+  if (showReviews) {
+    out.push({ label: t.kpi.reviews7d, value: String((reviews as { count: number | null }).count ?? 0) });
   }
+  return out;
+}
 
-  return out.slice(0, 4);
+function joinLabels(labels: string[], more: number): string {
+  return more > 0 ? `${labels.join(", ")} …` : labels.join(", ");
 }
 
 export default async function GestioneDashboardPage({
@@ -176,132 +173,80 @@ export default async function GestioneDashboardPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant) return null;
+  const { tenant, access, auth } = await requireGestioneSection(tenantSlug, "dashboard");
   const gt = await getGestioneTranslations();
   const t = gt.dashboard;
 
   const host = (await headers()).get("host") ?? "";
-  const isDemoHostname = isDemoHost(host);
-  const demoControl = isDemoHostname ? await getTenantDemoControl(tenantSlug).catch(() => null) : null;
-  const isDemo = isDemoHostname && !demoControl?.backendLive;
-  const vertical = getVerticalMeta(tenant.vertical);
-  const access = getGestioneModuleAccess(tenant.features);
-  const base = getGestioneBaseHref(host, tenant) || `/gestione/${tenant.id}`;
-  const publicDomain = tenant.domains.find(
-    (domain) => !domain.startsWith("www.") && !domain.includes("localhost") && domain !== "127.0.0.1",
-  );
-  const ordersHref = isDemoHostname
-    ? `/${tenant.id}/ordini`
-    : publicDomain
-      ? `https://ordini.${publicDomain}`
-      : `/operativo/${tenant.id}/ordini`;
+  const isDemo = auth.isDemo;
+  const viewer: GestioneViewer = auth.isDemo
+    ? { isAdmin: true, isDevice: false, capabilities: getEffectiveCapabilities(null) }
+    : auth;
+  const base = getGestioneBaseHref(host, tenant) || "";
 
-  const menuLabel = getModuleLabel("onlineMenu", tenant.vertical);
-  const reservationsLabel = getModuleLabel("reservations", tenant.vertical);
-  const worksLabel =
-    tenant.vertical === "creative" ? getModuleLabel("worksCatalog", tenant.vertical) : menuLabel;
-  const bookingLabel =
-    tenant.vertical === "creative" ? getModuleLabel("creativeBooking", tenant.vertical) : reservationsLabel;
-  const dashboardCopy =
-    tenant.vertical === "creative"
-      ? "Da qui gestisci sito, catalogo opere, community e materiali editoriali."
-      : tenant.vertical === "services"
-      ? interpolate(t.copyServices, {
-          menuLabel: worksLabel.toLowerCase(),
-          reservationsLabel: bookingLabel.toLowerCase(),
-          businessNoun: vertical.businessNoun,
-        })
-      : t.copyFood;
+  // Il testo elenca solo le aree che questa persona vede davvero nel menu.
+  const visibleAreas = GESTIONE_SECTIONS.filter(
+    (section) => section.group && section.key !== "dashboard" && isGestioneSectionAvailable(section, tenant, viewer),
+  ).map((section) => getGestioneSectionLabel(section.key, tenant, gt.navigation));
+  const lead = visibleAreas.length > 0 ? interpolate(gt.navigation.dashboardLead, { areas: joinLabels(visibleAreas.slice(0, 6), visibleAreas.length - 6) }) : "";
 
-  const activeLocation = isDemo || tenant.vertical === "creative"
-    ? null
-    : await getActiveGestioneLocation(tenantSlug);
-  const kpis = await loadKpis(tenantSlug, activeLocation?.id ?? null, isDemo, access, tenant.vertical, t);
+  const activeLocation = isDemo || tenant.vertical === "creative" ? null : await getActiveGestioneLocation(tenantSlug);
+  const kpis = await loadKpis(tenantSlug, activeLocation?.id ?? null, isDemo, access, viewer, tenant.vertical, t);
+  const quiet = !isDemo && kpis.length > 0 && kpis.every((kpi) => kpi.value === "0" || /^0\s?€$/.test(kpi.value));
 
-  const orderModules = (["takeaway", "tableOrders", "orderKiosk"] as const)
-    .filter((key) => access.modules[key]);
-  const enabledGroups = getTenantModuleGroups(tenant.vertical)
-    .map((group) => ({
-      ...group,
-      activeDefinitions: group.definitions.filter((module) => access.modules[module.key]),
-    }))
-    .filter((group) => group.activeDefinitions.length > 0);
+  const orderModules = (["takeaway", "tableOrders", "orderKiosk"] as const).filter((key) => access.modules[key]);
+  const quickOrders = access.hasOrders;
+  const quickMenu = access.canManageMenu && viewerMeets(viewer, "can_edit_menu");
+  const quickReservations = access.canManageReservations && viewerMeets(viewer, "can_manage_reservations");
+  const quickActivity = access.canManageActivity && tenant.vertical !== "creative" && viewerMeets(viewer, "admin");
 
   return (
     <div className="ga-dashboard">
       <header>
         <span className="ga-eyebrow">{t.eyebrow}</span>
         <h1 className="ga-heading">{interpolate(t.welcome, { tenantName: tenant.name })}</h1>
-        <p className="ga-lead">{dashboardCopy}</p>
+        {lead && <p className="ga-lead">{lead}</p>}
       </header>
 
-      <section className="ga-section" aria-labelledby="ga-kpi-title">
-        <div className="ga-section-head">
-          <h2 id="ga-kpi-title" className="ga-section-title">{t.todayTitle}</h2>
-          {isDemo && <span className="ga-section-hint">{t.demoHint}</span>}
-        </div>
-        <div className="ga-kpi-grid">
-          {kpis.map((k) => (
-            <div key={k.label} className="ga-kpi">
-              <span className="ga-kpi-label">{k.label}</span>
-              <span className="ga-kpi-value" data-empty={k.value === null}>
-                {k.value ?? "—"}
-              </span>
-              {k.hint && <span className="ga-kpi-hint">{k.hint}</span>}
-            </div>
-          ))}
-        </div>
-      </section>
+      {kpis.length > 0 && (
+        <section className="ga-section" aria-labelledby="ga-kpi-title">
+          <div className="ga-section-head">
+            <h2 id="ga-kpi-title" className="ga-section-title">{t.todayTitle}</h2>
+            {isDemo && <span className="ga-section-hint">{t.demoHint}</span>}
+          </div>
+          <div className="ga-kpi-grid">
+            {kpis.map((k) => (
+              <div key={k.label} className="ga-kpi">
+                <span className="ga-kpi-label">{k.label}</span>
+                <span className="ga-kpi-value">{k.value}</span>
+                {k.hint && <span className="ga-kpi-hint">{k.hint}</span>}
+              </div>
+            ))}
+          </div>
+          {quiet && <p className="ga-section-hint">{gt.navigation.dashboardQuiet}</p>}
+        </section>
+      )}
 
-      {(access.hasOrders || access.canManageMenu || access.canManageReservations || access.canManageActivity) && (
+      {(quickOrders || quickMenu || quickReservations || quickActivity) && (
         <section className="ga-section" aria-labelledby="ga-quick-title">
           <div className="ga-section-head">
             <h2 id="ga-quick-title" className="ga-section-title">{t.shortcuts}</h2>
-            <span className="ga-section-hint">Le operazioni più frequenti, senza passaggi inutili</span>
           </div>
           <DashboardQuickActions
             tenantId={tenant.id}
             base={base}
-            ordersHref={ordersHref}
+            ordersHref={`${base}/ordini`}
             vertical={tenant.vertical}
             isDemo={isDemo}
-            hasOrders={access.hasOrders}
-            canManageMenu={access.canManageMenu}
-            canManageReservations={access.canManageReservations}
-            canManageActivity={access.canManageActivity}
+            hasOrders={quickOrders}
+            canSuspendOrders={viewerMeets(viewer, "admin")}
+            canManageMenu={quickMenu}
+            canManageReservations={quickReservations}
+            canManageActivity={quickActivity}
             orderModules={[...orderModules]}
           />
         </section>
       )}
-
-      <section className="ga-section" aria-labelledby="ga-modules-title">
-        <div className="ga-section-head">
-          <h2 id="ga-modules-title" className="ga-section-title">{t.modulesDiagnostic}</h2>
-          <span className="ga-section-hint">{enabledGroups.length} aree operative</span>
-        </div>
-        {enabledGroups.length === 0 ? (
-          <div className="ga-empty">
-            {t.noModules}
-          </div>
-        ) : (
-          <div className="ga-modules-grid">
-            {enabledGroups.map((group) => (
-              <div key={group.key} className="ga-module">
-                <span>
-                  <span className="ga-module-name">{group.label}</span>
-                  <span className="ga-kpi-hint">
-                    {group.activeDefinitions
-                      .map((module) => getModuleLabel(module.key, tenant.vertical))
-                      .join(" · ")}
-                  </span>
-                </span>
-                <span className="ga-module-count">{group.activeDefinitions.length} attive</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
     </div>
   );
 }

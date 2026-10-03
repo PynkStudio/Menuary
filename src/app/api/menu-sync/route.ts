@@ -9,7 +9,7 @@ import { getTenantLocaleConfig, matchTenantLocale } from "@/lib/tenant-locales";
 import type { MenuSyncBundle } from "@/lib/menu-sync-types";
 import type { AdminMenuCategory, AdminMenuItem, AdminMenuList, MenuDay, MenuOrderChannel, PriceFormat } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 type SupabaseAdmin = ReturnType<typeof createSupabaseAdminClient>;
@@ -43,7 +43,7 @@ export async function PUT(req: Request) {
   const url = new URL(req.url);
   const tenantId = url.searchParams.get("tenantId")?.trim();
   if (!tenantId) return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
-  const auth = await authorizeGestione(tenantId);
+  const auth = await requireGestione(tenantId, "can_edit_menu");
   if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createSupabaseAdminClient();
   const locationId = auth.isDemo

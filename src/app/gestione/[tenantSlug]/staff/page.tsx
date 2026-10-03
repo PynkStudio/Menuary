@@ -1,11 +1,10 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { GestioneStaffManager } from "@/components/gestione/gestione-staff-manager";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { isDemoHost } from "@/lib/platform";
-import { getTenantById } from "@/lib/data/tenant";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 export default async function StaffPage({
   params,
@@ -13,8 +12,7 @@ export default async function StaffPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant || !getGestioneModuleAccess(tenant.features).canManageStaff) notFound();
+  const { tenant } = await requireGestioneSection(tenantSlug, "staff");
 
   const host = (await headers()).get("host");
   const demo = isDemoHost(host);

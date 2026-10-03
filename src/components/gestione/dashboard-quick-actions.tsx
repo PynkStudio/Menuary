@@ -14,6 +14,7 @@ type DashboardQuickActionsProps = {
   vertical: TenantVertical;
   isDemo: boolean;
   hasOrders: boolean;
+  canSuspendOrders: boolean;
   canManageMenu: boolean;
   canManageReservations: boolean;
   canManageActivity: boolean;
@@ -33,6 +34,7 @@ export function DashboardQuickActions({
   vertical,
   isDemo,
   hasOrders,
+  canSuspendOrders,
   canManageMenu,
   canManageReservations,
   canManageActivity,
@@ -40,14 +42,19 @@ export function DashboardQuickActions({
 }: DashboardQuickActionsProps) {
   const suspendModule = useSettingsStore((state) => state.suspendModule);
   const { activeLocation } = useGestioneLocation();
-  const [ready, setReady] = useState(() => useSettingsStore.persist.hasHydrated());
+  // Parte sempre da false: lo store si idrata solo nel browser e il primo
+  // render deve coincidere con quello del server.
+  const [ready, setReady] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [savingOrders, setSavingOrders] = useState(false);
 
   useEffect(() => {
-    if (ready) return;
+    if (useSettingsStore.persist.hasHydrated()) {
+      setReady(true);
+      return;
+    }
     return useSettingsStore.persist.onFinishHydration(() => setReady(true));
-  }, [ready]);
+  }, []);
 
   async function suspendOrders() {
     if (!window.confirm("Sospendere tutti i nuovi ordini in ingresso? Gli ordini già ricevuti resteranno disponibili.")) {
@@ -99,13 +106,15 @@ export function DashboardQuickActions({
                 <span className="ga-quick-hint">Conferma, prepara e completa</span>
               </span>
             </Link>
-            <button type="button" className="ga-quick" disabled={savingOrders || (isDemo && !ready)} onClick={suspendOrders}>
-              <span className="ga-quick-icon"><Ban size={16} /></span>
-              <span className="ga-quick-meta">
-                <span>Sospendi ordini in ingresso</span>
-                <span className="ga-quick-hint">Blocca i nuovi ordini, non quelli già ricevuti</span>
-              </span>
-            </button>
+            {canSuspendOrders && (
+              <button type="button" className="ga-quick" disabled={savingOrders || (isDemo && !ready)} onClick={suspendOrders}>
+                <span className="ga-quick-icon"><Ban size={16} /></span>
+                <span className="ga-quick-meta">
+                  <span>Sospendi ordini in ingresso</span>
+                  <span className="ga-quick-hint">Blocca i nuovi ordini, non quelli già ricevuti</span>
+                </span>
+              </button>
+            )}
           </>
         )}
         {canManageMenu && (
@@ -127,7 +136,7 @@ export function DashboardQuickActions({
           </Link>
         )}
         {canManageActivity && (
-          <Link href={`${base}/impostazioni`} className="ga-quick">
+          <Link href={`${base}/attivita`} className="ga-quick">
             <span className="ga-quick-icon"><Settings size={16} /></span>
             <span className="ga-quick-meta">
               <span>Aggiorna orari e contatti</span>

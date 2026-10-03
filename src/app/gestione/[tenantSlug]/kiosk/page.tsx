@@ -1,10 +1,8 @@
-import { notFound } from "next/navigation";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { headers } from "next/headers";
 import {
   MonitorSmartphone, RefreshCw, Trash2, Power, PowerOff, Copy, Wifi, WifiOff, Plus,
 } from "lucide-react";
-import { getTenantById } from "@/lib/data/tenant";
-import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { fetchLocations } from "@/lib/location";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -79,15 +77,9 @@ export default async function KioskGestionePage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant) return null;
+  const { auth } = await requireGestioneSection(tenantSlug, "kiosk");
   const gt = await getGestioneTranslations();
   const t = gt.kiosk;
-
-  const auth = await authorizeGestione(tenantSlug);
-  if (!auth.ok) notFound();
-  if (!auth.isDemo && !auth.isAdmin) notFound();
-  if (!tenant.features.orderKiosk) notFound();
 
   const activeLocation = auth.isDemo ? null : await getActiveGestioneLocation(tenantSlug);
   const { devices, locations } = auth.isDemo

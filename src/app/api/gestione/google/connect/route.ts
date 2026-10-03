@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildOAuthUrl } from "@/lib/google/my-business";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireGestione } from "@/lib/gestione-auth";
 
 // GET /api/gestione/google/connect?tenantId=bepork
 // Restituisce l'URL OAuth da cui il gestore deve essere reindirizzato.
@@ -8,9 +8,9 @@ export async function GET(request: Request) {
   const tenantId = new URL(request.url).searchParams.get("tenantId");
   if (!tenantId) return NextResponse.json({ error: "tenantId required" }, { status: 400 });
 
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ error: "Collegamento Google non disponibile in demo." }, { status: 409 });
 
   try {
     const url = buildOAuthUrl(tenantId);

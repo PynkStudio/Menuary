@@ -57,6 +57,7 @@ const STATUS_BADGE: Record<TenantStatus, { label: string; className: string }> =
   offline: { label: "Offline", className: "bg-pork-ink/20 text-pork-ink/60" },
   trattativa: { label: "Trattativa", className: "bg-amber-100 text-amber-800" },
   suspended: { label: "Sospeso", className: "bg-orange-100 text-orange-700" },
+  churned: { label: "Perso", className: "bg-pork-ink/10 text-pork-ink/45" },
 };
 
 const VERTICAL_FILTERS: Array<{ value: "all" | TenantVertical; label: string }> = [
@@ -85,6 +86,7 @@ type DemoControl = {
   tenantId: string;
   enabled: boolean;
   backendLive: boolean;
+  backendLiveUntil: string | null;
 };
 
 type TenantAdvancedModalProps = {
@@ -134,6 +136,11 @@ export function PlatformTenantsPage({
   const [advancedOpenFor, setAdvancedOpenFor] = useState<string | null>(null);
   const [showAllModules, setShowAllModules] = useState(false);
   const [demoControls, setDemoControls] = useState<Record<string, DemoControl>>({});
+  const [clock, setClock] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setClock(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
   const [demoSaving, setDemoSaving] = useState<Record<string, boolean>>({});
   const [demoError, setDemoError] = useState<string | null>(null);
   const [hubriseOpenFor, setHubriseOpenFor] = useState<string | null>(null);
@@ -298,7 +305,11 @@ export function PlatformTenantsPage({
             const effective = mergeTenantOverrides(tenant, overrides[tenant.id]);
             const current = tenant.id === activeTenant?.id;
             const demoEnabled = demoControls[tenant.id]?.enabled ?? true;
-            const backendLive = demoControls[tenant.id]?.backendLive ?? false;
+            const backendLiveUntil = demoControls[tenant.id]?.backendLiveUntil;
+            const backendLiveMinutes = backendLiveUntil
+              ? Math.ceil((new Date(backendLiveUntil).getTime() - clock) / 60_000)
+              : 0;
+            const backendLive = (demoControls[tenant.id]?.backendLive ?? false) && backendLiveMinutes > 0;
             const isDemoSaving = demoSaving[tenant.id] ?? false;
             const enabledModules = Object.values(effective.features).filter(Boolean).length;
             const verticalMeta = getVerticalMeta(tenant.vertical);
@@ -370,7 +381,7 @@ export function PlatformTenantsPage({
                         type="button"
                         disabled={isDemoSaving}
                         onClick={() => persistBackendLive(tenant.id, !backendLive)}
-                        title="Quando attivo, la gestione demo usa Supabase reale."
+                        title="Attiva per 15 minuti la gestione demo su Supabase reale, senza login. Poi torna ai dati di esempio."
                         className={
                           "rounded-full px-3 py-2 text-xs font-black uppercase transition disabled:cursor-wait disabled:opacity-50 " +
                           (backendLive
@@ -378,7 +389,7 @@ export function PlatformTenantsPage({
                             : "bg-pork-ink/5 text-pork-ink/45 hover:bg-pork-ink/10")
                         }
                       >
-                        {isDemoSaving ? "..." : backendLive ? "Backend live" : "Backend demo"}
+                        {isDemoSaving ? "..." : backendLive ? `Backend live · ${backendLiveMinutes} min` : "Backend demo"}
                       </button>
                     </>
                   )}

@@ -697,7 +697,7 @@ export default async function RootLayout({
   const effectiveStatus = liveTenant?.status ?? tenant.status;
   const tenantSiteDisabled =
     (mode === "tenant" || mode === "preview" || mode === "preview-bizery" || mode === "preview-orpheo") &&
-    (!effectiveEnabled || effectiveStatus === "offline" || effectiveStatus === "suspended");
+    (!effectiveEnabled || effectiveStatus === "offline" || effectiveStatus === "suspended" || effectiveStatus === "churned");
   const unavailableReason: "suspended" | "offline" =
     effectiveStatus === "suspended" ? "suspended" : "offline";
 

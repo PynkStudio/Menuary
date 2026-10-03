@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChefHat, Bell, Check, X, MapPin, Clock, StickyNote, ShoppingBag, UtensilsCrossed, AlarmClock, Bike, Settings, Phone, ChevronDown, Star } from "lucide-react";
-import { TENANTS } from "@/lib/tenant-registry";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { headers } from "next/headers";
+import { getTenantById } from "@/lib/data/tenant";
+import { requireGestione } from "@/lib/gestione-auth";
+import { getGestioneBaseHref } from "@/lib/gestione-routing";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/database.types";
 import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder } from "./actions";
@@ -239,13 +241,15 @@ export default async function OrdiniPage({
 }) {
   const { tenantSlug } = await params;
   const { f, loc, location } = await searchParams;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) return null;
+  const tenant = await getTenantById(tenantSlug);
+  if (!tenant) notFound();
   const gt = await getGestioneTranslations();
   const t = gt.orders;
 
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "member");
   if (!auth.ok) notFound();
+  const settingsHref = `${getGestioneBaseHref((await headers()).get("host"), tenant)}/ordini/impostazioni`;
+  const canEditSettings = auth.isDemo || auth.isAdmin;
 
   const filter: Filter = FILTERS.some((x) => x.id === f) ? (f as Filter) : "live";
   const locationSlug = loc ?? location;
@@ -309,13 +313,11 @@ export default async function OrdiniPage({
             />
           )}
           <OperationalAlertControls tenantId={tenantSlug} />
-          <Link
-            href={`/gestione/${tenantSlug}/ordini/impostazioni`}
-            className="ga-btn ga-btn-ghost"
-            style={{ alignSelf: "center" }}
-          >
-            <Settings size={14} strokeWidth={2.4} /> {t.settings}
-          </Link>
+          {canEditSettings && (
+            <Link href={settingsHref} className="ga-btn ga-btn-ghost" style={{ alignSelf: "center" }}>
+              <Settings size={14} strokeWidth={2.4} /> {t.settings}
+            </Link>
+          )}
         </div>
       </header>
 

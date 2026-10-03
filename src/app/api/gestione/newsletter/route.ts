@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { getTenantById } from "@/lib/data/tenant";
 import {
   deleteMessage,
@@ -12,9 +12,13 @@ import {
 } from "@/lib/newsletter/server";
 
 async function requireAccess(tenantId: string) {
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok || (!auth.isDemo && !auth.isAdmin)) {
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) {
     return { error: NextResponse.json({ error: "Non autorizzato." }, { status: 403 }) };
+  }
+  // Gli iscritti sono dati personali: la demo pubblica non li legge mai.
+  if (auth.isDemo) {
+    return { error: NextResponse.json({ error: "La newsletter non è disponibile nella demo." }, { status: 403 }) };
   }
   const tenant = await getTenantById(tenantId);
   if (!tenant?.features.fanbaseCommunity) {

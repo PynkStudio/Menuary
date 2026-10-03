@@ -100,6 +100,11 @@ src/lib/
 Per aggiungere un tenant: aggiungere un oggetto in `TENANTS[]` dentro `tenant-registry.ts`
 con `id`, `name`, `vertical`, `domains[]`, `previewSlug` e `theme`.
 
+**Fonte di verità a runtime: la tabella `tenants` del DB.** `getTenantById()` (`src/lib/data/tenant.ts`)
+legge nome, verticale, stato, tema e flag dal DB e usa il registry solo come fallback se la riga
+manca o non ha flag. Le divergenze tra registry e DB si controllano con `npm run tenants:drift`
+(`scripts/check-tenant-drift.ts`, sola lettura). Vedi [[audit-gestione]].
+
 ---
 
 ## 3b. Multilingua tenant e SEO
@@ -142,6 +147,13 @@ src/lib/use-effective-features.ts → hook client che combina feature flags del
 src/store/settings-store.ts → stato runtime: allowTakeaway, moduleOverrides,
                                moduleSuspensions, kitchenDisplayEnabled, ecc.
 ```
+
+Le impostazioni sito dello store (social, link email del footer, prezzi menu, finestre
+prenotazione, valuta, lingue, sospensioni moduli) vivono sul server nella tabella
+`tenant_site_settings`; il localStorage è solo una cache. Lettura pubblica:
+`GET /api/tenant/[tenantId]/site-settings`. Scrittura dalla gestione: `PUT /api/gestione/site-settings`,
+fatta in automatico da `SiteSettingsServerSync` montato nel layout gestione. Chiavi sincronizzate:
+`src/lib/site-settings-sync.ts`. Sulla demo restano i fixture locali.
 
 I moduli hanno dipendenze dichiarate (`requires`, `requiresAny`): un modulo è
 effettivo solo se anche le sue dipendenze sono abilitate.
@@ -346,6 +358,10 @@ src/app/admin/
   tenant/page.tsx     → vista piattaforma: lista tenant, feature flags (solo platform-admin)
 ```
 
+Il pannello **gestione** del tenant (`/gestione/[tenantSlug]`) ha sezioni, gruppi di menu e
+permessi definiti in un'unica tabella, `src/lib/gestione-sections.ts`. Pagine e API passano da
+`requireGestioneSection()` / `requireGestione()`. Vedi [[adr-0014-accesso-gestione-sezioni-e-ruoli]].
+
 Il pannello **servizi** (`admin/servizi`) corrisponde direttamente ai moduli
 definiti in `tenant-modules.ts`: ogni toggle nel pannello scrive nello `settings-store`
 e viene letto da `useEffectiveFeatures()` in tutti i componenti.
@@ -370,6 +386,11 @@ Le preview usano lo stesso stack visivo del tenant reale ma con
 così i CSS override per tenant funzionano anche nel contesto embedded.
 
 URL di esempio: `https://demo.menuary.it/bepork-demo`
+
+La gestione demo (`/[tenant]/gestione` sugli host demo) è senza login e lavora sui fixture
+in localStorage. Il siteadmin può accendere da admin la modalità **backend live**, che collega la
+demo ai dati reali per **15 minuti** (`tenant_demo_controls.backend_live_until`) e poi si spegne da
+sola. In demo pura le API non leggono né scrivono dati reali.
 
 ---
 

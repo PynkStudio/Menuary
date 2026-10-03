@@ -1,16 +1,15 @@
 import { notFound, redirect } from "next/navigation";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { headers } from "next/headers";
 import "@/lib/mailapp-runtime";
 import { MailApp } from "@pynkstudio/mailapp/react";
 import { MAIL_BRANDS } from "@/lib/mailapp-brands";
 import { getInboundEmails, getInboxUnreadCounts, getTenantInboxUnreadCount } from "@pynkstudio/mailapp/email";
 import { getSentDeliveryIssueCount, getSentEmails, buildTenantEmailScope } from "@pynkstudio/mailapp/email";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { isDemoHost } from "@/lib/platform";
 import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getTenantContent } from "@/lib/tenant-content";
-import { getTenantById } from "@/lib/data/tenant";
 
 function activeMailDomain(domains: string[]): string | null {
   return domains.find((domain) =>
@@ -35,9 +34,7 @@ export default async function GestioneMailPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  const access = tenant ? getGestioneModuleAccess(tenant.features) : null;
-  if (!tenant || !access?.canManageMail) notFound();
+  const { tenant, access } = await requireGestioneSection(tenantSlug, "mail");
 
   const host = (await headers()).get("host");
   if (isDemoHost(host)) {

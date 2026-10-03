@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getCountersignedContractByTenant } from "@/lib/contracts/contract-queries";
 
 export const dynamic = "force-dynamic";
 
 async function canAccessTenant(tenantId: string) {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return false;
-  const { data: tenantAdmin } = await supabase
-    .from("tenantadmin")
-    .select("email")
-    .eq("user_id", user.id)
-    .eq("tenant_id", tenantId)
-    .eq("enabled", true)
-    .maybeSingle();
-  return Boolean(tenantAdmin);
+  const auth = await requireGestione(tenantId, "can_view_financials");
+  // La demo backend live non ha un utente: contratti e fatture restano esclusi.
+  return auth.ok && !auth.isDemo && auth.userId !== "demo";
 }
 
 export async function GET(req: NextRequest) {

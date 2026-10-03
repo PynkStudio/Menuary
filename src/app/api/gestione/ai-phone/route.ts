@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import {
   buildPauseUntil,
-  getAiPhoneSettings,
+  defaultAiPhoneSettings, getAiPhoneSettings,
   upsertAiPhoneSettings,
   type AiPhoneQuickSettings,
 } from "@/lib/retell/settings";
@@ -36,8 +36,9 @@ export async function GET(req: NextRequest) {
   const tenantId = tenantFrom(req);
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ settings: defaultAiPhoneSettings(tenantId) });
 
   try {
     return NextResponse.json({ settings: await getAiPhoneSettings(tenantId) });
@@ -54,8 +55,9 @@ export async function PATCH(req: NextRequest) {
   const tenantId = tenantFrom(req, body);
   if (!tenantId || !body) return NextResponse.json({ error: "invalid_request" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ settings: defaultAiPhoneSettings(tenantId), demo: true });
 
   try {
     const current = await getAiPhoneSettings(tenantId);

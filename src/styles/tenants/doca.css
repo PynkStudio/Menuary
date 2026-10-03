@@ -606,3 +606,29 @@
     }
   }
 }
+
+/* Tema del pannello gestione (prima stava in admin.css). */
+@layer components {
+  .gestione-admin[data-gestione-tenant="doca"] {
+    --ga-bg:          var(--doca-paper);
+    --ga-surface:     var(--doca-cream-soft);
+    --ga-surface-2:   color-mix(in srgb, var(--doca-paper) 72%, white);
+    --ga-surface-3:   var(--doca-cream);
+    --ga-border:      rgba(39, 21, 13, 0.14);
+    --ga-border-soft: rgba(39, 21, 13, 0.08);
+    --ga-ink:         var(--doca-ink);
+    --ga-ink-muted:   rgba(39, 21, 13, 0.66);
+    --ga-ink-faint:   rgba(39, 21, 13, 0.45);
+    --ga-ink-dim:     rgba(39, 21, 13, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: var(--doca-font-display);
+    --ga-font-body:    var(--doca-font-body);
+  }
+
+  .gestione-admin[data-gestione-tenant="doca"] .ga-header {
+    background:
+      linear-gradient(90deg, rgba(132, 35, 22, 0.05) 1px, transparent 1px),
+      color-mix(in srgb, var(--doca-paper) 88%, transparent);
+    background-size: 56px 56px, auto;
+  }
+}

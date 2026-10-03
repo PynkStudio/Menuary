@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { Plus, Trash2, Clock } from "lucide-react";
-import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { createShift, deleteShift } from "./actions";
 import { demoTurni } from "@/lib/demo-fixtures";
@@ -74,8 +73,7 @@ export default async function TurniPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const auth = await authorizeGestione(tenantSlug);
-  if (!auth.ok) notFound();
+  const { auth } = await requireGestioneSection(tenantSlug, "shifts");
 
   const activeLocation = auth.isDemo ? null : await getActiveGestioneLocation(tenantSlug);
   const data = auth.isDemo

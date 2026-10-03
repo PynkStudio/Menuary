@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import { ADMIN_TOKEN_HEADER, getAdminPassword } from "@/lib/admin-auth";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
     const form = await req.formData();
     const tenantId = form.get("tenantId");
     if (token !== getAdminPassword()) {
-      if (typeof tenantId !== "string" || !(await authorizeGestione(tenantId)).ok) {
+      // La demo pubblica non ha un utente: niente upload sullo storage reale.
+      const auth = typeof tenantId === "string" ? await requireGestione(tenantId, "staff") : null;
+      if (!auth?.ok || auth.isDemo) {
         return NextResponse.json({ error: "unauthorized" }, { status: 401 });
       }
     }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 
 export const runtime = "nodejs";
@@ -8,8 +8,9 @@ export async function GET(req: NextRequest) {
   const tenantId = req.nextUrl.searchParams.get("tenantId");
   if (!tenantId) return NextResponse.json({ error: "missing_tenant" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json(null);
 
   const svc = createSupabaseServiceClient();
   if (!svc) return NextResponse.json(null);
@@ -35,8 +36,9 @@ export async function POST(req: NextRequest) {
   const { tenantId } = body;
   if (!tenantId) return NextResponse.json({ error: "missing_tenant" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ ok: true, demo: true });
 
   const svc = createSupabaseServiceClient();
   if (!svc) return NextResponse.json({ error: "db_unavailable" }, { status: 503 });

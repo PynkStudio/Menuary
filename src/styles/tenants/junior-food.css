@@ -844,3 +844,26 @@
     }
   }
 }
+
+/* Tema del pannello gestione (prima stava in admin.css). */
+@layer components {
+  .gestione-admin[data-gestione-tenant="junior-food"] {
+    --ga-bg:          #FFFFFF;
+    --ga-surface:     #FFFFFF;
+    --ga-surface-2:   var(--jf-soft);
+    --ga-surface-3:   var(--jf-cream);
+    --ga-border:      var(--jf-line);
+    --ga-border-soft: rgba(17, 17, 17, 0.07);
+    --ga-ink:         var(--jf-ink);
+    --ga-ink-muted:   rgba(17, 17, 17, 0.66);
+    --ga-ink-faint:   rgba(17, 17, 17, 0.45);
+    --ga-ink-dim:     rgba(17, 17, 17, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: Georgia, "Times New Roman", serif;
+    --ga-font-body:    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .gestione-admin[data-gestione-tenant="junior-food"] .ga-header {
+    background: rgba(255, 255, 255, 0.9);
+  }
+}

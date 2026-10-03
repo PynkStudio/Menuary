@@ -1,7 +1,6 @@
-import { notFound } from "next/navigation";
-import { getTenantById } from "@/lib/data/tenant";
 import { getTenantLinktreeItems } from "@/lib/tenant-linktree";
 import { LinktreeManager } from "@/components/gestione/linktree-manager";
+import { requireGestioneSection } from "@/lib/gestione-page";
 
 export default async function GestioneLinktreePage({
   params,
@@ -9,9 +8,7 @@ export default async function GestioneLinktreePage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant || !tenant.features.linktree) notFound();
-
+  await requireGestioneSection(tenantSlug, "linktree");
   const links = await getTenantLinktreeItems(tenantSlug);
   return <LinktreeManager tenantId={tenantSlug} initialLinks={links} />;
 }

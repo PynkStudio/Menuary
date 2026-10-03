@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { TENANTS } from "@/lib/tenant-registry";
@@ -38,8 +38,8 @@ export async function GET(req: NextRequest) {
   const tenantId = tenantFrom(req);
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "member");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
   if (!moduleEnabled(tenantId) && (auth.isDemo || !auth.isPlatformAdmin)) {
     return NextResponse.json({ error: "module_disabled" }, { status: 403 });
   }
@@ -143,8 +143,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
   }
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "member");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
   if (!moduleEnabled(tenantId) && (auth.isDemo || !auth.isPlatformAdmin)) {
     return NextResponse.json({ error: "module_disabled" }, { status: 403 });
   }

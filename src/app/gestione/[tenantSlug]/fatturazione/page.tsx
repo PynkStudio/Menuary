@@ -1,5 +1,4 @@
-import { notFound } from "next/navigation";
-import { headers } from "next/headers";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import {
   CreditCard,
   Building2,
@@ -9,13 +8,8 @@ import {
   Download,
   Sparkles,
 } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getCountersignedContractByTenant } from "@/lib/contracts/contract-queries";
-import { resolveSessionCookieDomain } from "@/lib/session-cookie-domain";
-import { isDemoHost } from "@/lib/platform";
-import { getTenantDemoControl } from "@/lib/demo-controls";
-import { TENANTS } from "@/lib/tenant-registry";
 import { getVerticalMeta } from "@/lib/vertical";
 import { PLATFORM_ADDON_PACKAGES, PLATFORM_PACKAGES } from "@/lib/platform-admin-data";
 import type { PlatformPayment, PlatformSubscription } from "@/lib/platform-crm-types";
@@ -88,53 +82,22 @@ export default async function FatturazionePage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const host = (await headers()).get("host") ?? "";
-  const isDemoHostname = isDemoHost(host);
-
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) notFound();
-
+  const { tenant, auth } = await requireGestioneSection(tenantSlug, "billing");
   const vertical = getVerticalMeta(tenant.vertical);
 
-  let isDemo = isDemoHostname;
+  const isDemo = auth.isDemo;
+  // Backend live sulla demo pubblica: nessun utente reale, quindi né dati di
+  // esempio (sembrerebbero veri) né contratti e pagamenti reali.
+  const isBackendLiveDemo = !auth.isDemo && auth.userId === "demo";
+  const canReadRealBilling = !auth.isDemo && !isBackendLiveDemo;
 
-  if (!isDemoHostname) {
-    const supabase = await createSupabaseServerClient(resolveSessionCookieDomain(host));
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) notFound();
-
-    const [{ data: sa }, { data: ta }] = await Promise.all([
-      supabase
-        .from("siteadmin")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("enabled", true)
-        .maybeSingle(),
-      supabase
-        .from("tenantadmin")
-        .select("email")
-        .eq("user_id", user.id)
-        .eq("tenant_id", tenantSlug)
-        .eq("enabled", true)
-        .maybeSingle(),
-    ]);
-    if (!sa && !ta) notFound();
-  } else {
-    const demoControl = await getTenantDemoControl(tenantSlug).catch(() => null);
-    isDemo = !demoControl?.backendLive;
-  }
-
-  // Questa pagina non legge ancora la fatturazione reale dal backend: in demo
-  // mostriamo sempre la struttura completa con dati esempio.
-  const showDemoBilling = isDemoHostname;
+  const showDemoBilling = isDemo;
   const plan = showDemoBilling ? demoBillingPlan(tenant.vertical) : null;
   const invoices = showDemoBilling ? demoBillingInvoices() : [];
   let subscription: PlatformSubscription | null = null;
   let realPayments: PlatformPayment[] = [];
 
-  if (!showDemoBilling) {
+  if (canReadRealBilling) {
     const db = createSupabaseServiceClient();
     if (db) {
       const { data: sub } = await db
@@ -171,7 +134,7 @@ export default async function FatturazionePage({
     numero: string;
     countersignedAt: string | null;
   } | null = null;
-  if (!isDemoHostname) {
+  if (canReadRealBilling) {
     try {
       const contract = await getCountersignedContractByTenant(tenantSlug);
       if (contract?.signed_document_path) {
@@ -233,7 +196,14 @@ export default async function FatturazionePage({
         </section>
       )}
 
-      {!plan && !isDemo && !subscription ? (
+      {isBackendLiveDemo ? (
+        <section className="ga-card">
+          <p className="ga-card-hint">
+            Abbonamento, fatture e contratto compaiono qui dopo l&apos;attivazione dell&apos;account, con l&apos;accesso
+            personale del titolare.
+          </p>
+        </section>
+      ) : !plan && !isDemo && !subscription ? (
         <section className="ga-card">
           <p className="ga-card-hint">
             I dati di fatturazione non sono ancora disponibili. Contatta{" "}

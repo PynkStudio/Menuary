@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createBlogPost } from "@/lib/blog/write";
 
 export async function POST(request: Request) {
@@ -13,8 +13,8 @@ export async function POST(request: Request) {
   const tenantId = body.tenantId?.trim();
   if (!tenantId) return NextResponse.json({ error: "tenantId richiesto." }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato." }, { status: 403 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato." }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json({ ok: true, postId: crypto.randomUUID(), demo: true });
 
   const result = await createBlogPost({

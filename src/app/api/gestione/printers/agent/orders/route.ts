@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { buildComandaEscPos } from "@/lib/printing/comanda";
 import { loadDefaultPrinter } from "@/lib/printing/config";
@@ -42,8 +42,9 @@ export async function GET(req: NextRequest) {
   const tenantId = tenantFrom(req);
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "member");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ error: "Non disponibile nella demo" }, { status: 409 });
 
   const supabase = createSupabaseServiceClient();
   if (!supabase) return NextResponse.json({ error: "service unavailable" }, { status: 503 });

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 export async function createShift(formData: FormData) {
@@ -16,7 +16,7 @@ export async function createShift(formData: FormData) {
   if (!tenantSlug || !employeeId || !startAt || !endAt) return;
   if (new Date(endAt).getTime() <= new Date(startAt).getTime()) return;
 
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "can_manage_shifts");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
@@ -42,7 +42,7 @@ export async function deleteShift(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
   const id = String(formData.get("id") ?? "");
   if (!tenantSlug || !id) return;
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "can_manage_shifts");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();

@@ -291,6 +291,11 @@ export async function resolveRetellTenantByPhone(calledNumber: string): Promise<
   return data?.tenant_id ?? null;
 }
 
+/** Impostazioni di default, senza leggere il DB (demo pubblica). */
+export function defaultAiPhoneSettings(tenantId: string): AiPhoneSettings {
+  return rowToSettings(tenantId, null);
+}
+
 export async function getAiPhoneSettings(tenantId: string): Promise<AiPhoneSettings> {
   const { data } = await (db() as unknown as {
     from: (table: "tenant_ai_phone_settings") => {

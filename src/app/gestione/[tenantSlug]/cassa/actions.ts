@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { TENANTS } from "@/lib/tenant-registry";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
@@ -24,7 +24,7 @@ export async function openCashSession(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
   if (!tenantSlug) return;
   assertCashRegisterEnabled(tenantSlug);
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "can_cassa");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
@@ -48,7 +48,7 @@ export async function closeCashSession(formData: FormData) {
   const sessionId = String(formData.get("sessionId") ?? "");
   if (!tenantSlug || !sessionId) return;
   assertCashRegisterEnabled(tenantSlug);
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "can_cassa");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();
@@ -104,7 +104,7 @@ export async function addCashMovement(formData: FormData) {
 
   if (!tenantSlug || !sessionId || !kind || amount <= 0) return;
   assertCashRegisterEnabled(tenantSlug);
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "can_cassa");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
   const svc = createSupabaseServiceClient();

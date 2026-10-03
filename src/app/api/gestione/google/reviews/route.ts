@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getBusinessReviews, replyToReview, deleteReviewReply } from "@/lib/google/my-business";
 import { getPrimaryLocation } from "@/lib/data/google-sync";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 // GET  /api/gestione/google/reviews?tenantId=bepork
@@ -13,8 +13,8 @@ export async function GET(request: Request) {
   const tenantId = new URL(request.url).searchParams.get("tenantId");
   if (!tenantId) return NextResponse.json({ error: "tenantId required" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json([]);
   const activeLocation = await requireActiveGestioneLocation(tenantId);
   const location = await getPrimaryLocation(tenantId, activeLocation.id);
@@ -34,8 +34,8 @@ export async function POST(request: Request) {
     reviewName: string;
     comment: string;
   };
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json({ ok: true });
   const activeLocation = await requireActiveGestioneLocation(tenantId);
   const db = createSupabaseServiceClient();
@@ -75,8 +75,8 @@ export async function DELETE(request: Request) {
     tenantId: string;
     reviewName: string;
   };
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json({ ok: true });
   const activeLocation = await requireActiveGestioneLocation(tenantId);
   const db = createSupabaseServiceClient();

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { deleteBlogPost, saveBlogPost, type BlogPostPatch } from "@/lib/blog/write";
 
 const STATUS_BY_CODE = {
@@ -29,8 +29,8 @@ export async function PATCH(
   const tenantId = body.tenantId?.trim();
   if (!tenantId) return NextResponse.json({ error: "tenantId richiesto." }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato." }, { status: 403 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato." }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json({ ok: true, updatedAt: new Date().toISOString(), demo: true });
 
   const result = await saveBlogPost({
@@ -58,8 +58,8 @@ export async function DELETE(
   const tenantId = new URL(request.url).searchParams.get("tenantId")?.trim();
   if (!tenantId) return NextResponse.json({ error: "tenantId richiesto." }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato." }, { status: 403 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato." }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json({ ok: true, demo: true });
 
   const result = await deleteBlogPost(tenantId, postId);

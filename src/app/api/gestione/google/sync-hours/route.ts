@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireGestione } from "@/lib/gestione-auth";
 import { runGoogleHoursSync, type HoursSyncMode } from "@/lib/google/hours-sync";
 
 // POST /api/gestione/google/sync-hours
@@ -24,12 +24,11 @@ async function readPayload(request: Request): Promise<{ tenantId?: string; mode:
 }
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { tenantId, mode } = await readPayload(request);
   if (!tenantId) return NextResponse.json({ error: "tenantId required" }, { status: 400 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ ok: true, synced: [], errors: [] });
 
   let result;
   try {

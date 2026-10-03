@@ -424,8 +424,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "food",
     domains: ["localhost", "127.0.0.1"],
     previewSlug: "bepork-demo",
-    enabled: true,
-    status: "active",
+    enabled: false,
+    status: "churned",
     theme: {
       red: "#B8332E",
       redDark: "#8E2420",
@@ -447,8 +447,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "food",
     domains: ["faak.menuary.local", "faak.menuary.localhost"],
     previewSlug: "faak-demo",
-    enabled: true,
-    status: "trial",
+    enabled: false,
+    status: "churned",
     theme: {
       red: "#CD562F",
       redDark: "#000000",
@@ -484,8 +484,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "food",
     domains: ["cascinaerrante.it", "www.cascinaerrante.it"],
     previewSlug: "cascina-errante",
-    enabled: true,
-    status: "active",
+    enabled: false,
+    status: "churned",
     theme: {
       red: "#F0783C",
       redDark: "#0F2F1E",
@@ -508,8 +508,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "food",
     domains: [],
     previewSlug: "doca",
-    enabled: true,
-    status: "trattativa",
+    enabled: false,
+    status: "churned",
     theme: {
       // Palette ispirata al locale reale: legno, tonalità della terra,
       // illustrazioni brasiliane sobrie (no tropicale da cartolina).
@@ -533,8 +533,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "food",
     domains: [],
     previewSlug: "nom-sushi",
-    enabled: true,
-    status: "trattativa",
+    enabled: false,
+    status: "churned",
     theme: {
       // Palette Nøm — riso, matcha, salmone, ginger, nori.
       // Allineata con src/styles/tenants/nom-sushi.css (--nom-*).
@@ -558,8 +558,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "food",
     domains: [],
     previewSlug: "junior-food",
-    enabled: true,
-    status: "trattativa",
+    enabled: false,
+    status: "churned",
     theme: {
       red: "#FF1111",
       redDark: "#C90000",
@@ -607,8 +607,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "services",
     domains: [],
     previewSlug: "libritech",
-    enabled: true,
-    status: "trial",
+    enabled: false,
+    status: "churned",
     theme: {
       red: "#6c47ff",
       redDark: "#5335cc",
@@ -634,7 +634,7 @@ export const TENANTS: TenantProfile[] = [
     domains: ["valentinaorciuoli.it", "www.valentinaorciuoli.it", "valentinaorciuoli.localhost"],
     previewSlug: "valentina-orciuoli",
     enabled: true,
-    status: "trattativa",
+    status: "active",
     theme: {
       red: "#A12B24",
       redDark: "#671713",
@@ -658,8 +658,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "services",
     domains: ["studiolegalearanzulla.it", "www.studiolegalearanzulla.it"],
     previewSlug: "studioaranzulla",
-    enabled: true,
-    status: "trattativa",
+    enabled: false,
+    status: "churned",
     theme: {
       red: "#9B7E46",       // gold primario (brand legale)
       redDark: "#7A6235",   // gold scuro
@@ -681,8 +681,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "services",
     domains: [],                    // nessun dominio proprio (solo preview slug)
     previewSlug: "officinakam",     // → demo.bizery.it/officinakam
-    enabled: true,
-    status: "trattativa",
+    enabled: false,
+    status: "churned",
     theme: {
       red: "#F97316",               // orange primario (brand officinakam)
       redDark: "#C2410C",           // orange scuro
@@ -740,8 +740,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "services",
     domains: [],                    // solo preview slug → demo.bizery.it/casabramanti
     previewSlug: "casabramanti",
-    enabled: true,
-    status: "trial",
+    enabled: false,
+    status: "churned",
     theme: {
       // Palette osso e cemento: i fondi reali dei packshot diventano il fondo
       // della pagina, così i capi galleggiano senza card. Accento bordeaux
@@ -768,8 +768,8 @@ export const TENANTS: TenantProfile[] = [
     vertical: "creative",
     domains: [],
     previewSlug: "orpheo-demo",
-    enabled: true,
-    status: "trial",
+    enabled: false,
+    status: "churned",
     theme: {
       red: "#7C3AED",
       redDark: "#4C1D95",

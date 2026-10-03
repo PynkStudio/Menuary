@@ -1,7 +1,5 @@
-import { notFound } from "next/navigation";
-import { getTenantById } from "@/lib/data/tenant";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { PynkPatrimoniale } from "@/components/admin-pynkstudio/pynk-patrimoniale";
+import { requireGestioneSection } from "@/lib/gestione-page";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +9,6 @@ export default async function GestionePatrimonialePage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  const access = tenant ? getGestioneModuleAccess(tenant.features) : null;
-  if (!tenant || !access?.canManagePatrimoniale) notFound();
-
+  await requireGestioneSection(tenantSlug, "patrimoniale");
   return <PynkPatrimoniale />;
 }

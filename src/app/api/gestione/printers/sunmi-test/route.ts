@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getActiveGestioneLocation } from "@/lib/gestione-location";
 import { getGestioneModuleAccess } from "@/lib/gestione-routing";
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
   const tenantId = req.nextUrl.searchParams.get("tenantId") ?? body?.tenantId ?? "";
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
   // Su host demo authorizeGestione dà isDemo=false solo con "Backend live" attivo:
   // stesso gate delle comande (isComandaPrintBlockedForHost), spento non stampa.
   if (auth.isDemo) return NextResponse.json({ error: "demo_backend_off" }, { status: 403 });

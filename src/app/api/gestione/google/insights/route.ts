@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPerformanceMetrics, type DatedValue } from "@/lib/google/my-business";
 import { getPrimaryLocation } from "@/lib/data/google-sync";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireGestione } from "@/lib/gestione-auth";
 
 // ─── Tipi esposti al client ───────────────────────────────────────────────────
 
@@ -67,9 +67,9 @@ export async function GET(request: Request) {
 
   if (!tenantId) return NextResponse.json({ error: "tenantId required" }, { status: 400 });
 
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ error: "Sede Google non collegata" }, { status: 404 });
 
   const location = await getPrimaryLocation(tenantId);
   if (!location) return NextResponse.json({ error: "Sede Google non collegata" }, { status: 404 });

@@ -310,3 +310,29 @@
     text-transform: none;
   }
 }
+
+/* Tema del pannello gestione (prima stava in admin.css). */
+@layer components {
+  .gestione-admin[data-gestione-tenant="nom-sushi"] {
+    --ga-bg:          var(--nom-rice);
+    --ga-surface:     var(--nom-paper);
+    --ga-surface-2:   color-mix(in srgb, var(--nom-rice) 56%, white);
+    --ga-surface-3:   color-mix(in srgb, var(--nom-ginger) 24%, white);
+    --ga-border:      var(--nom-line);
+    --ga-border-soft: rgba(23, 40, 32, 0.07);
+    --ga-ink:         var(--nom-ink);
+    --ga-ink-muted:   rgba(23, 40, 32, 0.66);
+    --ga-ink-faint:   rgba(23, 40, 32, 0.45);
+    --ga-ink-dim:     rgba(23, 40, 32, 0.28);
+    --ga-accent-ink:  #FFFFFF;
+    --ga-font-display: var(--font-menuary-display), Fraunces, Georgia, serif;
+    --ga-font-body:    var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
+  }
+
+  .gestione-admin[data-gestione-tenant="nom-sushi"] .ga-header {
+    background:
+      linear-gradient(90deg, rgba(23, 40, 32, 0.035) 1px, transparent 1px),
+      color-mix(in srgb, var(--nom-rice) 88%, transparent);
+    background-size: 38px 38px, auto;
+  }
+}

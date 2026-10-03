@@ -154,6 +154,65 @@
     background: var(--menuary-copper-dark);
   }
 
+  /* Gestione: alcune pagine condivise (editor menu, Google, fatturazione,
+     assistente AI) usano ancora le classi tipografiche nate per BePork.
+     Dentro .gestione-admin le rivestiamo con i token --ga-* del tenant, così
+     nessun tenant eredita font e bottoni di BePork. Le pagine si convertono
+     alle classi ga-* man mano; questo ponte copre quelle non ancora migrate. */
+  .gestione-admin .headline {
+    font-family: var(--ga-font-display);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    text-transform: none;
+  }
+
+  .gestione-admin .impact-title {
+    font-family: var(--ga-font-body);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .gestione-admin .btn-primary {
+    @apply shadow-none;
+    background: var(--ga-accent);
+    color: var(--ga-accent-ink);
+  }
+
+  .gestione-admin .btn-primary:hover {
+    @apply shadow-none;
+    background: var(--ga-accent);
+    filter: brightness(1.08);
+  }
+
+  .gestione-admin .btn-mustard {
+    @apply shadow-none;
+    background: var(--ga-surface-3);
+    color: var(--ga-ink);
+  }
+
+  .gestione-admin .btn-ghost {
+    border-width: 1px;
+    border-color: var(--ga-border);
+    color: var(--ga-ink);
+  }
+
+  .gestione-admin .btn-ghost:hover {
+    background: var(--ga-surface);
+    border-color: var(--ga-accent-ring);
+    color: var(--ga-ink);
+  }
+
+  .gestione-admin .chip {
+    background: var(--ga-surface-2);
+    color: var(--ga-ink-muted);
+  }
+
+  /* Le superfici bianche fisse stonano sui temi scuri (PynkStudio, Valentina). */
+  .gestione-admin .bg-white {
+    background-color: var(--ga-surface-2);
+  }
+
   /* ============================================================
      Gestione admin — modulo condiviso della piattaforma.
      I token --ga-* sono una traduzione del tema tenant corrente:
@@ -187,103 +246,165 @@
 
   .gestione-admin a { color: inherit; }
 
-  .gestione-admin[data-gestione-tenant="doca"] {
-    --ga-bg:          var(--doca-paper);
-    --ga-surface:     var(--doca-cream-soft);
-    --ga-surface-2:   color-mix(in srgb, var(--doca-paper) 72%, white);
-    --ga-surface-3:   var(--doca-cream);
-    --ga-border:      rgba(39, 21, 13, 0.14);
-    --ga-border-soft: rgba(39, 21, 13, 0.08);
-    --ga-ink:         var(--doca-ink);
-    --ga-ink-muted:   rgba(39, 21, 13, 0.66);
-    --ga-ink-faint:   rgba(39, 21, 13, 0.45);
-    --ga-ink-dim:     rgba(39, 21, 13, 0.28);
-    --ga-accent-ink:  #FFFFFF;
-    --ga-font-display: var(--doca-font-display);
-    --ga-font-body:    var(--doca-font-body);
-  }
-
-  .gestione-admin[data-gestione-tenant="doca"] .ga-header {
-    background:
-      linear-gradient(90deg, rgba(132, 35, 22, 0.05) 1px, transparent 1px),
-      color-mix(in srgb, var(--doca-paper) 88%, transparent);
-    background-size: 56px 56px, auto;
-  }
-
-  .gestione-admin[data-gestione-tenant="junior-food"] {
-    --ga-bg:          #FFFFFF;
-    --ga-surface:     #FFFFFF;
-    --ga-surface-2:   var(--jf-soft);
-    --ga-surface-3:   var(--jf-cream);
-    --ga-border:      var(--jf-line);
-    --ga-border-soft: rgba(17, 17, 17, 0.07);
-    --ga-ink:         var(--jf-ink);
-    --ga-ink-muted:   rgba(17, 17, 17, 0.66);
-    --ga-ink-faint:   rgba(17, 17, 17, 0.45);
-    --ga-ink-dim:     rgba(17, 17, 17, 0.28);
-    --ga-accent-ink:  #FFFFFF;
-    --ga-font-display: Georgia, "Times New Roman", serif;
-    --ga-font-body:    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  .gestione-admin[data-gestione-tenant="junior-food"] .ga-header {
-    background: rgba(255, 255, 255, 0.9);
-  }
-
-  .gestione-admin[data-gestione-tenant="nom-sushi"] {
-    --ga-bg:          var(--nom-rice);
-    --ga-surface:     var(--nom-paper);
-    --ga-surface-2:   color-mix(in srgb, var(--nom-rice) 56%, white);
-    --ga-surface-3:   color-mix(in srgb, var(--nom-ginger) 24%, white);
-    --ga-border:      var(--nom-line);
-    --ga-border-soft: rgba(23, 40, 32, 0.07);
-    --ga-ink:         var(--nom-ink);
-    --ga-ink-muted:   rgba(23, 40, 32, 0.66);
-    --ga-ink-faint:   rgba(23, 40, 32, 0.45);
-    --ga-ink-dim:     rgba(23, 40, 32, 0.28);
-    --ga-accent-ink:  #FFFFFF;
-    --ga-font-display: var(--font-menuary-display), Fraunces, Georgia, serif;
-    --ga-font-body:    var(--font-menuary-body), "DM Sans", system-ui, sans-serif;
-  }
-
-  .gestione-admin[data-gestione-tenant="nom-sushi"] .ga-header {
-    background:
-      linear-gradient(90deg, rgba(23, 40, 32, 0.035) 1px, transparent 1px),
-      color-mix(in srgb, var(--nom-rice) 88%, transparent);
-    background-size: 38px 38px, auto;
-  }
-
-  .gestione-admin[data-gestione-tenant="kimos"] {
-    --ga-bg:          var(--km-paper);
-    --ga-surface:     var(--km-card);
-    --ga-surface-2:   color-mix(in srgb, var(--km-paper) 46%, white);
-    --ga-surface-3:   color-mix(in srgb, var(--km-warm) 24%, white);
-    --ga-border:      var(--km-line);
-    --ga-border-soft: rgba(23, 21, 18, 0.08);
-    --ga-ink:         var(--km-ink);
-    --ga-ink-muted:   rgba(23, 21, 18, 0.66);
-    --ga-ink-faint:   rgba(23, 21, 18, 0.45);
-    --ga-ink-dim:     rgba(23, 21, 18, 0.28);
-    --ga-accent-ink:  #FFFFFF;
-    --ga-font-display: "Arial Black", Impact, Haettenschweiler, sans-serif;
-    --ga-font-body:    "Manrope", ui-sans-serif, system-ui, sans-serif;
-  }
-
-  .gestione-admin[data-gestione-tenant="kimos"] .ga-header {
-    background:
-      linear-gradient(90deg, rgba(23, 21, 18, 0.035) 1px, transparent 1px),
-      color-mix(in srgb, var(--km-paper) 88%, transparent);
-    background-size: 2rem 2rem, auto;
-  }
-
   /* Layout primitives */
+  /* Shell: sidebar a gruppi su desktop, drawer su mobile. La sidebar tiene la
+     classe .ga-header così i temi tenant che colorano la testata la vestono. */
+  .ga-shell {
+    --ga-sidebar-w: 248px;
+    min-height: 100vh;
+  }
   .ga-header {
-    position: sticky;
-    top: 0;
-    z-index: 40;
     background: color-mix(in srgb, var(--ga-bg) 86%, transparent);
     backdrop-filter: blur(14px) saturate(140%);
-    border-bottom: 1px solid var(--ga-border);
+  }
+  .ga-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    width: var(--ga-sidebar-w);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 14px 14px;
+    border-right: 1px solid var(--ga-border);
+    background: color-mix(in srgb, var(--ga-bg) 94%, var(--ga-surface));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .ga-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 6px;
+  }
+  .ga-sidebar-head .ga-brand {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+  }
+  .ga-sidebar-head .ga-brand-name {
+    overflow-wrap: anywhere;
+  }
+  .ga-sidebar-close { display: none; }
+  .ga-sidebar-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1px solid var(--ga-border);
+    border-radius: var(--ga-radius);
+    background: var(--ga-surface);
+    color: var(--ga-ink-muted);
+  }
+  .ga-sidebar-location .ga-location-select { flex: 1; min-width: 0; }
+  .ga-backend-live {
+    margin: 0;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, #F5B400 22%, var(--ga-surface));
+    color: var(--ga-ink);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .ga-sidebar-foot {
+    position: relative;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--ga-border-soft);
+  }
+  .ga-sidebar-foot .ga-settings-popover {
+    min-width: 0;
+    top: auto;
+    bottom: calc(100% + 6px);
+    left: 0;
+    right: 0;
+  }
+  .ga-sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ga-account-button {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--ga-radius);
+    background: none;
+    color: var(--ga-ink);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+  }
+  .ga-account-button:hover,
+  .ga-account-button[aria-expanded="true"] {
+    border-color: var(--ga-border);
+    background: var(--ga-surface);
+  }
+  .ga-account-avatar {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: var(--ga-accent-soft);
+    color: var(--ga-accent);
+    font-weight: 800;
+  }
+  .ga-account-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ga-topbar {
+    display: none;
+  }
+  .ga-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    border: 0;
+    background: rgb(0 0 0 / 0.36);
+  }
+  @media (max-width: 1023px) {
+    .ga-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--ga-border);
+      background: color-mix(in srgb, var(--ga-bg) 90%, transparent);
+      backdrop-filter: blur(14px) saturate(140%);
+    }
+    .ga-topbar .ga-brand-name {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ga-sidebar {
+      width: min(86vw, 320px);
+      transform: translateX(-102%);
+      transition: transform 220ms ease;
+      box-shadow: 0 0 48px rgb(0 0 0 / 0.22);
+    }
+    .ga-shell[data-drawer-open="true"] .ga-sidebar { transform: none; }
+    .ga-sidebar-close { display: inline-grid; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ga-sidebar { transition: none; }
   }
   .ga-header-row {
     max-width: 80rem;
@@ -493,19 +614,33 @@
   .ga-location-continue { justify-content: center; width: 100%; }
 
   .ga-nav {
-    max-width: 80rem;
-    margin: 0 auto;
-    padding: 0 24px 12px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    display: grid;
+    gap: 16px;
+  }
+  .ga-nav-group {
+    display: grid;
+    gap: 2px;
+  }
+  .ga-nav-group-label {
+    margin: 0 0 4px;
+    padding: 0 10px;
+    color: var(--ga-ink-faint);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
   .ga-nav-link {
-    padding: 7px 14px;
-    border-radius: 999px;
-    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--ga-ink-muted);
+    text-decoration: none;
     transition: color 160ms ease, background 160ms ease;
   }
   .ga-nav-link:hover { color: var(--ga-ink); background: var(--ga-surface); }
@@ -1586,6 +1721,20 @@
     margin: 0 auto;
     padding: 32px 24px 64px;
   }
+  @media (min-width: 1024px) {
+    .ga-shell > .ga-main {
+      margin-left: var(--ga-sidebar-w);
+      margin-right: 0;
+      max-width: none;
+      padding: 36px clamp(24px, 4vw, 56px) 72px;
+    }
+    .ga-shell > .ga-main > * {
+      max-width: 72rem;
+    }
+  }
+  @media (max-width: 640px) {
+    .ga-main { padding: 20px 16px 56px; }
+  }
 
   /* Content primitives */
   .ga-eyebrow {
@@ -1653,7 +1802,6 @@
     color: var(--ga-ink);
     font-size: 13px;
     outline: none;
-    color-scheme: dark;
     transition: border-color 160ms ease, background 160ms ease;
   }
   .ga-input:focus,
@@ -1839,6 +1987,141 @@
   }
 
   .ga-checkbox { accent-color: var(--ga-accent); }
+
+  /* Avvisi, badge e link "indietro": stati della gestione con un solo lessico. */
+  .ga-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    padding: 12px 16px;
+    border-radius: var(--ga-radius);
+    border: 1px solid var(--ga-border);
+    background: var(--ga-surface);
+    color: var(--ga-ink);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .ga-notice[data-tone="success"] { border-color: rgb(22 163 74 / 0.32); background: rgb(22 163 74 / 0.08); }
+  .ga-notice[data-tone="warning"] { border-color: rgb(217 119 6 / 0.36); background: rgb(217 119 6 / 0.09); }
+  .ga-notice[data-tone="error"] { border-color: rgb(220 38 38 / 0.34); background: rgb(220 38 38 / 0.08); }
+  .ga-section-hint[data-tone="success"] { color: rgb(21 128 61); }
+  .ga-section-hint[data-tone="error"] { color: rgb(185 28 28); }
+  .ga-badge {
+    flex: none;
+    margin-left: auto;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--ga-surface-2);
+    color: var(--ga-ink-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .ga-badge[data-tone="accent"] { background: var(--ga-accent); color: var(--ga-accent-ink); }
+  .ga-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 6px;
+    color: var(--ga-ink-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+  .ga-back-link:hover { color: var(--ga-accent); }
+  .ga-empty > * + * { margin-top: 12px; }
+
+  /* Form standard della gestione: due colonne su desktop, una su mobile. */
+  .ga-form-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    align-items: end;
+  }
+  .ga-field { display: grid; gap: 0; min-width: 0; }
+  .ga-field-wide { grid-column: 1 / -1; }
+  .ga-fieldset {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--ga-border);
+    border-radius: var(--ga-radius);
+  }
+  .ga-fieldset legend { padding: 0 6px; margin-bottom: 0; }
+  .ga-inline-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--ga-ink);
+    cursor: pointer;
+  }
+  .ga-inline-check input { accent-color: var(--ga-accent); width: 16px; height: 16px; }
+  .ga-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .ga-inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .ga-inline-form .ga-input { width: auto; flex: 1 1 110px; padding: 7px 10px; }
+
+  .ga-disclosure > summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .ga-disclosure > summary::-webkit-details-marker { display: none; }
+  .ga-disclosure > summary::after {
+    content: "Modifica";
+    margin-left: auto;
+    color: var(--ga-accent);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .ga-disclosure[open] > summary::after { content: "Chiudi"; }
+  .ga-disclosure[open] > summary { margin-bottom: 16px; }
+  .ga-section > .ga-disclosure + .ga-disclosure { margin-top: -4px; }
+
+  .ga-table-scroll { overflow-x: auto; padding: 0; }
+  .ga-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .ga-data-table th {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--ga-border);
+    color: var(--ga-ink-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .ga-data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--ga-border-soft);
+    vertical-align: middle;
+  }
+  .ga-data-table tbody tr:last-child td { border-bottom: 0; }
+  .ga-data-table .ga-num { text-align: right; font-variant-numeric: tabular-nums; }
+  .ga-cell-hint { display: block; margin-top: 2px; color: var(--ga-ink-faint); font-size: 12px; }
 
   .ga-btn {
     display: inline-flex;

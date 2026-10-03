@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 
@@ -17,8 +17,8 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Payload non valido" }, { status: 400 });
   }
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json({ ok: true });
 
   const location = await requireActiveGestioneLocation(tenantId);

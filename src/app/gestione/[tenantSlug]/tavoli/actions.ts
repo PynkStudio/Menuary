@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 function code(): string {
@@ -16,7 +16,7 @@ export async function openTableSession(formData: FormData) {
   const covers = typeof coversRaw === "string" && coversRaw.trim() !== "" ? Number(coversRaw) : null;
   if (!tenantSlug || !tableId) return;
 
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "can_manage_reservations");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
 
@@ -50,7 +50,7 @@ export async function closeTableSession(formData: FormData) {
   const sessionId = String(formData.get("sessionId") ?? "");
   if (!tenantSlug || !sessionId) return;
 
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "can_manage_reservations");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
 

@@ -1,7 +1,5 @@
-import { notFound } from "next/navigation";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { Users, Clock, Power } from "lucide-react";
-import { TENANTS } from "@/lib/tenant-registry";
-import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { openTableSession, closeTableSession } from "./actions";
 import { demoTavoli } from "@/lib/demo-fixtures";
@@ -52,13 +50,9 @@ export default async function TavoliPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = TENANTS.find((t) => t.id === tenantSlug);
-  if (!tenant) return null;
+  const { tenant, auth } = await requireGestioneSection(tenantSlug, "tables");
   const gt = await getGestioneTranslations();
   const tt = gt.tables;
-
-  const auth = await authorizeGestione(tenantSlug);
-  if (!auth.ok) notFound();
 
   const isServices = tenant.vertical === "services" || tenant.vertical === "creative";
   const demoVertical = tenant.vertical === "food" ? "food" : "services";

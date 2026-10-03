@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
@@ -28,8 +28,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "missing_params" }, { status: 400 });
   }
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "can_edit_menu");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json([]);
   const location = await requireActiveGestioneLocation(tenantId);
 
@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "can_edit_menu");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
   if (auth.isDemo) return NextResponse.json({ ok: true });
   const location = await requireActiveGestioneLocation(tenantId);
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 import type { Json } from "@/lib/database.types";
 
@@ -32,9 +32,8 @@ function generateCode(len = 6): string {
 }
 
 async function guard(tenantSlug: string) {
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "admin");
   if (!auth.ok) throw new Error("unauthorized");
-  if (!auth.isDemo && !auth.isAdmin) throw new Error("forbidden");
   return auth;
 }
 

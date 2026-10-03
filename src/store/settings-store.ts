@@ -6,12 +6,16 @@ import { createBrowserLocalJSONStorage } from "@/lib/zustand-json-storage";
 import type { TenantFeatureKey } from "@/lib/tenant";
 import type { DaySchedule } from "@/lib/venue-hours";
 import { defaultHoursWeek } from "@/lib/venue-hours";
+import { isDemoBrowser } from "@/lib/demo-mode";
+import { pickServerSiteSettings, type ServerSiteSettings } from "@/lib/site-settings-sync";
 
 const LEGACY_STORAGE_KEY = "bepork-settings-v1";
 const STORAGE_KEY_PREFIX = "menuary-settings-v1";
 const FALLBACK_STORAGE_KEY = `${STORAGE_KEY_PREFIX}:unscoped`;
 
 let activeSettingsTenantId: string | null = null;
+let serverHydratedTenantId: string | null = null;
+let serverSnapshot: ServerSiteSettings = {};
 
 export function settingsStorageKey(tenantId: string): string {
   return `${STORAGE_KEY_PREFIX}:${tenantId}`;
@@ -270,6 +274,52 @@ export async function activateSettingsTenantStorage(tenantId: string) {
     hoursWeek: defaultHoursWeek(),
   });
   await useSettingsStore.persist.rehydrate();
+  await hydrateSettingsFromServer(tenantId);
+}
+
+/**
+ * Il localStorage resta una cache: le impostazioni vere stanno su
+ * tenant_site_settings e vincono su quelle del browser. Sulla demo restano i
+ * fixture locali.
+ */
+async function hydrateSettingsFromServer(tenantId: string) {
+  serverHydratedTenantId = null;
+  if (typeof window === "undefined" || isDemoBrowser()) return;
+  try {
+    const response = await fetch(`/api/tenant/${encodeURIComponent(tenantId)}/site-settings`, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = (await response.json()) as { settings?: unknown };
+    if (activeSettingsTenantId !== tenantId) return;
+    const remote = pickServerSiteSettings(payload.settings);
+    if (Object.keys(remote).length > 0) {
+      const current = useSettingsStore.getState();
+      useSettingsStore.setState({
+        ...remote,
+        socialLinks: { ...EMPTY_SOCIAL_LINKS, ...(remote.socialLinks ?? current.socialLinks) },
+        reservationTimeSettings: {
+          ...DEFAULT_RESERVATION_TIME_SETTINGS,
+          ...(remote.reservationTimeSettings ?? current.reservationTimeSettings),
+        },
+      });
+    }
+    serverSnapshot = remote;
+    serverHydratedTenantId = tenantId;
+  } catch {
+    // Rete assente: resta la cache locale, il prossimo caricamento riallinea.
+  }
+}
+
+/** Vero quando lo store riflette già il server per il tenant indicato. */
+export function isSettingsServerHydrated(tenantId: string): boolean {
+  return serverHydratedTenantId === tenantId;
+}
+
+export function getSettingsServerSnapshot(): ServerSiteSettings {
+  return serverSnapshot;
+}
+
+export function markSettingsServerSnapshot(patch: ServerSiteSettings) {
+  serverSnapshot = { ...serverSnapshot, ...patch };
 }
 
 export function getLocalModuleEnabled(

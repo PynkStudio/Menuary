@@ -3,7 +3,7 @@
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { pushOrderStatusToHubrise } from "@/lib/hubrise/push-status";
 import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email";
 import { notifyCustomerOrderStatus, type OrderNotificationKind } from "@/lib/orders/order-notifications";
@@ -29,7 +29,7 @@ function canActOnOrder(orderLocationId: string | null, activeLocationId: string 
 }
 
 async function update(tenantSlug: string, orderId: string, status: Status) {
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "member");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
 
@@ -94,7 +94,7 @@ export async function toggleOrderLinePrepared(formData: FormData) {
   const prepared = String(formData.get("prepared") ?? "") === "true";
   if (!tenantSlug || !orderId || !lineId) return;
 
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "member");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
 
@@ -137,7 +137,7 @@ export async function confirmPendingOrder(formData: FormData) {
   const expectedTime = String(formData.get("expectedTime") ?? "").trim();
   if (!tenantSlug || !id) return;
 
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "member");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
 
@@ -230,7 +230,7 @@ export async function setTodayHandlingOverride(formData: FormData) {
   const raw = String(formData.get("minutes") ?? "").trim();
   if (!tenantSlug) return;
 
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "staff");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
 
@@ -283,7 +283,7 @@ export async function rejectPendingOrder(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!tenantSlug || !id) return;
 
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "member");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) return;
 

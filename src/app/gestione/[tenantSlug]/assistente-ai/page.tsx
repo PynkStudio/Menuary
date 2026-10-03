@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
-import { getTenantById } from "@/lib/data/tenant";
 import { AiPhoneQuickSettings } from "@/components/gestione/ai-phone-quick-settings";
+import { requireGestioneSection } from "@/lib/gestione-page";
 
 export default async function GestioneAssistenteAiPage({
   params,
@@ -8,8 +7,6 @@ export default async function GestioneAssistenteAiPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant || (!tenant.features.aiPhone && !tenant.features.aiWhatsapp)) notFound();
-
+  await requireGestioneSection(tenantSlug, "aiAssistant");
   return <AiPhoneQuickSettings tenantId={tenantSlug} />;
 }

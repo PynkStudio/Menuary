@@ -1,7 +1,4 @@
-import { notFound } from "next/navigation";
-import { getTenantById } from "@/lib/data/tenant";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { demoAnalytics } from "@/lib/demo-fixtures";
 import { getGestioneTranslations, interpolate, type GestioneMessages } from "@/i18n/gestione";
@@ -134,13 +131,9 @@ export default async function AnalyticsPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant) return null;
-  if (!getGestioneModuleAccess(tenant.features).canViewAnalytics) notFound();
+  const { tenant, auth } = await requireGestioneSection(tenantSlug, "analytics");
   const gt = await getGestioneTranslations();
   const t = gt.analytics;
-  const auth = await authorizeGestione(tenantSlug);
-  if (!auth.ok) notFound();
 
   if (tenant.vertical === "creative") {
     const creativeModules = [

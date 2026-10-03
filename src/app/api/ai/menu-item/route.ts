@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import {
   suggestIngredients,
   rewriteDescription,
@@ -44,8 +44,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) {
+  const auth = await requireGestione(tenantId, "can_edit_menu");
+  // Le chiamate AI hanno un costo: la demo pubblica senza login non le usa.
+  if (!auth.ok || auth.isDemo) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

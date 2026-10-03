@@ -1,10 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { Check, X, UserCheck, UserX, Tag, Users, Briefcase, Clock } from "lucide-react";
-import { getTenantById } from "@/lib/data/tenant";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 import { getModuleLabel, getVerticalMeta } from "@/lib/vertical";
-import { authorizeGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import {
   confirmReservation,
@@ -150,14 +147,9 @@ export default async function PrenotazioniPage({
 }) {
   const { tenantSlug } = await params;
   const { f } = await searchParams;
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant) return null;
-  if (!getGestioneModuleAccess(tenant.features).canManageReservations) notFound();
+  const { tenant, auth } = await requireGestioneSection(tenantSlug, "reservations");
   const gt = await getGestioneTranslations();
   const t = gt.reservations;
-
-  const auth = await authorizeGestione(tenantSlug);
-  if (!auth.ok) notFound();
 
   const filter: Filter = FILTERS.some((x) => x.id === f) ? (f as Filter) : "today";
   const demoVertical = tenant.vertical === "food" ? "food" : "services";

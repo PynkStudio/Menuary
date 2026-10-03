@@ -21,7 +21,7 @@ Mostra la **coda live degli ordini** (sala, asporto e kiosk) e permette di cambi
 
 # Elementi della schermata
 
-- **Intestazione** con titolo «Ordini» e pulsante **«Impostazioni»** (apre le impostazioni ordini, `/ordini/impostazioni`).
+- **Intestazione** con titolo «Ordini» e pulsante **«Impostazioni»**, visibile solo al titolare (apre **Regole ordini**, `/ordini/impostazioni`, che si trova anche nel menu sotto **Impostazioni**).
 - **Barra filtri** («Filtra ordini») per restringere la coda.
 - **Lista ordini**: ogni riga mostra il **cliente** («Cliente»), il **tipo** (Asporto / Sala / Mangia qui / Delivery), l'orario di ritiro/consegna, i **dati cliente** (Telefono, Indirizzo) e i pulsanti azione.
 - Sugli ordini in attesa può comparire un **timer** («{n}s al timeout»).
@@ -65,7 +65,7 @@ Tipi di ordine mostrati: **Asporto**, **Sala**, **Mangia qui**, **Delivery**.
 
 # Riferimenti nel codice (manutenzione)
 
-- Pagina: `src/app/gestione/[tenantSlug]/ordini/page.tsx`
+- Pagina: `src/app/gestione/[tenantSlug]/ordini/page.tsx` (mostra la stessa coda di `src/app/operativo/[tenantSlug]/ordini/page.tsx`, sulla sede attiva della gestione)
 - Impostazioni: `src/app/gestione/[tenantSlug]/ordini/impostazioni/page.tsx`
 - Etichette, filtri, stati e azioni: `src/i18n/gestione.ts` → oggetto `orders`
 - API ordini: `src/app/api/orders/*`

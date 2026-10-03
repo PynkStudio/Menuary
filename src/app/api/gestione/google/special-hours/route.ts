@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { after } from "next/server";
 import { getSpecialHours, upsertSpecialHour, deleteSpecialHour } from "@/lib/data/special-hours";
 import { triggerGoogleHoursSync } from "@/lib/google/hours-sync";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireGestione } from "@/lib/gestione-auth";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -10,19 +10,15 @@ export async function GET(request: Request) {
   const locationId = url.searchParams.get("locationId");
   if (!tenantId) return NextResponse.json({ error: "tenantId required" }, { status: 400 });
 
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json([]);
 
   const data = await getSpecialHours(tenantId, locationId);
   return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { tenantId, locationId, date, end_date, weekday, kind, closed, slots, label } =
     (await request.json()) as {
       tenantId: string;
@@ -35,6 +31,9 @@ export async function POST(request: Request) {
       slots: string[];
       label?: string | null;
     };
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ ok: true, item: null });
 
   const item = await upsertSpecialHour(tenantId, {
     date,
@@ -51,11 +50,10 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { tenantId, id } = (await request.json()) as { tenantId: string; id: string };
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "Unauthorized" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ ok: true });
   await deleteSpecialHour(tenantId, id);
   after(() => triggerGoogleHoursSync(tenantId, "special"));
   return NextResponse.json({ ok: true });

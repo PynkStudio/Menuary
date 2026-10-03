@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 
 type Params = { params: Promise<{ tenantSlug: string; orderId: string }> };
 
 export async function POST(request: NextRequest, { params }: Params) {
   const { tenantSlug, orderId } = await params;
-  const auth = await authorizeGestione(tenantSlug);
-  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  const auth = await requireGestione(tenantSlug, "staff");
+  if (!auth.ok) return NextResponse.json({ error: "Non autorizzato" }, { status: auth.status });
+  if (auth.isDemo) return NextResponse.json({ ok: true, demo: true });
 
   const body = await request.json().catch(() => null);
   const { riderId } = body ?? {};

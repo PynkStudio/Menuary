@@ -9,7 +9,8 @@
     "lint": "next lint",
     "whatsapp:worker": "npm --prefix scripts/openwa run worker",
     "seed:menu": "dotenv -e .env.local -- tsx scripts/seed-menu.ts",
-    "blog:migrate": "dotenv -e .env.local -- tsx scripts/migrate-blog-blocks-to-tiptap.ts"
+    "blog:migrate": "dotenv -e .env.local -- tsx scripts/migrate-blog-blocks-to-tiptap.ts",
+    "tenants:drift": "dotenv -e .env.local -- tsx --tsconfig tsconfig.json scripts/check-tenant-drift.ts"
   },
   "dependencies": {
     "@livekit/components-react": "^2.9.24",

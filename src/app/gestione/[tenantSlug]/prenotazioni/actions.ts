@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { requireActiveGestioneLocation } from "@/lib/gestione-location";
 
 type Status = "confirmed" | "rejected" | "seated" | "no_show" | "pending_manual";
 
 async function update(tenantSlug: string, reservationId: string, status: Status) {
-  const auth = await authorizeGestione(tenantSlug);
+  const auth = await requireGestione(tenantSlug, "can_manage_reservations");
   if (!auth.ok) throw new Error("unauthorized");
   if (auth.isDemo) {
     // Nessuna scrittura sul DB in demo: la UI ottimistica resta lato client.

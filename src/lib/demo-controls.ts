@@ -8,8 +8,10 @@ export type TenantDemoControl = {
   vertical: TenantVertical;
   enabled: boolean;
   // Quando true, gestione/* per il tenant su demo.menuary.it usa Supabase reale
-  // invece dei fixture in localStorage. Leva siteadmin-only.
+  // invece dei fixture in localStorage. Leva siteadmin-only, scade da sola dopo
+  // BACKEND_LIVE_WINDOW_MS: la demo e' pubblica e senza login.
   backendLive: boolean;
+  backendLiveUntil: string | null;
   disabledAt: string | null;
   updatedAt: string;
 };
@@ -20,6 +22,7 @@ type TenantDemoControlRow = {
   vertical: string;
   enabled: boolean;
   backend_live: boolean | null;
+  backend_live_until: string | null;
   disabled_at: string | null;
   updated_at: string;
 };
@@ -30,8 +33,15 @@ function getServiceClient() {
   return db;
 }
 
+export const BACKEND_LIVE_WINDOW_MS = 15 * 60 * 1000;
+
 const SELECT_COLS =
-  "tenant_id,preview_slug,vertical,enabled,backend_live,disabled_at,updated_at";
+  "tenant_id,preview_slug,vertical,enabled,backend_live,backend_live_until,disabled_at,updated_at";
+
+function isBackendLiveActive(row: TenantDemoControlRow): boolean {
+  if (!row.backend_live || !row.backend_live_until) return false;
+  return new Date(row.backend_live_until).getTime() > Date.now();
+}
 
 function mapControl(row: TenantDemoControlRow): TenantDemoControl {
   return {
@@ -39,7 +49,8 @@ function mapControl(row: TenantDemoControlRow): TenantDemoControl {
     previewSlug: row.preview_slug,
     vertical: row.vertical === "creative" ? "creative" : row.vertical === "services" ? "services" : "food",
     enabled: row.enabled,
-    backendLive: Boolean(row.backend_live),
+    backendLive: isBackendLiveActive(row),
+    backendLiveUntil: isBackendLiveActive(row) ? row.backend_live_until : null,
     disabledAt: row.disabled_at,
     updatedAt: row.updated_at,
   };
@@ -86,6 +97,11 @@ export async function upsertTenantDemoControl(input: {
         vertical: input.vertical,
         enabled,
         backend_live: backendLive,
+        backend_live_until: backendLive
+          ? input.backendLive
+            ? new Date(Date.now() + BACKEND_LIVE_WINDOW_MS).toISOString()
+            : existing?.backendLiveUntil ?? null
+          : null,
         disabled_at: enabled ? null : (existing?.disabledAt ?? now),
         updated_at: now,
       },

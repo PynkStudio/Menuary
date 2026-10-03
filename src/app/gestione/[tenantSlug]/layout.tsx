@@ -22,6 +22,7 @@ import type { TenantTheme } from "@/lib/tenant";
 import { readGestioneLocationId } from "@/lib/gestione-location";
 import { GestioneLocationGate } from "@/components/gestione/gestione-location-gate";
 import { GestioneLocationProvider } from "@/components/gestione/gestione-location-provider";
+import { SiteSettingsServerSync } from "@/components/gestione/site-settings-server-sync";
 
 interface Props {
   children: React.ReactNode;
@@ -246,9 +247,11 @@ export default async function GestioneLayout({ children, params }: Props) {
           navBaseHref={navBaseHref}
           loginFrom={loginFrom}
           isDemo={isDemo}
+          backendLiveUntil={backendLive ? (demoControl?.backendLiveUntil ?? null) : null}
           messages={messages}
         >
           <TenantProvider tenant={tenant}>{children}</TenantProvider>
+          {!isDemo && <SiteSettingsServerSync tenantId={tenantSlug} />}
         </GestioneShell>
       </GestioneLocationProvider>
       {!isDemoHostname && <PortalSwitcher current="gestione" cookieDomain={cookieDomain} />}

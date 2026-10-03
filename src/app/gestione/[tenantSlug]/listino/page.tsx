@@ -1,7 +1,5 @@
-import { notFound } from "next/navigation";
+import { requireGestioneSection } from "@/lib/gestione-page";
 import { ValentinaWorksCatalogAdmin } from "@/components/tenants/valentina-orciuoli/admin/works-catalog";
-import { getTenantById } from "@/lib/data/tenant";
-import { getGestioneModuleAccess } from "@/lib/gestione-routing";
 
 export default async function GestioneListinoPage({
   params,
@@ -9,11 +7,7 @@ export default async function GestioneListinoPage({
   params: Promise<{ tenantSlug: string }>;
 }) {
   const { tenantSlug } = await params;
-  const tenant = await getTenantById(tenantSlug);
-  if (!tenant) notFound();
-
-  const access = getGestioneModuleAccess(tenant.features);
-  if (!access.canManageMenu) notFound();
+  const { tenant } = await requireGestioneSection(tenantSlug, "menu");
 
   if (tenant.id === "valentina-orciuoli") {
     return <ValentinaWorksCatalogAdmin />;

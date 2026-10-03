@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeGestione } from "@/lib/gestione-auth";
+import { requireGestione } from "@/lib/gestione-auth";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { DEFAULT_ORDER_SETTINGS, loadOrderSettings } from "@/lib/orders/order-settings";
 import type { TenantOrderSettings } from "@/lib/types";
@@ -42,8 +42,11 @@ export async function GET(req: NextRequest) {
   const tenantId = tenantFrom(req);
   if (!tenantId) return NextResponse.json({ error: "tenant_required" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
+  if (auth.isDemo) {
+    return NextResponse.json({ settings: { id: "", tenantId, locationId: locationFrom(req), ...DEFAULT_ORDER_SETTINGS } });
+  }
   const requestedLocationId = locationFrom(req);
   const locationId = auth.isDemo
     ? requestedLocationId
@@ -64,8 +67,8 @@ export async function PUT(req: NextRequest) {
   const tenantId = tenantFrom(req, body);
   if (!tenantId || !body) return NextResponse.json({ error: "invalid_request" }, { status: 400 });
 
-  const auth = await authorizeGestione(tenantId);
-  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireGestione(tenantId, "admin");
+  if (!auth.ok) return NextResponse.json({ error: "unauthorized" }, { status: auth.status });
   const requestedLocationId = locationFrom(req, body);
   const locationId = auth.isDemo
     ? requestedLocationId
