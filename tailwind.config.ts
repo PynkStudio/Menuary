@@ -1,7 +1,13 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    // I pacchetti @pynkstudio portano componenti scritti in classi Tailwind:
+    // senza scansionarli le classi che non compaiono anche in src/ non
+    // vengono generate (popover senza posizione, modali senza altezza massima).
+    "./node_modules/@pynkstudio/*/dist/**/*.js",
+  ],
   theme: {
     extend: {
       colors: {
