@@ -15,7 +15,7 @@
   "dependencies": {
     "@livekit/components-react": "^2.9.24",
     "@pynkstudio/agendaapp": "https://github.com/PynkStudio/pynkstudio-agendaapp/archive/refs/tags/v0.4.0.tar.gz",
-    "@pynkstudio/mailapp": "https://github.com/PynkStudio/pynkstudio-mailapp/archive/refs/tags/v0.5.0.tar.gz",
+    "@pynkstudio/mailapp": "https://github.com/PynkStudio/pynkstudio-mailapp/archive/20b978c6e76a05e380d5ea1da6b454b07e3dcaa0.tar.gz",
     "@pynkstudio/newsletterapp": "https://github.com/PynkStudio/pynkstudio-newsletterapp/archive/refs/tags/v0.2.0.tar.gz",
     "@react-pdf/renderer": "^4.5.1",
     "@supabase/ssr": "^0.10.3",
