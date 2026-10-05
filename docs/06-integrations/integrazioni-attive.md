@@ -89,6 +89,7 @@ Dalla **0.5.0** il pacchetto non conosce nessun brand. L'elenco delle identità 
 
 - `20260902_mailapp_brand_free_text.sql` — il CHECK su `brand` diventa `length(brand) > 0`.
 - `20260902_mailapp_webhook_idempotency.sql` — `inbound_emails.resend_email_id` e `email_tracking_events.provider_event_id` con indici unici parziali. Servono al webhook 0.5.0, che fa `upsert(onConflict)` su quelle chiavi: senza, ogni ritentativo di Svix duplicava mail e notifica push.
+- `20261003120000_mailapp_webhook_idempotency_full_index.sql` — sostituisce i due indici parziali con indici unici pieni. `on conflict (col)` senza predicato non riconosce un indice parziale (errore 42P10): dal 2026-09-02 al 2026-10-03 il webhook inbound rispondeva 500 e nessuna mail ricevuta veniva salvata. Le mail di quel periodo restano su Resend: vanno recuperate con un replay del webhook o rileggendole dall'API `/emails/receiving`.
 
 **Non applicate** (e non applicabili così come sono, perché lo schema qui è diverso): `20260903_mailbox_runtime_schema.sql` e `20260905_mail_fulltext_search.sql` del pacchetto. Riguardano il mailbox runtime: la prima ridefinisce `push_subscriptions` con una forma incompatibile con quella di questo progetto e dipende da `profiles`/`user_roles`, la seconda genera una colonna su `sent_emails.text_body`, che qui non esiste. **Da verificare** se e quando serviranno: oggi nessun codice in uso le richiede.
 
