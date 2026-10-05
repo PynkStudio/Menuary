@@ -78,6 +78,7 @@ Il pacchetto della posta è una dipendenza esterna, installata da un **tag** del
 Dalla **0.5.0** il pacchetto non conosce nessun brand. L'elenco delle identità di posta vive qui:
 
 - `src/lib/mailapp-brands.ts` — `MAIL_BRANDS` (id, label, domini, indirizzi, tema), più fallback, casella condivisa e ruoli. **È l'unico posto da toccare per aggiungere un brand**: non serve più una migrazione per allargare il vincolo su `brand`.
+  - **PynkStudio invia solo da `pynkstudio.eu`** (dal 2026-10-05): è l'unico dominio PynkStudio verificato su Resend, un mittente `@pynkstudio.it` viene rifiutato con `403 validation_error`. `fromAddress` è `hello@pynkstudio.eu` e `website` (che dà anche il dominio delle firme automatiche) è `pynkstudio.eu`; `.it` e `.com` restano in `domains` solo per riconoscere la posta in arrivo.
 - `src/lib/mailapp-runtime.ts` — `configureMailappRuntime({ brands, … })`: passa i brand al runtime server e delega all'app la risoluzione del mittente, l'invio e i template di marketing (dalla 0.5.0 il pacchetto non li contiene più).
 - Le pagine passano `brands={MAIL_BRANDS}` a `<MailApp>`: `admin-pynkstudio/mailapp`, `admin/inbox`, `gestione/[tenantSlug]/mail`.
 

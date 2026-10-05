@@ -15,9 +15,11 @@ export const MAIL_BRANDS: MailBrandProfile[] = [
   {
     id: "pynkstudio",
     label: "PynkStudio",
-    domains: ["pynkstudio.it", "pynkstudio.com", "pynkstudio.eu"],
-    fromAddress: "hello@pynkstudio.it",
-    website: "pynkstudio.it",
+    // Resend ha verificato solo pynkstudio.eu: .it e .com restano per attribuire
+    // la posta in arrivo, ma ogni invio esce da .eu.
+    domains: ["pynkstudio.eu", "pynkstudio.it", "pynkstudio.com"],
+    fromAddress: "hello@pynkstudio.eu",
+    website: "pynkstudio.eu",
     tagline: "Gruppo creativo e tecnologico",
     theme: {
       accent: "#D946A8",
