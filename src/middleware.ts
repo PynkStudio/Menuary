@@ -384,6 +384,9 @@ function allowStaticAssets(pathname: string) {
   if (pathname.startsWith("/_next")) return true;
   if (pathname.startsWith("/api")) return true;
   if (pathname === "/robots.txt" || pathname === "/sitemap.xml") return true;
+  // Link universali di "Are You Stupid?!": Apple vuole l'AASA senza redirect,
+  // e la pagina del QR /ays/join non ha varianti di lingua.
+  if (pathname.startsWith("/.well-known/") || pathname.startsWith("/ays/")) return true;
   if (/\.[a-z0-9]{2,5}$/i.test(pathname)) return true;
   return false;
 }
