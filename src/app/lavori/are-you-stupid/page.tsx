@@ -4,9 +4,9 @@ import { pynkMetadata } from "@/components/tenants/pynkstudio/pynk-seo";
 import { PYNK_ORIGIN } from "@/components/tenants/pynkstudio/ai-governance-data";
 
 const base = pynkMetadata({
-  title: "Are You Stupid? — il party game per Apple TV, Mac e telefono | PYNK STUDIO",
+  title: "Are You Stupid? — party game, iMessage e AI | PYNK STUDIO",
   description:
-    "Are You Stupid? è il party game da 2 a 8 giocatori firmato PYNK STUDIO: la stessa istruzione stupidissima per tutti, sulla TV chi sbaglia, il telefono come controller. Apple TV, Mac, iPhone e Android, anche in singolo.",
+    "Are You Stupid? è il party game da 2 a 16 giocatori di PYNK STUDIO: Apple TV o Mac come tabellone, telefoni come controller, sfide AI e Stupid Streak 1v1 in iMessage.",
   path: "/lavori/are-you-stupid",
 });
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, ExternalLink, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, Mail, MessageCircle, Mic2, ShieldCheck, Sparkles, Tv } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { PynkJsonLd } from "../pynk-json-ld";
 import { breadcrumbSchema, faqSchema, organizationSchema } from "../pynk-seo";
@@ -12,12 +12,33 @@ import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 const TESTFLIGHT_URL = "https://testflight.apple.com/join/G8kQkCdt";
 
 const pillars = [
-  { title: "Tutti insieme, nello stesso istante", body: "Da 2 a 8 giocatori ricevono la stessa istruzione nello stesso momento. Sulla TV si vede chi ha sbagliato. Subito." },
+  { title: "Tutti insieme, nello stesso istante", body: "Da 2 a 16 giocatori ricevono la stessa istruzione nello stesso momento. Sulla TV si vede chi ha sbagliato. Subito. Le prime 8 postazioni sono incluse." },
   { title: "Sotto le 8 parole", body: "Ogni istruzione sta in una riga, in maiuscolo. Facilissima. Ed è proprio per questo che qualcuno la sbaglierà." },
   { title: "Il telefono è il controller", body: "Niente gamepad, niente app da configurare: inquadri il QR sulla TV e sei dentro. iPhone e Android nella stessa partita." },
   { title: "Zero tempi morti", body: "Un round dura pochi secondi, lo sfottò per chi sbaglia arriva in diretta e si riparte. Nessun caricamento, nessuna attesa." },
   { title: "L'AI inventa le sfide", body: "Con un iPhone compatibile con Apple Intelligence nella stanza, il gioco crea sfide nuove al volo. Tutto sul dispositivo, niente cloud." },
   { title: "E quando sei da solo", body: "La modalità singolo è sempre lì: offline, a una mano, livello dopo livello finché non sbagli. Funziona anche in modalità aereo." },
+];
+
+const waysToPlay = [
+  {
+    icon: Tv,
+    status: "Party mode · beta",
+    title: "Il salotto diventa un game show",
+    body: "Apple TV o Mac fanno da tabellone; iPhone e Android diventano controller. Da 2 a 16 persone giocano gli stessi round sulla rete Wi-Fi locale, senza account né matchmaking online.",
+  },
+  {
+    icon: MessageCircle,
+    status: "iMessage · code complete",
+    title: "Stupid Streak, uno contro uno",
+    body: "Una sfida asincrona best-of-three dentro Messaggi. I due giocatori affrontano la stessa sequenza deterministica: vince il filotto più lungo. Nessun server e nessun avversario deve essere online nello stesso momento.",
+  },
+  {
+    icon: Mic2,
+    status: "Presentatore IA · in sviluppo",
+    title: "Una voce che ricorda tutto. Purtroppo.",
+    body: "Un presentatore vocale opzionale reagirà a risultati reali, nomi pronunciabili, rivalità e rimonte. Non giudica mai la partita e non rallenta i round: se internet o la voce mancano, il gioco continua con le battute incluse.",
+  },
 ];
 
 const steps = [
@@ -30,7 +51,7 @@ const steps = [
 const faq = [
   {
     q: "Cosa serve per giocare in gruppo?",
-    a: "Un'Apple TV, oppure un Mac collegato alla TV con AirPlay, che fa da tabellone. Poi un telefono a testa, iPhone o Android, tutti sulla stessa rete Wi-Fi. Da 2 a 8 giocatori.",
+    a: "Un'Apple TV, oppure un Mac collegato alla TV con AirPlay, che fa da tabellone. Poi un telefono a testa, iPhone o Android, tutti sulla stessa rete Wi-Fi. Da 2 a 8 giocatori inclusi, fino a 16 con Party Pack.",
   },
   {
     q: "Posso già provarlo?",
@@ -47,6 +68,14 @@ const faq = [
   {
     q: "Cos'è la modalità AI?",
     a: "Sugli iPhone e iPad compatibili con Apple Intelligence, il gioco usa il modello di Apple direttamente sul dispositivo per inventare sfide nuove. Niente viene inviato a server esterni, e si può spegnere dalle impostazioni. In una partita di gruppo basta un iPhone compatibile: anche chi gioca da Android riceve le sfide AI.",
+  },
+  {
+    q: "Cos'è Stupid Streak per iMessage?",
+    a: "È una modalità asincrona 1 contro 1, best-of-three, dentro Messaggi. Giochi il tuo round e invii la sfida; l'altra persona affronta la stessa sequenza quando vuole. È completa nel codice, ma resta fuori dalla release finché non supera il collaudo finale su due dispositivi reali.",
+  },
+  {
+    q: "Il presentatore IA è la stessa cosa dell'AI Director?",
+    a: "No. L'AI Director usa Apple Intelligence sul dispositivo per creare sfide e commenti testuali. Il presentatore vocale è uno strato opzionale, ancora in sviluppo, che usa internet per dare voce alle battute; non controlla regole, punteggi o tempi e ha sempre un fallback locale.",
   },
   {
     q: "Are You Stupid? raccoglie dati personali?",
@@ -75,7 +104,7 @@ function AreYouStupidInner() {
       applicationSubCategory: "Party game",
       operatingSystem: "iOS, iPadOS, tvOS, macOS, Android",
       description:
-        "Il party game da 2 a 8 giocatori: un'istruzione stupidamente semplice, uguale per tutti nello stesso istante, sulla TV la classifica di chi sbaglia. Il telefono è il controller. Anche in singolo, offline.",
+        "Il party game da 2 a 16 giocatori: sfide simultanee su Apple TV o Mac, telefoni come controller, modalità offline in singolo e Stupid Streak 1v1 per iMessage.",
       author: { "@type": "Organization", name: "PYNK STUDIO" },
       publisher: { "@type": "Organization", name: "PYNK STUDIO" },
       offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
@@ -95,7 +124,7 @@ function AreYouStupidInner() {
       <section className="pynk-hero pynk-hero-sub">
         <div className="pynk-glow pynk-glow-tr" aria-hidden />
         <div className="pynk-container pynk-hero-content">
-          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iPhone &amp; Android · In beta su TestFlight</p>
+          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iMessage, iPhone &amp; Android · In beta su TestFlight</p>
           <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="pynk-hero-title">
             ARE YOU <span className="pynk-accent">STUPID?</span>
           </motion.h1>
@@ -106,7 +135,7 @@ function AreYouStupidInner() {
             className="pynk-hero-subtitle"
           >
             Il party game dove tutti ricevono la stessa istruzione stupidissima nello stesso istante, e la TV mostra a tutti chi
-            l&apos;ha sbagliata. Il telefono è il controller, da 2 a 8 giocatori. Sembra facile. Non lo è.
+            l&apos;ha sbagliata. Il telefono è il controller, da 2 a 16 giocatori. Sembra facile. Non lo è.
           </motion.p>
           <p className="pynk-note pynk-mt-24">
             Dal gioco: <em>&laquo;One job. Don&apos;t fuck it up.&raquo;</em> — linguaggio scorretto usato di proposito, vedi{" "}
@@ -151,7 +180,35 @@ function AreYouStupidInner() {
         </div>
       </section>
 
-      <section className="pynk-section pynk-section-alt" aria-labelledby="come-si-gioca">
+      <section className="pynk-section pynk-section-alt" aria-labelledby="tre-modi-di-sbagliare">
+        <div className="pynk-container">
+          <div className="pynk-section-head">
+            <p className="pynk-eyebrow">Da solo, insieme o a distanza</p>
+            <h2 id="tre-modi-di-sbagliare" className="pynk-section-title">
+              Ora ci sono più modi di fare una figuraccia
+            </h2>
+            <p className="pynk-section-lead">
+              Il multiplayer live, il duello asincrono in iMessage e il presentatore vocale sono esperienze distinte. Ecco cosa è già
+              giocabile e cosa stiamo ancora preparando.
+            </p>
+          </div>
+          <div className="pynk-grid-2">
+            {waysToPlay.map((mode) => {
+              const Icon = mode.icon;
+              return (
+                <article key={mode.title} className="pynk-panel">
+                  <Icon className="pynk-icon-sm" aria-hidden="true" />
+                  <p className="pynk-eyebrow pynk-mt-12">{mode.status}</p>
+                  <h3 className="pynk-panel-title">{mode.title}</h3>
+                  <p className="pynk-panel-desc">{mode.body}</p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="pynk-section" aria-labelledby="come-si-gioca">
         <div className="pynk-container">
           <div className="pynk-section-head">
             <h2 id="come-si-gioca" className="pynk-section-title">
