@@ -9,6 +9,7 @@ import { breadcrumbSchema, faqSchema, organizationSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 // Public iOS beta — add/replace the Google Play link once that beta opens.
+const MAC_APP_STORE_URL = "https://apps.apple.com/app/are-you-stupid-party-game/id6809188487?mt=12";
 const TESTFLIGHT_URL = "https://testflight.apple.com/join/G8kQkCdt";
 
 const pillars = [
@@ -55,7 +56,7 @@ const faq = [
   },
   {
     q: "Can I try it already?",
-    a: "Yes, it's in public beta on TestFlight for iOS. The App Store (iPhone, iPad, Apple TV and Mac) and Google Play launch is coming soon.",
+    a: "Yes. The Mac version is on the Mac App Store; on iPhone it's in public beta on TestFlight. Links for iPhone, iPad, Apple TV and Android are coming soon.",
   },
   {
     q: "Can I play alone?",
@@ -108,6 +109,7 @@ function AreYouStupidEnInner() {
       author: { "@type": "Organization", name: "PYNK STUDIO" },
       publisher: { "@type": "Organization", name: "PYNK STUDIO" },
       offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+      downloadUrl: MAC_APP_STORE_URL,
       inLanguage: "en",
     },
     breadcrumbSchema([
@@ -125,7 +127,7 @@ function AreYouStupidEnInner() {
       <section className="pynk-hero pynk-hero-sub">
         <div className="pynk-glow pynk-glow-tr" aria-hidden />
         <div className="pynk-container pynk-hero-content">
-          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iMessage, iPhone &amp; Android · Public beta on TestFlight</p>
+          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iMessage, iPhone &amp; Android · Now on the Mac App Store</p>
           <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="pynk-hero-title">
             ARE YOU <span className="pynk-accent">STUPID?</span>
           </motion.h1>
@@ -142,10 +144,14 @@ function AreYouStupidEnInner() {
             In-game: <em>&laquo;One job. Don&apos;t fuck it up.&raquo;</em> — crude language used on purpose, see{" "}
             <a href="#content-age">Content &amp; age</a> below.
           </p>
-          <p className="pynk-note pynk-mt-12">Public beta on TestFlight (iOS) — App Store (iPhone, iPad, Apple TV, Mac) and Google Play coming soon.</p>
+          <p className="pynk-note pynk-mt-12">Available on the Mac App Store. iPhone in public beta on TestFlight — links for iPhone, iPad, Apple TV and Android coming soon.</p>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="pynk-hero-ctas pynk-mt-24">
-            <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-btn-lg">
-              Try it on TestFlight
+            <a href={MAC_APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-btn-lg">
+              Download on the Mac App Store
+              <ExternalLink className="pynk-icon-xs" />
+            </a>
+            <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-outline pynk-btn-lg">
+              iPhone beta on TestFlight
               <ExternalLink className="pynk-icon-xs" />
             </a>
             <Link href={href("/lavori/are-you-stupid/privacy")} className="pynk-btn pynk-btn-outline pynk-btn-lg">

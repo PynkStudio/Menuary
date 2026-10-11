@@ -8,7 +8,8 @@ import { PynkJsonLd } from "../pynk-json-ld";
 import { breadcrumbSchema, faqSchema, organizationSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
-// Beta pubblica iOS — sostituire/aggiungere il link Google Play quando aperta la chiusa/aperta beta Android.
+// Mac già sul Mac App Store; iPhone/iPad/Apple TV restano su TestFlight finché non escono, Google Play in arrivo.
+const MAC_APP_STORE_URL = "https://apps.apple.com/it/app/are-you-stupid-party-game/id6809188487?mt=12";
 const TESTFLIGHT_URL = "https://testflight.apple.com/join/G8kQkCdt";
 
 const pillars = [
@@ -55,7 +56,7 @@ const faq = [
   },
   {
     q: "Posso già provarlo?",
-    a: "Sì, è in beta pubblica su TestFlight per iOS. Il lancio su App Store (iPhone, iPad, Apple TV e Mac) e Google Play arriva a breve.",
+    a: "Sì. La versione Mac si scarica dal Mac App Store; su iPhone è in beta pubblica su TestFlight. I link per iPhone, iPad, Apple TV e Android arrivano a breve.",
   },
   {
     q: "Si può giocare anche da soli?",
@@ -108,6 +109,7 @@ function AreYouStupidInner() {
       author: { "@type": "Organization", name: "PYNK STUDIO" },
       publisher: { "@type": "Organization", name: "PYNK STUDIO" },
       offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+      downloadUrl: MAC_APP_STORE_URL,
     },
     breadcrumbSchema([
       { name: "Home", path: "/" },
@@ -124,7 +126,7 @@ function AreYouStupidInner() {
       <section className="pynk-hero pynk-hero-sub">
         <div className="pynk-glow pynk-glow-tr" aria-hidden />
         <div className="pynk-container pynk-hero-content">
-          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iMessage, iPhone &amp; Android · In beta su TestFlight</p>
+          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iMessage, iPhone &amp; Android · Ora sul Mac App Store</p>
           <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="pynk-hero-title">
             ARE YOU <span className="pynk-accent">STUPID?</span>
           </motion.h1>
@@ -141,10 +143,14 @@ function AreYouStupidInner() {
             Dal gioco: <em>&laquo;One job. Don&apos;t fuck it up.&raquo;</em> — linguaggio scorretto usato di proposito, vedi{" "}
             <a href="#contenuto-eta">Contenuto ed età</a> qui sotto.
           </p>
-          <p className="pynk-note pynk-mt-12">In beta pubblica su TestFlight (iOS) — App Store (iPhone, iPad, Apple TV, Mac) e Google Play in arrivo.</p>
+          <p className="pynk-note pynk-mt-12">Disponibile sul Mac App Store. iPhone in beta pubblica su TestFlight — i link per iPhone, iPad, Apple TV e Android arrivano a breve.</p>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="pynk-hero-ctas pynk-mt-24">
-            <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-btn-lg">
-              Prova su TestFlight
+            <a href={MAC_APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-btn-lg">
+              Scarica per Mac dall&apos;App Store
+              <ExternalLink className="pynk-icon-xs" />
+            </a>
+            <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-outline pynk-btn-lg">
+              Beta iPhone su TestFlight
               <ExternalLink className="pynk-icon-xs" />
             </a>
             <Link href={href("/lavori/are-you-stupid/privacy")} className="pynk-btn pynk-btn-outline pynk-btn-lg">
