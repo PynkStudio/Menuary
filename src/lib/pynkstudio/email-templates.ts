@@ -176,3 +176,84 @@ export function bookingReminderHtml(d: BookingEmailData): string {
     </p>
   `);
 }
+
+// ─── Beta manager ───────────────────────────────────────────────
+
+function betaFooterNote(unsubscribeUrl?: string): string {
+  return unsubscribeUrl
+    ? `<p style="margin:28px 0 0;font-size:12px;color:${MUTED};line-height:1.6;">
+        Ricevi questa email perché sei iscritto alle beta di PYNK STUDIO.
+        <a href="${escapeHtml(unsubscribeUrl)}" style="color:${MUTED};">Non voglio più avvisi sulle nuove beta</a>.
+      </p>`
+    : "";
+}
+
+export function betaAccessHtml(d: { firstName: string; accessUrl: string; isNew: boolean }): string {
+  return shell(`
+    <p style="margin:0 0 4px;font-size:26px;font-weight:700;color:${TEXT};line-height:1.2;">
+      ${d.isNew ? "Benvenuto tra i beta tester 🧪" : "Il tuo accesso alle beta"}
+    </p>
+    <p style="margin:12px 0 28px;font-size:15px;color:${MUTED};line-height:1.6;">
+      Ciao <strong style="color:${TEXT};">${escapeHtml(d.firstName)}</strong>,
+      ${d.isNew
+        ? "conferma la tua email per completare l'iscrizione e ricevere gli avvisi quando escono nuove beta per i tuoi dispositivi."
+        : "ecco il link per entrare nella tua area beta. Funziona su qualsiasi dispositivo."}
+    </p>
+    ${joinButton(d.accessUrl, d.isNew ? "Conferma ed entra" : "Entra nell'area beta")}
+    <p style="margin:0;font-size:13px;color:${MUTED};line-height:1.7;">
+      Il link è personale: non inoltrarlo. Se non hai richiesto tu questa email puoi ignorarla.
+    </p>
+  `);
+}
+
+export type BetaEmailChannel = { deviceLabel: string; methodLabel: string };
+
+export function betaNewHtml(d: {
+  firstName: string;
+  betaName: string;
+  tagline: string | null;
+  kindLabel: string;
+  version: string | null;
+  channels: BetaEmailChannel[];
+  areaUrl: string;
+  unsubscribeUrl: string;
+}): string {
+  const rows = d.channels
+    .map((c) => detailRow(escapeHtml(c.deviceLabel), escapeHtml(c.methodLabel)))
+    .join("");
+  return shell(`
+    <p style="margin:0 0 4px;font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${PYNK};">
+      ${escapeHtml(d.kindLabel)}${d.version ? ` · v${escapeHtml(d.version)}` : ""}
+    </p>
+    <p style="margin:0 0 4px;font-size:26px;font-weight:700;color:${TEXT};line-height:1.2;">${escapeHtml(d.betaName)} è in beta</p>
+    <p style="margin:12px 0 24px;font-size:15px;color:${MUTED};line-height:1.6;">
+      Ciao <strong style="color:${TEXT};">${escapeHtml(d.firstName)}</strong>,
+      ${d.tagline ? `${escapeHtml(d.tagline)} — ` : ""}c'è una nuova beta disponibile per i tuoi dispositivi.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+      style="background:${PYNK_LIGHT};border:1px solid ${BORDER};border-radius:10px;padding:20px 24px;margin-bottom:28px;">
+      <tr><td><table role="presentation" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
+    </table>
+    ${joinButton(d.areaUrl, "Scopri come unirti")}
+    ${betaFooterNote(d.unsubscribeUrl)}
+  `);
+}
+
+export function betaApprovedHtml(d: {
+  firstName: string;
+  betaName: string;
+  deviceLabel: string;
+  url: string | null;
+  areaUrl: string;
+}): string {
+  return shell(`
+    <p style="margin:0 0 4px;font-size:26px;font-weight:700;color:${TEXT};line-height:1.2;">Sei dentro ✅</p>
+    <p style="margin:12px 0 24px;font-size:15px;color:${MUTED};line-height:1.6;">
+      Ciao <strong style="color:${TEXT};">${escapeHtml(d.firstName)}</strong>, abbiamo approvato la tua richiesta per
+      <strong style="color:${TEXT};">${escapeHtml(d.betaName)}</strong> su ${escapeHtml(d.deviceLabel)}.
+      Trovi le istruzioni complete nella tua area beta.
+    </p>
+    ${d.url ? joinButton(d.url, "Unisciti alla beta") : ""}
+    <p style="margin:0;font-size:14px;"><a href="${escapeHtml(d.areaUrl)}" style="color:${PYNK};font-weight:600;">Apri l'area beta</a></p>
+  `);
+}

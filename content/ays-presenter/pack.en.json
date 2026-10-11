@@ -1,0 +1,215 @@
+{
+  "format": 1,
+  "locale": "en",
+  "lines": {
+    "lobby.empty": [
+      {
+        "id": "nobody-promising",
+        "text": "NOBODY. PROMISING."
+      },
+      {
+        "id": "the-night-is-already-a-success",
+        "text": "THE NIGHT IS ALREADY A SUCCESS."
+      }
+    ],
+    "result.everyoneWrong": [
+      {
+        "id": "nobody-read-it-perfect",
+        "text": "NOBODY READ IT. PERFECT."
+      },
+      {
+        "id": "zero-right-answers-great-team",
+        "text": "ZERO RIGHT ANSWERS. GREAT TEAM."
+      },
+      {
+        "id": "you-all-got-it-wrong-together",
+        "text": "YOU ALL GOT IT WRONG. TOGETHER."
+      }
+    ],
+    "result.everyoneCorrect": [
+      {
+        "id": "suspiciously-competent",
+        "text": "SUSPICIOUSLY COMPETENT."
+      },
+      {
+        "id": "all-correct-do-not-get-used-to-i",
+        "text": "ALL CORRECT. DO NOT GET USED TO IT."
+      }
+    ],
+    "result.mixed": [
+      {
+        "id": "some-read-it-some-were-present",
+        "text": "SOME READ IT. SOME WERE PRESENT."
+      },
+      {
+        "id": "mixed-results-very-mixed",
+        "text": "MIXED RESULTS. VERY MIXED."
+      }
+    ],
+    "gameEnd": [
+      {
+        "id": "we-have-a-winner-technically",
+        "text": "WE HAVE A WINNER. TECHNICALLY."
+      },
+      {
+        "id": "it-is-over-you-may-go-back-to-pr",
+        "text": "IT IS OVER. YOU MAY GO BACK TO PRETENDING YOU ARE SMART."
+      }
+    ]
+  },
+  "templates": {
+    "result.player.stillZero": [
+      {
+        "id": "v1",
+        "text": "{name}, YOU WIN BY SCORING MORE POINTS. OR AT LEAST SOME POINTS.",
+        "intensity": "savage"
+      }
+    ],
+    "result.title.king.named": [
+      {
+        "id": "v1",
+        "text": "{name}, ANOTHER POINT. YOU ARE NOW {title}."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.direction": [
+      {
+        "id": "v1",
+        "text": "{name}, THAT WAS YOUR OTHER LEFT.",
+        "intensity": "savage"
+      }
+    ],
+    "title.anonymous": [
+      {
+        "id": "0",
+        "text": "YOU ARE NOW {title}."
+      }
+    ],
+    "result.player.lss.lastLife": [
+      {
+        "id": "v1",
+        "text": "{name}, ONE LIFE LEFT. TRY NOT TO WASTE THIS ONE TOO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.waiting": [
+      {
+        "id": "v1",
+        "text": "YOU HAD TO DO NOTHING, {name}. FINALLY, YOUR SPECIALTY.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.wrongStreak3": [
+      {
+        "id": "v1",
+        "text": "{name}, WOULD YOU LIKE TO PHONE A FRIEND OR CAN YOU FAIL ALONE?",
+        "intensity": "savage"
+      }
+    ],
+    "title.named": [
+      {
+        "id": "0",
+        "text": "{name}, YOU ARE NOW {title}."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.memory": [
+      {
+        "id": "v1",
+        "text": "IT WAS ONE THING, {name}. NOT AN ENTIRE NOVEL.",
+        "intensity": "savage"
+      }
+    ],
+    "lobby.returning.named": [
+      {
+        "id": "0",
+        "text": "{name} IS BACK, {title}."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.timing": [
+      {
+        "id": "v1",
+        "text": "{name}, IT WAS A MATTER OF TIME. AND YOU WASTED IT.",
+        "intensity": "savage"
+      }
+    ],
+    "lobby.returning.anonymous": [
+      {
+        "id": "0",
+        "text": "{title} IS BACK."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.counting": [
+      {
+        "id": "v1",
+        "text": "{name}, YOU LOOKED COMPETITIVE WHILE FINGERS WERE ENOUGH.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.firstPointLate": [
+      {
+        "id": "v1",
+        "text": "OH, SO YOU DID REALIZE THIS WAS A COMPETITION, {name}?",
+        "intensity": "savage"
+      }
+    ],
+    "result.title.doesNotRead.named": [
+      {
+        "id": "v1",
+        "text": "{name}, THREE IN A ROW. YOU ARE NOW {title}.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.button": [
+      {
+        "id": "v1",
+        "text": "IT WAS ONE BUTTON, {name}. ONE.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.reading": [
+      {
+        "id": "v1",
+        "text": "IT WAS WRITTEN IN FRONT OF YOU, {name}. IN FRONT OF YOU.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.perception": [
+      {
+        "id": "v1",
+        "text": "IT WAS RIGHT BEFORE YOUR EYES, {name}. SO WERE YOU.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.math": [
+      {
+        "id": "v1",
+        "text": "{name}, WE USED SMALL NUMBERS FOR A REASON.",
+        "intensity": "savage"
+      }
+    ],
+    "gameEnd.named": [
+      {
+        "id": "0",
+        "text": "{name} WON. TECHNICALLY."
+      }
+    ],
+    "result.mixed.oneWrong.named": [
+      {
+        "id": "v1",
+        "text": "IT'S OK, {name}. I'LL EXPLAIN IT TO YOU LATER. PROMISE.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.lss.losingLives": [
+      {
+        "id": "v1",
+        "text": "{name}, LIVES AREN'T POINTS. THEY ACTUALLY RUN OUT.",
+        "intensity": "savage"
+      }
+    ]
+  },
+  "titles": {
+    "king": "THE KING",
+    "kingUndisputed": "THE UNDISPUTED KING",
+    "doesNotRead": "THE ONE WHO DOESN'T READ"
+  }
+}

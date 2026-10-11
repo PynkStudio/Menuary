@@ -3568,6 +3568,219 @@ export type Database = {
           },
         ]
       }
+      pynkstudio_beta_notifications: {
+        Row: {
+          beta_id: string
+          sent_at: string
+          tester_id: string
+        }
+        Insert: {
+          beta_id: string
+          sent_at?: string
+          tester_id: string
+        }
+        Update: {
+          beta_id?: string
+          sent_at?: string
+          tester_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pynkstudio_beta_notifications_beta_id_fkey"
+            columns: ["beta_id"]
+            isOneToOne: false
+            referencedRelation: "pynkstudio_betas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pynkstudio_beta_notifications_tester_id_fkey"
+            columns: ["tester_id"]
+            isOneToOne: false
+            referencedRelation: "pynkstudio_beta_testers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pynkstudio_beta_requests: {
+        Row: {
+          account_email: string | null
+          beta_id: string
+          created_at: string
+          device: string
+          id: string
+          method: string
+          status: string
+          tester_id: string
+          updated_at: string
+        }
+        Insert: {
+          account_email?: string | null
+          beta_id: string
+          created_at?: string
+          device: string
+          id?: string
+          method: string
+          status?: string
+          tester_id: string
+          updated_at?: string
+        }
+        Update: {
+          account_email?: string | null
+          beta_id?: string
+          created_at?: string
+          device?: string
+          id?: string
+          method?: string
+          status?: string
+          tester_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pynkstudio_beta_requests_beta_id_fkey"
+            columns: ["beta_id"]
+            isOneToOne: false
+            referencedRelation: "pynkstudio_betas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pynkstudio_beta_requests_tester_id_fkey"
+            columns: ["tester_id"]
+            isOneToOne: false
+            referencedRelation: "pynkstudio_beta_testers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pynkstudio_beta_testers: {
+        Row: {
+          access_token: string
+          apple_id_email: string | null
+          consent_at: string
+          created_at: string
+          devices: string[]
+          email: string
+          email_verified_at: string | null
+          first_name: string
+          google_account_email: string | null
+          id: string
+          last_name: string
+          last_seen_at: string | null
+          locale: string
+          notify_categories: string[]
+          notify_enabled: boolean
+          notify_kinds: string[]
+          notify_languages: string[]
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string
+          apple_id_email?: string | null
+          consent_at?: string
+          created_at?: string
+          devices?: string[]
+          email: string
+          email_verified_at?: string | null
+          first_name: string
+          google_account_email?: string | null
+          id?: string
+          last_name: string
+          last_seen_at?: string | null
+          locale?: string
+          notify_categories?: string[]
+          notify_enabled?: boolean
+          notify_kinds?: string[]
+          notify_languages?: string[]
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          apple_id_email?: string | null
+          consent_at?: string
+          created_at?: string
+          devices?: string[]
+          email?: string
+          email_verified_at?: string | null
+          first_name?: string
+          google_account_email?: string | null
+          id?: string
+          last_name?: string
+          last_seen_at?: string | null
+          locale?: string
+          notify_categories?: string[]
+          notify_enabled?: boolean
+          notify_kinds?: string[]
+          notify_languages?: string[]
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pynkstudio_betas: {
+        Row: {
+          category: string
+          channels: Json
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          feedback_url: string | null
+          icon_url: string | null
+          id: string
+          kind: string
+          languages: string[]
+          name: string
+          notified_at: string | null
+          published_at: string | null
+          slug: string
+          status: string
+          tagline: string | null
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          category?: string
+          channels?: Json
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          feedback_url?: string | null
+          icon_url?: string | null
+          id?: string
+          kind?: string
+          languages?: string[]
+          name: string
+          notified_at?: string | null
+          published_at?: string | null
+          slug: string
+          status?: string
+          tagline?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          category?: string
+          channels?: Json
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          feedback_url?: string | null
+          icon_url?: string | null
+          id?: string
+          kind?: string
+          languages?: string[]
+          name?: string
+          notified_at?: string | null
+          published_at?: string | null
+          slug?: string
+          status?: string
+          tagline?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       pynkstudio_crm_activities: {
         Row: {
           body: string | null

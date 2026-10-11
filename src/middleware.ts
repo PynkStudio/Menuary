@@ -328,6 +328,7 @@ function isInternalPlatformPath(pathname: string): boolean {
 /** Path noti dell'app admin-pynkstudio (escluso /login e /set-password che sono pubblici). */
 const ADMIN_PYNKSTUDIO_PATHS = [
   "/agenda",
+  "/beta",
   "/bizery",
   "/crm",
   "/inbox",
@@ -615,6 +616,7 @@ const PREVIEW_GLOBAL_TENANT_ROUTES = new Set([
   "blog",
   "ia-in-azienda",
   "videocall",
+  "beta",
 ]);
 
 function handlePreviewTenantLocale(

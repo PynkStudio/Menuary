@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
   const cueId = cleanString(body.cueId, 120);
   const text = cleanString(body.text, MAX_TEXT);
-  const locale = /^(it|en)(-[A-Z]{2})?$/.test(String(body.locale ?? "")) ? String(body.locale) : "it";
+  const locale = /^(en|it|fr|es|pt|de)(-[A-Z]{2})?$/.test(String(body.locale ?? "")) ? String(body.locale) : "en";
   const intensity = body.intensity === "savage" ? "savage" : "neutral";
   const cacheable = body.cacheable !== false;
   if (!cueId || !text) return NextResponse.json({ error: "invalid_cue" }, { status: 400 });

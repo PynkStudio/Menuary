@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, ExternalLink, Mail, MessageCircle, Mic2, ShieldCheck, Sparkles, Tv } from "lucide-react";
+import { Apple, ArrowRight, Check, ExternalLink, Mail, MessageCircle, Mic2, ShieldCheck, Smartphone, Tv } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { PynkJsonLd } from "../pynk-json-ld";
 import { breadcrumbSchema, faqSchema, organizationSchema } from "../pynk-seo";
@@ -24,13 +24,13 @@ const pillars = [
 const waysToPlay = [
   {
     icon: Tv,
-    status: "Party mode · beta",
+    status: "Party mode · disponibile",
     title: "Il salotto diventa un game show",
     body: "Apple TV o Mac fanno da tabellone; iPhone e Android diventano controller. Da 2 a 16 persone giocano gli stessi round sulla rete Wi-Fi locale, senza account né matchmaking online.",
   },
   {
     icon: MessageCircle,
-    status: "iMessage · code complete",
+    status: "iMessage · disponibile",
     title: "Stupid Streak, uno contro uno",
     body: "Una sfida asincrona best-of-three dentro Messaggi. I due giocatori affrontano la stessa sequenza deterministica: vince il filotto più lungo. Nessun server e nessun avversario deve essere online nello stesso momento.",
   },
@@ -72,7 +72,7 @@ const faq = [
   },
   {
     q: "Cos'è Stupid Streak per iMessage?",
-    a: "È una modalità asincrona 1 contro 1, best-of-three, dentro Messaggi. Giochi il tuo round e invii la sfida; l'altra persona affronta la stessa sequenza quando vuole. È completa nel codice, ma resta fuori dalla release finché non supera il collaudo finale su due dispositivi reali.",
+    a: "È una modalità asincrona 1 contro 1, best-of-three, dentro Messaggi. Giochi il tuo round e invii la sfida; l'altra persona affronta la stessa sequenza quando vuole. Entrambi giocate la stessa sfida e vince chi costruisce il filotto più lungo.",
   },
   {
     q: "Il presentatore IA è la stessa cosa dell'AI Director?",
@@ -120,47 +120,48 @@ function AreYouStupidInner() {
   ];
 
   return (
-    <div className="pynk-page">
+    <div className="pynk-page pynk-ays-page">
       <PynkJsonLd data={jsonLd} />
 
-      <section className="pynk-hero pynk-hero-sub">
-        <div className="pynk-glow pynk-glow-tr" aria-hidden />
-        <div className="pynk-container pynk-hero-content">
-          <p className="pynk-eyebrow pynk-eyebrow-chip">Party game · Apple TV, Mac, iMessage, iPhone &amp; Android · Ora sul Mac App Store</p>
-          <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="pynk-hero-title">
-            ARE YOU <span className="pynk-accent">STUPID?</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-            className="pynk-hero-subtitle"
-          >
-            Il party game dove tutti ricevono la stessa istruzione stupidissima nello stesso istante, e la TV mostra a tutti chi
-            l&apos;ha sbagliata. Il telefono è il controller, da 2 a 16 giocatori. Sembra facile. Non lo è.
-          </motion.p>
-          <p className="pynk-note pynk-mt-24">
-            Dal gioco: <em>&laquo;One job. Don&apos;t fuck it up.&raquo;</em> — linguaggio scorretto usato di proposito, vedi{" "}
-            <a href="#contenuto-eta">Contenuto ed età</a> qui sotto.
-          </p>
-          <p className="pynk-note pynk-mt-12">Disponibile sul Mac App Store. iPhone in beta pubblica su TestFlight — i link per iPhone, iPad, Apple TV e Android arrivano a breve.</p>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="pynk-hero-ctas pynk-mt-24">
-            <a href={MAC_APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-btn-lg">
-              Scarica per Mac dall&apos;App Store
-              <ExternalLink className="pynk-icon-xs" />
-            </a>
-            <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-outline pynk-btn-lg">
-              Beta iPhone su TestFlight
-              <ExternalLink className="pynk-icon-xs" />
-            </a>
-            <Link href={href("/lavori/are-you-stupid/privacy")} className="pynk-btn pynk-btn-outline pynk-btn-lg">
-              <ShieldCheck className="pynk-icon-xs" />
-              Privacy Policy
-            </Link>
+      <section className="pynk-ays-hero">
+        <div className="pynk-container pynk-ays-hero-grid">
+          <div className="pynk-ays-hero-copy">
+            <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="pynk-ays-title">
+              ARE YOU{" "}<br /><span>STUPID?</span>
+            </motion.h1>
+            <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="pynk-ays-tagline">
+              Un&apos;istruzione. Pochi secondi. Tutti guardano.
+            </motion.p>
+            <p className="pynk-ays-intro">
+              Il party game da 2 a 16 giocatori dove il telefono è il controller e la TV mostra a tutti chi ha sbagliato. Sembra facile. Non lo è.
+            </p>
+            <p className="pynk-ays-age-note">
+              <em>&laquo;One job. Don&apos;t fuck it up.&raquo;</em> Linguaggio scorretto usato di proposito. <a href="#contenuto-eta">Contenuto ed età</a>
+            </p>
+          </div>
+
+          <motion.div initial={{ opacity: 0, rotate: 2, scale: 0.96 }} animate={{ opacity: 1, rotate: -1, scale: 1 }} transition={{ delay: 0.18, duration: 0.55 }} className="pynk-ays-game-screen" aria-label="Esempio di una sfida del gioco">
+            <div className="pynk-ays-screen-top"><span>ROUND 07</span><span>00:04</span></div>
+            <div className="pynk-ays-command">NON TOCCARE<br />IL ROSSO</div>
+            <div className="pynk-ays-controls" aria-hidden="true"><span /><span /><span /><span /></div>
+            <div className="pynk-ays-screen-result"><strong>3</strong> persone hanno già sbagliato.</div>
           </motion.div>
-          <p className="pynk-note pynk-mt-24">
-            <Link href={href("/lavori/are-you-stupid/en")}>Read this page in English →</Link>
-          </p>
+        </div>
+
+        <div className="pynk-container pynk-ays-downloads" aria-label="Download del gioco">
+          <a href={MAC_APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="pynk-ays-download-card pynk-ays-download-card-live">
+            <Apple aria-hidden="true" /><span><small>Scarica ora</small><strong>Mac</strong></span><ExternalLink aria-hidden="true" />
+          </a>
+          <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-ays-download-card">
+            <Smartphone aria-hidden="true" /><span><small>Beta testing</small><strong>iPhone</strong></span><ExternalLink aria-hidden="true" />
+          </a>
+          <div className="pynk-ays-download-card pynk-ays-download-card-soon" aria-label="Android, in arrivo">
+            <Smartphone aria-hidden="true" /><span><small>In arrivo</small><strong>Android</strong></span>
+          </div>
+        </div>
+        <div className="pynk-container pynk-ays-hero-links">
+          <Link href={href("/lavori/are-you-stupid/privacy")}><ShieldCheck aria-hidden="true" /> Privacy Policy</Link>
+          <Link href={href("/lavori/are-you-stupid/en")}>Read in English <ArrowRight aria-hidden="true" /></Link>
         </div>
       </section>
 
@@ -232,21 +233,6 @@ function AreYouStupidInner() {
                 </div>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="pynk-section" aria-labelledby="anteprima">
-        <div className="pynk-container pynk-center-col">
-          <h2 id="anteprima" className="pynk-section-title">
-            Anteprima
-          </h2>
-          <div className="pynk-panel">
-            <Sparkles className="pynk-icon-sm" />
-            <p className="pynk-panel-desc">
-              Screenshot e video di una partita vera, con la TV e i telefoni, arrivano insieme all&apos;uscita sugli store. Questa scheda intanto ospita
-              già tutto il necessario per il controllo di pubblicazione: descrizione, privacy policy e contatti di supporto.
-            </p>
           </div>
         </div>
       </section>

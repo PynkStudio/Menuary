@@ -3825,6 +3825,418 @@
     .pynk-ia-marquee-track,
     .pynk-ia-live::after { animation: none; }
   }
+
+  /* ─── Are You Stupid? — game page ──────────────────────── */
+  .pynk-ays-page {
+    --ays-yellow: hsl(50 100% 58%);
+    --ays-red: hsl(355 86% 61%);
+    --ays-blue: hsl(199 88% 55%);
+    --ays-ink: hsl(248 24% 8%);
+    --ays-paper: hsl(45 35% 94%);
+    background:
+      radial-gradient(circle at 15% 18%, hsl(330 80% 60% / 0.13), transparent 31rem),
+      var(--ays-ink);
+  }
+  .pynk-ays-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: 132px 0 72px;
+    border-bottom: 1px solid hsl(0 0% 100% / 0.1);
+  }
+  .pynk-ays-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    opacity: 0.22;
+    background-image:
+      linear-gradient(hsl(0 0% 100% / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(0 0% 100% / 0.06) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: linear-gradient(to bottom, black 58%, transparent 100%);
+  }
+  .pynk-ays-hero::after {
+    content: "STUPID?";
+    position: absolute;
+    z-index: -1;
+    right: -0.08em;
+    bottom: -0.32em;
+    color: hsl(0 0% 100% / 0.025);
+    font-size: clamp(9rem, 26vw, 27rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.1em;
+    white-space: nowrap;
+  }
+  .pynk-ays-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.88fr) minmax(420px, 1.12fr);
+    gap: clamp(48px, 7vw, 104px);
+    align-items: center;
+  }
+  .pynk-ays-title {
+    margin: 0;
+    color: var(--ays-paper);
+    font-size: clamp(4.4rem, 9vw, 8.5rem);
+    font-weight: 800;
+    line-height: 0.76;
+    letter-spacing: -0.085em;
+    text-wrap: balance;
+  }
+  .pynk-ays-title span {
+    display: inline-block;
+    color: var(--ays-yellow);
+    transform: translateX(0.04em) rotate(-2deg);
+    text-shadow: 0.035em 0.045em 0 var(--ays-red);
+  }
+  .pynk-ays-tagline {
+    margin: 38px 0 0;
+    max-width: 18ch;
+    color: var(--ays-paper);
+    font-size: clamp(1.45rem, 2.5vw, 2.15rem);
+    font-weight: 600;
+    line-height: 1.06;
+    letter-spacing: -0.035em;
+  }
+  .pynk-ays-intro {
+    max-width: 55ch;
+    margin: 20px 0 0;
+    color: hsl(45 25% 88% / 0.76);
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+  .pynk-ays-age-note {
+    max-width: 58ch;
+    margin: 22px 0 0;
+    color: hsl(45 25% 88% / 0.5);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .pynk-ays-age-note a { color: hsl(45 25% 88% / 0.8); text-decoration: underline; text-underline-offset: 3px; }
+  .pynk-ays-game-screen {
+    position: relative;
+    min-height: 430px;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    padding: clamp(22px, 3.5vw, 42px);
+    color: var(--ays-paper);
+    border: 10px solid hsl(248 18% 17%);
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 50% 30%, hsl(330 82% 58% / 0.32), transparent 44%),
+      hsl(248 27% 11%);
+    box-shadow: 24px 30px 0 hsl(355 86% 61% / 0.92), 0 34px 80px hsl(248 40% 2% / 0.55);
+  }
+  .pynk-ays-game-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: 17px;
+    background: repeating-linear-gradient(to bottom, transparent 0 3px, hsl(0 0% 100% / 0.018) 3px 4px);
+  }
+  .pynk-ays-screen-top {
+    display: flex;
+    justify-content: space-between;
+    color: hsl(45 25% 88% / 0.62);
+    font: 600 12px/1 ui-monospace, "SFMono-Regular", Consolas, monospace;
+    letter-spacing: 0.14em;
+  }
+  .pynk-ays-command {
+    align-self: center;
+    text-align: center;
+    font-size: clamp(2.7rem, 5.2vw, 5.2rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.065em;
+  }
+  .pynk-ays-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+  .pynk-ays-controls span { aspect-ratio: 1.65; border-radius: 9px; background: var(--ays-blue); box-shadow: inset 0 -5px 0 hsl(248 30% 10% / 0.24); }
+  .pynk-ays-controls span:nth-child(2) { background: var(--ays-yellow); }
+  .pynk-ays-controls span:nth-child(3) { background: var(--ays-red); }
+  .pynk-ays-controls span:nth-child(4) { background: hsl(151 62% 51%); }
+  .pynk-ays-screen-result { text-align: center; color: hsl(45 25% 88% / 0.66); font-size: 13px; }
+  .pynk-ays-screen-result strong { color: var(--ays-yellow); font-size: 18px; }
+  .pynk-ays-downloads {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 74px;
+  }
+  .pynk-ays-download-card {
+    min-height: 98px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 15px;
+    padding: 18px 20px;
+    color: var(--ays-paper);
+    border: 1px solid hsl(0 0% 100% / 0.14);
+    border-radius: 15px;
+    background: hsl(0 0% 100% / 0.055);
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+  }
+  a.pynk-ays-download-card:hover { transform: translateY(-3px); border-color: hsl(0 0% 100% / 0.32); background: hsl(0 0% 100% / 0.09); }
+  a.pynk-ays-download-card:active { transform: translateY(0) scale(0.99); }
+  .pynk-ays-download-card:focus-visible { outline: 3px solid var(--ays-yellow); outline-offset: 4px; }
+  .pynk-ays-download-card > svg:first-child { width: 28px; height: 28px; }
+  .pynk-ays-download-card > svg:last-child { width: 15px; height: 15px; opacity: 0.55; }
+  .pynk-ays-download-card span { display: grid; }
+  .pynk-ays-download-card small { color: hsl(45 25% 88% / 0.58); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
+  .pynk-ays-download-card strong { font-size: 22px; line-height: 1.15; }
+  .pynk-ays-download-card-live { color: var(--ays-ink); border-color: var(--ays-yellow); background: var(--ays-yellow); }
+  .pynk-ays-download-card-live small { color: hsl(248 24% 8% / 0.62); }
+  a.pynk-ays-download-card-live:hover { border-color: hsl(50 100% 68%); background: hsl(50 100% 64%); }
+  .pynk-ays-download-card-soon { opacity: 0.52; }
+  .pynk-ays-hero-links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; margin-top: 26px; }
+  .pynk-ays-hero-links a { display: inline-flex; align-items: center; gap: 8px; color: hsl(45 25% 88% / 0.6); font-size: 13px; }
+  .pynk-ays-hero-links a:hover { color: var(--ays-paper); }
+  .pynk-ays-hero-links svg { width: 14px; height: 14px; }
+
+  .pynk-ays-page > .pynk-section { border-bottom: 1px solid hsl(0 0% 100% / 0.07); }
+  .pynk-ays-page > .pynk-section-alt { background: hsl(330 28% 13% / 0.42); }
+  .pynk-ays-page .pynk-section-title { font-weight: 700; letter-spacing: -0.05em; }
+  .pynk-ays-page .pynk-section-head { max-width: 780px; }
+  .pynk-ays-page .pynk-grid-2 { align-items: stretch; }
+  .pynk-ays-page .pynk-grid-2 .pynk-panel {
+    position: relative;
+    overflow: hidden;
+    min-height: 190px;
+    border-radius: 12px;
+    border-color: hsl(0 0% 100% / 0.1);
+    background: hsl(0 0% 100% / 0.045);
+    box-shadow: none;
+  }
+  .pynk-ays-page .pynk-grid-2 .pynk-panel::after {
+    content: "";
+    position: absolute;
+    right: -38px;
+    bottom: -46px;
+    width: 112px;
+    aspect-ratio: 1;
+    border: 18px solid hsl(50 100% 58% / 0.08);
+    border-radius: 50%;
+  }
+  .pynk-ays-page .pynk-step { border-radius: 10px; }
+  .pynk-ays-page .pynk-step-number { border-radius: 5px; background: var(--ays-yellow); color: var(--ays-ink); }
+  .pynk-ays-page .pynk-ai-faq-list { gap: 0; border-top: 1px solid hsl(0 0% 100% / 0.11); }
+  .pynk-ays-page .pynk-ai-faq-list .pynk-panel {
+    border: 0;
+    border-bottom: 1px solid hsl(0 0% 100% / 0.11);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .pynk-ays-page .pynk-ai-faq-list .pynk-panel-title-sm { color: var(--ays-yellow); }
+
+  @media (max-width: 900px) {
+    .pynk-ays-hero-grid { grid-template-columns: 1fr; }
+    .pynk-ays-hero-copy { max-width: 650px; }
+    .pynk-ays-game-screen { width: min(100%, 680px); min-height: 390px; }
+    .pynk-ays-downloads { margin-top: 64px; }
+  }
+  @media (max-width: 700px) {
+    .pynk-ays-hero { padding: 104px 0 54px; }
+    .pynk-ays-hero-grid { gap: 38px; }
+    .pynk-ays-title { font-size: clamp(4rem, 21vw, 6.4rem); }
+    .pynk-ays-tagline { margin-top: 28px; }
+    .pynk-ays-game-screen { min-height: 310px; padding: 22px; border-width: 7px; border-radius: 22px; box-shadow: 12px 16px 0 hsl(355 86% 61% / 0.92); }
+    .pynk-ays-command { font-size: clamp(2.55rem, 12vw, 4.2rem); }
+    .pynk-ays-downloads { grid-template-columns: 1fr; margin-top: 54px; }
+    .pynk-ays-download-card { min-height: 82px; }
+    .pynk-ays-hero-links { flex-direction: column; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pynk-ays-download-card { transition: none; }
+  }
+
+  .pynk-site[data-pynk-theme="light"] .pynk-ays-page {
+    --ays-ink: hsl(248 24% 8%);
+    background: hsl(44 31% 93%);
+    color: hsl(248 24% 8%);
+  }
+  .pynk-site[data-pynk-theme="light"] .pynk-ays-hero { background: var(--ays-ink); color: var(--ays-paper); }
+  .pynk-site[data-pynk-theme="light"] .pynk-ays-page > .pynk-section { border-color: hsl(248 24% 8% / 0.1); }
+  .pynk-site[data-pynk-theme="light"] .pynk-ays-page > .pynk-section-alt { background: hsl(330 45% 88% / 0.45); }
+  .pynk-site[data-pynk-theme="light"] .pynk-ays-page .pynk-grid-2 .pynk-panel { border-color: hsl(248 24% 8% / 0.12); background: hsl(0 0% 100% / 0.52); }
+  .pynk-site[data-pynk-theme="light"] .pynk-ays-page .pynk-ai-faq-list,
+  .pynk-site[data-pynk-theme="light"] .pynk-ays-page .pynk-ai-faq-list .pynk-panel { border-color: hsl(248 24% 8% / 0.13); }
+  .pynk-site[data-pynk-theme="light"] .pynk-ays-page .pynk-ai-faq-list .pynk-panel-title-sm { color: hsl(344 70% 43%); }
+
+  /* ─── Beta program (pynkstudio.eu/beta) ─────────────────── */
+  .pynk-beta-notice {
+    margin: 0 auto 24px; max-width: 760px;
+    border-radius: 14px; padding: 14px 18px;
+    border: 1px solid color-mix(in srgb, var(--pynk-primary) 30%, transparent);
+    background: color-mix(in srgb, var(--pynk-primary) 10%, transparent);
+    font-size: 14px; font-weight: 300; display: grid; gap: 10px; justify-items: start;
+  }
+  .pynk-beta-notice p { margin: 0; }
+  .pynk-beta-skeleton {
+    height: 320px; border-radius: 24px;
+    background: color-mix(in srgb, var(--pynk-card) 50%, transparent);
+    animation: pynk-beta-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pynk-beta-pulse { 50% { opacity: 0.5; } }
+
+  .pynk-beta-how { margin: 8px 0 48px; }
+  .pynk-beta-how-list { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 16px; }
+  @media (min-width: 760px) { .pynk-beta-how-list { grid-template-columns: repeat(3, 1fr); } }
+  .pynk-beta-how-item {
+    display: grid; gap: 6px; padding: 22px; border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 45%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 35%, transparent);
+    font-size: 14px; font-weight: 300;
+  }
+  .pynk-beta-how-item strong { font-size: 17px; font-weight: 500; }
+  .pynk-beta-how-num {
+    width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center;
+    background: var(--pynk-gradient); color: var(--pynk-primary-fg); font-weight: 600; font-size: 14px;
+  }
+
+  .pynk-beta-layout { display: grid; gap: 40px; align-items: start; }
+  @media (min-width: 1000px) { .pynk-beta-layout { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }
+  .pynk-beta-layout-form { display: grid; gap: 24px; }
+  .pynk-beta-form-title { margin: 0; font-size: 22px; font-weight: 400; display: inline-flex; align-items: center; gap: 8px; }
+  .pynk-beta-label { font-size: 14px; font-weight: 300; color: color-mix(in srgb, var(--pynk-fg) 80%, transparent); }
+  .pynk-beta-hint { font-size: 12px; }
+  .pynk-beta-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  .pynk-beta-device-groups { display: grid; gap: 14px; margin-top: 6px; }
+  .pynk-beta-device-group { display: grid; gap: 8px; }
+  .pynk-beta-device-group-label { margin: 0; padding: 0; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pynk-muted-fg); }
+  .pynk-beta-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pynk-beta-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border-radius: 999px; padding: 8px 14px; font-size: 14px; font-weight: 300; cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 60%, transparent);
+    background: color-mix(in srgb, var(--pynk-input) 70%, transparent); color: var(--pynk-fg);
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+  .pynk-beta-chip:hover { border-color: color-mix(in srgb, var(--pynk-primary) 55%, transparent); }
+  .pynk-beta-chip[aria-pressed="true"] {
+    border-color: var(--pynk-primary);
+    background: color-mix(in srgb, var(--pynk-primary) 18%, transparent);
+    color: var(--pynk-primary);
+  }
+  .pynk-beta-chip:focus-visible, .pynk-beta-tab:focus-visible { outline: 2px solid var(--pynk-primary); outline-offset: 2px; }
+  .pynk-beta-fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 18px; min-width: 0; }
+  .pynk-beta-fieldset:disabled { opacity: 0.45; }
+
+  .pynk-beta-check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; font-weight: 300; cursor: pointer; }
+  .pynk-beta-check input { margin-top: 3px; width: 17px; height: 17px; accent-color: var(--pynk-primary); flex-shrink: 0; }
+  .pynk-beta-check-inline { align-items: center; white-space: nowrap; }
+  .pynk-beta-check-inline input { margin-top: 0; }
+
+  .pynk-beta-login {
+    display: grid; gap: 8px; padding: 24px; border-radius: 20px;
+    border: 1px dashed color-mix(in srgb, var(--pynk-border) 70%, transparent);
+  }
+  .pynk-beta-login p { margin: 0; font-size: 14px; }
+  .pynk-beta-login-title { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 16px !important; }
+  .pynk-beta-login-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  .pynk-beta-login-row input { flex: 1 1 200px; }
+
+  .pynk-beta-tabs {
+    display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 28px; padding-bottom: 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--pynk-border) 45%, transparent);
+  }
+  .pynk-beta-tab {
+    border: 0; background: none; color: var(--pynk-muted-fg); cursor: pointer;
+    padding: 8px 14px; border-radius: 999px; font-size: 15px; font-weight: 300;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pynk-beta-tab[aria-selected="true"] { background: color-mix(in srgb, var(--pynk-primary) 16%, transparent); color: var(--pynk-primary); }
+  .pynk-beta-logout { margin-left: auto; }
+
+  .pynk-beta-area-body { display: grid; gap: 24px; }
+  .pynk-beta-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pynk-beta-search { position: relative; flex: 1 1 240px; }
+  .pynk-beta-search input { padding-left: 36px !important; }
+  .pynk-beta-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--pynk-muted-fg); }
+  .pynk-beta-select {
+    border-radius: 12px; padding: 11px 12px; font: inherit; font-size: 14px; font-weight: 300;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 50%, transparent);
+    background: var(--pynk-input); color: var(--pynk-fg); max-width: 100%;
+  }
+  .pynk-beta-empty { padding: 32px 0; text-align: center; }
+
+  .pynk-beta-grid { display: grid; gap: 18px; margin-top: 18px; }
+  @media (min-width: 760px) { .pynk-beta-area-body .pynk-beta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .pynk-beta-card {
+    display: grid; gap: 14px; align-content: start; padding: 24px; border-radius: 22px;
+    border: 1px solid color-mix(in srgb, var(--pynk-primary) 14%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 45%, transparent);
+    box-shadow: var(--pynk-shadow-card); min-width: 0;
+  }
+  .pynk-beta-card[data-available="false"] { opacity: 0.7; }
+  .pynk-beta-card-head { display: flex; gap: 14px; align-items: center; }
+  .pynk-beta-card-title { margin: 0; font-size: 20px; font-weight: 500; }
+  .pynk-beta-card-tagline { margin: 2px 0 0; font-size: 14px; font-weight: 300; color: var(--pynk-muted-fg); }
+  .pynk-beta-icon { width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0; object-fit: cover; }
+  .pynk-beta-icon-fallback { display: grid; place-items: center; background: var(--pynk-gradient); color: var(--pynk-primary-fg); }
+  .pynk-beta-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pynk-beta-tag {
+    border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 500;
+    background: color-mix(in srgb, var(--pynk-primary) 18%, transparent); color: var(--pynk-primary);
+  }
+  .pynk-beta-tag[data-kind="update"] { background: color-mix(in srgb, hsl(200 80% 55%) 18%, transparent); color: hsl(200 80% 60%); }
+  .pynk-beta-tag[data-kind="full"] { background: color-mix(in srgb, hsl(35 90% 55%) 18%, transparent); color: hsl(35 90% 55%); }
+  .pynk-beta-desc { margin: 0; font-size: 15px; font-weight: 300; line-height: 1.6; white-space: pre-line; }
+  .pynk-beta-locked { margin: 0; font-size: 13px; font-weight: 300; color: var(--pynk-muted-fg); }
+
+  .pynk-beta-join-details { border-top: 1px solid color-mix(in srgb, var(--pynk-border) 40%, transparent); padding-top: 12px; }
+  .pynk-beta-join-details summary { cursor: pointer; font-weight: 500; color: var(--pynk-primary); }
+  .pynk-beta-channel { display: grid; gap: 10px; margin-top: 16px; }
+  .pynk-beta-channel-head { margin: 0; font-size: 15px; }
+  .pynk-beta-steps { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; font-weight: 300; line-height: 1.55; }
+  .pynk-beta-notes {
+    margin: 0; padding: 10px 14px; border-radius: 12px; font-size: 14px; font-weight: 300;
+    background: color-mix(in srgb, var(--pynk-muted) 45%, transparent); white-space: pre-line;
+  }
+  .pynk-beta-join-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .pynk-beta-join { justify-self: start; display: inline-flex; align-items: center; gap: 8px; }
+  .pynk-beta-account { font-size: 13px; overflow-wrap: anywhere; }
+  .pynk-beta-feedback-link { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--pynk-muted-fg); justify-self: start; }
+  .pynk-beta-feedback-link:hover { color: var(--pynk-primary); }
+
+  .pynk-beta-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; }
+  .pynk-beta-danger {
+    border: 0; background: none; cursor: pointer; font-size: 14px; font-weight: 300;
+    color: hsl(0 70% 58%); display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pynk-section-head .pynk-eyebrow { display: inline-flex; align-items: center; gap: 8px; }
+
+  @media (prefers-reduced-motion: reduce) { .pynk-beta-skeleton { animation: none; } }
+
+  /* ─── Beta program — admin ──────────────────────────────── */
+  .pynk-beta-admin-badge {
+    display: inline-block; padding: 3px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    background: hsl(220 12% 92%); color: hsl(220 15% 35%);
+  }
+  .pynk-beta-admin-badge[data-status="open"],
+  .pynk-beta-admin-badge[data-status="approved"] { background: hsl(150 60% 90%); color: hsl(150 65% 28%); }
+  .pynk-beta-admin-badge[data-status="full"],
+  .pynk-beta-admin-badge[data-status="pending"] { background: hsl(35 100% 90%); color: hsl(25 85% 33%); }
+  .pynk-beta-admin-badge[data-status="closed"],
+  .pynk-beta-admin-badge[data-status="rejected"] { background: hsl(0 60% 92%); color: hsl(0 60% 38%); }
+  .pynk-beta-admin-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pynk-beta-admin-chips .pynk-crm-chip { display: inline-flex; align-items: center; gap: 4px; }
+  .pynk-beta-admin-channel {
+    display: grid; gap: 8px; padding: 12px; margin-bottom: 10px; border-radius: 10px;
+    border: 1px solid var(--pa-line); background: var(--pa-surface);
+  }
+  .pynk-beta-admin-channel-foot { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
+  .pynk-beta-admin-row { display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .pynk-beta-admin-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 80;
+    padding: 10px 18px; border-radius: 10px; background: var(--pa-ink); color: #fff; font-size: 14px;
+    box-shadow: 0 8px 24px hsl(330 15% 12% / 0.25);
+  }
 }
 
 /* Angolo del bordo rotante del form /ia-in-azienda: @property sta fuori dal layer. */

@@ -37,10 +37,10 @@ Voce del conduttore per la modalità party su Apple TV / Mac. Il gioco gira offl
 
 - Auth: `Authorization: Bearer AYS_PRESENTER_API_TOKEN` su tutte le route (token condiviso, dentro l'app: limita gli abusi, non è un'autenticazione forte). Limite per IP e per istanza.
 - `POST /api/ays/presenter`: battute dinamiche (con nome). Cache nel bucket privato `ays-presenter-cache` + tabella `ays_presenter_cache_entries`, retention di 30 giorni dall'ultimo uso (cron `ays-presenter-cache-retention` → `api/cron/ays-presenter-cache`).
-- `GET /api/ays/presenter/pack?locale=it&format=1`: manifest del pack pre-registrato da `ays_presenter_packs`, con ETag → `304`.
+- `GET /api/ays/presenter/pack?locale=<en|it|fr|es|pt|de>&format=1`: manifest del pack pre-registrato da `ays_presenter_packs`, con ETag → `304` e fallback inglese per una locale non supportata.
 - `GET /api/ays/presenter/pack/clips/<sha256>`: clip del pack dal bucket privato `ays-presenter-pack`, immutabile.
 - Sintesi: `src/lib/ays-presenter/speech.ts`. ElevenLabs se configurato, altrimenti OpenAI (vedi [[integrazioni-attive]]). Il testo maiuscolo dei sottotitoli arriva alla voce in minuscolo con iniziale maiuscola. La voce fa parte delle chiavi di cache.
-- Contenuti: `content/ays-presenter/pack.<locale>.json`, validati da `src/lib/ays-presenter/pack.ts`. Pubblicazione: `npm run ays:pack -- [--locale it] [--dry-run] [--prune]`. Registra solo le righe nuove o cambiate e alza la revisione. Per sostituire una registrazione si cambia il testo o il `take`; per invalidarla si toglie la riga.
+- Contenuti: `content/ays-presenter/pack.<locale>.json`, validati da `src/lib/ays-presenter/pack.ts`. Pubblicazione: `npm run ays:pack -- --locale <locale> [--dry-run] [--prune]`. Registra solo le righe nuove o cambiate e alza la revisione. Per sostituire una registrazione si cambia il testo o il `take`; per invalidarla si toglie la riga. Dal 2026-10-11 sono pubblicate le revisioni 1 di tutte le sei lingue, 11 clip universali ciascuna; i template con nome/titolo sono sintetizzati al bisogno.
 
 ## Dove inserire i prompt
 

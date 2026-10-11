@@ -1,0 +1,215 @@
+{
+  "format": 1,
+  "locale": "fr",
+  "lines": {
+    "lobby.empty": [
+      {
+        "id": "personne-prometteur",
+        "text": "PERSONNE. PROMETTEUR."
+      },
+      {
+        "id": "la-soiree-est-deja-un-succes",
+        "text": "LA SOIRÉE EST DÉJÀ UN SUCCÈS."
+      }
+    ],
+    "result.everyoneWrong": [
+      {
+        "id": "personne-n-a-lu-parfait",
+        "text": "PERSONNE N'A LU. PARFAIT."
+      },
+      {
+        "id": "zero-bonne-reponse-belle-equipe",
+        "text": "ZÉRO BONNE RÉPONSE. BELLE ÉQUIPE."
+      },
+      {
+        "id": "vous-avez-tous-echoue-ensemble",
+        "text": "VOUS AVEZ TOUS ÉCHOUÉ. ENSEMBLE."
+      }
+    ],
+    "result.everyoneCorrect": [
+      {
+        "id": "etrangement-competents",
+        "text": "ÉTRANGEMENT COMPÉTENTS."
+      },
+      {
+        "id": "tout-est-juste-ne-vous-habituez-",
+        "text": "TOUT EST JUSTE. NE VOUS HABITUEZ PAS."
+      }
+    ],
+    "result.mixed": [
+      {
+        "id": "certains-ont-lu-certains-etaient",
+        "text": "CERTAINS ONT LU. CERTAINS ÉTAIENT PRÉSENTS."
+      },
+      {
+        "id": "resultats-mitiges-tres-mitiges",
+        "text": "RÉSULTATS MITIGÉS. TRÈS MITIGÉS."
+      }
+    ],
+    "gameEnd": [
+      {
+        "id": "nous-avons-un-gagnant-techniquem",
+        "text": "NOUS AVONS UN GAGNANT. TECHNIQUEMENT."
+      },
+      {
+        "id": "c-est-fini-vous-pouvez-refaire-s",
+        "text": "C'EST FINI. VOUS POUVEZ REFAIRE SEMBLANT D'ÊTRE INTELLIGENTS."
+      }
+    ]
+  },
+  "templates": {
+    "result.mixed.oneWrong.mechanic.reading": [
+      {
+        "id": "v1",
+        "text": "C'ÉTAIT ÉCRIT DEVANT TOI, {name}. DEVANT. TOI.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.memory": [
+      {
+        "id": "v1",
+        "text": "C'ÉTAIT UNE SEULE CHOSE, {name}. PAS UN ROMAN ENTIER.",
+        "intensity": "savage"
+      }
+    ],
+    "title.anonymous": [
+      {
+        "id": "0",
+        "text": "TU ES DÉSORMAIS {title}."
+      }
+    ],
+    "result.title.doesNotRead.named": [
+      {
+        "id": "v1",
+        "text": "{name}, TROIS DE SUITE. TU ES DÉSORMAIS {title}.",
+        "intensity": "savage"
+      }
+    ],
+    "gameEnd.named": [
+      {
+        "id": "0",
+        "text": "{name} A GAGNÉ. TECHNIQUEMENT."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.counting": [
+      {
+        "id": "v1",
+        "text": "{name}, TANT QUE TES DOIGTS SUFFISAIENT, TU SEMBLAIS COMPÉTITIF.",
+        "intensity": "savage"
+      }
+    ],
+    "result.title.king.named": [
+      {
+        "id": "v1",
+        "text": "{name}, ENCORE UN POINT. TU ES DÉSORMAIS {title}."
+      }
+    ],
+    "result.player.lss.losingLives": [
+      {
+        "id": "v1",
+        "text": "{name}, LES VIES NE SONT PAS DES POINTS. ELLES S'ÉPUISENT.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.direction": [
+      {
+        "id": "v1",
+        "text": "{name}, C'ÉTAIT TON AUTRE GAUCHE.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.perception": [
+      {
+        "id": "v1",
+        "text": "C'ÉTAIT SOUS TES YEUX, {name}. TOI AUSSI, MALHEUREUSEMENT.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.stillZero": [
+      {
+        "id": "v1",
+        "text": "{name}, IL FAUT MARQUER PLUS DE POINTS. OU AU MOINS UN POINT.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.timing": [
+      {
+        "id": "v1",
+        "text": "{name}, C'ÉTAIT UNE QUESTION DE TEMPS. TU L'AS GASPILLÉ.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.lss.lastLife": [
+      {
+        "id": "v1",
+        "text": "{name}, IL T'EN RESTE UNE. ESSAIE DE NE PAS GÂCHER CELLE-LÀ AUSSI.",
+        "intensity": "savage"
+      }
+    ],
+    "title.named": [
+      {
+        "id": "0",
+        "text": "{name}, TU ES DÉSORMAIS {title}."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.button": [
+      {
+        "id": "v1",
+        "text": "C'ÉTAIT UN BOUTON, {name}. UN SEUL.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.firstPointLate": [
+      {
+        "id": "v1",
+        "text": "AH, TU AVAIS COMPRIS QUE C'ÉTAIT UNE COMPÉTITION, {name} ?",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.wrongStreak3": [
+      {
+        "id": "v1",
+        "text": "{name}, TU VEUX APPELER UN AMI OU TU TE DÉBROUILLES SEUL ?",
+        "intensity": "savage"
+      }
+    ],
+    "lobby.returning.named": [
+      {
+        "id": "0",
+        "text": "{name} EST DE RETOUR, {title}."
+      }
+    ],
+    "lobby.returning.anonymous": [
+      {
+        "id": "0",
+        "text": "{title} EST DE RETOUR."
+      }
+    ],
+    "result.mixed.oneWrong.named": [
+      {
+        "id": "v1",
+        "text": "T'INQUIÈTE, {name}. JE T'EXPLIQUERAI APRÈS. PROMIS.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.waiting": [
+      {
+        "id": "v1",
+        "text": "IL FALLAIT NE RIEN FAIRE, {name}. ENFIN TA SPÉCIALITÉ.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.math": [
+      {
+        "id": "v1",
+        "text": "{name}, ON AVAIT CHOISI DE PETITS NOMBRES EXPRÈS.",
+        "intensity": "savage"
+      }
+    ]
+  },
+  "titles": {
+    "king": "LE ROI",
+    "kingUndisputed": "LE ROI INCONTESTÉ",
+    "doesNotRead": "CELUI QUI NE LIT PAS"
+  }
+}

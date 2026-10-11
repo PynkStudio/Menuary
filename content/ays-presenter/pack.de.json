@@ -1,0 +1,215 @@
+{
+  "format": 1,
+  "locale": "de",
+  "lines": {
+    "lobby.empty": [
+      {
+        "id": "niemand-vielversprechend",
+        "text": "NIEMAND. VIELVERSPRECHEND."
+      },
+      {
+        "id": "der-abend-ist-jetzt-schon-ein-er",
+        "text": "DER ABEND IST JETZT SCHON EIN ERFOLG."
+      }
+    ],
+    "result.everyoneWrong": [
+      {
+        "id": "niemand-hat-gelesen-perfekt",
+        "text": "NIEMAND HAT GELESEN. PERFEKT."
+      },
+      {
+        "id": "null-richtige-antworten-starkes-",
+        "text": "NULL RICHTIGE ANTWORTEN. STARKES TEAM."
+      },
+      {
+        "id": "ihr-lagt-alle-falsch-gemeinsam",
+        "text": "IHR LAGT ALLE FALSCH. GEMEINSAM."
+      }
+    ],
+    "result.everyoneCorrect": [
+      {
+        "id": "verdachtig-kompetent",
+        "text": "VERDÄCHTIG KOMPETENT."
+      },
+      {
+        "id": "alles-richtig-gewohnt-euch-nicht",
+        "text": "ALLES RICHTIG. GEWÖHNT EUCH NICHT DARAN."
+      }
+    ],
+    "result.mixed": [
+      {
+        "id": "einige-haben-gelesen-einige-ware",
+        "text": "EINIGE HABEN GELESEN. EINIGE WAREN ANWESEND."
+      },
+      {
+        "id": "gemischte-ergebnisse-sehr-gemisc",
+        "text": "GEMISCHTE ERGEBNISSE. SEHR GEMISCHT."
+      }
+    ],
+    "gameEnd": [
+      {
+        "id": "wir-haben-einen-sieger-technisch",
+        "text": "WIR HABEN EINEN SIEGER. TECHNISCH GESEHEN."
+      },
+      {
+        "id": "es-ist-vorbei-ihr-konnt-wieder-s",
+        "text": "ES IST VORBEI. IHR KÖNNT WIEDER SO TUN, ALS WÄRT IHR SCHLAU."
+      }
+    ]
+  },
+  "templates": {
+    "gameEnd.named": [
+      {
+        "id": "0",
+        "text": "{name} HAT GEWONNEN. TECHNISCH GESEHEN."
+      }
+    ],
+    "lobby.returning.named": [
+      {
+        "id": "0",
+        "text": "{name} IST ZURÜCK, {title}."
+      }
+    ],
+    "result.title.doesNotRead.named": [
+      {
+        "id": "v1",
+        "text": "{name}, DREIMAL IN FOLGE. AB JETZT BIST DU {title}.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.reading": [
+      {
+        "id": "v1",
+        "text": "ES STAND VOR DIR, {name}. DIREKT. VOR. DIR.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.direction": [
+      {
+        "id": "v1",
+        "text": "{name}, DAS WAR DEIN ANDERES LINKS.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.waiting": [
+      {
+        "id": "v1",
+        "text": "DU SOLLTEST NICHTS TUN, {name}. ENDLICH DEIN SPEZIALGEBIET.",
+        "intensity": "savage"
+      }
+    ],
+    "title.named": [
+      {
+        "id": "0",
+        "text": "{name}, AB JETZT BIST DU {title}."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.math": [
+      {
+        "id": "v1",
+        "text": "{name}, WIR HABEN EXTRA KLEINE ZAHLEN GENOMMEN.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.perception": [
+      {
+        "id": "v1",
+        "text": "ES WAR DIREKT VOR DEINEN AUGEN, {name}. DU LEIDER AUCH.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.wrongStreak3": [
+      {
+        "id": "v1",
+        "text": "{name}, WILLST DU JEMANDEN ANRUFEN ODER SCHAFFST DU DAS ALLEIN?",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.named": [
+      {
+        "id": "v1",
+        "text": "GANZ RUHIG, {name}. ICH ERKLÄRE ES DIR SPÄTER. VERSPROCHEN.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.stillZero": [
+      {
+        "id": "v1",
+        "text": "{name}, MAN GEWINNT MIT MEHR PUNKTEN. ODER WENIGSTENS MIT EINEM.",
+        "intensity": "savage"
+      }
+    ],
+    "result.title.king.named": [
+      {
+        "id": "v1",
+        "text": "{name}, NOCH EIN PUNKT. AB JETZT BIST DU {title}."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.timing": [
+      {
+        "id": "v1",
+        "text": "{name}, ES WAR EINE FRAGE DER ZEIT. DU HAST SIE VERSCHWENDET.",
+        "intensity": "savage"
+      }
+    ],
+    "lobby.returning.anonymous": [
+      {
+        "id": "0",
+        "text": "{title} IST ZURÜCK."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.memory": [
+      {
+        "id": "v1",
+        "text": "ES WAR EINE SACHE, {name}. KEIN GANZER ROMAN.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.button": [
+      {
+        "id": "v1",
+        "text": "ES WAR EIN KNOPF, {name}. EINER.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.lss.lastLife": [
+      {
+        "id": "v1",
+        "text": "{name}, EIN LEBEN NOCH. VERSCHWENDE DAS BITTE NICHT AUCH.",
+        "intensity": "savage"
+      }
+    ],
+    "title.anonymous": [
+      {
+        "id": "0",
+        "text": "AB JETZT BIST DU {title}."
+      }
+    ],
+    "result.player.lss.losingLives": [
+      {
+        "id": "v1",
+        "text": "{name}, LEBEN SIND KEINE PUNKTE. DIE GEHEN WIRKLICH AUS.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.counting": [
+      {
+        "id": "v1",
+        "text": "{name}, SOLANGE DIE FINGER REICHTEN, SAHST DU KONKURRENZFÄHIG AUS.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.firstPointLate": [
+      {
+        "id": "v1",
+        "text": "ACH, DU HAST GEMERKT, DASS DAS EIN WETTBEWERB IST, {name}?",
+        "intensity": "savage"
+      }
+    ]
+  },
+  "titles": {
+    "doesNotRead": "DER, DER NICHT LIEST",
+    "king": "DER KÖNIG",
+    "kingUndisputed": "DER UNANGEFOCHTENE KÖNIG"
+  }
+}

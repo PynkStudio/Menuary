@@ -3,37 +3,238 @@
   "locale": "it",
   "lines": {
     "lobby.empty": [
-      { "id": "nessuno", "text": "NESSUNO. PROMETTENTE." },
-      { "id": "successo", "text": "LA SERATA È GIÀ UN SUCCESSO." }
+      {
+        "id": "nessuno",
+        "text": "NESSUNO. PROMETTENTE."
+      },
+      {
+        "id": "successo",
+        "text": "LA SERATA È GIÀ UN SUCCESSO."
+      }
     ],
     "result.everyoneWrong": [
-      { "id": "nessuno-letto", "text": "NESSUNO HA LETTO. PERFETTO." },
-      { "id": "zero-giuste", "text": "ZERO RISPOSTE GIUSTE. GRANDE SQUADRA." },
-      { "id": "insieme", "text": "AVETE SBAGLIATO TUTTI. INSIEME." }
+      {
+        "id": "nessuno-letto",
+        "text": "NESSUNO HA LETTO. PERFETTO."
+      },
+      {
+        "id": "zero-giuste",
+        "text": "ZERO RISPOSTE GIUSTE. GRANDE SQUADRA."
+      },
+      {
+        "id": "insieme",
+        "text": "AVETE SBAGLIATO TUTTI. INSIEME."
+      }
     ],
     "result.everyoneCorrect": [
-      { "id": "sospetto", "text": "SOSPETTOSAMENTE COMPETENTI." },
-      { "id": "non-abituatevi", "text": "TUTTI GIUSTI. NON ABITUATEVI." }
+      {
+        "id": "sospetto",
+        "text": "SOSPETTOSAMENTE COMPETENTI."
+      },
+      {
+        "id": "non-abituatevi",
+        "text": "TUTTI GIUSTI. NON ABITUATEVI."
+      }
     ],
     "result.mixed": [
-      { "id": "presenti", "text": "ALCUNI HANNO LETTO. ALCUNI ERANO PRESENTI." },
-      { "id": "misti", "text": "RISULTATI MISTI. MOLTO MISTI." }
+      {
+        "id": "presenti",
+        "text": "ALCUNI HANNO LETTO. ALCUNI ERANO PRESENTI."
+      },
+      {
+        "id": "misti",
+        "text": "RISULTATI MISTI. MOLTO MISTI."
+      }
     ],
     "gameEnd": [
-      { "id": "tecnicamente", "text": "ABBIAMO UN VINCITORE. TECNICAMENTE." },
-      { "id": "fingervi", "text": "È FINITA. POTETE TORNARE A FINGERVI INTELLIGENTI." }
+      {
+        "id": "tecnicamente",
+        "text": "ABBIAMO UN VINCITORE. TECNICAMENTE."
+      },
+      {
+        "id": "fingervi",
+        "text": "È FINITA. POTETE TORNARE A FINGERVI INTELLIGENTI."
+      }
     ]
   },
   "templates": {
-    "title.named": [{ "id": "da-ora", "text": "{name}, DA ORA SEI {title}." }],
-    "title.anonymous": [{ "id": "da-ora", "text": "DA ORA SEI {title}." }],
-    "gameEnd.named": [{ "id": "tecnicamente", "text": "{name} HA VINTO. TECNICAMENTE." }],
-    "lobby.returning.named": [{ "id": "tornato", "text": "È TORNATO {name}, {title}." }],
-    "lobby.returning.anonymous": [{ "id": "tornato", "text": "È TORNATO {title}." }]
+    "result.mixed.oneWrong.mechanic.reading": [
+      {
+        "id": "v1",
+        "text": "C'ERA SCRITTO DAVANTI A TE, {name}. DAVANTI. A. TE.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.memory": [
+      {
+        "id": "v1",
+        "text": "ERA UNA COSA SOLA, {name}. NON LA DIVINA COMMEDIA.",
+        "intensity": "savage"
+      }
+    ],
+    "title.anonymous": [
+      {
+        "id": "0",
+        "text": "DA ORA SEI {title}."
+      }
+    ],
+    "result.title.doesNotRead.named": [
+      {
+        "id": "v1",
+        "text": "{name}, TRE DI FILA. DA ORA SEI {title}.",
+        "intensity": "savage"
+      }
+    ],
+    "gameEnd.named": [
+      {
+        "id": "0",
+        "text": "{name} HA VINTO. TECNICAMENTE."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.counting": [
+      {
+        "id": "v1",
+        "text": "{name}, FINCHÉ BASTAVANO LE DITA SEMBRAVI COMPETITIVO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.title.king.named": [
+      {
+        "id": "v1",
+        "text": "{name}, UN ALTRO PUNTO. DA ORA SEI {title}."
+      }
+    ],
+    "result.player.lss.losingLives": [
+      {
+        "id": "v1",
+        "text": "{name}, LE VITE NON SONO PUNTI. QUELLE FINISCONO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.stillZero": [
+      {
+        "id": "v1",
+        "text": "{name}, VINCE CHI FA PIÙ PUNTI. O ALMENO CHI FA DEI PUNTI.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.direction": [
+      {
+        "id": "v1",
+        "text": "{name}, QUELLA ERA L'ALTRA SINISTRA.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.perception": [
+      {
+        "id": "v1",
+        "text": "{name}, ERA DAVANTI AI TUOI OCCHI. PURTROPPO ANCHE TU.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.timing": [
+      {
+        "id": "v1",
+        "text": "{name}, ERA UNA QUESTIONE DI TEMPO. E LO HAI PERSO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.button": [
+      {
+        "id": "v1",
+        "text": "ERA UN BOTTONE, {name}. UNO.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, NON PENSAVO SERVISSE UN TUTORIAL PER PREMERE UN BOTTONE.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.lss.lastLife": [
+      {
+        "id": "v1",
+        "text": "{name}, TE NE RESTA UNA. PROVA A NON BUTTARE VIA ANCHE QUESTA.",
+        "intensity": "savage"
+      }
+    ],
+    "title.named": [
+      {
+        "id": "0",
+        "text": "{name}, DA ORA SEI {title}."
+      }
+    ],
+    "result.player.firstPointLate": [
+      {
+        "id": "v1",
+        "text": "AH, MA QUINDI LO HAI CAPITO CHE È UNA GARA, {name}?",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "DALLA REGIA DICONO CHE {name} ERA QUI DALL'INIZIO. NON CE N'ERAVAMO ACCORTI. FORSE NEANCHE LUI.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.wrongStreak3": [
+      {
+        "id": "v1",
+        "text": "{name}, VUOI CHIEDERE L'AIUTO DA CASA O CE LA FAI DA SOLO?",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "TI SERVE L'AIUTO DEL PUBBLICO, {name}? PERCHÉ QUI SIAMO ALLA DISPERAZIONE.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v3",
+        "text": "SE AVESSIMO UN NOTAIO, STAREBBE GIÀ CHIAMANDO PER SUGGERIRTI, {name}.",
+        "intensity": "savage"
+      }
+    ],
+    "lobby.returning.named": [
+      {
+        "id": "0",
+        "text": "È TORNATO {name}, {title}."
+      }
+    ],
+    "lobby.returning.anonymous": [
+      {
+        "id": "0",
+        "text": "È TORNATO {title}."
+      }
+    ],
+    "result.mixed.oneWrong.named": [
+      {
+        "id": "v1",
+        "text": "DAI, TRANQUILLO, {name}. DOPO TE LA SPIEGO, PROMESSO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.waiting": [
+      {
+        "id": "v1",
+        "text": "DOVEVI NON FARE NIENTE, {name}. FINALMENTE ERI QUALIFICATO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.math": [
+      {
+        "id": "v1",
+        "text": "{name}, ERANO NUMERI PICCOLI APPOSTA.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, QUESTA ERA LETTERALMENTE UNA DOMANDA DELLE ELEMENTARI.",
+        "intensity": "savage"
+      }
+    ]
   },
   "titles": {
     "king": "IL KING",
-    "kingUndisputed": "IL KING INDISCUSSO",
-    "doesNotRead": "QUELLO CHE NON LEGGE"
+    "doesNotRead": "QUELLO CHE NON LEGGE",
+    "kingUndisputed": "IL KING INDISCUSSO"
   }
 }

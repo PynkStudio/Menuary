@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (isAysPresenterRateLimited(req, "pack", 20)) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
 
   const params = req.nextUrl.searchParams;
-  const locale = /^(it|en)$/.test(params.get("locale") ?? "") ? params.get("locale")! : "it";
+  const locale = /^(en|it|fr|es|pt|de)$/.test(params.get("locale") ?? "") ? params.get("locale")! : "en";
   const clientFormat = Number.parseInt(params.get("format") ?? "", 10);
   const format = Number.isFinite(clientFormat) ? Math.min(clientFormat, AYS_PACK_FORMAT) : AYS_PACK_FORMAT;
 

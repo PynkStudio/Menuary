@@ -51,25 +51,39 @@ export const PACK_TEMPLATE_PLACEHOLDERS: Record<string, string[]> = {
   "gameEnd.named": ["name"],
   "lobby.returning.named": ["name", "title"],
   "lobby.returning.anonymous": ["title"],
+  "result.title.king.named": ["name", "title"],
+  "result.title.doesNotRead.named": ["name", "title"],
+  "result.mixed.oneWrong.named": ["name"],
+  "result.player.stillZero": ["name"],
+  "result.player.firstPointLate": ["name"],
+  "result.player.wrongStreak3": ["name"],
+  "result.player.lss.lastLife": ["name"],
+  "result.player.lss.losingLives": ["name"],
 };
+
+const RESULT_MECHANICS = ["button", "math", "counting", "reading", "waiting", "timing", "memory", "direction", "perception"];
+for (const base of ["result.mixed.oneWrong", "result.player.stillZero", "result.player.firstPointLate", "result.player.wrongStreak3"]) {
+  for (const mechanic of RESULT_MECHANICS) PACK_TEMPLATE_PLACEHOLDERS[`${base}.mechanic.${mechanic}`] = ["name"];
+}
 
 export const PACK_TITLE_KEYS = ["king", "kingUndisputed", "doesNotRead"] as const;
 
 const KEY_PATTERN = /^[a-z][A-Za-z0-9]*(\.[A-Za-z0-9]+)*$/;
 const ID_PATTERN = /^[A-Za-z0-9-]{1,32}$/;
-const MAX_LINE_CHARS = 90;
+const MAX_LINE_CHARS = 180;
+const SUPPORTED_LOCALES = new Set(["en", "it", "fr", "es", "pt", "de"]);
 
 /** Le stesse regole dell'host: maiuscolo, breve, nessun segnaposto sconosciuto. */
 export function validatePackSource(source: PackSource): string[] {
   const errors: string[] = [];
   if (source.format !== AYS_PACK_FORMAT) errors.push(`format ${source.format} non supportato`);
-  if (!/^(it|en)$/.test(source.locale)) errors.push(`locale ${source.locale} non supportata`);
+  if (!SUPPORTED_LOCALES.has(source.locale)) errors.push(`locale ${source.locale} non supportata`);
 
   const checkText = (where: string, text: string) => {
     if (!text.trim()) errors.push(`${where}: testo vuoto`);
     if (text.length > MAX_LINE_CHARS) errors.push(`${where}: oltre ${MAX_LINE_CHARS} caratteri`);
     const withoutSlots = text.replace(/\{(name|title)\}/g, "");
-    if (withoutSlots !== withoutSlots.toLocaleUpperCase("it-IT")) errors.push(`${where}: deve essere maiuscolo`);
+    if (withoutSlots !== withoutSlots.toLocaleUpperCase(source.locale)) errors.push(`${where}: deve essere maiuscolo`);
     for (const slot of text.matchAll(/\{([^}]*)\}/g)) {
       if (slot[1] !== "name" && slot[1] !== "title") errors.push(`${where}: segnaposto {${slot[1]}} sconosciuto`);
     }

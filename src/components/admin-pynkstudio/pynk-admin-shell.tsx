@@ -6,6 +6,7 @@ import {
   BadgeEuro,
   BookUser,
   CalendarClock,
+  FlaskConical,
   LayoutDashboard,
   LogOut,
   Mail,
@@ -35,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin-pynkstudio/mailapp",      label: "Posta",          icon: Mail },
   { href: "/admin-pynkstudio/agenda",       label: "Agenda",         icon: CalendarClock },
   { href: "/admin-pynkstudio/crm",          label: "CRM PynkStudio", icon: BookUser },
+  { href: "/admin-pynkstudio/beta",         label: "Beta program",   icon: FlaskConical },
   { href: "/admin-pynkstudio/patrimoniale", label: "Patrimoniale",   icon: BadgeEuro },
   { href: "/admin-pynkstudio/utenti",       label: "Utenti interni", icon: UserCog },
 ];

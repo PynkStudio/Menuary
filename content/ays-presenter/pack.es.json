@@ -1,0 +1,215 @@
+{
+  "format": 1,
+  "locale": "es",
+  "lines": {
+    "lobby.empty": [
+      {
+        "id": "nadie-prometedor",
+        "text": "NADIE. PROMETEDOR."
+      },
+      {
+        "id": "la-noche-ya-es-todo-un-exito",
+        "text": "LA NOCHE YA ES TODO UN ÉXITO."
+      }
+    ],
+    "result.everyoneWrong": [
+      {
+        "id": "nadie-leyo-perfecto",
+        "text": "NADIE LEYÓ. PERFECTO."
+      },
+      {
+        "id": "cero-respuestas-correctas-gran-e",
+        "text": "CERO RESPUESTAS CORRECTAS. GRAN EQUIPO."
+      },
+      {
+        "id": "habeis-fallado-todos-juntos",
+        "text": "HABÉIS FALLADO TODOS. JUNTOS."
+      }
+    ],
+    "result.everyoneCorrect": [
+      {
+        "id": "sospechosamente-competentes",
+        "text": "SOSPECHOSAMENTE COMPETENTES."
+      },
+      {
+        "id": "todo-correcto-no-os-acostumbreis",
+        "text": "TODO CORRECTO. NO OS ACOSTUMBRÉIS."
+      }
+    ],
+    "result.mixed": [
+      {
+        "id": "algunos-leyeron-otros-estaban-pr",
+        "text": "ALGUNOS LEYERON. OTROS ESTABAN PRESENTES."
+      },
+      {
+        "id": "resultados-mixtos-muy-mixtos",
+        "text": "RESULTADOS MIXTOS. MUY MIXTOS."
+      }
+    ],
+    "gameEnd": [
+      {
+        "id": "tenemos-ganador-tecnicamente",
+        "text": "TENEMOS GANADOR. TÉCNICAMENTE."
+      },
+      {
+        "id": "se-acabo-podeis-volver-a-fingir-",
+        "text": "SE ACABÓ. PODÉIS VOLVER A FINGIR QUE SOIS INTELIGENTES."
+      }
+    ]
+  },
+  "templates": {
+    "result.mixed.oneWrong.mechanic.reading": [
+      {
+        "id": "v1",
+        "text": "ESTABA ESCRITO DELANTE DE TI, {name}. DELANTE. DE. TI.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.memory": [
+      {
+        "id": "v1",
+        "text": "ERA UNA SOLA COSA, {name}. NO UNA NOVELA ENTERA.",
+        "intensity": "savage"
+      }
+    ],
+    "gameEnd.named": [
+      {
+        "id": "0",
+        "text": "{name} HA GANADO. TÉCNICAMENTE."
+      }
+    ],
+    "title.anonymous": [
+      {
+        "id": "0",
+        "text": "AHORA ERES {title}."
+      }
+    ],
+    "result.title.doesNotRead.named": [
+      {
+        "id": "v1",
+        "text": "{name}, TRES SEGUIDAS. AHORA ERES {title}.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.counting": [
+      {
+        "id": "v1",
+        "text": "{name}, PARECÍAS COMPETITIVO MIENTRAS BASTABAN LOS DEDOS.",
+        "intensity": "savage"
+      }
+    ],
+    "result.title.king.named": [
+      {
+        "id": "v1",
+        "text": "{name}, OTRO PUNTO. AHORA ERES {title}."
+      }
+    ],
+    "result.player.lss.losingLives": [
+      {
+        "id": "v1",
+        "text": "{name}, LAS VIDAS NO SON PUNTOS. SE ACABAN DE VERDAD.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.direction": [
+      {
+        "id": "v1",
+        "text": "{name}, ERA TU OTRA IZQUIERDA.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.stillZero": [
+      {
+        "id": "v1",
+        "text": "{name}, GANA QUIEN HACE MÁS PUNTOS. O AL MENOS ALGÚN PUNTO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.perception": [
+      {
+        "id": "v1",
+        "text": "ESTABA ANTE TUS OJOS, {name}. TÚ TAMBIÉN, POR DESGRACIA.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.timing": [
+      {
+        "id": "v1",
+        "text": "{name}, ERA CUESTIÓN DE TIEMPO. Y LO PERDISTE.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.lss.lastLife": [
+      {
+        "id": "v1",
+        "text": "{name}, TE QUEDA UNA VIDA. INTENTA NO TIRAR ESTA TAMBIÉN.",
+        "intensity": "savage"
+      }
+    ],
+    "title.named": [
+      {
+        "id": "0",
+        "text": "{name}, AHORA ERES {title}."
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.button": [
+      {
+        "id": "v1",
+        "text": "ERA UN BOTÓN, {name}. UNO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.firstPointLate": [
+      {
+        "id": "v1",
+        "text": "AH, ¿ENTONCES ENTENDISTE QUE ESTO ERA UNA COMPETICIÓN, {name}?",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.wrongStreak3": [
+      {
+        "id": "v1",
+        "text": "{name}, ¿QUIERES LLAMAR A UN AMIGO O PUEDES FALLAR TÚ SOLO?",
+        "intensity": "savage"
+      }
+    ],
+    "lobby.returning.named": [
+      {
+        "id": "0",
+        "text": "HA VUELTO {name}, {title}."
+      }
+    ],
+    "lobby.returning.anonymous": [
+      {
+        "id": "0",
+        "text": "HA VUELTO {title}."
+      }
+    ],
+    "result.mixed.oneWrong.named": [
+      {
+        "id": "v1",
+        "text": "TRANQUILO, {name}. LUEGO TE LO EXPLICO. PROMETIDO.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.waiting": [
+      {
+        "id": "v1",
+        "text": "TENÍAS QUE NO HACER NADA, {name}. POR FIN TU ESPECIALIDAD.",
+        "intensity": "savage"
+      }
+    ],
+    "result.mixed.oneWrong.mechanic.math": [
+      {
+        "id": "v1",
+        "text": "{name}, PUSIMOS NÚMEROS PEQUEÑOS A PROPÓSITO.",
+        "intensity": "savage"
+      }
+    ]
+  },
+  "titles": {
+    "doesNotRead": "EL QUE NO LEE",
+    "king": "EL REY",
+    "kingUndisputed": "EL REY INDISCUTIBLE"
+  }
+}

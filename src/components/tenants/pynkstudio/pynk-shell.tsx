@@ -208,6 +208,7 @@ function PynkFooter() {
     { label: copy.nav.lavori, to: "/lavori" },
     { label: copy.nav.consulenza, to: "/consulenza" },
     { label: copy.nav.contattaci, to: "/contattaci" },
+    { label: "Beta program", to: "/beta" },
   ];
 
   return (

@@ -65,7 +65,7 @@ export async function synthesizePresenterSpeech(input: {
   const voice = resolvePresenterVoice(input.purpose);
   if (!voice) return { ok: false, status: 503, error: "speech_unavailable" };
   const spoken = toSpokenText(input.text);
-  const language = input.locale.startsWith("it") ? "it" : "en";
+  const language = input.locale.split("-")[0];
 
   const response =
     voice.provider === "elevenlabs"
@@ -81,10 +81,11 @@ export async function synthesizePresenterSpeech(input: {
 
 function elevenLabsSpeech(voice: PresenterVoice, text: string, language: string, intensity: PresenterIntensity) {
   const savage = intensity === "savage";
-  // eleven_v3 accetta solo stabilità 0 / 0.5 / 1 (Creative / Natural / Robust).
+  // The fixed seed and conservative settings keep all six packs recognizably
+  // the same host; v3 still gets its supported Natural stability value.
   const voiceSettings = voice.model === "eleven_v3"
-    ? { stability: savage ? 0 : 0.5, similarity_boost: 0.8 }
-    : { stability: savage ? 0.32 : 0.45, similarity_boost: 0.8, style: savage ? 0.55 : 0.35, use_speaker_boost: true };
+    ? { stability: 0.5, similarity_boost: 0.86, style: 0.42, use_speaker_boost: true, speed: 1.03 }
+    : { stability: savage ? 0.32 : 0.45, similarity_boost: 0.86, style: savage ? 0.55 : 0.35, use_speaker_boost: true, speed: 1.03 };
 
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voice.voice)}?output_format=mp3_44100_128`;
   return fetch(url, {
@@ -100,6 +101,7 @@ function elevenLabsSpeech(voice: PresenterVoice, text: string, language: string,
       // multilingual_v2 rifiuta language_code; gli altri modelli lo usano per non sbagliare lingua sui nomi.
       ...(voice.model === "eleven_multilingual_v2" ? {} : { language_code: language }),
       voice_settings: voiceSettings,
+      seed: 42817,
     }),
   });
 }

@@ -35,6 +35,18 @@ const option = (name: string) => {
   return index >= 0 ? args[index + 1] : undefined;
 };
 
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.entries(value as Record<string, unknown>)
+      .filter(([, item]) => item !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => `${JSON.stringify(key)}:${canonicalJson(item)}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
 function serviceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -131,8 +143,8 @@ async function main() {
   };
   const unchanged =
     previous &&
-    JSON.stringify({ ...previous, revision: undefined, publishedAt: undefined }) ===
-      JSON.stringify({ ...body, revision: undefined, publishedAt: undefined });
+    canonicalJson({ ...previous, revision: undefined, publishedAt: undefined }) ===
+      canonicalJson(body);
 
   console.log(`clip: ${synthesized} registrate, ${reused} riusate`);
   if (unchanged) {
