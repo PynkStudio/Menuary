@@ -812,6 +812,16 @@ const it = {
     titleAccent: "prima di tutti.",
     subtitle:
       "Iscriviti una volta, dicci che dispositivi usi e ti mostriamo solo le beta che puoi installare: TestFlight per iPhone, iPad, Mac e Apple TV, Google Play e Firebase per Android, link web per il resto.",
+    ctaSignup: "Diventa beta tester",
+    ctaLogin: "Ho già un profilo",
+    platformsLabel: "Distribuiamo con",
+    platforms: ["TestFlight", "Google Play", "Firebase", "Web"],
+    visual: {
+      build: "Build in test",
+      status: "Pronta da provare",
+      invite: "Invito inviato",
+      testers: "tester attivi",
+    },
     howTitle: "Come funziona",
     how: [
       { title: "Ti iscrivi", body: "Nome, contatti e i dispositivi che hai. Niente password: entri con un link via email." },
@@ -823,6 +833,12 @@ const it = {
     lockedHint: "Iscriviti per vedere i link d'invito.",
     form: {
       title: "Diventa beta tester",
+      lead: "Un minuto, una volta sola. Poi ti mostriamo solo ciò che puoi installare.",
+      stepWho: "Chi sei",
+      stepDevices: "I tuoi dispositivi",
+      stepAlerts: "Avvisi e privacy",
+      selectedDevices: "selezionati",
+      selectedDevice: "selezionato",
       firstName: "Nome",
       lastName: "Cognome",
       email: "Email",
@@ -863,6 +879,13 @@ const it = {
     },
     area: {
       hello: "Ciao",
+      lead: "Qui trovi le beta compatibili con i tuoi dispositivi e come unirti, passo per passo.",
+      statBetas: "beta per te",
+      statDevices: "dispositivi",
+      statRequests: "richieste in attesa",
+      statAlerts: "avvisi",
+      alertsOn: "attivi",
+      alertsOff: "spenti",
       tabs: { betas: "Beta per te", devices: "Profilo e dispositivi", notifications: "Avvisi" },
       logout: "Esci",
       search: "Cerca una beta…",

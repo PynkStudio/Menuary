@@ -2,7 +2,33 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, Check, ExternalLink, FlaskConical, LogOut, Mail, Search, Smartphone, Trash2 } from "lucide-react";
+import {
+  ArrowRight,
+  Bell,
+  BellRing,
+  Car,
+  Check,
+  ExternalLink,
+  FlaskConical,
+  Gamepad2,
+  Glasses,
+  Globe,
+  Headset,
+  Hourglass,
+  Laptop,
+  LogOut,
+  Mail,
+  Monitor,
+  Search,
+  Smartphone,
+  Sparkles,
+  Tablet,
+  Terminal,
+  Trash2,
+  Tv,
+  Watch,
+  type LucideIcon,
+} from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
@@ -71,28 +97,95 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
 }
 
+const DEVICE_ICONS: Record<string, LucideIcon> = {
+  iphone: Smartphone,
+  ipad: Tablet,
+  mac: Laptop,
+  apple_watch: Watch,
+  apple_tv: Tv,
+  vision_pro: Glasses,
+  android_phone: Smartphone,
+  android_tablet: Tablet,
+  android_tv: Tv,
+  wear_os: Watch,
+  android_auto: Car,
+  chromebook: Laptop,
+  windows: Monitor,
+  linux: Terminal,
+  steam_deck: Gamepad2,
+  meta_quest: Headset,
+  fire_tv: Tv,
+  fire_tablet: Tablet,
+  huawei: Smartphone,
+  web: Globe,
+};
+
+function DeviceIcon({ device, className = "pynk-icon-xs" }: { device: string; className?: string }) {
+  const Icon = DEVICE_ICONS[device] ?? Smartphone;
+  return <Icon className={className} aria-hidden />;
+}
+
 function DevicePicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   return (
     <div className="pynk-beta-device-groups">
       {BETA_DEVICE_GROUPS.map((g) => (
         <div key={g.id} className="pynk-beta-device-group">
           <p className="pynk-beta-device-group-label">{g.label}</p>
-          <div className="pynk-beta-chips">
-            {BETA_DEVICES.filter((d) => d.group === g.id).map((d) => (
-              <button
-                key={d.id}
-                type="button"
-                className="pynk-beta-chip"
-                aria-pressed={value.includes(d.id)}
-                onClick={() => onChange(toggle(value, d.id))}
-              >
-                {value.includes(d.id) && <Check className="pynk-icon-xs" aria-hidden />}
-                {d.label}
-              </button>
-            ))}
+          <div className="pynk-beta-device-grid">
+            {BETA_DEVICES.filter((d) => d.group === g.id).map((d) => {
+              const on = value.includes(d.id);
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  className="pynk-beta-device"
+                  aria-pressed={on}
+                  onClick={() => onChange(toggle(value, d.id))}
+                >
+                  <span className="pynk-beta-device-icon"><DeviceIcon device={d.id} className="pynk-beta-device-svg" /></span>
+                  <span className="pynk-beta-device-name">{d.label}</span>
+                  <span className="pynk-beta-device-tick" aria-hidden>{on && <Check className="pynk-icon-xs" />}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/** Composizione decorativa dell'hero: un "banco di prova" con i dispositivi attorno alla build. */
+function BetaHeroVisual() {
+  const v = usePynkCopy().betaPage.visual;
+  // Nomi di classe letterali: Tailwind elimina dal layer components quelli costruiti a runtime.
+  const orbit: { device: string; label: string; pos: string }[] = [
+    { device: "iphone", label: "iPhone", pos: "pynk-beta-visual-device-1" },
+    { device: "mac", label: "Mac", pos: "pynk-beta-visual-device-2" },
+    { device: "apple_tv", label: "Apple TV", pos: "pynk-beta-visual-device-3" },
+    { device: "android_phone", label: "Android", pos: "pynk-beta-visual-device-4" },
+    { device: "web", label: "Web", pos: "pynk-beta-visual-device-5" },
+  ];
+  return (
+    <div className="pynk-beta-visual" aria-hidden>
+      <div className="pynk-beta-visual-ring" />
+      <div className="pynk-beta-visual-ring pynk-beta-visual-ring-2" />
+      <div className="pynk-beta-visual-core">
+        <span className="pynk-beta-visual-flask"><FlaskConical /></span>
+        <span className="pynk-beta-visual-kicker">{v.build}</span>
+        <span className="pynk-beta-visual-version">v1.2.0</span>
+        <span className="pynk-beta-visual-status"><span className="pynk-beta-visual-dot" /> {v.status}</span>
+      </div>
+      {orbit.map((o) => (
+        <span key={o.device} className={`pynk-beta-visual-device ${o.pos}`}>
+          <DeviceIcon device={o.device} />
+          {o.label}
+        </span>
+      ))}
+      <span className="pynk-beta-visual-toast">
+        <BellRing className="pynk-icon-xs" />
+        {v.invite}
+      </span>
     </div>
   );
 }
@@ -154,7 +247,14 @@ function BetaIcon({ beta }: { beta: Beta }) {
 
 function PublicBetaList({ betas }: { betas: Beta[] }) {
   const c = usePynkCopy().betaPage;
-  if (betas.length === 0) return <p className="pynk-muted">{c.openNowEmpty}</p>;
+  if (betas.length === 0) {
+    return (
+      <div className="pynk-beta-empty-card">
+        <span className="pynk-beta-empty-icon"><Hourglass aria-hidden /></span>
+        <p>{c.openNowEmpty}</p>
+      </div>
+    );
+  }
   return (
     <div className="pynk-beta-grid">
       {betas.map((b) => (
@@ -168,7 +268,7 @@ function PublicBetaList({ betas }: { betas: Beta[] }) {
           </header>
           <BetaMeta beta={b} />
           <div className="pynk-beta-chips">
-            {b.channels.map((ch) => <span key={ch.device} className="pynk-chip"><Smartphone className="pynk-icon-xs" aria-hidden /> {betaDeviceLabel(ch.device)}</span>)}
+            {b.channels.map((ch) => <span key={ch.device} className="pynk-beta-device-pill"><DeviceIcon device={ch.device} /> {betaDeviceLabel(ch.device)}</span>)}
           </div>
           <p className="pynk-beta-locked">{c.lockedHint}</p>
         </article>
@@ -223,8 +323,11 @@ function JoinChannel({
   return (
     <div className="pynk-beta-channel">
       <p className="pynk-beta-channel-head">
-        <strong>{betaDeviceLabel(channel.device)}</strong>
-        <span className="pynk-muted"> · {method.label}</span>
+        <span className="pynk-beta-channel-icon"><DeviceIcon device={channel.device} /></span>
+        <span>
+          <strong>{betaDeviceLabel(channel.device)}</strong>
+          <span className="pynk-beta-channel-method">{method.label}</span>
+        </span>
       </p>
       <ol className="pynk-beta-steps">
         {method.steps.map((s) => <li key={s}>{s}</li>)}
@@ -233,7 +336,7 @@ function JoinChannel({
 
       {method.needsApproval && request?.status !== "approved" ? (
         request?.status === "pending" ? (
-          <p className="pynk-feedback pynk-feedback-success">{c.requestPending}</p>
+          <p className="pynk-beta-pending"><Hourglass className="pynk-icon-xs" aria-hidden /> {c.requestPending}</p>
         ) : request?.status === "rejected" ? (
           <p className="pynk-feedback pynk-feedback-error">{c.requestRejected}</p>
         ) : canJoin ? (
@@ -368,8 +471,12 @@ function SignupForm({ onDone }: { onDone: (status: "created" | "exists") => void
   };
 
   return (
-    <form className="pynk-form" onSubmit={submit} autoComplete="on" noValidate>
-      <h2 className="pynk-beta-form-title">{c.title}</h2>
+    <form id="iscrizione" className="pynk-form pynk-beta-signup" onSubmit={submit} autoComplete="on" noValidate>
+      <div className="pynk-beta-form-head">
+        <h2 className="pynk-beta-form-title">{c.title}</h2>
+        <p className="pynk-muted">{c.lead}</p>
+      </div>
+      <p className="pynk-beta-step"><span>1</span>{c.stepWho}</p>
       <div className="pynk-form-row">
         <div className="pynk-field">
           <label htmlFor="beta-first">{c.firstName}</label>
@@ -391,6 +498,10 @@ function SignupForm({ onDone }: { onDone: (status: "created" | "exists") => void
         </div>
       </div>
 
+      <p className="pynk-beta-step">
+        <span>2</span>{c.stepDevices}
+        {devices.length > 0 && <em className="pynk-beta-step-count">{devices.length} {devices.length === 1 ? c.selectedDevice : c.selectedDevices}</em>}
+      </p>
       <div className="pynk-field">
         <span className="pynk-beta-label">{c.devicesLabel}</span>
         <span className="pynk-muted pynk-beta-hint">{c.devicesHint}</span>
@@ -419,6 +530,7 @@ function SignupForm({ onDone }: { onDone: (status: "created" | "exists") => void
       {/* Honeypot: invisibile alle persone, compilato dai bot. */}
       <input className="pynk-beta-hp" tabIndex={-1} autoComplete="off" aria-hidden name="website" value={form.website} onChange={set("website")} />
 
+      <p className="pynk-beta-step"><span>3</span>{c.stepAlerts}</p>
       <label className="pynk-beta-check">
         <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
         <span>{c.notify}</span>
@@ -432,7 +544,7 @@ function SignupForm({ onDone }: { onDone: (status: "created" | "exists") => void
 
       {feedback && <p className={`pynk-feedback pynk-feedback-${feedback.kind}`} role="status">{feedback.text}</p>}
       <button type="submit" className="pynk-btn pynk-btn-primary pynk-btn-lg pynk-btn-block" disabled={sending}>
-        {sending ? c.sending : c.submit}
+        {sending ? c.sending : c.submit} {!sending && <ArrowRight className="pynk-icon-xs" aria-hidden />}
       </button>
     </form>
   );
@@ -458,7 +570,7 @@ function LoginForm() {
     }
   };
   return (
-    <form className="pynk-beta-login" onSubmit={submit}>
+    <form id="accedi" className="pynk-beta-login" onSubmit={submit}>
       <p className="pynk-beta-login-title"><Mail className="pynk-icon-xs pynk-accent" aria-hidden /> {c.login.title}</p>
       <p className="pynk-muted">{c.login.body}</p>
       <div className="pynk-beta-login-row pynk-field">
@@ -726,23 +838,45 @@ function BetaInner() {
     <div className="pynk-page">
       <section className="pynk-section pynk-section-top">
         <div className="pynk-container">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="pynk-section-head">
-            <span className="pynk-eyebrow"><FlaskConical className="pynk-icon-xs" aria-hidden /> {c.eyebrow}</span>
-            <h1 className="pynk-hero-title">
-              {tester ? (
-                <>
-                  <span className="pynk-block">{c.area.hello} {tester.first_name},</span>
-                  <span className="pynk-accent">{c.titleAccent}</span>
-                </>
-              ) : (
-                <>
+          {tester ? (
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="pynk-beta-area-head">
+              <div>
+                <span className="pynk-eyebrow"><FlaskConical className="pynk-icon-xs" aria-hidden /> {c.eyebrow}</span>
+                <h1 className="pynk-beta-area-title">
+                  {c.area.hello} <span className="pynk-accent">{tester.first_name}</span>
+                </h1>
+                <p className="pynk-muted">{c.area.lead}</p>
+              </div>
+              <dl className="pynk-beta-stats">
+                <div><dt>{c.area.statBetas}</dt><dd>{data!.betas.filter((b) => channelsForDevices(b.channels, tester.devices).length > 0).length}</dd></div>
+                <div><dt>{c.area.statDevices}</dt><dd>{tester.devices.length}</dd></div>
+                <div><dt>{c.area.statRequests}</dt><dd>{data!.requests.filter((r) => r.status === "pending").length}</dd></div>
+                <div><dt>{c.area.statAlerts}</dt><dd className="pynk-beta-stat-word">{tester.notify_enabled ? c.area.alertsOn : c.area.alertsOff}</dd></div>
+              </dl>
+            </motion.div>
+          ) : (
+            <div className="pynk-beta-hero">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="pynk-beta-hero-copy">
+                <span className="pynk-eyebrow"><Sparkles className="pynk-icon-xs" aria-hidden /> {c.eyebrow}</span>
+                <h1 className="pynk-hero-title pynk-beta-hero-title">
                   <span className="pynk-block">{c.titleLine1}</span>
                   <span className="pynk-accent">{c.titleAccent}</span>
-                </>
-              )}
-            </h1>
-            {!tester && <p className="pynk-hero-subtitle">{c.subtitle}</p>}
-          </motion.div>
+                </h1>
+                <p className="pynk-beta-hero-lead">{c.subtitle}</p>
+                <div className="pynk-beta-hero-ctas">
+                  <a href="#iscrizione" className="pynk-btn pynk-btn-primary pynk-btn-lg">{c.ctaSignup} <ArrowRight className="pynk-icon-xs" aria-hidden /></a>
+                  <a href="#accedi" className="pynk-btn pynk-btn-outline pynk-btn-lg">{c.ctaLogin}</a>
+                </div>
+                <div className="pynk-beta-platforms">
+                  <span>{c.platformsLabel}</span>
+                  {c.platforms.map((p) => <span key={p} className="pynk-beta-platform">{p}</span>)}
+                </div>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, delay: 0.15 }}>
+                <BetaHeroVisual />
+              </motion.div>
+            </div>
+          )}
 
           {notice && <p className="pynk-beta-notice" role="status">{notice}</p>}
 
@@ -751,7 +885,7 @@ function BetaInner() {
           ) : tester ? (
             <>
               {!tester.email_verified_at && <p className="pynk-beta-notice">{c.notices.verify}</p>}
-              <div className="pynk-beta-tabs" role="tablist">
+              <div className="pynk-beta-tabs" role="tablist" aria-label={c.eyebrow}>
                 {(["betas", "devices", "notifications"] as const).map((t) => (
                   <button key={t} type="button" role="tab" aria-selected={tab === t} className="pynk-beta-tab" onClick={() => setTab(t)}>
                     {c.area.tabs[t]}
@@ -785,7 +919,7 @@ function BetaInner() {
           ) : (
             <>
               <div className="pynk-beta-how">
-                <h2 className="pynk-section-title pynk-section-title-sm">{c.howTitle}</h2>
+                <h2 className="pynk-beta-h2">{c.howTitle}</h2>
                 <ol className="pynk-beta-how-list">
                   {c.how.map((s, i) => (
                     <li key={s.title} className="pynk-beta-how-item">
@@ -802,8 +936,8 @@ function BetaInner() {
                   <SignupForm onDone={(status) => { if (status === "created") void load(); }} />
                   <LoginForm />
                 </div>
-                <div>
-                  <h2 className="pynk-section-title pynk-section-title-sm">{c.openNowTitle}</h2>
+                <div className="pynk-beta-layout-side">
+                  <h2 className="pynk-beta-h2"><span className="pynk-beta-live" aria-hidden /> {c.openNowTitle}</h2>
                   <PublicBetaList betas={data.betas} />
                 </div>
               </div>

@@ -24,4 +24,5 @@ Quando cambia un'etichetta, una route o un pulsante nel codice (es. in `src/i18n
 - [[posta-admin-gestione]] — schermata Posta per admin piattaforma e tenant.
 - [[gestione-stampanti-comande]] — schermata Stampanti comande (in Cassa).
 - [[pynkstudio-agenda]] — Agenda PynkStudio: call prenotate, esiti, stanza videocall.
+- [[pynkstudio-beta]] — Beta program PynkStudio: beta, canali TestFlight/Google Play, richieste d'accesso, tester e avvisi.
 - [[pynkstudio-impostazioni]] — Impostazioni (connessione Google) e task dashboard "Verifica dominio Google".

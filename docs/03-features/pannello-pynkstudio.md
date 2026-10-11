@@ -81,6 +81,7 @@ Filtri applicati per sezione:
 | Posta | `/mailapp` | `@pynkstudio/mailapp` — **aggregata**, con filtro brand nella sidebar del pacchetto |
 | Agenda | `/agenda` | `@pynkstudio/agendaapp` — call prenotate, stanza videocall in `/agenda/call/[id]`. Vedi [[agenda-videocall]] |
 | CRM PynkStudio | `/crm` | tabelle `pynkstudio_crm` + `pynkstudio_crm_activities` — clienti dell'agenzia, **non** i lead di piattaforma. Si alimenta da form contatti, landing IA, prenotazioni e disiscrizioni (dimensione azienda, settore, tempistica, interessi e attribuzione campagna come campi strutturati). KPI, filtri per stato/sorgente/vista, priorità caldo/tiepido/freddo, follow-up con scadenza, valore stimato, timeline attività, export CSV, inserimento manuale. Logica in `src/lib/pynkstudio/crm*.ts`, API `/api/admin/pynkstudio/crm*` |
+| Beta program | `/beta` | beta delle app PynkStudio pubblicate su `pynkstudio.eu/beta`: canali per dispositivo (TestFlight, Google Play aperto/chiuso, Firebase, download, web), richieste d'accesso su invito, tester iscritti, avvisi email filtrati per dispositivo/categoria/lingua/tipo. Tabelle `pynkstudio_beta_*`, logica `src/lib/pynkstudio/beta*.ts`, API `/api/admin/pynkstudio/beta*` (admin) e `/api/pynkstudio/beta/*` (tester, sessione via cookie `pynk_beta`). Scheda UI [[pynkstudio-beta]] |
 | Patrimoniale | `/patrimoniale` | |
 | Utenti interni | `/utenti` | `siteadmin` — dato aziendale, spostato qui dal portale Menuary |
 | Profilo | `/profilo` | firma email con anteprima per tutti e quattro i brand |
@@ -212,6 +213,24 @@ PerX (voce 2026-09-06). Guida env/endpoint → `docs/perx-integration.md`.
 > una sessione `superadmin` e verificare che tenant (incluso Studio Randa), utenti ed errori si
 > vedano — e che un ruolo diverso da `superadmin`/`admin` non veda la sezione. Tocca all'utente:
 > serve accesso ai due dashboard di deploy e una sessione autenticata di produzione.
+
+### F7 — Beta program (`/beta` admin + `pynkstudio.eu/beta`)
+
+Dettagli d'uso → [[pynkstudio-beta]].
+
+| # | Lavoro | Stato | Note |
+|---|---|---|---|
+| 7.1 | Tabelle `pynkstudio_beta_testers`, `pynkstudio_betas`, `pynkstudio_beta_requests`, `pynkstudio_beta_notifications` | ✅ completata | Migration `20261011090000_pynkstudio_beta_manager.sql` applicata con MCP il 2026-10-11 e verificata sul DB (4 tabelle, RLS attiva senza policy: solo service role) |
+| 7.2 | Pagina pubblica `/beta`: iscrizione, link magico, area tester con filtri, profilo/dispositivi, preferenze avvisi | 🔵 in test | Aperta in locale (`pynkstudio.localhost`): form, selettore dispositivi, campi Apple ID/Google condizionali, layout mobile senza overflow. **Manca**: iscrizione reale end-to-end (email Resend + link `/beta/accedi/[token]`) sul dominio di produzione |
+| 7.3 | API tester `/api/pynkstudio/beta/*` | 🔵 in test | Verificati in locale i gate: signup invalido → 400, richiesta senza sessione → 401, bozza non esposta in `me`. Da provare in produzione: signup, login, richiesta, disiscrizione dal link email |
+| 7.4 | Pannello admin `/admin-pynkstudio/beta` + API `/api/admin/pynkstudio/beta*` | 🔵 in test | `tsc`/lint puliti; API senza sessione → 401. **Manca**: apertura con sessione siteadmin, creazione/modifica beta, approvazione richiesta, invio avvisi |
+| 7.5 | Prima beta: Are You Stupid?! Android (Play test chiuso, Google Group su invito) | 🟡 in lavorazione | Inserita come **Bozza** (`are-you-stupid-android`): il link di opt-in funziona solo dopo l'approvazione della release 1.2.0 (9) da parte di Google. Quando arriva l'ok: stato → «Aperta», poi «Conta destinatari» / «Invia». Le richieste d'accesso danno l'email Google da aggiungere a mano al gruppo `ays-beta-testers@googlegroups.com` |
+
+> **Cosa manca per portare F7 a ✅:** deploy, poi su `pynkstudio.eu/beta` un'iscrizione di prova
+> (arrivo email + link), e su `admin.pynkstudio.eu/beta` con sessione siteadmin: approvazione di una
+> richiesta e invio di un avviso. Tocca all'utente (serve sessione di produzione e una casella reale).
+> L'invio avvisi è sequenziale (~2 email/s, limite Resend): oltre ~500 destinatari per beta va
+> spostato su una coda.
 
 ---
 
