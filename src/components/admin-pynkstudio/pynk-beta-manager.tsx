@@ -247,7 +247,7 @@ function BetaEditor({
             </div>
           </div>
           <div className="pynk-crm-field">
-            <label className="pynk-crm-label">Lingue dell'app</label>
+              <label className="pynk-crm-label">Lingue dell&apos;app</label>
             <div className="pynk-beta-admin-chips">
               {BETA_LANGUAGES.map((l) => (
                 <button
@@ -314,7 +314,7 @@ function BetaEditor({
             <div className="pynk-crm-drawer-section">
               <p className="pynk-crm-drawer-section-title"><Send size={14} /> Avvisi email</p>
               <p className="pynk-crm-row-secondary">
-                Va ai tester con email confermata, avvisi attivi, almeno un dispositivo compatibile e filtri d'interesse soddisfatti. Chi è già stato avvisato per questa beta non riceve doppioni.
+                Va ai tester con email confermata, avvisi attivi, almeno un dispositivo compatibile e filtri d&apos;interesse soddisfatti. Chi è già stato avvisato per questa beta non riceve doppioni.
                 {beta.notified_at && ` Ultimo invio: ${formatDate(beta.notified_at)}.`}
               </p>
               {dirty && <p className="pynk-crm-drawer-error">Salva le modifiche prima di inviare gli avvisi.</p>}
@@ -411,7 +411,7 @@ export function PynkBetaManager() {
         <div>
           <h1 className="pynk-admin-page-title">Beta program</h1>
           <p className="pynk-admin-page-subtitle">
-            Beta pubblicate su <a href="https://pynkstudio.eu/beta" target="_blank" rel="noopener noreferrer" className="pynk-crm-drawer-link">pynkstudio.eu/beta <ExternalLink size={12} /></a>, iscritti e richieste d'accesso.
+            Beta pubblicate su <a href="https://pynkstudio.eu/beta" target="_blank" rel="noopener noreferrer" className="pynk-crm-drawer-link">pynkstudio.eu/beta <ExternalLink size={12} /></a>, iscritti e richieste d&apos;accesso.
           </p>
         </div>
         <div className="pynk-crm-header-actions">

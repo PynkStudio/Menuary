@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Bell, Check, ExternalLink, FlaskConical, LogOut, Mail, Search, Smartphone, Trash2 } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
 import { usePynkCopy } from "@/lib/pynkstudio-i18n";
-import { useTenantLocalizedHref } from "@/lib/tenant-i18n";
+import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import {
   APPLE_DEVICES,
   BETA_CATEGORIES,

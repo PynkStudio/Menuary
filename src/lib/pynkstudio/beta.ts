@@ -84,6 +84,7 @@ export type PublicBeta = Omit<BetaRow, "channels" | "notified_at"> & { channels:
 /** Senza profilo il visitatore vede le beta ma non i link d'invito. */
 export function toPublicBeta(beta: BetaRow, withUrls: boolean): PublicBeta {
   const { notified_at: _n, ...rest } = beta;
+  void _n;
   const channels = cleanBetaChannels(beta.channels).map((c) => {
     if (withUrls && !betaMethodInfo(c.method).needsApproval) return c;
     return { ...c, url: "" };

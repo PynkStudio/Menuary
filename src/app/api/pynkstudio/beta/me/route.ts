@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
 
 function publicTester(t: BetaTesterRow) {
   const { access_token: _token, ...rest } = t;
+  void _token;
   return rest;
 }
 
