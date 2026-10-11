@@ -94,6 +94,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ays_presenter_packs: {
+        Row: {
+          format: number
+          locale: string
+          manifest: Json
+          published_at: string
+          revision: number
+        }
+        Insert: {
+          format: number
+          locale: string
+          manifest: Json
+          published_at?: string
+          revision: number
+        }
+        Update: {
+          format?: number
+          locale?: string
+          manifest?: Json
+          published_at?: string
+          revision?: number
+        }
+        Relationships: []
+      }
       bunq_api_contexts: {
         Row: {
           created_at: string

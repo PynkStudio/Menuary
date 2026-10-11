@@ -1,6 +1,12 @@
-import { createHash, timingSafeEqual } from "node:crypto";
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
+import { isAysPresenterAuthorized, isAysPresenterRateLimited } from "@/lib/ays-presenter/auth";
+import {
+  resolvePresenterVoice,
+  SPEECH_TEXT_VERSION,
+  synthesizePresenterSpeech,
+} from "@/lib/ays-presenter/speech";
 
 export const runtime = "nodejs";
 
@@ -14,27 +20,6 @@ type PresenterBody = {
 
 const BUCKET = "ays-presenter-cache";
 const MAX_TEXT = 180;
-const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 30;
-const requests = new Map<string, { count: number; resetsAt: number }>();
-
-function authorized(req: NextRequest): boolean {
-  const expected = process.env.AYS_PRESENTER_API_TOKEN;
-  const actual = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
-  if (!expected || actual.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
-}
-
-function limited(ip: string): boolean {
-  const now = Date.now();
-  const current = requests.get(ip);
-  if (!current || current.resetsAt <= now) {
-    requests.set(ip, { count: 1, resetsAt: now + WINDOW_MS });
-    return false;
-  }
-  current.count += 1;
-  return current.count > MAX_PER_WINDOW;
-}
 
 function cleanString(value: unknown, max: number): string {
   return typeof value === "string"
@@ -42,20 +27,21 @@ function cleanString(value: unknown, max: number): string {
     : "";
 }
 
-function audioResponse(bytes: ArrayBuffer, cache: "HIT" | "MISS") {
+function audioResponse(bytes: ArrayBuffer, cache: "HIT" | "MISS", voiceTag: string) {
   return new NextResponse(bytes, {
     headers: {
       "Content-Type": "audio/mpeg",
       "Cache-Control": "private, max-age=86400",
       "X-AYS-Presenter-Cache": cache,
+      "X-AYS-Presenter-Voice": voiceTag,
     },
   });
 }
 
+/** Battute dinamiche (con nome o rare): cache condivisa con retention di 30 giorni. */
 export async function POST(req: NextRequest) {
-  if (!authorized(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (limited(ip)) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  if (!isAysPresenterAuthorized(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (isAysPresenterRateLimited(req, "speech", 30)) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
 
   let body: PresenterBody;
   try {
@@ -71,51 +57,27 @@ export async function POST(req: NextRequest) {
   const cacheable = body.cacheable !== false;
   if (!cueId || !text) return NextResponse.json({ error: "invalid_cue" }, { status: 400 });
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "speech_unavailable" }, { status: 503 });
-  const voice = process.env.AYS_PRESENTER_VOICE || "cedar";
-  const model = process.env.AYS_PRESENTER_TTS_MODEL || "gpt-4o-mini-tts";
+  const voice = resolvePresenterVoice("live");
+  if (!voice) return NextResponse.json({ error: "speech_unavailable" }, { status: 503 });
   const digest = createHash("sha256")
-    .update(JSON.stringify({ v: 2, text, locale, intensity, voice, model }))
+    .update(JSON.stringify({ v: 3, t: SPEECH_TEXT_VERSION, text, locale, intensity, voice: voice.tag }))
     .digest("hex");
-  const objectPath = `v2/${locale}/${digest}.mp3`;
+  const objectPath = `v3/${locale}/${digest}.mp3`;
   const supabase = createSupabaseServiceClient();
-  const storage = supabase?.storage;
 
-  if (cacheable && storage && supabase) {
-    const { data } = await storage.from(BUCKET).download(objectPath);
+  if (cacheable && supabase) {
+    const { data } = await supabase.storage.from(BUCKET).download(objectPath);
     if (data) {
       await supabase.rpc("touch_ays_presenter_cache", { p_cache_key: digest });
-      return audioResponse(await data.arrayBuffer(), "HIT");
+      return audioResponse(await data.arrayBuffer(), "HIT", voice.tag);
     }
   }
 
-  const speech = await fetch("https://api.openai.com/v1/audio/speech", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model,
-      voice,
-      input: text,
-      response_format: "mp3",
-      instructions: [
-        `Speak in ${locale.startsWith("it") ? "Italian" : "English"}.`,
-        "You are a charismatic late-night game-show host: elegant, theatrical, dry, disappointed and funny.",
-        intensity === "savage"
-          ? "Deliver the roast sharply and confidently, close to the line without adding or changing any words."
-          : "Keep the delivery dry and playful, never cruel.",
-        "Read exactly the provided text. Do not add words, introductions, laughter or sound effects.",
-      ].join(" "),
-    }),
-  });
-  if (!speech.ok) {
-    console.error("AYS presenter TTS failed", speech.status, await speech.text());
-    return NextResponse.json({ error: "speech_generation_failed" }, { status: 502 });
-  }
+  const speech = await synthesizePresenterSpeech({ text, locale, intensity, purpose: "live" });
+  if (!speech.ok) return NextResponse.json({ error: speech.error }, { status: speech.status });
 
-  const bytes = await speech.arrayBuffer();
-  if (cacheable && storage && supabase) {
-    const { error: uploadError } = await storage.from(BUCKET).upload(objectPath, bytes, {
+  if (cacheable && supabase) {
+    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(objectPath, speech.bytes, {
       contentType: "audio/mpeg",
       cacheControl: "31536000",
       upsert: false,
@@ -128,5 +90,5 @@ export async function POST(req: NextRequest) {
       });
     }
   }
-  return audioResponse(bytes, "MISS");
+  return audioResponse(speech.bytes, "MISS", voice.tag);
 }

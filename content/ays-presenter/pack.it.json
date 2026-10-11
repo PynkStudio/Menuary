@@ -1,0 +1,39 @@
+{
+  "format": 1,
+  "locale": "it",
+  "lines": {
+    "lobby.empty": [
+      { "id": "nessuno", "text": "NESSUNO. PROMETTENTE." },
+      { "id": "successo", "text": "LA SERATA È GIÀ UN SUCCESSO." }
+    ],
+    "result.everyoneWrong": [
+      { "id": "nessuno-letto", "text": "NESSUNO HA LETTO. PERFETTO." },
+      { "id": "zero-giuste", "text": "ZERO RISPOSTE GIUSTE. GRANDE SQUADRA." },
+      { "id": "insieme", "text": "AVETE SBAGLIATO TUTTI. INSIEME." }
+    ],
+    "result.everyoneCorrect": [
+      { "id": "sospetto", "text": "SOSPETTOSAMENTE COMPETENTI." },
+      { "id": "non-abituatevi", "text": "TUTTI GIUSTI. NON ABITUATEVI." }
+    ],
+    "result.mixed": [
+      { "id": "presenti", "text": "ALCUNI HANNO LETTO. ALCUNI ERANO PRESENTI." },
+      { "id": "misti", "text": "RISULTATI MISTI. MOLTO MISTI." }
+    ],
+    "gameEnd": [
+      { "id": "tecnicamente", "text": "ABBIAMO UN VINCITORE. TECNICAMENTE." },
+      { "id": "fingervi", "text": "È FINITA. POTETE TORNARE A FINGERVI INTELLIGENTI." }
+    ]
+  },
+  "templates": {
+    "title.named": [{ "id": "da-ora", "text": "{name}, DA ORA SEI {title}." }],
+    "title.anonymous": [{ "id": "da-ora", "text": "DA ORA SEI {title}." }],
+    "gameEnd.named": [{ "id": "tecnicamente", "text": "{name} HA VINTO. TECNICAMENTE." }],
+    "lobby.returning.named": [{ "id": "tornato", "text": "È TORNATO {name}, {title}." }],
+    "lobby.returning.anonymous": [{ "id": "tornato", "text": "È TORNATO {title}." }]
+  },
+  "titles": {
+    "king": "IL KING",
+    "kingUndisputed": "IL KING INDISCUSSO",
+    "doesNotRead": "QUELLO CHE NON LEGGE"
+  }
+}
