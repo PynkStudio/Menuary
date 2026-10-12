@@ -49,7 +49,7 @@ const VALENTINA_PAGE_SEO: Record<string, { title: string; description: string }>
   trilogia: {
     title: "The Emotion Dragons Trilogy — Valentina Orciuoli",
     description:
-      "Anxiety, Fury e Il Terzo Canto: la trilogia in cui le emozioni diventano dragoni.",
+      "Anxiety, Fury e La Terza Emozione: la trilogia in cui le emozioni diventano dragoni.",
   },
   thriller: {
     title: "Thriller psicologico — Valentina Orciuoli",

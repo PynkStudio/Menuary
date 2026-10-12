@@ -14,7 +14,7 @@ export const instagramHref = "https://www.instagram.com/di.vale_in.peggio/";
 export const tiktokHref = "https://www.tiktok.com/@valentina.orciuoli";
 export const valentinaEmail = "valentina.orciuoli@gmail.com";
 export const anxietyCoverSrc = "/valentina-orciuoli/anxiety-cover.webp";
-export const furyCoverSrc = "https://m.media-amazon.com/images/I/71z2LZ6a8XL.jpg";
+export const furyCoverSrc = "/valentina-orciuoli/fury-cover.webp";
 export const darkNoirCoverSrc = "/valentina-orciuoli/tra-fumo-e-ombre.webp";
 export const authorPortraitSrc = "https://www.selfcreation.it/wp-content/uploads/2024/11/Valentina-Orciuoli.jpg";
 
@@ -41,7 +41,7 @@ export const valentinaCreativeWorks: ValentinaCreativeWork[] = [
     description:
       "La nebbia fitta del dubbio, il peso sul petto che toglie il respiro ma costringe a guardarsi dentro con sincerità.",
     secondaryText:
-      "Quando non è più possibile mentire a sé stessi, quando il vero combatte per uscire allo scoperto il potere dell'ansia si sprigiona, più feroce che mai.",
+      "Quando non è più possibile mentire a sé stessi, quando il vero io combatte per uscire allo scoperto il potere dell'ansia si sprigiona, più feroce che mai.",
     coverImageUrl: anxietyCoverSrc,
     backgroundMediaUrl: "/valentina-orciuoli/sfondo-anxiety.webp",
     ctaLabel: "Leggi la trama",
@@ -103,7 +103,7 @@ export function valentinaWorkSection(slug: string): ValentinaWorkSection {
  * tiene il posto.
  */
 export const valentinaUpcomingVolume = {
-  title: "Il Terzo Canto",
+  title: "La Terza Emozione",
   description: "La trilogia troverà presto il suo compimento.",
   state: "In arrivo",
 } as const;
@@ -178,7 +178,7 @@ export const trilogy: Array<{
   },
   {
     n: "III",
-    title: "Il Terzo Canto",
+    title: "La Terza Emozione",
     desc: "La trilogia troverà presto il suo compimento.",
     state: "In arrivo",
     href: null,
