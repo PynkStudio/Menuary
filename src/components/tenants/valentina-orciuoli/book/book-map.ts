@@ -58,10 +58,6 @@ const blogSpread: VoSpread = {
 export const voSpreads: readonly VoSpread[] = [
   { id: "home", kind: "static", path: "", navLabel: "Home", runningHead: "Frontespizio", inNav: true },
   { id: "libri", kind: "static", path: "/libri", navLabel: "Libri", runningHead: "Le opere", inNav: true },
-  // Le schede dei singoli volumi pubblicati: subito dopo l'indice, prima della
-  // collana a cui appartengono — è lì che "Leggi la trama" porta il lettore.
-  { id: "anxiety", kind: "static", path: "/anxiety", navLabel: "Anxiety", runningHead: "Anxiety", inNav: false },
-  { id: "fury", kind: "static", path: "/fury", navLabel: "Fury", runningHead: "Fury", inNav: false },
   {
     id: "trilogia",
     kind: "static",
@@ -70,6 +66,10 @@ export const voSpreads: readonly VoSpread[] = [
     runningHead: "The Emotion Dragons Trilogy",
     inNav: false,
   },
+  // Le schede dei singoli volumi seguono la collana che le presenta: prima la
+  // pagina riassuntiva, poi il dettaglio di ciascun libro.
+  { id: "anxiety", kind: "static", path: "/anxiety", navLabel: "Anxiety", runningHead: "Anxiety", inNav: false },
+  { id: "fury", kind: "static", path: "/fury", navLabel: "Fury", runningHead: "Fury", inNav: false },
   {
     id: "thriller",
     kind: "static",

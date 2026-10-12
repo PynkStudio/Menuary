@@ -35,8 +35,10 @@ Estratti da `TENANTS[]` in `src/lib/tenant-registry.ts` (campi `id`, `name`, `ve
   copertina**: il volume si chiude e si rigira per mostrarla. La pagina `/link` (linktree)
   resta fuori dal libro. **Le opere non hanno più una pagina a testa**: il volume le
   raccoglie per collana in `/trilogia` (i due volumi usciti più l'annuncio del terzo) e
-  `/thriller`, e l'indice di `/libri` nomina le due collane. I vecchi indirizzi delle opere
-  (`/anxiety`, `/fury`, `/tra-fumo-e-ombre`) rimandano alla sezione giusta. Vedi
+  `/thriller`, e l'indice di `/libri` nomina le due collane. Le schede dei volumi usciti
+  (`/anxiety`, `/fury`) sono doppie pagine che vengono **dopo** `/trilogia`: prima la
+  pagina riassuntiva della collana, poi il dettaglio dei singoli libri. Da verificare se
+  `/tra-fumo-e-ombre` rimandi ancora a `/thriller`. Vedi
   [[adr-0009-valentina-opere-per-collana]].
   **Il taccuino è una doppia pagina del volume, oggi spenta**: il modulo `blog` è a
   `false` finché non ci sono appunti da pubblicare, quindi la sezione non esiste nel volume,
