@@ -67,7 +67,7 @@ Nell'area tester la scheda **«Feedback»** permette di scegliere la beta (solo 
 
 # Chi riceve gli avvisi
 
-Un tester riceve l'email di una beta se: ha confermato l'email, ha gli avvisi attivi, possiede almeno un dispositivo con un canale della beta, e la beta rientra nei suoi filtri (categorie, lingue, tipo — un filtro vuoto vale «tutto»). Ogni email contiene il link «Non voglio più avvisi sulle nuove beta».
+Un tester riceve l'email di una beta se: ha confermato l'email, ha gli avvisi attivi, possiede almeno un dispositivo con un canale della beta, e la beta rientra nei suoi filtri (categorie, lingue, tipo — un filtro vuoto vale «tutto»). Ogni email contiene il link «Non voglio più avvisi sulle nuove beta». Le email hanno anche l'intestazione `List-Unsubscribe` con disiscrizione in un clic, che Gmail e Yahoo mostrano accanto al mittente. Se le email finiscono in spam vedi [[email-beta-in-spam]].
 
 # Note
 

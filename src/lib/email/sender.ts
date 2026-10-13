@@ -99,6 +99,8 @@ export type SendEmailParams = {
   fromOverride?: string;
   replyTo?: string;
   attachments?: EmailAttachment[];
+  /** Intestazioni extra, es. List-Unsubscribe per gli invii a più destinatari. */
+  headers?: Record<string, string>;
 };
 
 export type SendEmailResult =
@@ -126,6 +128,7 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
     html: params.html,
     ...(params.replyTo ?? replyTo ? { reply_to: params.replyTo ?? replyTo } : {}),
     ...(attachments ? { attachments } : {}),
+    ...(params.headers && Object.keys(params.headers).length > 0 ? { headers: params.headers } : {}),
   };
 
   const res = await fetch("https://api.resend.com/emails", {

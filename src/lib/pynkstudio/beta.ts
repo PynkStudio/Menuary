@@ -75,8 +75,16 @@ export async function sendBetaAccessEmail(tester: BetaTesterRow, origin: string,
   });
 }
 
-export async function sendBetaMail(to: string, subject: string, html: string) {
-  return sendEmail({ to, fromOverride: PYNK_FROM, replyTo: PYNK_REPLY_TO, subject, html });
+export async function sendBetaMail(to: string, subject: string, html: string, headers?: Record<string, string>) {
+  return sendEmail({ to, fromOverride: PYNK_FROM, replyTo: PYNK_REPLY_TO, subject, html, headers });
+}
+
+/** RFC 8058: Gmail e Yahoo vogliono la disiscrizione in un clic sugli invii a più destinatari. */
+function unsubscribeHeaders(url: string): Record<string, string> {
+  return {
+    "List-Unsubscribe": `<${url}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
 }
 
 export type PublicBeta = Omit<BetaRow, "channels" | "notified_at"> & { channels: BetaChannel[] };
@@ -122,6 +130,7 @@ export async function notifyBetaTesters(svc: Svc, beta: BetaRow, origin: string,
   let failed = 0;
   for (const t of targets) {
     const mine = channelsForDevices(channels, t.devices);
+    const unsubscribeUrl = betaUnsubscribeUrl(origin, t.access_token);
     const result = await sendBetaMail(
       t.email,
       `${beta.name}: nuova beta disponibile`,
@@ -133,8 +142,9 @@ export async function notifyBetaTesters(svc: Svc, beta: BetaRow, origin: string,
         version: beta.version,
         channels: mine.map((c) => ({ deviceLabel: betaDeviceLabel(c.device), methodLabel: betaMethodInfo(c.method).label })),
         areaUrl: `${origin}/beta`,
-        unsubscribeUrl: betaUnsubscribeUrl(origin, t.access_token),
+        unsubscribeUrl,
       }),
+      unsubscribeHeaders(unsubscribeUrl),
     );
     if (result.ok) {
       sent++;
