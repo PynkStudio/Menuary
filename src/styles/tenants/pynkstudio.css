@@ -4428,6 +4428,11 @@
     background: color-mix(in srgb, var(--pynk-primary) 14%, transparent); color: var(--pynk-primary);
   }
 
+  .pynk-beta-join-step {
+    width: 20px; height: 20px; border-radius: 999px; display: grid; place-items: center;
+    font-size: 11px; font-weight: 600; background: color-mix(in srgb, currentColor 18%, transparent);
+  }
+
   /* ─── Beta program — admin ──────────────────────────────── */
   .pynk-beta-admin-badge {
     display: inline-block; padding: 3px 9px; border-radius: 999px;

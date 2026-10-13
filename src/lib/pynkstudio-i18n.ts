@@ -900,6 +900,7 @@ const it = {
       until: "Fino al",
       feedback: "Invia un feedback",
       howToJoin: "Come unirti",
+      install: "Installa l'app",
       requestPending: "Richiesta inviata: ti scriviamo quando è approvata.",
       requestRejected: "Richiesta non approvata.",
       requestAccount: "Account usato:",

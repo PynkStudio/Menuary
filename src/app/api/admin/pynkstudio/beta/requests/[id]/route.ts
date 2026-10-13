@@ -50,6 +50,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           betaName: beta.name,
           deviceLabel: betaDeviceLabel(data.device),
           url: channel?.url || null,
+          installUrl: channel?.installUrl ?? null,
           areaUrl: `${site}/beta`,
         }),
       );

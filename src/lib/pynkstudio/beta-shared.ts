@@ -212,6 +212,8 @@ export type BetaChannel = {
   method: BetaMethod;
   url: string;
   notes?: string;
+  /** Secondo passo, dove serve: es. la scheda Play Store da cui installare dopo l'opt-in al test. */
+  installUrl?: string;
 };
 
 export function cleanBetaChannels(raw: unknown): BetaChannel[] {
@@ -232,6 +234,9 @@ export function cleanBetaChannels(raw: unknown): BetaChannel[] {
       method: method as BetaMethod,
       url,
       ...(typeof c.notes === "string" && c.notes.trim() ? { notes: c.notes.trim().slice(0, 500) } : {}),
+      ...(typeof c.installUrl === "string" && /^https:\/\//i.test(c.installUrl.trim())
+        ? { installUrl: c.installUrl.trim().slice(0, 500) }
+        : {}),
     });
   }
   return out;

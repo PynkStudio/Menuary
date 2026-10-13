@@ -5,7 +5,7 @@ roles: ["siteadmin"]
 tags: ["ui", "admin-pynkstudio", "beta", "testflight", "google-play"]
 route: "/admin-pynkstudio/beta"
 source: "src/components/admin-pynkstudio/pynk-beta-manager.tsx, src/components/tenants/pynkstudio/pages/beta.tsx, src/lib/pynkstudio/beta*.ts, src/app/api/admin/pynkstudio/beta, src/app/api/pynkstudio/beta"
-last_updated: "2026-10-12"
+last_updated: "2026-10-13"
 owner: ""
 ---
 
@@ -25,7 +25,7 @@ Lato pubblico il tester si iscrive con **nome, cognome, telefono, email e dispos
 - **Riquadri in alto**: Beta aperte, Tester iscritti (con quanti hanno confermato l'email), Richieste in attesa (cliccabile: apre le richieste), Avvisi attivi.
 - **Schede**: **Beta**, **Richieste** (con il numero in attesa), **Tester**.
 - **Beta**: tabella con app, stato, tipo, dispositivi, richieste approvate, tester avvisati, data di pubblicazione. Clic su una riga apre l'editor.
-- **Editor beta**: nome, slug, frase breve, descrizione, stato (Bozza / Aperta / Posti esauriti / Chiusa), tipo, categoria, versione, lingue dell'app, icona, data di fine, feedback (link o email), **Canali per dispositivo** (dispositivo, metodo, link, nota per il tester) e la sezione **Avvisi email**.
+- **Editor beta**: nome, slug, frase breve, descrizione, stato (Bozza / Aperta / Posti esauriti / Chiusa), tipo, categoria, versione, lingue dell'app, icona, data di fine, feedback (link o email), **Canali per dispositivo** (dispositivo, metodo, link, link per installare facoltativo, nota per il tester) e la sezione **Avvisi email**.
 - **Richieste**: filtri per beta e stato, tabella con tester, beta, dispositivo, account da aggiungere, data, stato.
 - **Tester**: ricerca, tabella con contatti, dispositivi, account Apple/Google, preferenze avvisi, data di iscrizione.
 
@@ -50,6 +50,8 @@ Lato pubblico il tester si iscrive con **nome, cognome, telefono, email e dispos
 - **TestFlight · invito via email**: su richiesta; lo staff aggiunge l'Apple ID in App Store Connect, poi approva.
 - **Google Play · test aperto**: link di opt-in `play.google.com/apps/testing/<package>`, visibile subito.
 - **Google Play · test chiuso**: su richiesta; lo staff aggiunge l'account Google alla lista tester o al Google Group, poi approva.
+
+Il **link per installare** è un secondo passo facoltativo: per Google Play è la scheda dello store (`play.google.com/store/apps/details?id=…`), da cui il tester installa dopo aver toccato «Diventa un tester». Nell'area tester compare come secondo bottone «Installa l'app» e nell'email di approvazione come «2 · Installa l'app».
 - **Firebase App Distribution**, **Download diretto**, **Versione web**, **Altro**: link visibile subito.
 
 Il canale **Browser (web)** vale per tutti i tester, qualunque dispositivo abbiano.

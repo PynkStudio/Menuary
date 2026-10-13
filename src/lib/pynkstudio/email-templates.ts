@@ -244,6 +244,7 @@ export function betaApprovedHtml(d: {
   betaName: string;
   deviceLabel: string;
   url: string | null;
+  installUrl?: string | null;
   areaUrl: string;
 }): string {
   return shell(`
@@ -253,7 +254,8 @@ export function betaApprovedHtml(d: {
       <strong style="color:${TEXT};">${escapeHtml(d.betaName)}</strong> su ${escapeHtml(d.deviceLabel)}.
       Trovi le istruzioni complete nella tua area beta.
     </p>
-    ${d.url ? joinButton(d.url, "Unisciti alla beta") : ""}
+    ${d.url ? joinButton(d.url, d.installUrl ? "1 · Unisciti alla beta" : "Unisciti alla beta") : ""}
+    ${d.installUrl ? `<p style="margin:0 0 24px;font-size:14px;color:${MUTED};">Poi installa l'app da qui: <a href="${escapeHtml(d.installUrl)}" style="color:${PYNK};font-weight:600;">2 · Installa l'app</a></p>` : ""}
     <p style="margin:0;font-size:14px;"><a href="${escapeHtml(d.areaUrl)}" style="color:${PYNK};font-weight:600;">Apri l'area beta</a></p>
   `);
 }

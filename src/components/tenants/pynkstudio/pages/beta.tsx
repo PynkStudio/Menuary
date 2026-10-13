@@ -346,9 +346,18 @@ function JoinChannel({
           </div>
         ) : null
       ) : channel.url && canJoin ? (
-        <a href={channel.url} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-beta-join">
-          {method.cta} <ExternalLink className="pynk-icon-xs" aria-hidden />
-        </a>
+        <div className="pynk-beta-join-row">
+          <a href={channel.url} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-beta-join">
+            {channel.installUrl && <span className="pynk-beta-join-step">1</span>}
+            {method.cta} <ExternalLink className="pynk-icon-xs" aria-hidden />
+          </a>
+          {channel.installUrl && (
+            <a href={channel.installUrl} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-outline pynk-beta-join">
+              <span className="pynk-beta-join-step">2</span>
+              {c.install} <ExternalLink className="pynk-icon-xs" aria-hidden />
+            </a>
+          )}
+        </div>
       ) : null}
       {error && <p className="pynk-feedback pynk-feedback-error">{error}</p>}
     </div>
