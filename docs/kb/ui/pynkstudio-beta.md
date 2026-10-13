@@ -25,7 +25,7 @@ Lato pubblico il tester si iscrive con **nome, cognome, telefono, email e dispos
 - **Riquadri in alto**: Beta aperte, Tester iscritti (con quanti hanno confermato l'email), Richieste in attesa (cliccabile: apre le richieste), Avvisi attivi.
 - **Schede**: **Beta**, **Richieste** (con il numero in attesa), **Tester**.
 - **Beta**: tabella con app, stato, tipo, dispositivi, richieste approvate, tester avvisati, data di pubblicazione. Clic su una riga apre l'editor.
-- **Editor beta**: nome, slug, frase breve, descrizione, stato (Bozza / Aperta / Posti esauriti / Chiusa), tipo, categoria, versione, lingue dell'app, icona, data di fine, feedback (link o email), **Canali per dispositivo** (dispositivo, metodo, link, link per installare facoltativo, nota per il tester) e la sezione **Avvisi email**.
+- **Editor beta**: nome, slug, frase breve, descrizione, stato (Bozza / Aperta / Posti esauriti / Chiusa), tipo, categoria, versione, lingue dell'app, icona, data di fine, feedback (link o email), **Canali per dispositivo** (dispositivo, metodo, link del gruppo facoltativo, link, link per installare facoltativo, nota per il tester) e la sezione **Avvisi email**.
 - **Richieste**: filtri per beta e stato, tabella con tester, beta, dispositivo, account da aggiungere, data, stato.
 - **Tester**: ricerca, tabella con contatti, dispositivi, account Apple/Google, preferenze avvisi, data di iscrizione.
 
@@ -52,6 +52,7 @@ Lato pubblico il tester si iscrive con **nome, cognome, telefono, email e dispos
 - **Google Play · test chiuso**: su richiesta; lo staff aggiunge l'account Google alla lista tester o al Google Group, poi approva.
 
 Il **link per installare** è un secondo passo facoltativo: per Google Play è la scheda dello store (`play.google.com/store/apps/details?id=…`), da cui il tester installa dopo aver toccato «Diventa un tester». Nell'area tester compare come secondo bottone «Installa l'app» e nell'email di approvazione come «2 · Installa l'app».
+- **Google Play · test chiuso con gruppo aperto**: nessuna approvazione. Il tester entra da solo nel Google Group (che deve consentire l'iscrizione libera), poi fa l'opt-in e installa. L'area mostra l'account Google da usare e tre bottoni numerati: «Entra nel gruppo tester», «Diventa tester su Google Play», «Installa l'app». È il metodo usato per Are You Stupid?! Android.
 - **Firebase App Distribution**, **Download diretto**, **Versione web**, **Altro**: link visibile subito.
 
 Il canale **Browser (web)** vale per tutti i tester, qualunque dispositivo abbiano.

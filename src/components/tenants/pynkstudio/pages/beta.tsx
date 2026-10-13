@@ -346,22 +346,35 @@ function JoinChannel({
           </div>
         ) : null
       ) : channel.url && canJoin ? (
-        <div className="pynk-beta-join-row">
-          <a href={channel.url} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-primary pynk-beta-join">
-            {channel.installUrl && <span className="pynk-beta-join-step">1</span>}
-            {method.cta} <ExternalLink className="pynk-icon-xs" aria-hidden />
-          </a>
-          {channel.installUrl && (
-            <a href={channel.installUrl} target="_blank" rel="noopener noreferrer" className="pynk-btn pynk-btn-outline pynk-beta-join">
-              <span className="pynk-beta-join-step">2</span>
-              {c.install} <ExternalLink className="pynk-icon-xs" aria-hidden />
-            </a>
-          )}
-        </div>
+        <>
+          {account && <p className="pynk-muted pynk-beta-account">{c.useAccount} <strong>{account}</strong></p>}
+          <div className="pynk-beta-join-row">
+            {joinLinks(channel, method.cta, c).map((l, i, all) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`pynk-btn ${i === 0 ? "pynk-btn-primary" : "pynk-btn-outline"} pynk-beta-join`}
+              >
+                {all.length > 1 && <span className="pynk-beta-join-step">{i + 1}</span>}
+                {l.label} <ExternalLink className="pynk-icon-xs" aria-hidden />
+              </a>
+            ))}
+          </div>
+        </>
       ) : null}
       {error && <p className="pynk-feedback pynk-feedback-error">{error}</p>}
     </div>
   );
+}
+
+function joinLinks(channel: BetaChannel, cta: string, c: { joinGroup: string; install: string }) {
+  return [
+    channel.groupUrl ? { href: channel.groupUrl, label: c.joinGroup } : null,
+    { href: channel.url, label: cta },
+    channel.installUrl ? { href: channel.installUrl, label: c.install } : null,
+  ].filter((l): l is { href: string; label: string } => !!l);
 }
 
 function BetaCard({

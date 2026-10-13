@@ -51,6 +51,7 @@ export type BetaMethod =
   | "testflight_invite"
   | "play_open"
   | "play_closed"
+  | "play_group"
   | "firebase"
   | "download"
   | "web"
@@ -110,6 +111,18 @@ export const BETA_METHODS: BetaMethodInfo[] = [
     steps: [
       "Richiedi l'accesso: aggiungiamo l'account Google indicato nel profilo alla lista dei tester.",
       "Quando la richiesta è approvata apri il link, tocca «Diventa un tester» e scarica l'app dal Play Store.",
+    ],
+  },
+  {
+    id: "play_group",
+    label: "Google Play · test chiuso con gruppo aperto",
+    cta: "Diventa tester su Google Play",
+    needsApproval: false,
+    account: "google",
+    steps: [
+      "Entra nel gruppo dei tester con l'account Google che usi sul dispositivo Android: tocca «Iscriviti al gruppo».",
+      "Apri il link di opt-in con lo stesso account e tocca «Diventa un tester».",
+      "Installa l'app dal Play Store: la versione di prova può impiegare qualche minuto a comparire.",
     ],
   },
   {
@@ -212,7 +225,9 @@ export type BetaChannel = {
   method: BetaMethod;
   url: string;
   notes?: string;
-  /** Secondo passo, dove serve: es. la scheda Play Store da cui installare dopo l'opt-in al test. */
+  /** Passo prima del link: es. il Google Group aperto da cui passa il test chiuso di Play. */
+  groupUrl?: string;
+  /** Passo dopo il link: es. la scheda Play Store da cui installare dopo l'opt-in al test. */
   installUrl?: string;
 };
 
@@ -234,6 +249,9 @@ export function cleanBetaChannels(raw: unknown): BetaChannel[] {
       method: method as BetaMethod,
       url,
       ...(typeof c.notes === "string" && c.notes.trim() ? { notes: c.notes.trim().slice(0, 500) } : {}),
+      ...(typeof c.groupUrl === "string" && /^https:\/\//i.test(c.groupUrl.trim())
+        ? { groupUrl: c.groupUrl.trim().slice(0, 500) }
+        : {}),
       ...(typeof c.installUrl === "string" && /^https:\/\//i.test(c.installUrl.trim())
         ? { installUrl: c.installUrl.trim().slice(0, 500) }
         : {}),

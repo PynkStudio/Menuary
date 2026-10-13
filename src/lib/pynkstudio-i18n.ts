@@ -901,6 +901,8 @@ const it = {
       feedback: "Invia un feedback",
       howToJoin: "Come unirti",
       install: "Installa l'app",
+      joinGroup: "Entra nel gruppo tester",
+      useAccount: "Usa l'account Google:",
       requestPending: "Richiesta inviata: ti scriviamo quando è approvata.",
       requestRejected: "Richiesta non approvata.",
       requestAccount: "Account usato:",

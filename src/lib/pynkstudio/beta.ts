@@ -87,8 +87,9 @@ export function toPublicBeta(beta: BetaRow, withUrls: boolean): PublicBeta {
   void _n;
   const channels = cleanBetaChannels(beta.channels).map((c) => {
     if (withUrls && !betaMethodInfo(c.method).needsApproval) return c;
-    const { installUrl: _install, ...locked } = c;
+    const { installUrl: _install, groupUrl: _group, ...locked } = c;
     void _install;
+    void _group;
     return { ...locked, url: "" };
   });
   return { ...rest, channels };

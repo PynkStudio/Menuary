@@ -293,6 +293,7 @@ function BetaEditor({
                     </select>
                   </div>
                   <input className="pynk-admin-input" value={ch.url} onChange={(e) => setChannel(i, { url: e.target.value })} placeholder={method.id.startsWith("testflight") ? "https://testflight.apple.com/join/…" : method.id.startsWith("play") ? "https://play.google.com/apps/testing/…" : "https://…"} aria-label="Link" />
+                  <input className="pynk-admin-input" value={ch.groupUrl ?? ""} onChange={(e) => setChannel(i, { groupUrl: e.target.value })} placeholder="Link del gruppo tester, primo passo (facoltativo) — es. https://groups.google.com/g/…" aria-label="Link del gruppo" />
                   <input className="pynk-admin-input" value={ch.installUrl ?? ""} onChange={(e) => setChannel(i, { installUrl: e.target.value })} placeholder="Link per installare, secondo passo (facoltativo) — es. https://play.google.com/store/apps/details?id=…" aria-label="Link per installare" />
                   <input className="pynk-admin-input" value={ch.notes ?? ""} onChange={(e) => setChannel(i, { notes: e.target.value })} placeholder="Nota per il tester (facoltativa)" aria-label="Nota" />
                   <div className="pynk-beta-admin-channel-foot">
