@@ -32,6 +32,7 @@ import {
 import {
   isBackCoverPathname,
   isBookPathname,
+  isMergedInCompact,
   appendixOrdinal,
   leafFaces,
   spreadHref,
@@ -426,6 +427,66 @@ export function VoBookShell({
   const posRef = useRef(pos);
   posRef.current = pos;
 
+  /**
+   * Su schermo stretto le due facciate esistono entrambe ma non ci stanno a
+   * fuoco insieme: la telecamera guarda una alla volta, come una testa che si
+   * gira. `tryShiftFocus`, più sotto, decide se un passo sposta lo sguardo o
+   * gira davvero pagina. Su schermo largo resta scritto ma senza effetto
+   * visivo — il CSS che lo legge è tutto sotto `[data-compact]`.
+   */
+  const [focus, setFocus] = useState<VoFaceSide>("left");
+  /**
+   * Il fuoco leggibile *subito*.
+   *
+   * Prima si scriveva in fase di render, quindi valeva solo dal render
+   * successivo: due sfogliate nello stesso fotogramma — o una che arriva fra
+   * l'atterraggio del foglio e il ridisegno — leggevano entrambe il lato
+   * vecchio e venivano spese tutte e due per girare la testa. Da fuori è il
+   * libro che smette di andare avanti.
+   */
+  const focusRef = useRef(focus);
+  const lookAt = useCallback((side: VoFaceSide) => {
+    focusRef.current = side;
+    setFocus(side);
+  }, []);
+  /**
+   * La facciata sinistra di questa posizione è un verso bianco: succede su
+   * schermo stretto nelle aperture fuse sulla destra (`isMergedInCompact`). Lì
+   * lo sguardo non si ferma mai — si resta sulla destra, e il giro pagina
+   * attraversa il verso bianco senza sostarci.
+   */
+  const blankLeft = useCallback(
+    (position: number) => {
+      if (!compact) return false;
+      const id =
+        position >= appendixBase
+          ? voAppendixOrder[position - appendixBase]?.id
+          : voSpreads[position]?.id;
+      return id ? isMergedInCompact(id) : false;
+    },
+    [appendixBase, compact],
+  );
+  /**
+   * Su che facciata atterra lo sguardo arrivando su `target`. Andando avanti si
+   * ricomincia da sinistra, tornando indietro da destra — la stessa testa che
+   * continua a girare nella direzione da cui veniva — ma un verso bianco non è
+   * un posto dove guardare, e l'appendice si apre sempre dal suo frontespizio.
+   */
+  const landingSide = useCallback(
+    (target: number, dir: 1 | -1 | undefined): VoFaceSide => {
+      if (blankLeft(target)) return "right";
+      if (target >= appendixBase) return "left";
+      return dir === -1 ? "right" : "left";
+    },
+    [appendixBase, blankLeft],
+  );
+  /**
+   * Da quale facciata parte e su quale arriva la telecamera nel giro in corso,
+   * fissati quando il gesto nasce. Riferimenti e non stato: li legge la
+   * trasformazione della telecamera a ogni fotogramma del foglio.
+   */
+  const flipFromRef = useRef(1);
+  const flipToRef = useRef(0);
   const [gesture, setGestureState] = useState<Gesture | null>(null);
   /**
    * 1 mentre un foglio è in mano o in volo, 0 a riposo.
@@ -451,11 +512,15 @@ export function VoBookShell({
   const setGesture = useCallback(
     (next: Gesture | null | ((current: Gesture | null) => Gesture | null)) => {
       const value = typeof next === "function" ? next(gestureRef.current) : next;
+      if (value && value.token !== gestureRef.current?.token) {
+        flipFromRef.current = focusRef.current === "right" ? 1 : 0;
+        flipToRef.current = landingSide(value.to, value.dir) === "right" ? 1 : 0;
+      }
       gestureRef.current = value;
       flipping.set(value?.mode === "run" || value?.mode === "drag" ? 1 : 0);
       setGestureState(value);
     },
-    [flipping],
+    [flipping, landingSide],
   );
 
   const tokenRef = useRef(0);
@@ -536,28 +601,6 @@ export function VoBookShell({
   const busy = gesture?.mode === "run";
 
   /**
-   * Su schermo stretto le due facciate esistono entrambe ma non ci stanno a
-   * fuoco insieme: la telecamera guarda una alla volta, come una testa che si
-   * gira. `tryShiftFocus`, più sotto, decide se un passo sposta lo sguardo o
-   * gira davvero pagina. Su schermo largo resta scritto ma senza effetto
-   * visivo — il CSS che lo legge è tutto sotto `[data-compact]`.
-   */
-  const [focus, setFocus] = useState<VoFaceSide>("left");
-  /**
-   * Il fuoco leggibile *subito*.
-   *
-   * Prima si scriveva in fase di render, quindi valeva solo dal render
-   * successivo: due sfogliate nello stesso fotogramma — o una che arriva fra
-   * l'atterraggio del foglio e il ridisegno — leggevano entrambe il lato
-   * vecchio e venivano spese tutte e due per girare la testa. Da fuori è il
-   * libro che smette di andare avanti.
-   */
-  const focusRef = useRef(focus);
-  const lookAt = useCallback((side: VoFaceSide) => {
-    focusRef.current = side;
-    setFocus(side);
-  }, []);
-  /**
    * Il fuoco a riposo — dove la telecamera torna quando non c'è un foglio in
    * mano o in volo. Durante un giro vero non è lui a guidare: la telecamera
    * segue invece il foglio stesso, vedi `focusDuringFlip` qui sotto.
@@ -567,6 +610,13 @@ export function VoBookShell({
     const controls = animate(restingFocusT, focus === "left" ? 0 : 1, cameraFocusSpring);
     return () => controls.stop();
   }, [restingFocusT, focus]);
+  // Entrando su un verso bianco — link diretto, ritorno dalla memoria, telefono
+  // girato — lo sguardo va già sulla destra, senza carrellata.
+  useBeforePaint(() => {
+    if (gestureRef.current || !blankLeft(pos) || focusRef.current === "right") return;
+    restingFocusT.set(1);
+    lookAt("right");
+  }, [blankLeft, lookAt, pos, restingFocusT]);
   /**
    * Mentre un foglio è preso o in volo, la telecamera non salta da un fuoco
    * all'altro: insegue il foglio stesso, come un occhio che segue la pagina
@@ -596,7 +646,16 @@ export function VoBookShell({
    */
   const focusDuringFlip = useTransform(
     [p0, restingFocusT, flipping],
-    ([progress, resting, active]: number[]) => (active ? 1 - progress : resting),
+    ([progress, resting, active]: number[]) => {
+      if (!active) return resting;
+      // Il cammino del foglio da 0 a 1, qualunque sia il verso. Con i capi
+      // sinistra/destra è la stessa `1 - p0` di sempre; quando l'arrivo è un
+      // verso bianco i due capi coincidono sulla destra e la telecamera resta
+      // lì, allargando a metà corsa (`zoomDuringFlip`) sopra la pagina vuota.
+      const travel = gestureRef.current?.dir === -1 ? 1 - progress : progress;
+      const from = flipFromRef.current;
+      return from + (flipToRef.current - from) * travel;
+    },
   );
   /**
    * Quanto l'inquadratura è stretta sulla facciata: 1 sulla carta posata, 0 col
@@ -644,12 +703,14 @@ export function VoBookShell({
   const tryShiftFocus = useCallback(
     (dir: 1 | -1) => {
       if (!compact) return false;
+      // Sul verso bianco non c'è niente da guardare: il passo gira la pagina.
+      if (blankLeft(posRef.current)) return false;
       const wanted: VoFaceSide = dir === 1 ? "right" : "left";
       if (focusRef.current === wanted) return false;
       lookAt(wanted);
       return true;
     },
-    [compact, lookAt],
+    [blankLeft, compact, lookAt],
   );
 
   // Da chiuso il volume mostra solo la copertina, quindi va centrato sulla metà
@@ -754,7 +815,12 @@ export function VoBookShell({
         if (!entry) return <div className="vo-page-sheet vo-page-sheet-blank" />;
         const face: VoFaceSide = side;
         return (
-          <div className="vo-page-sheet" data-side={face} data-spread="appendice">
+          <div
+            className="vo-page-sheet"
+            data-side={face}
+            data-spread="appendice"
+            data-blank={(face === "left" && blankLeft(position)) || undefined}
+          >
             <div className="vo-page-grain" aria-hidden="true" />
             <div className="vo-page-running-head" aria-hidden="true">
               <span>{face === "left" ? "Valentina Orciuoli" : entry.runningHead}</span>
@@ -773,7 +839,12 @@ export function VoBookShell({
       const meta = voSpreads[targetSpread];
       const folio = targetSpread * 2 + (face === "right" ? 1 : 0);
       return (
-        <div className="vo-page-sheet" data-side={face} data-spread={meta.id}>
+        <div
+          className="vo-page-sheet"
+          data-side={face}
+          data-spread={meta.id}
+          data-blank={(face === "left" && blankLeft(position)) || undefined}
+        >
           <div className="vo-page-grain" aria-hidden="true" />
           <div className="vo-page-running-head" aria-hidden="true">
             <span>{face === "left" ? "Valentina Orciuoli" : meta.runningHead}</span>
@@ -789,7 +860,7 @@ export function VoBookShell({
         </div>
       );
     },
-    [appendixBase, fromPos, renderAppendix, renderFace],
+    [appendixBase, blankLeft, fromPos, renderAppendix, renderFace],
   );
 
   const pageSheet = useCallback(
@@ -887,16 +958,17 @@ export function VoBookShell({
       // L'appendice non è una posizione del volume: l'URL ce l'ha già portata, e
       // scriverla in `spread` la farebbe rientrare nella sequenza sfogliabile.
       if (target >= appendixBase) {
-        restingFocusT.set(0);
+        const side = landingSide(target, dir);
+        restingFocusT.set(side === "left" ? 0 : 1);
         setShownAppendix(target - appendixBase);
-        lookAt("left");
+        lookAt(side);
         clearGesture();
         return;
       }
       // Arrivando avanti si ricomincia a guardare da sinistra, arrivando
       // indietro da destra: è la stessa testa che continua a girare nella
       // direzione da cui veniva, non che scatta sempre al solito lato.
-      const landing: VoFaceSide = (dir ?? gestureRef.current?.dir) === -1 ? "right" : "left";
+      const landing = landingSide(target, dir ?? gestureRef.current?.dir);
       /*
        * Il passaggio di consegne della telecamera.
        *
@@ -928,7 +1000,7 @@ export function VoBookShell({
       if (queuedRef.current !== 0) return;
       publish(nextSpread);
     },
-    [appendixBase, clearGesture, fromPos, lookAt, playPageSound, publish, restingFocusT],
+    [appendixBase, clearGesture, fromPos, landingSide, lookAt, playPageSound, publish, restingFocusT],
   );
 
   /**

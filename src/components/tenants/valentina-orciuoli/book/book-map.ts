@@ -168,6 +168,21 @@ export const voErrata: VoAppendix = {
  */
 export const voAppendixOrder: readonly VoAppendix[] = [...voAppendix, voErrata];
 
+/**
+ * Le aperture che su schermo stretto si fondono sulla facciata destra.
+ *
+ * Sono quelle la cui sinistra porta solo un titolo o una riga: col libro a una
+ * facciata alla volta il pollice doveva fermarsi su una pagina quasi vuota a
+ * ogni sezione. Lì la sinistra diventa un verso bianco che il giro attraversa
+ * senza fermarsi. Le aperture con due facciate davvero piene — preambolo ed
+ * elenco, copertina e scheda — restano com'erano.
+ */
+const voCompactMerged = new Set<string>(["libri", "eventi", "privacy", "cookie", "errata"]);
+
+export function isMergedInCompact(id: string) {
+  return voCompactMerged.has(id);
+}
+
 /** Quanto lontano sta questa appendice dalla prima. */
 export function appendixOrdinal(entry: VoAppendix) {
   const index = voAppendixOrder.findIndex((item) => item.id === entry.id);

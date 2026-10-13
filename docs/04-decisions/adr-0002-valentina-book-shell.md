@@ -558,6 +558,22 @@ l'affordance — si capisce che è un foglio e che lo si può prendere — senza
 gira più spesso, ma non si scorre mai dentro la carta. Prima le due facce dello spread
 venivano impilate in un foglio solo, che è esattamente ciò che produceva lo scroll interno.
 
+> **Aggiornamento 2026-10-13 — verso bianco dove la sinistra era quasi vuota.** Sul
+> telefono alcune aperture avevano a sinistra solo un titolo o una riga ("I libri") e il
+> pollice doveva fermarcisi a ogni sezione. Solo per quelle — elencate in
+> `isMergedInCompact` (`book-map.ts`): `libri`, `eventi`, `privacy`, `cookie`, `errata` —
+> in compatto la sinistra diventa un **verso bianco** (senza testatina né folio, attributo
+> `data-blank`) e la destra porta titolo e contenuto uno sotto l'altro (`voMergedFace` in
+> `pages.tsx`). Le aperture con due facciate davvero piene (frontespizio, trilogia,
+> schede dei volumi, thriller, taccuino, contatti) restano a due tappe come prima.
+> Nello shell: su un verso bianco `tryShiftFocus` non sposta lo sguardo e il passo gira
+> la pagina; `landingSide` fa atterrare sulla destra quando l'arrivo è un verso bianco;
+> la telecamera durante il giro interpola fra facciata di partenza e d'arrivo (fissate
+> alla nascita del gesto), così fra due destre resta sulla destra e allarga a metà corsa
+> attraversando il verso bianco senza sostarci. Su schermo largo nulla cambia.
+> Verificato a 375 px: home → `/libri` (destra) → `/trilogia` sinistra → `/trilogia`
+> destra, e all'indietro lo stesso percorso fino al frontespizio.
+
 Lo stato resta in unità di spread — è quello che URL, memoria e numeri di pagina conoscono
 — e la *posizione* si deriva dal modo corrente, così un cambio di larghezza non corrompe
 nulla. La soglia è dichiarata **una volta sola, nel componente**, e il foglio di stile la

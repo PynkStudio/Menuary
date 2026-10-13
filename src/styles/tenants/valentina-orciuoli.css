@@ -3870,6 +3870,24 @@
       display: none;
     }
 
+    /* Le aperture fuse sulla destra (`isMergedInCompact`): la sinistra è un
+       verso bianco, senza testatina né numero come in un libro vero, e la
+       destra porta titolo e contenuto uno sotto l'altro. */
+    .vo-book-site[data-compact] .vo-page-sheet[data-blank] .vo-page-running-head,
+    .vo-book-site[data-compact] .vo-page-sheet[data-blank] .vo-page-folio {
+      visibility: hidden;
+    }
+
+    .vo-book-site[data-compact] .vo-face-merged {
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+    }
+
+    .vo-book-site[data-compact] .vo-face-merged > .vo-face {
+      min-height: 0;
+    }
+
     .vo-book-site[data-compact] .vo-book-nav {
       gap: 0.9rem;
       padding: 0.7rem 0.9rem;

@@ -33,6 +33,7 @@ import { VoDesk } from "@/components/tenants/valentina-orciuoli/book/desk";
 import {
   renderVoAppendixFace,
   renderVoFace,
+  voMergedFace,
   type VoBookContext,
 } from "@/components/tenants/valentina-orciuoli/book/pages";
 import {
@@ -49,6 +50,7 @@ import {
   backCoverHref,
   hasSpread,
   isBackCoverPathname,
+  isMergedInCompact,
   spreadHref,
   spreadIndexById,
   spreadIndexByPathname,
@@ -611,16 +613,27 @@ export function ValentinaOrciuoliBookSite({
     ],
   );
 
+  // Su schermo stretto alcune aperture si fondono sulla destra: vedi `isMergedInCompact`.
   const renderFace = useCallback(
-    (spread: VoSpread, side: "left" | "right") => renderVoFace(spread, side, ctx),
-    [ctx],
+    (spread: VoSpread, side: "left" | "right") =>
+      compact && isMergedInCompact(spread.id)
+        ? voMergedFace(side, renderVoFace(spread, "left", ctx), renderVoFace(spread, "right", ctx))
+        : renderVoFace(spread, side, ctx),
+    [compact, ctx],
   );
 
   // L'errata ha due richiami che sfogliano: come le facciate del volume, anche
   // l'appendice ha bisogno del contesto per farlo.
   const renderAppendix = useCallback(
-    (entry: VoAppendix, side: "left" | "right") => renderVoAppendixFace(entry, side, ctx),
-    [ctx],
+    (entry: VoAppendix, side: "left" | "right") =>
+      compact && isMergedInCompact(entry.id)
+        ? voMergedFace(
+            side,
+            renderVoAppendixFace(entry, "left", ctx),
+            renderVoAppendixFace(entry, "right", ctx),
+          )
+        : renderVoAppendixFace(entry, side, ctx),
+    [compact, ctx],
   );
 
   // Sulla quarta il libro è chiuso e nessuno dei due gestori della rotella è

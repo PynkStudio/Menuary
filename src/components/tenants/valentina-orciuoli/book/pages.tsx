@@ -584,6 +584,23 @@ export function renderVoAppendixFace(
   );
 }
 
+/**
+ * Su schermo stretto la telecamera guarda solo la facciata destra: la sinistra
+ * resta un verso bianco che il giro pagina attraversa senza fermarsi, e la
+ * destra porta tutte e due — il titolo sopra, il contenuto sotto. Un verso
+ * bianco è normale in un libro; una facciata col solo titolo su cui il pollice
+ * deve fermarsi a ogni sezione no.
+ */
+export function voMergedFace(side: VoFaceSide, left: ReactNode, right: ReactNode): ReactNode {
+  if (side === "left") return null;
+  return (
+    <div className="vo-face-merged">
+      {left}
+      {right}
+    </div>
+  );
+}
+
 export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookContext): ReactNode {
   const key = `${spread.id as VoStaticSpreadId}-${side}`;
   switch (key) {
