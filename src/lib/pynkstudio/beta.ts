@@ -4,7 +4,7 @@ import type { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { sendEmail } from "@/lib/email/sender";
-import { betaAccessHtml, betaNewHtml } from "@/lib/pynkstudio/email-templates";
+import { betaAccessHtml, betaNewHtml, PYNK_REPLY_TO, PYNK_TRANSACTIONAL_FROM } from "@/lib/pynkstudio/email-templates";
 import {
   betaDeviceLabel,
   betaKindLabel,
@@ -21,8 +21,6 @@ export type BetaRow = Database["public"]["Tables"]["pynkstudio_betas"]["Row"];
 
 export const BETA_COOKIE = "pynk_beta";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
-const PYNK_FROM = "PYNK STUDIO <amministrazione@pynkstudio.eu>";
-const PYNK_REPLY_TO = "amministrazione@pynkstudio.eu";
 const PYNK_ORIGIN = "https://pynkstudio.eu";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -68,7 +66,7 @@ export async function getBetaTester(svc: Svc): Promise<BetaTesterRow | null> {
 export async function sendBetaAccessEmail(tester: BetaTesterRow, origin: string, isNew: boolean) {
   return sendEmail({
     to: tester.email,
-    fromOverride: PYNK_FROM,
+    fromOverride: PYNK_TRANSACTIONAL_FROM,
     replyTo: PYNK_REPLY_TO,
     subject: isNew ? "Conferma la tua iscrizione alle beta PYNK STUDIO" : "Il tuo link per le beta PYNK STUDIO",
     html: betaAccessHtml({ firstName: tester.first_name, accessUrl: betaAccessUrl(origin, tester.access_token), isNew }),
@@ -76,7 +74,7 @@ export async function sendBetaAccessEmail(tester: BetaTesterRow, origin: string,
 }
 
 export async function sendBetaMail(to: string, subject: string, html: string, headers?: Record<string, string>) {
-  return sendEmail({ to, fromOverride: PYNK_FROM, replyTo: PYNK_REPLY_TO, subject, html, headers });
+  return sendEmail({ to, fromOverride: PYNK_TRANSACTIONAL_FROM, replyTo: PYNK_REPLY_TO, subject, html, headers });
 }
 
 /** RFC 8058: Gmail e Yahoo vogliono la disiscrizione in un clic sugli invii a più destinatari. */

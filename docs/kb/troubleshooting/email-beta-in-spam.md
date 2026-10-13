@@ -35,6 +35,8 @@ Disattivare il tracciamento di aperture e clic per le email transazionali. Poich
 1. **Disattivarlo su `pynkstudio.eu`**: risolve subito, ma spegne anche le statistiche di apertura/clic per tutto ciò che parte da quel dominio (incluse eventuali campagne della posta che le usano — **da verificare** se `email_tracking_events` viene usato).
 2. **Separare gli invii**: un sottodominio dedicato alle transazionali (es. `mail.pynkstudio.eu`) verificato su Resend senza tracciamento, e il codice del beta program che invia da lì; il tracciamento resta su `pynkstudio.eu` per il marketing.
 
+**Scelta adottata il 2026-10-13: la 2.** Le email automatiche PynkStudio partono da `amministrazione@mail.pynkstudio.eu` (senza tracciamento); il tracciamento resta su `pynkstudio.eu`.
+
 # Quando aprire un ticket
 
 Se senza tracciamento e con SPF/DKIM/DMARC in `PASS` le email continuano a finire in spam per più giorni: è un problema di reputazione o di contenuto, da analizzare con lo staff tecnico (vedi [[escalation-policy]]).

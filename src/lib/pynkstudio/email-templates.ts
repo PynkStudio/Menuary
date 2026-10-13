@@ -1,3 +1,12 @@
+/**
+ * Mittente delle email automatiche PynkStudio (conferme, promemoria, beta program).
+ * mail.pynkstudio.eu è verificato su Resend senza tracciamento di aperture e clic, che
+ * su pynkstudio.eu è attivo e manda in spam link d'accesso e conferme. Le risposte
+ * tornano alla casella principale.
+ */
+export const PYNK_TRANSACTIONAL_FROM = "PYNK STUDIO <amministrazione@mail.pynkstudio.eu>";
+export const PYNK_REPLY_TO = "amministrazione@pynkstudio.eu";
+
 const PYNK = "#d93378";
 const PYNK_LIGHT = "#fdf0f6";
 const TEXT = "#17111f";

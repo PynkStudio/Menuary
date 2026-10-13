@@ -2,14 +2,13 @@ import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/sender";
 import { sendWebPush } from "@/lib/push/send";
 import { sendWhatsApp } from "@/lib/whatsapp/send";
-import { bookingReminderHtml } from "@/lib/pynkstudio/email-templates";
+import { bookingReminderHtml, PYNK_REPLY_TO, PYNK_TRANSACTIONAL_FROM } from "@/lib/pynkstudio/email-templates";
 import { getAgenda, PYNK_AGENDA_SCOPE, pynkCalendarLinks, pynkSlotLabel } from "@/lib/agenda-runtime";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 const REMINDER_LEAD_MINUTES = 20;
-const PYNK_FROM = "PYNK STUDIO <amministrazione@pynkstudio.eu>";
 
 // pg_cron chiama con Authorization: Bearer {CRON_SECRET}.
 function isAuthorized(req: Request): boolean {
@@ -56,8 +55,8 @@ export async function GET(req: Request) {
     try {
       await sendEmail({
         to: b.email,
-        fromOverride: PYNK_FROM,
-        replyTo: "amministrazione@pynkstudio.eu",
+        fromOverride: PYNK_TRANSACTIONAL_FROM,
+        replyTo: PYNK_REPLY_TO,
         subject: joinUrl
           ? "La tua videocall con PYNK STUDIO inizia tra ~20 minuti"
           : "La tua call con PYNK STUDIO inizia tra ~20 minuti",

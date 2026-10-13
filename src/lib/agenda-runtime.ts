@@ -15,7 +15,7 @@ import { createAgendaServer, type AgendaServer } from "@pynkstudio/agendaapp/ser
 import { sendEmail } from "@/lib/email/sender";
 import { sendWebPush } from "@/lib/push/send";
 import { addCrmActivity, cleanAttribution, cleanList, recordCrmTouch } from "@/lib/pynkstudio/crm";
-import { bookingConfirmHtml } from "@/lib/pynkstudio/email-templates";
+import { bookingConfirmHtml, PYNK_REPLY_TO, PYNK_TRANSACTIONAL_FROM } from "@/lib/pynkstudio/email-templates";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sendWhatsApp } from "@/lib/whatsapp/send";
@@ -49,8 +49,6 @@ function calendarsConfig() {
     microsoft: oauthClient(process.env.AGENDA_MICROSOFT_CLIENT_ID, process.env.AGENDA_MICROSOFT_CLIENT_SECRET),
   };
 }
-const PYNK_FROM = "PYNK STUDIO <amministrazione@pynkstudio.eu>";
-const PYNK_REPLY_TO = "amministrazione@pynkstudio.eu";
 
 function livekitConfig() {
   const url = process.env.LIVEKIT_URL;
@@ -140,7 +138,7 @@ async function onPynkBookingCreated(booking: AgendaBooking, guestUrl: string | n
   try {
     await sendEmail({
       to: booking.email,
-      fromOverride: PYNK_FROM,
+      fromOverride: PYNK_TRANSACTIONAL_FROM,
       replyTo: PYNK_REPLY_TO,
       subject: `Call confermata — ${slotLabel}`,
       html: bookingConfirmHtml({ name: booking.name, slotLabel, topic, phone, joinUrl, calendar: pynkCalendarLinks(booking, calendarEvent, manageToken) }),
