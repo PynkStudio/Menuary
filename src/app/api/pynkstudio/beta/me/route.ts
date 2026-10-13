@@ -25,7 +25,7 @@ export async function GET() {
   if (!svc) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
 
   const tester = await getBetaTester(svc);
-  const [{ data: betas }, requests] = await Promise.all([
+  const [{ data: betas }, requests, feedback] = await Promise.all([
     svc
       .from("pynkstudio_betas")
       .select("*")
@@ -34,6 +34,14 @@ export async function GET() {
       .limit(200),
     tester
       ? svc.from("pynkstudio_beta_requests").select("id, beta_id, device, status, created_at").eq("tester_id", tester.id)
+      : Promise.resolve({ data: [] }),
+    tester
+      ? svc
+          .from("pynkstudio_beta_feedback")
+          .select("id, beta_id, device, kind, message, app_version, status, created_at")
+          .eq("tester_id", tester.id)
+          .order("created_at", { ascending: false })
+          .limit(100)
       : Promise.resolve({ data: [] }),
   ]);
 
@@ -56,6 +64,7 @@ export async function GET() {
     tester: tester ? publicTester(tester) : null,
     betas: list,
     requests: requests.data ?? [],
+    feedback: feedback.data ?? [],
   });
 }
 

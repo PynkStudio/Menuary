@@ -23,10 +23,11 @@ Lato pubblico il tester si iscrive con **nome, cognome, telefono, email e dispos
 # Elementi della schermata
 
 - **Riquadri in alto**: Beta aperte, Tester iscritti (con quanti hanno confermato l'email), Richieste in attesa (cliccabile: apre le richieste), Avvisi attivi.
-- **Schede**: **Beta**, **Richieste** (con il numero in attesa), **Tester**.
+- **Schede**: **Beta**, **Feedback** (con il numero da gestire), **Partecipanti e richieste** (con il numero in attesa), **Tester**.
 - **Beta**: tabella con app, stato, tipo, dispositivi, richieste approvate, tester avvisati, data di pubblicazione. Clic su una riga apre l'editor.
 - **Editor beta**: nome, slug, frase breve, descrizione, stato (Bozza / Aperta / Posti esauriti / Chiusa), tipo, categoria, versione, lingue dell'app, icona, data di fine, feedback (link o email), **Canali per dispositivo** (dispositivo, metodo, link del gruppo facoltativo, link, link per installare facoltativo, nota per il tester) e la sezione **Avvisi email**.
-- **Richieste**: filtri per beta e stato, tabella con tester, beta, dispositivo, account da aggiungere, data, stato.
+- **Feedback**: filtri per beta, tipo e stato (predefinito «Da gestire» = Ricevuto + In lavorazione), tabella con tipo, testo, beta e dispositivo, tester, data e stato modificabile. Clic su una riga: testo completo, note interne, «Salva note», «Rispondi via email».
+- **Partecipanti e richieste**: filtri per beta e stato, tabella con tester, beta, dispositivo, account da aggiungere, data, stato. Le partecipazioni alle beta senza approvazione compaiono qui già «Approvate»: vengono registrate quando il tester apre i link per unirsi o preme «Inviaci i tuoi feedback qui».
 - **Tester**: ricerca, tabella con contatti, dispositivi, account Apple/Google, preferenze avvisi, data di iscrizione.
 
 # Pulsanti e azioni
@@ -41,6 +42,9 @@ Lato pubblico il tester si iscrive con **nome, cognome, telefono, email e dispos
 | «Invia a N tester» | Editor → Avvisi email | Invia l'email «nuova beta disponibile». Chi è già stato avvisato per questa beta non la riceve di nuovo |
 | «Copia email account» | Richieste | Copia gli account (Apple ID / Google) delle richieste filtrate, da incollare nel Google Group o in TestFlight |
 | «Approva» / «Rifiuta» | Richieste, su ogni riga | L'approvazione invia al tester l'email con il link e sblocca il link nella sua area |
+| Menu stato | Feedback, su ogni riga | Ricevuto / In lavorazione / Risolto / Chiuso. Il tester vede lo stato nella sua area |
+| «Salva note» | Feedback, riga aperta | Salva le note interne (non visibili al tester) |
+| «Rispondi via email» | Feedback, riga aperta | Apre una mail al tester |
 | «Copia email» | Tester | Copia le email dei tester filtrati |
 | Cestino | Tester, su ogni riga | Elimina il tester (chiede conferma) |
 
@@ -56,6 +60,10 @@ Il **link per installare** è un secondo passo facoltativo: per Google Play è l
 - **Firebase App Distribution**, **Download diretto**, **Versione web**, **Altro**: link visibile subito.
 
 Il canale **Browser (web)** vale per tutti i tester, qualunque dispositivo abbiano.
+
+# Feedback dei tester
+
+Nell'area tester la scheda **«Feedback»** permette di scegliere la beta (solo quelle a cui il tester partecipa), il dispositivo (solo se ne ha più di uno collegato a quella beta), il tipo — Bug, Crash, Suggerimento, Usabilità, Prestazioni, Testi e traduzioni, Altro — e di scrivere il testo; la versione dell'app è precompilata. Sotto c'è l'elenco dei feedback inviati con lo stato. Ogni nuovo feedback manda una notifica push al pannello. Nei canali delle beta, accanto alla nota, c'è il link **«Inviaci i tuoi feedback qui»** che apre direttamente questa scheda.
 
 # Chi riceve gli avvisi
 
@@ -73,4 +81,5 @@ Un tester riceve l'email di una beta se: ha confermato l'email, ha gli avvisi at
 - Pagina pubblica: `src/app/beta/page.tsx`, `src/components/tenants/pynkstudio/pages/beta.tsx`, copy in `src/lib/pynkstudio-i18n.ts` (`betaPage`)
 - Tassonomia (dispositivi, metodi, categorie, lingue): `src/lib/pynkstudio/beta-shared.ts`
 - Email e notifiche: `src/lib/pynkstudio/beta.ts`, `src/lib/pynkstudio/email-templates.ts`
-- Tabelle: `pynkstudio_beta_testers`, `pynkstudio_betas`, `pynkstudio_beta_requests`, `pynkstudio_beta_notifications` (migration `20261011090000_pynkstudio_beta_manager.sql`)
+- Tabelle: `pynkstudio_beta_testers`, `pynkstudio_betas`, `pynkstudio_beta_requests`, `pynkstudio_beta_notifications` (migration `20261011090000_pynkstudio_beta_manager.sql`), `pynkstudio_beta_feedback` (migration `20261013090000_pynkstudio_beta_feedback.sql`)
+- API feedback e partecipazione: `src/app/api/pynkstudio/beta/feedback`, `src/app/api/pynkstudio/beta/join`, `src/app/api/admin/pynkstudio/beta/feedback/[id]`

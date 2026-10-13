@@ -6,6 +6,8 @@ import type { Database } from "@/lib/database.types";
 import {
   BETA_CATEGORIES,
   BETA_DEVICES,
+  BETA_FEEDBACK_KINDS,
+  BETA_FEEDBACK_STATUSES,
   BETA_KINDS,
   BETA_LANGUAGES,
   BETA_METHODS,
@@ -13,6 +15,7 @@ import {
   BETA_WEB_DEVICE,
   betaCategoryLabel,
   betaDeviceLabel,
+  betaFeedbackKindLabel,
   betaKindLabel,
   betaMethodInfo,
   betaStatusLabel,
@@ -25,6 +28,7 @@ const API = "/api/admin/pynkstudio/beta";
 
 type BetaRow = Database["public"]["Tables"]["pynkstudio_betas"]["Row"];
 type RequestRow = Database["public"]["Tables"]["pynkstudio_beta_requests"]["Row"];
+type FeedbackRow = Database["public"]["Tables"]["pynkstudio_beta_feedback"]["Row"];
 type TesterRow = Omit<Database["public"]["Tables"]["pynkstudio_beta_testers"]["Row"], "access_token" | "consent_at" | "updated_at" | "locale">;
 
 type Payload = {
@@ -32,9 +36,10 @@ type Payload = {
   testers: TesterRow[];
   requests: RequestRow[];
   notifiedByBeta: Record<string, number>;
+  feedback: FeedbackRow[];
 };
 
-type Tab = "betas" | "requests" | "testers";
+type Tab = "betas" | "feedback" | "requests" | "testers";
 
 const ERRORS: Record<string, string> = {
   name_required: "Il nome è obbligatorio.",
@@ -344,6 +349,57 @@ function BetaEditor({
   );
 }
 
+function FeedbackRowView({
+  f,
+  tester,
+  testerEmail,
+  betaName,
+  expanded,
+  onToggle,
+  onUpdate,
+}: {
+  f: FeedbackRow;
+  tester: string;
+  testerEmail: string;
+  betaName: string;
+  expanded: boolean;
+  onToggle: () => void;
+  onUpdate: (patch: { status?: string; admin_notes?: string }) => void;
+}) {
+  const [notes, setNotes] = useState(f.admin_notes ?? "");
+  return (
+    <>
+      <tr className="pynk-crm-row" onClick={onToggle}>
+        <td><span className="pynk-beta-admin-kind" data-kind={f.kind}>{betaFeedbackKindLabel(f.kind)}</span></td>
+        <td className="pynk-beta-admin-msg">{f.message.length > 140 && !expanded ? `${f.message.slice(0, 140)}…` : f.message.slice(0, 140)}</td>
+        <td className="pynk-crm-row-secondary">{betaName}<span className="pynk-crm-row-sub">{betaDeviceLabel(f.device)}{f.app_version ? ` · v${f.app_version}` : ""}</span></td>
+        <td className="pynk-crm-row-secondary">{tester}<span className="pynk-crm-row-sub">{testerEmail}</span></td>
+        <td className="pynk-crm-row-secondary">{formatDate(f.created_at)}</td>
+        <td onClick={(e) => e.stopPropagation()}>
+          <select className="pynk-admin-select pynk-beta-admin-status" data-status={f.status} value={f.status} onChange={(e) => onUpdate({ status: e.target.value })} aria-label="Stato">
+            {BETA_FEEDBACK_STATUSES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+        </td>
+      </tr>
+      {expanded && (
+        <tr className="pynk-beta-admin-detail">
+          <td colSpan={6}>
+            <p className="pynk-beta-admin-fulltext">{f.message}</p>
+            <div className="pynk-crm-field">
+              <label className="pynk-crm-label">Note interne</label>
+              <textarea className="pynk-admin-textarea" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Es. riprodotto su Pixel 7, fix nella 1.2.1" />
+            </div>
+            <div className="pynk-beta-admin-row" style={{ marginTop: 8 }}>
+              <button type="button" className="pynk-admin-btn-primary pynk-crm-btn" disabled={notes === (f.admin_notes ?? "")} onClick={() => onUpdate({ admin_notes: notes })}>Salva note</button>
+              {testerEmail && <a className="pynk-admin-btn-outline pynk-crm-btn" href={`mailto:${testerEmail}?subject=${encodeURIComponent(`Il tuo feedback su ${betaName}`)}`}>Rispondi via email</a>}
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
 export function PynkBetaManager() {
   const [data, setData] = useState<Payload | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -353,6 +409,10 @@ export function PynkBetaManager() {
   const [requestBeta, setRequestBeta] = useState("all");
   const [requestStatus, setRequestStatus] = useState("pending");
   const [toast, setToast] = useState("");
+  const [fbBeta, setFbBeta] = useState("all");
+  const [fbKind, setFbKind] = useState("all");
+  const [fbStatus, setFbStatus] = useState("open");
+  const [openFeedback, setOpenFeedback] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch(API, { cache: "no-store" });
@@ -375,6 +435,25 @@ export function PynkBetaManager() {
   const betasById = useMemo(() => new Map((data?.betas ?? []).map((b) => [b.id, b])), [data]);
 
   const pending = data?.requests.filter((r) => r.status === "pending").length ?? 0;
+  const feedbackOpen = data?.feedback.filter((f) => f.status === "new" || f.status === "in_progress").length ?? 0;
+  const filteredFeedback = (data?.feedback ?? []).filter(
+    (f) =>
+      (fbBeta === "all" || f.beta_id === fbBeta) &&
+      (fbKind === "all" || f.kind === fbKind) &&
+      (fbStatus === "all" || (fbStatus === "open" ? f.status === "new" || f.status === "in_progress" : f.status === fbStatus)),
+  );
+
+  const updateFeedback = async (f: FeedbackRow, patch: { status?: string; admin_notes?: string }) => {
+    const res = await fetch(`${API}/feedback/${f.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok || !out.feedback) return setToast("Aggiornamento non riuscito.");
+    setData((d) => (d ? { ...d, feedback: d.feedback.map((x) => (x.id === f.id ? out.feedback : x)) } : d));
+    setToast("Feedback aggiornato.");
+  };
   const verified = data?.testers.filter((t) => t.email_verified_at).length ?? 0;
   const openBetas = data?.betas.filter((b) => b.status === "open").length ?? 0;
 
@@ -427,11 +506,14 @@ export function PynkBetaManager() {
         <button type="button" className="pynk-admin-kpi pynk-crm-kpi-btn" data-alert={pending > 0} onClick={() => { setTab("requests"); setRequestStatus("pending"); }}>
           <p className="pynk-admin-kpi-label">Richieste in attesa</p><p className="pynk-admin-kpi-value">{data ? pending : "—"}</p><p className="pynk-admin-kpi-hint">TestFlight su invito e Play test chiusi</p>
         </button>
+        <button type="button" className="pynk-admin-kpi pynk-crm-kpi-btn" data-alert={feedbackOpen > 0} onClick={() => { setTab("feedback"); setFbStatus("open"); }}>
+          <p className="pynk-admin-kpi-label">Feedback da gestire</p><p className="pynk-admin-kpi-value">{data ? feedbackOpen : "—"}</p><p className="pynk-admin-kpi-hint">{data?.feedback.length ?? 0} ricevuti in totale</p>
+        </button>
         <div className="pynk-admin-kpi"><p className="pynk-admin-kpi-label">Avvisi attivi</p><p className="pynk-admin-kpi-value">{data ? data.testers.filter((t) => t.notify_enabled && t.email_verified_at).length : "—"}</p><p className="pynk-admin-kpi-hint">tester raggiungibili via email</p></div>
       </div>
 
       <div className="pynk-crm-status-tabs" style={{ marginBottom: 14 }}>
-        {([["betas", "Beta"], ["requests", `Richieste${pending ? ` (${pending})` : ""}`], ["testers", "Tester"]] as [Tab, string][]).map(([v, l]) => (
+        {([["betas", "Beta"], ["feedback", `Feedback${feedbackOpen ? ` (${feedbackOpen})` : ""}`], ["requests", `Partecipanti e richieste${pending ? ` (${pending})` : ""}`], ["testers", "Tester"]] as [Tab, string][]).map(([v, l]) => (
           <button key={v} type="button" className="pynk-crm-status-tab" data-active={tab === v} onClick={() => setTab(v)}>{l}</button>
         ))}
       </div>
@@ -472,6 +554,53 @@ export function PynkBetaManager() {
             </table>
           )}
         </div>
+      )}
+
+      {tab === "feedback" && data && (
+        <>
+          <div className="pynk-crm-toolbar">
+            <select className="pynk-admin-select pynk-crm-select" value={fbBeta} onChange={(e) => setFbBeta(e.target.value)} aria-label="Beta">
+              <option value="all">Tutte le beta</option>
+              {data.betas.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+            <select className="pynk-admin-select pynk-crm-select" value={fbKind} onChange={(e) => setFbKind(e.target.value)} aria-label="Tipo">
+              <option value="all">Tutti i tipi</option>
+              {BETA_FEEDBACK_KINDS.map((k) => <option key={k.id} value={k.id}>{k.label}</option>)}
+            </select>
+            <select className="pynk-admin-select pynk-crm-select" value={fbStatus} onChange={(e) => setFbStatus(e.target.value)} aria-label="Stato">
+              <option value="open">Da gestire</option>
+              {BETA_FEEDBACK_STATUSES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              <option value="all">Tutti</option>
+            </select>
+          </div>
+          <div className="pynk-admin-card pynk-crm-table-wrap">
+            {filteredFeedback.length === 0 ? <p className="pynk-crm-empty">Nessun feedback.</p> : (
+              <table className="pynk-crm-table">
+                <thead>
+                  <tr><th>Tipo</th><th>Feedback</th><th>Beta</th><th>Tester</th><th>Data</th><th>Stato</th></tr>
+                </thead>
+                <tbody>
+                  {filteredFeedback.map((f) => {
+                    const t = testersById.get(f.tester_id);
+                    const expanded = openFeedback === f.id;
+                    return (
+                      <FeedbackRowView
+                        key={f.id}
+                        f={f}
+                        tester={t ? `${t.first_name} ${t.last_name}` : "—"}
+                        testerEmail={t?.email ?? ""}
+                        betaName={betasById.get(f.beta_id)?.name ?? "—"}
+                        expanded={expanded}
+                        onToggle={() => setOpenFeedback(expanded ? null : f.id)}
+                        onUpdate={(patch) => updateFeedback(f, patch)}
+                      />
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
       )}
 
       {tab === "requests" && data && (

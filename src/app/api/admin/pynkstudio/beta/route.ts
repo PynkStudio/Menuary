@@ -12,7 +12,7 @@ export async function GET() {
   const svc = createSupabaseServiceClient();
   if (!svc) return NextResponse.json({ error: "supabase_unconfigured" }, { status: 503 });
 
-  const [betas, testers, requests, notifications] = await Promise.all([
+  const [betas, testers, requests, notifications, feedback] = await Promise.all([
     svc.from("pynkstudio_betas").select("*").order("created_at", { ascending: false }).limit(500),
     svc
       .from("pynkstudio_beta_testers")
@@ -21,6 +21,7 @@ export async function GET() {
       .limit(5000),
     svc.from("pynkstudio_beta_requests").select("*").order("created_at", { ascending: false }).limit(5000),
     svc.from("pynkstudio_beta_notifications").select("beta_id").limit(20000),
+    svc.from("pynkstudio_beta_feedback").select("*").order("created_at", { ascending: false }).limit(2000),
   ]);
   if (betas.error || testers.error || requests.error) return NextResponse.json({ error: "db_error" }, { status: 500 });
 
@@ -32,6 +33,7 @@ export async function GET() {
     testers: testers.data,
     requests: requests.data,
     notifiedByBeta,
+    feedback: feedback.data ?? [],
   });
 }
 

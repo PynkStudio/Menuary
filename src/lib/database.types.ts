@@ -3568,6 +3568,63 @@ export type Database = {
           },
         ]
       }
+      pynkstudio_beta_feedback: {
+        Row: {
+          admin_notes: string | null
+          app_version: string | null
+          beta_id: string
+          created_at: string
+          device: string
+          id: string
+          kind: string
+          message: string
+          status: string
+          tester_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          app_version?: string | null
+          beta_id: string
+          created_at?: string
+          device: string
+          id?: string
+          kind: string
+          message: string
+          status?: string
+          tester_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          app_version?: string | null
+          beta_id?: string
+          created_at?: string
+          device?: string
+          id?: string
+          kind?: string
+          message?: string
+          status?: string
+          tester_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pynkstudio_beta_feedback_beta_id_fkey"
+            columns: ["beta_id"]
+            isOneToOne: false
+            referencedRelation: "pynkstudio_betas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pynkstudio_beta_feedback_tester_id_fkey"
+            columns: ["tester_id"]
+            isOneToOne: false
+            referencedRelation: "pynkstudio_beta_testers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pynkstudio_beta_notifications: {
         Row: {
           beta_id: string

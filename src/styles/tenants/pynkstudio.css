@@ -4433,6 +4433,63 @@
     font-size: 11px; font-weight: 600; background: color-mix(in srgb, currentColor 18%, transparent);
   }
 
+  /* Feedback tester */
+  .pynk-beta-inline-link {
+    border: 0; background: none; padding: 0; font: inherit; cursor: pointer;
+    color: var(--pynk-primary); text-decoration: underline; text-underline-offset: 3px;
+  }
+  .pynk-beta-feedback-layout { display: grid; gap: 40px; align-items: start; }
+  @media (min-width: 1000px) { .pynk-beta-feedback-layout { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } }
+  .pynk-beta-feedback-target {
+    display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 16px;
+    background: color-mix(in srgb, var(--pynk-muted) 40%, transparent);
+  }
+  .pynk-beta-feedback-target .pynk-beta-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .pynk-beta-kind-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .pynk-beta-kind {
+    display: grid; gap: 4px; text-align: left; padding: 12px 14px; border-radius: 14px; cursor: pointer; font: inherit;
+    color: var(--pynk-fg); border: 1px solid color-mix(in srgb, var(--pynk-border) 55%, transparent);
+    background: color-mix(in srgb, var(--pynk-input) 65%, transparent); transition: border-color 0.2s, background 0.2s;
+  }
+  .pynk-beta-kind strong { font-weight: 500; font-size: 14px; }
+  .pynk-beta-kind span { font-size: 12px; font-weight: 300; color: var(--pynk-muted-fg); line-height: 1.4; }
+  .pynk-beta-kind:hover { border-color: color-mix(in srgb, var(--pynk-primary) 50%, transparent); }
+  .pynk-beta-kind:focus-visible { outline: 2px solid var(--pynk-primary); outline-offset: 2px; }
+  .pynk-beta-kind[aria-pressed="true"] {
+    border-color: var(--pynk-primary); background: color-mix(in srgb, var(--pynk-primary) 12%, transparent);
+    box-shadow: 0 0 0 1px var(--pynk-primary);
+  }
+  .pynk-beta-kind[aria-pressed="true"] strong { color: var(--pynk-primary); }
+  .pynk-beta-feedback-history { display: grid; gap: 14px; }
+  .pynk-beta-feedback-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .pynk-beta-feedback-item {
+    display: grid; gap: 8px; padding: 16px; border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--pynk-border) 45%, transparent);
+    background: color-mix(in srgb, var(--pynk-card) 40%, transparent);
+  }
+  .pynk-beta-feedback-item-head { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pynk-beta-feedback-msg { margin: 0; font-size: 14px; font-weight: 300; line-height: 1.55; white-space: pre-line; overflow-wrap: anywhere; }
+  .pynk-beta-kind-tag, .pynk-beta-status-tag {
+    border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 500;
+    background: color-mix(in srgb, var(--pynk-muted) 60%, transparent); color: var(--pynk-fg);
+  }
+  .pynk-beta-kind-tag[data-kind="bug"], .pynk-beta-kind-tag[data-kind="crash"] { background: color-mix(in srgb, hsl(0 70% 58%) 18%, transparent); color: hsl(0 75% 66%); }
+  .pynk-beta-kind-tag[data-kind="feature"] { background: color-mix(in srgb, var(--pynk-primary) 18%, transparent); color: var(--pynk-primary); }
+  .pynk-beta-status-tag[data-status="in_progress"] { background: color-mix(in srgb, hsl(35 90% 55%) 18%, transparent); color: hsl(35 90% 58%); }
+  .pynk-beta-status-tag[data-status="resolved"] { background: color-mix(in srgb, hsl(150 65% 45%) 18%, transparent); color: hsl(150 60% 52%); }
+
+  /* Feedback admin */
+  .pynk-beta-admin-kind {
+    display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    background: hsl(220 12% 92%); color: hsl(220 15% 35%); white-space: nowrap;
+  }
+  .pynk-beta-admin-kind[data-kind="bug"], .pynk-beta-admin-kind[data-kind="crash"] { background: hsl(0 60% 92%); color: hsl(0 60% 38%); }
+  .pynk-beta-admin-kind[data-kind="feature"] { background: hsl(330 80% 94%); color: hsl(330 70% 38%); }
+  .pynk-beta-admin-msg { max-width: 420px; font-size: 13px; color: var(--pa-ink); }
+  .pynk-beta-admin-status { width: auto; min-width: 140px; }
+  .pynk-beta-admin-detail td { padding: 4px 14px 16px; background: var(--pa-surface); }
+  .pynk-beta-admin-fulltext { margin: 8px 0 12px; font-size: 14px; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
+
   /* ─── Beta program — admin ──────────────────────────────── */
   .pynk-beta-admin-badge {
     display: inline-block; padding: 3px 9px; border-radius: 999px;

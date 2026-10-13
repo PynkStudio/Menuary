@@ -18,6 +18,7 @@ import {
   Laptop,
   LogOut,
   Mail,
+  MessageSquareWarning,
   Monitor,
   Search,
   Smartphone,
@@ -37,11 +38,14 @@ import {
   BETA_CATEGORIES,
   BETA_DEVICE_GROUPS,
   BETA_DEVICES,
+  BETA_FEEDBACK_KINDS,
   BETA_KINDS,
   BETA_LANGUAGES,
   GOOGLE_DEVICES,
   betaCategoryLabel,
   betaDeviceLabel,
+  betaFeedbackKindLabel,
+  betaFeedbackStatusLabel,
   betaKindLabel,
   betaLanguageLabel,
   betaMethodInfo,
@@ -85,7 +89,18 @@ type Beta = {
 
 type JoinRequest = { id: string; beta_id: string; device: string; status: string };
 
-type MeResponse = { tester: Tester | null; betas: Beta[]; requests: JoinRequest[] };
+type FeedbackItem = {
+  id: string;
+  beta_id: string;
+  device: string;
+  kind: string;
+  message: string;
+  app_version: string | null;
+  status: string;
+  created_at: string;
+};
+
+type MeResponse = { tester: Tester | null; betas: Beta[]; requests: JoinRequest[]; feedback: FeedbackItem[] };
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
@@ -283,12 +298,14 @@ function JoinChannel({
   tester,
   request,
   onRequested,
+  onFeedback,
 }: {
   beta: Beta;
   channel: BetaChannel;
   tester: Tester;
   request: JoinRequest | undefined;
   onRequested: (r: JoinRequest) => void;
+  onFeedback: (betaId: string) => void;
 }) {
   const copy = usePynkCopy().betaPage;
   const c = copy.area;
@@ -320,6 +337,21 @@ function JoinChannel({
   };
 
   const canJoin = beta.status === "open";
+  const joined = request?.status === "approved";
+
+  // Aprire i link (o voler lasciare un feedback) vale come partecipazione: senza
+  // approvazione non c'è altro modo di sapere chi sta usando la beta.
+  const markJoined = () => {
+    if (method.needsApproval || joined || !canJoin) return;
+    onRequested({ id: `local-${beta.id}-${channel.device}`, beta_id: beta.id, device: channel.device, status: "approved" });
+    void fetch("/api/pynkstudio/beta/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ betaId: beta.id, device: channel.device }),
+      keepalive: true,
+    }).catch(() => {});
+  };
+
   return (
     <div className="pynk-beta-channel">
       <p className="pynk-beta-channel-head">
@@ -332,7 +364,23 @@ function JoinChannel({
       <ol className="pynk-beta-steps">
         {method.steps.map((s) => <li key={s}>{s}</li>)}
       </ol>
-      {channel.notes && <p className="pynk-beta-notes">{channel.notes}</p>}
+      {(channel.notes || joined || (!method.needsApproval && channel.url)) && (
+        <p className="pynk-beta-notes">
+          {channel.notes}
+          {(joined || (!method.needsApproval && channel.url && canJoin)) && (
+            <>
+              {channel.notes && " "}
+              <button
+                type="button"
+                className="pynk-beta-inline-link"
+                onClick={() => { markJoined(); onFeedback(beta.id); }}
+              >
+                {c.feedbackLink}
+              </button>
+            </>
+          )}
+        </p>
+      )}
 
       {method.needsApproval && request?.status !== "approved" ? (
         request?.status === "pending" ? (
@@ -356,6 +404,7 @@ function JoinChannel({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`pynk-btn ${i === 0 ? "pynk-btn-primary" : "pynk-btn-outline"} pynk-beta-join`}
+                onClick={markJoined}
               >
                 {all.length > 1 && <span className="pynk-beta-join-step">{i + 1}</span>}
                 {l.label} <ExternalLink className="pynk-icon-xs" aria-hidden />
@@ -382,11 +431,13 @@ function BetaCard({
   tester,
   requests,
   onRequested,
+  onFeedback,
 }: {
   beta: Beta;
   tester: Tester;
   requests: JoinRequest[];
   onRequested: (r: JoinRequest) => void;
+  onFeedback: (betaId: string) => void;
 }) {
   const c = usePynkCopy().betaPage.area;
   const mine = channelsForDevices(beta.channels, tester.devices);
@@ -417,13 +468,14 @@ function BetaCard({
               tester={tester}
               request={requests.find((r) => r.beta_id === beta.id && r.device === ch.device)}
               onRequested={onRequested}
+              onFeedback={onFeedback}
             />
           ))}
         </details>
       )}
       {beta.feedback_url && (
         <a href={beta.feedback_url} target="_blank" rel="noopener noreferrer" className="pynk-beta-feedback-link">
-          {c.feedback} <ExternalLink className="pynk-icon-xs" aria-hidden />
+          {c.feedback}: {beta.feedback_url.replace(/^mailto:/i, "")} <ExternalLink className="pynk-icon-xs" aria-hidden />
         </a>
       )}
     </article>
@@ -762,7 +814,15 @@ function NotificationsTab({ tester, onSaved }: { tester: Tester; onSaved: (t: Te
   );
 }
 
-function BetasTab({ data, setRequests }: { data: MeResponse & { tester: Tester }; setRequests: (fn: (r: JoinRequest[]) => JoinRequest[]) => void }) {
+function BetasTab({
+  data,
+  setRequests,
+  onFeedback,
+}: {
+  data: MeResponse & { tester: Tester };
+  setRequests: (fn: (r: JoinRequest[]) => JoinRequest[]) => void;
+  onFeedback: (betaId: string) => void;
+}) {
   const c = usePynkCopy().betaPage.area;
   const [query, setQuery] = useState("");
   const [onlyMine, setOnlyMine] = useState(true);
@@ -819,7 +879,8 @@ function BetasTab({ data, setRequests }: { data: MeResponse & { tester: Tester }
               beta={b}
               tester={data.tester}
               requests={data.requests}
-              onRequested={(r) => setRequests((prev) => [...prev.filter((p) => p.id !== r.id), r])}
+              onRequested={(r) => setRequests((prev) => [...prev.filter((p) => p.id !== r.id && !(p.beta_id === r.beta_id && p.device === r.device)), r])}
+              onFeedback={onFeedback}
             />
           ))}
         </div>
@@ -828,17 +889,182 @@ function BetasTab({ data, setRequests }: { data: MeResponse & { tester: Tester }
   );
 }
 
+function FeedbackTab({
+  data,
+  preselect,
+  onSent,
+}: {
+  data: MeResponse & { tester: Tester };
+  preselect: string;
+  onSent: (f: FeedbackItem) => void;
+}) {
+  const c = usePynkCopy().betaPage.feedback;
+  const joinedDevices = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const r of data.requests) {
+      if (r.status !== "approved") continue;
+      map.set(r.beta_id, [...(map.get(r.beta_id) ?? []), r.device]);
+    }
+    return map;
+  }, [data.requests]);
+  const joinedBetas = data.betas.filter((b) => joinedDevices.has(b.id));
+
+  const [betaId, setBetaId] = useState(() => (joinedDevices.has(preselect) ? preselect : joinedBetas[0]?.id ?? ""));
+  const beta = joinedBetas.find((b) => b.id === betaId);
+  const devices = joinedDevices.get(betaId) ?? [];
+  const [device, setDevice] = useState(devices[0] ?? "");
+  const [kind, setKind] = useState("");
+  const [message, setMessage] = useState("");
+  const [version, setVersion] = useState(beta?.version ?? "");
+  const [sending, setSending] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback>(null);
+  const errorGeneric = usePynkCopy().betaPage.form.errorGeneric;
+
+  const pickBeta = (id: string) => {
+    setBetaId(id);
+    setDevice(joinedDevices.get(id)?.[0] ?? "");
+    setVersion(joinedBetas.find((b) => b.id === id)?.version ?? "");
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFeedback(null);
+    if (!kind) return setFeedback({ kind: "error", text: c.errorKind });
+    if (message.trim().length < 3) return setFeedback({ kind: "error", text: c.errorMessage });
+    setSending(true);
+    try {
+      const res = await fetch("/api/pynkstudio/beta/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ betaId, device: device || devices[0], kind, message, appVersion: version }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.feedback) return setFeedback({ kind: "error", text: errorGeneric });
+      onSent(out.feedback);
+      setKind("");
+      setMessage("");
+      setFeedback({ kind: "success", text: c.sent });
+    } catch {
+      setFeedback({ kind: "error", text: errorGeneric });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const betaName = (id: string) => data.betas.find((b) => b.id === id)?.name ?? c.closedBeta;
+
+  return (
+    <div className="pynk-beta-feedback-layout">
+      {joinedBetas.length === 0 ? (
+        <div className="pynk-beta-empty-card">
+          <span className="pynk-beta-empty-icon"><MessageSquareWarning aria-hidden /></span>
+          <p>{c.emptyJoined}</p>
+        </div>
+      ) : (
+        <form className="pynk-form" onSubmit={submit} noValidate>
+          <div className="pynk-beta-form-head">
+            <h2 className="pynk-beta-form-title">{c.title}</h2>
+            <p className="pynk-muted">{c.lead}</p>
+          </div>
+
+          {joinedBetas.length > 1 ? (
+            <div className="pynk-field">
+              <label htmlFor="fb-beta">{c.beta}</label>
+              <select id="fb-beta" className="pynk-beta-select" value={betaId} onChange={(e) => pickBeta(e.target.value)}>
+                {joinedBetas.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+          ) : beta && (
+            <div className="pynk-beta-feedback-target">
+              <BetaIcon beta={beta} />
+              <div>
+                <strong>{beta.name}</strong>
+                {beta.version && <span className="pynk-muted"> · v{beta.version}</span>}
+              </div>
+            </div>
+          )}
+
+          {devices.length > 1 && (
+            <fieldset className="pynk-beta-fieldset">
+              <legend className="pynk-beta-device-group-label">{c.device}</legend>
+              <div className="pynk-beta-chips">
+                {devices.map((d) => (
+                  <button key={d} type="button" className="pynk-beta-chip" aria-pressed={device === d} onClick={() => setDevice(d)}>
+                    <DeviceIcon device={d} /> {betaDeviceLabel(d)}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          )}
+
+          <fieldset className="pynk-beta-fieldset">
+            <legend className="pynk-beta-device-group-label">{c.kind}</legend>
+            <div className="pynk-beta-kind-grid">
+              {BETA_FEEDBACK_KINDS.map((k) => (
+                <button key={k.id} type="button" className="pynk-beta-kind" data-kind={k.id} aria-pressed={kind === k.id} onClick={() => setKind(k.id)}>
+                  <strong>{k.label}</strong>
+                  <span>{k.hint}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="pynk-field">
+            <label htmlFor="fb-message">{c.message}</label>
+            <textarea id="fb-message" value={message} onChange={(e) => setMessage(e.target.value)} placeholder={c.messagePlaceholder} maxLength={5000} />
+          </div>
+          <div className="pynk-field">
+            <label htmlFor="fb-version">{c.version}</label>
+            <input id="fb-version" value={version} onChange={(e) => setVersion(e.target.value)} placeholder="1.2.0 (9)" />
+            <span className="pynk-muted pynk-beta-hint">{c.versionHint}</span>
+          </div>
+
+          {feedback && <p className={`pynk-feedback pynk-feedback-${feedback.kind}`} role="status">{feedback.text}</p>}
+          <div className="pynk-beta-actions">
+            <button type="submit" className="pynk-btn pynk-btn-primary" disabled={sending}>
+              {sending ? c.sending : c.submit} {!sending && <ArrowRight className="pynk-icon-xs" aria-hidden />}
+            </button>
+          </div>
+        </form>
+      )}
+
+      <section className="pynk-beta-feedback-history" aria-labelledby="fb-history">
+        <h2 id="fb-history" className="pynk-beta-h2">{c.historyTitle}</h2>
+        {data.feedback.length === 0 ? (
+          <p className="pynk-muted">{c.historyEmpty}</p>
+        ) : (
+          <ul className="pynk-beta-feedback-list">
+            {data.feedback.map((f) => (
+              <li key={f.id} className="pynk-beta-feedback-item">
+                <div className="pynk-beta-feedback-item-head">
+                  <span className="pynk-beta-kind-tag" data-kind={f.kind}>{betaFeedbackKindLabel(f.kind)}</span>
+                  <span className="pynk-beta-status-tag" data-status={f.status}>{betaFeedbackStatusLabel(f.status)}</span>
+                </div>
+                <p className="pynk-beta-feedback-msg">{f.message}</p>
+                <p className="pynk-muted pynk-beta-hint">
+                  {betaName(f.beta_id)} · {betaDeviceLabel(f.device)}{f.app_version ? ` · v${f.app_version}` : ""} · {formatDate(f.created_at)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function BetaInner() {
   const copy = usePynkCopy();
   const c = copy.betaPage;
   const [data, setData] = useState<MeResponse | null>(null);
-  const [tab, setTab] = useState<"betas" | "devices" | "notifications">("betas");
+  const [tab, setTab] = useState<"betas" | "feedback" | "devices" | "notifications">("betas");
+  const [feedbackBeta, setFeedbackBeta] = useState<string>("");
   const [notice, setNotice] = useState<string>("");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/pynkstudio/beta/me", { cache: "no-store" });
     if (res.ok) setData(await res.json());
-    else setData({ tester: null, betas: [], requests: [] });
+    else setData({ tester: null, betas: [], requests: [], feedback: [] });
   }, []);
 
   useEffect(() => {
@@ -908,7 +1134,7 @@ function BetaInner() {
             <>
               {!tester.email_verified_at && <p className="pynk-beta-notice">{c.notices.verify}</p>}
               <div className="pynk-beta-tabs" role="tablist" aria-label={c.eyebrow}>
-                {(["betas", "devices", "notifications"] as const).map((t) => (
+                {(["betas", "feedback", "devices", "notifications"] as const).map((t) => (
                   <button key={t} type="button" role="tab" aria-selected={tab === t} className="pynk-beta-tab" onClick={() => setTab(t)}>
                     {c.area.tabs[t]}
                   </button>
@@ -921,6 +1147,14 @@ function BetaInner() {
                 <BetasTab
                   data={{ ...data, tester }}
                   setRequests={(fn) => setData((d) => (d ? { ...d, requests: fn(d.requests) } : d))}
+                  onFeedback={(betaId) => { setFeedbackBeta(betaId); setTab("feedback"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                />
+              )}
+              {tab === "feedback" && (
+                <FeedbackTab
+                  data={{ ...data, tester }}
+                  preselect={feedbackBeta}
+                  onSent={(f) => setData((d) => (d ? { ...d, feedback: [f, ...d.feedback] } : d))}
                 />
               )}
               {tab === "devices" && (

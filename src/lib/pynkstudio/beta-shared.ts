@@ -220,6 +220,33 @@ export function betaStatusLabel(id: string): string {
   return BETA_STATUSES.find((s) => s.id === id)?.label ?? id;
 }
 
+export const BETA_FEEDBACK_KINDS = [
+  { id: "bug", label: "Bug", hint: "Qualcosa non funziona come dovrebbe" },
+  { id: "crash", label: "Crash", hint: "L'app si chiude o si blocca" },
+  { id: "feature", label: "Suggerimento", hint: "Un'idea o una funzione che vorresti" },
+  { id: "ux", label: "Usabilità", hint: "Qualcosa è poco chiaro o scomodo da usare" },
+  { id: "performance", label: "Prestazioni", hint: "Lentezza, batteria, surriscaldamento" },
+  { id: "content", label: "Testi e traduzioni", hint: "Errori nei testi, nelle traduzioni o nei contenuti" },
+  { id: "other", label: "Altro", hint: "Tutto il resto" },
+] as const;
+
+export type BetaFeedbackKind = (typeof BETA_FEEDBACK_KINDS)[number]["id"];
+
+export function betaFeedbackKindLabel(id: string): string {
+  return BETA_FEEDBACK_KINDS.find((k) => k.id === id)?.label ?? id;
+}
+
+export const BETA_FEEDBACK_STATUSES = [
+  { id: "new", label: "Ricevuto" },
+  { id: "in_progress", label: "In lavorazione" },
+  { id: "resolved", label: "Risolto" },
+  { id: "closed", label: "Chiuso" },
+] as const;
+
+export function betaFeedbackStatusLabel(id: string): string {
+  return BETA_FEEDBACK_STATUSES.find((s) => s.id === id)?.label ?? id;
+}
+
 export type BetaChannel = {
   device: string;
   method: BetaMethod;
