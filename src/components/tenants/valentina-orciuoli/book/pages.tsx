@@ -681,8 +681,8 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
         <div className="vo-face vo-face-work-cover">
           <VoPhoto
             src={valentinaReadingSrc}
-            alt="Valentina Orciuoli legge Anxiety davanti a una tazza di tè"
-            caption="Anxiety, e una tazza di tè"
+            alt="Valentina Orciuoli legge Anxiety davanti a un cappuccino"
+            caption="Anxiety ed un cappuccino"
             hand={photoHand("libri", 1)}
           />
         </div>
