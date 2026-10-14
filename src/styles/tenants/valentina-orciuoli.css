@@ -4260,6 +4260,18 @@
     cursor: pointer;
   }
 
+  /* La coda è larga una decina di pixel: da sola non si centra col pollice.
+     Sta sul nastro e non sulla coda, che ha un clip-path e taglierebbe anche
+     l'area di tocco. */
+  a.vo-bookmark::after {
+    content: "";
+    position: absolute;
+    left: -18px;
+    right: -18px;
+    bottom: -16px;
+    height: 3.25rem;
+  }
+
   a.vo-bookmark:hover,
   a.vo-bookmark:focus-visible {
     filter: brightness(1.22);

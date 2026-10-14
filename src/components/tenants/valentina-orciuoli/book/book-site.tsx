@@ -117,6 +117,8 @@ const TOUCH_CEREMONY_GAIN = 3.1;
  * fino in fondo da sé.
  */
 const TOUCH_OPEN_TRAVEL = 44;
+/** Quanto deve correre il dito, all'indietro, per lasciare la quarta di copertina. */
+const BACK_COVER_SWIPE_PX = 40;
 /** La copertina insegue il bersaglio con una molla, non salta di scatto in scatto. */
 const CEREMONY_FOLLOW = { type: "spring", stiffness: 210, damping: 30, mass: 0.7 } as const;
 const CEREMONY_OPEN_TRANSITION = { duration: 0.85, ease: [0.42, 0.02, 0.18, 1] } as const;
@@ -636,8 +638,9 @@ export function ValentinaOrciuoliBookSite({
     [compact, ctx],
   );
 
-  // Sulla quarta il libro è chiuso e nessuno dei due gestori della rotella è
-  // attivo. Senza questo, chi naviga scorrendo ci resterebbe intrappolato.
+  // Sulla quarta il libro è chiuso e nessuno dei gestori di rotella e dito è
+  // attivo. Senza questo, chi naviga scorrendo ci resterebbe intrappolato — su
+  // telefono restava solo la coda del nastro, larga pochi pixel.
   // Il ref segue la pagina da riprendere: il gestore della rotella vive in un
   // effetto con dipendenze stabili e non deve richiudersi su un valore vecchio.
   const resumeHrefRef = useRef("");
@@ -657,8 +660,37 @@ export function ValentinaOrciuoliBookSite({
       voPushUrl(resumeHrefRef.current);
     };
 
+    // All'indietro col dito vale come sfogliare all'indietro (verso destra) o come
+    // la rotella in su (verso il basso). Si decide a fine tocco, così un tap sui
+    // link della quarta resta un tap.
+    let start: { x: number; y: number } | null = null;
+    const onTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      start = touch && event.touches.length === 1 ? { x: touch.clientX, y: touch.clientY } : null;
+    };
+    const onTouchEnd = (event: TouchEvent) => {
+      const touch = event.changedTouches[0];
+      const from = start;
+      start = null;
+      if (!from || !touch) return;
+      const dx = touch.clientX - from.x;
+      const dy = touch.clientY - from.y;
+      const back = Math.abs(dx) >= Math.abs(dy) ? dx : dy;
+      if (back < BACK_COVER_SWIPE_PX) return;
+      const now = performance.now();
+      if (now < lock) return;
+      lock = now + 900;
+      voPushUrl(resumeHrefRef.current);
+    };
+
     element.addEventListener("wheel", onWheel, { passive: false });
-    return () => element.removeEventListener("wheel", onWheel);
+    element.addEventListener("touchstart", onTouchStart, { passive: true });
+    element.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      element.removeEventListener("wheel", onWheel);
+      element.removeEventListener("touchstart", onTouchStart);
+      element.removeEventListener("touchend", onTouchEnd);
+    };
   }, [showsBackCover]);
 
   /** Sfogliare oltre l'ultima pagina porta alla quarta: è lì che il volume finisce. */
