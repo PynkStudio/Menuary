@@ -68,8 +68,8 @@ export const voSpreads: readonly VoSpread[] = [
   },
   // Le schede dei singoli volumi seguono la collana che le presenta: prima la
   // pagina riassuntiva, poi il dettaglio di ciascun libro.
-  { id: "anxiety", kind: "static", path: "/anxiety", navLabel: "Anxiety", runningHead: "Anxiety", inNav: false },
-  { id: "fury", kind: "static", path: "/fury", navLabel: "Fury", runningHead: "Fury", inNav: false },
+  { id: "anxiety", kind: "static", path: "/anxiety", navLabel: "Anxiety", runningHead: "The Emotion Dragons Trilogy", inNav: false },
+  { id: "fury", kind: "static", path: "/fury", navLabel: "Fury", runningHead: "The Emotion Dragons Trilogy", inNav: false },
   {
     id: "thriller",
     kind: "static",
@@ -173,14 +173,24 @@ export const voAppendixOrder: readonly VoAppendix[] = [...voAppendix, voErrata];
  *
  * Sono quelle la cui sinistra porta solo un titolo o una riga: col libro a una
  * facciata alla volta il pollice doveva fermarsi su una pagina quasi vuota a
- * ogni sezione. Lì la sinistra diventa un verso bianco che il giro attraversa
- * senza fermarsi. Le aperture con due facciate davvero piene — preambolo ed
- * elenco, copertina e scheda — restano com'erano.
+ * ogni sezione. Lì la sinistra diventa un verso bianco. Le aperture con due
+ * facciate davvero piene — preambolo ed elenco, copertina e scheda — restano
+ * com'erano.
  */
-const voCompactMerged = new Set<string>(["libri", "eventi", "privacy", "cookie", "errata"]);
+const voCompactMerged = new Set<string>(["eventi", "privacy", "cookie", "errata"]);
 
 export function isMergedInCompact(id: string) {
   return voCompactMerged.has(id);
+}
+
+/**
+ * Le aperture la cui sinistra su schermo stretto non è una tappa: il giro la
+ * attraversa e atterra direttamente sulla destra. Oltre ai versi bianchi c'è
+ * l'indice dei libri, che a sinistra ha solo la foto dell'autrice — si
+ * intravede mentre la pagina gira, il contenuto sta tutto a destra.
+ */
+export function skipsLeftInCompact(id: string) {
+  return id === "libri" || isMergedInCompact(id);
 }
 
 /** Quanto lontano sta questa appendice dalla prima. */

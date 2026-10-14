@@ -13,6 +13,7 @@ import {
   LifeBuoy,
   Mail,
   MessageCircle,
+  Megaphone,
   Music,
   Palette,
   Package,
@@ -60,6 +61,7 @@ function productNav(slug: "menuary" | "bizery" | "orpheo"): PortalNavItem[] {
 // negli altri prodotti restano fuori dai rispettivi portali.
 const MENUARY_NAV: PortalNavItem[] = [
   ...productNav("menuary"),
+  { href: "/admin-pynkstudio/menuary/marketing",        label: "Marketing",          icon: Megaphone },
   { href: "/admin-pynkstudio/menuary/messaggi-wa",     label: "Messaggi WA",       icon: MessageCircle },
   { href: "/admin-pynkstudio/menuary/assistente-ai",   label: "Assistente AI",     icon: Bot },
   { href: "/admin-pynkstudio/menuary/template-design", label: "Template designer", icon: Palette },

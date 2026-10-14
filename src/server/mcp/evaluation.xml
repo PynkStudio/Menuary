@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<evaluation>
+  <qa_pair><question>Quanti prospect Menuary hanno ricevuto almeno una mail e quanti hanno prenotato una call?</question><answer>Usare pynk_marketing_dashboard e riportare stats.sent e stats.booked.</answer></qa_pair>
+  <qa_pair><question>Trova i prospect che hanno visitato la landing ma non avviato il video e indica il loro stato.</question><answer>Usare pynk_marketing_list_prospects e confrontare landing_viewed_at con video_clicked_at.</answer></qa_pair>
+  <qa_pair><question>Mostra i quattro touchpoint della campagna outreach attiva, con attese e oggetti.</question><answer>Usare pynk_marketing_dashboard per l'id e pynk_marketing_get_sequence per i dettagli.</answer></qa_pair>
+  <qa_pair><question>Trova nel CRM il contatto associato a un ristorante specifico e ricostruisci le ultime attività.</question><answer>Usare pynk_crm_list_contacts e poi pynk_crm_get_contact.</answer></qa_pair>
+  <qa_pair><question>Quante email Menuary non lette sono presenti nella posta amministrativa?</question><answer>Usare pynk_mail_list con brand menuary e unread_only true; leggere total.</answer></qa_pair>
+  <qa_pair><question>Quali tenant food risultano registrati e quanti vengono restituiti nella prima pagina?</question><answer>Usare pynk_admin_list con resource tenants e filtrare vertical food dai risultati.</answer></qa_pair>
+  <qa_pair><question>Per un tenant indicato, elenca sedi, feature e abbonamenti collegati.</question><answer>Usare pynk_admin_get_tenant con il tenant_id.</answer></qa_pair>
+  <qa_pair><question>Quali sessioni e scope possiede il connettore corrente?</question><answer>Usare pynk_admin_capabilities e riportare principal e scopes.</answer></qa_pair>
+  <qa_pair><question>Quali prospect sono in stato replied o booked e quindi non devono più ricevere follow-up?</question><answer>Usare due chiamate a pynk_marketing_list_prospects filtrate per replied e booked.</answer></qa_pair>
+  <qa_pair><question>Qual è l'ultimo messaggio ricevuto nella casella PynkStudio e quando è arrivato?</question><answer>Usare pynk_mail_list con brand pynkstudio, limit 1, offset 0.</answer></qa_pair>
+</evaluation>

@@ -32,7 +32,7 @@ import {
 import {
   isBackCoverPathname,
   isBookPathname,
-  isMergedInCompact,
+  skipsLeftInCompact,
   appendixOrdinal,
   leafFaces,
   spreadHref,
@@ -450,9 +450,9 @@ export function VoBookShell({
     setFocus(side);
   }, []);
   /**
-   * La facciata sinistra di questa posizione è un verso bianco: succede su
-   * schermo stretto nelle aperture fuse sulla destra (`isMergedInCompact`). Lì
-   * lo sguardo non si ferma mai — si resta sulla destra, e il giro pagina
+   * La facciata sinistra di questa posizione non è una tappa: succede su
+   * schermo stretto nelle aperture di `skipsLeftInCompact`. Lì lo sguardo non
+   * si ferma mai — si resta sulla destra, e il giro pagina
    * attraversa il verso bianco senza sostarci.
    */
   const blankLeft = useCallback(
@@ -462,23 +462,34 @@ export function VoBookShell({
         position >= appendixBase
           ? voAppendixOrder[position - appendixBase]?.id
           : voSpreads[position]?.id;
-      return id ? isMergedInCompact(id) : false;
+      return id ? skipsLeftInCompact(id) : false;
     },
     [appendixBase, compact],
   );
   /**
-   * Su che facciata atterra lo sguardo arrivando su `target`. Andando avanti si
+   * Dove porta lo sguardo il foglio che si posa su `target`. Andando avanti si
    * ricomincia da sinistra, tornando indietro da destra — la stessa testa che
-   * continua a girare nella direzione da cui veniva — ma un verso bianco non è
-   * un posto dove guardare, e l'appendice si apre sempre dal suo frontespizio.
+   * continua a girare nella direzione da cui veniva — e l'appendice si apre
+   * sempre dal suo frontespizio. È il capo del cammino della telecamera
+   * *durante* il giro.
    */
-  const landingSide = useCallback(
+  const flipSide = useCallback(
     (target: number, dir: 1 | -1 | undefined): VoFaceSide => {
-      if (blankLeft(target)) return "right";
       if (target >= appendixBase) return "left";
       return dir === -1 ? "right" : "left";
     },
-    [appendixBase, blankLeft],
+    [appendixBase],
+  );
+  /**
+   * Dove lo sguardo si ferma, a giro concluso. Coincide con `flipSide` tranne
+   * sulle sinistre che non sono una tappa: lì la telecamera ci arriva insieme
+   * al foglio — la pagina scorre davvero sotto gli occhi — e prosegue da sola
+   * fino alla destra, senza aspettare un altro gesto.
+   */
+  const landingSide = useCallback(
+    (target: number, dir: 1 | -1 | undefined): VoFaceSide =>
+      blankLeft(target) ? "right" : flipSide(target, dir),
+    [blankLeft, flipSide],
   );
   /**
    * Da quale facciata parte e su quale arriva la telecamera nel giro in corso,
@@ -514,13 +525,13 @@ export function VoBookShell({
       const value = typeof next === "function" ? next(gestureRef.current) : next;
       if (value && value.token !== gestureRef.current?.token) {
         flipFromRef.current = focusRef.current === "right" ? 1 : 0;
-        flipToRef.current = landingSide(value.to, value.dir) === "right" ? 1 : 0;
+        flipToRef.current = flipSide(value.to, value.dir) === "right" ? 1 : 0;
       }
       gestureRef.current = value;
       flipping.set(value?.mode === "run" || value?.mode === "drag" ? 1 : 0);
       setGestureState(value);
     },
-    [flipping, landingSide],
+    [flipping, flipSide],
   );
 
   const tokenRef = useRef(0);
@@ -606,6 +617,21 @@ export function VoBookShell({
    * segue invece il foglio stesso, vedi `focusDuringFlip` qui sotto.
    */
   const restingFocusT = useMotionValue(focus === "left" ? 0 : 1);
+  /**
+   * Posa la telecamera dove il foglio l'ha portata e, se la tappa è un'altra,
+   * ce la fa proseguire da sola. La carrellata parte qui e non dall'effetto sul
+   * fuoco: arrivando dalla destra di un'apertura su una sinistra da attraversare,
+   * il fuoco era già "destra" prima del giro, lo stato non cambia e l'effetto
+   * non si sarebbe mai riacceso — la telecamera restava sulla pagina attraversata.
+   */
+  const settleCamera = useCallback(
+    (reached: VoFaceSide, landing: VoFaceSide) => {
+      restingFocusT.set(reached === "left" ? 0 : 1);
+      lookAt(landing);
+      if (reached !== landing) animate(restingFocusT, landing === "left" ? 0 : 1, cameraFocusSpring);
+    },
+    [lookAt, restingFocusT],
+  );
   useEffect(() => {
     const controls = animate(restingFocusT, focus === "left" ? 0 : 1, cameraFocusSpring);
     return () => controls.stop();
@@ -649,9 +675,7 @@ export function VoBookShell({
     ([progress, resting, active]: number[]) => {
       if (!active) return resting;
       // Il cammino del foglio da 0 a 1, qualunque sia il verso. Con i capi
-      // sinistra/destra è la stessa `1 - p0` di sempre; quando l'arrivo è un
-      // verso bianco i due capi coincidono sulla destra e la telecamera resta
-      // lì, allargando a metà corsa (`zoomDuringFlip`) sopra la pagina vuota.
+      // sinistra/destra è la stessa `1 - p0` di sempre.
       const travel = gestureRef.current?.dir === -1 ? 1 - progress : progress;
       const from = flipFromRef.current;
       return from + (flipToRef.current - from) * travel;
@@ -958,17 +982,16 @@ export function VoBookShell({
       // L'appendice non è una posizione del volume: l'URL ce l'ha già portata, e
       // scriverla in `spread` la farebbe rientrare nella sequenza sfogliabile.
       if (target >= appendixBase) {
-        const side = landingSide(target, dir);
-        restingFocusT.set(side === "left" ? 0 : 1);
+        settleCamera(flipSide(target, dir), landingSide(target, dir));
         setShownAppendix(target - appendixBase);
-        lookAt(side);
         clearGesture();
         return;
       }
       // Arrivando avanti si ricomincia a guardare da sinistra, arrivando
       // indietro da destra: è la stessa testa che continua a girare nella
       // direzione da cui veniva, non che scatta sempre al solito lato.
-      const landing = landingSide(target, dir ?? gestureRef.current?.dir);
+      const arrivingDir = dir ?? gestureRef.current?.dir;
+      const landing = landingSide(target, arrivingDir);
       /*
        * Il passaggio di consegne della telecamera.
        *
@@ -977,9 +1000,13 @@ export function VoBookShell({
        * quello d'arrivo, nell'istante del cambio l'inquadratura salta al valore
        * vecchio e poi ci torna sopra con la molla: è quello lo scatto che si
        * vedeva in fondo a ogni giro pagina.
+       *
+       * Per questo il valore a riposo parte da dove il foglio ha portato lo
+       * sguardo, non da dove si fermerà: sulle sinistre che non sono una tappa
+       * le due cose differiscono, e la molla del fuoco prosegue da lì fino alla
+       * destra in un movimento solo.
        */
-      restingFocusT.set(landing === "left" ? 0 : 1);
-      lookAt(landing);
+      settleCamera(flipSide(target, arrivingDir), landing);
       const { spread: nextSpread, half: nextHalf } = fromPos(target);
       // Si scrive qui, non nell'effetto: il foglio è atterrato *adesso*. La
       // navigazione che parte due righe sotto rimonta il componente, e l'effetto
@@ -1000,7 +1027,7 @@ export function VoBookShell({
       if (queuedRef.current !== 0) return;
       publish(nextSpread);
     },
-    [appendixBase, clearGesture, fromPos, landingSide, lookAt, playPageSound, publish, restingFocusT],
+    [appendixBase, clearGesture, flipSide, fromPos, landingSide, playPageSound, publish, settleCamera],
   );
 
   /**

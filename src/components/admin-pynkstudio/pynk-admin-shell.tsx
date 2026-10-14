@@ -19,6 +19,7 @@ import {
   UserCog,
   Briefcase,
   Music,
+  PlugZap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { clearAdminSession } from "@/lib/admin-auth";
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin-pynkstudio/beta",         label: "Beta program",   icon: FlaskConical },
   { href: "/admin-pynkstudio/patrimoniale", label: "Patrimoniale",   icon: BadgeEuro },
   { href: "/admin-pynkstudio/utenti",       label: "Utenti interni", icon: UserCog },
+  { href: "/admin-pynkstudio/mcp",          label: "MCP & agenti",   icon: PlugZap },
 ];
 
 const PORTAL_ITEMS: NavItem[] = [

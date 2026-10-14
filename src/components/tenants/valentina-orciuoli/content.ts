@@ -16,6 +16,7 @@ export const valentinaEmail = "valentina.orciuoli@gmail.com";
 export const anxietyCoverSrc = "/valentina-orciuoli/anxiety-cover.webp";
 export const furyCoverSrc = "/valentina-orciuoli/fury-cover.webp";
 export const darkNoirCoverSrc = "/valentina-orciuoli/tra-fumo-e-ombre.webp";
+export const valentinaReadingSrc = "/valentina-orciuoli/valentina-lettura.webp";
 export const authorPortraitSrc = "https://www.selfcreation.it/wp-content/uploads/2024/11/Valentina-Orciuoli.jpg";
 
 export type ValentinaCreativeWork = {

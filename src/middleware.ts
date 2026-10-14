@@ -333,6 +333,7 @@ const ADMIN_PYNKSTUDIO_PATHS = [
   "/crm",
   "/inbox",
   "/mailapp",
+  "/mcp",
   "/menuary",
   "/orpheo",
   "/patrimoniale",
@@ -922,6 +923,17 @@ export async function middleware(request: NextRequest) {
 
   // ── Admin PynkStudio (admin.pynkstudio.eu) ────────────────────────────────
   if (mode === "admin-pynkstudio") {
+    // Endpoint MCP/OAuth canonici: restano path root perché vengono scoperti
+    // automaticamente dai client (Claude Cowork incluso) e non appartengono
+    // al routing visuale /admin-pynkstudio.
+    if (
+      pathname === "/mcp" ||
+      pathname.startsWith("/mcp/") ||
+      pathname.startsWith("/api/mcp/") ||
+      pathname.startsWith("/.well-known/oauth-")
+    ) {
+      return NextResponse.next({ request });
+    }
     const isKnownAdminPath =
       pathname === "/" ||
       pathname === "/login" ||

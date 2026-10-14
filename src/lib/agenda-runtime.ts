@@ -110,6 +110,7 @@ async function onPynkBookingCreated(booking: AgendaBooking, guestUrl: string | n
   // Il link è l'unico accesso dell'ospite alla stanza: deve stare nella conferma.
   const joinUrl = booking.location === "video" ? guestUrl : null;
   const calendarEvent = await getAgenda().guestCalendarEvent(booking);
+  const attribution = cleanAttribution(extra.attribution);
 
   if (svc) {
     try {
@@ -125,13 +126,32 @@ async function onPynkBookingCreated(booking: AgendaBooking, guestUrl: string | n
         interests: cleanList(extra.interests),
         timing: str(extra.timing, 60),
         plan: str(extra.plan, 120),
-        attribution: cleanAttribution(extra.attribution),
+        attribution,
         title: `Call prenotata · ${slotLabel}`,
         body: topic,
         booking: { id: booking.id, startsAt: booking.startsAt },
       });
     } catch (e) {
       console.warn("[agenda] crm upsert fallito:", e);
+    }
+    const outreachToken = attribution?.utm_content?.startsWith("menuary-outreach:")
+      ? attribution.utm_content.slice("menuary-outreach:".length)
+      : "";
+    if (outreachToken) {
+      try {
+        const { outreachDb } = await import("@/lib/menuary-outreach/server");
+        const outreach = outreachDb();
+        if (outreach) {
+          const now = new Date().toISOString();
+          const { data: lead } = await outreach.from("menuary_outreach_leads").select("id").eq("public_token", outreachToken).maybeSingle();
+          if (lead) {
+            await outreach.from("menuary_outreach_leads").update({ status: "booked", booked_at: now, next_send_at: null, updated_at: now }).eq("id", lead.id);
+            await outreach.from("menuary_outreach_events").insert({ lead_id: lead.id, event_type: "booked", metadata: { booking_id: booking.id } });
+          }
+        }
+      } catch (e) {
+        console.warn("[agenda] outreach booking link fallito:", e);
+      }
     }
   }
 

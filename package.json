@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@livekit/components-react": "^2.9.24",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@pynkstudio/agendaapp": "https://github.com/PynkStudio/pynkstudio-agendaapp/archive/refs/tags/v0.4.0.tar.gz",
     "@pynkstudio/mailapp": "https://github.com/PynkStudio/pynkstudio-mailapp/archive/20b978c6e76a05e380d5ea1da6b454b07e3dcaa0.tar.gz",
     "@pynkstudio/newsletterapp": "https://github.com/PynkStudio/pynkstudio-newsletterapp/archive/refs/tags/v0.2.0.tar.gz",
@@ -39,6 +40,7 @@
     "tailwind-merge": "2.6.0",
     "twilio": "^6.0.2",
     "web-push": "^3.6.7",
+    "zod": "^3.25.76",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

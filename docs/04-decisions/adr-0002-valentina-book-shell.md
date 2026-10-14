@@ -573,6 +573,18 @@ venivano impilate in un foglio solo, che è esattamente ciò che produceva lo sc
 > attraversando il verso bianco senza sostarci. Su schermo largo nulla cambia.
 > Verificato a 375 px: home → `/libri` (destra) → `/trilogia` sinistra → `/trilogia`
 > destra, e all'indietro lo stesso percorso fino al frontespizio.
+>
+> **Stesso giorno — la foto dell'autrice nell'indice.** `/libri` non è più fra le
+> aperture fuse: su tutte le larghezze la sinistra porta una foto di Valentina che legge
+> (`public/valentina-orciuoli/valentina-lettura.webp`, incollata come le copertine con
+> `VoPhoto`) e la destra titolo e sommario. Su schermo stretto la sinistra resta però
+> fuori dalle tappe: `skipsLeftInCompact` = `libri` + le aperture di `isMergedInCompact`,
+> ed è quella che lo shell interroga. **La sinistra si attraversa, non si salta**: durante
+> il giro la telecamera segue il foglio fino alla sinistra (`flipSide`) come per ogni altra
+> pagina, e all'atterraggio prosegue da sola fino alla destra (`landingSide`,
+> `settleCamera`). La carrellata parte dal commit e non dall'effetto sul fuoco: arrivando
+> dalla destra del frontespizio il fuoco era già "destra", lo stato non cambiava e la
+> telecamera restava ferma sulla foto.
 
 Lo stato resta in unità di spread — è quello che URL, memoria e numeri di pagina conoscono
 — e la *posizione* si deriva dal modo corrente, così un cambio di larghezza non corrompe

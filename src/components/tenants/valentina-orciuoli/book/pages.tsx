@@ -20,6 +20,7 @@ import {
   instagramHref,
   tiktokHref,
   valentinaEmail,
+  valentinaReadingSrc,
   valentinaUpcomingVolume,
   valentinaWorkSection,
   type ValentinaCreativeWork,
@@ -285,6 +286,11 @@ function VoInternalLink({
   );
 }
 
+/** Un'opera senza titolo definitivo si chiama "In arrivo": non va ripetuto attorno. */
+function titleSaysUpcoming(work: ValentinaCreativeWork) {
+  return /in arrivo/i.test(work.title);
+}
+
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
 
 /**
@@ -339,19 +345,42 @@ function VoWorkPhoto({
   work,
   ordinal,
   caption,
+  glyph = "龍",
 }: {
   work: ValentinaCreativeWork;
   ordinal: number;
-  caption: string;
+  caption?: string;
+  glyph?: string;
 }) {
-  const hand = photoHand(work.slug, ordinal);
   if (!work.coverImageUrl) {
     return (
       <div className="vo-face-cover-placeholder" aria-hidden="true">
-        龍
+        {glyph}
       </div>
     );
   }
+  return (
+    <VoPhoto
+      src={work.coverImageUrl}
+      alt={`Copertina di ${work.title}`}
+      caption={caption}
+      hand={photoHand(work.slug, ordinal)}
+    />
+  );
+}
+
+/** Una foto incollata sulla carta: nastro adesivo, lucido e didascalia a mano. */
+function VoPhoto({
+  src,
+  alt,
+  caption,
+  hand,
+}: {
+  src: string;
+  alt: string;
+  caption?: string;
+  hand: ReturnType<typeof photoHand>;
+}) {
   return (
     <figure className="vo-photo" data-diagonal={hand.diagonal} style={hand.style}>
       <span className="vo-photo-tape vo-photo-tape-a" aria-hidden="true" />
@@ -370,14 +399,14 @@ function VoWorkPhoto({
           sulla seconda comparsa, che a quel punto ha la cache già calda.
         */}
         <img
-          src={work.coverImageUrl}
-          alt={`Copertina di ${work.title}`}
+          src={src}
+          alt={alt}
           loading="eager"
           decoding="sync"
         />
         <span className="vo-photo-gloss" aria-hidden="true" />
       </span>
-      <figcaption>{caption}</figcaption>
+      {caption ? <figcaption>{caption}</figcaption> : null}
     </figure>
   );
 }
@@ -435,7 +464,8 @@ function VoWorkDetailFace({
   if (side === "left") {
     return (
       <div className="vo-face vo-face-work-cover">
-        <VoWorkPhoto work={work} ordinal={slug === "fury" ? 1 : 0} caption={work.title} />
+        {/* Niente didascalia: la copertina stampa già il titolo, e l'h2 accanto lo ripete. */}
+        <VoWorkPhoto work={work} ordinal={slug === "fury" ? 1 : 0} />
       </div>
     );
   }
@@ -527,7 +557,6 @@ export function renderVoAppendixFace(
     if (side === "left") {
       return (
         <div className="vo-face vo-face-intro">
-          <span className="vo-face-kicker">Errata corrige</span>
           <h2>Questa pagina non è mai stata stampata.</h2>
           <span className="vo-face-rule" aria-hidden="true" />
           <p className="vo-face-lead">
@@ -562,7 +591,6 @@ export function renderVoAppendixFace(
   if (side === "left") {
     return (
       <div className="vo-face vo-face-intro">
-        <span className="vo-face-kicker">Note legali</span>
         <h2>{entry.navLabel}</h2>
         <span className="vo-face-rule" aria-hidden="true" />
         <p className="vo-face-lead">
@@ -650,13 +678,13 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
     // ── Indice delle opere ───────────────────────────────────────────────────
     case "libri-left":
       return (
-        <div className="vo-face vo-face-intro">
-          <span className="vo-face-kicker">Indice</span>
-          <h2>I libri</h2>
-          <span className="vo-face-rule" aria-hidden="true" />
-          <span className="vo-face-glyph vo-face-glyph-watermark" aria-hidden="true">
-            龍
-          </span>
+        <div className="vo-face vo-face-work-cover">
+          <VoPhoto
+            src={valentinaReadingSrc}
+            alt="Valentina Orciuoli legge Anxiety davanti a una tazza di tè"
+            caption="Anxiety, e una tazza di tè"
+            hand={photoHand("libri", 1)}
+          />
         </div>
       );
     case "libri-right":
@@ -664,7 +692,9 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
       // stanno nella pagina della collana a cui appartengono.
       return (
         <div className="vo-face vo-face-index">
-          <span className="vo-face-kicker">Sommario</span>
+          <span className="vo-face-kicker">Indice</span>
+          <h2>I libri</h2>
+          <span className="vo-face-rule" aria-hidden="true" />
           <ol>
             <li>
               <VoInternalLink ctx={ctx} to="trilogia">
@@ -686,19 +716,18 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
 
     // ── Le schede dei volumi ─────────────────────────────────────────────────
     case "anxiety-left":
-      return <VoWorkDetailFace ctx={ctx} slug="anxiety" kicker="Vol. I · The Emotion Dragons Trilogy" side="left" />;
+      return <VoWorkDetailFace ctx={ctx} slug="anxiety" kicker="Volume I" side="left" />;
     case "anxiety-right":
-      return <VoWorkDetailFace ctx={ctx} slug="anxiety" kicker="Vol. I · The Emotion Dragons Trilogy" side="right" />;
+      return <VoWorkDetailFace ctx={ctx} slug="anxiety" kicker="Volume I" side="right" />;
     case "fury-left":
-      return <VoWorkDetailFace ctx={ctx} slug="fury" kicker="Vol. II · The Emotion Dragons Trilogy" side="left" />;
+      return <VoWorkDetailFace ctx={ctx} slug="fury" kicker="Volume II" side="left" />;
     case "fury-right":
-      return <VoWorkDetailFace ctx={ctx} slug="fury" kicker="Vol. II · The Emotion Dragons Trilogy" side="right" />;
+      return <VoWorkDetailFace ctx={ctx} slug="fury" kicker="Volume II" side="right" />;
 
     // ── La trilogia ──────────────────────────────────────────────────────────
     case "trilogia-left":
       return (
         <div className="vo-face vo-face-intro">
-          <span className="vo-face-kicker">The Emotion Dragons Trilogy</span>
           <h2>Cosa accadrebbe se le nostre emozioni diventassero dei poteri?</h2>
           <span className="vo-face-rule" aria-hidden="true" />
           <p className="vo-face-lead">
@@ -720,7 +749,16 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
       );
       return (
         <div className="vo-face vo-face-work-cover">
-          {work ? <VoWorkPhoto work={work} ordinal={0} caption="In arrivo" /> : null}
+          {/* Il drago è il segno della trilogia: il thriller è un'altra storia e
+              porta la falena. */}
+          {work ? (
+            <VoWorkPhoto
+              work={work}
+              ordinal={0}
+              caption={titleSaysUpcoming(work) ? undefined : "In arrivo"}
+              glyph="蛾"
+            />
+          ) : null}
         </div>
       );
     }
@@ -732,9 +770,9 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
       const external = work.ctaHref.startsWith("http");
       return (
         <div className="vo-face vo-face-work">
-          {/* La collana giusta: questo libro non appartiene alla saga dei dragoni,
-              e dirlo qui è metà del suo posizionamento. */}
-          <span className="vo-face-kicker">Thriller psicologico · in arrivo</span>
+          {/* Il genere sta già nella testatina: l'occhiello annuncia l'uscita solo
+              finché il titolo non lo fa da sé (in gestione oggi è "In arrivo"). */}
+          {titleSaysUpcoming(work) ? null : <span className="vo-face-kicker">In arrivo</span>}
           <h2>{work.title}</h2>
           <span className="vo-face-rule" aria-hidden="true" />
           {work.description ? <p className="vo-face-lead">{work.description}</p> : null}
@@ -759,7 +797,6 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
     case "eventi-left":
       return (
         <div className="vo-face vo-face-intro">
-          <span className="vo-face-kicker">Calendario</span>
           <h2>Eventi, fiere &amp; presentazioni</h2>
           <span className="vo-face-rule" aria-hidden="true" />
           <p className="vo-face-lead">
