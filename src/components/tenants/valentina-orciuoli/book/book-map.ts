@@ -177,7 +177,7 @@ export const voAppendixOrder: readonly VoAppendix[] = [...voAppendix, voErrata];
  * facciate davvero piene — preambolo ed elenco, copertina e scheda — restano
  * com'erano.
  */
-const voCompactMerged = new Set<string>(["eventi", "privacy", "cookie", "errata"]);
+const voCompactMerged = new Set<string>(["privacy", "cookie", "errata"]);
 
 export function isMergedInCompact(id: string) {
   return voCompactMerged.has(id);

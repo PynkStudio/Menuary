@@ -802,6 +802,21 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
           <p className="vo-face-lead">
             Una storia prende respiro solo quando incontra lo sguardo di chi la legge.
           </p>
+          {/* L'annuncio delle prossime date sta qui e non in coda all'elenco: a
+              destra non ci stava senza far scorrere il foglio, e le pagine del
+              volume non scorrono. */}
+          <div className="vo-face-events">
+            <article>
+              <span>In aggiornamento</span>
+              <h3>Nuove date in arrivo</h3>
+              <p>
+                Lungo il cammino lascio la scrivania per raggiungere librerie, fiere e festival
+                letterari. È in questi momenti dal vivo che ci confrontiamo, decifriamo insieme
+                i simboli nascosti tra le righe e diamo un volto a chi condivide questa
+                passione.
+              </p>
+            </article>
+          </div>
         </div>
       );
     case "eventi-right":
@@ -821,16 +836,6 @@ export function renderVoFace(spread: VoSpread, side: VoFaceSide, ctx: VoBookCont
             <span>2025 · Milano</span>
             <h3>FRI — Festival del Romance Italiano</h3>
             <p>Esordio con Anxiety.</p>
-          </article>
-          <article>
-            <span>In aggiornamento</span>
-            <h3>Nuove date in arrivo</h3>
-            <p>
-              Lungo il cammino lascio la scrivania per raggiungere librerie, fiere e festival
-              letterari. È in questi momenti dal vivo che ci confrontiamo, decifriamo insieme
-              i simboli nascosti tra le righe e diamo un volto a chi condivide questa
-              passione.
-            </p>
           </article>
         </div>
       );

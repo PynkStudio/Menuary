@@ -585,6 +585,19 @@ venivano impilate in un foglio solo, che è esattamente ciò che produceva lo sc
 > `settleCamera`). La carrellata parte dal commit e non dall'effetto sul fuoco: arrivando
 > dalla destra del frontespizio il fuoco era già "destra", lo stato non cambiava e la
 > telecamera restava ferma sulla foto.
+>
+> **2026-10-15 — gli eventi tornano a due facciate.** `eventi` esce da
+> `isMergedInCompact`: fuso sulla destra, titolo più elenco più annuncio non stavano in
+> una facciata senza scorrere, e le pagine del volume non scorrono mai (eccezione: note
+> legali). Su tutte le larghezze la sinistra porta titolo, sottotitolo e l'annuncio
+> "Nuove date in arrivo"; la destra solo le date passate. Verificato senza scroll
+> interno a 360×640, 375×812 e 1280×720.
+>
+> **Stesso giorno — dalla quarta di copertina si torna col dito.** A volume rigirato i
+> gestori di pagina sono spenti; su telefono restava solo la coda del nastro (9×18 px).
+> Ora uno swipe verso destra o verso il basso riporta alla pagina del segnalibro
+> (`book-site.tsx`, accanto al gestore della rotella) e `a.vo-bookmark::after` allarga
+> l'area di tocco della coda.
 
 Lo stato resta in unità di spread — è quello che URL, memoria e numeri di pagina conoscono
 — e la *posizione* si deriva dal modo corrente, così un cambio di larghezza non corrompe
