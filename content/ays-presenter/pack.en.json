@@ -10,6 +10,14 @@
       {
         "id": "the-night-is-already-a-success",
         "text": "THE NIGHT IS ALREADY A SUCCESS."
+      },
+      {
+        "id": "pubblico-ideale",
+        "text": "EMPTY ROOM. THE IDEAL AUDIENCE."
+      },
+      {
+        "id": "va-bene-tutto",
+        "text": "LOOKING FOR CONTESTANTS. BAD ONES ARE FINE TOO."
       }
     ],
     "result.everyoneWrong": [
@@ -24,6 +32,19 @@
       {
         "id": "you-all-got-it-wrong-together",
         "text": "YOU ALL GOT IT WRONG. TOGETHER."
+      },
+      {
+        "id": "coerenti",
+        "text": "ALL WRONG. AT LEAST YOU'RE CONSISTENT."
+      },
+      {
+        "id": "regia",
+        "text": "THE CONTROL ROOM ASKS IF ANYONE LOOKED AT THE SCREEN."
+      },
+      {
+        "id": "unanimita",
+        "text": "UNANIMOUS. SHAME IT WAS THE WRONG ANSWER.",
+        "intensity": "savage"
       }
     ],
     "result.everyoneCorrect": [
@@ -34,6 +55,19 @@
       {
         "id": "all-correct-do-not-get-used-to-i",
         "text": "ALL CORRECT. DO NOT GET USED TO IT."
+      },
+      {
+        "id": "rotto",
+        "text": "NO MISTAKES. CHECKING WHETHER THE GAME IS BROKEN."
+      },
+      {
+        "id": "per-bambini",
+        "text": "ALL CORRECT. IT WAS DESIGNED FOR CHILDREN, BUT WELL DONE."
+      },
+      {
+        "id": "preferivo",
+        "text": "I PREFERRED YOU WHEN YOU WERE WRONG.",
+        "intensity": "savage"
       }
     ],
     "result.mixed": [
@@ -44,6 +78,19 @@
       {
         "id": "mixed-results-very-mixed",
         "text": "MIXED RESULTS. VERY MIXED."
+      },
+      {
+        "id": "partecipato",
+        "text": "SOME MADE IT. THE OTHERS TOOK PART."
+      },
+      {
+        "id": "tifato",
+        "text": "SOME ANSWERED. THE OTHERS CHEERED."
+      },
+      {
+        "id": "sappiamo",
+        "text": "WHOEVER GOT IT WRONG KNOWS WHO THEY ARE. NOW SO DO WE.",
+        "intensity": "savage"
       }
     ],
     "gameEnd": [
@@ -54,6 +101,14 @@
       {
         "id": "it-is-over-you-may-go-back-to-pr",
         "text": "IT IS OVER. YOU MAY GO BACK TO PRETENDING YOU ARE SMART."
+      },
+      {
+        "id": "sospetti",
+        "text": "IT'S OVER. SOMEONE WON, EVERYONE ELSE CONFIRMED OUR SUSPICIONS."
+      },
+      {
+        "id": "pazienza",
+        "text": "GAME OVER. THE CONTROL ROOM THANKS EVERYONE FOR THEIR PATIENCE. MOSTLY ITS OWN."
       }
     ]
   },
@@ -63,12 +118,22 @@
         "id": "v1",
         "text": "{name}, YOU WIN BY SCORING MORE POINTS. OR AT LEAST SOME POINTS.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, STILL ZERO. AT LEAST IT'S A ROUND NUMBER.",
+        "intensity": "savage"
       }
     ],
     "result.title.king.named": [
       {
         "id": "v1",
         "text": "{name}, ANOTHER POINT. YOU ARE NOW {title}."
+      },
+      {
+        "id": "v2",
+        "text": "{name} DOESN'T MISS ANYMORE. YOU ARE NOW {title}. THE REST OF YOU, TAKE NOTES.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.direction": [
@@ -76,18 +141,32 @@
         "id": "v1",
         "text": "{name}, THAT WAS YOUR OTHER LEFT.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, LEFT AND RIGHT. TWO OPTIONS. YOU FOUND A THIRD.",
+        "intensity": "savage"
       }
     ],
     "title.anonymous": [
       {
         "id": "0",
         "text": "YOU ARE NOW {title}."
+      },
+      {
+        "id": "1",
+        "text": "IT'S OFFICIAL: YOU ARE {title}."
       }
     ],
     "result.player.lss.lastLife": [
       {
         "id": "v1",
         "text": "{name}, ONE LIFE LEFT. TRY NOT TO WASTE THIS ONE TOO.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "LAST LIFE, {name}. THE AUDIENCE HOLDS ITS BREATH. ALLEGEDLY.",
         "intensity": "savage"
       }
     ],
@@ -96,6 +175,11 @@
         "id": "v1",
         "text": "YOU HAD TO DO NOTHING, {name}. FINALLY, YOUR SPECIALTY.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, YOU ONLY HAD TO WAIT. THAT WAS THE WHOLE JOB.",
+        "intensity": "savage"
       }
     ],
     "result.player.wrongStreak3": [
@@ -103,12 +187,21 @@
         "id": "v1",
         "text": "{name}, WOULD YOU LIKE TO PHONE A FRIEND OR CAN YOU FAIL ALONE?",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "DO YOU NEED TO ASK THE AUDIENCE, {name}? BECAUSE WE'RE GETTING DESPERATE.",
+        "intensity": "savage"
       }
     ],
     "title.named": [
       {
         "id": "0",
         "text": "{name}, YOU ARE NOW {title}."
+      },
+      {
+        "id": "1",
+        "text": "{name}, IT'S OFFICIAL: YOU ARE {title}."
       }
     ],
     "result.mixed.oneWrong.mechanic.memory": [
@@ -116,12 +209,21 @@
         "id": "v1",
         "text": "IT WAS ONE THING, {name}. NOT AN ENTIRE NOVEL.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, YOU HAD TO REMEMBER ONE THING. YOU REMEMBERED TO GET IT WRONG.",
+        "intensity": "savage"
       }
     ],
     "lobby.returning.named": [
       {
         "id": "0",
         "text": "{name} IS BACK, {title}."
+      },
+      {
+        "id": "1",
+        "text": "LOOK WHO'S BACK: {name}, {title}."
       }
     ],
     "result.mixed.oneWrong.mechanic.timing": [
@@ -129,18 +231,32 @@
         "id": "v1",
         "text": "{name}, IT WAS A MATTER OF TIME. AND YOU WASTED IT.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, THE RIGHT MOMENT CAME AND WENT. IT EVEN WAVED.",
+        "intensity": "savage"
       }
     ],
     "lobby.returning.anonymous": [
       {
         "id": "0",
         "text": "{title} IS BACK."
+      },
+      {
+        "id": "1",
+        "text": "LOOK WHO'S BACK: {title}."
       }
     ],
     "result.mixed.oneWrong.mechanic.counting": [
       {
         "id": "v1",
         "text": "{name}, YOU LOOKED COMPETITIVE WHILE FINGERS WERE ENOUGH.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, YOU WERE SUPPOSED TO COUNT. NOT INTERPRET.",
         "intensity": "savage"
       }
     ],
@@ -149,12 +265,22 @@
         "id": "v1",
         "text": "OH, SO YOU DID REALIZE THIS WAS A COMPETITION, {name}?",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "THE CONTROL ROOM CONFIRMS {name} HAS BEEN PLAYING SINCE THE START. NOBODY SUSPECTED A THING.",
+        "intensity": "savage"
       }
     ],
     "result.title.doesNotRead.named": [
       {
         "id": "v1",
         "text": "{name}, THREE IN A ROW. YOU ARE NOW {title}.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, THIRD TIME. THE CONTROL ROOM NAMES YOU {title}.",
         "intensity": "savage"
       }
     ],
@@ -163,12 +289,22 @@
         "id": "v1",
         "text": "IT WAS ONE BUTTON, {name}. ONE.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, I DIDN'T THINK PRESSING A BUTTON NEEDED A TUTORIAL.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.reading": [
       {
         "id": "v1",
         "text": "IT WAS WRITTEN IN FRONT OF YOU, {name}. IN FRONT OF YOU.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, THERE WERE FEW WORDS. AND THEY WERE BIG.",
         "intensity": "savage"
       }
     ],
@@ -177,6 +313,11 @@
         "id": "v1",
         "text": "IT WAS RIGHT BEFORE YOUR EYES, {name}. SO WERE YOU.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, YOU JUST HAD TO LOOK. JUST LOOK.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.math": [
@@ -184,12 +325,21 @@
         "id": "v1",
         "text": "{name}, WE USED SMALL NUMBERS FOR A REASON.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, THAT WAS LITERALLY A PRIMARY SCHOOL QUESTION.",
+        "intensity": "savage"
       }
     ],
     "gameEnd.named": [
       {
         "id": "0",
         "text": "{name} WON. TECHNICALLY."
+      },
+      {
+        "id": "1",
+        "text": "{name} WON. EVERYONE ELSE MADE IT EASY."
       }
     ],
     "result.mixed.oneWrong.named": [
@@ -197,12 +347,39 @@
         "id": "v1",
         "text": "IT'S OK, {name}. I'LL EXPLAIN IT TO YOU LATER. PROMISE.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DON'T WORRY. GETTING IT WRONG IS ALSO A TALENT.",
+        "intensity": "savage"
       }
     ],
     "result.player.lss.losingLives": [
       {
         "id": "v1",
         "text": "{name}, LIVES AREN'T POINTS. THEY ACTUALLY RUN OUT.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "ANOTHER LIFE GONE, {name}. YOU'RE COLLECTING THEM IN REVERSE.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.again": [
+      {
+        "id": "v1",
+        "text": "YOU AGAIN, {name}? IT'S BECOMING A TRADITION.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, AGAIN. AT THIS POINT IT'S A STYLE.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v3",
+        "text": "THE CONTROL ROOM STOPPED COUNTING {name}'S MISTAKES. THEY RAN OUT OF PAPER.",
         "intensity": "savage"
       }
     ]

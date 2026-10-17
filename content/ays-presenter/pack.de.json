@@ -10,6 +10,14 @@
       {
         "id": "der-abend-ist-jetzt-schon-ein-er",
         "text": "DER ABEND IST JETZT SCHON EIN ERFOLG."
+      },
+      {
+        "id": "pubblico-ideale",
+        "text": "LEERER SAAL. DAS IDEALE PUBLIKUM."
+      },
+      {
+        "id": "va-bene-tutto",
+        "text": "WIR SUCHEN KANDIDATEN. SCHLECHTE GEHEN AUCH."
       }
     ],
     "result.everyoneWrong": [
@@ -24,6 +32,19 @@
       {
         "id": "ihr-lagt-alle-falsch-gemeinsam",
         "text": "IHR LAGT ALLE FALSCH. GEMEINSAM."
+      },
+      {
+        "id": "coerenti",
+        "text": "ALLES FALSCH. IMMERHIN SEID IHR KONSEQUENT."
+      },
+      {
+        "id": "regia",
+        "text": "DIE REGIE FRAGT, OB JEMAND AUF DEN BILDSCHIRM GESCHAUT HAT."
+      },
+      {
+        "id": "unanimita",
+        "text": "EINSTIMMIG. SCHADE, DASS ES DIE FALSCHE ANTWORT WAR.",
+        "intensity": "savage"
       }
     ],
     "result.everyoneCorrect": [
@@ -34,6 +55,19 @@
       {
         "id": "alles-richtig-gewohnt-euch-nicht",
         "text": "ALLES RICHTIG. GEWÖHNT EUCH NICHT DARAN."
+      },
+      {
+        "id": "rotto",
+        "text": "KEIN FEHLER. ICH PRÜFE, OB DAS SPIEL KAPUTT IST."
+      },
+      {
+        "id": "per-bambini",
+        "text": "ALLES RICHTIG. DIE FRAGE WAR FÜR KINDER GEDACHT, ABER BRAVO."
+      },
+      {
+        "id": "preferivo",
+        "text": "MIR WART IHR LIEBER, ALS IHR FALSCH LAGT.",
+        "intensity": "savage"
       }
     ],
     "result.mixed": [
@@ -44,6 +78,19 @@
       {
         "id": "gemischte-ergebnisse-sehr-gemisc",
         "text": "GEMISCHTE ERGEBNISSE. SEHR GEMISCHT."
+      },
+      {
+        "id": "partecipato",
+        "text": "EINIGE HABEN ES GESCHAFFT. DIE ANDEREN WAREN DABEI."
+      },
+      {
+        "id": "tifato",
+        "text": "EINIGE HABEN GEANTWORTET. DIE ANDEREN HABEN ANGEFEUERT."
+      },
+      {
+        "id": "sappiamo",
+        "text": "WER FALSCH LAG, WEISS ES. JETZT WISSEN WIR ES AUCH.",
+        "intensity": "savage"
       }
     ],
     "gameEnd": [
@@ -54,6 +101,14 @@
       {
         "id": "es-ist-vorbei-ihr-konnt-wieder-s",
         "text": "ES IST VORBEI. IHR KÖNNT WIEDER SO TUN, ALS WÄRT IHR SCHLAU."
+      },
+      {
+        "id": "sospetti",
+        "text": "ES IST VORBEI. JEMAND HAT GEWONNEN, DER REST HAT UNSEREN VERDACHT BESTÄTIGT."
+      },
+      {
+        "id": "pazienza",
+        "text": "SPIELENDE. DIE REGIE DANKT FÜR EURE GEDULD. VOR ALLEM FÜR IHRE EIGENE."
       }
     ]
   },
@@ -62,18 +117,31 @@
       {
         "id": "0",
         "text": "{name} HAT GEWONNEN. TECHNISCH GESEHEN."
+      },
+      {
+        "id": "1",
+        "text": "{name} HAT GEWONNEN. DIE ANDEREN HABEN ES LEICHT GEMACHT."
       }
     ],
     "lobby.returning.named": [
       {
         "id": "0",
         "text": "{name} IST ZURÜCK, {title}."
+      },
+      {
+        "id": "1",
+        "text": "SCHAUT MAL, WER WIEDER DA IST: {name}, {title}."
       }
     ],
     "result.title.doesNotRead.named": [
       {
         "id": "v1",
         "text": "{name}, DREIMAL IN FOLGE. AB JETZT BIST DU {title}.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, ZUM DRITTEN MAL. OFFIZIELL BIST DU JETZT {title}.",
         "intensity": "savage"
       }
     ],
@@ -82,12 +150,22 @@
         "id": "v1",
         "text": "ES STAND VOR DIR, {name}. DIREKT. VOR. DIR.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, ES WAREN WENIGE WÖRTER. UND GROSSE.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.direction": [
       {
         "id": "v1",
         "text": "{name}, DAS WAR DEIN ANDERES LINKS.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, LINKS ODER RECHTS. ZWEI OPTIONEN. DU HAST EINE DRITTE GEFUNDEN.",
         "intensity": "savage"
       }
     ],
@@ -96,18 +174,32 @@
         "id": "v1",
         "text": "DU SOLLTEST NICHTS TUN, {name}. ENDLICH DEIN SPEZIALGEBIET.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DU MUSSTEST NUR WARTEN. DAS WAR DIE GANZE AUFGABE.",
+        "intensity": "savage"
       }
     ],
     "title.named": [
       {
         "id": "0",
         "text": "{name}, AB JETZT BIST DU {title}."
+      },
+      {
+        "id": "1",
+        "text": "{name}, ES IST OFFIZIELL: DU BIST {title}."
       }
     ],
     "result.mixed.oneWrong.mechanic.math": [
       {
         "id": "v1",
         "text": "{name}, WIR HABEN EXTRA KLEINE ZAHLEN GENOMMEN.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DAS WAR BUCHSTÄBLICH EINE GRUNDSCHULAUFGABE.",
         "intensity": "savage"
       }
     ],
@@ -116,12 +208,22 @@
         "id": "v1",
         "text": "ES WAR DIREKT VOR DEINEN AUGEN, {name}. DU LEIDER AUCH.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DU MUSSTEST NUR HINSCHAUEN. NUR HINSCHAUEN.",
+        "intensity": "savage"
       }
     ],
     "result.player.wrongStreak3": [
       {
         "id": "v1",
         "text": "{name}, WILLST DU JEMANDEN ANRUFEN ODER SCHAFFST DU DAS ALLEIN?",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "BRAUCHST DU DEN PUBLIKUMSJOKER, {name}? HIER HERRSCHT LANGSAM VERZWEIFLUNG.",
         "intensity": "savage"
       }
     ],
@@ -130,6 +232,11 @@
         "id": "v1",
         "text": "GANZ RUHIG, {name}. ICH ERKLÄRE ES DIR SPÄTER. VERSPROCHEN.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, KEINE SORGE. DANEBENLIEGEN IST AUCH EIN TALENT.",
+        "intensity": "savage"
       }
     ],
     "result.player.stillZero": [
@@ -137,12 +244,22 @@
         "id": "v1",
         "text": "{name}, MAN GEWINNT MIT MEHR PUNKTEN. ODER WENIGSTENS MIT EINEM.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, IMMER NOCH NULL. IMMERHIN EINE RUNDE ZAHL.",
+        "intensity": "savage"
       }
     ],
     "result.title.king.named": [
       {
         "id": "v1",
         "text": "{name}, NOCH EIN PUNKT. AB JETZT BIST DU {title}."
+      },
+      {
+        "id": "v2",
+        "text": "{name} TRIFFT NUR NOCH. AB JETZT BIST DU {title}. DER REST: MITSCHREIBEN.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.timing": [
@@ -150,18 +267,32 @@
         "id": "v1",
         "text": "{name}, ES WAR EINE FRAGE DER ZEIT. DU HAST SIE VERSCHWENDET.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DER RICHTIGE MOMENT IST VORBEI. ER HAT DIR SOGAR GEWINKT.",
+        "intensity": "savage"
       }
     ],
     "lobby.returning.anonymous": [
       {
         "id": "0",
         "text": "{title} IST ZURÜCK."
+      },
+      {
+        "id": "1",
+        "text": "SCHAUT MAL, WER WIEDER DA IST: {title}."
       }
     ],
     "result.mixed.oneWrong.mechanic.memory": [
       {
         "id": "v1",
         "text": "ES WAR EINE SACHE, {name}. KEIN GANZER ROMAN.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DU SOLLTEST DIR EINE SACHE MERKEN. DU HAST DIR DEN FEHLER GEMERKT.",
         "intensity": "savage"
       }
     ],
@@ -170,6 +301,11 @@
         "id": "v1",
         "text": "ES WAR EIN KNOPF, {name}. EINER.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, ICH WUSSTE NICHT, DASS MAN FÜR EINEN KNOPF EIN TUTORIAL BRAUCHT.",
+        "intensity": "savage"
       }
     ],
     "result.player.lss.lastLife": [
@@ -177,18 +313,32 @@
         "id": "v1",
         "text": "{name}, EIN LEBEN NOCH. VERSCHWENDE DAS BITTE NICHT AUCH.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "LETZTES LEBEN, {name}. DAS PUBLIKUM HÄLT DEN ATEM AN. ANGEBLICH.",
+        "intensity": "savage"
       }
     ],
     "title.anonymous": [
       {
         "id": "0",
         "text": "AB JETZT BIST DU {title}."
+      },
+      {
+        "id": "1",
+        "text": "ES IST OFFIZIELL: DU BIST {title}."
       }
     ],
     "result.player.lss.losingLives": [
       {
         "id": "v1",
         "text": "{name}, LEBEN SIND KEINE PUNKTE. DIE GEHEN WIRKLICH AUS.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "WIEDER EIN LEBEN WEG, {name}. DU SAMMELST SIE RÜCKWÄRTS.",
         "intensity": "savage"
       }
     ],
@@ -197,12 +347,39 @@
         "id": "v1",
         "text": "{name}, SOLANGE DIE FINGER REICHTEN, SAHST DU KONKURRENZFÄHIG AUS.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, ZÄHLEN WAR GEFRAGT. NICHT INTERPRETIEREN.",
+        "intensity": "savage"
       }
     ],
     "result.player.firstPointLate": [
       {
         "id": "v1",
         "text": "ACH, DU HAST GEMERKT, DASS DAS EIN WETTBEWERB IST, {name}?",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "DIE REGIE BESTÄTIGT: {name} SPIELT SEIT ANFANG MIT. NIEMAND HAT ES GEAHNT.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.again": [
+      {
+        "id": "v1",
+        "text": "SCHON WIEDER DU, {name}? DAS WIRD LANGSAM TRADITION.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, SCHON WIEDER. INZWISCHEN IST DAS EIN STIL.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v3",
+        "text": "DIE REGIE ZÄHLT DIE FEHLER VON {name} NICHT MEHR. DAS PAPIER IST AUS.",
         "intensity": "savage"
       }
     ]
