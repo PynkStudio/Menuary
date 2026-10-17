@@ -10,6 +10,14 @@
       {
         "id": "successo",
         "text": "LA SERATA È GIÀ UN SUCCESSO."
+      },
+      {
+        "id": "pubblico-ideale",
+        "text": "SALA VUOTA. IL PUBBLICO IDEALE."
+      },
+      {
+        "id": "va-bene-tutto",
+        "text": "CERCO CONCORRENTI. ANCHE SCARSI, VA BENE TUTTO."
       }
     ],
     "result.everyoneWrong": [
@@ -24,6 +32,19 @@
       {
         "id": "insieme",
         "text": "AVETE SBAGLIATO TUTTI. INSIEME."
+      },
+      {
+        "id": "coerenti",
+        "text": "TUTTI SBAGLIATI. ALMENO SIETE COERENTI."
+      },
+      {
+        "id": "regia",
+        "text": "LA REGIA CHIEDE SE QUALCUNO HA GUARDATO LO SCHERMO."
+      },
+      {
+        "id": "unanimita",
+        "text": "UNANIMITÀ. PECCATO FOSSE LA RISPOSTA SBAGLIATA.",
+        "intensity": "savage"
       }
     ],
     "result.everyoneCorrect": [
@@ -34,6 +55,19 @@
       {
         "id": "non-abituatevi",
         "text": "TUTTI GIUSTI. NON ABITUATEVI."
+      },
+      {
+        "id": "rotto",
+        "text": "NESSUN ERRORE. CONTROLLO SE IL GIOCO SI È ROTTO."
+      },
+      {
+        "id": "per-bambini",
+        "text": "TUTTI GIUSTI. ERA PENSATA PER BAMBINI, MA BRAVI."
+      },
+      {
+        "id": "preferivo",
+        "text": "VI PREFERIVO QUANDO SBAGLIAVATE.",
+        "intensity": "savage"
       }
     ],
     "result.mixed": [
@@ -44,6 +78,19 @@
       {
         "id": "misti",
         "text": "RISULTATI MISTI. MOLTO MISTI."
+      },
+      {
+        "id": "partecipato",
+        "text": "QUALCUNO CE L'HA FATTA. GLI ALTRI HANNO PARTECIPATO."
+      },
+      {
+        "id": "tifato",
+        "text": "QUALCUNO HA RISPOSTO. GLI ALTRI HANNO FATTO IL TIFO."
+      },
+      {
+        "id": "sappiamo",
+        "text": "CHI HA SBAGLIATO SA CHI È. ORA LO SAPPIAMO ANCHE NOI.",
+        "intensity": "savage"
       }
     ],
     "gameEnd": [
@@ -54,6 +101,14 @@
       {
         "id": "fingervi",
         "text": "È FINITA. POTETE TORNARE A FINGERVI INTELLIGENTI."
+      },
+      {
+        "id": "sospetti",
+        "text": "È FINITA. QUALCUNO HA VINTO, GLI ALTRI HANNO CONFERMATO I SOSPETTI."
+      },
+      {
+        "id": "pazienza",
+        "text": "FINE DELLA PARTITA. LA REGIA RINGRAZIA PER LA PAZIENZA. LA SUA."
       }
     ]
   },
@@ -63,6 +118,11 @@
         "id": "v1",
         "text": "C'ERA SCRITTO DAVANTI A TE, {name}. DAVANTI. A. TE.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, LE PAROLE ERANO POCHE. E GRANDI.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.memory": [
@@ -70,12 +130,21 @@
         "id": "v1",
         "text": "ERA UNA COSA SOLA, {name}. NON LA DIVINA COMMEDIA.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DOVEVI RICORDARE UNA COSA. HAI RICORDATO DI SBAGLIARE.",
+        "intensity": "savage"
       }
     ],
     "title.anonymous": [
       {
         "id": "0",
         "text": "DA ORA SEI {title}."
+      },
+      {
+        "id": "1",
+        "text": "È UFFICIALE: SEI {title}."
       }
     ],
     "result.title.doesNotRead.named": [
@@ -83,12 +152,21 @@
         "id": "v1",
         "text": "{name}, TRE DI FILA. DA ORA SEI {title}.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, TERZA VOLTA. LA REGIA TI NOMINA {title}.",
+        "intensity": "savage"
       }
     ],
     "gameEnd.named": [
       {
         "id": "0",
         "text": "{name} HA VINTO. TECNICAMENTE."
+      },
+      {
+        "id": "1",
+        "text": "{name} HA VINTO. GLI ALTRI GLIEL'HANNO RESA FACILE."
       }
     ],
     "result.mixed.oneWrong.mechanic.counting": [
@@ -96,18 +174,33 @@
         "id": "v1",
         "text": "{name}, FINCHÉ BASTAVANO LE DITA SEMBRAVI COMPETITIVO.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, BISOGNAVA CONTARE. NON INTERPRETARE.",
+        "intensity": "savage"
       }
     ],
     "result.title.king.named": [
       {
         "id": "v1",
         "text": "{name}, UN ALTRO PUNTO. DA ORA SEI {title}."
+      },
+      {
+        "id": "v2",
+        "text": "{name} NON SBAGLIA PIÙ. DA ORA SEI {title}. GLI ALTRI PRENDANO APPUNTI.",
+        "intensity": "savage"
       }
     ],
     "result.player.lss.losingLives": [
       {
         "id": "v1",
         "text": "{name}, LE VITE NON SONO PUNTI. QUELLE FINISCONO.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "UN'ALTRA VITA PERSA, {name}. LE STAI COLLEZIONANDO AL CONTRARIO.",
         "intensity": "savage"
       }
     ],
@@ -116,12 +209,22 @@
         "id": "v1",
         "text": "{name}, VINCE CHI FA PIÙ PUNTI. O ALMENO CHI FA DEI PUNTI.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, ANCORA ZERO. ALMENO È UN NUMERO TONDO.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.direction": [
       {
         "id": "v1",
         "text": "{name}, QUELLA ERA L'ALTRA SINISTRA.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DESTRA E SINISTRA. DUE OPZIONI. HAI TROVATO LA TERZA.",
         "intensity": "savage"
       }
     ],
@@ -130,12 +233,22 @@
         "id": "v1",
         "text": "{name}, ERA DAVANTI AI TUOI OCCHI. PURTROPPO ANCHE TU.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, BASTAVA GUARDARE. GUARDARE E BASTA.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.timing": [
       {
         "id": "v1",
         "text": "{name}, ERA UNA QUESTIONE DI TEMPO. E LO HAI PERSO.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, IL MOMENTO GIUSTO È PASSATO. TI HA ANCHE SALUTATO.",
         "intensity": "savage"
       }
     ],
@@ -156,12 +269,21 @@
         "id": "v1",
         "text": "{name}, TE NE RESTA UNA. PROVA A NON BUTTARE VIA ANCHE QUESTA.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "ULTIMA VITA, {name}. IL PUBBLICO TRATTIENE IL FIATO. PER FINTA.",
+        "intensity": "savage"
       }
     ],
     "title.named": [
       {
         "id": "0",
         "text": "{name}, DA ORA SEI {title}."
+      },
+      {
+        "id": "1",
+        "text": "{name}, È UFFICIALE: SEI {title}."
       }
     ],
     "result.player.firstPointLate": [
@@ -197,12 +319,20 @@
       {
         "id": "0",
         "text": "È TORNATO {name}, {title}."
+      },
+      {
+        "id": "1",
+        "text": "GUARDATE CHI SI RIVEDE: {name}, {title}."
       }
     ],
     "lobby.returning.anonymous": [
       {
         "id": "0",
         "text": "È TORNATO {title}."
+      },
+      {
+        "id": "1",
+        "text": "GUARDATE CHI SI RIVEDE: {title}."
       }
     ],
     "result.mixed.oneWrong.named": [
@@ -210,12 +340,22 @@
         "id": "v1",
         "text": "DAI, TRANQUILLO, {name}. DOPO TE LA SPIEGO, PROMESSO.",
         "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, NON PREOCCUPARTI. ANCHE SBAGLIARE È UN TALENTO.",
+        "intensity": "savage"
       }
     ],
     "result.mixed.oneWrong.mechanic.waiting": [
       {
         "id": "v1",
         "text": "DOVEVI NON FARE NIENTE, {name}. FINALMENTE ERI QUALIFICATO.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, BASTAVA ASPETTARE. ERA L'UNICA COSA RICHIESTA.",
         "intensity": "savage"
       }
     ],
@@ -228,6 +368,23 @@
       {
         "id": "v2",
         "text": "{name}, QUESTA ERA LETTERALMENTE UNA DOMANDA DELLE ELEMENTARI.",
+        "intensity": "savage"
+      }
+    ],
+    "result.player.again": [
+      {
+        "id": "v1",
+        "text": "ANCORA TU, {name}? ORMAI È UN APPUNTAMENTO FISSO.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v2",
+        "text": "{name}, DI NUOVO. A QUESTO PUNTO È UNO STILE.",
+        "intensity": "savage"
+      },
+      {
+        "id": "v3",
+        "text": "LA REGIA HA SMESSO DI CONTARE GLI ERRORI DI {name}. HA FINITO I FOGLI.",
         "intensity": "savage"
       }
     ]

@@ -59,6 +59,8 @@ export const PACK_TEMPLATE_PLACEHOLDERS: Record<string, string[]> = {
   "result.player.wrongStreak3": ["name"],
   "result.player.lss.lastLife": ["name"],
   "result.player.lss.losingLives": ["name"],
+  /** Callback per chi viene preso in giro di nuovo nella stessa partita. */
+  "result.player.again": ["name"],
 };
 
 const RESULT_MECHANICS = ["button", "math", "counting", "reading", "waiting", "timing", "memory", "direction", "perception"];
