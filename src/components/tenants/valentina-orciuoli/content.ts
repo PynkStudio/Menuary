@@ -104,7 +104,7 @@ export function valentinaWorkSection(slug: string): ValentinaWorkSection {
  * tiene il posto.
  */
 export const valentinaUpcomingVolume = {
-  title: "La Terza Emozione",
+  title: "La terza emozione",
   description: "La trilogia troverà presto il suo compimento.",
   state: "In arrivo",
 } as const;
@@ -179,7 +179,7 @@ export const trilogy: Array<{
   },
   {
     n: "III",
-    title: "La Terza Emozione",
+    title: "La terza emozione",
     desc: "La trilogia troverà presto il suo compimento.",
     state: "In arrivo",
     href: null,

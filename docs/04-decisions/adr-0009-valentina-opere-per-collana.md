@@ -41,7 +41,7 @@ L'indice (`/libri`) nomina le **collane**, non i titoli: due voci con il proprio
 
 ### 2. Il terzo volume è un annuncio, non una scheda
 
-`valentinaUpcomingVolume` in `content.ts` tiene il posto di *La Terza Emozione* nella pagina
+`valentinaUpcomingVolume` in `content.ts` tiene il posto di *La terza emozione* nella pagina
 della trilogia: numerazione romana, titolo, una riga e lo stato «In arrivo», senza copertina
 né link. Non è una riga di gestione perché non è ancora un libro — e una trilogia che ne
 mostra due non si capisce.

@@ -26,3 +26,4 @@ public/uploads/*
 **_IGNORE_**
 .openwa-session/
 # end managed by open-wa
+/media
