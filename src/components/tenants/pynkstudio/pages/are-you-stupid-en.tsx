@@ -43,7 +43,7 @@ const waysToPlay = [
 ];
 
 const steps = [
-  { title: "Turn on the TV", body: "Open Are You Stupid? on Apple TV, or on a Mac and send it to the TV with AirPlay. The room and its QR code appear on screen." },
+  { title: "Turn on the TV", body: "Open Are You Stupid?! on Apple TV, or on a Mac and send it to the TV with AirPlay. The room and its QR code appear on screen." },
   { title: "Join from your phone", body: "Everyone scans the QR (or types the room code), picks a name and an emoji. Just be on the same Wi-Fi network." },
   { title: "Pick a mode", body: "Last Stupid Standing: fail and you're out, last one left wins. Stupid Battle: everyone plays to the end, most points wins." },
   { title: "Don't screw it up", body: "One ridiculously simple instruction, the same for everyone, a few seconds to do it. On the TV, in front of everyone: who didn't make it." },
@@ -79,7 +79,7 @@ const faq = [
     a: "No. The AI Director uses Apple Intelligence on-device to create challenges and text commentary. The voice presenter is a separate optional layer, still in development, that uses the internet to speak its lines; it never controls rules, scores or timing and always has a local fallback.",
   },
   {
-    q: "Does Are You Stupid? collect personal data?",
+    q: "Does Are You Stupid?! collect personal data?",
     a: "We have no account, no backend and no analytics tools. The only data processing is done by our advertising partner, Google AdMob, and only after consent where the law requires it. Full details in the privacy policy.",
   },
   {
@@ -100,7 +100,7 @@ function AreYouStupidEnInner() {
     {
       "@context": "https://schema.org",
       "@type": "MobileApplication",
-      name: "Are You Stupid?",
+      name: "Are You Stupid?!",
       applicationCategory: "GameApplication",
       applicationSubCategory: "Party game",
       operatingSystem: "iOS, iPadOS, tvOS, macOS, Android",
@@ -115,7 +115,7 @@ function AreYouStupidEnInner() {
     breadcrumbSchema([
       { name: "Home", path: "/" },
       { name: "Lavori", path: "/lavori" },
-      { name: "Are You Stupid? (English)", path: "/lavori/are-you-stupid/en" },
+      { name: "Are You Stupid?! (English)", path: "/lavori/are-you-stupid/en" },
     ]),
     faqSchema(faq),
   ];
@@ -128,7 +128,7 @@ function AreYouStupidEnInner() {
         <div className="pynk-container pynk-ays-hero-grid">
           <div className="pynk-ays-hero-copy">
             <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="pynk-ays-title">
-              ARE YOU{" "}<br /><span>STUPID?</span>
+              ARE YOU{" "}<br /><span>STUPID?!</span>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="pynk-ays-tagline">
               One instruction. A few seconds. Everyone is watching.

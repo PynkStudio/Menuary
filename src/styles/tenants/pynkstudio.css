@@ -3826,7 +3826,7 @@
     .pynk-ia-live::after { animation: none; }
   }
 
-  /* ─── Are You Stupid? — game page ──────────────────────── */
+  /* ─── Are You Stupid?! — game page ──────────────────────── */
   .pynk-ays-page {
     --ays-yellow: hsl(50 100% 58%);
     --ays-red: hsl(355 86% 61%);
@@ -3857,7 +3857,7 @@
     mask-image: linear-gradient(to bottom, black 58%, transparent 100%);
   }
   .pynk-ays-hero::after {
-    content: "STUPID?";
+    content: "STUPID?!";
     position: absolute;
     z-index: -1;
     right: -0.08em;

@@ -18,7 +18,7 @@ function PrivacyInner() {
     breadcrumbSchema([
       { name: "Home", path: "/" },
       { name: "Lavori", path: "/lavori" },
-      { name: "Are You Stupid?", path: "/lavori/are-you-stupid" },
+      { name: "Are You Stupid?!", path: "/lavori/are-you-stupid" },
       { name: "Privacy Policy", path: "/lavori/are-you-stupid/privacy" },
     ]),
   ];
@@ -30,7 +30,7 @@ function PrivacyInner() {
       <section className="pynk-hero pynk-hero-sub pynk-hero-compact">
         <div className="pynk-glow pynk-glow-tl" aria-hidden />
         <div className="pynk-container pynk-hero-content">
-          <p className="pynk-eyebrow">Are You Stupid? — iPhone, iPad, Apple TV, Mac &amp; Android</p>
+          <p className="pynk-eyebrow">Are You Stupid?! — iPhone, iPad, Apple TV, Mac &amp; Android</p>
           <h1 className="pynk-hero-title">Privacy Policy</h1>
           <p className="pynk-hero-subtitle">
             Written in English, the language of the app. Last updated: {LAST_UPDATED}.
@@ -45,7 +45,7 @@ function PrivacyInner() {
               In one sentence
             </h2>
             <p className="pynk-panel-desc">
-              Are You Stupid? has no account and no server of its own; the only information that leaves your device is what our
+              Are You Stupid?! has no account and no server of its own; the only information that leaves your device is what our
               advertising partner, Google AdMob, collects to show and measure ads, within the choices you make in the consent
               message — everything else (your scores, your settings, your multiplayer name, anything the on-device AI uses) stays on
               your devices.
@@ -60,12 +60,12 @@ function PrivacyInner() {
             Who we are
           </h2>
           <p className="pynk-panel-desc">
-            Are You Stupid? is developed and published by <strong>PYNK STUDIO</strong> (P.IVA 13577530960), Via Gino Severini 1,
+            Are You Stupid?! is developed and published by <strong>PYNK STUDIO</strong> (P.IVA 13577530960), Via Gino Severini 1,
             Milano, Italy — the data controller for this app. Contact: <a href="mailto:info@pynkstudio.eu">info@pynkstudio.eu</a>,{" "}
             <a href="tel:+393513768607">+39 351 3768607</a>.
           </p>
           <p className="pynk-panel-desc">
-            This policy covers the game <em>Are You Stupid?</em> on iPhone and iPad, its party-mode host apps for Apple TV and Mac
+            This policy covers the game <em>Are You Stupid?!</em> on iPhone and iPad, its party-mode host apps for Apple TV and Mac
             (all published under the identifier <code>com.ays.areYouStupid</code>), and on Android (identifier{" "}
             <code>com.ays.are_you_stupid</code>), with every feature described below. It does not cover PYNK STUDIO&apos;s other products or websites, which have their own
             privacy policies.
@@ -257,7 +257,7 @@ function PrivacyInner() {
             Children&apos;s privacy
           </h2>
           <p className="pynk-panel-desc">
-            Are You Stupid? contains crude language and humor and is <strong>not directed at children</strong>. It is not listed
+            Are You Stupid?! contains crude language and humor and is <strong>not directed at children</strong>. It is not listed
             in Apple&apos;s Kids Category and is not part of Google Play&apos;s Families program. We do not knowingly collect
             personal data from children under 13 (or the minimum age required by your local law). If you believe a child has
             provided data to us or to our advertising partner through the app, please contact us using the details below so we can
@@ -329,7 +329,7 @@ function PrivacyInner() {
           </p>
           <div className="pynk-hero-ctas pynk-mt-24">
             <Link href={href("/lavori/are-you-stupid")} className="pynk-btn pynk-btn-outline pynk-btn-lg">
-              Back to Are You Stupid?
+              Back to Are You Stupid?!
               <ArrowRight className="pynk-icon-xs" />
             </Link>
             <Link href={href("/contattaci")} className="pynk-btn pynk-btn-primary pynk-btn-lg">

@@ -131,7 +131,7 @@ export const pynkPortfolioItems: PynkPortfolioItem[] = [
   },
   {
     id: "are-you-stupid",
-    title: "Are You Stupid?",
+    title: "Are You Stupid?!",
     kind: "mobile",
     descriptionPlain:
       "Party game da 2 a 8 giocatori: la stessa istruzione stupidissima per tutti nello stesso istante, sulla TV chi sbaglia, il telefono come controller. Apple TV, Mac, iPhone e Android, e in singolo anche offline.",
