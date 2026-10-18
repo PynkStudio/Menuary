@@ -110,6 +110,34 @@
         "id": "pazienza",
         "text": "FIN DE LA PARTIDA. CONTROL OS AGRADECE LA PACIENCIA. SOBRE TODO LA SUYA."
       }
+    ],
+    "gameEnd.noWinner": [
+      {
+        "id": "nessuno",
+        "text": "ENHORABUENA A ABSOLUTAMENTE NADIE."
+      },
+      {
+        "id": "ce-lo-aspettavamo",
+        "text": "NO QUEDA NADIE EN PIE. LA VERDAD, NOS LO OLÍAMOS."
+      },
+      {
+        "id": "vince-la-stupidita",
+        "text": "NI UN SUPERVIVIENTE. ESTA VEZ GANA LA TONTERÍA, POR GOLEADA."
+      }
+    ],
+    "gameEnd.tie": [
+      {
+        "id": "pareggio",
+        "text": "EMPATE. IGUAL DE DECEPCIONANTES, PUNTO POR PUNTO."
+      },
+      {
+        "id": "nessuno-meno",
+        "text": "EMPATE. NADIE HA CONSEGUIDO SER MENOS ESTÚPIDO."
+      },
+      {
+        "id": "non-pervenuto",
+        "text": "EMPATE. BUSCÁBAMOS AL MENOS ESTÚPIDO. SEGUIMOS BUSCANDO."
+      }
     ]
   },
   "templates": {

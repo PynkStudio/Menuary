@@ -110,6 +110,34 @@
         "id": "pazienza",
         "text": "FIN DE LA PARTIE. LA RÉGIE VOUS REMERCIE DE VOTRE PATIENCE. SURTOUT DE LA SIENNE."
       }
+    ],
+    "gameEnd.noWinner": [
+      {
+        "id": "nessuno",
+        "text": "FÉLICITATIONS À ABSOLUMENT PERSONNE."
+      },
+      {
+        "id": "ce-lo-aspettavamo",
+        "text": "PLUS PERSONNE DEBOUT. FRANCHEMENT, ON S'Y ATTENDAIT."
+      },
+      {
+        "id": "vince-la-stupidita",
+        "text": "AUCUN SURVIVANT. CETTE FOIS, C'EST LA BÊTISE QUI GAGNE."
+      }
+    ],
+    "gameEnd.tie": [
+      {
+        "id": "pareggio",
+        "text": "ÉGALITÉ. AUSSI DÉCEVANTS LES UNS QUE LES AUTRES, AU POINT PRÈS."
+      },
+      {
+        "id": "nessuno-meno",
+        "text": "MATCH NUL. PERSONNE N'A RÉUSSI À ÊTRE MOINS BÊTE."
+      },
+      {
+        "id": "non-pervenuto",
+        "text": "ÉGALITÉ. ON CHERCHAIT LE MOINS BÊTE. ON CHERCHE ENCORE."
+      }
     ]
   },
   "templates": {

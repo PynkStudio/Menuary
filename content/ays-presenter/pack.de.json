@@ -110,6 +110,34 @@
         "id": "pazienza",
         "text": "SPIELENDE. DIE REGIE DANKT FÜR EURE GEDULD. VOR ALLEM FÜR IHRE EIGENE."
       }
+    ],
+    "gameEnd.noWinner": [
+      {
+        "id": "nessuno",
+        "text": "HERZLICHEN GLÜCKWUNSCH AN ABSOLUT NIEMANDEN."
+      },
+      {
+        "id": "ce-lo-aspettavamo",
+        "text": "KEINER MEHR ÜBRIG. EHRLICH GESAGT, DAS HABEN WIR KOMMEN SEHEN."
+      },
+      {
+        "id": "vince-la-stupidita",
+        "text": "KEINE ÜBERLEBENDEN. DIESMAL GEWINNT DIE DUMMHEIT, HAUSHOCH."
+      }
+    ],
+    "gameEnd.tie": [
+      {
+        "id": "pareggio",
+        "text": "UNENTSCHIEDEN. GLEICH ENTTÄUSCHEND, AUF DEN PUNKT GENAU."
+      },
+      {
+        "id": "nessuno-meno",
+        "text": "UNENTSCHIEDEN. KEINER HAT ES GESCHAFFT, WENIGER DUMM ZU SEIN."
+      },
+      {
+        "id": "non-pervenuto",
+        "text": "UNENTSCHIEDEN. WIR HABEN DEN AM WENIGSTEN DUMMEN GESUCHT. WIR SUCHEN NOCH."
+      }
     ]
   },
   "templates": {

@@ -110,6 +110,34 @@
         "id": "pazienza",
         "text": "FINE DELLA PARTITA. LA REGIA RINGRAZIA PER LA PAZIENZA. LA SUA."
       }
+    ],
+    "gameEnd.noWinner": [
+      {
+        "id": "nessuno",
+        "text": "CONGRATULAZIONI ASSOLUTAMENTE A NESSUNO."
+      },
+      {
+        "id": "ce-lo-aspettavamo",
+        "text": "NESSUNO IN PIEDI. SINCERAMENTE, CE LO ASPETTAVAMO."
+      },
+      {
+        "id": "vince-la-stupidita",
+        "text": "NESSUN SOPRAVVISSUTO. STAVOLTA HA VINTO LA STUPIDITÀ, A MANI BASSE."
+      }
+    ],
+    "gameEnd.tie": [
+      {
+        "id": "pareggio",
+        "text": "PAREGGIO. UGUALMENTE DELUDENTI, AL PUNTO."
+      },
+      {
+        "id": "nessuno-meno",
+        "text": "PARI. NESSUNO È RIUSCITO A ESSERE MENO STUPIDO."
+      },
+      {
+        "id": "non-pervenuto",
+        "text": "PAREGGIO. DOVEVA VINCERE IL MENO STUPIDO. NON È PERVENUTO."
+      }
     ]
   },
   "templates": {

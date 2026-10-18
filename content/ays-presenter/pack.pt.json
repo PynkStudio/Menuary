@@ -110,6 +110,34 @@
         "id": "pazienza",
         "text": "FIM DO JOGO. A REALIZAÇÃO AGRADECE A VOSSA PACIÊNCIA. SOBRETUDO A SUA."
       }
+    ],
+    "gameEnd.noWinner": [
+      {
+        "id": "nessuno",
+        "text": "PARABÉNS A ABSOLUTAMENTE NINGUÉM."
+      },
+      {
+        "id": "ce-lo-aspettavamo",
+        "text": "NINGUÉM DE PÉ. SINCERAMENTE, JÁ ESTÁVAMOS À ESPERA."
+      },
+      {
+        "id": "vince-la-stupidita",
+        "text": "NENHUM SOBREVIVENTE. DESTA VEZ GANHOU A BURRICE, SEM DISCUSSÃO."
+      }
+    ],
+    "gameEnd.tie": [
+      {
+        "id": "pareggio",
+        "text": "EMPATE. IGUALMENTE DECEPCIONANTES, AO PONTO."
+      },
+      {
+        "id": "nessuno-meno",
+        "text": "EMPATE. NINGUÉM CONSEGUIU SER MENOS ESTÚPIDO."
+      },
+      {
+        "id": "non-pervenuto",
+        "text": "EMPATE. PROCURÁVAMOS O MENOS ESTÚPIDO. CONTINUAMOS À PROCURA."
+      }
     ]
   },
   "templates": {

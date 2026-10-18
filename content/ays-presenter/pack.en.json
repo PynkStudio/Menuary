@@ -110,6 +110,34 @@
         "id": "pazienza",
         "text": "GAME OVER. THE CONTROL ROOM THANKS EVERYONE FOR THEIR PATIENCE. MOSTLY ITS OWN."
       }
+    ],
+    "gameEnd.noWinner": [
+      {
+        "id": "nessuno",
+        "text": "CONGRATULATIONS TO ABSOLUTELY NOBODY."
+      },
+      {
+        "id": "ce-lo-aspettavamo",
+        "text": "NOBODY LEFT STANDING. HONESTLY, WE SAW IT COMING."
+      },
+      {
+        "id": "vince-la-stupidita",
+        "text": "NO SURVIVORS. STUPIDITY WINS THIS ONE, FAIR AND SQUARE."
+      }
+    ],
+    "gameEnd.tie": [
+      {
+        "id": "pareggio",
+        "text": "A TIE. EQUALLY DISAPPOINTING, DOWN TO THE POINT."
+      },
+      {
+        "id": "nessuno-meno",
+        "text": "A DRAW. NOBODY MANAGED TO BE LESS STUPID."
+      },
+      {
+        "id": "non-pervenuto",
+        "text": "A TIE. WE WERE LOOKING FOR THE LEAST STUPID. STILL LOOKING."
+      }
     ]
   },
   "templates": {
