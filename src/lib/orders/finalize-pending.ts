@@ -69,14 +69,19 @@ export async function finalizePendingOrder(
   if (updateError) return { ok: false, reason: "update_failed", error: updateError.message };
   if (!updated) return { ok: true, status: "nuovo", alreadyFinalized: true };
 
-  void notifyOperationalNewOrder({
-    tenantId: order.tenant_id,
-    orderCode: order.code,
-    status: "nuovo",
-    customerName: order.customer_name,
-    locationId: order.location_id ?? null,
-  }).catch(() => null);
-  void dispatchComandaForOrder(db, order.tenant_id, order.id, order.location_id ?? null).catch(() => {});
+  // Attesi, non fire-and-forget: in una funzione serverless il lavoro lasciato in volo
+  // dopo la risposta può non partire mai, e qui c'è la comanda della cucina.
+  // Entrambi non lanciano; un dispatch fallito lo ripesca il cron.
+  await Promise.all([
+    notifyOperationalNewOrder({
+      tenantId: order.tenant_id,
+      orderCode: order.code,
+      status: "nuovo",
+      customerName: order.customer_name,
+      locationId: order.location_id ?? null,
+    }).catch(() => null),
+    dispatchComandaForOrder(db, order.tenant_id, order.id, order.location_id ?? null).catch(() => null),
+  ]);
 
   return { ok: true, status: "nuovo" };
 }

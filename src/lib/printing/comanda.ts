@@ -31,11 +31,42 @@ function paymentLabel(order: Order): string {
   return "DA PAGARE - CASH";
 }
 
+// La comanda esce in cucina in Italia, ma il dispatch gira su server UTC.
+const COMANDA_TIMEZONE = "Europe/Rome";
+
+// desired_time arriva come "HH:MM", "YYYY-MM-DD HH:MM" o ISO: in comanda serve una
+// forma breve e inequivocabile, con la data solo quando non è oggi.
+function formatRequestedTime(raw: string): string {
+  const value = raw.trim();
+  const today = new Date().toLocaleDateString("sv-SE", { timeZone: COMANDA_TIMEZONE });
+  const local = value.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})$/);
+  if (local) {
+    const [, y, m, d, hh, mm] = local;
+    const time = `${hh.padStart(2, "0")}:${mm}`;
+    return `${y}-${m}-${d}` === today ? time : `${d}/${m} ${time}`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) {
+      const day = date.toLocaleDateString("sv-SE", { timeZone: COMANDA_TIMEZONE });
+      const time = date.toLocaleTimeString("it-IT", { timeZone: COMANDA_TIMEZONE, hour: "2-digit", minute: "2-digit" });
+      if (day === today) return time;
+      const [, m, d] = day.split("-");
+      return `${d}/${m} ${time}`;
+    }
+  }
+  const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateOnly) return `${dateOnly[3]}/${dateOnly[2]}`;
+  return value;
+}
+
 function lineBlock(line: OrderLine, width: number): string {
   const head = `${line.qty}x ${line.name}`;
   const parts: string[] = [CMD.boldOn + asciiFold(head) + CMD.boldOff + "\n"];
 
-  if (line.variantLabel) {
+  // Il checkout del sito e il telefono mettono già il formato nel nome ("Margherita
+  // (Gigante)"): ripeterlo sotto confonde la lettura.
+  if (line.variantLabel && !line.name.includes(`(${line.variantLabel})`)) {
     parts.push(`  - variante: ${asciiFold(line.variantLabel)}\n`);
   }
   for (const extra of line.addedExtras ?? []) {
@@ -55,7 +86,7 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
   const isUpdate = opts?.variant === "payment_update";
   const createdAt = order.createdAt ? new Date(order.createdAt) : null;
   const time = createdAt
-    ? createdAt.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })
+    ? createdAt.toLocaleTimeString("it-IT", { timeZone: COMANDA_TIMEZONE, hour: "2-digit", minute: "2-digit" })
     : "";
 
   let out = CMD.init;
@@ -76,12 +107,24 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
   out += CMD.alignLeft;
   out += justify(asciiFold(originLabel(order)), time, w) + "\n";
   out += rule(w) + "\n";
+  // Orario richiesto in grande: è la prima cosa che la cucina deve leggere.
+  const requested = order.desiredTime || order.pickupTime;
+  if (requested) {
+    const isDelivery = order.dineOption === "delivery" || String(order.type) === "delivery" || Boolean(order.deliveryAddress);
+    out += CMD.sizeDoubleHeight + CMD.boldOn;
+    out += asciiFold(`${isDelivery ? "CONSEGNA" : "RITIRO"} ORE ${formatRequestedTime(requested)}`) + "\n";
+    out += CMD.sizeNormal + CMD.boldOff;
+  }
   if (order.customerName) out += `Cliente: ${asciiFold(order.customerName)}\n`;
   if (order.deliveryAddress) {
     for (const wline of wrap(asciiFold(order.deliveryAddress), w)) out += `${wline}\n`;
   }
-  if (order.customerPhone) out += `${asciiFold(order.customerPhone)}\n`;
-  if (order.pickupTime) out += `Ritiro: ${asciiFold(order.pickupTime)}\n`;
+  if (order.deliveryDoorbell) out += CMD.boldOn + `Citofono: ${asciiFold(order.deliveryDoorbell)}` + CMD.boldOff + "\n";
+  if (order.deliveryFloor) out += `Piano: ${asciiFold(order.deliveryFloor)}\n`;
+  if (order.deliveryNotes) {
+    for (const wline of wrap(`Note consegna: ${order.deliveryNotes}`, w)) out += `${wline}\n`;
+  }
+  if (order.customerPhone) out += `Tel: ${asciiFold(order.customerPhone)}\n`;
   out += rule(w) + "\n";
 
   // Comanda di variazione: niente righe piatti, solo il nuovo stato pagamento ben visibile.

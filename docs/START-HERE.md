@@ -31,6 +31,7 @@ Documenti già popolati a partire dai file della repo:
 - [[agenda-videocall]] — `docs/03-features/` (progetto a fasi: pacchetto esterno `@pynkstudio/agendaapp`, prenotazione call e videocall LiveKit per PynkStudio). Contiene la **bacheca di avanzamento**: consultala prima di toccare `src/lib/agenda-runtime.ts`, le rotte `bookings` o la repo `../pynkstudio-agendaapp`.
 - [[landing-verticali-ristoranti]] — `docs/03-features/` (progetto a fasi: 6 landing `menuary.it/ristoranti/*` per campagne, funzioni da costruire e interruttori dei claim — vedi [[adr-0012-claim-landing-legati-a-funzioni-pronte]]). Contiene la **bacheca di avanzamento**.
 - [[adr-0014-accesso-gestione-sezioni-e-ruoli]] — `docs/04-decisions/` (accesso alla gestione da una tabella unica di sezioni e ruoli).
+- [[audit-kimos-golive]] — `docs/03-features/` (audit 2026-10-19 della catena ordini telefonici Retell → stampa comanda SUNMI per il go-live Kimos). Contiene la **bacheca di avanzamento** dei blocchi P0/P1.
 - [[audit-gestione]] — `docs/03-features/` (audit 2026-10-03 del pannello `gestione` e delle API `api/gestione`: sicurezza, fonte di verità tenant, navigazione, design system). Contiene la **bacheca di avanzamento**: consultala prima di toccare `src/app/gestione/`, `src/components/gestione/` o `src/app/api/gestione/`.
 - [[integrazioni-attive]] — `docs/06-integrations/`
 - [[endpoint-ia]] — `docs/07-prompts/`

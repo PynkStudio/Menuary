@@ -37,7 +37,11 @@ export function dbRowToOrder(row: DbOrder, lines: OrderLine[]): Order {
     customerEmail: row.customer_email ?? undefined,
     customerPhone: row.customer_phone ?? undefined,
     deliveryAddress: row.delivery_address ?? row.delivery_address_text ?? undefined,
+    deliveryDoorbell: row.delivery_doorbell ?? undefined,
+    deliveryFloor: row.delivery_floor ?? undefined,
+    deliveryNotes: row.delivery_notes ?? undefined,
     pickupTime: row.pickup_time ?? undefined,
+    desiredTime: row.desired_time ?? undefined,
     notes: row.notes ?? undefined,
     lines,
     total: Number(row.total),
@@ -116,6 +120,11 @@ export type DbOrder = {
   delivery_pin_lat: number | null;
   delivery_pin_lng: number | null;
   delivery_address_text: string | null;
+  // Opzionali: non tutte le query li selezionano.
+  delivery_doorbell?: string | null;
+  delivery_floor?: string | null;
+  delivery_notes?: string | null;
+  desired_time?: string | null;
   assigned_at: string | null;
   picked_up_at: string | null;
   delivered_at: string | null;

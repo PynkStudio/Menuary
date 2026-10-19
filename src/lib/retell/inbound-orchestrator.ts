@@ -21,6 +21,7 @@ import { isMenuOrderChannel } from "@/lib/menu-channels";
 import { euroToItalianWords, orderCodeToSpoken } from "@/lib/retell/number-speech";
 import { tenantCheckoutUrl } from "@/lib/orders/checkout-url";
 import { notifyOperationalNewOrder } from "@/lib/notifications/operational-order-push";
+import { recordPlatformError } from "@/lib/platform-errors";
 
 type Db = SupabaseClient<Database>;
 
@@ -211,7 +212,10 @@ export type CreateRetellOrderInput = {
   lines: {
     itemCode: string;
     quantity: number;
+    /** Codice (es. "large") o etichetta (es. "Gigante") del formato, da `priceOptions`. */
     priceOption?: string | null;
+    /** Opzioni dei `variantGroups` scelte dal cliente (id o nome, es. "Integrale"). */
+    variantOptions?: string[];
     note?: string | null;
     addedExtraCodes?: string[];
     removedIngredients?: string[];
@@ -601,20 +605,62 @@ function listPriceOptions(price: Json): { code: string; label: string; value: nu
   return [];
 }
 
-function resolveNumericPrice(itemCode: string, price: Json, selectedOption?: string | null): number {
+// Il formato scelto va anche in comanda (`label`), non solo nel prezzo: una "Gigante"
+// stampata senza formato esce Normale. `label` è null quando il piatto ha un solo prezzo.
+function resolvePriceOption(
+  itemCode: string,
+  price: Json,
+  selectedOption?: string | null,
+): { value: number; label: string | null } {
   const options = listPriceOptions(price);
   if (options.length === 0) throw new Error(`price_to_confirm:${itemCode}`);
-  if (options.length === 1) return options[0].value;
+  if (options.length === 1) return { value: options[0].value, label: null };
 
-  if (selectedOption) {
-    const selected = selectedOption.trim().toLocaleLowerCase("it-IT");
-    const option = options.find((candidate) => candidate.code.toLocaleLowerCase("it-IT") === selected);
-    if (option) return option.value;
+  const selected = selectedOption?.trim().toLocaleLowerCase("it-IT");
+  if (selected) {
+    const option = options.find(
+      (candidate) =>
+        candidate.code.toLocaleLowerCase("it-IT") === selected ||
+        candidate.label.toLocaleLowerCase("it-IT") === selected,
+    );
+    // Formato non riconosciuto: meglio far ripetere la scelta all'agente che addebitare
+    // e preparare in silenzio il formato di default.
+    if (!option) throw new Error(`price_option_required:${itemCode}:${options.map((o) => o.label).join("/")}`);
+    return { value: option.value, label: option.label };
   }
 
   // Nessuna selezione esplicita: usa la variante di default configurata nel menu,
   // oppure la prima disponibile come fallback.
-  return (options.find((o) => o.isDefault) ?? options[0]).value;
+  const fallback = options.find((o) => o.isDefault) ?? options[0];
+  return { value: fallback.value, label: fallback.label };
+}
+
+// Scelte nei variantGroups (es. impasto): stesso formato che usa il checkout del sito,
+// cioè voci in added_extras "Gruppo: Opzione" col sovrapprezzo dell'opzione.
+function resolveVariantSelections(itemCode: string, variantGroups: Json, requested: string[]) {
+  if (requested.length === 0) return [];
+  const groups = Array.isArray(variantGroups) ? variantGroups : [];
+  return requested.map((raw) => {
+    const wanted = raw.trim().toLocaleLowerCase("it-IT");
+    for (const group of groups) {
+      if (!group || typeof group !== "object" || Array.isArray(group)) continue;
+      const g = group as Record<string, Json | undefined>;
+      if (typeof g.id !== "string" || typeof g.name !== "string" || !Array.isArray(g.options)) continue;
+      for (const option of g.options) {
+        if (!option || typeof option !== "object" || Array.isArray(option)) continue;
+        const o = option as Record<string, Json | undefined>;
+        if (typeof o.id !== "string" || typeof o.name !== "string") continue;
+        if (o.id.toLocaleLowerCase("it-IT") === wanted || o.name.toLocaleLowerCase("it-IT") === wanted) {
+          return {
+            id: `variant:${g.id}:${o.id}`,
+            name: `${g.name}: ${o.name}`,
+            price: typeof o.price === "number" ? o.price : 0,
+          };
+        }
+      }
+    }
+    throw new Error(`missing_extra:${itemCode}:${raw}`);
+  });
 }
 
 function money(value: number): string {
@@ -1305,14 +1351,90 @@ function reconcileMenuItem<T extends { code: string; name: string }>(
   return best && best.score >= 50 ? best.item : null;
 }
 
+// Il flow telefonico non conosce le sedi: senza questa risoluzione l'ordine nasceva con
+// location_id NULL e non trovava la stampante (legata alla sede), né compariva nel
+// portale della sede. Usiamo la sede di default, o l'unica sede; senza sedi resta NULL.
+async function resolveOrderLocationId(db: Db, tenantId: string, requested: string | null | undefined): Promise<string | null> {
+  if (requested && UUID_RE.test(requested)) return requested;
+  const { data } = await db
+    .from("locations")
+    .select("id,is_default")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: true });
+  const rows = data ?? [];
+  return rows.find((row) => row.is_default)?.id ?? (rows.length === 1 ? rows[0].id : null);
+}
+
+type SignatureLine = {
+  item_uuid: string | null;
+  qty: number;
+  variant_label: string | null;
+  added_extras: Json;
+  removed_ingredients: Json;
+};
+
+// Firma del contenuto di un ordine per riconoscere un doppione: il tool chiamato due
+// volte nella stessa telefonata, o il cliente che riordina dopo un errore dell'agente.
+function orderLinesSignature(lines: SignatureLine[]): string {
+  const ids = (value: Json) =>
+    (Array.isArray(value) ? value : [])
+      .map((entry) => (entry && typeof entry === "object" && !Array.isArray(entry) ? String((entry as { id?: Json }).id ?? "") : String(entry)))
+      .sort()
+      .join("+");
+  return lines
+    .map((line) => [line.item_uuid ?? "", line.qty, line.variant_label ?? "", ids(line.added_extras), ids(line.removed_ingredients)].join("|"))
+    .sort()
+    .join("\n");
+}
+
+const DUPLICATE_ORDER_WINDOW_MS = 10 * 60 * 1000;
+
+async function findRecentDuplicateOrder(
+  db: Db,
+  input: { tenantId: string; phone: string; fulfillmentType: string; signature: string },
+) {
+  const since = new Date(Date.now() - DUPLICATE_ORDER_WINDOW_MS).toISOString();
+  const { data: candidates } = await db
+    .from("orders")
+    .select("id,code,total,status,fulfillment_type")
+    .eq("tenant_id", input.tenantId)
+    .eq("customer_phone", input.phone)
+    .in("source", ["retell", "whatsapp"])
+    .in("status", ["pending_confirmation", "nuovo", "in_preparazione"])
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  const sameType = (candidates ?? []).filter((row) => (row.fulfillment_type ?? "takeaway") === input.fulfillmentType);
+  if (sameType.length === 0) return null;
+  const { data: lines } = await db
+    .from("order_lines")
+    .select("order_id,item_uuid,qty,variant_label,added_extras,removed_ingredients")
+    .in("order_id", sameType.map((row) => row.id));
+  const linesByOrder = groupBy((lines ?? []) as Array<SignatureLine & { order_id: string }>, (line) => line.order_id);
+  return sameType.find((row) => orderLinesSignature(linesByOrder.get(row.id) ?? []) === input.signature) ?? null;
+}
+
+async function logOrderSideEffectError(tenantId: string, orderId: string, operation: string, error: unknown) {
+  await recordPlatformError({
+    source: "api",
+    tenantId,
+    orderId,
+    flow: "retell_create_order",
+    operation,
+    title: "Ordine telefonico: passo accessorio fallito (ordine comunque creato)",
+    message: error instanceof Error ? error.message : String(error),
+    fingerprint: `retell_create_order:${operation}:${tenantId}`,
+  }).catch(() => undefined);
+}
+
 export async function createRetellOrder(input: CreateRetellOrderInput) {
   const db = svc();
   // L'assistente AI a volte inventa il tenantId (es. il placeholder "kimos_tenant_id")
   // invece di usare {{tenant_id}}: senza questo guard finiva in un 500 da FK su customers.
   if (!findTenantById(input.tenantId)) throw new Error("tenant_not_found");
-  // Idem per il locationId (es. "kimos_main"): le sedi reali sono UUID, altrimenti
-  // la usiamo come sede di default (null) per non rompere le foreign key.
-  const locationId = input.locationId && UUID_RE.test(input.locationId) ? input.locationId : null;
+  // Idem per il locationId (es. "kimos_main"): le sedi reali sono UUID; altrimenti
+  // ripieghiamo sulla sede di default del tenant.
+  const locationId = await resolveOrderLocationId(db, input.tenantId, input.locationId);
   const settings = await getAiPhoneSettings(input.tenantId);
   if (!settings.enabled || !isAiPhoneControlAccepting(settings.quickSettings.acceptNewOrders)) {
     throw new Error("orders_not_accepting");
@@ -1410,9 +1532,10 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     codeCandidates.add(`${tenantPrefix}${code}`);
     if (code.startsWith(tenantPrefix)) codeCandidates.add(code.slice(tenantPrefix.length));
   }
+  const menuLists = await loadActiveMenuLists(db, input.tenantId, conversationalMenuChannel(input.source));
   const { data: items, error: itemsError } = await db
     .from("menu_items")
-    .select("id,code,category_id,name,price,available,extra_list_id,location_id")
+    .select("id,code,category_id,name,price,available,extra_list_id,location_id,variant_groups")
     .eq("tenant_id", input.tenantId)
     .in("code", [...codeCandidates]);
   if (itemsError) throw new Error(itemsError.message);
@@ -1439,9 +1562,16 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     // è comunque modificabile dall'utente, quindi un match imperfetto è recuperabile.
     const { data: allItems } = await db
       .from("menu_items")
-      .select("id,code,category_id,name,price,available,extra_list_id,location_id")
+      .select("id,code,category_id,name,price,available,extra_list_id,location_id,variant_groups")
       .eq("tenant_id", input.tenantId);
-    const pool = (allItems ?? []) as NonNullable<typeof items>;
+    // Solo voci vendibili su questo canale/sede: con due set di prodotti omonimi (es.
+    // vecchio import e menu attivo) il match per nome deve cadere su quello ordinabile.
+    const orderable = ((allItems ?? []) as NonNullable<typeof items>).filter(
+      (item) =>
+        (!menuLists.allowedItemIds || menuLists.allowedItemIds.has(item.id)) &&
+        (!locationId || !item.location_id || item.location_id === locationId),
+    );
+    const pool = orderable.length > 0 ? orderable : ((allItems ?? []) as NonNullable<typeof items>);
     const stillMissing: string[] = [];
     for (const code of unresolved) {
       const match = reconcileMenuItem(code, pool, tenantPrefix);
@@ -1458,13 +1588,12 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   const itemIds = resolvedItems.map((item) => item.id);
   const categoryIds = [...new Set(resolvedItems.map((item) => item.category_id))];
   const listIds = resolvedItems.map((item) => item.extra_list_id).filter(Boolean) as string[];
-  const [{ data: itemExtras }, { data: extraListItems }, { data: categories }, menuLists] = await Promise.all([
+  const [{ data: itemExtras }, { data: extraListItems }, { data: categories }] = await Promise.all([
     db.from("menu_item_extras").select("item_id,code,name,price,position").in("item_id", itemIds),
     listIds.length
       ? db.from("extra_list_items").select("id,list_id,code,name,price,position").in("list_id", listIds)
       : Promise.resolve({ data: [] as ExtraListItemRow[] }),
     db.from("menu_categories").select("id,availability,location_id").in("id", categoryIds),
-    loadActiveMenuLists(db, input.tenantId, conversationalMenuChannel(input.source)),
   ]);
   const categoriesById = new Map((categories ?? []).map((category) => [category.id, category]));
   const inlineExtrasByItem = groupBy((itemExtras ?? []) as unknown as ItemExtraRow[], (extra) => extra.item_id);
@@ -1487,15 +1616,22 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       throw new Error(`item_not_in_active_menu:${line.itemCode}`);
     }
     const qty = Math.max(1, Math.floor(line.quantity));
-    const addedExtras = resolveAddedExtras(item, line.addedExtraCodes ?? [], inlineExtrasByItem, listItemsByListId);
-    const unit = resolveNumericPrice(item.code, item.price, line.priceOption) + addedExtras.reduce((sum, extra) => sum + extra.price, 0);
+    const addedExtras = [
+      ...resolveVariantSelections(line.itemCode, item.variant_groups, line.variantOptions ?? []),
+      ...resolveAddedExtras(item, line.addedExtraCodes ?? [], inlineExtrasByItem, listItemsByListId),
+    ];
+    const priceOption = resolvePriceOption(item.code, item.price, line.priceOption);
+    const unit = priceOption.value + addedExtras.reduce((sum, extra) => sum + extra.price, 0);
     return {
       item,
       row: {
         item_id: item.code,
         item_uuid: item.id,
         category_id: item.category_id,
-        name: item.name,
+        // Stessa convenzione del checkout del sito: il formato sta anche nel nome, perché
+        // operativo e cucina mostrano solo `name`.
+        name: priceOption.label ? `${item.name} (${priceOption.label})` : item.name,
+        variant_label: priceOption.label,
         qty,
         unit_price: unit,
         line_total: unit * qty,
@@ -1541,6 +1677,32 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
     : new Date(Date.now() + 2 * 60 * 1000).toISOString();
   const confirmedAt = null;
 
+  const customerPhone = identity?.phone ?? input.customerPhone ?? null;
+  if (customerPhone) {
+    const duplicate = await findRecentDuplicateOrder(db, {
+      tenantId: input.tenantId,
+      phone: customerPhone,
+      fulfillmentType,
+      signature: orderLinesSignature(rows.map(({ row }) => row)),
+    }).catch(() => null);
+    if (duplicate) {
+      // Stesso ordine già registrato da questo numero: lo restituiamo invece di crearne un
+      // secondo, così l'agente conferma lo stesso codice e in cucina esce una sola comanda.
+      const duplicateTotal = Number(duplicate.total);
+      return {
+        id: duplicate.id,
+        code: duplicate.code,
+        total: duplicateTotal,
+        status: duplicate.status,
+        duplicate: true,
+        code_spoken: orderCodeToSpoken(duplicate.code),
+        total_spoken: euroToItalianWords(duplicateTotal),
+        payment: null,
+        paymentMethod: effectivePaymentMethod,
+      };
+    }
+  }
+
   const { data: codeRow, error: codeErr } = await db.rpc("next_order_code", {
     p_tenant_id: input.tenantId,
     p_prefix: "R",
@@ -1565,7 +1727,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       notes: input.notes?.trim() || null,
       location_id: locationId,
       status: initialStatus,
-      customer_phone: identity?.phone ?? input.customerPhone ?? null,
+      customer_phone: customerPhone,
       fulfillment_type: fulfillmentType,
       dine_option: fulfillmentType === "delivery" ? null : "takeaway",
       delivery_address: input.delivery?.address ?? null,
@@ -1586,7 +1748,14 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   const { error: linesErr } = await db.from("order_lines").insert(
     rows.map(({ row }) => ({ ...row, order_id: order.id })),
   );
-  if (linesErr) throw new Error(linesErr.message);
+  if (linesErr) {
+    // Un ordine senza righe finirebbe in cucina come comanda vuota: lo togliamo, così
+    // l'errore che arriva all'agente corrisponde davvero a "nessun ordine registrato".
+    await db.from("orders").delete().eq("id", order.id);
+    throw new Error(linesErr.message);
+  }
+  // Da qui l'ordine esiste: niente deve più lanciare, altrimenti l'agente dice al
+  // cliente che c'è stato un problema e lui riordina (doppia comanda).
   // La comanda parte solo alla finalizzazione: conferma manuale dal link, pagamento
   // Stripe riuscito o cron di scadenza. Qui salviamo solo il riepilogo modificabile.
   void notifyOperationalNewOrder({
@@ -1609,7 +1778,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
         fulfillmentType,
         paymentRequested: shouldRequestPayment,
       },
-    });
+    }).catch((error) => logOrderSideEffectError(input.tenantId, order.id, "record_customer_event", error));
   }
 
   // Invio link al cliente:
@@ -1645,6 +1814,20 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
         paymentMethod: effectivePaymentMethod,
         fallbackChannel: settings.paymentControls.fallbackChannel,
       },
+    }).catch(async (error) => {
+      await logOrderSideEffectError(input.tenantId, order.id, "send_checkout_link", error);
+      // Senza link il cliente non può pagare online e l'ordine resterebbe in attesa per
+      // sempre: lo facciamo finalizzare a scadenza come "da pagare alla consegna".
+      if (waitsForPayment) {
+        await db
+          .from("orders")
+          .update({
+            confirmation_expires_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
+            payment_status: "not_required",
+          } as never)
+          .eq("id", order.id);
+      }
+      return null;
     });
   }
 
@@ -1755,10 +1938,10 @@ export async function detectRetellMenuOpportunity(
 
     const coveredItems = [...usedItemIds].map((id) => inputById.get(id)!);
     const currentItemsTotal = coveredItems.reduce(
-      (sum, it) => sum + resolveNumericPrice(it.code, it.price),
+      (sum, it) => sum + resolvePriceOption(it.code, it.price).value,
       0,
     );
-    const menuPrice = resolveNumericPrice(menuItem.code, menuItem.price);
+    const menuPrice = resolvePriceOption(menuItem.code, menuItem.price).value;
     const savingsEuro = currentItemsTotal - menuPrice;
 
     if (!bestOpportunity || savingsEuro > bestOpportunity.savingsEuro) {

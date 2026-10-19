@@ -3,7 +3,7 @@ title: "Stampanti comande"
 module: "printStations"
 roles: ["tenant_admin"]
 tags: ["stampa", "comande", "cucina", "cassa"]
-last_updated: "2026-06-25"
+last_updated: "2026-10-19"
 owner: ""
 ---
 
@@ -20,7 +20,9 @@ Il modulo **Stampanti e reparti** stampa le comande degli ordini su una stampant
 - Scelta del dispositivo tra le stampanti viste dal PC cassa.
 - Larghezza carta 80 mm (48 caratteri) o 58 mm (32 caratteri) e numero di copie.
 - **Stampa di prova** per validare il collegamento.
-- Comanda in ESC/POS con intestazione (tavolo/asporto/delivery), righe, varianti, extra e note.
+- Comanda in ESC/POS con intestazione (tavolo/asporto/delivery), **orario richiesto in grande** («CONSEGNA ORE 19:30» / «RITIRO ORE …», con la data se non è oggi), citofono, piano, note di consegna, telefono, righe con formato (es. «Margherita (Gigante)»), impasto e extra, note. L'ora di stampa è sempre quella italiana.
+- **Stampante cloud SUNMI, se la stampa non riesce:** ogni minuto il sistema riprova da solo le comande non uscite degli ultimi 120 minuti. Se SUNMI continua a rifiutarle, l'errore compare nel registro errori della piattaforma. Oltre le 2 ore non ristampa più: la comanda va gestita a mano.
+- Gli ordini telefonici e WhatsApp senza sede indicata vengono assegnati alla **sede predefinita** del locale, quindi usano la sua stampante.
 - **Stampa automatica** delle comande degli ordini accettati, da **qualsiasi canale** (sito, WhatsApp, Retell): la postazione di stampa sta nella pagina **Operativo → Ordini** aperta sul PC cassa e stampa appena un ordine entra in cucina. Dedup lato server: nessuna ristampa al refresh o alla riapertura.
 - *In arrivo (TODO):* più stampanti per reparto (cucina/bar/pizzeria/banco) con instradamento per categoria.
 

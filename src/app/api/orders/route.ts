@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import {
   cartLinesToDbRows,
@@ -290,17 +290,21 @@ export async function POST(req: NextRequest) {
 
   // Stampa comanda server-side (es. stampante cloud SUNMI) per ordini accettati.
   // QZ è gestito lato client; dispatch è no-op se non configurato. Mai bloccante.
+  // after(): la risposta al cliente non aspetta SUNMI, ma la funzione resta viva finché
+  // il push non è partito (un void verrebbe congelato dopo la risposta).
   if (autoAccepted && !printBlocked) {
-    void dispatchComandaForOrder(supabase, tenantId, order.id, locationId ?? null).catch((error) => {
-      void logOrderApiError(req, error, {
-        tenantId,
-        locationId,
-        orderId: order.id,
-        operation: "dispatch_comanda",
-        title: "Stampa comanda automatica fallita",
-        metadata: { orderCode: order.code, autoAccepted, channel: "web" },
-      });
-    });
+    after(() =>
+      dispatchComandaForOrder(supabase, tenantId, order.id, locationId ?? null).catch((error) =>
+        logOrderApiError(req, error, {
+          tenantId,
+          locationId,
+          orderId: order.id,
+          operation: "dispatch_comanda",
+          title: "Stampa comanda automatica fallita",
+          metadata: { orderCode: order.code, autoAccepted, channel: "web" },
+        }),
+      ),
+    );
   }
 
   void notifyOperationalNewOrder({

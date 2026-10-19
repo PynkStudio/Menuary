@@ -150,7 +150,12 @@ export type Order = {
   customerEmail?: string;
   customerPhone?: string;
   deliveryAddress?: string;
+  deliveryDoorbell?: string;
+  deliveryFloor?: string;
+  deliveryNotes?: string;
   pickupTime?: string;
+  /** Orario richiesto dal cliente (telefono/WhatsApp): "HH:MM" o "YYYY-MM-DD HH:MM". */
+  desiredTime?: string;
   notes?: string;
   lines: OrderLine[];
   total: number;

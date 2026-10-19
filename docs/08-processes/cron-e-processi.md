@@ -14,7 +14,7 @@ Da `vercel.json`:
 
 Route sotto `src/app/api/cron/` non (tutte) elencate in `vercel.json`:
 
-- `cron/expire-pending-orders`
+- `cron/expire-pending-orders` — pg_cron ogni minuto, job `expire-pending-orders-http` (`20261019_expire_pending_orders_via_route.sql`), URL e `CRON_SECRET` letti da Supabase Vault (`app_url`, `cron_secret`). Finalizza gli ordini Retell/WhatsApp scaduti con `finalizePendingOrder` (stampa comanda + push staff), poi ritenta le comande delle stampanti SUNMI cloud non uscite negli ultimi 120 minuti (`retryPendingComande`); ogni fallimento finisce in `platform_error_events` (`flow = comanda_print`). Il vecchio job SQL `expire-pending-orders` resta come fallback: tocca solo ordini scaduti da più di 3 minuti e non stampa, ma il ripasso della route li recupera. Vedi [[audit-kimos-golive]]
 - `cron/pynkstudio-call-reminders` — pg_cron ogni minuto (`20260627_pynkstudio_call_bookings.sql`). Dal 2026-09-30 legge `agenda_bookings` tramite `claimDueReminders` di `@pynkstudio/agendaapp` (marca e restituisce nella stessa UPDATE) e, per le videocall, rimanda il link personale, più i link «Salva sul calendario». Vedi [[agenda-videocall]]. La route accetta GET e POST: pg_cron usa `net.http_post`, e fino al 2026-09-30 la sola GET faceva rispondere 405 a ogni giro (promemoria mai inviati)
 - `cron/subscription-renewals`
 - `cron/sync-reviews`

@@ -65,7 +65,15 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   // Stampa comanda server-side (es. SUNMI cloud). No-op se QZ/non configurato.
   if (!(await isComandaPrintBlockedForHost(req.headers.get("host"), order.tenant_id))) {
-    void dispatchComandaForOrder(supabase, order.tenant_id, order.id, order.location_id ?? null).catch(() => {});
+    await dispatchComandaForOrder(supabase, order.tenant_id, order.id, order.location_id ?? null).catch(() => null);
+  } else {
+    // Demo con backend spento: come in creazione, la comanda nasce "gestita", altrimenti
+    // il ripasso del cron (che non conosce l'host) la stamperebbe nel locale reale.
+    await supabase
+      .from("orders")
+      .update({ comanda_printed_at: new Date().toISOString() })
+      .eq("id", order.id)
+      .is("comanda_printed_at", null);
   }
 
   // Email di conferma — best-effort, non blocca la response.

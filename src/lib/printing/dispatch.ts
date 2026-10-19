@@ -22,7 +22,7 @@ import { dbLinesToOrderLines, dbRowToOrder, type DbOrder, type DbOrderLine } fro
 // Non lancia mai: la stampa non deve far fallire la creazione/conferma ordine.
 
 const ORDER_COLUMNS =
-  "id, tenant_id, location_id, code, type, table_label, session_id, session_code, diner_client_id, diner_nickname, customer_name, customer_email, customer_phone, delivery_address, delivery_address_text, pickup_time, notes, total, status, created_at, dine_option, payment_method, payment_status, confirmation_expires_at, confirmed_at, auto_accepted";
+  "id, tenant_id, location_id, code, type, table_label, session_id, session_code, diner_client_id, diner_nickname, customer_name, customer_email, customer_phone, delivery_address, delivery_address_text, delivery_doorbell, delivery_floor, delivery_notes, desired_time, pickup_time, notes, total, status, created_at, dine_option, payment_method, payment_status, confirmation_expires_at, confirmed_at, auto_accepted";
 
 // trade_no SUNMI: max 32 caratteri. L'id ordine è un UUID (36 con trattini); senza
 // trattini sono 32 hex esatti, univoci → chiave dedup/idempotenza per SUNMI.
@@ -137,4 +137,64 @@ export async function dispatchComandaForOrder(
   } catch (e) {
     return { dispatched: false, reason: e instanceof Error ? e.message : "dispatch_error" };
   }
+}
+
+// Motivi per cui un ordine resta non stampato senza che sia un guasto: non vanno né
+// ritentati come errori né segnalati.
+const BENIGN_DISPATCH_REASONS = new Set([
+  "no_active_printer",
+  "already_dispatched",
+  "qz_client_side",
+  "sunmi_pos_client_side",
+]);
+
+// Oltre questa età una comanda che non è uscita va gestita a mano: ristamparla in
+// automatico ore dopo creerebbe solo confusione in cucina.
+const RETRY_WINDOW_MS = 2 * 60 * 60 * 1000;
+
+export type RetryComandeResult = {
+  attempted: number;
+  dispatched: number;
+  failed: Array<{ orderId: string; tenantId: string; reason: string }>;
+};
+
+/**
+ * Rete di sicurezza della stampa cloud: ripassa gli ordini accettati e non stampati dei
+ * tenant con una stampante server-side (SUNMI cloud). Copre i dispatch persi (errore
+ * SUNMI, stampante offline, funzione interrotta) e gli ordini finalizzati dal fallback
+ * SQL del cron, che non stampa. Idempotente grazie al claim su `comanda_printed_at`.
+ */
+export async function retryPendingComande(supabase: SupabaseClient): Promise<RetryComandeResult> {
+  const result: RetryComandeResult = { attempted: 0, dispatched: 0, failed: [] };
+
+  const { data: printers } = await supabase
+    .from("tenant_printers")
+    .select("tenant_id")
+    .eq("connection", "sunmi_cloud")
+    .eq("enabled", true)
+    .eq("auto_print", true);
+  const tenantIds = [...new Set(((printers ?? []) as Array<{ tenant_id: string }>).map((p) => p.tenant_id))];
+  if (tenantIds.length === 0) return result;
+
+  const since = new Date(Date.now() - RETRY_WINDOW_MS).toISOString();
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("id, tenant_id, location_id")
+    .in("tenant_id", tenantIds)
+    .in("status", ["nuovo", "in_preparazione"])
+    .is("comanda_printed_at", null)
+    .gte("created_at", since)
+    .order("created_at", { ascending: true })
+    .limit(50);
+
+  for (const order of (orders ?? []) as Array<{ id: string; tenant_id: string; location_id: string | null }>) {
+    result.attempted += 1;
+    const outcome = await dispatchComandaForOrder(supabase, order.tenant_id, order.id, order.location_id);
+    if (outcome.dispatched) {
+      result.dispatched += 1;
+    } else if (!BENIGN_DISPATCH_REASONS.has(outcome.reason)) {
+      result.failed.push({ orderId: order.id, tenantId: order.tenant_id, reason: outcome.reason });
+    }
+  }
+  return result;
 }
