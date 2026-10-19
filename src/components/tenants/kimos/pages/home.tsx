@@ -27,6 +27,10 @@ import {
 import { getTenantContent } from "@/lib/tenant-content";
 import { getGoogleRatingForTenant } from "@/lib/reviews-data";
 import { useTenant } from "@/components/core/tenant-provider";
+import { useSupabaseMenuSync } from "@/lib/menu-sync-client";
+import { useMenuStore } from "@/store/menu-store";
+import { formatEuro, hasMultipleVariants, minPrice } from "@/lib/price-utils";
+import type { PriceFormat } from "@/lib/types";
 
 const categories = [
   {
@@ -51,26 +55,23 @@ const categories = [
   },
 ];
 
-const highlights = [
-  {
-    title: "Pizza Kimos",
-    body: "Pomodoro San Marzano, fior di latte, salame piccante e olio EVO. Pronta in 8 minuti.",
-    price: "€ 9,50",
-  },
-  {
-    title: "Kebab nel pane",
-    body: "Pane caldo, vitello e pollo allo spiedo, salse di casa. Aggiungi patatine al menu.",
-    price: "€ 7,00",
-  },
-  {
-    title: "Box famiglia",
-    body: "Due pizze giganti, kebab in piatto, fritti misti e bibite. Pensato per quattro.",
-    price: "€ 32,00",
-  },
-];
+// Piatti in evidenza: solo i codici. Nome, descrizione e prezzo arrivano dal menu su
+// Supabase, così la home non può mostrare un prezzo diverso da quello che si paga.
+const HIGHLIGHT_ITEM_CODES = ["pizza-53-pizza-kimos", "kebab-01-panino-kebab", "sfizio-13-mix-fritti"];
+
+function highlightPrice(price: PriceFormat): string {
+  const value = formatEuro(minPrice(price));
+  return hasMultipleVariants(price) ? `da ${value}` : value;
+}
 
 export function KimosHomePage() {
   const tenant = useTenant();
+  useSupabaseMenuSync(tenant.id);
+  const menuItems = useMenuStore((s) => s.items);
+  const highlights = HIGHLIGHT_ITEM_CODES.flatMap((code) => {
+    const item = menuItems.find((candidate) => candidate.id === code && candidate.available !== false);
+    return item ? [{ code, title: item.name, body: item.description ?? "", price: highlightPrice(item.price) }] : [];
+  });
   const content = getTenantContent(tenant.id);
   const rating = getGoogleRatingForTenant(tenant.id);
   const menuHref = `/${tenant.previewSlug ?? tenant.id}/menu`;
@@ -207,12 +208,12 @@ export function KimosHomePage() {
 
       <section id="menu" className="km-highlight">
         <div className="km-section-heading">
-          <h2>I più<br /><span>ordinati.</span></h2>
-          <p>Tre scelte dalla carta di Kimos: pizza, kebab e un ordine da condividere in famiglia.</p>
+          <h2>Dalla<br /><span>carta.</span></h2>
+          <p>Tre scelte dal menu di Kimos: una pizza, un kebab e i fritti da dividere.</p>
         </div>
         <div className="km-highlight-grid">
-          {highlights.map(({ title, body, price }) => (
-            <article key={title} className="km-highlight-card">
+          {highlights.map(({ code, title, body, price }) => (
+            <article key={code} className="km-highlight-card">
               <header>
                 <em>{price}</em>
               </header>

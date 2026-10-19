@@ -1431,40 +1431,9 @@ const kimosContent: TenantContent = {
     title: "Le basi di un ordine fatto bene.",
     subtitle: "Pochi dubbi, molta scelta: pizza, kebab e fritti da comporre come vuoi.",
   },
-  dishes: [
-    {
-      name: "Menu panino kebab",
-      desc: "Panino kebab, patatine fritte e Coca-Cola 33 cl.",
-      price: "€ 9,50",
-      image: "/kimos/menu-board-kebab.png",
-      variant: "red",
-      href: "/menu#menu-completi",
-    },
-    {
-      name: "Menu piadina kebab",
-      desc: "Piadina kebab, patatine fritte e Coca-Cola 33 cl.",
-      price: "€ 10,00",
-      image: "/kimos/menu-board-kebab.png",
-      variant: "mustard",
-      href: "/menu#menu-completi",
-    },
-    {
-      name: "Piatto kebab",
-      desc: "Kebab completo con pane, insalata e contorno.",
-      price: "€ 9,50",
-      image: "/kimos/menu-board-plates.png",
-      variant: "green",
-      href: "/menu#kebab",
-    },
-    {
-      name: "Mix fritti",
-      desc: "Dodici pezzi misti: olive, mozzarelline, alette, crocchette, onion rings e nuggets.",
-      price: "€ 12,50",
-      image: "/kimos/menu-board-plates.png",
-      variant: "pink",
-      href: "/menu#fritti",
-    },
-  ],
+  // Kimos non usa la sezione condivisa SignatureDishes: piatti e prezzi della home
+  // arrivano dal menu su Supabase (KimosHomePage), mai da testo fisso.
+  dishes: [],
   findUs: {
     eyebrow: "Santa Giulia, Milano",
     titleLead: "Passa da Kimos,",

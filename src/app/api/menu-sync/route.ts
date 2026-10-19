@@ -554,7 +554,18 @@ async function ensureSeeded(supabase: SupabaseAdmin, tenantId: string, locationI
     .select("id", { count: "exact", head: true })
     .eq("tenant_id", tenantId), locationId);
   if ((count ?? 0) === 0) {
-    await writeBundle(supabase, tenantId, locationId, seedBundle(tenantId));
+    // Il seed serve solo a un tenant che non ha ancora nessun menu. Se il menu esiste in
+    // un altro scope (tipico: tenant con menu a livello tenant che riceve la prima sede),
+    // seminare qui scriverebbe un menu di esempio accanto a quello reale: è successo a
+    // Kimos il 2026-10-03. Spostare il menu sulla sede è un'operazione dati esplicita.
+    const { count: tenantCount } = await supabase
+      .from("menu_categories")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId);
+    const seed = seedBundle(tenantId);
+    if ((tenantCount ?? 0) === 0 && seed.categories.length > 0) {
+      await writeBundle(supabase, tenantId, locationId, seed);
+    }
     return;
   }
 

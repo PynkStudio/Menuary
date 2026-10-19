@@ -410,6 +410,8 @@ export async function generateMetadata(): Promise<Metadata> {
         ? "Cascina Errante - Ristorante demo Menuary"
       : tenant.id === "junior-food"
         ? "Junior Food - Cucina sudamericana a Bergamo"
+      : tenant.id === "kimos"
+        ? "Pizzeria Kimos - Pizza, kebab e ordini online a Milano"
       : tenant.vertical === "creative"
         ? `${tenant.name} - press kit, opere e booking creativo`
       : tenant.vertical === "services"
