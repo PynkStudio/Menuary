@@ -17,6 +17,9 @@ type Body = {
   locale?: string;
   cartItemIds?: string[];
   favoriteItemIds?: string[];
+  // Il sito identifica i prodotti con menu_items.code, il kiosk con menu_items.id:
+  // tutti gli id in ingresso e in uscita usano la chiave dichiarata dal client.
+  itemKey?: "id" | "code";
 };
 
 type MenuItem = {
@@ -210,7 +213,7 @@ function fallbackReply(items: MenuItem[], query: string, locale: string, context
     };
   }
   return {
-    reply: `${context ? "Considerando il tuo profilo e le tue preferenze, n" : "N"}el menu disponibile guarderei ${ranked.map(({ item }) => item.name).join(", ")}. Apri una proposta per aggiungerla al carrello.`,
+    reply: `${context ? "Considerando il tuo profilo e le tue preferenze, n" : "N"}el menu disponibile guarderei ${ranked.map(({ item }) => item.name).join(", ")}. Puoi aggiungerli al carrello da qui.`,
     suggestions: ranked.map(({ item }) => ({ itemId: item.id, reason: "È coerente con quello che hai chiesto." })),
   };
 }
@@ -247,7 +250,8 @@ export async function POST(req: NextRequest) {
   ]);
   if (error) return NextResponse.json({ error: "menu_unavailable" }, { status: 503 });
 
-  const menuItems = (rows ?? []) as MenuItem[];
+  const itemKey = body.itemKey === "code" ? "code" : "id";
+  const menuItems = ((rows ?? []) as MenuItem[]).map((item) => ({ ...item, id: item[itemKey] }));
   const blockedCodes = new Set(await validateMenuItemsForOrderChannel(svc, {
     tenantId: body.tenantId,
     itemCodes: menuItems.map((item) => item.code),

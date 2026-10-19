@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useId, useState } from "react";
+import { FormEvent, KeyboardEvent, ReactNode, useId, useState } from "react";
 import { MessageCircle, Plus, Send } from "lucide-react";
 import type { MenuOrderChannel } from "@/lib/types";
 
@@ -9,6 +9,7 @@ type Suggestion = { itemId: string; reason: string };
 
 export function ConversationalMenuAssistant({
   tenantId, channel, tableId, locale, cartItemIds, favoriteItemIds = [], itemNames, onAdd,
+  itemKey = "id", className, renderSuggestion,
 }: {
   tenantId: string;
   channel: MenuOrderChannel;
@@ -18,6 +19,9 @@ export function ConversationalMenuAssistant({
   favoriteItemIds?: string[];
   itemNames: Record<string, string>;
   onAdd: (itemId: string) => void;
+  itemKey?: "id" | "code";
+  className?: string;
+  renderSuggestion?: (itemId: string, reason: string) => ReactNode;
 }) {
   const inputId = useId();
   const [open, setOpen] = useState(false);
@@ -50,6 +54,7 @@ export function ConversationalMenuAssistant({
           cartItemIds,
           favoriteItemIds,
           messages: nextMessages,
+          itemKey,
         }),
       });
       const payload = (await response.json()) as {
@@ -77,7 +82,7 @@ export function ConversationalMenuAssistant({
   }
 
   return (
-    <section className="mx-5 mb-4 rounded-2xl border border-pork-ink/15 bg-white/70 p-4 text-pork-ink">
+    <section className={`${className ?? "mx-5 mb-4"} rounded-2xl border border-pork-ink/15 bg-white/70 p-4 text-pork-ink`}>
       <button
         type="button"
         className="flex min-h-12 w-full items-center justify-between gap-3 text-left"
@@ -111,7 +116,18 @@ export function ConversationalMenuAssistant({
             {loading && <p className="text-sm text-pork-ink/60">Sto leggendo il menu…</p>}
           </div>
 
-          {suggestions.length > 0 && (
+          {suggestions.length > 0 && renderSuggestion && (
+            <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-label="Piatti suggeriti">
+              {suggestions.map((suggestion) => (
+                <div key={suggestion.itemId} className="flex flex-col gap-2">
+                  <p className="text-sm text-pork-ink/70">{suggestion.reason}</p>
+                  {renderSuggestion(suggestion.itemId, suggestion.reason)}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {suggestions.length > 0 && !renderSuggestion && (
             <div className="mt-3 space-y-2" aria-label="Piatti suggeriti">
               {suggestions.map((suggestion) => (
                 <button

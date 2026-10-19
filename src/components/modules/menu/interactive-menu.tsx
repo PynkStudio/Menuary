@@ -15,6 +15,8 @@ import {
   selectVisibleMenuLists,
 } from "@/store/menu-store";
 import { useCartStore } from "@/store/cart-store";
+import { useFavoritesStore } from "@/store/favorites-store";
+import { ConversationalMenuAssistant } from "@/components/modules/shop/conversational-menu-assistant";
 import { parseAppendTarget } from "@/lib/orders/append-target";
 import { useHydrated } from "@/components/core/providers";
 import { useTenant } from "@/components/core/tenant-provider";
@@ -75,6 +77,8 @@ export function InteractiveMenu({
   const currentTenantId = useMenuStore((s) => s.currentTenantId);
   const setTenantSeed = useMenuStore((s) => s.setTenantSeed);
   const cartContext = useCartStore((s) => s.context);
+  const cartLines = useCartStore((s) => s.lines);
+  const favIds = useFavoritesStore((s) => s.ids);
   const [selectedMenuListId, setSelectedMenuListId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -162,6 +166,11 @@ export function InteractiveMenu({
     [activeItemIds, categories, items, showOnlyAvailable],
   );
 
+  const itemNames = useMemo(
+    () => Object.fromEntries(items.map((item) => [item.id, item.name])),
+    [items],
+  );
+
   const categoryNavCategories = useMemo(
     () =>
       populatedCategories.map((c) => ({
@@ -194,6 +203,22 @@ export function InteractiveMenu({
 
       <div className="bg-pork-cream pb-[max(8rem,calc(6rem+env(safe-area-inset-bottom)))] pt-10">
         <div className="container-wide space-y-20">
+          <ConversationalMenuAssistant
+            className="-mb-10"
+            tenantId={tenant.id}
+            channel={menuChannel}
+            tableId={tableIdForMenus}
+            locale={menuLanguage}
+            itemKey="code"
+            cartItemIds={cartLines.map((line) => line.itemId)}
+            favoriteItemIds={favIds}
+            itemNames={itemNames}
+            onAdd={() => {}}
+            renderSuggestion={(itemId) => {
+              const item = items.find((candidate) => candidate.id === itemId);
+              return item ? <MenuCardInteractive item={item} /> : null;
+            }}
+          />
           <DiningFormulasShowcase formulas={getDiningFormulasForTenant(tenant.id)} />
           {visibleMenuLists.length > 1 && (
             <section className="space-y-3">

@@ -134,7 +134,7 @@ Estendere `src/lib/tenant-support/whatsapp-service.ts` (oggi 4 intent) con:
 
 ### F2 — Chat IA sul menu per il cliente (`conversationalMenu`)
 
-Sostituire lo stub `api/ai/assistant` con una conversazione LLM vincolata al menu attivo del canale (ingredienti, allergeni, tag, prezzi, disponibilità), collegata al carrello (`cart-drawer`) su QR, tablet e kiosk. Deve rispondere nella lingua del cliente, riusare l'indice di `upselling-engine` per gli abbinamenti e, per una sessione Menuary autenticata, affinare i suggerimenti con allergeni/preferenze del profilo, preferiti e storico ordini limitato al tenant. I conflitti con allergeni noti devono essere filtrati anche lato server dopo la risposta del modello.
+Sostituire lo stub `api/ai/assistant` con una conversazione LLM vincolata al menu attivo del canale (ingredienti, allergeni, tag, prezzi, disponibilità), collegata al carrello su QR, tablet e kiosk. Su sito e tavolo vive nella pagina menu (`interactive-menu`, sopra le categorie) e mostra i piatti consigliati come card del menu, con lo stesso flusso di aggiunta (formati, personalizzazioni, bundle); nel kiosk resta nel pannello carrello. Il sito identifica i prodotti con `menu_items.code` e il kiosk con `menu_items.id`: il client dichiara la chiave con `itemKey` nella richiesta. Deve rispondere nella lingua del cliente, riusare l'indice di `upselling-engine` per gli abbinamenti e, per una sessione Menuary autenticata, affinare i suggerimenti con allergeni/preferenze del profilo, preferiti e storico ordini limitato al tenant. I conflitti con allergeni noti devono essere filtrati anche lato server dopo la risposta del modello.
 
 ### F3 — Priorità di vendita del titolare (`salesPriorities`)
 
@@ -171,7 +171,7 @@ Nuove action in `api/retell/inbound` per trovare la prenotazione del chiamante (
 | # | Funzione | Flag | Stato | Note |
 |---|---|---|---|---|
 | F1 | Assistente WhatsApp del titolare | `ownerWhatsappAssistant` | ✅ completata | Permessi per ruolo, audit, letture operative, disponibilità piatti e conferma per prezzo/fasce. Collaudo reale su webhook e DB il 2026-09-30; dati di test rimossi. |
-| F2 | Chat IA sul menu per il cliente | `conversationalMenu` | ✅ completata | Menu attivo per canale, lingua cliente, allergeni, profilo autenticato, preferiti, storico ordini tenant, indice upsell e aggiunta al carrello su sito/tavolo/kiosk. API, isolamento anonimo e flusso E2E mobile verificati il 2026-09-30. |
+| F2 | Chat IA sul menu per il cliente | `conversationalMenu` | 🔵 in test | Menu attivo per canale, lingua cliente, allergeni, profilo autenticato, preferiti, storico ordini tenant, indice upsell e aggiunta al carrello su sito/tavolo/kiosk. 2026-10-19: su sito/tavolo i suggerimenti non comparivano mai (l'API restituiva `menu_items.id`, il client cerca per `code`): corretto con `itemKey`, e la chat è passata dal carrello alla pagina menu con i suggerimenti mostrati come card. tsc/lint puliti; manca la verifica sul campo su demo.menuary.it (Kimos) dopo il deploy. |
 | F3 | Priorità di vendita del titolare | `salesPriorities` | ⬜ da iniziare | Dipende da F2 per il valore in pagina. |
 | F4 | Bozza IA risposte recensioni | `reviewReplyDrafts` | ⬜ da iniziare | |
 | F5 | Modifica/annullo prenotazioni al telefono | `reservationChangesByPhone` | ⬜ da iniziare | Richiede anche la modifica del flow su Retell (non editabile via API da pubblicato). |
