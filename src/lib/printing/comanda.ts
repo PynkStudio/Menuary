@@ -24,11 +24,17 @@ function originLabel(order: Order): string {
 }
 
 // Riga pagamento per la comanda: stato (pagato/non pagato) + metodo (contanti/carta).
+// Chi consegna deve sapere se portare il POS: senza metodo indicato lo diciamo, invece
+// di presumere i contanti.
 function paymentLabel(order: Order): string {
   const paid = order.paymentStatus === "paid";
   if (paid) return "PAGATO";
-  if (order.paymentMethod === "on_delivery_card") return "DA PAGARE - POS";
-  return "DA PAGARE - CASH";
+  if (order.tableLabel || order.table != null) return "DA PAGARE";
+  const isDelivery = order.dineOption === "delivery" || String(order.type) === "delivery" || Boolean(order.deliveryAddress);
+  const when = isDelivery ? "ALLA CONSEGNA" : "AL RITIRO";
+  if (order.paymentMethod === "on_delivery_card") return `DA PAGARE ${when}: CARTA (POS)`;
+  if (order.paymentMethod === "on_delivery_cash") return `DA PAGARE ${when}: CONTANTI`;
+  return `DA PAGARE ${when}: CHIEDERE CONTANTI O CARTA`;
 }
 
 // La comanda esce in cucina in Italia, ma il dispatch gira su server UTC.

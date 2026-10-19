@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
+import { getPublicCheckoutOrder, isSummaryOnlyCheckout } from "@/lib/orders/public-checkout";
 import { createCheckoutSession } from "@/lib/payments/stripe/checkout";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { PaymentSource } from "@/lib/payments/stripe/fees";
@@ -34,6 +34,10 @@ export async function POST(
   if (!order) return NextResponse.json({ error: "order_not_found" }, { status: 404 });
   if (order.paymentStatus === "paid") {
     return NextResponse.json({ error: "already_paid" }, { status: 409 });
+  }
+  // Ordini diretti: si paga solo alla consegna, il link è un riepilogo.
+  if (await isSummaryOnlyCheckout(order)) {
+    return NextResponse.json({ error: "online_payment_disabled" }, { status: 409 });
   }
   if (!order.lines.length) {
     return NextResponse.json({ error: "order_empty" }, { status: 422 });

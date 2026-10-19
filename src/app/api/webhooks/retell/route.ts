@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { linkRetellCallToOrders } from "@/lib/retell/call-billing";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Json } from "@/lib/database.types";
 import { buildRetellInboundContext, isAuthorizedRetellRequest, lookupRetellCustomer } from "@/lib/retell/inbound-orchestrator";
@@ -377,6 +378,12 @@ export async function POST(req: NextRequest) {
     tenant_id: tenantId,
     payload: payload as Json,
   });
+  // A fine chiamata leghiamo gli ordini creati durante la chiamata: serve a escludere
+  // dal costo mensile le chiamate i cui ordini il locale ha annullato.
+  if (eventType === "call_ended" && tenantId) {
+    const call = (payload.call ?? {}) as Record<string, unknown>;
+    await linkRetellCallToOrders(svc, tenantId, call).catch(() => 0);
+  }
   return NextResponse.json({ ok: true, stored: true });
 }
 

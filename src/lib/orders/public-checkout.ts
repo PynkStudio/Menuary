@@ -3,6 +3,7 @@ import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { PaymentMethod } from "@/lib/types";
+import { getAiPhoneSettings } from "@/lib/retell/settings";
 
 // Lettura pubblica di un ordine via codice + token. Usata dalla pagina
 // /checkout/[code] linkata in SMS/WhatsApp/Retell.
@@ -238,4 +239,14 @@ export async function getOrderPublicTokenById(orderId: string): Promise<{
     public_token: string;
   };
   return { tenantId: row.tenant_id, code: row.code, token: row.public_token };
+}
+
+/**
+ * Ordini diretti dell'assistente (es. Kimos): il link al cliente è un riepilogo e basta,
+ * senza modifiche, suggerimenti o pagamento online. L'ordine è già in cucina.
+ */
+export async function isSummaryOnlyCheckout(order: Pick<PublicCheckoutOrder, "tenantId" | "source">): Promise<boolean> {
+  if (order.source !== "retell" && order.source !== "whatsapp") return false;
+  const settings = await getAiPhoneSettings(order.tenantId).catch(() => null);
+  return Boolean(settings?.directOrders);
 }

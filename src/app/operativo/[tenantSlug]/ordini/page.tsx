@@ -7,7 +7,10 @@ import { requireGestione } from "@/lib/gestione-auth";
 import { getGestioneBaseHref } from "@/lib/gestione-routing";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import type { Database } from "@/lib/database.types";
-import { startOrder, markReady, markDelivered, cancelOrder, rejectPendingOrder } from "./actions";
+import { startOrder, markReady, markDelivered, rejectPendingOrder } from "./actions";
+import { OrderCancelForm } from "@/components/gestione/order-cancel-form";
+import { getAiPhoneSettings } from "@/lib/retell/settings";
+import { cancelDeadline, isOrderCancellationReason } from "@/lib/orders/cancellation";
 import { loadOrderHandling } from "@/lib/orders/order-settings";
 import { OrdersLiveRefresh } from "@/components/gestione/orders-live-refresh";
 import { ComandaAutoPrintWatcher } from "@/components/gestione/comanda-auto-print-watcher";
@@ -49,6 +52,8 @@ type OrderRow = {
   customer_phone: string | null;
   delivery_address: string | null;
   fulfillment_type: string | null;
+  cancellation_reason?: string | null;
+  cancellation_note?: string | null;
 };
 
 type OrderLine = { order_id: string; name: string; qty: number; variant_label: string | null; added_extras: unknown; removed_ingredients: unknown; note: string | null };
@@ -116,7 +121,7 @@ async function fetchOrders(tenantSlug: string, filter: Filter, locationId: strin
 
   let q = svc
     .from("orders")
-    .select("id, code, status, type, total, customer_name, table_label, pickup_time, desired_time, notes, created_at, dine_option, fulfillment_type, confirmation_expires_at, auto_accepted, customer_phone, delivery_address")
+    .select("id, code, status, type, total, customer_name, table_label, pickup_time, desired_time, notes, created_at, dine_option, fulfillment_type, confirmation_expires_at, auto_accepted, customer_phone, delivery_address, cancellation_reason, cancellation_note")
     .eq("tenant_id", tenantSlug);
 
   if (locationId) q = q.eq("location_id", locationId);
@@ -290,6 +295,10 @@ export default async function OrdiniPage({
     ? await loadOrderHandling(settingsSvc, tenantSlug, locationId)
     : { defaultMinutes: 45, overrideMinutes: null, effectiveMinutes: 45 };
 
+  const cancelWindowMinutes = auth.isDemo
+    ? null
+    : (await getAiPhoneSettings(tenantSlug).catch(() => null))?.orderCancelWindowMinutes ?? null;
+
   return (
     <OperationalAlertsClient tenantId={tenantSlug} portal="ordini" locationId={locationId ?? undefined}>
     <div className="ga-dashboard">
@@ -452,6 +461,18 @@ export default async function OrdiniPage({
                     </ul>
                   )}
 
+                  {o.status === "annullato" && (o.cancellation_reason || o.cancellation_note) && (
+                    <p className="ga-reservation-notes">
+                      <X size={12} strokeWidth={2.2} style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }} />
+                      {interpolate(t.cancelForm.cancelledBecause, {
+                        reason: [
+                          isOrderCancellationReason(o.cancellation_reason) ? t.cancelForm.reasons[o.cancellation_reason] : null,
+                          o.cancellation_note,
+                        ].filter(Boolean).join(" · "),
+                      })}
+                    </p>
+                  )}
+
                   {o.notes && (
                     <p className="ga-reservation-notes">
                       <StickyNote size={12} strokeWidth={2.2} style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }} />
@@ -512,23 +533,32 @@ export default async function OrdiniPage({
                           <ChefHat size={14} strokeWidth={2.4} /> {t.actions.start}
                         </button>
                       </form>
-                      <form action={cancelOrder}>
-                        <input type="hidden" name="tenantSlug" value={tenantSlug} />
-                        <input type="hidden" name="id" value={o.id} />
-                        <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                          <X size={14} strokeWidth={2.4} /> {t.actions.cancel}
-                        </button>
-                      </form>
+                      <OrderCancelForm
+                        tenantSlug={tenantSlug}
+                        orderId={o.id}
+                        deadline={cancelDeadline(o.created_at, cancelWindowMinutes)?.toISOString() ?? null}
+                        disabled={auth.isDemo}
+                        t={t.cancelForm}
+                      />
                     </>
                   )}
                   {isPreparazione && (
-                    <form action={markReady}>
-                      <input type="hidden" name="tenantSlug" value={tenantSlug} />
-                      <input type="hidden" name="id" value={o.id} />
-                      <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
-                        <Bell size={14} strokeWidth={2.4} /> {t.actions.markReady}
-                      </button>
-                    </form>
+                    <>
+                      <form action={markReady}>
+                        <input type="hidden" name="tenantSlug" value={tenantSlug} />
+                        <input type="hidden" name="id" value={o.id} />
+                        <button type="submit" className="ga-btn ga-btn-primary" disabled={auth.isDemo}>
+                          <Bell size={14} strokeWidth={2.4} /> {t.actions.markReady}
+                        </button>
+                      </form>
+                      <OrderCancelForm
+                        tenantSlug={tenantSlug}
+                        orderId={o.id}
+                        deadline={cancelDeadline(o.created_at, cancelWindowMinutes)?.toISOString() ?? null}
+                        disabled={auth.isDemo}
+                        t={t.cancelForm}
+                      />
+                    </>
                   )}
                   {isPronto && (
                     <>
@@ -539,13 +569,13 @@ export default async function OrdiniPage({
                           <Check size={14} strokeWidth={2.4} /> {t.actions.delivered}
                         </button>
                       </form>
-                      <form action={cancelOrder}>
-                        <input type="hidden" name="tenantSlug" value={tenantSlug} />
-                        <input type="hidden" name="id" value={o.id} />
-                        <button type="submit" className="ga-btn ga-btn-ghost" disabled={auth.isDemo}>
-                          <X size={14} strokeWidth={2.4} /> {t.actions.cancel}
-                        </button>
-                      </form>
+                      <OrderCancelForm
+                        tenantSlug={tenantSlug}
+                        orderId={o.id}
+                        deadline={cancelDeadline(o.created_at, cancelWindowMinutes)?.toISOString() ?? null}
+                        disabled={auth.isDemo}
+                        t={t.cancelForm}
+                      />
                     </>
                   )}
                 </div>

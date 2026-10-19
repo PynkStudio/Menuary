@@ -14,6 +14,7 @@ import {
   Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AiCallBillingSection } from "./ai-call-billing-section";
 import type {
   PlatformAIOrder,
   PlatformNonAIOrderStat,
@@ -399,6 +400,8 @@ export function PlatformAIRevenuePage() {
           </FilterBtn>
         </div>
       </div>
+
+      <AiCallBillingSection />
 
       {/* ── Lista ordini AI ───────────────────────────────────────────────── */}
       <section className="space-y-2">

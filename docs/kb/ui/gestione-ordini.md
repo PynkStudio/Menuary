@@ -4,8 +4,8 @@ module: "takeaway"
 roles: ["tenant_admin"]
 tags: ["ui", "gestione", "ordini"]
 route: "/gestione/[tenantSlug]/ordini"
-source: "src/app/gestione/[tenantSlug]/ordini/page.tsx, src/i18n/gestione.ts (orders)"
-last_updated: "2026-06-23"
+source: "src/app/gestione/[tenantSlug]/ordini/page.tsx, src/i18n/gestione.ts (orders), src/components/gestione/order-cancel-form.tsx"
+last_updated: "2026-10-19"
 owner: ""
 ---
 
@@ -39,7 +39,14 @@ Etichette esatte dell'interfaccia (italiano):
 | **In preparazione** | Segna l'ordine come in preparazione | Sulla riga dell'ordine |
 | **Pronto** *(Marca pronto)* | Segna l'ordine come pronto | Sulla riga dell'ordine |
 | **Consegnato** | Segna l'ordine come consegnato | Sulla riga dell'ordine |
-| **Annulla** | Annulla l'ordine | Sulla riga dell'ordine |
+| **Annulla ordine** | Apre il riquadro di annullamento: **Motivo (facoltativo)** tra «Fuori area di consegna», «Ordine finto», «Prodotti esauriti», «Richiesta del cliente», «Altro», una **Nota (facoltativa)** e il pulsante **«Conferma annullamento»** («Indietro» per chiudere) | Sulla riga degli ordini Nuovo, In preparazione e Pronto |
+
+## Annullare un ordine
+
+- Se il locale ha un tempo limite per annullare (es. Kimos: **5 minuti** dalla ricezione), sul pulsante compare il tempo rimasto (es. «Annulla ordine · 3:42»). Allo scadere il pulsante sparisce e compare «Tempo per annullare scaduto».
+- Il motivo non è obbligatorio, ma aiuta: lo vede anche il team Menuary per migliorare l'assistente telefonico, e un ordine telefonico annullato dal locale non fa pagare la chiamata.
+- Il cliente riceve il messaggio di annullamento, tranne quando il motivo è «Ordine finto». Con «Fuori area di consegna» o «Prodotti esauriti» il messaggio spiega il perché.
+- Nello **Storico** gli ordini annullati mostrano «Annullato: <motivo> · <nota>».
 
 # Campi e filtri
 

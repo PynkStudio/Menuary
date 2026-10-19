@@ -858,6 +858,7 @@ export function CheckoutClient({
   isAiSource,
   upsellSuggestions,
   stripeEnabled,
+  summaryOnly = false,
 }: {
   tenantId: string;
   tenantName: string;
@@ -868,6 +869,8 @@ export function CheckoutClient({
   isAiSource: boolean;
   upsellSuggestions: CheckoutUpsellSuggestion[];
   stripeEnabled: boolean;
+  /** Ordine diretto già in cucina: solo riepilogo, nessuna azione. */
+  summaryOnly?: boolean;
 }) {
   const [suggestions, setSuggestions] = useState(upsellSuggestions);
   const [addingItemId, setAddingItemId] = useState<string | null>(null);
@@ -987,7 +990,7 @@ export function CheckoutClient({
   const isTerminalNegative = currentStatus === "annullato" || currentStatus === "expired" || currentPaymentStatus === "failed" || currentPaymentStatus === "expired";
   // Spiega perché un'azione è sparita pur essendo la finestra a tempo ancora aperta.
   const lockedNote =
-    !alreadyPaid && !isTerminalNegative && windowAllowsUpsell
+    !summaryOnly && !alreadyPaid && !isTerminalNegative && windowAllowsUpsell
       ? !statusAllowsAdd
         ? "L'ordine è pronto: non è più possibile aggiungere o modificare piatti."
         : !statusAllowsModify
@@ -1004,7 +1007,7 @@ export function CheckoutClient({
   const menuHref = `${basePath}/menu?back=${encodeURIComponent(`${basePath}/checkout/${order.code}?t=${token}`)}`;
   const privacyHref = `${basePath}/privacy`;
   const fulfillmentLabel = dineLabel(order.dineOption, tenantVertical);
-  const showQuickActions = !alreadyPaid && !isTerminalNegative && (canCancel || canAdd || canModify);
+  const showQuickActions = !summaryOnly && !alreadyPaid && !isTerminalNegative && (canCancel || canAdd || canModify);
 
   // Wordmark del tenant (iniziali) — niente logo terzo, solo identità del locale.
   const initials = tenantName.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();

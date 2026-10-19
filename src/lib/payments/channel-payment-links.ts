@@ -42,6 +42,13 @@ export type CreateChannelPaymentRequestInput = {
    * Ignorato se paymentRequired=false.
    */
   onSiteAvailable?: boolean;
+  /**
+   * Ordine già confermato (ordini diretti): il link porta solo al riepilogo, senza
+   * modifiche né pagamento online. Cambia il testo del messaggio di fallback.
+   */
+  summaryOnly?: boolean;
+  /** Metodo alla consegna detto dal cliente (solo per il testo del messaggio). */
+  onSitePaymentMethod?: "on_delivery_cash" | "on_delivery_card" | null;
 };
 
 export type ChannelPaymentRequest = {
@@ -317,7 +324,16 @@ export async function createChannelPaymentRequest(
         (primaryChannel === "whatsapp" ? "sms" : "whatsapp");
 
       const kind = input.paymentRequired === false ? "order_summary" : "payment_link";
-      const greeting = input.paymentRequired === false
+      const onSiteWhen = input.fulfillmentType === "delivery" ? "alla consegna" : "al ritiro";
+      const onSiteHow =
+        input.onSitePaymentMethod === "on_delivery_cash"
+          ? " in contanti"
+          : input.onSitePaymentMethod === "on_delivery_card"
+            ? " con carta"
+            : "";
+      const greeting = input.summaryOnly
+        ? `Ordine ricevuto. Totale ${formatEuro(input.amount)}, da pagare ${onSiteWhen}${onSiteHow}. Riepilogo: ${stripe.paymentUrl}`
+        : input.paymentRequired === false
         ? `Totale da pagare: ${formatEuro(input.amount)}. Metodo predefinito: contanti alla consegna/ritiro. Apri il link entro pochi minuti per controllare l'ordine o cambiare metodo di pagamento: ${stripe.paymentUrl}`
         : input.onSiteAvailable
           ? `Puoi pagare l'ordine con carta cliccando sul link qui sotto: ${stripe.paymentUrl}`

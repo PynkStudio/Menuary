@@ -75,6 +75,14 @@ export type AiPhoneSettings = {
   afterHoursMode: "answer_and_collect" | "answer_info_only" | "closed_message";
   quickSettings: AiPhoneQuickSettings;
   paymentControls: ChannelPaymentControls;
+  /**
+   * Ordine dell'assistente confermato e stampato subito: niente finestra di modifica,
+   * link al cliente di solo riepilogo, niente pagamento online. Si imposta da DB
+   * (`tenant_ai_phone_settings.direct_orders`), non dal pannello.
+   */
+  directOrders: boolean;
+  /** Minuti dalla creazione entro cui il locale può annullare un ordine. null = senza limite. */
+  orderCancelWindowMinutes: number | null;
   updatedAt: string | null;
 };
 
@@ -100,11 +108,13 @@ type AiPhoneSettingsRow = {
   reservation_controls: Json | null;
   payment_controls: Json | null;
   quick_settings: Json | null;
+  direct_orders?: boolean | null;
+  order_cancel_window_minutes?: number | null;
   updated_at: string | null;
 };
 
 export type AiPhoneSettingsPatch = Partial<
-  Omit<AiPhoneSettings, "tenantId" | "quickSettings" | "updatedAt">
+  Omit<AiPhoneSettings, "tenantId" | "quickSettings" | "updatedAt" | "directOrders" | "orderCancelWindowMinutes">
 > & {
   quickSettings?: Partial<AiPhoneQuickSettings>;
 };
@@ -242,6 +252,9 @@ function rowToSettings(tenantId: string, row: AiPhoneSettingsRow | null): AiPhon
     ),
     quickSettings,
     paymentControls,
+    directOrders: row?.direct_orders === true,
+    orderCancelWindowMinutes:
+      typeof row?.order_cancel_window_minutes === "number" ? row.order_cancel_window_minutes : null,
     updatedAt: row?.updated_at ?? null,
   };
 }

@@ -1,5 +1,6 @@
 export {
   cancelOrder,
+  cancelOrderWithReason,
   confirmPendingOrder,
   markDelivered,
   markReady,

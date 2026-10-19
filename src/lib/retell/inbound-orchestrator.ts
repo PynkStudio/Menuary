@@ -22,6 +22,7 @@ import { euroToItalianWords, orderCodeToSpoken } from "@/lib/retell/number-speec
 import { tenantCheckoutUrl } from "@/lib/orders/checkout-url";
 import { notifyOperationalNewOrder } from "@/lib/notifications/operational-order-push";
 import { recordPlatformError } from "@/lib/platform-errors";
+import { dispatchComandaForOrder } from "@/lib/printing/dispatch";
 
 type Db = SupabaseClient<Database>;
 
@@ -1492,10 +1493,16 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
           ? "on_delivery_cash"
           : null;
 
-  const onlineAllowed = stripeReady && policy !== "on_site_only";
+  // Ordini diretti: si paga solo alla consegna/ritiro, mai online.
+  const directOrder = settings.directOrders;
+  const onlineAllowed = !directOrder && stripeReady && policy !== "on_site_only";
   // Risoluzione metodo effettivo (3 valori), rispettando policy tenant + stato Stripe.
   let paymentMethod: PaymentMethod;
-  if (policy === "online_only" && stripeReady) {
+  if (directOrder) {
+    // Contanti o carta come detto dal cliente; "online" detto per errore diventa carta.
+    // Il vecchio paymentMethodChoice "on_site" non dice quale dei due: non vale qui.
+    paymentMethod = input.paymentMethod === "on_delivery_cash" ? "on_delivery_cash" : "on_delivery_card";
+  } else if (policy === "online_only" && stripeReady) {
     paymentMethod = "online";
   } else if (requestedMethod === "online") {
     // Online richiesto ma non disponibile → ripiega su carta alla consegna.
@@ -1664,18 +1671,23 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   if (scheduledFuture && timeCheck.ok && (!desiredTime || !/^\d{4}-\d{2}-\d{2}/.test(desiredTime))) {
     desiredTime = timeCheck.whenSpoken ? `${timeCheck.date} ${timeCheck.whenSpoken}` : timeCheck.date;
   }
-  // Modello Retell con modifica rapida:
+  // Modello Retell con modifica rapida (default):
   //  - l'ordine parte pending e NON viene inviato/stampato subito;
   //  - senza apertura link scade dopo 2 minuti e viene auto-finalizzato cash;
   //  - se il cliente apre il link, il checkout estende a 5 minuti;
   //  - online resta pending fino al pagamento Stripe.
+  // Ordini diretti: confermato subito e comanda in stampa prima di rispondere all'agente.
   const waitsForPayment = shouldRequestPayment;
-  const autoAccepted = false;
-  const initialStatus = "pending_confirmation";
-  const confirmationExpiresAt = scheduledFuture || waitsForPayment
+  const autoAccepted = directOrder;
+  const initialStatus = directOrder ? "nuovo" : "pending_confirmation";
+  const confirmationExpiresAt = directOrder || scheduledFuture || waitsForPayment
     ? null
     : new Date(Date.now() + 2 * 60 * 1000).toISOString();
-  const confirmedAt = null;
+  const confirmedAt = directOrder ? new Date().toISOString() : null;
+  // Ordine diretto senza metodo detto dal cliente: in comanda deve risultare "da chiedere",
+  // non un "contanti" scelto da noi.
+  const storedPaymentMethod: PaymentMethod | null =
+    directOrder && !input.paymentMethod ? null : paymentMethod;
 
   const customerPhone = identity?.phone ?? input.customerPhone ?? null;
   if (customerPhone) {
@@ -1735,7 +1747,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       delivery_floor: input.delivery?.floor ?? null,
       delivery_notes: input.delivery?.notes ?? null,
       desired_time: desiredTime,
-      payment_method: paymentMethod,
+      payment_method: storedPaymentMethod,
       payment_status: shouldRequestPayment ? "pending" : "not_required",
       confirmation_expires_at: confirmationExpiresAt,
       confirmed_at: confirmedAt,
@@ -1756,6 +1768,11 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
   }
   // Da qui l'ordine esiste: niente deve più lanciare, altrimenti l'agente dice al
   // cliente che c'è stato un problema e lui riordina (doppia comanda).
+  if (directOrder) {
+    // Atteso: la stampa è il punto dell'ordine diretto e in serverless un lavoro lasciato
+    // in volo dopo la risposta può non partire. Non lancia; se fallisce lo riprende il cron.
+    await dispatchComandaForOrder(db, input.tenantId, order.id, locationId).catch(() => null);
+  }
   // La comanda parte solo alla finalizzazione: conferma manuale dal link, pagamento
   // Stripe riuscito o cron di scadenza. Qui salviamo solo il riepilogo modificabile.
   void notifyOperationalNewOrder({
@@ -1806,6 +1823,8 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       description: `Ordine ${order.code}: ${orderSummary}`,
       paymentRequired: effectivePaymentMethod === "online",
       onSiteAvailable: effectivePaymentMethod === "online" && policy === "both",
+      summaryOnly: directOrder,
+      onSitePaymentMethod: storedPaymentMethod === "online" ? null : storedPaymentMethod,
       fulfillmentType,
       deliveryAddress: input.delivery?.address ?? null,
       metadata: {

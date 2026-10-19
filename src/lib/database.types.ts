@@ -2076,6 +2076,11 @@ export type Database = {
       }
       orders: {
         Row: {
+          cancellation_reason: string | null
+          cancellation_note: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          retell_call_id: string | null
           application_fee_amount_cents: number | null
           assigned_at: string | null
           auto_accepted: boolean
@@ -2146,6 +2151,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cancellation_reason?: string | null
+          cancellation_note?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          retell_call_id?: string | null
           application_fee_amount_cents?: number | null
           assigned_at?: string | null
           auto_accepted?: boolean
@@ -2216,6 +2226,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cancellation_reason?: string | null
+          cancellation_note?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          retell_call_id?: string | null
           application_fee_amount_cents?: number | null
           assigned_at?: string | null
           auto_accepted?: boolean
@@ -4803,6 +4818,8 @@ export type Database = {
       }
       tenant_ai_phone_settings: {
         Row: {
+          direct_orders: boolean
+          order_cancel_window_minutes: number | null
           after_hours_mode: string
           confirm_before_write: boolean
           created_at: string
@@ -4826,6 +4843,8 @@ export type Database = {
           voice_label: string | null
         }
         Insert: {
+          direct_orders?: boolean
+          order_cancel_window_minutes?: number | null
           after_hours_mode?: string
           confirm_before_write?: boolean
           created_at?: string
@@ -4849,6 +4868,8 @@ export type Database = {
           voice_label?: string | null
         }
         Update: {
+          direct_orders?: boolean
+          order_cancel_window_minutes?: number | null
           after_hours_mode?: string
           confirm_before_write?: boolean
           created_at?: string

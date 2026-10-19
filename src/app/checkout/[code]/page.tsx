@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { resolveTenantFromHost } from "@/lib/tenant-runtime";
-import { extendPublicCheckoutWindowOnOpen, getPublicCheckoutOrder } from "@/lib/orders/public-checkout";
+import { extendPublicCheckoutWindowOnOpen, getPublicCheckoutOrder, isSummaryOnlyCheckout } from "@/lib/orders/public-checkout";
 import { loadCheckoutUpsellSuggestions } from "@/lib/orders/checkout-upsell";
 import { tenantThemeCssVars } from "@/lib/tenant-theme";
 import { getTenantPaymentAccount } from "@/lib/payments/stripe/accounts";
@@ -41,9 +41,10 @@ export default async function PublicCheckoutPage({
   // (registrazioni voce Retell, conversazioni WA gestite da assistente).
   const isAiSource = order.source === "retell" || order.source === "whatsapp";
 
+  const summaryOnly = await isSummaryOnlyCheckout(order);
   const [upsellSuggestions, paymentAccount] = await Promise.all([
-    tenant.features.upselling ? loadCheckoutUpsellSuggestions(tenant.id, order) : Promise.resolve([]),
-    getTenantPaymentAccount(tenant.id, { demoSandbox: shouldUseStripeSandbox(tenant.id, host) }),
+    tenant.features.upselling && !summaryOnly ? loadCheckoutUpsellSuggestions(tenant.id, order) : Promise.resolve([]),
+    summaryOnly ? Promise.resolve(null) : getTenantPaymentAccount(tenant.id, { demoSandbox: shouldUseStripeSandbox(tenant.id, host) }),
   ]);
   const stripeEnabled = Boolean(paymentAccount?.chargesEnabled);
 
@@ -59,6 +60,7 @@ export default async function PublicCheckoutPage({
         isAiSource={isAiSource}
         upsellSuggestions={upsellSuggestions}
         stripeEnabled={stripeEnabled}
+        summaryOnly={summaryOnly}
       />
     </div>
   );

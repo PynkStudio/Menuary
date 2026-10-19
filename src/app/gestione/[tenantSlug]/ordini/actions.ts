@@ -9,6 +9,13 @@ import { sendOrderConfirmationEmail } from "@/lib/orders/send-confirmation-email
 import { notifyCustomerOrderStatus, type OrderNotificationKind } from "@/lib/orders/order-notifications";
 import type { OrderStatus } from "@/lib/types";
 import { getActiveGestioneLocation, requireActiveGestioneLocation } from "@/lib/gestione-location";
+import { getAiPhoneSettings } from "@/lib/retell/settings";
+import {
+  CANCELLABLE_ORDER_STATUSES,
+  cancelDeadline,
+  isOrderCancellationReason,
+  type OrderCancellationReason,
+} from "@/lib/orders/cancellation";
 
 // L'enum order_status del DB contiene anche valori legacy mai scritti dall'app
 // (accettato, rifiutato, consegna_fallita): qui si usano solo gli stati gestiti.
@@ -86,6 +93,92 @@ export const startOrder = makeAction("in_preparazione");
 export const markReady = makeAction("pronto");
 export const markDelivered = makeAction("consegnato");
 export const cancelOrder = makeAction("annullato");
+
+export type CancelOrderState = { ok: boolean; error: "window_expired" | "not_cancellable" | "failed" | null };
+
+// Motivo mostrato al cliente nel messaggio di annullamento: solo quelli che lo riguardano.
+const CUSTOMER_REASON: Partial<Record<OrderCancellationReason, string>> = {
+  fuori_area: "l'indirizzo è fuori dalla nostra area di consegna",
+  prodotti_esauriti: "alcuni prodotti non sono più disponibili",
+};
+
+/**
+ * Annullamento dal pannello con causale facoltativa. La causale resta sull'ordine:
+ * serve a noi per capire cosa correggere e a non addebitare la chiamata che l'ha generato.
+ * Se il tenant ha una finestra (`order_cancel_window_minutes`), oltre quella non si annulla.
+ */
+export async function cancelOrderWithReason(_prev: CancelOrderState, formData: FormData): Promise<CancelOrderState> {
+  const tenantSlug = String(formData.get("tenantSlug") ?? "");
+  const id = String(formData.get("id") ?? "");
+  const rawReason = String(formData.get("reason") ?? "");
+  const reason = isOrderCancellationReason(rawReason) ? rawReason : null;
+  const note = String(formData.get("note") ?? "").trim().slice(0, 500) || null;
+  if (!tenantSlug || !id) return { ok: false, error: "failed" };
+
+  const auth = await requireGestione(tenantSlug, "member");
+  if (!auth.ok) throw new Error("unauthorized");
+  if (auth.isDemo) return { ok: true, error: null };
+
+  const svc = createSupabaseServiceClient();
+  if (!svc) throw new Error("supabase_service_unconfigured");
+  const location = await getActiveGestioneLocation(tenantSlug);
+
+  const { data: order } = await svc
+    .from("orders")
+    .select("id, code, status, created_at, public_token, customer_phone, source, type, location_id")
+    .eq("id", id)
+    .eq("tenant_id", tenantSlug)
+    .maybeSingle();
+  if (!order || !canActOnOrder(order.location_id, location?.id ?? null)) return { ok: false, error: "failed" };
+  if (!(CANCELLABLE_ORDER_STATUSES as readonly string[]).includes(order.status)) {
+    return { ok: false, error: "not_cancellable" };
+  }
+
+  const settings = await getAiPhoneSettings(tenantSlug);
+  const deadline = cancelDeadline(order.created_at, settings.orderCancelWindowMinutes);
+  if (deadline && Date.now() > deadline.getTime()) return { ok: false, error: "window_expired" };
+
+  const nowIso = new Date().toISOString();
+  const { data: updated, error } = await svc
+    .from("orders")
+    .update({
+      status: "annullato",
+      cancellation_reason: reason,
+      cancellation_note: note,
+      cancelled_at: nowIso,
+      cancelled_by: auth.userId,
+      updated_at: nowIso,
+    })
+    .eq("id", id)
+    .eq("tenant_id", tenantSlug)
+    .in("status", [...CANCELLABLE_ORDER_STATUSES])
+    .select("id")
+    .maybeSingle();
+  if (error) return { ok: false, error: "failed" };
+  if (!updated) return { ok: false, error: "not_cancellable" };
+
+  after(async () => {
+    await pushOrderStatusToHubrise({ orderId: id, newStatus: "annullato" });
+    // Un ordine finto ha spesso il numero di qualcun altro: non lo contattiamo.
+    if (reason !== "ordine_finto") {
+      await notifyCustomerOrderStatus({
+        tenantId: tenantSlug,
+        orderId: order.id,
+        code: order.code,
+        publicToken: order.public_token,
+        customerPhone: order.customer_phone,
+        kind: "cancelled",
+        orderSource: order.source,
+        orderType: order.type,
+        reason: reason ? CUSTOMER_REASON[reason] ?? null : null,
+      }).catch(() => {});
+    }
+  });
+
+  revalidatePath(`/gestione/${tenantSlug}/ordini`);
+  revalidatePath(`/operativo/${tenantSlug}/ordini`);
+  return { ok: true, error: null };
+}
 
 export async function toggleOrderLinePrepared(formData: FormData) {
   const tenantSlug = String(formData.get("tenantSlug") ?? "");
