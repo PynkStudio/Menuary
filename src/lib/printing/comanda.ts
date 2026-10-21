@@ -1,6 +1,10 @@
 import type { Order, OrderLine, TenantPrinter } from "@/lib/types";
 import { CMD, asciiFold, feed, justify, rule, wrap } from "./escpos";
 
+// Le stampanti con taglierina trattengono alcuni millimetri di carta sotto la lama:
+// una sola riga lasciava il totale e il pagamento parzialmente dentro la bocca d'uscita.
+const BOTTOM_FEED_LINES = 4;
+
 // Costruzione della comanda di cucina in ESC/POS a partire da un Order.
 //
 // F2/TODO(multi-printer): quando il routing per reparto sarà attivo, filtrare le
@@ -26,15 +30,29 @@ function originLabel(order: Order): string {
 // Riga pagamento per la comanda: stato (pagato/non pagato) + metodo (contanti/carta).
 // Chi consegna deve sapere se portare il POS: senza metodo indicato lo diciamo, invece
 // di presumere i contanti.
-function paymentLabel(order: Order): string {
-  const paid = order.paymentStatus === "paid";
-  if (paid) return "PAGATO";
-  if (order.tableLabel || order.table != null) return "DA PAGARE";
+function paymentMethodBadge(order: Order): string {
+  if (order.paymentStatus === "paid") return "[OK] PAGATO";
+  if (order.tableLabel || order.table != null) return "[?] DA PAGARE";
+  if (order.paymentMethod === "on_delivery_card") return "[CARD] CARTA / POS";
+  if (order.paymentMethod === "on_delivery_cash") return "[EUR] CONTANTI";
+  return "[?] METODO DA CHIEDERE";
+}
+
+function paymentTimingLabel(order: Order): string | null {
+  if (order.paymentStatus === "paid" || order.tableLabel || order.table != null) return null;
   const isDelivery = order.dineOption === "delivery" || String(order.type) === "delivery" || Boolean(order.deliveryAddress);
-  const when = isDelivery ? "ALLA CONSEGNA" : "AL RITIRO";
-  if (order.paymentMethod === "on_delivery_card") return `DA PAGARE ${when}: CARTA (POS)`;
-  if (order.paymentMethod === "on_delivery_cash") return `DA PAGARE ${when}: CONTANTI`;
-  return `DA PAGARE ${when}: CHIEDERE CONTANTI O CARTA`;
+  return isDelivery ? "PAGAMENTO ALLA CONSEGNA" : "PAGAMENTO AL RITIRO";
+}
+
+function paymentBlock(order: Order): string {
+  const total = `EUR ${Number(order.total).toFixed(2).replace(".", ",")}`;
+  let out = CMD.alignCenter + CMD.sizeDouble + CMD.boldOn;
+  out += `${total}\n`;
+  out += `${paymentMethodBadge(order)}\n`;
+  out += CMD.sizeNormal + CMD.boldOff;
+  const timing = paymentTimingLabel(order);
+  if (timing) out += `${timing}\n`;
+  return out + CMD.alignLeft;
 }
 
 // La comanda esce in cucina in Italia, ma il dispatch gira su server UTC.
@@ -135,10 +153,8 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
 
   // Comanda di variazione: niente righe piatti, solo il nuovo stato pagamento ben visibile.
   if (isUpdate) {
-    out += CMD.alignCenter + CMD.sizeDouble + CMD.boldOn;
-    out += asciiFold(paymentLabel(order)) + "\n";
-    out += CMD.sizeNormal + CMD.boldOff + CMD.alignLeft;
-    out += feed(1) + CMD.cut;
+    out += paymentBlock(order);
+    out += feed(BOTTOM_FEED_LINES) + CMD.cut;
     return out;
   }
 
@@ -155,10 +171,9 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
 
   // Riga pagamento sempre in fondo, in evidenza.
   out += rule(w) + "\n";
-  out += justify("Totale:", `EUR ${Number(order.total).toFixed(2).replace(".", ",")}`, w) + "\n";
-  out += CMD.boldOn + asciiFold(paymentLabel(order)) + CMD.boldOff + "\n";
+  out += paymentBlock(order);
 
-  out += feed(1) + CMD.cut;
+  out += feed(BOTTOM_FEED_LINES) + CMD.cut;
   return out;
 }
 
@@ -175,6 +190,6 @@ export function buildTestTicketEscPos(printer: TenantPrinter): string {
   out += justify("Riga di prova", "OK", w) + "\n";
   out += rule(w) + "\n";
   out += "Se leggi questo, la stampa funziona.\n";
-  out += feed(1) + CMD.cut;
+  out += feed(BOTTOM_FEED_LINES) + CMD.cut;
   return out;
 }
