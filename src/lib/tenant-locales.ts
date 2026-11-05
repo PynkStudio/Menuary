@@ -23,6 +23,7 @@ const TENANT_LOCALES: Record<string, TenantLocaleConfig> = {
   },
   // Predisposto per l'inglese: aggiungere "en" qui (e i copy in pynkstudio-i18n.ts)
   // quando la traduzione è pronta. Non pubblicare varianti URL senza contenuti.
+  // Il Beta program ha già la sua variante /beta/en, gestita a parte (beta-i18n.ts).
   pynkstudio: {
     defaultLocale: "it",
     locales: ["it"],

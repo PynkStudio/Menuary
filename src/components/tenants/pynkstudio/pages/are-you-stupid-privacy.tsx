@@ -8,7 +8,7 @@ import { breadcrumbSchema, organizationSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
 // Data qui sotto: bump manuale a ogni revisione sostanziale del testo.
-const LAST_UPDATED = "October 2, 2026";
+const LAST_UPDATED = "November 5, 2026";
 
 function PrivacyInner() {
   const href = useTenantLocalizedHref();
@@ -33,7 +33,7 @@ function PrivacyInner() {
           <p className="pynk-eyebrow">Are You Stupid?! — iPhone, iPad, Apple TV, Mac &amp; Android</p>
           <h1 className="pynk-hero-title">Privacy Policy</h1>
           <p className="pynk-hero-subtitle">
-            Written in English, the language of the app. Last updated: {LAST_UPDATED}.
+            Last updated: {LAST_UPDATED}.
           </p>
         </div>
       </section>
@@ -42,13 +42,13 @@ function PrivacyInner() {
         <div className="pynk-container">
           <div className="pynk-panel">
             <h2 id="pp-summary" className="pynk-panel-title">
-              In one sentence
+              In short
             </h2>
             <p className="pynk-panel-desc">
-              Are You Stupid?! has no account and no server of its own; the only information that leaves your device is what our
-              advertising partner, Google AdMob, collects to show and measure ads, within the choices you make in the consent
-              message — everything else (your scores, your settings, your multiplayer name, anything the on-device AI uses) stays on
-              your devices.
+              Are You Stupid?! has no account, and your scores and settings stay on your devices. Two things can leave them: what our
+              advertising partner, Google AdMob, collects to show and measure ads on phones and tablets, within the choices you make in
+              the consent message; and, in party mode, the lines the online voice host speaks, which can include a player&apos;s
+              spoken name and are turned into audio on our server by an AI voice service. The host can switch the voice off at any time.
             </p>
           </div>
         </div>
@@ -67,7 +67,7 @@ function PrivacyInner() {
           <p className="pynk-panel-desc">
             This policy covers the game <em>Are You Stupid?!</em> on iPhone and iPad, its party-mode host apps for Apple TV and Mac
             (all published under the identifier <code>com.ays.areYouStupid</code>), and on Android (identifier{" "}
-            <code>com.ays.are_you_stupid</code>), with every feature described below. It does not cover PYNK STUDIO&apos;s other products or websites, which have their own
+            <code>com.ays.are_you_stupid</code>), with every feature described below, including the Stupid Streak game in iMessage. It does not cover PYNK STUDIO&apos;s other products or websites, which have their own
             privacy policies.
           </p>
         </div>
@@ -85,15 +85,18 @@ function PrivacyInner() {
             </li>
             <li>
               <Check className="pynk-icon-sm pynk-check" />
-              <span>No server of our own — PYNK STUDIO does not receive or store any gameplay data.</span>
+              <span>
+                No player profiles: our server does not keep your scores, match history or any identifier for you. It only produces
+                the host&apos;s voice, as described below.
+              </span>
             </li>
             <li>
               <Check className="pynk-icon-sm pynk-check" />
-              <span>No analytics or crash-reporting SDK of any kind.</span>
+              <span>No analytics or crash-reporting SDK of our own.</span>
             </li>
             <li>
               <Check className="pynk-icon-sm pynk-check" />
-              <span>No chat, no user-generated content, no friends list, no leaderboard tied to an identity.</span>
+              <span>No chat, no friends list, no leaderboard tied to an identity.</span>
             </li>
             <li>
               <Check className="pynk-icon-sm pynk-check" />
@@ -104,7 +107,10 @@ function PrivacyInner() {
             </li>
             <li>
               <Check className="pynk-icon-sm pynk-check" />
-              <span>No cloud AI: the optional Apple Intelligence features run entirely on your device.</span>
+              <span>
+                No cloud AI for challenges or commentary: the optional Apple Intelligence features run entirely on your device. The only
+                AI used online is the speech service that voices the host&apos;s lines.
+              </span>
             </li>
           </ul>
         </div>
@@ -118,11 +124,18 @@ function PrivacyInner() {
           <p className="pynk-panel-desc">
             The app saves a small amount of data locally on your device (using Android/iOS standard preferences storage) to
             remember: your best score and run stats; your settings (sound, haptics, &quot;savage mode&quot;, language, AI mode);
-            whether you bought &quot;remove ads&quot;; your multiplayer nickname, emoji and match stats; and, on iPhone/iPad, a
-            small anonymous play-style summary of your recent rounds (no identity attached) used by the on-device AI. The Apple TV
-            and Mac host apps only remember hosting preferences. This data never leaves your device, is never transmitted to PYNK
-            STUDIO or to any third party, and is deleted when you uninstall the app or clear its storage (Settings → Reset stats
-            also clears the play-style summary).
+            your purchases; your multiplayer nickname, emoji, spoken name, a random anonymous player identifier and match stats;
+            and, on iPhone/iPad, a small anonymous play-style summary of your recent rounds (no identity attached) used by the
+            on-device AI. This data is not sent to PYNK STUDIO, and is deleted when you uninstall the app or clear its storage
+            (Settings → Reset stats also clears the play-style summary). The exceptions are what you share with the room and the
+            spoken lines described in the party mode sections below.
+          </p>
+          <p className="pynk-panel-desc">
+            The Apple TV and Mac host apps remember hosting preferences and the host&apos;s language, voice and intensity settings.
+            They also keep, for at most 64 returning players, a title earned in a match (such as &quot;the king&quot;), linked to
+            the anonymous player identifier and not to a name, so the host can greet that player next time: positive titles expire
+            after 90 days and negative ones after 7. Audio of the host&apos;s lines is cached in the device&apos;s temporary storage,
+            which the system can clear at any time. None of this is synced to any account or cloud service of ours.
           </p>
         </div>
       </section>
@@ -134,14 +147,86 @@ function PrivacyInner() {
           </h2>
           <p className="pynk-panel-desc">
             In party mode, phones join a game hosted by the Apple TV or Mac app over your <strong>local Wi-Fi network</strong>. The
-            app asks for local-network access to find and connect to that host. What travels between the devices — the nickname
-            and emoji you pick, your answers and taps, the scores — stays on your local network: it is never sent to the internet,
-            to PYNK STUDIO or to anyone else, and the host does not keep it after the match.
+            app asks for local-network access to find and connect to that host. Between the devices travel: the nickname and emoji
+            you pick, your spoken name, the anonymous player identifier, your answers and taps, the scores, and which party features
+            your purchases unlock. Other people in the room can see your nickname on the board. This traffic stays on your local
+            network, with one exception: the spoken lines described in the next section.
+          </p>
+          <p className="pynk-panel-desc">
+            If your phone cannot work out how to pronounce a nickname, it may ask another phone in the room with on-device AI to do
+            it, over the local network. That phone does not display the name.
           </p>
           <p className="pynk-panel-desc">
             The camera is used only if you tap to scan the room&apos;s QR code shown on the TV. Frames are read on your device to
             decode the code and are never stored or transmitted. You can always type the room code instead and leave the camera
-            permission off.
+            permission off. The QR code contains a link with the room code and the host&apos;s local network address. With the app
+            installed, the link opens the app directly. Without it, your browser opens a page on pynkstudio.eu, which receives that
+            link along with the standard information any website receives, such as your IP address.
+          </p>
+        </div>
+      </section>
+
+      <section className="pynk-section pynk-section-alt" aria-labelledby="pp-voice">
+        <div className="pynk-container">
+          <h2 id="pp-voice" className="pynk-section-title pynk-section-title-left">
+            Party mode: the online voice host
+          </h2>
+          <p className="pynk-panel-desc">
+            On Apple TV and Mac, a game-show host comments on the match out loud. Phones never contact this service: only the Apple
+            TV or Mac app does, and the match works exactly the same without it. We write the host&apos;s lines ourselves. They are
+            chosen on the Apple TV or Mac from what happens in the match, and our server does not use AI to write them.
+          </p>
+          <div className="pynk-panel pynk-mt-24">
+            <h3 className="pynk-panel-title-sm">What is sent</h3>
+            <p className="pynk-panel-desc">
+              Most lines are pre-recorded. The app downloads them from our server (<code>pynkstudio.eu</code>), and those requests
+              contain no player data. When a line is not already available as audio, the app sends our server its text, its language,
+              its intensity and a technical identifier for the line. The text can contain a <strong>player&apos;s spoken name</strong>{" "}
+              and a joke about what that player just did: for example &quot;LUCA, YOU FAILED AGAIN&quot;. The spoken name is a
+              cleaned-up version of the nickname (&quot;Luca&quot; from &quot;x_$Luca🔥_xX&quot;), so it may be a real first name if
+              that is what you typed. Your full nickname, emoji, player identifier, contacts and advertising identifier are not sent.
+              Names that cannot be spoken safely are never sent: the host addresses that player without using a name.
+            </p>
+          </div>
+          <div className="pynk-panel pynk-mt-12">
+            <h3 className="pynk-panel-title-sm">Who processes it</h3>
+            <p className="pynk-panel-desc">
+              Our server forwards the text to an AI speech service, <strong>ElevenLabs</strong> or, as a fallback,{" "}
+              <strong>OpenAI</strong>, which returns the audio. The server is hosted on <strong>Vercel</strong>, and the audio is
+              stored on <strong>Supabase</strong>. These providers act on our behalf.
+            </p>
+          </div>
+          <div className="pynk-panel pynk-mt-12">
+            <h3 className="pynk-panel-title-sm">How long it is kept</h3>
+            <p className="pynk-panel-desc">
+              Generated audio is kept in private storage so the same sentence does not have to be generated twice, and it can be
+              reused for any room that needs the same sentence. It is deleted automatically after 30 days without being used. Our
+              database stores only a hash of the request, the file location and timestamps, not the name or the sentence as text, but
+              the audio itself contains the words spoken. Nothing links the audio to a person, a device or a match. Like any website,
+              our server and its hosting provider also process the IP address of each request, to deliver the response and limit abuse.
+            </p>
+          </div>
+          <div className="pynk-panel pynk-mt-12">
+            <h3 className="pynk-panel-title-sm">Your choices</h3>
+            <p className="pynk-panel-desc">
+              Whoever runs the room controls the host from <strong>OPTIONS</strong> in the lobby: <strong>VOICE</strong>,{" "}
+              <strong>MUTE</strong> (captions only) or <strong>OFF</strong>. With MUTE or OFF, no line is sent for speech. You can also
+              play under a nickname that is not your real name. If you run the room, please let your guests know the host speaks their
+              names through an online service.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="pynk-section" aria-labelledby="pp-imessage">
+        <div className="pynk-container">
+          <h2 id="pp-imessage" className="pynk-section-title pynk-section-title-left">
+            Stupid Streak in iMessage
+          </h2>
+          <p className="pynk-panel-desc">
+            Stupid Streak is played inside Apple&apos;s Messages app. The state of the game travels inside your conversation as a
+            message, through Apple&apos;s service and under Apple&apos;s terms. It does not use a server of ours, and we do not see
+            your conversations, your contacts or your results.
           </p>
         </div>
       </section>
@@ -153,8 +238,9 @@ function PrivacyInner() {
           </h2>
           <p className="pynk-panel-desc">
             On iPhone and iPad models that support Apple Intelligence, the game can use Apple&apos;s on-device model to invent new
-            challenges. The model runs entirely on your device: nothing you do in the game is sent to PYNK STUDIO, to Apple&apos;s
-            servers or to any other AI service. The only input is the anonymous play-style summary described above. In party mode,
+            challenges and commentary. The model runs entirely on your device: nothing the on-device AI uses or produces is sent to
+            PYNK STUDIO, to Apple&apos;s servers or to any other AI service for this purpose. Its input is the anonymous play-style
+            summary described above and, in party mode, match facts without names. In party mode,
             the challenges one phone generates are shared with the other players over the local network — they contain game
             content, not personal data. You can switch the AI off at any time in Settings (Classic mode). These features are not
             available on Android.
@@ -185,8 +271,8 @@ function PrivacyInner() {
           <p className="pynk-panel-desc">
             To do this, the Google Mobile Ads SDK embedded in the app may collect and process, on Google&apos;s behalf: your
             device&apos;s advertising identifier (IDFA on iOS, Advertising ID on Android), IP address, general device information
-            (model, operating system, language, time zone), an approximate location derived from your IP address, and data about
-            how you interact with ads (impressions, clicks, view time). Google uses this to serve ads, measure and report on their
+            (model, operating system, language, time zone), an approximate location derived from your IP address, diagnostic data
+            about the ad SDK, and data about how you interact with ads (impressions, clicks, view time). Google uses this to serve ads, measure and report on their
             performance, prevent fraud, and — where you have consented — show ads personalized to your interests.
           </p>
           <div className="pynk-panel pynk-mt-24">
@@ -240,13 +326,13 @@ function PrivacyInner() {
       <section className="pynk-section" aria-labelledby="pp-iap">
         <div className="pynk-container">
           <h2 id="pp-iap" className="pynk-section-title pynk-section-title-left">
-            In-app purchase (&quot;Remove ads&quot;)
+            In-app purchases
           </h2>
           <p className="pynk-panel-desc">
-            You can buy a one-time &quot;Remove ads&quot; upgrade. The payment is handled entirely by the App Store or Google Play
+            You can buy one-time upgrades, such as &quot;Remove ads&quot; and the Party Pack. The payment is handled entirely by the App Store or Google Play
             under their own terms and privacy policies: PYNK STUDIO never receives your name, payment details or account. The app
-            only learns that the purchase succeeded, and remembers it locally; &quot;Restore purchase&quot; in Settings asks the
-            store again, for example after a reinstall.
+            only learns that the purchase succeeded, and remembers it locally; in party mode it tells the host which features are
+            unlocked. &quot;Restore purchase&quot; in Settings asks the store again, for example after a reinstall.
           </p>
         </div>
       </section>
@@ -260,7 +346,7 @@ function PrivacyInner() {
             Are You Stupid?! contains crude language and humor and is <strong>not directed at children</strong>. It is not listed
             in Apple&apos;s Kids Category and is not part of Google Play&apos;s Families program. We do not knowingly collect
             personal data from children under 13 (or the minimum age required by your local law). If you believe a child has
-            provided data to us or to our advertising partner through the app, please contact us using the details below so we can
+            provided data to us or to our partners through the app, please contact us using the details below so we can
             address it.
           </p>
         </div>
@@ -275,13 +361,16 @@ function PrivacyInner() {
             Where the GDPR applies, personalized advertising and the use of your advertising identifier rely on your{" "}
             <strong>consent</strong> (Art. 6(1)(a)), collected through the consent message and withdrawable at any time from
             Settings → AD PRIVACY CHOICES; non-personalized ads and fraud prevention rely on our and Google&apos;s legitimate
-            interest in funding and protecting a free game (Art. 6(1)(f)). Because PYNK STUDIO does not hold any personal data about
-            you on a server, most requests about advertising data are
-            best handled directly with Google using the links above (Ad Settings, Tracking permission, Advertising ID reset). For
-            anything else — a question about this policy, a request about local data on your own device, or a report of a problem
-            — contact us at <a href="mailto:info@pynkstudio.eu">info@pynkstudio.eu</a> and we will respond as soon as we can. If
-            you are in the EU/EEA, UK, or California, you may also have additional rights under GDPR or CCPA/CPRA regarding
-            Google&apos;s processing; Google&apos;s privacy policy explains how to exercise them. You also have the right to lodge a
+            interest in funding and protecting a free game (Art. 6(1)(f)). The online voice host relies on our legitimate interest in
+            offering the entertainment feature the room has chosen to use (Art. 6(1)(f)): you can object at any time, and the room
+            can switch it off from OPTIONS. Because the audio of the host&apos;s lines is not linked to a person, we can usually find
+            it only if you tell us the exact name and language; if you ask, we will delete it, and otherwise it expires as described
+            above. Requests about advertising data are best handled directly with Google using the links above (Ad Settings, Tracking
+            permission, Advertising ID reset). For anything else — a question about this policy, a request under the rights below, or a
+            report of a problem — contact us at <a href="mailto:info@pynkstudio.eu">info@pynkstudio.eu</a> and we will respond as soon
+            as we can. If
+            you are in the EU/EEA, UK, or California, you may have rights of access, correction, erasure, restriction and objection
+            under GDPR or CCPA/CPRA; for Google&apos;s processing, Google&apos;s privacy policy explains how to exercise them. You also have the right to lodge a
             complaint with a data protection authority — in Italy, the{" "}
             <a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer">
               Garante per la protezione dei dati personali
@@ -299,7 +388,9 @@ function PrivacyInner() {
           <p className="pynk-panel-desc">
             Data processed by Google for advertising purposes may be transferred to and processed in countries outside your own,
             including the United States. Google relies on mechanisms such as Standard Contractual Clauses to safeguard this data;
-            see Google&apos;s Privacy Policy for details.
+            see Google&apos;s Privacy Policy for details. The providers behind the voice host may also process the text of a line and
+            the resulting audio outside the European Economic Area, including in the United States, under the safeguards the GDPR
+            requires for such transfers, such as Standard Contractual Clauses.
           </p>
         </div>
       </section>

@@ -3796,6 +3796,7 @@ export type Database = {
           channels: Json
           created_at: string
           description: string | null
+          description_en: string | null
           ends_at: string | null
           feedback_url: string | null
           icon_url: string | null
@@ -3808,6 +3809,7 @@ export type Database = {
           slug: string
           status: string
           tagline: string | null
+          tagline_en: string | null
           updated_at: string
           version: string | null
         }
@@ -3816,6 +3818,7 @@ export type Database = {
           channels?: Json
           created_at?: string
           description?: string | null
+          description_en?: string | null
           ends_at?: string | null
           feedback_url?: string | null
           icon_url?: string | null
@@ -3828,6 +3831,7 @@ export type Database = {
           slug: string
           status?: string
           tagline?: string | null
+          tagline_en?: string | null
           updated_at?: string
           version?: string | null
         }
@@ -3836,6 +3840,7 @@ export type Database = {
           channels?: Json
           created_at?: string
           description?: string | null
+          description_en?: string | null
           ends_at?: string | null
           feedback_url?: string | null
           icon_url?: string | null
@@ -3848,6 +3853,7 @@ export type Database = {
           slug?: string
           status?: string
           tagline?: string | null
+          tagline_en?: string | null
           updated_at?: string
           version?: string | null
         }

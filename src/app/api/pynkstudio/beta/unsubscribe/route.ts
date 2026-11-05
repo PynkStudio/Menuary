@@ -1,23 +1,27 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { isBetaToken } from "@/lib/pynkstudio/beta";
+import { betaAreaPath, toBetaLang } from "@/lib/pynkstudio/beta-shared";
 
 export const dynamic = "force-dynamic";
 
 async function disableAlerts(token: string | null) {
   const svc = createSupabaseServiceClient();
-  if (!svc || !isBetaToken(token)) return;
-  await svc
+  if (!svc || !isBetaToken(token)) return toBetaLang(null);
+  const { data } = await svc
     .from("pynkstudio_beta_testers")
     .update({ notify_enabled: false, updated_at: new Date().toISOString() })
-    .eq("access_token", token);
+    .eq("access_token", token)
+    .select("locale")
+    .maybeSingle();
+  return toBetaLang(data?.locale);
 }
 
 /** Link "non voglio più avvisi" delle email: spegne le notifiche senza chiedere il login. */
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  await disableAlerts(url.searchParams.get("t"));
-  return NextResponse.redirect(new URL("/beta?avvisi=off", url.origin));
+  const lang = await disableAlerts(url.searchParams.get("t"));
+  return NextResponse.redirect(new URL(`${betaAreaPath(lang)}?avvisi=off`, url.origin));
 }
 
 /** Disiscrizione in un clic dal client di posta (header List-Unsubscribe-Post): niente redirect. */

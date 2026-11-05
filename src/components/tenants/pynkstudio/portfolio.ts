@@ -136,7 +136,7 @@ export const pynkPortfolioItems: PynkPortfolioItem[] = [
     descriptionPlain:
       "Party game da 2 a 8 giocatori: la stessa istruzione stupidissima per tutti nello stesso istante, sulla TV chi sbaglia, il telefono come controller. Apple TV, Mac, iPhone e Android, e in singolo anche offline.",
     descriptionNerd:
-      "Flutter per i telefoni, host SwiftUI per tvOS e macOS, protocollo LAN versionato con scoperta Bonjour e join via QR, generatore di sfide deterministico in puro Dart (39 template), sfide generate on-device con Apple Foundation Models dietro un validatore. AdMob con consenso UMP: zero backend, zero account.",
+      "Flutter per i telefoni, host SwiftUI per tvOS e macOS, protocollo LAN versionato con scoperta Bonjour e join via QR, generatore di sfide deterministico in puro Dart (39 template), sfide generate on-device con Apple Foundation Models dietro un validatore. AdMob con consenso UMP, presentatore vocale con TTS e cache su backend minimale: zero account.",
     stack: ["Flutter", "Dart", "SwiftUI", "tvOS", "macOS", "Android", "Apple Intelligence"],
     href: "/lavori/are-you-stupid",
   },

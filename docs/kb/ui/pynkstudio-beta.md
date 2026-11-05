@@ -5,7 +5,7 @@ roles: ["siteadmin"]
 tags: ["ui", "admin-pynkstudio", "beta", "testflight", "google-play"]
 route: "/admin-pynkstudio/beta"
 source: "src/components/admin-pynkstudio/pynk-beta-manager.tsx, src/components/tenants/pynkstudio/pages/beta.tsx, src/lib/pynkstudio/beta*.ts, src/app/api/admin/pynkstudio/beta, src/app/api/pynkstudio/beta"
-last_updated: "2026-10-13"
+last_updated: "2026-11-05"
 owner: ""
 ---
 
@@ -14,6 +14,8 @@ owner: ""
 Il **Beta program** gestisce le beta delle app PynkStudio pubblicate su `pynkstudio.eu/beta`: quali app sono in beta, su quali dispositivi e con quale canale (TestFlight, Google Play, Firebase App Distribution, download diretto, web), chi si è iscritto come tester e chi ha chiesto l'accesso ai canali su invito.
 
 Lato pubblico il tester si iscrive con **nome, cognome, telefono, email e dispositivi posseduti** (più, facoltativi, l'Apple ID e l'account Google se diversi dall'email). Non c'è password: entra con un link via email, che conferma anche l'indirizzo. Nell'area personale vede solo le beta compatibili con i suoi dispositivi, con filtri per categoria, lingua e tipo (app nuova / aggiornamento), e sceglie quali avvisi email ricevere.
+
+La pagina pubblica è in **italiano e inglese**: `/it/beta` e `/it/beta/en`, con il selettore «Italiano / English» in alto. Chi ha il browser in una lingua diversa dall'italiano arriva alla versione inglese (redirect nel middleware); la scelta fatta col selettore vale per le visite successive. È l'unica pagina del sito in due lingue: il tenant resta `locales: ["it"]`. Le email seguono la lingua del tester (colonna `locale`), fissata all'iscrizione e aggiornata dal selettore. Il consenso rimanda a un'informativa dedicata, `/beta/privacy` e `/beta/en/privacy`: **se cambiano i dati raccolti, va aggiornata**.
 
 # Come arrivarci
 
@@ -25,7 +27,7 @@ Lato pubblico il tester si iscrive con **nome, cognome, telefono, email e dispos
 - **Riquadri in alto**: Beta aperte, Tester iscritti (con quanti hanno confermato l'email), Richieste in attesa (cliccabile: apre le richieste), Avvisi attivi.
 - **Schede**: **Beta**, **Feedback** (con il numero da gestire), **Partecipanti e richieste** (con il numero in attesa), **Tester**.
 - **Beta**: tabella con app, stato, tipo, dispositivi, richieste approvate, tester avvisati, data di pubblicazione. Clic su una riga apre l'editor.
-- **Editor beta**: nome, slug, frase breve, descrizione, stato (Bozza / Aperta / Posti esauriti / Chiusa), tipo, categoria, versione, lingue dell'app, icona, data di fine, feedback (link o email), **Canali per dispositivo** (dispositivo, metodo, link del gruppo facoltativo, link, link per installare facoltativo, nota per il tester) e la sezione **Avvisi email**.
+- **Editor beta**: nome, slug, frase breve e descrizione (ognuna con il campo inglese facoltativo: se vuoto, chi legge in inglese vede l'italiano), stato (Bozza / Aperta / Posti esauriti / Chiusa), tipo, categoria, versione, lingue dell'app, icona, data di fine, feedback (link o email), **Canali per dispositivo** (dispositivo, metodo, link del gruppo facoltativo, link, link per installare facoltativo, nota per il tester, nota in inglese facoltativa) e la sezione **Avvisi email**.
 - **Feedback**: filtri per beta, tipo e stato (predefinito «Da gestire» = Ricevuto + In lavorazione), tabella con tipo, testo, beta e dispositivo, tester, data e stato modificabile. Clic su una riga: testo completo, note interne, «Salva note», «Rispondi via email».
 - **Partecipanti e richieste**: filtri per beta e stato, tabella con tester, beta, dispositivo, account da aggiungere, data, stato. Le partecipazioni alle beta senza approvazione compaiono qui già «Approvate»: vengono registrate quando il tester apre i link per unirsi o preme «Inviaci i tuoi feedback qui».
 - **Tester**: ricerca, tabella con contatti, dispositivi, account Apple/Google, preferenze avvisi, data di iscrizione.
@@ -78,8 +80,8 @@ Un tester riceve l'email di una beta se: ha confermato l'email, ha gli avvisi at
 # Riferimenti nel codice
 
 - Pagina admin: `src/app/admin-pynkstudio/beta/page.tsx`, `src/components/admin-pynkstudio/pynk-beta-manager.tsx`
-- Pagina pubblica: `src/app/beta/page.tsx`, `src/components/tenants/pynkstudio/pages/beta.tsx`, copy in `src/lib/pynkstudio-i18n.ts` (`betaPage`)
+- Pagina pubblica: `src/app/beta/page.tsx`, `src/components/tenants/pynkstudio/pages/beta.tsx`, copy in `src/lib/pynkstudio/beta-i18n.ts`, informativa in `pages/beta-privacy.tsx`, redirect lingua in `src/middleware.ts` (`betaEnglishRedirect`)
 - Tassonomia (dispositivi, metodi, categorie, lingue): `src/lib/pynkstudio/beta-shared.ts`
 - Email e notifiche: `src/lib/pynkstudio/beta.ts`, `src/lib/pynkstudio/email-templates.ts`
-- Tabelle: `pynkstudio_beta_testers`, `pynkstudio_betas`, `pynkstudio_beta_requests`, `pynkstudio_beta_notifications` (migration `20261011090000_pynkstudio_beta_manager.sql`), `pynkstudio_beta_feedback` (migration `20261013090000_pynkstudio_beta_feedback.sql`)
+- Tabelle: `pynkstudio_beta_testers`, `pynkstudio_betas`, `pynkstudio_beta_requests`, `pynkstudio_beta_notifications` (migration `20261011090000_pynkstudio_beta_manager.sql`), `pynkstudio_beta_feedback` (migration `20261013090000_pynkstudio_beta_feedback.sql`), testi inglesi `tagline_en` e `description_en` (migration `20261105090000_pynkstudio_beta_english.sql`, **da applicare prima del deploy**: senza colonne il salvataggio dall'editor fallisce)
 - API feedback e partecipazione: `src/app/api/pynkstudio/beta/feedback`, `src/app/api/pynkstudio/beta/join`, `src/app/api/admin/pynkstudio/beta/feedback/[id]`

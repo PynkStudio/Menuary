@@ -10,6 +10,21 @@ import { usePynkCopy } from "@/lib/pynkstudio-i18n";
 import { buildTenantManagementUrl } from "@/lib/login-url";
 import { ConsentPreferencesLink } from "@/components/modules/tracking/consent-preferences-link";
 
+// ─── Chrome in inglese (solo pagine con variante inglese: il sito resta italiano) ─
+
+const PynkChromeLangContext = createContext<"it" | "en">("it");
+
+const CHROME_EN = {
+  nav: { servizi: "Services", settori: "Sectors", lavori: "Work", consulenza: "Consulting", contattaci: "Contact us" },
+  footer: { staff: "Staff area", piva: "VAT no. 13577530960", address: "Via Gino Severini 1, Milan", poweredBy: "Powered by" },
+};
+
+function usePynkChromeCopy() {
+  const copy = usePynkCopy();
+  const lang = useContext(PynkChromeLangContext);
+  return { ...copy, ...(lang === "en" ? CHROME_EN : {}), en: lang === "en" };
+}
+
 // ─── Nerd mode ────────────────────────────────────────────────────────────────
 
 const NERD_STORAGE_KEY = "pynk:nerd-mode";
@@ -97,7 +112,7 @@ function PynkMagneticText({ text, className = "" }: { text: string; className?: 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
 function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme: () => void }) {
-  const copy = usePynkCopy();
+  const copy = usePynkChromeCopy();
   const { nerd, toggleNerd } = usePynkNerd();
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname() ?? "/";
@@ -112,7 +127,7 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
   const navLinks = [
     { label: copy.nav.servizi, to: "/servizi" },
     { label: "AI Governance", to: "/ai-governance" },
-    { label: "Soluzioni", to: "/soluzioni" },
+    { label: copy.en ? "Solutions" : "Soluzioni", to: "/soluzioni" },
     { label: copy.nav.settori, to: "/settori" },
     { label: copy.nav.lavori, to: "/lavori" },
     { label: copy.nav.consulenza, to: "/consulenza" },
@@ -195,7 +210,7 @@ function PynkNavbar({ theme, onToggleTheme }: { theme: PynkTheme; onToggleTheme:
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
 function PynkFooter() {
-  const copy = usePynkCopy();
+  const copy = usePynkChromeCopy();
   const href = useTenantLocalizedHref();
   // Accesso staff/gestione sul dominio del tenant (gestione.pynkstudio.eu).
   const staffUrl = buildTenantManagementUrl("pynkstudio");
@@ -262,7 +277,7 @@ function PynkFooter() {
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
 
-export function PynkShell({ children, chromeless = false }: { children: React.ReactNode; chromeless?: boolean }) {
+export function PynkShell({ children, chromeless = false, lang = "it" }: { children: React.ReactNode; chromeless?: boolean; lang?: "it" | "en" }) {
   const [nerd, setNerd] = useState(false);
   const [theme, setTheme] = useState<PynkTheme>("dark");
 
@@ -307,11 +322,13 @@ export function PynkShell({ children, chromeless = false }: { children: React.Re
 
   return (
     <PynkNerdContext.Provider value={nerdValue}>
-      <div className="pynk-site" data-pynk-theme={theme}>
-        {!chromeless && <PynkNavbar theme={theme} onToggleTheme={toggleTheme} />}
-        {children}
-        {!chromeless && <PynkFooter />}
-      </div>
+      <PynkChromeLangContext.Provider value={lang}>
+        <div className="pynk-site" data-pynk-theme={theme}>
+          {!chromeless && <PynkNavbar theme={theme} onToggleTheme={toggleTheme} />}
+          {children}
+          {!chromeless && <PynkFooter />}
+        </div>
+      </PynkChromeLangContext.Provider>
     </PynkNerdContext.Provider>
   );
 }

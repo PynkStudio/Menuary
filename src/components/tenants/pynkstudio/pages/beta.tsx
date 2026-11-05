@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -31,27 +32,33 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { PynkShell } from "../pynk-shell";
-import { usePynkCopy } from "@/lib/pynkstudio-i18n";
+import { BETA_COPY } from "@/lib/pynkstudio/beta-i18n";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 import {
   APPLE_DEVICES,
   BETA_CATEGORIES,
   BETA_DEVICE_GROUPS,
   BETA_DEVICES,
-  BETA_FEEDBACK_KINDS,
   BETA_KINDS,
+  BETA_LANG_COOKIE,
   BETA_LANGUAGES,
   GOOGLE_DEVICES,
   betaCategoryLabel,
+  betaChannelNotes,
+  betaDeviceGroupLabel,
   betaDeviceLabel,
   betaFeedbackKindLabel,
+  betaFeedbackKinds,
   betaFeedbackStatusLabel,
   betaKindLabel,
   betaLanguageLabel,
+  betaLocalizedText,
   betaMethodInfo,
   channelsForDevices,
   isValidEmail,
+  localizedOptions,
   type BetaChannel,
+  type BetaLang,
 } from "@/lib/pynkstudio/beta-shared";
 
 type Tester = {
@@ -75,7 +82,9 @@ type Beta = {
   slug: string;
   name: string;
   tagline: string | null;
+  tagline_en?: string | null;
   description: string | null;
+  description_en?: string | null;
   icon_url: string | null;
   category: string;
   languages: string[];
@@ -104,12 +113,16 @@ type MeResponse = { tester: Tester | null; betas: Beta[]; requests: JoinRequest[
 
 type Feedback = { kind: "success" | "error"; text: string } | null;
 
+const BetaLangContext = createContext<BetaLang>("it");
+const useBetaLang = () => useContext(BetaLangContext);
+const useBetaCopy = () => BETA_COPY[useBetaLang()];
+
 function toggle(list: string[], id: string) {
   return list.includes(id) ? list.filter((v) => v !== id) : [...list, id];
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+function formatDate(iso: string, lang: BetaLang) {
+  return new Date(iso).toLocaleDateString(lang === "en" ? "en-GB" : "it-IT", { day: "numeric", month: "long", year: "numeric" });
 }
 
 const DEVICE_ICONS: Record<string, LucideIcon> = {
@@ -141,11 +154,12 @@ function DeviceIcon({ device, className = "pynk-icon-xs" }: { device: string; cl
 }
 
 function DevicePicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const lang = useBetaLang();
   return (
     <div className="pynk-beta-device-groups">
       {BETA_DEVICE_GROUPS.map((g) => (
         <div key={g.id} className="pynk-beta-device-group">
-          <p className="pynk-beta-device-group-label">{g.label}</p>
+          <p className="pynk-beta-device-group-label">{betaDeviceGroupLabel(g.id, g.label, lang)}</p>
           <div className="pynk-beta-device-grid">
             {BETA_DEVICES.filter((d) => d.group === g.id).map((d) => {
               const on = value.includes(d.id);
@@ -158,7 +172,7 @@ function DevicePicker({ value, onChange }: { value: string[]; onChange: (v: stri
                   onClick={() => onChange(toggle(value, d.id))}
                 >
                   <span className="pynk-beta-device-icon"><DeviceIcon device={d.id} className="pynk-beta-device-svg" /></span>
-                  <span className="pynk-beta-device-name">{d.label}</span>
+                  <span className="pynk-beta-device-name">{betaDeviceLabel(d.id, lang)}</span>
                   <span className="pynk-beta-device-tick" aria-hidden>{on && <Check className="pynk-icon-xs" />}</span>
                 </button>
               );
@@ -172,7 +186,7 @@ function DevicePicker({ value, onChange }: { value: string[]; onChange: (v: stri
 
 /** Composizione decorativa dell'hero: un "banco di prova" con i dispositivi attorno alla build. */
 function BetaHeroVisual() {
-  const v = usePynkCopy().betaPage.visual;
+  const v = useBetaCopy().visual;
   // Nomi di classe letterali: Tailwind elimina dal layer components quelli costruiti a runtime.
   const orbit: { device: string; label: string; pos: string }[] = [
     { device: "iphone", label: "iPhone", pos: "pynk-beta-visual-device-1" },
@@ -238,15 +252,16 @@ function ChipFilter({
 }
 
 function BetaMeta({ beta }: { beta: Beta }) {
-  const c = usePynkCopy().betaPage.area;
+  const lang = useBetaLang();
+  const c = useBetaCopy().area;
   return (
     <div className="pynk-beta-meta">
-      <span className="pynk-beta-tag" data-kind={beta.kind}>{betaKindLabel(beta.kind)}</span>
-      <span className="pynk-chip">{betaCategoryLabel(beta.category)}</span>
+      <span className="pynk-beta-tag" data-kind={beta.kind}>{betaKindLabel(beta.kind, lang)}</span>
+      <span className="pynk-chip">{betaCategoryLabel(beta.category, lang)}</span>
       {beta.version && <span className="pynk-chip">v{beta.version}</span>}
-      {beta.languages.map((l) => <span key={l} className="pynk-chip">{betaLanguageLabel(l)}</span>)}
+      {beta.languages.map((l) => <span key={l} className="pynk-chip">{betaLanguageLabel(l, lang)}</span>)}
       {beta.status === "full" && <span className="pynk-beta-tag" data-kind="full">{c.full}</span>}
-      {beta.ends_at && <span className="pynk-chip">{c.until} {formatDate(beta.ends_at)}</span>}
+      {beta.ends_at && <span className="pynk-chip">{c.until} {formatDate(beta.ends_at, lang)}</span>}
     </div>
   );
 }
@@ -261,7 +276,8 @@ function BetaIcon({ beta }: { beta: Beta }) {
 }
 
 function PublicBetaList({ betas }: { betas: Beta[] }) {
-  const c = usePynkCopy().betaPage;
+  const lang = useBetaLang();
+  const c = useBetaCopy();
   if (betas.length === 0) {
     return (
       <div className="pynk-beta-empty-card">
@@ -272,22 +288,25 @@ function PublicBetaList({ betas }: { betas: Beta[] }) {
   }
   return (
     <div className="pynk-beta-grid">
-      {betas.map((b) => (
-        <article key={b.id} className="pynk-beta-card">
-          <header className="pynk-beta-card-head">
-            <BetaIcon beta={b} />
-            <div>
-              <h3 className="pynk-beta-card-title">{b.name}</h3>
-              {b.tagline && <p className="pynk-beta-card-tagline">{b.tagline}</p>}
+      {betas.map((b) => {
+        const { tagline } = betaLocalizedText(b, lang);
+        return (
+          <article key={b.id} className="pynk-beta-card">
+            <header className="pynk-beta-card-head">
+              <BetaIcon beta={b} />
+              <div>
+                <h3 className="pynk-beta-card-title">{b.name}</h3>
+                {tagline && <p className="pynk-beta-card-tagline">{tagline}</p>}
+              </div>
+            </header>
+            <BetaMeta beta={b} />
+            <div className="pynk-beta-chips">
+              {b.channels.map((ch) => <span key={ch.device} className="pynk-beta-device-pill"><DeviceIcon device={ch.device} /> {betaDeviceLabel(ch.device, lang)}</span>)}
             </div>
-          </header>
-          <BetaMeta beta={b} />
-          <div className="pynk-beta-chips">
-            {b.channels.map((ch) => <span key={ch.device} className="pynk-beta-device-pill"><DeviceIcon device={ch.device} /> {betaDeviceLabel(ch.device)}</span>)}
-          </div>
-          <p className="pynk-beta-locked">{c.lockedHint}</p>
-        </article>
-      ))}
+            <p className="pynk-beta-locked">{c.lockedHint}</p>
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -307,9 +326,11 @@ function JoinChannel({
   onRequested: (r: JoinRequest) => void;
   onFeedback: (betaId: string) => void;
 }) {
-  const copy = usePynkCopy().betaPage;
+  const lang = useBetaLang();
+  const copy = useBetaCopy();
   const c = copy.area;
-  const method = betaMethodInfo(channel.method);
+  const method = betaMethodInfo(channel.method, lang);
+  const notes = betaChannelNotes(channel, lang);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const account =
@@ -357,19 +378,19 @@ function JoinChannel({
       <p className="pynk-beta-channel-head">
         <span className="pynk-beta-channel-icon"><DeviceIcon device={channel.device} /></span>
         <span>
-          <strong>{betaDeviceLabel(channel.device)}</strong>
+          <strong>{betaDeviceLabel(channel.device, lang)}</strong>
           <span className="pynk-beta-channel-method">{method.label}</span>
         </span>
       </p>
       <ol className="pynk-beta-steps">
         {method.steps.map((s) => <li key={s}>{s}</li>)}
       </ol>
-      {(channel.notes || joined || (!method.needsApproval && channel.url)) && (
+      {(notes || joined || (!method.needsApproval && channel.url)) && (
         <p className="pynk-beta-notes">
-          {channel.notes}
+          {notes}
           {(joined || (!method.needsApproval && channel.url && canJoin)) && (
             <>
-              {channel.notes && " "}
+              {notes && " "}
               <button
                 type="button"
                 className="pynk-beta-inline-link"
@@ -439,23 +460,25 @@ function BetaCard({
   onRequested: (r: JoinRequest) => void;
   onFeedback: (betaId: string) => void;
 }) {
-  const c = usePynkCopy().betaPage.area;
+  const lang = useBetaLang();
+  const c = useBetaCopy().area;
   const mine = channelsForDevices(beta.channels, tester.devices);
+  const { tagline, description } = betaLocalizedText(beta, lang);
   return (
     <article className="pynk-beta-card" data-available={mine.length > 0}>
       <header className="pynk-beta-card-head">
         <BetaIcon beta={beta} />
         <div>
           <h3 className="pynk-beta-card-title">{beta.name}</h3>
-          {beta.tagline && <p className="pynk-beta-card-tagline">{beta.tagline}</p>}
+          {tagline && <p className="pynk-beta-card-tagline">{tagline}</p>}
         </div>
       </header>
       <BetaMeta beta={beta} />
-      {beta.description && <p className="pynk-beta-desc">{beta.description}</p>}
+      {description && <p className="pynk-beta-desc">{description}</p>}
 
       {mine.length === 0 ? (
         <p className="pynk-beta-locked">
-          {c.notForYou}: {beta.channels.map((ch) => betaDeviceLabel(ch.device)).join(", ")}
+          {c.notForYou}: {beta.channels.map((ch) => betaDeviceLabel(ch.device, lang)).join(", ")}
         </p>
       ) : (
         <details className="pynk-beta-join-details" open={mine.length === 1}>
@@ -483,8 +506,8 @@ function BetaCard({
 }
 
 function SignupForm({ onDone }: { onDone: (status: "created" | "exists") => void }) {
-  const copy = usePynkCopy();
-  const c = copy.betaPage.form;
+  const lang = useBetaLang();
+  const c = useBetaCopy().form;
   const href = useTenantLocalizedHref();
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", appleIdEmail: "", googleAccountEmail: "", website: "" });
   const [devices, setDevices] = useState<string[]>([]);
@@ -518,6 +541,7 @@ function SignupForm({ onDone }: { onDone: (status: "created" | "exists") => void
           devices,
           notify,
           consent,
+          locale: lang,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -612,7 +636,7 @@ function SignupForm({ onDone }: { onDone: (status: "created" | "exists") => void
       <label className="pynk-beta-check">
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
         <span>
-          {c.consentBefore}<a href={href("/privacy")} className="pynk-accent" target="_blank" rel="noopener noreferrer">{c.consentLink}</a>{c.consentAfter}
+          {c.consentBefore}<a href={href(lang === "en" ? "/beta/en/privacy" : "/beta/privacy")} className="pynk-accent" target="_blank" rel="noopener noreferrer">{c.consentLink}</a>{c.consentAfter}
         </span>
       </label>
 
@@ -625,7 +649,7 @@ function SignupForm({ onDone }: { onDone: (status: "created" | "exists") => void
 }
 
 function LoginForm() {
-  const c = usePynkCopy().betaPage;
+  const c = useBetaCopy();
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const submit = async (e: React.FormEvent) => {
@@ -658,7 +682,7 @@ function LoginForm() {
 }
 
 function ProfileTab({ tester, onSaved, onDeleted }: { tester: Tester; onSaved: (t: Tester) => void; onDeleted: () => void }) {
-  const copy = usePynkCopy().betaPage;
+  const copy = useBetaCopy();
   const c = copy.area;
   const f = copy.form;
   const [form, setForm] = useState({
@@ -752,8 +776,12 @@ function ProfileTab({ tester, onSaved, onDeleted }: { tester: Tester; onSaved: (
 }
 
 function NotificationsTab({ tester, onSaved }: { tester: Tester; onSaved: (t: Tester) => void }) {
-  const copy = usePynkCopy().betaPage;
+  const lang = useBetaLang();
+  const copy = useBetaCopy();
   const c = copy.area;
+  const kindOptions = localizedOptions(BETA_KINDS, betaKindLabel, lang);
+  const categoryOptions = localizedOptions(BETA_CATEGORIES, betaCategoryLabel, lang);
+  const languageOptions = localizedOptions(BETA_LANGUAGES, betaLanguageLabel, lang);
   const [enabled, setEnabled] = useState(tester.notify_enabled);
   const [categories, setCategories] = useState(tester.notify_categories);
   const [languages, setLanguages] = useState(tester.notify_languages);
@@ -802,9 +830,9 @@ function NotificationsTab({ tester, onSaved }: { tester: Tester; onSaved: (t: Te
         <span>{c.notifyEnabled}</span>
       </label>
       <fieldset className="pynk-beta-fieldset" disabled={!enabled}>
-        <ChipFilter label={c.notifyKinds} options={BETA_KINDS} value={kinds} onChange={setKinds} />
-        <ChipFilter label={c.notifyCategories} options={BETA_CATEGORIES} value={categories} onChange={setCategories} />
-        <ChipFilter label={c.notifyLanguages} options={BETA_LANGUAGES} value={languages} onChange={setLanguages} />
+        <ChipFilter label={c.notifyKinds} options={kindOptions} value={kinds} onChange={setKinds} />
+        <ChipFilter label={c.notifyCategories} options={categoryOptions} value={categories} onChange={setCategories} />
+        <ChipFilter label={c.notifyLanguages} options={languageOptions} value={languages} onChange={setLanguages} />
       </fieldset>
       {feedback && <p className={`pynk-feedback pynk-feedback-${feedback.kind}`} role="status">{feedback.text}</p>}
       <div className="pynk-beta-actions">
@@ -823,7 +851,8 @@ function BetasTab({
   setRequests: (fn: (r: JoinRequest[]) => JoinRequest[]) => void;
   onFeedback: (betaId: string) => void;
 }) {
-  const c = usePynkCopy().betaPage.area;
+  const lang = useBetaLang();
+  const c = useBetaCopy().area;
   const [query, setQuery] = useState("");
   const [onlyMine, setOnlyMine] = useState(true);
   const [category, setCategory] = useState("");
@@ -853,15 +882,15 @@ function BetasTab({
         </div>
         <select className="pynk-beta-select" value={category} onChange={(e) => setCategory(e.target.value)} aria-label={c.allCategories}>
           <option value="">{c.allCategories}</option>
-          {BETA_CATEGORIES.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          {localizedOptions(BETA_CATEGORIES, betaCategoryLabel, lang).map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
         <select className="pynk-beta-select" value={language} onChange={(e) => setLanguage(e.target.value)} aria-label={c.allLanguages}>
           <option value="">{c.allLanguages}</option>
-          {BETA_LANGUAGES.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          {localizedOptions(BETA_LANGUAGES, betaLanguageLabel, lang).map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
         <select className="pynk-beta-select" value={kind} onChange={(e) => setKind(e.target.value)} aria-label={c.allKinds}>
           <option value="">{c.allKinds}</option>
-          {BETA_KINDS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          {localizedOptions(BETA_KINDS, betaKindLabel, lang).map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
         <label className="pynk-beta-check pynk-beta-check-inline">
           <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
@@ -898,7 +927,8 @@ function FeedbackTab({
   preselect: string;
   onSent: (f: FeedbackItem) => void;
 }) {
-  const c = usePynkCopy().betaPage.feedback;
+  const lang = useBetaLang();
+  const c = useBetaCopy().feedback;
   const joinedDevices = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const r of data.requests) {
@@ -918,7 +948,7 @@ function FeedbackTab({
   const [version, setVersion] = useState(beta?.version ?? "");
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(null);
-  const errorGeneric = usePynkCopy().betaPage.form.errorGeneric;
+  const errorGeneric = useBetaCopy().form.errorGeneric;
 
   const pickBeta = (id: string) => {
     setBetaId(id);
@@ -990,7 +1020,7 @@ function FeedbackTab({
               <div className="pynk-beta-chips">
                 {devices.map((d) => (
                   <button key={d} type="button" className="pynk-beta-chip" aria-pressed={device === d} onClick={() => setDevice(d)}>
-                    <DeviceIcon device={d} /> {betaDeviceLabel(d)}
+                    <DeviceIcon device={d} /> {betaDeviceLabel(d, lang)}
                   </button>
                 ))}
               </div>
@@ -1000,7 +1030,7 @@ function FeedbackTab({
           <fieldset className="pynk-beta-fieldset">
             <legend className="pynk-beta-device-group-label">{c.kind}</legend>
             <div className="pynk-beta-kind-grid">
-              {BETA_FEEDBACK_KINDS.map((k) => (
+              {betaFeedbackKinds(lang).map((k) => (
                 <button key={k.id} type="button" className="pynk-beta-kind" data-kind={k.id} aria-pressed={kind === k.id} onClick={() => setKind(k.id)}>
                   <strong>{k.label}</strong>
                   <span>{k.hint}</span>
@@ -1037,12 +1067,12 @@ function FeedbackTab({
             {data.feedback.map((f) => (
               <li key={f.id} className="pynk-beta-feedback-item">
                 <div className="pynk-beta-feedback-item-head">
-                  <span className="pynk-beta-kind-tag" data-kind={f.kind}>{betaFeedbackKindLabel(f.kind)}</span>
-                  <span className="pynk-beta-status-tag" data-status={f.status}>{betaFeedbackStatusLabel(f.status)}</span>
+                  <span className="pynk-beta-kind-tag" data-kind={f.kind}>{betaFeedbackKindLabel(f.kind, lang)}</span>
+                  <span className="pynk-beta-status-tag" data-status={f.status}>{betaFeedbackStatusLabel(f.status, lang)}</span>
                 </div>
                 <p className="pynk-beta-feedback-msg">{f.message}</p>
                 <p className="pynk-muted pynk-beta-hint">
-                  {betaName(f.beta_id)} · {betaDeviceLabel(f.device)}{f.app_version ? ` · v${f.app_version}` : ""} · {formatDate(f.created_at)}
+                  {betaName(f.beta_id)} · {betaDeviceLabel(f.device, lang)}{f.app_version ? ` · v${f.app_version}` : ""} · {formatDate(f.created_at, lang)}
                 </p>
               </li>
             ))}
@@ -1053,9 +1083,32 @@ function FeedbackTab({
   );
 }
 
+/** Scelta esplicita: vale per le prossime visite e, se c'è un profilo, per le email. */
+function LanguageSwitch({ hasProfile }: { hasProfile: boolean }) {
+  const lang = useBetaLang();
+  const href = useTenantLocalizedHref();
+  const remember = (next: BetaLang) => {
+    document.cookie = `${BETA_LANG_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
+    if (!hasProfile || next === lang) return;
+    void fetch("/api/pynkstudio/beta/me", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale: next }),
+      keepalive: true,
+    }).catch(() => {});
+  };
+  return (
+    <div className="pynk-beta-lang" role="group" aria-label={BETA_COPY[lang].languageLabel}>
+      {/* prefetch off: precaricherebbe il redirect del middleware prima che il click salvi la scelta. */}
+      <Link href={href("/beta")} prefetch={false} hrefLang="it" lang="it" aria-current={lang === "it" ? "true" : undefined} onClick={() => remember("it")}>Italiano</Link>
+      <Link href={href("/beta/en")} prefetch={false} hrefLang="en" lang="en" aria-current={lang === "en" ? "true" : undefined} onClick={() => remember("en")}>English</Link>
+    </div>
+  );
+}
+
 function BetaInner() {
-  const copy = usePynkCopy();
-  const c = copy.betaPage;
+  const lang = useBetaLang();
+  const c = useBetaCopy();
   const [data, setData] = useState<MeResponse | null>(null);
   const [tab, setTab] = useState<"betas" | "feedback" | "devices" | "notifications">("betas");
   const [feedbackBeta, setFeedbackBeta] = useState<string>("");
@@ -1082,10 +1135,16 @@ function BetaInner() {
 
   const tester = data?.tester ?? null;
 
+  // Il layout serve lang="it": questa pagina deve dichiarare la lingua reale.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   return (
     <div className="pynk-page">
       <section className="pynk-section pynk-section-top">
         <div className="pynk-container">
+          <LanguageSwitch hasProfile={!!tester} />
           {tester ? (
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="pynk-beta-area-head">
               <div>
@@ -1205,10 +1264,12 @@ function BetaInner() {
   );
 }
 
-export function PynkStudioBetaPage() {
+export function PynkStudioBetaPage({ lang = "it" }: { lang?: BetaLang }) {
   return (
-    <PynkShell>
-      <BetaInner />
+    <PynkShell lang={lang}>
+      <BetaLangContext.Provider value={lang}>
+        <BetaInner />
+      </BetaLangContext.Provider>
     </PynkShell>
   );
 }

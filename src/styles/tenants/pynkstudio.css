@@ -4123,6 +4123,11 @@
     color: var(--pynk-primary);
   }
   .pynk-beta-chip:focus-visible, .pynk-beta-tab:focus-visible { outline: 2px solid var(--pynk-primary); outline-offset: 2px; }
+  .pynk-beta-lang { display: flex; justify-content: flex-end; gap: 4px; margin-bottom: 20px; font-size: 14px; }
+  .pynk-beta-lang a { padding: 6px 12px; border-radius: 999px; color: var(--pynk-muted-fg); text-decoration: none; }
+  .pynk-beta-lang a:hover { color: var(--pynk-primary); }
+  .pynk-beta-lang a[aria-current="true"] { color: var(--pynk-primary); background: color-mix(in srgb, var(--pynk-primary) 14%, transparent); font-weight: 500; }
+  .pynk-beta-lang a:focus-visible { outline: 2px solid var(--pynk-primary); outline-offset: 2px; }
   .pynk-beta-fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 18px; min-width: 0; }
   .pynk-beta-fieldset:disabled { opacity: 0.45; }
 

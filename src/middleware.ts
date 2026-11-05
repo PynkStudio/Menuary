@@ -47,6 +47,7 @@ import {
   tenantLocaleCookieName,
   type TenantLocaleConfig,
 } from "@/lib/tenant-locales";
+import { BETA_LANG_COOKIE, preferredBetaLang } from "@/lib/pynkstudio/beta-shared";
 import {
   MARKETING_ROUTE_KEYS,
   localizedSlug,
@@ -620,6 +621,19 @@ const PREVIEW_GLOBAL_TENANT_ROUTES = new Set([
   "beta",
 ]);
 
+/**
+ * Beta program: unica pagina PynkStudio con variante inglese. Chi l'ha scelta, o ha il
+ * browser in una lingua diversa dall'italiano, ci arriva con un vero redirect.
+ */
+function betaEnglishRedirect(request: NextRequest, tenantId: string, rest: string) {
+  if (tenantId !== "pynkstudio" || rest !== "beta") return null;
+  const cookie = request.cookies.get(BETA_LANG_COOKIE)?.value;
+  if (preferredBetaLang(cookie, request.headers.get("accept-language")) !== "en") return null;
+  const url = request.nextUrl.clone();
+  url.pathname = `${url.pathname}/en`;
+  return NextResponse.redirect(url, 307);
+}
+
 function handlePreviewTenantLocale(
   request: NextRequest,
   mode: PlatformMode,
@@ -643,6 +657,8 @@ function handlePreviewTenantLocale(
     );
   }
   const rest = parts.slice(2).join("/");
+  const betaRedirect = betaEnglishRedirect(request, tenantId, rest);
+  if (betaRedirect) return betaRedirect;
   const firstSegment = rest.split("/")[0];
   // Il tenant valentina-orciuoli serve alcune pagine (contatti, blog, ...) tramite
   // [previewSlug]/[bookId]: se il segmento coincide anche con una route globale
@@ -692,6 +708,8 @@ function handleCustomTenantLocale(
     );
   }
   const rest = parts.slice(1).join("/");
+  const betaRedirect = betaEnglishRedirect(request, tenantId, rest);
+  if (betaRedirect) return betaRedirect;
   // Il sito-libro di valentina-orciuoli è impaginato dalle route [previewSlug],
   // non dai segmenti globali dell'app dir: sul dominio custom l'URL resta nudo
   // (`/it/libri`) ma la richiesta va servita da quell'albero, altrimenti le sue

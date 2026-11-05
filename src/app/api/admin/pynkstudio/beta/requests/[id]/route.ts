@@ -3,7 +3,7 @@ import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { requireSiteadmin } from "@/lib/pynkstudio/crm-admin";
 import { betaOrigin, sendBetaMail } from "@/lib/pynkstudio/beta";
 import { betaApprovedHtml } from "@/lib/pynkstudio/email-templates";
-import { betaDeviceLabel, cleanBetaChannels } from "@/lib/pynkstudio/beta-shared";
+import { betaAreaPath, betaDeviceLabel, cleanBetaChannels, toBetaLang } from "@/lib/pynkstudio/beta-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -36,22 +36,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   let emailed = false;
   if (status === "approved" && before.status !== "approved") {
     const [{ data: tester }, { data: beta }] = await Promise.all([
-      svc.from("pynkstudio_beta_testers").select("email, first_name").eq("id", data.tester_id).maybeSingle(),
+      svc.from("pynkstudio_beta_testers").select("email, first_name, locale").eq("id", data.tester_id).maybeSingle(),
       svc.from("pynkstudio_betas").select("name, channels").eq("id", data.beta_id).maybeSingle(),
     ]);
     if (tester && beta) {
       const site = betaOrigin(request);
+      const lang = toBetaLang(tester.locale);
       const channel = cleanBetaChannels(beta.channels).find((c) => c.device === data.device);
       const result = await sendBetaMail(
         tester.email,
-        `${beta.name}: richiesta beta approvata`,
+        lang === "en" ? `${beta.name}: beta request approved` : `${beta.name}: richiesta beta approvata`,
         betaApprovedHtml({
           firstName: tester.first_name,
           betaName: beta.name,
-          deviceLabel: betaDeviceLabel(data.device),
+          deviceLabel: betaDeviceLabel(data.device, lang),
           url: channel?.url || null,
           installUrl: channel?.installUrl ?? null,
-          areaUrl: `${site}/beta`,
+          areaUrl: `${site}${betaAreaPath(lang)}`,
+          lang,
         }),
       );
       emailed = result.ok;

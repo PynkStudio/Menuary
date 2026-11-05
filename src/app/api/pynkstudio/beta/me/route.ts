@@ -110,6 +110,7 @@ export async function PATCH(request: Request) {
     if (devices.length === 0) return NextResponse.json({ error: "no_devices" }, { status: 400 });
     patch.devices = devices;
   }
+  if (body.locale === "it" || body.locale === "en") patch.locale = body.locale;
   if (typeof body.notifyEnabled === "boolean") patch.notify_enabled = body.notifyEnabled;
   if (body.notifyCategories !== undefined) patch.notify_categories = cleanFromList(body.notifyCategories, BETA_CATEGORIES);
   if (body.notifyLanguages !== undefined) patch.notify_languages = cleanFromList(body.notifyLanguages, BETA_LANGUAGES);

@@ -80,7 +80,9 @@ type EditorForm = {
   name: string;
   slug: string;
   tagline: string;
+  tagline_en: string;
   description: string;
+  description_en: string;
   icon_url: string;
   category: string;
   kind: string;
@@ -97,7 +99,9 @@ function toForm(b: BetaRow | null): EditorForm {
     name: b?.name ?? "",
     slug: b?.slug ?? "",
     tagline: b?.tagline ?? "",
+    tagline_en: b?.tagline_en ?? "",
     description: b?.description ?? "",
+    description_en: b?.description_en ?? "",
     icon_url: b?.icon_url ?? "",
     category: b?.category ?? "altro",
     kind: b?.kind ?? "new",
@@ -222,8 +226,16 @@ function BetaEditor({
             <input className="pynk-admin-input" value={form.tagline} onChange={(e) => set("tagline", e.target.value)} placeholder="Il party game con il presentatore AI" />
           </div>
           <div className="pynk-crm-field">
+            <label className="pynk-crm-label">Frase breve in inglese (facoltativa)</label>
+            <input className="pynk-admin-input" value={form.tagline_en} onChange={(e) => set("tagline_en", e.target.value)} placeholder="The party game with an AI host" />
+          </div>
+          <div className="pynk-crm-field">
             <label className="pynk-crm-label">Descrizione e cosa testare</label>
             <textarea className="pynk-admin-textarea" value={form.description} onChange={(e) => set("description", e.target.value)} />
+          </div>
+          <div className="pynk-crm-field">
+            <label className="pynk-crm-label">Descrizione in inglese (facoltativa)</label>
+            <textarea className="pynk-admin-textarea" value={form.description_en} onChange={(e) => set("description_en", e.target.value)} />
           </div>
           <div className="pynk-crm-field-row">
             <div className="pynk-crm-field">
@@ -301,6 +313,7 @@ function BetaEditor({
                   <input className="pynk-admin-input" value={ch.groupUrl ?? ""} onChange={(e) => setChannel(i, { groupUrl: e.target.value })} placeholder="Link del gruppo tester, primo passo (facoltativo) — es. https://groups.google.com/g/…" aria-label="Link del gruppo" />
                   <input className="pynk-admin-input" value={ch.installUrl ?? ""} onChange={(e) => setChannel(i, { installUrl: e.target.value })} placeholder="Link per installare, secondo passo (facoltativo) — es. https://play.google.com/store/apps/details?id=…" aria-label="Link per installare" />
                   <input className="pynk-admin-input" value={ch.notes ?? ""} onChange={(e) => setChannel(i, { notes: e.target.value })} placeholder="Nota per il tester (facoltativa)" aria-label="Nota" />
+                  <input className="pynk-admin-input" value={ch.notesEn ?? ""} onChange={(e) => setChannel(i, { notesEn: e.target.value })} placeholder="Nota per il tester in inglese (facoltativa)" aria-label="Nota in inglese" />
                   <div className="pynk-beta-admin-channel-foot">
                     <span className="pynk-crm-row-secondary">
                       {method.needsApproval ? `Su richiesta: il tester indica l'account ${method.account === "apple" ? "Apple ID" : "Google"}, il link si sblocca dopo l'approvazione.` : "Link visibile subito agli iscritti con questo dispositivo."}
@@ -463,7 +476,7 @@ export function PynkBetaManager() {
 
   const q = search.trim().toLowerCase();
   const filteredTesters = (data?.testers ?? []).filter(
-    (t) => !q || `${t.first_name} ${t.last_name} ${t.email} ${t.phone} ${t.devices.map(betaDeviceLabel).join(" ")}`.toLowerCase().includes(q),
+    (t) => !q || `${t.first_name} ${t.last_name} ${t.email} ${t.phone} ${t.devices.map((id) => betaDeviceLabel(id)).join(" ")}`.toLowerCase().includes(q),
   );
 
   const setRequest = async (r: RequestRow, status: string) => {
@@ -698,7 +711,7 @@ export function PynkBetaManager() {
                         <span className="pynk-crm-row-sub">{t.email}{!t.email_verified_at && " · non confermata"}</span>
                       </td>
                       <td className="pynk-crm-row-secondary"><a href={`tel:${t.phone}`} className="pynk-crm-icon-link">{t.phone}</a></td>
-                      <td className="pynk-crm-row-secondary">{t.devices.map(betaDeviceLabel).join(", ")}</td>
+                      <td className="pynk-crm-row-secondary">{t.devices.map((id) => betaDeviceLabel(id)).join(", ")}</td>
                       <td className="pynk-crm-row-secondary">
                         {t.apple_id_email && <span className="pynk-crm-row-sub">Apple: {t.apple_id_email}</span>}
                         {t.google_account_email && <span className="pynk-crm-row-sub">Google: {t.google_account_email}</span>}
@@ -708,7 +721,7 @@ export function PynkBetaManager() {
                         {t.notify_enabled ? "Sì" : "No"}
                         {(t.notify_categories.length > 0 || t.notify_kinds.length > 0 || t.notify_languages.length > 0) && (
                           <span className="pynk-crm-row-sub">
-                            {[...t.notify_kinds.map(betaKindLabel), ...t.notify_categories.map(betaCategoryLabel), ...t.notify_languages.map((l) => l.toUpperCase())].join(", ")}
+                            {[...t.notify_kinds.map((id) => betaKindLabel(id)), ...t.notify_categories.map((id) => betaCategoryLabel(id)), ...t.notify_languages.map((l) => l.toUpperCase())].join(", ")}
                           </span>
                         )}
                       </td>

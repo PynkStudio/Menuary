@@ -80,7 +80,7 @@ const faq = [
   },
   {
     q: "Does Are You Stupid?! collect personal data?",
-    a: "We have no account, no backend and no analytics tools. The only data processing is done by our advertising partner, Google AdMob, and only after consent where the law requires it. Full details in the privacy policy.",
+    a: "There is no account and we use no analytics tools. Two things can leave your devices: what our advertising partner, Google AdMob, collects, after consent where the law requires it, and the lines of the online voice host, which can include a player's spoken name and can be switched off in the room's options. Full details in the privacy policy.",
   },
   {
     q: "Is it suitable for kids?",
@@ -260,21 +260,24 @@ function AreYouStupidEnInner() {
               </li>
               <li>
                 <Check className="pynk-icon-sm pynk-check" />
-                <span>No backend of our own, and no analytics tools.</span>
-              </li>
-              <li>
-                <Check className="pynk-icon-sm pynk-check" />
-                <span>Party mode only travels over your own Wi-Fi: nothing leaves the house.</span>
-              </li>
-              <li>
-                <Check className="pynk-icon-sm pynk-check" />
-                <span>The AI runs on your device, no cloud.</span>
+                <span>No analytics tools, and no player profiles on our server.</span>
               </li>
               <li>
                 <Check className="pynk-icon-sm pynk-check" />
                 <span>
-                  The only data that leaves your phone is what our advertising partner, Google AdMob, collects — with your consent
-                  where the law requires it.
+                  Party mode plays over your own Wi-Fi. Only the online voice host goes further: its lines, which can include a spoken name,
+                  are voiced by an AI service. You can switch it off.
+                </span>
+              </li>
+              <li>
+                <Check className="pynk-icon-sm pynk-check" />
+                <span>AI challenges and commentary run on your device, no cloud.</span>
+              </li>
+              <li>
+                <Check className="pynk-icon-sm pynk-check" />
+                <span>
+                  On phones and tablets, our advertising partner, Google AdMob, collects data to show ads, with your consent where the
+                  law requires it.
                 </span>
               </li>
             </ul>

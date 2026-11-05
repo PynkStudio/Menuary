@@ -26,7 +26,7 @@ export function parseBetaInput(body: Record<string, unknown>) {
   if (name !== undefined) out.name = name;
   const slug = str(body.slug, 60);
   if (slug !== undefined) out.slug = slugify(slug);
-  for (const [key, max] of [["tagline", 200], ["description", 4000], ["version", 40]] as const) {
+  for (const [key, max] of [["tagline", 200], ["tagline_en", 200], ["description", 4000], ["description_en", 4000], ["version", 40]] as const) {
     const v = str(body[key], max);
     if (v !== undefined) out[key] = v || null;
   }

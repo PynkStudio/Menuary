@@ -6,13 +6,18 @@ import type { Database } from "@/lib/database.types";
 import { sendEmail } from "@/lib/email/sender";
 import { betaAccessHtml, betaNewHtml, PYNK_REPLY_TO, PYNK_TRANSACTIONAL_FROM } from "@/lib/pynkstudio/email-templates";
 import {
+  BETA_LANG_COOKIE,
+  betaAreaPath,
   betaDeviceLabel,
   betaKindLabel,
+  betaLocalizedText,
   betaMethodInfo,
   channelsForDevices,
   cleanBetaChannels,
   testerWantsBeta,
+  toBetaLang,
   type BetaChannel,
+  type BetaLang,
 } from "@/lib/pynkstudio/beta-shared";
 
 type Svc = SupabaseClient<Database>;
@@ -52,6 +57,11 @@ export function setBetaCookie(res: NextResponse, token: string) {
   });
 }
 
+/** Il link magico fissa la lingua del tester, così il rilevamento del browser non la scavalca. */
+export function setBetaLangCookie(res: NextResponse, lang: BetaLang) {
+  res.cookies.set(BETA_LANG_COOKIE, lang, { sameSite: "lax", path: "/", maxAge: COOKIE_MAX_AGE });
+}
+
 export function clearBetaCookie(res: NextResponse) {
   res.cookies.set(BETA_COOKIE, "", { path: "/", maxAge: 0 });
 }
@@ -64,12 +74,17 @@ export async function getBetaTester(svc: Svc): Promise<BetaTesterRow | null> {
 }
 
 export async function sendBetaAccessEmail(tester: BetaTesterRow, origin: string, isNew: boolean) {
+  const lang = toBetaLang(tester.locale);
+  const subject =
+    lang === "en"
+      ? isNew ? "Confirm your sign-up for PYNK STUDIO betas" : "Your link to PYNK STUDIO betas"
+      : isNew ? "Conferma la tua iscrizione alle beta PYNK STUDIO" : "Il tuo link per le beta PYNK STUDIO";
   return sendEmail({
     to: tester.email,
     fromOverride: PYNK_TRANSACTIONAL_FROM,
     replyTo: PYNK_REPLY_TO,
-    subject: isNew ? "Conferma la tua iscrizione alle beta PYNK STUDIO" : "Il tuo link per le beta PYNK STUDIO",
-    html: betaAccessHtml({ firstName: tester.first_name, accessUrl: betaAccessUrl(origin, tester.access_token), isNew }),
+    subject,
+    html: betaAccessHtml({ firstName: tester.first_name, accessUrl: betaAccessUrl(origin, tester.access_token), isNew, lang }),
   });
 }
 
@@ -129,18 +144,20 @@ export async function notifyBetaTesters(svc: Svc, beta: BetaRow, origin: string,
   for (const t of targets) {
     const mine = channelsForDevices(channels, t.devices);
     const unsubscribeUrl = betaUnsubscribeUrl(origin, t.access_token);
+    const lang = toBetaLang(t.locale);
     const result = await sendBetaMail(
       t.email,
-      `${beta.name}: nuova beta disponibile`,
+      lang === "en" ? `${beta.name}: new beta available` : `${beta.name}: nuova beta disponibile`,
       betaNewHtml({
         firstName: t.first_name,
         betaName: beta.name,
-        tagline: beta.tagline,
-        kindLabel: betaKindLabel(beta.kind),
+        tagline: betaLocalizedText(beta, lang).tagline,
+        kindLabel: betaKindLabel(beta.kind, lang),
         version: beta.version,
-        channels: mine.map((c) => ({ deviceLabel: betaDeviceLabel(c.device), methodLabel: betaMethodInfo(c.method).label })),
-        areaUrl: `${origin}/beta`,
+        channels: mine.map((c) => ({ deviceLabel: betaDeviceLabel(c.device, lang), methodLabel: betaMethodInfo(c.method, lang).label })),
+        areaUrl: `${origin}${betaAreaPath(lang)}`,
         unsubscribeUrl,
+        lang,
       }),
       unsubscribeHeaders(unsubscribeUrl),
     );

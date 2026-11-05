@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import { isBetaToken, setBetaCookie } from "@/lib/pynkstudio/beta";
+import { isBetaToken, setBetaCookie, setBetaLangCookie } from "@/lib/pynkstudio/beta";
+import { betaAreaPath, toBetaLang } from "@/lib/pynkstudio/beta-shared";
 import { isPynkstudioRequest } from "@/components/tenants/pynkstudio/resolve-tenant";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   const svc = createSupabaseServiceClient();
   if (!svc || !isBetaToken(token)) return NextResponse.redirect(new URL("/beta?link=scaduto", url.origin));
 
-  const { data: tester } = await svc.from("pynkstudio_beta_testers").select("id, email_verified_at").eq("access_token", token).maybeSingle();
+  const { data: tester } = await svc.from("pynkstudio_beta_testers").select("id, email_verified_at, locale").eq("access_token", token).maybeSingle();
   if (!tester) return NextResponse.redirect(new URL("/beta?link=scaduto", url.origin));
 
   const now = new Date().toISOString();
@@ -24,7 +25,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
     .update({ email_verified_at: tester.email_verified_at ?? now, last_seen_at: now })
     .eq("id", tester.id);
 
-  const res = NextResponse.redirect(new URL("/beta", url.origin));
+  const lang = toBetaLang(tester.locale);
+  const res = NextResponse.redirect(new URL(betaAreaPath(lang), url.origin));
   setBetaCookie(res, token);
+  setBetaLangCookie(res, lang);
   return res;
 }

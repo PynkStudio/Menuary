@@ -45,6 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           "/ia-in-azienda",
           "/contattaci",
           "/beta",
+          "/beta/en",
         ]
       : tenant.id === "valentina-orciuoli"
         ? [

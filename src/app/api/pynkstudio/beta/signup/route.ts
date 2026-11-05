@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { sendWebPush } from "@/lib/push/send";
 import { betaOrigin, sendBetaAccessEmail, setBetaCookie } from "@/lib/pynkstudio/beta";
-import { cleanBetaDevices, isValidEmail } from "@/lib/pynkstudio/beta-shared";
+import { cleanBetaDevices, isValidEmail, toBetaLang } from "@/lib/pynkstudio/beta-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +57,7 @@ export async function POST(request: Request) {
       devices,
       apple_id_email: appleId || null,
       google_account_email: google || null,
+      locale: toBetaLang(body.locale),
       notify_enabled: body.notify !== false,
       last_seen_at: new Date().toISOString(),
     })

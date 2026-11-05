@@ -1,5 +1,30 @@
 // Tassonomia del beta manager PynkStudio: usata da sito pubblico, admin, API ed email.
 
+/** Lingue del Beta program (colonna `locale` del tester). L'admin resta in italiano: default "it". */
+export type BetaLang = "it" | "en";
+
+export function toBetaLang(v: unknown): BetaLang {
+  return v === "en" ? "en" : "it";
+}
+
+/** Preferenza esplicita (cookie) > lingua principale del browser: l'italiano resta il default. */
+export const BETA_LANG_COOKIE = "pynk_beta_lang";
+
+export function preferredBetaLang(cookie: string | null | undefined, acceptLanguage: string | null | undefined): BetaLang {
+  if (cookie === "it" || cookie === "en") return cookie;
+  const first = acceptLanguage?.split(",")[0]?.trim().toLowerCase();
+  if (!first || first === "*" || first.startsWith("it")) return "it";
+  return "en";
+}
+
+export function betaAreaPath(lang: BetaLang) {
+  return lang === "en" ? "/beta/en" : "/beta";
+}
+
+function pick(en: Record<string, string>, lang: BetaLang, id: string, fallback: string) {
+  return lang === "en" ? en[id] ?? fallback : fallback;
+}
+
 export type BetaDeviceGroup = "apple" | "android" | "computer" | "altro";
 
 export const BETA_DEVICE_GROUPS: { id: BetaDeviceGroup; label: string }[] = [
@@ -38,9 +63,23 @@ export const BETA_WEB_DEVICE = "web";
 
 const DEVICE_IDS = new Set<string>([...BETA_DEVICES.map((d) => d.id), BETA_WEB_DEVICE]);
 
-export function betaDeviceLabel(id: string): string {
+const DEVICE_GROUPS_EN: Record<string, string> = { android: "Android and Google", altro: "Other devices" };
+const DEVICES_EN: Record<string, string> = {
+  android_phone: "Android phone",
+  android_tablet: "Android tablet",
+  wear_os: "Wear OS smartwatch",
+  windows: "Windows PC",
+  linux: "Linux PC",
+  fire_tablet: "Amazon Fire tablet",
+};
+
+export function betaDeviceLabel(id: string, lang: BetaLang = "it"): string {
   if (id === BETA_WEB_DEVICE) return "Browser (web)";
-  return BETA_DEVICES.find((d) => d.id === id)?.label ?? id;
+  return pick(DEVICES_EN, lang, id, BETA_DEVICES.find((d) => d.id === id)?.label ?? id);
+}
+
+export function betaDeviceGroupLabel(id: string, label: string, lang: BetaLang = "it"): string {
+  return pick(DEVICE_GROUPS_EN, lang, id, label);
 }
 
 export const APPLE_DEVICES = new Set(["iphone", "ipad", "mac", "apple_watch", "apple_tv", "vision_pro"]);
@@ -161,8 +200,80 @@ export const BETA_METHODS: BetaMethodInfo[] = [
   },
 ];
 
-export function betaMethodInfo(id: string): BetaMethodInfo {
-  return BETA_METHODS.find((m) => m.id === id) ?? BETA_METHODS[BETA_METHODS.length - 1];
+const METHODS_EN: Record<BetaMethod, Pick<BetaMethodInfo, "label" | "cta" | "steps">> = {
+  testflight: {
+    label: "TestFlight · public link",
+    cta: "Open the TestFlight invite",
+    steps: [
+      "Install the TestFlight app from the App Store on your device (Mac needs macOS 12 or later).",
+      "Open the invite link on your device and tap “Accept”, then “Install”.",
+      "For Apple TV and Apple Watch: accept the invite on an iPhone with the same Apple ID, then install from the device's TestFlight app.",
+    ],
+  },
+  testflight_invite: {
+    label: "TestFlight · email invite",
+    cta: "Request an invite",
+    steps: [
+      "Request access: we'll add you as a tester using the Apple ID in your profile.",
+      "You'll get an email from TestFlight: open it on your device and tap “View in TestFlight”.",
+    ],
+  },
+  play_open: {
+    label: "Google Play · open test",
+    cta: "Become a tester on Google Play",
+    steps: [
+      "Open the link with the Google account you use on your device and tap “Become a tester”.",
+      "Download or update the app from the Play Store: you'll get the beta version (it can take a few minutes).",
+    ],
+  },
+  play_closed: {
+    label: "Google Play · closed test",
+    cta: "Request access",
+    steps: [
+      "Request access: we'll add the Google account in your profile to the tester list.",
+      "Once your request is approved, open the link, tap “Become a tester” and download the app from the Play Store.",
+    ],
+  },
+  play_group: {
+    label: "Google Play · closed test with open group",
+    cta: "Become a tester on Google Play",
+    steps: [
+      "Join the tester group with the Google account you use on your Android device: tap “Join group”.",
+      "Open the opt-in link with the same account and tap “Become a tester”.",
+      "Install the app from the Play Store: the test version can take a few minutes to appear.",
+    ],
+  },
+  firebase: {
+    label: "Firebase App Distribution",
+    cta: "Open the invite",
+    steps: [
+      "Open the link on your device and sign in with your Google account.",
+      "Follow the instructions to install “App Tester” and download the test build.",
+    ],
+  },
+  download: {
+    label: "Direct download",
+    cta: "Download the beta",
+    steps: [
+      "Download the file on the device you want to install it on.",
+      "On Android you may need to allow installs from this source; on Mac and Windows, confirm that you want to open the downloaded app.",
+    ],
+  },
+  web: {
+    label: "Web version",
+    cta: "Open the beta",
+    steps: ["Open the link in your browser: there's nothing to install."],
+  },
+  other: {
+    label: "Other (store or beta program)",
+    cta: "Join the beta",
+    steps: ["Open the link and follow the platform's instructions."],
+  },
+};
+
+export function betaMethodInfo(id: string, lang: BetaLang = "it"): BetaMethodInfo {
+  const info = BETA_METHODS.find((m) => m.id === id) ?? BETA_METHODS[BETA_METHODS.length - 1];
+  return lang === "en" ? { ...info, ...METHODS_EN[info.id] } : info;
 }
 
 export const BETA_CATEGORIES = [
@@ -181,8 +292,24 @@ export const BETA_CATEGORIES = [
   { id: "altro", label: "Altro" },
 ] as const;
 
-export function betaCategoryLabel(id: string): string {
-  return BETA_CATEGORIES.find((c) => c.id === id)?.label ?? id;
+const CATEGORIES_EN: Record<string, string> = {
+  giochi: "Games",
+  produttivita: "Productivity",
+  utility: "Utilities",
+  social: "Social and messaging",
+  intrattenimento: "Entertainment",
+  "foto-video": "Photo and video",
+  musica: "Music and audio",
+  business: "Business",
+  food: "Food and restaurants",
+  salute: "Health and wellness",
+  istruzione: "Education",
+  ai: "Artificial intelligence",
+  altro: "Other",
+};
+
+export function betaCategoryLabel(id: string, lang: BetaLang = "it"): string {
+  return pick(CATEGORIES_EN, lang, id, BETA_CATEGORIES.find((c) => c.id === id)?.label ?? id);
 }
 
 export const BETA_LANGUAGES = [
@@ -194,8 +321,17 @@ export const BETA_LANGUAGES = [
   { id: "pt", label: "Portoghese" },
 ] as const;
 
-export function betaLanguageLabel(id: string): string {
-  return BETA_LANGUAGES.find((l) => l.id === id)?.label ?? id.toUpperCase();
+const LANGUAGES_EN: Record<string, string> = {
+  it: "Italian",
+  en: "English",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  pt: "Portuguese",
+};
+
+export function betaLanguageLabel(id: string, lang: BetaLang = "it"): string {
+  return pick(LANGUAGES_EN, lang, id, BETA_LANGUAGES.find((l) => l.id === id)?.label ?? id.toUpperCase());
 }
 
 export const BETA_KINDS = [
@@ -203,8 +339,19 @@ export const BETA_KINDS = [
   { id: "update", label: "Aggiornamento" },
 ] as const;
 
-export function betaKindLabel(id: string): string {
-  return BETA_KINDS.find((k) => k.id === id)?.label ?? id;
+const KINDS_EN: Record<string, string> = { new: "New app", update: "Update" };
+
+export function betaKindLabel(id: string, lang: BetaLang = "it"): string {
+  return pick(KINDS_EN, lang, id, BETA_KINDS.find((k) => k.id === id)?.label ?? id);
+}
+
+/** Opzioni {id, label} di filtri e selettori nella lingua della pagina. */
+export function localizedOptions(
+  options: readonly { id: string; label: string }[],
+  label: (id: string, lang: BetaLang) => string,
+  lang: BetaLang,
+) {
+  return options.map((o) => ({ id: o.id, label: label(o.id, lang) }));
 }
 
 export const BETA_STATUSES = [
@@ -232,8 +379,23 @@ export const BETA_FEEDBACK_KINDS = [
 
 export type BetaFeedbackKind = (typeof BETA_FEEDBACK_KINDS)[number]["id"];
 
-export function betaFeedbackKindLabel(id: string): string {
+const FEEDBACK_KINDS_EN: Record<BetaFeedbackKind, { label: string; hint: string }> = {
+  bug: { label: "Bug", hint: "Something doesn't work as it should" },
+  crash: { label: "Crash", hint: "The app closes or freezes" },
+  feature: { label: "Suggestion", hint: "An idea or a feature you'd like" },
+  ux: { label: "Usability", hint: "Something is unclear or awkward to use" },
+  performance: { label: "Performance", hint: "Slowness, battery, overheating" },
+  content: { label: "Text and translations", hint: "Mistakes in text, translations or content" },
+  other: { label: "Other", hint: "Everything else" },
+};
+
+export function betaFeedbackKindLabel(id: string, lang: BetaLang = "it"): string {
+  if (lang === "en" && id in FEEDBACK_KINDS_EN) return FEEDBACK_KINDS_EN[id as BetaFeedbackKind].label;
   return BETA_FEEDBACK_KINDS.find((k) => k.id === id)?.label ?? id;
+}
+
+export function betaFeedbackKinds(lang: BetaLang = "it") {
+  return BETA_FEEDBACK_KINDS.map((k) => (lang === "en" ? { id: k.id, ...FEEDBACK_KINDS_EN[k.id] } : k));
 }
 
 export const BETA_FEEDBACK_STATUSES = [
@@ -243,8 +405,15 @@ export const BETA_FEEDBACK_STATUSES = [
   { id: "closed", label: "Chiuso" },
 ] as const;
 
-export function betaFeedbackStatusLabel(id: string): string {
-  return BETA_FEEDBACK_STATUSES.find((s) => s.id === id)?.label ?? id;
+const FEEDBACK_STATUSES_EN: Record<string, string> = {
+  new: "Received",
+  in_progress: "In progress",
+  resolved: "Resolved",
+  closed: "Closed",
+};
+
+export function betaFeedbackStatusLabel(id: string, lang: BetaLang = "it"): string {
+  return pick(FEEDBACK_STATUSES_EN, lang, id, BETA_FEEDBACK_STATUSES.find((s) => s.id === id)?.label ?? id);
 }
 
 export type BetaChannel = {
@@ -252,6 +421,8 @@ export type BetaChannel = {
   method: BetaMethod;
   url: string;
   notes?: string;
+  /** Nota in inglese; se manca, il tester inglese vede quella italiana. */
+  notesEn?: string;
   /** Passo prima del link: es. il Google Group aperto da cui passa il test chiuso di Play. */
   groupUrl?: string;
   /** Passo dopo il link: es. la scheda Play Store da cui installare dopo l'opt-in al test. */
@@ -276,6 +447,7 @@ export function cleanBetaChannels(raw: unknown): BetaChannel[] {
       method: method as BetaMethod,
       url,
       ...(typeof c.notes === "string" && c.notes.trim() ? { notes: c.notes.trim().slice(0, 500) } : {}),
+      ...(typeof c.notesEn === "string" && c.notesEn.trim() ? { notesEn: c.notesEn.trim().slice(0, 500) } : {}),
       ...(typeof c.groupUrl === "string" && /^https:\/\//i.test(c.groupUrl.trim())
         ? { groupUrl: c.groupUrl.trim().slice(0, 500) }
         : {}),
@@ -285,6 +457,21 @@ export function cleanBetaChannels(raw: unknown): BetaChannel[] {
     });
   }
   return out;
+}
+
+/** Testi scritti dallo staff: l'inglese è facoltativo e ricade sull'italiano. */
+export function betaLocalizedText(
+  beta: { tagline: string | null; description?: string | null; tagline_en?: string | null; description_en?: string | null },
+  lang: BetaLang,
+) {
+  return {
+    tagline: (lang === "en" && beta.tagline_en) || beta.tagline,
+    description: (lang === "en" && beta.description_en) || beta.description || null,
+  };
+}
+
+export function betaChannelNotes(channel: BetaChannel, lang: BetaLang) {
+  return (lang === "en" && channel.notesEn) || channel.notes;
 }
 
 export function cleanBetaDevices(raw: unknown): string[] {
