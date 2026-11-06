@@ -8,9 +8,9 @@ import { PynkJsonLd } from "../pynk-json-ld";
 import { breadcrumbSchema, faqSchema, organizationSchema } from "../pynk-seo";
 import { useTenantLocalizedHref } from "@/lib/use-tenant-localized-href";
 
-// Mac già sul Mac App Store; iPhone/iPad/Apple TV restano su TestFlight finché non escono, Google Play in arrivo.
+// iPhone, iPad e Mac sono sull'App Store; Android passa dal Beta program finché non esce su Google Play.
 const MAC_APP_STORE_URL = "https://apps.apple.com/it/app/are-you-stupid-party-game/id6809188487?mt=12";
-const TESTFLIGHT_URL = "https://testflight.apple.com/join/G8kQkCdt";
+const IOS_APP_STORE_URL = "https://apps.apple.com/it/app/are-you-stupid-party-game/id6809188487";
 
 const pillars = [
   { title: "Tutti insieme, nello stesso istante", body: "Da 2 a 16 giocatori ricevono la stessa istruzione nello stesso momento. Sulla TV si vede chi ha sbagliato. Subito. Le prime 8 postazioni sono incluse." },
@@ -56,7 +56,7 @@ const faq = [
   },
   {
     q: "Posso già provarlo?",
-    a: "Sì. La versione Mac si scarica dal Mac App Store; su iPhone è in beta pubblica su TestFlight. I link per iPhone, iPad, Apple TV e Android arrivano a breve.",
+    a: "Sì. Su iPhone, iPad e Mac si scarica dall'App Store. Su Android è in beta pubblica: ti iscrivi dal nostro Beta program.",
   },
   {
     q: "Si può giocare anche da soli?",
@@ -109,7 +109,7 @@ function AreYouStupidInner() {
       author: { "@type": "Organization", name: "PYNK STUDIO" },
       publisher: { "@type": "Organization", name: "PYNK STUDIO" },
       offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-      downloadUrl: MAC_APP_STORE_URL,
+      downloadUrl: IOS_APP_STORE_URL,
     },
     breadcrumbSchema([
       { name: "Home", path: "/" },
@@ -152,12 +152,12 @@ function AreYouStupidInner() {
           <a href={MAC_APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="pynk-ays-download-card pynk-ays-download-card-live">
             <Apple aria-hidden="true" /><span><small>Scarica ora</small><strong>Mac</strong></span><ExternalLink aria-hidden="true" />
           </a>
-          <a href={TESTFLIGHT_URL} target="_blank" rel="noopener noreferrer" className="pynk-ays-download-card">
-            <Smartphone aria-hidden="true" /><span><small>Beta testing</small><strong>iPhone</strong></span><ExternalLink aria-hidden="true" />
+          <a href={IOS_APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="pynk-ays-download-card pynk-ays-download-card-live">
+            <Smartphone aria-hidden="true" /><span><small>Scarica ora</small><strong>iPhone e iPad</strong></span><ExternalLink aria-hidden="true" />
           </a>
-          <div className="pynk-ays-download-card pynk-ays-download-card-soon" aria-label="Android, in arrivo">
-            <Smartphone aria-hidden="true" /><span><small>In arrivo</small><strong>Android</strong></span>
-          </div>
+          <Link href={href("/beta")} className="pynk-ays-download-card">
+            <Smartphone aria-hidden="true" /><span><small>Iscriviti alla beta pubblica</small><strong>Android</strong></span><ArrowRight aria-hidden="true" />
+          </Link>
         </div>
         <div className="pynk-container pynk-ays-hero-links">
           <Link href={href("/lavori/are-you-stupid/privacy")}><ShieldCheck aria-hidden="true" /> Privacy Policy</Link>
