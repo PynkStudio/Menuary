@@ -899,3 +899,193 @@
     background-size: 2rem 2rem, auto;
   }
 }
+
+/* ── Componi la tua pizza (modulo dish-builder vestito Kimos) ── */
+@layer components {
+  [data-tenant-surface="kimos"] .km-site.km-componi {
+    overflow: clip;
+    background: #1d150e;
+  }
+
+  [data-tenant-surface="kimos"] .km-componi .km-header {
+    position: relative;
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] {
+    --db-bg: #1d150e;
+    --db-surface: #2e2117;
+    --db-surface-2: #3a2a1c;
+    --db-ink: var(--km-paper);
+    --db-muted: rgba(250, 243, 230, 0.66);
+    --db-line: rgba(250, 243, 230, 0.14);
+    --db-accent: var(--km-red);
+    --db-accent-ink: #fff;
+    --db-selected: var(--km-warm);
+    --db-price: var(--km-warm);
+    --db-glow: #f0a52a;
+    --db-danger: #ff7a5c;
+    --db-radius: 16px;
+    --db-font-display: var(--km-font-display);
+    --db-font-body: var(--km-font);
+    --db-stage-max: 470px;
+    /* Forno a legna: brace in alto, piastrelle scure sotto. */
+    --db-background:
+      radial-gradient(120% 60% at 50% -10%, rgba(232, 168, 37, 0.22), transparent 60%),
+      radial-gradient(80% 50% at 50% 110%, rgba(194, 58, 42, 0.18), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 46px),
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 46px),
+      #1d150e;
+    /* Tagliere tondo in legno sotto la pizza. */
+    --db-stage-bg:
+      radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.12), transparent 55%),
+      repeating-radial-gradient(circle at 48% 52%, #8d5c34 0 5px, #7f522d 5px 9px, #94633a 9px 14px);
+    min-height: calc(100dvh - 5rem);
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="stage"] {
+    border-radius: 50%;
+    box-shadow:
+      0 0 0 6px #5b3a20,
+      0 28px 60px -20px rgba(0, 0, 0, 0.7);
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="stage-wrap"] {
+    background: none;
+    padding-top: 20px;
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="title"] {
+    font-size: clamp(1.7rem, 4.5vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="choice"] {
+    background: rgba(250, 243, 230, 0.06);
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="choice-option"][data-active] {
+    background: var(--km-warm);
+    color: #241a12;
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="group-title"] {
+    color: var(--km-warm);
+    font-size: 1.4rem;
+  }
+
+  /* Tessere color carta, come il menu stampato del locale. */
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="tile"] {
+    background: var(--km-card);
+    border-color: transparent;
+    color: var(--km-ink);
+    box-shadow: 0 10px 20px -14px rgba(0, 0, 0, 0.8);
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="tile"][data-selected] {
+    border-color: var(--km-warm);
+    box-shadow:
+      0 0 0 2px var(--km-warm),
+      0 14px 26px -12px rgba(232, 168, 37, 0.55);
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="tile-price"] {
+    color: var(--km-red);
+    font-weight: 800;
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="tile-info"] {
+    background: transparent;
+    border-color: var(--km-line);
+    color: rgba(43, 31, 20, 0.55);
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="tile-minus"] {
+    background: var(--km-red);
+    color: #fff;
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="submit"] {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: 0 10px 24px -10px rgba(194, 58, 42, 0.8);
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-builder] [data-part="bar"] {
+    background: rgba(29, 21, 14, 0.92);
+  }
+
+  [data-tenant-surface="kimos"].km-componi-done-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    display: grid;
+    place-items: end center;
+    padding: 1rem;
+    background: rgba(29, 21, 14, 0.6);
+    backdrop-filter: blur(4px);
+  }
+
+  [data-tenant-surface="kimos"] .km-componi-done {
+    width: min(100%, 26rem);
+    padding: 1.4rem 1.3rem 1.2rem;
+    border-radius: 1.2rem;
+    background: var(--km-paper);
+    color: var(--km-ink);
+    font-family: var(--km-font);
+    box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.8);
+  }
+
+  @media (min-width: 640px) {
+    [data-tenant-surface="kimos"].km-componi-done-layer {
+      place-items: center;
+    }
+  }
+
+  [data-tenant-surface="kimos"] .km-componi-done-kicker {
+    margin: 0;
+    color: var(--km-red);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  [data-tenant-surface="kimos"] .km-componi-done h2 {
+    margin: 0.3rem 0 0.4rem;
+    font-family: var(--km-font-display);
+    font-size: 1.5rem;
+    line-height: 1.15;
+  }
+
+  [data-tenant-surface="kimos"] .km-componi-done p {
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+  }
+
+  [data-tenant-surface="kimos"] .km-componi-done-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  [data-tenant-surface="kimos"] .km-componi-again {
+    background: transparent;
+    color: var(--km-ink);
+    border: 1.5px solid var(--km-line);
+  }
+
+  /* Ingresso dal menu verso la pizza componibile. */
+  [data-tenant-surface="kimos"] [data-dish-entry] {
+    --db-entry-bg: linear-gradient(110deg, #2b1f14 0%, #3a2a1a 60%, #5b2a1f 100%);
+    --db-entry-ink: var(--km-paper);
+    --db-entry-accent: var(--km-warm);
+    --db-entry-accent-ink: #241a12;
+    --db-entry-font: var(--km-font-display);
+    --db-entry-radius: 1.25rem;
+  }
+
+  [data-tenant-surface="kimos"] [data-dish-entry] [data-part="entry-image"] {
+    box-shadow: 0 0 0 4px #5b3a20;
+  }
+}

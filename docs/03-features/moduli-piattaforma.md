@@ -137,6 +137,44 @@ pubblici (marketing e tenant su dominio custom) e si attiva quando il sito ha ID
 
 Decisione e alternative in [[adr-0011-tracciamento-condiviso-con-consenso]].
 
+## Modulo «Componi il piatto» (dish builder)
+
+**Dedotto dal codice, creato il 2026-11-10.** Motore riutilizzabile per far comporre al cliente
+un piatto visivamente: sceglie gli ingredienti da tessere, li vede cadere sul piatto, il prezzo
+si aggiorna e la riga va nel carrello. Non è (ancora) un feature flag di `tenant-modules.ts`:
+un tenant lo usa importando il componente nelle proprie pagine.
+
+| Pezzo | Dove | Cosa fa |
+|---|---|---|
+| Tipi della ricetta | `src/lib/dish-builder/types.ts` | `DishRecipe`: layout, prezzo base, scelte (taglia, base, pane…), gruppi di ingredienti con `min`/`max`, `maxPortions`, `includedPicks` |
+| Motore (puro) | `src/lib/dish-builder/engine.ts` | stato, aggiunta/rimozione porzioni, prezzo, validazione, `dishToCartLine()` |
+| Ricette d'esempio | `src/lib/dish-builder/sample-recipes.ts` | pizza, burger, poke, pasta: **solo demo**, non dati di un tenant |
+| Componente | `src/components/modules/dish-builder/dish-builder.tsx` | `<DishBuilder recipe onSubmit? onBack? headerActions? />` |
+| Stage | `src/components/modules/dish-builder/dish-stage.tsx` | disegno SVG animato per layout |
+| Demo | `/componi-demo` (noindex, passthrough sul sito Menuary) | prova le 4 ricette e due vesti |
+
+Layout disponibili: `disc` (pizza, vista dall'alto), `stack` (burger, strati di lato),
+`bowl` (poke, un settore per ingrediente), `nest` (pasta su piatto, il sugo colora il nido).
+
+- **Look fotografico**: ogni ingrediente e ogni base accetta `art.image` (ritaglio PNG/WebP
+  trasparente in `public/(slug)/`), che sostituisce la forma vettoriale nello stage e nella tessera.
+  Senza immagini il modulo disegna forme vettoriali (`round-slice`, `leaf`, `cube`, `drizzle`…).
+- **Stile**: il CSS module è neutro; ogni tenant lo veste ridefinendo le variabili `--db-*`
+  (colori, font, raggio) nel proprio foglio `src/styles/tenants/(slug).css`.
+- **Carrello**: senza `onSubmit` la riga va in `useCartStore` (scelte → `variantSelections`,
+  ingredienti → `addedExtras` con «x2» per i doppi, riepilogo in `note`).
+- **Flag**: `dishBuilder` (opzionale in `TenantFeatureFlags`, catalogo in `tenant-modules.ts`, richiede `onlineMenu` + un modulo d'ordine). Attivo per **kimos** (2026-11-10).
+- **Ricette per tenant**: `src/lib/dish-builder/tenant-recipes.ts` (Kimos: `recipes/kimos.ts`, parte da `pizza-03-margherita`, Normale/Gigante come `variantKey` small/large).
+- **Lingue**: prop `locale` (it, en, es, fr, de inclusi), testi ricetta come `DishText` (`{ it, en }`), prop `copy` per sovrascrivere i testi UI. I testi di carrello/comanda restano in `recipe.kitchenLocale`.
+- **Personalizzazione**: prop `theme` / `recipe.theme` (colori, font, raggio, sfondo intero, sfondo del piatto, sfondo tessere, alone), variabili `--db-*` nel CSS tenant, `data-part="…"` su ogni elemento. Ingredienti con `description`, `badges`, `allergens`, `detailImage` mostrati nella scheda dettagli (icona «i»).
+- **Server**: la riga porta `dish` (ricetta, scelte, porzioni); `POST /api/orders` la ricalcola con `validateDishLines` e risponde 422 `dish_line_invalid` se prezzo o limiti non tornano (verificato con un prezzo manomesso).
+- **Route**: `/componi` (dominio tenant) e `/[previewSlug]/componi`; pagina Kimos in `src/components/tenants/kimos/pages/componi.tsx`, stile in `kimos.css`. Ingresso dal menu: `DishBuilderMenuEntry` in `MenuPageShell`, visibile solo con flag + ricette.
+- **Da confermare con Kimos**: prezzo aggiunte standard (1,50 €), fattore Gigante (x2), allergeni degli ingredienti (indicati solo latte/pesce/crostacei ovvi).
+- **Da fare**: editor ricette in `gestione`; ricalcolo server del prezzo per le righe non «Componi» (l'API ordini e `edit-line` si fidano ancora del client).
+- **Fix collegato**: `activateCartTenantStorage` / `activateFavoritesTenantStorage` azzeravano lo storage prima di rileggerlo: carrello e preferiti si perdevano a ogni ricaricamento, per tutti i tenant.
+
+Scheda KB: [[componi-piatto]].
+
 ## Dipendenze tra moduli
 
 Da `ARCHITECTURE.md`: i moduli dichiarano dipendenze (`requires`, `requiresAny`); un modulo è effettivo solo se anche le sue dipendenze sono abilitate. Le combinazioni esatte sono **da leggere** in `tenant-modules.ts`.

@@ -138,6 +138,14 @@ export function getActiveCartTenantId(): string | null {
   return activeCartTenantId;
 }
 
+function hasStoredValue(key: string): boolean {
+  try {
+    return window.localStorage.getItem(key) != null;
+  } catch {
+    return false;
+  }
+}
+
 export async function activateCartTenantStorage(tenantId: string) {
   const nextKey = cartStorageKey(tenantId);
   if (activeCartTenantId === tenantId && useCartStore.persist.getOptions().name === nextKey) {
@@ -146,8 +154,14 @@ export async function activateCartTenantStorage(tenantId: string) {
   migrateLegacyCartStorage(tenantId, nextKey);
   activeCartTenantId = tenantId;
   useCartStore.persist.setOptions({ name: nextKey });
-  useCartStore.setState({ lines: [], context: { type: "asporto" }, openDrawer: false });
-  await useCartStore.persist.rehydrate();
+  // persist scrive su ogni setState: azzerare prima di rileggere sovrascriveva il carrello
+  // salvato con uno vuoto, e ogni ricaricamento della pagina lo perdeva.
+  if (hasStoredValue(nextKey)) {
+    await useCartStore.persist.rehydrate();
+    useCartStore.setState({ openDrawer: false });
+  } else {
+    useCartStore.setState({ lines: [], context: { type: "asporto" }, openDrawer: false });
+  }
 }
 
 export function cartTotal(lines: CartLine[]): number {

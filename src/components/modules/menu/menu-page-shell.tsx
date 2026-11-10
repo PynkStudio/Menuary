@@ -8,6 +8,7 @@ import { MenuActiveTableBar } from "@/components/modules/table-orders/menu-activ
 import { MenuaryAuthHintGate } from "@/components/modules/menu/menuary-auth-hint-gate";
 import { PersonalizedMenuHint } from "@/components/modules/menu/personalized-menu-hint";
 import { useTenant } from "@/components/core/tenant-provider";
+import { DishBuilderMenuEntry } from "@/components/modules/dish-builder/dish-builder-menu-entry";
 
 export function MenuPageShell({
   hasGlobalHeader = true,
@@ -83,6 +84,8 @@ export function MenuPageShell({
           </div>
         </section>
       )}
+
+      {!isDoca && <DishBuilderMenuEntry />}
 
       <Suspense fallback={null}>
         <InteractiveMenu hasGlobalHeader={hasGlobalHeader} />

@@ -5,6 +5,11 @@ import { CMD, asciiFold, feed, justify, rule, wrap } from "./escpos";
 // una sola riga lasciava il totale e il pagamento parzialmente dentro la bocca d'uscita.
 const BOTTOM_FEED_LINES = 4;
 
+// Le stampanti ESC/POS non espongono misure tipografiche intermedie: il primo
+// incremento disponibile raddoppia una sola dimensione. Aumentiamo quindi solo
+// l'altezza del corpo, conservando la larghezza e il numero di caratteri per riga.
+const BODY_TEXT_SIZE = CMD.sizeDoubleHeight;
+
 // Costruzione della comanda di cucina in ESC/POS a partire da un Order.
 //
 // F2/TODO(multi-printer): quando il routing per reparto sarà attivo, filtrare le
@@ -49,7 +54,7 @@ function paymentBlock(order: Order): string {
   let out = CMD.alignCenter + CMD.sizeDouble + CMD.boldOn;
   out += `${total}\n`;
   out += `${paymentMethodBadge(order)}\n`;
-  out += CMD.sizeNormal + CMD.boldOff;
+  out += BODY_TEXT_SIZE + CMD.boldOff;
   const timing = paymentTimingLabel(order);
   if (timing) out += `${timing}\n`;
   return out + CMD.alignLeft;
@@ -120,13 +125,13 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
     out += CMD.alignCenter + CMD.sizeDouble + CMD.boldOn;
     out += "** VARIAZIONE **\n";
     out += "PAGAMENTO\n";
-    out += CMD.sizeNormal + CMD.boldOff;
+    out += BODY_TEXT_SIZE + CMD.boldOff;
     out += rule(w) + "\n";
     out += CMD.alignLeft;
   }
   out += CMD.alignCenter + CMD.sizeDouble + CMD.boldOn;
   out += "MENUARY\n";
-  out += CMD.sizeNormal + CMD.boldOff;
+  out += BODY_TEXT_SIZE + CMD.boldOff;
   out += `Ordine N. ${asciiFold(order.code ?? "")}\n`;
   out += CMD.alignLeft;
   out += justify(asciiFold(originLabel(order)), time, w) + "\n";
@@ -137,7 +142,7 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
     const isDelivery = order.dineOption === "delivery" || String(order.type) === "delivery" || Boolean(order.deliveryAddress);
     out += CMD.sizeDoubleHeight + CMD.boldOn;
     out += asciiFold(`${isDelivery ? "CONSEGNA" : "RITIRO"} ORE ${formatRequestedTime(requested)}`) + "\n";
-    out += CMD.sizeNormal + CMD.boldOff;
+    out += BODY_TEXT_SIZE + CMD.boldOff;
   }
   if (order.customerName) out += `Cliente: ${asciiFold(order.customerName)}\n`;
   if (order.deliveryAddress) {

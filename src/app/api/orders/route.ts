@@ -1,3 +1,4 @@
+import { validateDishLines } from "@/lib/dish-builder/validate-lines";
 import { NextRequest, NextResponse, after } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import {
@@ -122,6 +123,14 @@ export async function POST(req: NextRequest) {
   if (invalidMenuItems.length > 0) {
     return NextResponse.json(
       { error: "Alcuni prodotti non sono disponibili per questo canale.", code: "items_not_in_active_menu", items: invalidMenuItems },
+      { status: 422 },
+    );
+  }
+
+  const invalidDishLines = validateDishLines(tenantId, lines);
+  if (invalidDishLines.length > 0) {
+    return NextResponse.json(
+      { error: "Il piatto composto non è più valido: ricomponilo.", code: "dish_line_invalid", items: invalidDishLines },
       { status: 422 },
     );
   }

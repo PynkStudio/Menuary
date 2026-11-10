@@ -1,3 +1,4 @@
+import type { DishLinePayload } from "@/lib/dish-builder/types";
 import type {
   MenuItem,
   MenuCategory,
@@ -275,4 +276,6 @@ export type CartLine = {
   variantSelections?: VariantSelection[];
   note?: string;
   bundlePicks?: BundlePick[];
+  /** Composizione del modulo «Componi il piatto»: il server la ricalcola (prezzo e limiti). */
+  dish?: DishLinePayload;
 };

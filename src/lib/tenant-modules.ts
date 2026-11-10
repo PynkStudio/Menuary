@@ -404,6 +404,15 @@ export const TENANT_MODULES: TenantModuleDefinition[] = [
     },
   },
   {
+    key: "dishBuilder",
+    label: "Componi il piatto",
+    description: "Il cliente compone pizza, burger, poke o pasta scegliendo gli ingredienti e li vede sul piatto.",
+    category: "Ordini",
+    verticals: ["food"],
+    requires: ["onlineMenu"],
+    requiresAny: ["takeaway", "tableOrders", "shop"],
+  },
+  {
     key: "favorites",
     label: "Preferiti",
     description: "Mantiene attivo il layer di salvataggio piatti preferiti.",
@@ -574,6 +583,7 @@ export const TENANT_MODULE_GROUPS: TenantModuleGroupDefinition[] = [
     description: "Menu, preferiti, disponibilità, costi e valorizzazione dell'offerta.",
     modules: [
       "onlineMenu",
+      "dishBuilder",
       "favorites",
       "productAvailability",
       "upselling",

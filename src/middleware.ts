@@ -156,6 +156,8 @@ const MENUARY_MARKETING_PASSTHROUGH = new Set([
   "privacy",
   "cookie",
   "team",
+  // Demo noindex del modulo "Componi il piatto", da mostrare ai ristoranti in trattativa.
+  "componi-demo",
 ]);
 const BIZERY_MARKETING_PASSTHROUGH = new Set(["payment", "privacy", "cookie", "team"]);
 const ORPHEO_MARKETING_PASSTHROUGH = new Set(["payment", "privacy", "cookie"]);

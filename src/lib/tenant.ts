@@ -73,6 +73,8 @@ export type TenantFeatureFlags = {
   mail?: boolean;
   /** Blog editoriale: articoli, media, blocchi contenuto e commenti semplici moderati. */
   blog?: boolean;
+  /** Componi il piatto: configuratore visivo di pizza, burger, poke, pasta con ricette del tenant. */
+  dishBuilder?: boolean;
   /** Press kit pubblico: bio, foto ufficiali, contatti media/booking e materiali scaricabili. */
   pressKit?: boolean;
   /** Catalogo opere: libri, brani, album, filmografia, spettacoli, crediti e asset collegati. */

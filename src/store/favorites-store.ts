@@ -66,6 +66,15 @@ export async function activateFavoritesTenantStorage(tenantId: string) {
   migrateLegacyFavoritesStorage(tenantId, nextKey);
   activeFavoritesTenantId = tenantId;
   useFavoritesStore.persist.setOptions({ name: nextKey });
-  useFavoritesStore.setState({ ids: [], openDrawer: false });
-  await useFavoritesStore.persist.rehydrate();
+  // Come nel carrello: azzerare prima di rileggere sovrascriveva i preferiti salvati.
+  let stored = false;
+  try {
+    stored = window.localStorage.getItem(nextKey) != null;
+  } catch {}
+  if (stored) {
+    await useFavoritesStore.persist.rehydrate();
+    useFavoritesStore.setState({ openDrawer: false });
+  } else {
+    useFavoritesStore.setState({ ids: [], openDrawer: false });
+  }
 }
