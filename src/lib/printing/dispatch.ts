@@ -22,7 +22,7 @@ import { dbLinesToOrderLines, dbRowToOrder, type DbOrder, type DbOrderLine } fro
 // Non lancia mai: la stampa non deve far fallire la creazione/conferma ordine.
 
 const ORDER_COLUMNS =
-  "id, tenant_id, location_id, code, type, table_label, session_id, session_code, diner_client_id, diner_nickname, customer_name, customer_email, customer_phone, delivery_address, delivery_address_text, delivery_doorbell, delivery_floor, delivery_notes, desired_time, pickup_time, notes, total, status, created_at, dine_option, payment_method, payment_status, confirmation_expires_at, confirmed_at, auto_accepted";
+  "id, tenant_id, location_id, code, is_demo, type, table_label, session_id, session_code, diner_client_id, diner_nickname, customer_name, customer_email, customer_phone, delivery_address, delivery_address_text, delivery_doorbell, delivery_floor, delivery_notes, desired_time, pickup_time, notes, total, status, created_at, dine_option, payment_method, payment_status, confirmation_expires_at, confirmed_at, auto_accepted";
 
 // trade_no SUNMI: max 32 caratteri. L'id ordine è un UUID (36 con trattini); senza
 // trattini sono 32 hex esatti, univoci → chiave dedup/idempotenza per SUNMI.

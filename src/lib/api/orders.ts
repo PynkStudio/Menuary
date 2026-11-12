@@ -25,6 +25,7 @@ export function dbLinesToOrderLines(rows: DbOrderLine[]): OrderLine[] {
 export function dbRowToOrder(row: DbOrder, lines: OrderLine[]): Order {
   return {
     id: row.id,
+    isDemo: row.is_demo ?? false,
     code: row.code,
     createdAt: row.created_at,
     type: row.type as Order["type"],
@@ -90,6 +91,7 @@ export function cartLinesToDbRows(
 
 export type DbOrder = {
   id: string;
+  is_demo?: boolean | null;
   tenant_id: string;
   code: string;
   type: string;

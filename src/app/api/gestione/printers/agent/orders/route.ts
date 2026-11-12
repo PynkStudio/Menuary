@@ -8,7 +8,7 @@ import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 import type { Order } from "@/lib/types";
 
 const ORDER_COLUMNS =
-  "id, code, type, table_label, session_id, session_code, diner_client_id, diner_nickname, customer_name, customer_email, customer_phone, delivery_address, delivery_address_text, delivery_doorbell, delivery_floor, delivery_notes, desired_time, pickup_time, notes, total, status, created_at, dine_option, confirmation_expires_at, confirmed_at, auto_accepted, payment_method, payment_status";
+  "id, code, is_demo, type, table_label, session_id, session_code, diner_client_id, diner_nickname, customer_name, customer_email, customer_phone, delivery_address, delivery_address_text, delivery_doorbell, delivery_floor, delivery_notes, desired_time, pickup_time, notes, total, status, created_at, dine_option, confirmation_expires_at, confirmed_at, auto_accepted, payment_method, payment_status";
 
 type OrderSummary = {
   id: string;
@@ -18,6 +18,7 @@ type OrderSummary = {
   total: number;
   createdAt: string;
   printed: boolean;
+  isDemo: boolean;
   escposBase64?: string;
 };
 
@@ -34,6 +35,7 @@ function orderToSummary(order: Order, printed: boolean, escposBase64?: string): 
     total: order.total,
     createdAt: order.createdAt,
     printed,
+    isDemo: order.isDemo === true,
     ...(escposBase64 ? { escposBase64 } : {}),
   };
 }

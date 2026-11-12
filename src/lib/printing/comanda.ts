@@ -130,7 +130,7 @@ export function buildComandaEscPos(order: Order, printer: TenantPrinter, opts?: 
     out += CMD.alignLeft;
   }
   out += CMD.alignCenter + CMD.sizeDouble + CMD.boldOn;
-  out += "MENUARY\n";
+  out += order.isDemo ? "*** ORDINE DEMO ***\n" : "MENUARY\n";
   out += BODY_TEXT_SIZE + CMD.boldOff;
   out += `Ordine N. ${asciiFold(order.code ?? "")}\n`;
   out += CMD.alignLeft;

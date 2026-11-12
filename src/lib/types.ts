@@ -138,6 +138,7 @@ export type OrderLine = {
 
 export type Order = {
   id: string;
+  isDemo?: boolean;
   code: string;
   createdAt: string;
   type: OrderType;

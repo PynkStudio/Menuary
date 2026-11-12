@@ -70,8 +70,8 @@ async function resolveMembership(
 /**
  * Identifica l'utente corrente rispetto al tenant. Non applica requisiti:
  * per le operazioni usare requireGestione().
- * In demo l'accesso è sempre garantito. Con backend live (finestra di 15 minuti
- * su tenant_demo_controls) le operazioni usano Supabase reale invece dei fixture.
+ * In demo l'accesso è sempre garantito. Con backend live temporaneo o permanente
+ * su tenant_demo_controls, le operazioni usano Supabase reale invece dei fixture.
  */
 export async function authorizeGestione(tenantSlug: string): Promise<GestioneAuth> {
   const requestHeaders = await headers();

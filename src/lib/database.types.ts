@@ -2076,6 +2076,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          is_demo: boolean
           cancellation_reason: string | null
           cancellation_note: string | null
           cancelled_at: string | null
@@ -2151,6 +2152,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          is_demo?: boolean
           cancellation_reason?: string | null
           cancellation_note?: string | null
           cancelled_at?: string | null
@@ -2226,6 +2228,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          is_demo?: boolean
           cancellation_reason?: string | null
           cancellation_note?: string | null
           cancelled_at?: string | null
@@ -4824,6 +4827,7 @@ export type Database = {
       }
       tenant_ai_phone_settings: {
         Row: {
+          demo_orders: boolean
           direct_orders: boolean
           order_cancel_window_minutes: number | null
           after_hours_mode: string
@@ -4849,6 +4853,7 @@ export type Database = {
           voice_label: string | null
         }
         Insert: {
+          demo_orders?: boolean
           direct_orders?: boolean
           order_cancel_window_minutes?: number | null
           after_hours_mode?: string
@@ -4874,6 +4879,7 @@ export type Database = {
           voice_label?: string | null
         }
         Update: {
+          demo_orders?: boolean
           direct_orders?: boolean
           order_cancel_window_minutes?: number | null
           after_hours_mode?: string
@@ -5789,6 +5795,7 @@ export type Database = {
       }
       tenant_demo_controls: {
         Row: {
+          backend_always_live: boolean
           backend_live: boolean
           backend_live_until: string | null
           created_at: string
@@ -5800,6 +5807,7 @@ export type Database = {
           vertical: string
         }
         Insert: {
+          backend_always_live?: boolean
           backend_live?: boolean
           backend_live_until?: string | null
           created_at?: string
@@ -5811,6 +5819,7 @@ export type Database = {
           vertical?: string
         }
         Update: {
+          backend_always_live?: boolean
           backend_live?: boolean
           backend_live_until?: string | null
           created_at?: string

@@ -1515,6 +1515,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          is_demo: boolean
           auto_accepted: boolean | null
           code: string
           confirmation_expires_at: string | null
@@ -1548,6 +1549,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          is_demo?: boolean
           auto_accepted?: boolean | null
           code: string
           confirmation_expires_at?: string | null
@@ -1581,6 +1583,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          is_demo?: boolean
           auto_accepted?: boolean | null
           code?: string
           confirmation_expires_at?: string | null
@@ -2878,6 +2881,7 @@ export type Database = {
       }
       tenant_demo_controls: {
         Row: {
+          backend_always_live: boolean
           backend_live: boolean
           backend_live_until: string | null
           created_at: string
@@ -2889,6 +2893,7 @@ export type Database = {
           vertical: string
         }
         Insert: {
+          backend_always_live?: boolean
           backend_live?: boolean
           backend_live_until?: string | null
           created_at?: string
@@ -2900,6 +2905,7 @@ export type Database = {
           vertical?: string
         }
         Update: {
+          backend_always_live?: boolean
           backend_live?: boolean
           backend_live_until?: string | null
           created_at?: string

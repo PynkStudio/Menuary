@@ -20,6 +20,7 @@ import { notifyOperationalNewOrder } from "@/lib/notifications/operational-order
 import { recordPlatformErrorFromRequest } from "@/lib/platform-errors";
 import type { CartLine, OrderDineOption } from "@/lib/types";
 import type { Database } from "@/lib/database.types";
+import { isDemoHost } from "@/lib/platform";
 
 // ─── POST /api/orders — crea ordine ──────────────────────────────────────────
 
@@ -201,7 +202,8 @@ export async function POST(req: NextRequest) {
   const confirmationExpiresAt = null;
   const confirmedAt = new Date().toISOString();
 
-  const printBlocked = await isComandaPrintBlockedForHost(req.headers.get("host"), tenantId);
+  const requestHost = req.headers.get("host");
+  const printBlocked = await isComandaPrintBlockedForHost(requestHost, tenantId);
 
   // Inserisci ordine
   const { data: order, error: orderErr } = await supabase
@@ -212,6 +214,7 @@ export async function POST(req: NextRequest) {
       type,
       total,
       source: "web",
+      is_demo: isDemoHost(requestHost),
       status: initialStatus,
       table_id: rest.tableId ?? null,
       table_label: rest.tableLabel ?? null,

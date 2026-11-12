@@ -1729,6 +1729,7 @@ export async function createRetellOrder(input: CreateRetellOrderInput) {
       type: fulfillmentType === "delivery" ? "delivery" : "asporto",
       total,
       source: input.source ?? "retell",
+      is_demo: settings.demoOrders,
       customer_name: resolvedCustomerName,
       customer_id: identity?.customerId ?? null,
       menuary_user_id: identity?.menuaryUserId ?? null,

@@ -81,6 +81,8 @@ export type AiPhoneSettings = {
    * (`tenant_ai_phone_settings.direct_orders`), non dal pannello.
    */
   directOrders: boolean;
+  /** Gli ordini conversazionali vengono persistiti come ordini demo, ma seguono il normale flusso operativo e di stampa. */
+  demoOrders: boolean;
   /** Minuti dalla creazione entro cui il locale può annullare un ordine. null = senza limite. */
   orderCancelWindowMinutes: number | null;
   updatedAt: string | null;
@@ -109,12 +111,13 @@ type AiPhoneSettingsRow = {
   payment_controls: Json | null;
   quick_settings: Json | null;
   direct_orders?: boolean | null;
+  demo_orders?: boolean | null;
   order_cancel_window_minutes?: number | null;
   updated_at: string | null;
 };
 
 export type AiPhoneSettingsPatch = Partial<
-  Omit<AiPhoneSettings, "tenantId" | "quickSettings" | "updatedAt" | "directOrders" | "orderCancelWindowMinutes">
+  Omit<AiPhoneSettings, "tenantId" | "quickSettings" | "updatedAt" | "directOrders" | "demoOrders" | "orderCancelWindowMinutes">
 > & {
   quickSettings?: Partial<AiPhoneQuickSettings>;
 };
@@ -253,6 +256,7 @@ function rowToSettings(tenantId: string, row: AiPhoneSettingsRow | null): AiPhon
     quickSettings,
     paymentControls,
     directOrders: row?.direct_orders === true,
+    demoOrders: row?.demo_orders === true,
     orderCancelWindowMinutes:
       typeof row?.order_cancel_window_minutes === "number" ? row.order_cancel_window_minutes : null,
     updatedAt: row?.updated_at ?? null,

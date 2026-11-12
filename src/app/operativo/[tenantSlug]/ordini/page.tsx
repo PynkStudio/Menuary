@@ -36,6 +36,7 @@ const FILTERS: { id: Filter; labelKey: keyof GestioneMessages["orders"]["filters
 
 type OrderRow = {
   id: string;
+  is_demo: boolean;
   code: string;
   status: Database["public"]["Enums"]["order_status"];
   type: Database["public"]["Enums"]["order_type"];
@@ -121,7 +122,7 @@ async function fetchOrders(tenantSlug: string, filter: Filter, locationId: strin
 
   let q = svc
     .from("orders")
-    .select("id, code, status, type, total, customer_name, table_label, pickup_time, desired_time, notes, created_at, dine_option, fulfillment_type, confirmation_expires_at, auto_accepted, customer_phone, delivery_address, cancellation_reason, cancellation_note")
+    .select("id, is_demo, code, status, type, total, customer_name, table_label, pickup_time, desired_time, notes, created_at, dine_option, fulfillment_type, confirmation_expires_at, auto_accepted, customer_phone, delivery_address, cancellation_reason, cancellation_note")
     .eq("tenant_id", tenantSlug);
 
   if (locationId) q = q.eq("location_id", locationId);
@@ -383,6 +384,11 @@ export default async function OrdiniPage({
                 <div className="ga-reservation-body">
                   <div className="ga-reservation-head">
                     <span className="ga-reservation-name">{o.customer_name ?? t.customer}</span>
+                    {o.is_demo && (
+                      <span className="ga-reservation-tag" style={{ background: "var(--ga-warn-faint, #FFFBEB)", color: "var(--ga-warn-ink, #92400E)" }}>
+                        DEMO
+                      </span>
+                    )}
                     {loyalty && (
                       <span className="ga-reservation-tag" style={{ background: loyalty.bg, color: loyalty.fg, display: "inline-flex", alignItems: "center", gap: 3 }}>
                         {loyalty.label === "Affezionato" && <Star size={10} strokeWidth={2.4} style={{ fill: "currentColor" }} />}
