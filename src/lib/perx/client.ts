@@ -45,6 +45,30 @@ export type PerxTenantSettings = {
   [key: string]: unknown;
 };
 
+export type PerxAdminCapability = {
+  resource: string;
+  read: boolean;
+  create: boolean;
+  update: boolean;
+  delete: boolean;
+};
+
+export type PerxAdminOverview = {
+  service: "perx";
+  api_version: "v1";
+  single_tenant_mode: boolean;
+  counts: {
+    tenants: number;
+    users: number;
+    active_users: number;
+    domain_routes: number;
+    active_domain_routes: number;
+    unresolved_errors: number;
+    unresolved_critical_errors: number;
+  };
+  capabilities: PerxAdminCapability[];
+};
+
 export type PerxUser = {
   id: string;
   tenant_id: string;
@@ -89,6 +113,8 @@ export type PerxErrorLog = {
 };
 
 export const perxApi = {
+  getOverview: () => perxFetch<PerxAdminOverview>("/overview"),
+
   listTenants: () => perxFetch<PerxTenant[]>("/tenants"),
 
   getTenantSettings: (id: string) =>

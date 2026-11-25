@@ -5,9 +5,8 @@
 Il portale `admin.pynkstudio.eu/perx` ha il client server-only pronto in `src/lib/perx/client.ts`
 e le pagine in `/admin-pynkstudio/perx/*`.
 
-**Mancano solo le env vars** (server-only, non `NEXT_PUBLIC_`) e il valore condiviso lato PerX su
-Render. Nessun CORS da configurare: le chiamate partono dal server Next.js di BePork verso il
-backend PerX, mai dal browser.
+Le env vars restano server-only (non `NEXT_PUBLIC_`). Nessun CORS da configurare: le chiamate
+partono dal server Next.js di BePork verso il backend PerX, mai dal browser.
 
 ## Target di piattaforma deciso il 2026-11-25
 
@@ -28,10 +27,13 @@ idempotenti e credenziali per prodotto/azione ruotabili; la chiave platform-admi
 una soluzione transitoria. La migrazione host deve essere dual-host con redirect dei domini
 storici solo dopo la verifica di callback, webhook e client.
 
-Prima fase applicativa completata il 2026-11-25: i tre portali PerX pubblico, CAT Dispatcher e
+Prima fase domini completata il 2026-11-25: i tre portali PerX pubblico, CAT Dispatcher e
 Bignami Online hanno origin Vercel production separati dietro al gateway `perx`; i nuovi host
 PynkStudio sono associati a Vercel ma attendono i record DNS presso Register.it. Questa fase non
-estende ancora le capability del pannello amministrativo descritte nelle sezioni successive.
+estende le capability mutative del pannello amministrativo descritte nelle sezioni successive.
+Nello stesso giorno è stato aggiunto lo snapshot `GET /overview`: la dashboard mostra ora KPI,
+stato connessione, modalità tenant e capability CRUD dichiarate dal backend con una sola chiamata
+aggregata. La gestione utenti resta intenzionalmente indicata come read-only.
 
 ---
 
@@ -83,6 +85,7 @@ Autenticazione: header `X-PerX-Admin-Key`.
 
 | Metodo | Path | Descrizione |
 |--------|------|-------------|
+| GET | `/overview` | Snapshot KPI, modalità tenant e capability CRUD supportate |
 | GET | `/tenants` | Lista tenant |
 | POST | `/tenants` | Crea tenant (403 se `SINGLE_TENANT_MODE=True` sul backend) |
 | PUT | `/tenants/{id}` | Aggiorna tenant |
@@ -103,13 +106,15 @@ SecurityApp, il modello `Tenant` di PerX non ha un campo stato.
 ```typescript
 import { perxApi } from "@/lib/perx/client";
 
+const overview = await perxApi.getOverview();
 const tenants = await perxApi.listTenants();
 const settings = await perxApi.getTenantSettings(tenantId);
 const errors = await perxApi.listErrors({ resolved: false });
 await perxApi.resolveError(errorId);
 ```
 
-Tipi esportati: `PerxTenant`, `PerxTenantSettings`, `PerxUser`, `PerxDomainRoute`, `PerxErrorLog`.
+Tipi esportati: `PerxAdminOverview`, `PerxAdminCapability`, `PerxTenant`,
+`PerxTenantSettings`, `PerxUser`, `PerxDomainRoute`, `PerxErrorLog`.
 
 ## 6. Nota di sicurezza e limiti
 
