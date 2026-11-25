@@ -9,6 +9,30 @@ e le pagine in `/admin-pynkstudio/perx/*`.
 Render. Nessun CORS da configurare: le chiamate partono dal server Next.js di BePork verso il
 backend PerX, mai dal browser.
 
+## Target di piattaforma deciso il 2026-11-25
+
+`admin.pynkstudio.eu` diventa il control plane unico di tutti i prodotti PynkStudio. PerX resta
+un backend indipendente e deve essere amministrato da questo portale integralmente tramite API
+server-to-server: nessun accesso diretto al suo database, nessun segreto nel browser e nessun
+pannello admin PerX parallelo da mantenere come fonte autorevole.
+
+Anche i domini prodotto confluiranno sotto `pynkstudio.eu`: `perx.pynkstudio.eu`,
+`catdispatcher.pynkstudio.eu`, `bignamionline.pynkstudio.eu`; i servizi PerX useranno la
+gerarchia `app.perx.pynkstudio.eu`, `api.perx.pynkstudio.eu`,
+`login.perx.pynkstudio.eu`. I domini custom dei tenant (Studio Randa e gli altri) e i loro
+sottodomini operativi restano indipendenti.
+
+Il bridge documentato qui è la prima integrazione, non ancora il control plane completo. Prima
+dell'estensione alle azioni mutative servono inventario delle capability, audit trail, operazioni
+idempotenti e credenziali per prodotto/azione ruotabili; la chiave platform-admin globale rimane
+una soluzione transitoria. La migrazione host deve essere dual-host con redirect dei domini
+storici solo dopo la verifica di callback, webhook e client.
+
+Prima fase applicativa completata il 2026-11-25: i tre portali PerX pubblico, CAT Dispatcher e
+Bignami Online hanno origin Vercel production separati dietro al gateway `perx`; i nuovi host
+PynkStudio sono associati a Vercel ma attendono i record DNS presso Register.it. Questa fase non
+estende ancora le capability del pannello amministrativo descritte nelle sezioni successive.
+
 ---
 
 ## 1. Perché PerX e non un verticale Menuary
