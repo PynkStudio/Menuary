@@ -23,6 +23,32 @@
 > compenetrazione fra pagine che questo ADR lasciava "da verificare sul campo" sono stati
 > misurati e risolti lì.
 
+> **Nota (2026-11-10) — la carta segue la mano.** Ispirato al libro 3D di
+> seanaiux.com/book (Three.js, analizzato per reverse engineering), portando nel DOM
+> solo la *matematica del movimento*, non la geometria WebGL. Tutto in `book-shell.tsx`:
+>
+> 1. **Trascinamento ad arcocoseno.** Un foglio che ruota sul dorso porta il taglio a
+>    `cos(π·p)` volte il braccio, quindi `p = acos(taglio₀ − Δx/braccio)/π`. Su schermo
+>    largo il braccio è la distanza vera dal dorso (minimo 35% di pagina): il taglio
+>    resta sotto il cursore. Su stretto la corsa resta quella di prima (`span`), con la
+>    stessa forma. La rotella resta lineare.
+> 2. **Rilascio sulla velocità degli ultimi 120 ms**, non dell'ultimo fotogramma: un
+>    dito che si ferma un istante prima di alzarsi non perde più il colpetto.
+> 3. **Giro a tempo, non a molla.** easeInOutCubic, `1 s × max(0.4, corsa mancante)`
+>    (0.9 s nei salti lunghi); dopo un rilascio oltre soglia easeOutCubic in
+>    `0.75 s × corsa mancante`, che parte alla velocità del dito.
+> 4. **Accenno inseguito**, non impostato a ogni evento: vicinanza passata da una curva
+>    a S e inseguimento esponenziale (`1 − e^(−k·dt)`, k=9) sul frame loop di framer.
+> 5. **Parallasse del volume** col mouse (solo `hover: hover` e `pointer: fine`, mai con
+>    `prefers-reduced-motion`): ±3.2° di imbardata e ±2° di beccheggio, k=2.5, che torna
+>    al centro mentre un foglio è in mano.
+>
+> Verificato in preview (desktop 1440×900) con il frame loop pompato a mano: posizione
+> del foglio uguale all'arcocoseno atteso a ogni punto, colpetto a p=0.22 che completa il
+> giro, curva del giro a tempo, accenno senza salti al cambio di lato. **Da verificare
+> sul campo:** sensazione su trackpad e su telefono reale (la preview non dipinge a
+> frame rate pieno). Sviluppato sul branch `feat/vo-libro-fluido`.
+
 > **Nota (2026-09-11) — lo sfogliare diventa a prova di gesto.** Il motore dei gesti
 > perdeva colpi e ogni tanto si piantava del tutto. Le cause erano quattro, tutte
 > strutturali e non di regolazione, e sono state tolte alla radice:

@@ -2,6 +2,8 @@
 
 import {
   animate,
+  cancelFrame,
+  frame,
   motion,
   useMotionValue,
   useSpring,
@@ -112,8 +114,8 @@ const WHEEL_POINTER_ID = -1;
 const OPEN_GRACE_MS = 750;
 const MAX_ANIMATED_LEAVES = 3;
 /**
- * Oltre questo tempo un giro pagina si considera concluso comunque. La molla ci
- * mette mezzo secondo scarso: è un margine, non un tempo di riferimento.
+ * Oltre questo tempo un giro pagina si considera concluso comunque. Il giro a
+ * tempo dura al più `FLIP_DURATION_S`: è un margine, non un tempo di riferimento.
  */
 const RUN_TIMEOUT_MS = 1800;
 const LEAF_STAGGER_MS = 90;
@@ -151,21 +153,94 @@ type Gesture = {
   resumed?: boolean;
 };
 
-// Una pagina di carta è leggera ma incontra l'aria: si posa senza rimbalzare.
-// Smorzamento appena sotto il critico, così arriva dritta e non oscilla.
-//
-// La molla di prima era sovrasmorzata e pesante: la coda per rientrare nella
-// tolleranza durava oltre un secondo, e per tutto quel tempo il foglio era
-// tecnicamente in volo — il libro sordo ai gesti successivi e la carta ferma a
-// un capello dalla pagina. Mezzo secondo scarso è il tempo di un giro pagina vero.
-const flipSpring = {
-  type: "spring",
-  stiffness: 150,
-  damping: 24,
-  mass: 1,
-  restDelta: 0.0015,
-  restSpeed: 0.02,
-} as const;
+/**
+ * Il giro pagina è **a tempo**, non a molla.
+ *
+ * Una molla non ha una durata: ha una coda, e la coda si sente — il foglio
+ * rallenta, quasi si ferma, poi si posa con un ultimo scivolone che a schermo
+ * legge come esitazione. Una curva a tempo arriva quando deve, e la durata
+ * proporzionale alla corsa che manca fa sì che un foglio già a metà non impieghi
+ * quanto uno partito da fermo. Valori e curve vengono dal libro 3D preso a
+ * riferimento (seanaiux.com/book), adattati al DOM.
+ */
+const FLIP_DURATION_S = 1;
+/** Un salto lungo fa passare più fogli: ognuno va un po' più svelto. */
+const JUMP_DURATION_S = 0.9;
+/** Il foglio lasciato andare oltre soglia finisce la corsa con la spinta del dito. */
+const RELEASE_DURATION_S = 0.75;
+/** Nessun giro dura meno di questa frazione, anche se manca un capello. */
+const MIN_DURATION_FRACTION = 0.4;
+
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+/** Parte alla velocità con cui il dito l'ha lasciato, e si posa piano. */
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+const smoothstep = (edge0: number, edge1: number, x: number) => {
+  const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * Inseguimento esponenziale, indipendente dal frame rate:
+ * `v += (bersaglio − v) · (1 − e^(−k·dt))`.
+ *
+ * Serve dove il bersaglio cambia a ogni evento — l'accenno sotto il mouse, la
+ * parallasse. Una molla nuova a ogni `pointermove` riparte ogni volta da
+ * velocità propria e fa scattare la carta; questo invece *ri-mira* lo stesso
+ * moto, quindi la curva resta continua per quanto fitti arrivino gli eventi.
+ */
+type DampFollower = { stop: () => void; retarget: (target: number) => void };
+function dampTo(value: MotionValue<number>, target: number, k: number): DampFollower {
+  let goal = target;
+  let running = false;
+  // Sul frame loop di framer, non su un rAF proprio: si muove nello stesso
+  // fotogramma delle altre motion value, quindi foglio e telecamera non si sfasano.
+  const tick = ({ delta }: { delta: number }) => {
+    // Un fotogramma lungo (scheda in secondo piano) non deve teletrasportare il foglio.
+    const dt = Math.min(0.05, delta / 1000);
+    const current = value.get();
+    const next = current + (goal - current) * (1 - Math.exp(-k * dt));
+    if (Math.abs(goal - next) < 0.0005) {
+      value.set(goal);
+      stop();
+      return;
+    }
+    value.set(next);
+  };
+  const stop = () => {
+    if (running) cancelFrame(tick);
+    running = false;
+  };
+  const start = () => {
+    if (running) return;
+    running = true;
+    frame.update(tick, true);
+  };
+  start();
+  return {
+    stop,
+    retarget: (next) => {
+      goal = next;
+      start();
+    },
+  };
+}
+/** Rapidità dell'accenno sotto il mouse. */
+const HINT_DAMPING = 9;
+/**
+ * Parallasse del volume sotto il mouse, in gradi. Piccola di proposito: è la
+ * testa di chi legge che si sposta, non il libro che gira.
+ */
+const PARALLAX_YAW_DEG = 3.2;
+const PARALLAX_PITCH_DEG = 2;
+const PARALLAX_DAMPING = 2.5;
+/**
+ * Il trascinamento a dito-sul-taglio: il foglio si prende al taglio, ma chi lo
+ * afferra vicino al dorso non deve vederlo girare a scatti. Sotto questa
+ * frazione di pagina il braccio di leva si considera comunque questo.
+ */
+const DRAG_MIN_ARM = 0.35;
+/** Finestra su cui si misura la velocità del rilascio. */
+const FLICK_WINDOW_MS = 120;
 const hintSpring = { type: "spring", stiffness: 150, damping: 20, mass: 0.9 } as const;
 /**
  * Il foglio lasciato cadere sotto soglia: torna al suo posto più deciso della
@@ -187,8 +262,8 @@ const wheelFollow = {
 /** La testa che gira da una facciata all'altra a riposo: un moto solo, non un trascinamento. */
 const cameraFocusSpring = { type: "spring", stiffness: 190, damping: 26, mass: 0.9 } as const;
 /**
- * L'occhio che segue il foglio mentre gira. Smorzamento vicino al critico,
- * come `flipSpring` per la carta: la telecamera non deve rimbalzare, solo
+ * L'occhio che segue il foglio mentre gira. Smorzamento vicino al critico:
+ * la telecamera non deve rimbalzare, solo
  * arrivare morbida — un rimbalzo su una ripresa si nota molto più che su un
  * foglio, perché è tutta l'inquadratura a muoversi, non un dettaglio in essa.
  */
@@ -561,6 +636,15 @@ export function VoBookShell({
     /** Da dove parte il foglio: un accenno già sollevato non ricomincia dal dorso. */
     base: number;
     /**
+     * Braccio di leva in pixel: distanza dal dorso a cui il taglio sta sotto il
+     * dito. `null` per la rotella, che non ha un taglio da tenere e resta lineare.
+     */
+    arm: number | null;
+    /** Dove stava il taglio a inizio presa, in coseno: +1 sulla destra, −1 sulla sinistra. */
+    edge0: number;
+    /** Ultimi punti del gesto, per la velocità del rilascio. */
+    samples: { t: number; p: number }[];
+    /**
      * Dove il gesto ha chiesto di portare il foglio. Non coincide con la
      * posizione del foglio quando è una molla a inseguire il bersaglio, ed è
      * *questo* il valore su cui si decide se il giro è compiuto: il dito che ha
@@ -779,6 +863,43 @@ export function VoBookShell({
    */
   const flipDepthT = useTransform(cameraZoomFlipT, (value) => 1 - value);
   const volumeTurn = useTransform(turn, [0, 1], [0, 180]);
+  /**
+   * La testa di chi legge: col mouse il punto di vista si sposta di qualche
+   * grado verso il puntatore e ci arriva con un ritardo morbido. Tiene vivo il
+   * volume anche quando nessuna pagina si muove. Mentre un foglio è in mano
+   * torna al centro, così il taglio non si sposta sotto il dito.
+   */
+  const parallaxYaw = useMotionValue(0);
+  const parallaxPitch = useMotionValue(0);
+  const bookRotateY = useTransform([volumeTurn, parallaxYaw], ([turnDeg, yaw]: number[]) => turnDeg + yaw);
+  const bookRotateX = useTransform(parallaxPitch, (pitch) => 6 + pitch);
+  useEffect(() => {
+    if (reducedMotion) return;
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    if (!fine.matches) return;
+    const yaw = dampTo(parallaxYaw, 0, PARALLAX_DAMPING);
+    const pitch = dampTo(parallaxPitch, 0, PARALLAX_DAMPING);
+    const aim = (nx: number, ny: number) => {
+      const holding = gestureRef.current?.mode === "drag";
+      yaw.retarget(holding ? 0 : -nx * PARALLAX_YAW_DEG);
+      pitch.retarget(holding ? 0 : -ny * PARALLAX_PITCH_DEG);
+    };
+    const onMove = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") return;
+      aim((event.clientX / window.innerWidth) * 2 - 1, (event.clientY / window.innerHeight) * 2 - 1);
+    };
+    const center = () => aim(0, 0);
+    window.addEventListener("pointermove", onMove, { passive: true });
+    document.documentElement.addEventListener("pointerleave", center);
+    window.addEventListener("blur", center);
+    return () => {
+      yaw.stop();
+      pitch.stop();
+      window.removeEventListener("pointermove", onMove);
+      document.documentElement.removeEventListener("pointerleave", center);
+      window.removeEventListener("blur", center);
+    };
+  }, [parallaxPitch, parallaxYaw, reducedMotion]);
   /**
    * La prima pagina **è il dietro della copertina**: non compare, scende con lei.
    *
@@ -1098,8 +1219,17 @@ export function VoBookShell({
       // lasciato oltre metà corsa, che ripartiva da capo sotto gli occhi.
       const stale = dir === 1 ? current > 0.5 : current < 0.5;
       if (index > 0 || (stale && !gesture.resumed)) value.set(start);
+      const released = index === 0 && gesture.resumed;
+      const base = released
+        ? RELEASE_DURATION_S
+        : leaves.length > 1
+          ? JUMP_DURATION_S
+          : FLIP_DURATION_S;
+      const remaining = Math.abs(end - value.get());
       const control = animate(value, end, {
-        ...flipSpring,
+        type: "tween",
+        duration: base * Math.max(MIN_DURATION_FRACTION, remaining),
+        ease: released ? easeOutCubic : easeInOutCubic,
         delay: (index * LEAF_STAGGER_MS) / 1000,
       });
       // Il fruscio del primo foglio è già dovuto: farlo partire subito lo aggancia
@@ -1338,7 +1468,9 @@ export function VoBookShell({
    * posizione continua — ma quello da tastiera sì, e i due non possono scrivere
    * sullo stesso valore insieme.
    */
-  const hintAnimRef = useRef<{ stop: () => void } | null>(null);
+  const hintAnimRef = useRef<{ stop: () => void; retarget?: (target: number) => void } | null>(
+    null,
+  );
   const stopHintAnim = useCallback(() => {
     hintAnimRef.current?.stop();
     hintAnimRef.current = null;
@@ -1396,14 +1528,33 @@ export function VoBookShell({
       const held = gestureRef.current;
       if (!open || reducedMotion || held?.mode === "run" || held?.mode === "drag") return;
       if (!armGesture(dir, "hint")) return;
-      const lift = HINT_MAX * Math.min(1, Math.max(0, strength));
+      // Un foglio nuovo — l'altro taglio, o la pagina dopo un giro — parte dal suo
+      // capo: l'inseguitore del foglio di prima lo trascinerebbe attraverso il libro.
+      if (gestureRef.current?.token !== held?.token) {
+        stopHintAnim();
+        p0.set(dir === 1 ? 0 : 1);
+      }
+      // La vicinanza passa da una curva a S: il foglio non comincia a muoversi
+      // di netto al confine della zona, e arrivato sul taglio non ci sbatte.
+      const lift = HINT_MAX * smoothstep(0, 1, strength);
       const settled = dir === 1 ? lift : 1 - lift;
-      stopHintAnim();
-      // Il puntatore è già una posizione continua: seguirlo di pari passo è più
-      // fluido di una molla nuova a ogni evento, che è quel che rendeva l'accenno
-      // scattoso e teneva il processore occupato per nulla.
-      if (smooth) hintAnimRef.current = animate(p0, settled, hintSpring);
-      else p0.set(settled);
+      if (smooth) {
+        stopHintAnim();
+        hintAnimRef.current = animate(p0, settled, hintSpring);
+        return;
+      }
+      /*
+       * Il puntatore è già una posizione continua, ma i suoi eventi arrivano a
+       * strappi: seguirli di pari passo faceva tremare la carta, una molla nuova
+       * a ogni evento la faceva scattare. Un solo inseguitore che si ri-mira a
+       * ogni evento tiene il moto continuo.
+       */
+      const follower = hintAnimRef.current;
+      if (follower?.retarget) follower.retarget(settled);
+      else {
+        stopHintAnim();
+        hintAnimRef.current = dampTo(p0, settled, HINT_DAMPING);
+      }
     },
     [armGesture, open, p0, reducedMotion, stopHintAnim],
   );
@@ -1439,6 +1590,32 @@ export function VoBookShell({
       stopHintAnim();
       if (!resuming) p0.set(dir === 1 ? 0 : 1);
       const rect = stage.getBoundingClientRect();
+      const span = Math.max(
+        travelSpan ?? Math.min(rect.width * 0.5, window.innerWidth * 0.5),
+        1,
+      );
+      /*
+       * Il taglio resta sotto il dito.
+       *
+       * Un foglio che ruota attorno al dorso porta il taglio a `cos(π·p)` volte
+       * il braccio: la progressione giusta è quindi `acos`, non una retta. Con
+       * la retta la carta scivolava rispetto al puntatore — avanti all'inizio,
+       * indietro a metà — ed era quello a far sembrare il trascinamento di gomma.
+       *
+       * Su schermo largo il braccio è la distanza vera dal dorso. Su stretto il
+       * dorso può essere fuori schermo e la facciata più larga del pollice:
+       * resta la corsa `span` di prima, ma con la stessa forma.
+       */
+      let arm: number | null = null;
+      if (pointerId !== WHEEL_POINTER_ID) {
+        const rightPage = stage.querySelector<HTMLElement>(".vo-page-right")?.getBoundingClientRect();
+        if (!compact && rightPage && rightPage.width > 0) {
+          arm = Math.max(Math.abs(startX - rightPage.left), rightPage.width * DRAG_MIN_ARM);
+        } else {
+          arm = span / 2;
+        }
+      }
+      const base = p0.get();
       dragRef.current = {
         startX,
         /*
@@ -1454,12 +1631,12 @@ export function VoBookShell({
          * davvero percorrere. La rotella porta la sua, perché non ha una
          * pagina sotto da misurare.
          */
-        span: Math.max(
-          travelSpan ?? Math.min(rect.width * 0.5, window.innerWidth * 0.5),
-          1,
-        ),
-        base: p0.get(),
-        target: p0.get(),
+        span,
+        base,
+        arm,
+        edge0: Math.cos(Math.PI * base),
+        samples: [{ t: performance.now(), p: base }],
+        target: base,
         moved: false,
         pointerId,
       };
@@ -1467,7 +1644,7 @@ export function VoBookShell({
       if (!resuming) playPageSound();
       return true;
     },
-    [armGesture, open, p0, playPageSound, reducedMotion, stopHintAnim],
+    [armGesture, compact, open, p0, playPageSound, reducedMotion, stopHintAnim],
   );
 
   /**
@@ -1480,9 +1657,14 @@ export function VoBookShell({
     (clientX: number, smooth = false) => {
       const drag = dragRef.current;
       if (!drag) return 0;
-      const travelled = (drag.startX - clientX) / drag.span;
-      const target = Math.min(1, Math.max(0, drag.base + travelled));
+      const target =
+        drag.arm === null
+          ? clamp(drag.base + (drag.startX - clientX) / drag.span, 0, 1)
+          : Math.acos(clamp(drag.edge0 - (drag.startX - clientX) / drag.arm, -1, 1)) / Math.PI;
       drag.target = target;
+      const now = performance.now();
+      drag.samples.push({ t: now, p: target });
+      while (drag.samples.length > 2 && now - drag.samples[0].t > FLICK_WINDOW_MS) drag.samples.shift();
       if (Math.abs(clientX - drag.startX) > CLICK_SLOP) drag.moved = true;
       stopHintAnim();
       if (smooth) hintAnimRef.current = animate(p0, target, wheelFollow);
@@ -1521,8 +1703,22 @@ export function VoBookShell({
       // giro risultava appena accennato e non si compiva mai.
       const reached = drag.target;
       const travelled = held.dir === 1 ? reached : 1 - reached;
-      // La velocità del pollice conta quanto la distanza percorsa.
-      const flick = p0.getVelocity() * held.dir;
+      /*
+       * La velocità del pollice conta quanto la distanza percorsa, misurata
+       * sugli ultimi centoventi millisecondi del gesto e non sull'ultimo
+       * fotogramma: un dito che si ferma un istante prima di alzarsi — lo
+       * fanno tutti — non deve azzerare il colpetto che l'ha preceduto. La
+       * rotella insegue il bersaglio con una molla e tiene la sua velocità.
+       */
+      let flick = p0.getVelocity() * held.dir;
+      if (drag.arm !== null) {
+        const first = drag.samples[0];
+        const lastSample = drag.samples[drag.samples.length - 1];
+        const elapsed = (lastSample.t - first.t) / 1000;
+        flick = elapsed > 0 ? ((lastSample.p - first.p) / elapsed) * held.dir : 0;
+        // Fermo da più della finestra: il dito si è posato, nessun colpetto.
+        if (performance.now() - lastSample.t > FLICK_WINDOW_MS) flick = 0;
+      }
       /*
        * Il ripensamento: chi ha portato il foglio oltre metà e poi lo rimanda
        * indietro con decisione vuole *riavvolgere*, non compiere il giro. Senza
@@ -2052,7 +2248,7 @@ export function VoBookShell({
       onPointerLeave={onStagePointerLeave}
     >
       <div className="vo-book-ambient" aria-hidden="true" />
-      <motion.div className="vo-book" style={{ x: blockShift, rotateX: 6, rotateY: volumeTurn }}>
+      <motion.div className="vo-book" style={{ x: blockShift, rotateX: bookRotateX, rotateY: bookRotateY }}>
         <motion.div
           className="vo-book-edge vo-book-edge-left"
           aria-hidden="true"
