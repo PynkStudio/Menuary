@@ -16,10 +16,10 @@ server-to-server: nessun accesso diretto al suo database, nessun segreto nel bro
 pannello admin PerX parallelo da mantenere come fonte autorevole.
 
 Anche i domini prodotto confluiranno sotto `pynkstudio.eu`: `perx.pynkstudio.eu`,
-`catdispatcher.pynkstudio.eu`, `bignamionline.pynkstudio.eu`; i servizi PerX useranno la
-gerarchia `app.perx.pynkstudio.eu`, `api.perx.pynkstudio.eu`,
-`login.perx.pynkstudio.eu`. I domini custom dei tenant (Studio Randa e gli altri) e i loro
-sottodomini operativi restano indipendenti.
+`catdispatcher.pynkstudio.eu`, `bignamionline.pynkstudio.eu`; per compatibilità con il pannello
+DNS Register.it i servizi PerX useranno i nomi piatti `app-perx.pynkstudio.eu`,
+`api-perx.pynkstudio.eu`, `login-perx.pynkstudio.eu`. I domini custom dei tenant (Studio Randa e
+gli altri) e i loro sottodomini operativi restano indipendenti.
 
 Il bridge documentato qui è la prima integrazione, non ancora il control plane completo. Prima
 dell'estensione alle azioni mutative servono inventario delle capability, audit trail, operazioni
